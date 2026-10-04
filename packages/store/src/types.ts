@@ -192,6 +192,12 @@ export interface StoredLabel extends StoredRow {
 }
 
 export interface StoredSession extends StoredRow {
+  /** Latest Meta account notice, independent of the runtime connection state. */
+  readonly cloudAccountNotification?: {
+    readonly kind?: string;
+    readonly wabaId?: string;
+    readonly value: unknown;
+  };
   readonly status?: string;
   readonly statusReason?: string;
   readonly phoneNumber?: string;
@@ -209,6 +215,8 @@ export interface StoredSession extends StoredRow {
 }
 
 export interface StoredTemplate extends StoredRow {
+  readonly language?: string;
+  readonly wabaId?: string;
   readonly templateName?: string;
   readonly status?: string;
   readonly category?: string;

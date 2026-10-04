@@ -4,6 +4,8 @@ import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 import {
   MessagingCampaignsResource,
   MessagingClient,
+  PolymorfaPaymentRequiredError,
+  PolymorfaServerError,
   type AddCampaignRecipientsResponse,
   type ApiResponse,
   type Campaign,
@@ -147,6 +149,44 @@ async function campaignsServer(): Promise<{
 }
 
 describe("MessagingClient campaigns", () => {
+  it("surfaces campaign eligibility errors from the current contract", async () => {
+    const server = await startTestServer((_request, index) => ({
+      status: index === 0 ? 402 : 503,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        error: {
+          code: index === 0 ? "campaigns_not_entitled" : "service_unavailable",
+          message:
+            index === 0
+              ? "The selected number's plan does not include campaigns."
+              : "The selected number's plan could not be checked.",
+        },
+      }),
+    }));
+    servers.push(server);
+    const client = new MessagingClient({
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      baseUrl: server.url,
+      maxNetworkRetries: 0,
+    });
+
+    await expect(
+      client.campaigns.launch("launch/eu", campaign.id),
+    ).rejects.toMatchObject({
+      constructor: PolymorfaPaymentRequiredError,
+      status: 402,
+      code: "campaigns_not_entitled",
+    });
+    await expect(
+      client.campaigns.launch("launch/eu", campaign.id),
+    ).rejects.toMatchObject({
+      constructor: PolymorfaServerError,
+      status: 503,
+      code: "service_unavailable",
+    });
+    expect(server.requests).toHaveLength(2);
+  });
+
   it("exports the exact resource and live campaign contracts", () => {
     expectTypeOf<
       MessagingClient["campaigns"]

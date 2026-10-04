@@ -47,6 +47,8 @@ export interface PlaceCallRequest {
   /** Source session. Sent for server credentials; client tokens are bound to one. */
   readonly session: string;
   readonly to: string;
+  readonly participants?: readonly string[];
+  readonly groupId?: string;
   readonly video: boolean;
   /** Claim the call for the placing participant. Default `false`. */
   readonly exclusive?: boolean;
@@ -60,6 +62,20 @@ export interface PlaceCallRequest {
  * it and the browser package backs it with its client-token transport.
  */
 export interface CallsApi {
+  sendReaction?(
+    callId: string,
+    connectionId: string,
+    emoji: import("./protocol.js").CallReactionEmoji,
+    participant?: string,
+    signal?: AbortSignal,
+  ): Promise<void>;
+  setHandRaised?(
+    callId: string,
+    connectionId: string,
+    raised: boolean,
+    participant?: string,
+    signal?: AbortSignal,
+  ): Promise<void>;
   /** Credential for socket authentication frames. */
   token(request?: CallsTokenRequest): Promise<CallsToken>;
   /** Absolute `ws(s)://` URL for a socket path on the API host. */
@@ -103,6 +119,11 @@ export interface CallsApi {
   report?(
     callId: string,
     report: CallReport,
+    signal?: AbortSignal,
+  ): Promise<void>;
+  ringParticipant?(
+    callId: string,
+    to: string,
     signal?: AbortSignal,
   ): Promise<void>;
   addParticipant(
@@ -221,7 +242,11 @@ export class HttpCallsApi implements CallsApi {
       "/messaging/voip/calls",
       async (token) => ({
         ...(isClientToken(token) ? {} : { session: input.session }),
-        to: input.to,
+        ...(input.groupId !== undefined
+          ? { groupId: input.groupId }
+          : input.participants === undefined
+            ? { to: input.to }
+            : { participants: input.participants }),
         video: input.video,
         ...(input.exclusive === undefined
           ? {}
@@ -317,6 +342,69 @@ export class HttpCallsApi implements CallsApi {
     await this.#request("DELETE", callPath(callId), undefined, signal, {
       "idempotency-key": `voip-end:${callId}`,
     });
+  }
+
+  async sendReaction(
+    callId: string,
+    connectionId: string,
+    emoji: import("./protocol.js").CallReactionEmoji,
+    participant?: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.#social(
+      callId,
+      "/reaction",
+      { connectionId, emoji },
+      participant,
+      signal,
+    );
+  }
+  async setHandRaised(
+    callId: string,
+    connectionId: string,
+    raised: boolean,
+    participant?: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.#social(
+      callId,
+      "/hand",
+      { connectionId, raised },
+      participant,
+      signal,
+    );
+  }
+  async #social(
+    callId: string,
+    suffix: string,
+    body: Record<string, unknown>,
+    participant?: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.#request(
+      "POST",
+      callPath(callId, suffix),
+      async (token) => ({
+        ...body,
+        ...(participant === undefined || isClientToken(token)
+          ? {}
+          : { participant }),
+      }),
+      signal,
+    );
+  }
+
+  async ringParticipant(
+    callId: string,
+    to: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    await this.#request(
+      "POST",
+      callPath(callId, "/participants/ring"),
+      async () => ({ to }),
+      signal,
+    );
   }
 
   async addParticipant(

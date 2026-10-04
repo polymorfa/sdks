@@ -4,6 +4,7 @@ import type {
   CreateProjectRequest,
   CreatedProject,
   DataEnvelope,
+  HybridMergeCandidate,
   ProductionEnrollmentCommandResult,
   ProductionEnrollmentRequest,
   ProductionEnrollmentResult,
@@ -133,6 +134,25 @@ export class ProjectsResource {
       body,
       options,
     );
+  }
+
+  /**
+   * Lists same-number pairs (one Linked Devices Number and one Official API
+   * coexistence Number) that can merge into one Hybrid Link Number. Merge an
+   * eligible pair with `sessions.quoteTierChange(keepId, { tierOverride: "pro",
+   * hybridMerge: { absorbNumberId } })`; the absorbed Number must have
+   * `canBeAbsorbed: true`. Requires `sessions:read` and live Hybrid Link
+   * access (otherwise `403 feature_unavailable`).
+   */
+  listHybridMergeCandidates(
+    projectId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<readonly HybridMergeCandidate[]>>> {
+    return this.transport.request({
+      method: "GET",
+      path: `/platform/projects/${encodeURIComponent(projectId)}/hybrid-merge-candidates`,
+      ...options,
+    });
   }
 
   requestProductionEnrollment(

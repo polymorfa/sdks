@@ -41,7 +41,6 @@ import type {
   OrganizationWebhookMutationReceipt,
   OrganizationWebhookSecretRotationReceipt,
   OrganizationWebhookTestReceipt,
-  OrganizationWebhookTestInput,
   ProjectEvent,
   ProjectEventReplayReceipt,
   ProjectWebhook,
@@ -57,7 +56,8 @@ import type {
   RetryWebhookDeliveryInput,
   RetrieveEventParams,
   RotateWebhookSecretInput,
-  TestWebhookInput,
+  TestOrganizationWebhookInput,
+  TestProjectWebhookInput,
   UpdateOrganizationWebhookInput,
   UpdateProjectWebhookInput,
 } from "./developer-types.js";
@@ -114,8 +114,8 @@ type WebhookTestFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookTestReceipt
   : OrganizationWebhookTestReceipt;
 type WebhookTestInputFor<O extends ClientOwner> = O extends "project"
-  ? TestWebhookInput
-  : OrganizationWebhookTestInput;
+  ? TestProjectWebhookInput
+  : TestOrganizationWebhookInput;
 type DeliveryFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookDelivery
   : OrganizationWebhookDelivery;
@@ -429,6 +429,16 @@ export class WebhooksResource<O extends ClientOwner> extends ResourceBase {
     input: WebhookTestInputFor<O> = {} as WebhookTestInputFor<O>,
     options: RequestOptions = {},
   ): Promise<ApiResponse<WebhookTestFor<O>>> {
+    if (
+      this.prefix === "/platform" &&
+      ("body" in input || "sessionId" in input)
+    ) {
+      return Promise.reject(
+        new PolymorfaValidationError(
+          "Organization webhook tests do not accept body or sessionId.",
+        ),
+      );
+    }
     return this.mutate(
       "POST",
       this.path(`/webhooks/${encodeURIComponent(webhookId)}/tests`),

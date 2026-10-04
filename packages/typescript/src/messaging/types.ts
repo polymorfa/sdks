@@ -31,8 +31,32 @@ export interface Session {
   readonly status: string;
   readonly statusReason?: string;
   readonly configuration?: import("./session-configuration.js").SessionConfigurationView;
+  /**
+   * WhatsApp's per-number new-chat cap. Returned by `sessions.retrieve` for
+   * linked-device numbers only; `null` until Polymorfa observed the number.
+   */
+  readonly newChatCapping?: NewChatCapping | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+}
+
+/** WhatsApp's new-chat cap for a linked-device number, as WhatsApp configured and reported it. */
+export interface NewChatCapping {
+  /** Whether WhatsApp enabled a cap for the number; `null` when it cannot be decided. */
+  readonly enabled: boolean | null;
+  /** Whether Polymorfa holds back new-chat sends while the number is capped. */
+  readonly pacing: boolean;
+  /** The status WhatsApp last reported; `null` before it reported one. */
+  readonly status:
+    "none" | "first_warning" | "second_warning" | "capped" | null;
+  /** True while WhatsApp reports the number capped and Polymorfa paces it (`pacing`), until `resetsAt`. */
+  readonly capped: boolean;
+  readonly limit: number | null;
+  readonly used: number | null;
+  readonly remaining: number | null;
+  readonly cycleStartsAt: string | null;
+  readonly resetsAt: string | null;
+  readonly observedAt: string;
 }
 
 export interface UpdateSessionRequest {
@@ -160,6 +184,9 @@ export interface CampaignSendWindow {
   readonly timeZoneVariable: string;
 }
 
+// Both names were exported on the integration branches.
+export type CampaignWeekday = CampaignSendWindowDay;
+
 export interface CampaignAnalytics {
   readonly campaignId: string;
   readonly recipientCount: number;
@@ -179,13 +206,13 @@ export interface CreateCampaignRequest {
   readonly senderConfig?: Readonly<Record<string, unknown>>;
   /** Epoch milliseconds. */
   readonly scheduledAt?: number;
+  /** When the campaign may send; null or omitted sends at any time. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   /**
    * Up to 1,000 recipients to queue with the draft. Invalid entries reject the
    * whole request; use `campaigns.addRecipients` for partial acceptance.
    */
   readonly recipients?: readonly CampaignRecipientInput[];
-  /** Local hours the campaign may send in. Omit it to send at any hour. */
-  readonly sendWindow?: CampaignSendWindowRequest;
 }
 
 export type CampaignRecipientStatus =
@@ -1668,7 +1695,11 @@ export type VoipParticipantReference = string;
 /** Body for `POST /messaging/voip/calls`. */
 export interface VoipPlaceCallRequest {
   /** Phone number in E.164 form or a WhatsApp user ID. */
-  readonly to: string;
+  readonly to?: string;
+  /** Ad-hoc group of 2 to 31 distinct people. Mutually exclusive with to. */
+  readonly participants?: readonly string[];
+  /** Public group ID; mutually exclusive with to and participants. */
+  readonly groupId?: string;
   /** Session that places the call. Required with a server credential. */
   readonly session?: string;
   readonly video?: boolean;
@@ -1684,6 +1715,37 @@ export interface VoipPlaceCallResult {
 }
 
 export type VoipPlaceCallResponse = SuccessEnvelope<VoipPlaceCallResult>;
+
+/** Server credentials only. Creates a reusable link without joining a call. */
+export interface VoipCreateCallLinkRequest {
+  readonly session: string;
+  readonly video?: boolean;
+}
+
+/** Keep the token private; send the media type that matches the link. */
+export interface VoipPreviewCallLinkRequest extends VoipCreateCallLinkRequest {
+  readonly token: string;
+}
+
+export interface VoipCreatedCallLink {
+  readonly session: string;
+  readonly token: string;
+  readonly url: string;
+  readonly video: boolean;
+}
+
+export interface VoipPreviewedCallLink {
+  readonly session: string;
+  readonly video: boolean;
+  readonly creator: ConversationIdentity;
+  readonly approvalRequired: boolean;
+  /** WhatsApp-reported role for this Number, not an API permission grant. */
+  readonly isAdmin: boolean;
+}
+
+export type VoipCreatedCallLinkResponse = SuccessEnvelope<VoipCreatedCallLink>;
+export type VoipPreviewedCallLinkResponse =
+  SuccessEnvelope<VoipPreviewedCallLink>;
 
 /** Body for `POST /messaging/voip/calls/{callId}/accept`. */
 export interface VoipAcceptCallRequest {
@@ -1992,7 +2054,9 @@ export type MessageKind =
   | "buttons"
   | "address_message"
   | "flow"
-  | "call_permission_request";
+  | "call_permission_request"
+  | "order_details"
+  | "order_status";
 
 export interface QuotedMessage {
   readonly id: string;
@@ -2270,6 +2334,141 @@ export interface SendCallPermissionRequestMessageRequest extends MessageSendCont
   };
 }
 
+/** An amount in centavos: `value` is the amount times `offset` (always 100 for BRL). */
+export interface PaymentOrderAmount {
+  readonly value: number;
+  readonly offset: 100;
+}
+
+export type PixKeyType = "CPF" | "CNPJ" | "EMAIL" | "PHONE" | "EVP";
+
+/**
+ * A Brazil order with payment instructions (payment orders beta, Official API
+ * Numbers only). Polymorfa validates and relays the order; it does not
+ * collect, hold or confirm funds. Use a new `referenceId` for every order.
+ */
+export interface PixDynamicCodePayment {
+  /** Dynamic Pix copy-and-paste code from your bank or payment provider. */
+  readonly code: string;
+  readonly merchantName: string;
+  readonly key: string;
+  readonly keyType: PixKeyType;
+}
+
+/** Ways to pay; provide at least one. */
+export type OrderPaymentSettings = {
+  readonly pixDynamicCode?: PixDynamicCodePayment;
+  /** HTTPS checkout link. */
+  readonly paymentLink?: { readonly uri: string };
+  /** Boleto digitable line of 47 or 48 digits. */
+  readonly boleto?: { readonly digitableLine: string };
+} & (
+  | { readonly pixDynamicCode: PixDynamicCodePayment }
+  | { readonly paymentLink: { readonly uri: string } }
+  | { readonly boleto: { readonly digitableLine: string } }
+);
+
+/** Itemized order lines and totals. */
+export interface OrderDetailsItemization {
+  readonly catalogId?: string;
+  readonly expiration?: {
+    /** Unix seconds, at least 300 seconds from now. */
+    readonly timestamp: number;
+    readonly description: string;
+  };
+  readonly items: readonly {
+    readonly retailerId: string;
+    readonly name: string;
+    readonly amount: PaymentOrderAmount;
+    readonly quantity: number;
+    readonly saleAmount?: PaymentOrderAmount;
+  }[];
+  /** Sum of each item's saleAmount (or amount) times quantity. */
+  readonly subtotal: PaymentOrderAmount;
+  readonly tax: PaymentOrderAmount & { readonly description?: string };
+  readonly shipping?: PaymentOrderAmount & { readonly description?: string };
+  readonly discount?: PaymentOrderAmount & {
+    readonly description?: string;
+    readonly programName?: string;
+  };
+}
+
+/**
+ * A Brazil order with payment instructions (payment orders beta, Official API
+ * Numbers only). Polymorfa validates and relays the order; it does not
+ * collect, hold or confirm funds. Use a new `referenceId` for every order.
+ */
+export type OrderDetailsMessageContent = {
+  /** 1 to 60 letters, digits, underscores, dashes or dots. */
+  readonly referenceId: string;
+  readonly type: "digital-goods" | "physical-goods";
+  /** At most 1,024 characters. */
+  readonly body: string;
+  /** At most 60 characters. */
+  readonly footer?: string;
+  readonly currency: "BRL";
+  /** With `order`, equals subtotal + tax + shipping - discount. */
+  readonly totalAmount: PaymentOrderAmount;
+  readonly paymentSettings: OrderPaymentSettings;
+} & (
+  | {
+      /** Itemized order. */
+      readonly order: OrderDetailsItemization;
+      /** HTTPS image shown as the thumbnail. */
+      readonly headerImageUrl?: string;
+    }
+  | { readonly order?: undefined; readonly headerImageUrl?: undefined }
+);
+
+export type OrderStatus =
+  | "pending"
+  | "processing"
+  | "partially_shipped"
+  | "shipped"
+  | "completed"
+  | "canceled";
+export type OrderPaymentStatus = "pending" | "captured" | "failed";
+
+/**
+ * Updates a Brazil order sent with `orderDetails`. Send `payment.status`
+ * after your payment provider confirms it; `captured` shows the order as paid.
+ * Provide `order`, `payment`, or both.
+ */
+export type OrderStatusMessageContent = {
+  readonly referenceId: string;
+  readonly body: string;
+  readonly footer?: string;
+} & (
+  | {
+      readonly order: {
+        readonly status: OrderStatus;
+        readonly description?: string;
+      };
+      readonly payment?: {
+        readonly status: OrderPaymentStatus;
+        readonly timestamp?: number;
+      };
+    }
+  | {
+      readonly order?: {
+        readonly status: OrderStatus;
+        readonly description?: string;
+      };
+      readonly payment: {
+        readonly status: OrderPaymentStatus;
+        readonly timestamp?: number;
+      };
+    }
+);
+
+export interface SendOrderDetailsMessageRequest extends MessageSendContext {
+  readonly content: { readonly orderDetails: OrderDetailsMessageContent };
+}
+
+export interface SendOrderStatusMessageRequest extends MessageSendContext {
+  readonly content: { readonly orderStatus: OrderStatusMessageContent };
+}
+
 export interface SendTemplateMessageRequest extends MessageSendContext {
   readonly content: { readonly template: MessageTemplateSend };
 }
@@ -2289,6 +2488,8 @@ export type SendMessageRequest =
   | SendAddressMessageRequest
   | SendFlowMessageRequest
   | SendCallPermissionRequestMessageRequest
+  | SendOrderDetailsMessageRequest
+  | SendOrderStatusMessageRequest
   | SendTemplateMessageRequest;
 
 export interface MessageOperation {
@@ -2332,6 +2533,8 @@ export interface SeenRequest {
 
 export interface TypingRequest {
   readonly conversation: ConversationReference;
+  /** Required on Official Numbers: an inbound message to mark read while showing typing. */
+  readonly id?: string;
   readonly state: "typing" | "recording" | "paused";
 }
 
