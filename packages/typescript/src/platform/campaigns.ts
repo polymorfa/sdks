@@ -1,4 +1,6 @@
 import { HttpTransport } from "../transport/http.js";
+import { campaignRecipientExportPage } from "../transport/campaign-recipient-export.js";
+import type { CampaignRecipientsCsvPage } from "../messaging/types.js";
 import { withIdempotencyKey } from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
@@ -7,6 +9,7 @@ import type {
   CampaignConversion,
   CampaignConversionReport,
   CreatePlatformCampaignRequest,
+  ExportPlatformCampaignRecipientsParams,
   DataEnvelope,
   ListCampaignsParams,
   ListPlatformCampaignRecipientsParams,
@@ -190,11 +193,32 @@ export class CampaignsResource {
       query: {
         projectId: params.projectId,
         ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.reason === undefined ? {} : { reason: params.reason }),
         ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
         ...(params.limit === undefined ? {} : { limit: params.limit }),
       },
       ...options,
     });
+  }
+
+  /** One CSV page; use `nextCursor` with the same filters for the next page. */
+  exportRecipients(
+    campaignId: string,
+    params: ExportPlatformCampaignRecipientsParams,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CampaignRecipientsCsvPage>> {
+    return campaignRecipientExportPage(
+      this.transport,
+      `${recipientsPath(campaignId)}/export`,
+      {
+        projectId: params.projectId,
+        ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.reason === undefined ? {} : { reason: params.reason }),
+        ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
+        ...(params.limit === undefined ? {} : { limit: params.limit }),
+      },
+      options,
+    );
   }
 
   /**

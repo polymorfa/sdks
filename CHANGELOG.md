@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Campaign recipient lists expose a typed `failureReason` and can filter by
+  status and reason. Messaging and Platform campaign resources add
+  `exportRecipients`, which returns one CSV page and its continuation cursor.
 - `MessagingClient.campaigns.update(projectSlug, campaignId, body)` updates a
   campaign through the Messaging API. It accepts draft name, audience, sender,
   and schedule fields; the API refuses audience and schedule changes after
