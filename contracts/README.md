@@ -41,23 +41,24 @@ published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
-The current snapshots are byte-identical copies of Messaging and Platform
-contracts at API implementation commit `ac1c7010d5c3cdf0262f1b5deb2c4d7ce6a249a5` on
-`t3code/project-billing-dashboard`. This branch is unmerged. Seven financial
-operations cover limits, priorities, complete ordering and one-resource combined
-read/save. Project priority takes precedence. Numbers inherit customer priority;
-a higher number priority overrides it within the project. Customer limits still
-include all assigned numbers.
-Initial real QuickLink creation accepts optional billing controls before admission.
-This integrated source inherits five private Console operations: Settings
-Activity, the retained-log calendar, project logging reads, sampling writes and
-HTTPS drain writes. All require dashboard identity and remain excluded from
-server SDK authority. The already-excluded `logsInsight` fingerprint changes
-only for its server-side `filters` and `search` parameters. All public and other
-existing operation fingerprints remain unchanged. The ledger contains 574
-operations: 429 covered and 145 excluded. The financial methods operate actual
-monthly credit-debit limits; the separate nested included-usage/overage quota
-model remains an unshipped prototype outside those methods.
+The current snapshots are byte-identical copies of the Messaging and Platform
+contracts at API dev merge commit `171a9683ff45d11a4b5d3917dc428ad2722b0d99`.
+The full revision contains the inherited Logs and Usage contracts and all four
+public Analytics reads. The ledger contains 579 operations: 433 covered and
+146 excluded, with no missing, partial or changed fingerprints. Six reviewed
+Console changes cover analytics projections, consent preferences, operational
+error vitals and shared drains. They require dashboard identity and remain
+excluded from server SDK authority.
+
+The seven financial operations cover limits, priorities, complete ordering and
+one-resource combined read/save. Project priority takes precedence. Numbers
+inherit customer priority; a higher number priority overrides it within the
+project. Customer limits include all assigned numbers. Initial real QuickLink
+creation accepts optional billing controls before admission. These methods
+operate actual monthly credit-debit limits; the separate nested included-usage
+quota prototype remains outside those methods. Reads require `billing:read`;
+writes require `billing:manage`, live team authority and Pay-As-You-Go.
+SDK publication and API deployment remain separate gates.
 
 The preceding repin at `b8fa167e47c901131d3bd9865e6479b153ad5157`
 added only the private Console `listConsoleNumberOptions` operation,
@@ -286,6 +287,9 @@ exported `ContactOptPayload`. The unproduced `bansafe.health_changed`,
 `bansafe.risk_changed`, and `bansafe.enforcement` names are retired. Historical
 signed events with these names still decode as unknown events.
 
+The base contract snapshot below excludes the four WhatsApp business analytics
+reads described at the end of this document.
+
 | Status              | Operations |
 | ------------------- | ---------: |
 | Covered             |        422 |
@@ -467,3 +471,17 @@ spec while the beta has no audience. The full snapshots stay pinned to
 coverage ledger as `Client.campaigns.recordConversion` and
 `Client.campaigns.conversions`. `campaign-conversions-contract.test.ts`
 compares the exported types with the supplement.
+
+## WhatsApp business analytics contract
+
+`Client.analytics.get` covers the team and project Analytics reads.
+The strict response contains number/project-scoped messaging aggregates,
+retained-call outcomes, measured timings, quality, failure categories,
+missed-call follow-up and daily call series. `Client.analytics.metrics` covers
+the two collector reads and returns Prometheus/OpenMetrics text rather than
+a JSON envelope. All four use scoped reader authority and Analytics opt-in.
+
+The full Platform snapshot, each Analytics operation and `source.json` pin the
+same API source revision. Reconciliation tests check exact snapshot hashes and
+strict operation fingerprints. Counts do not establish package publication or
+customer access.

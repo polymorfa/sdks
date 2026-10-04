@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "ac1c7010d5c3cdf0262f1b5deb2c4d7ce6a249a5",
-  "branch": "t3code/project-billing-dashboard",
-  "published": false,
-  "note": "Exact Messaging and Platform snapshots from the Usage and Logs stack. Financial operations require organization billing scopes. Private Console operations remain excluded from SDK credentials. API deployment and SDK publication are separate gates.",
+  "commit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
+  "branch": "dev",
+  "published": true,
+  "note": "Full Messaging and Platform snapshots pin the merged API dev revision. SDK publication and API deployment remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "7f29c5c4a3d309a127e34fcee8dfcedada572141ab5c5902886abe3c4dcf8a7c"
+      "sha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8"
     }
   }
 }
