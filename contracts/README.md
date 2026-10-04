@@ -42,14 +42,22 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The current snapshots are byte-identical copies of the Messaging and Platform
-contracts at API dev merge commit `8e319f6bb4e733e776278577840d8fb15805fe6d`
-(polymorfa/polymorfa#392). That revision adds the
+contracts at API dev merge commit `ff12a76fe44fa23bf71e00fc6454a51b1fdbb399`
+(polymorfa/polymorfa#407). It adds six reply flow operations (create, read and
+attach on both API families), all covered. It also adds an optional
+`Idempotency-Key` to campaign recipient appends and audience creation and
+appends (polymorfa/polymorfa#323); those four methods are recorded as partial
+until polymorfa/sdks#305 sends the key. The ledger contains 587 operations: 439
+covered, 6 partial, 2 missing and 140 excluded.
+
+The preceding repin at `8e319f6bb4e733e776278577840d8fb15805fe6d`
+(polymorfa/polymorfa#392) added the
 `campaign.recipient_delivered`, `campaign.recipient_read` and
 `campaign.recipient_replied` webhook payloads, which the TypeScript webhook
 types now cover. It also contains the recipient CSV export reads and optional
 recipient failure-reason fields from an earlier API merge. The ledger records
 those two export reads as missing and the two recipient list reads as partial
-until polymorfa/sdks#309 adds the methods and fields. The ledger contains 581
+until polymorfa/sdks#309 adds the methods and fields. The ledger then contained 581
 operations: 437 covered, 2 partial, 2 missing and 140 excluded.
 
 The preceding repin at `171a9683ff45d11a4b5d3917dc428ad2722b0d99`

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Campaign reply flows (beta). `MessagingClient.campaigns.createReplyFlow`,
+  `retrieveReplyFlow` and `setReplyFlow`, and the same three methods on
+  `Client.campaigns` for the Platform API. Reply flow types include
+  `CampaignReplyFlowDefinition`, `CampaignReplyFlowSend` (text, buttons, list,
+  or an Official-only Flow form) and `CampaignReplyFlowMatch`. Creating a
+  revision is sent once and never retried, because a repeat returns `409`.
+  Contracts are pinned to API `dev` `ff12a76` (polymorfa/polymorfa#407).
+
 - Webhook payload types for `campaign.recipient_delivered`,
   `campaign.recipient_read` and `campaign.recipient_replied`
   (`CampaignRecipientDeliveredPayload`, `CampaignRecipientReadPayload`,

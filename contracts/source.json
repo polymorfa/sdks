@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "8e319f6bb4e733e776278577840d8fb15805fe6d",
+  "commit": "ff12a76fe44fa23bf71e00fc6454a51b1fdbb399",
   "branch": "dev",
   "published": true,
   "note": "Full Messaging and Platform snapshots pin the merged API dev revision. SDK publication and API deployment remain separate gates.",
@@ -8,12 +8,12 @@
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "31857038e0084c8afefd21c2702e19d7f55cd68f99ca01b8a836b92fe4ff37fb"
+      "sha256": "043f422cbf0e3f6425290842d49bc9b389fa1addbcd15bea5caa8f6ac20e13e3"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "88e56cc0e1a2e0f86dc672f91063395edb30ea9ebfe8091c9790be8e52b951e6"
+      "sha256": "0a615de2d7fb903cf2e40534728dcf43298228a046fde5b79f548a129ee397c1"
     }
   }
 }

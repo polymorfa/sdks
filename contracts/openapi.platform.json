@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (248 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (111 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (251 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (111 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -21390,6 +21390,283 @@
         }
       }
     },
+    "/platform/campaign-reply-flows": {
+      "post": {
+        "operationId": "createPlatformCampaignReplyFlow",
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Create campaign reply flow",
+        "description": "Creates an immutable reply flow revision: the steps a campaign runs when a recipient replies. Each step can send a text, reply buttons, a list, or a Flow form (Official numbers only), and branches on the button or list row chosen, an exact keyword, or a Flow form submission. Beta: returns `403` unless campaign reply flows are enabled for the team. `409` means this flow key and revision already exist.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePlatformCampaignReplyFlowRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PlatformCampaignReplyFlow"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
+    "/platform/campaign-reply-flows/{replyFlowId}": {
+      "get": {
+        "operationId": "getPlatformCampaignReplyFlow",
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Get campaign reply flow",
+        "description": "Gets one reply flow revision in a project. Beta: returns `403` unless campaign reply flows are enabled for the team.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "replyFlowId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/PlatformCampaignReplyFlow"
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/platform/campaigns/{campaignId}/reply-flow": {
+      "put": {
+        "operationId": "setPlatformCampaignReplyFlow",
+        "tags": [
+          "campaigns"
+        ],
+        "summary": "Set campaign reply flow",
+        "description": "Attaches a reply flow revision to a draft or scheduled campaign, or detaches it with `null`. The flow starts for each recipient once their message is sent. `409` means the campaign has already launched. Beta: returns `403` unless campaign reply flows are enabled for the team.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetPlatformCampaignReplyFlowRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "campaignId",
+                        "replyFlowId"
+                      ],
+                      "properties": {
+                        "campaignId": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "replyFlowId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "nullable": true
+                        }
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        }
+      }
+    },
     "/platform/campaigns/{campaignId}/analytics": {
       "get": {
         "operationId": "getPlatformCampaignAnalytics",
@@ -21712,6 +21989,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional key, 1 to 255 bytes of UTF-8, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request is not applied again: it returns `200` with `Idempotent-Replayed: true` and the replay result described for this operation. Reusing the key for a different request returns `409 idempotency_conflict`. A retry sent while the original is still running waits for it and then returns its result. A request that failed left no record, so retrying it with the same key runs it again. Access to the resource is checked again on every retry. A replay returns the original counts, even after the campaign has launched.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "requestBody": {
@@ -21758,6 +22046,15 @@
                   "type": "string"
                 },
                 "description": "API version applied to this response."
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
               }
             },
             "content": {
@@ -22188,6 +22485,19 @@
             "ConsoleSession": []
           }
         ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional key, 1 to 255 bytes of UTF-8, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request is not applied again: it returns `200` with `Idempotent-Replayed: true` and the replay result described for this operation. Reusing the key for a different request returns `409 idempotency_conflict`. A retry sent while the original is still running waits for it and then returns its result. A request that failed left no record, so retrying it with the same key runs it again. Access to the resource is checked again on every retry. A replay returns the audience as it is now, with the original import counts. If the audience was deleted after the original request, a replay returns `409 idempotency_completed`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -22213,6 +22523,15 @@
                   "type": "string"
                 },
                 "description": "API version applied to this response."
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
               }
             },
             "content": {
@@ -22243,6 +22562,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           },
           "413": {
             "$ref": "#/components/responses/PayloadTooLarge"
@@ -22478,6 +22800,17 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Optional key, 1 to 255 bytes of UTF-8, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request is not applied again: it returns `200` with `Idempotent-Replayed: true` and the replay result described for this operation. Reusing the key for a different request returns `409 idempotency_conflict`. A retry sent while the original is still running waits for it and then returns its result. A request that failed left no record, so retrying it with the same key runs it again. Access to the resource is checked again on every retry. A replay returns the original counts. The audience must still exist.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "requestBody": {
@@ -22520,6 +22853,15 @@
                   "type": "string"
                 },
                 "description": "API version applied to this response."
+              },
+              "Idempotent-Replayed": {
+                "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
               }
             },
             "content": {
@@ -22550,6 +22892,9 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
           }
         }
       },
@@ -51473,6 +51818,184 @@
         "required": [
           "name"
         ]
+      },
+      "PlatformCampaignReplyFlowDefinition": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "entryNodeId",
+          "nodes"
+        ],
+        "description": "An acyclic graph of 2 to 12 steps. The entry step waits for the first reply and sends nothing. See the reply flows guide for step and branch shapes.",
+        "properties": {
+          "entryNodeId": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+          },
+          "nodes": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 12,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "edges"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+                },
+                "send": {
+                  "type": "object",
+                  "required": [
+                    "kind"
+                  ],
+                  "additionalProperties": true,
+                  "description": "`text` (`text`), `buttons` (`body`, up to 3 `buttons` with `id` and `text`), `list` (`body`, `buttonText`, up to 10 `rows`), or `flow_form` (`flowId`, `body`, `buttonText`, `screen`; Official numbers only).",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "text",
+                        "buttons",
+                        "list",
+                        "flow_form"
+                      ]
+                    }
+                  }
+                },
+                "edges": {
+                  "type": "array",
+                  "maxItems": 3,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "match",
+                      "to"
+                    ],
+                    "properties": {
+                      "match": {
+                        "type": "object",
+                        "required": [
+                          "kind"
+                        ],
+                        "additionalProperties": true,
+                        "description": "`choice` (`replyKind` `button` or `list`, `id`), `keyword` (`value`), or `flow_submission`.",
+                        "properties": {
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "choice",
+                              "keyword",
+                              "flow_submission"
+                            ]
+                          }
+                        }
+                      },
+                      "to": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "PlatformCampaignReplyFlow": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "flowKey",
+          "revision",
+          "name",
+          "definition",
+          "createdAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "flowKey": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Groups the revisions of one reply flow."
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/PlatformCampaignReplyFlowDefinition"
+          },
+          "createdAt": {
+            "type": "integer",
+            "description": "Unix milliseconds."
+          }
+        }
+      },
+      "CreatePlatformCampaignReplyFlowRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "definition"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "flowKey": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Existing flow key to add a revision to. Omit to start a new reply flow."
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000000,
+            "description": "Defaults to 1; each key and revision can be created once."
+          },
+          "definition": {
+            "$ref": "#/components/schemas/PlatformCampaignReplyFlowDefinition"
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Required when using a team API key. Project tokens derive the project from the credential."
+          }
+        }
+      },
+      "SetPlatformCampaignReplyFlowRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "replyFlowId"
+        ],
+        "properties": {
+          "replyFlowId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "description": "Reply flow revision to run after replies, or null to detach it."
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Required when using a team API key. Project tokens derive the project from the credential."
+          }
+        }
       },
       "UpdatePlatformCampaignRequest": {
         "type": "object",
