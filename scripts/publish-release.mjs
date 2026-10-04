@@ -80,8 +80,7 @@ const packages = Object.fromEntries(
   manifest.map((pkg) => [pkg.name, pkg.version]),
 );
 const events = (provenance.acceptance.featureLinks ?? []).map((feature) => {
-  const stage =
-    channel === "stable" ? "sdk_stable_published" : "sdk_nightly_published";
+  const stage = channel === "stable" ? "stable_published" : "nightly_published";
   const identity = {
     featureId: feature.id,
     stage,
