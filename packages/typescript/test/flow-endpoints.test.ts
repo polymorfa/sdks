@@ -99,6 +99,9 @@ describe("dynamic Flow endpoints", () => {
     const bad: SetFlowEndpointRequest[] = [
       { sessionId: "", mode: "forward", url: "https://example.com" },
       { sessionId: "s", mode: "forward", url: "http://example.com" },
+      { sessionId: "s", mode: "forward", url: "https://" },
+      { sessionId: "s", mode: "direct", url: "https://user:pw@example.com" },
+      { sessionId: "s", mode: "direct", url: "https://example.com/#x" },
       { sessionId: "s", mode: "function", functionId: "" },
       {
         sessionId: "s",

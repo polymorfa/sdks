@@ -455,8 +455,10 @@ function validateEndpointRequest(body: SetFlowEndpointRequest): void {
   if (typeof body?.sessionId !== "string" || !body.sessionId.trim())
     throw new PolymorfaValidationError("sessionId is required.");
   if (body.mode === "forward" || body.mode === "direct") {
-    if (typeof body.url !== "string" || !body.url.startsWith("https://"))
-      throw new PolymorfaValidationError("url must be an HTTPS URL.");
+    if (!isHttpsUrl(body.url))
+      throw new PolymorfaValidationError(
+        "url must be an HTTPS URL without credentials or a fragment.",
+      );
   } else if (body.mode === "function") {
     if (typeof body.functionId !== "string" || !body.functionId)
       throw new PolymorfaValidationError("functionId is required.");
@@ -472,4 +474,19 @@ function validateEndpointRequest(body: SetFlowEndpointRequest): void {
     throw new PolymorfaValidationError(
       "expectedRevision must be a positive integer.",
     );
+}
+function isHttpsUrl(value: unknown): boolean {
+  if (typeof value !== "string" || value.length > 2048) return false;
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      url.hostname !== "" &&
+      url.username === "" &&
+      url.password === "" &&
+      url.hash === ""
+    );
+  } catch {
+    return false;
+  }
 }

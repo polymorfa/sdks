@@ -41,6 +41,7 @@ export async function verifyFlowForwardSignature(
   const nowSeconds = (options.now ?? Date.now()) / 1000;
   if (
     !Number.isFinite(tolerance) ||
+    !Number.isFinite(nowSeconds) ||
     tolerance < 0 ||
     Math.abs(nowSeconds - timestamp) > tolerance
   )
