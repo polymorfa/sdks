@@ -46,7 +46,17 @@ The two public Flow draft reads in the pinned Platform snapshot are covered by
 public, project-bound, and `sessions:read`.
 
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at API `dev` merge commit `e818ba62830d3727a7822379bb46c1fece90ef1b`
+files at API `dev` merge commit `8bc53d8bcdef167f43cf7a4a339af380b30fa860`
+(API PR #434, after PR #428 dynamic Flow endpoints). Moving from
+`e818ba62830d3727a7822379bb46c1fece90ef1b` adds six beta Platform operations,
+covered by `Client.project(projectId).flows.endpoint`, `setEndpoint`,
+`deleteEndpoint`, `endpointReceipts`, `encryptionKey` and
+`rotateEncryptionKey`. It changes two fingerprints, both reviewed:
+`getSession` and `updateSession` gain the optional `newChatCapping` from PR
+#403, already typed on `Session`. The API withholds the six operations from
+its public spec while the Cloud onboarding beta has no audience.
+
+The previous pin was API `dev` merge commit `e818ba62830d3727a7822379bb46c1fece90ef1b`
 (API PR #433, which corrects the payment order amount and status schemas from
 PR #429, on top of PR #431). PR #433 changes only the `sendMessage`
 fingerprint: `tax`, `shipping` and `discount` become single closed objects

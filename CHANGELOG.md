@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Dynamic WhatsApp Flow endpoints (beta, Cloud onboarding enrollment, Official
+  API Numbers only). `Client.project(projectId).flows` adds `endpoint`,
+  `setEndpoint` (modes `forward`, `function` and `direct`; a forward endpoint's
+  `signingSecret` is returned once), `deleteEndpoint`, `endpointReceipts`
+  (metadata only), `encryptionKey` and `rotateEncryptionKey` (managed key
+  custody per Number). Writes make one attempt. New
+  `verifyFlowForwardSignature` and `FLOW_FORWARD_SIGNATURE_HEADER` verify
+  forwarded requests at your endpoint. Contracts are pinned to API `dev`
+  `8bc53d8`. API contract: polymorfa/polymorfa#428 and #434.
+
 - `Session` gains optional `newChatCapping` (`NewChatCapping`): WhatsApp's
   per-number new-chat cap, returned by `sessions.retrieve` for linked-device
   numbers. API contract: polymorfa/polymorfa#403.

@@ -7436,7 +7436,7 @@
           },
           "reason": {
             "type": "string",
-            "description": "Why sending was paced",
+            "description": "Why sending was paced: `paced`, `bansafe_throttled`, `daily_allowance_reached`, or `new_chat_limit_reached` (WhatsApp capped this number's new chats for the current cycle)",
             "example": "bansafe_throttled"
           },
           "deferredCount": {
@@ -7517,18 +7517,18 @@
           },
           "capType": {
             "type": "string",
-            "description": "Which cap was reached: hourly or daily",
+            "description": "Which cap was reached: `hourly` or `daily` (the campaign's own caps), or `new_chat` (WhatsApp's per-number new-chat cap)",
             "example": "daily"
           },
           "capLimit": {
             "type": "integer",
             "minimum": 0,
-            "description": "The cap that was reached"
+            "description": "The cap that was reached. For `new_chat`, the quota WhatsApp reported"
           },
           "windowResetsAt": {
             "type": "integer",
             "minimum": 0,
-            "description": "Unix timestamp in seconds when the cap window resets",
+            "description": "Unix timestamp in seconds when the cap window resets. For `new_chat`, the end of WhatsApp's cycle, or of Polymorfa's one-hour hold when WhatsApp rejected a new chat without reporting a cycle",
             "example": 1757161200
           },
           "at": {

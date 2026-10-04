@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "e818ba62830d3727a7822379bb46c1fece90ef1b",
+  "sourceCommit": "8bc53d8bcdef167f43cf7a4a339af380b30fa860",
   "excludedContracts": [
     {
       "family": "graph",
@@ -3957,7 +3957,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}",
       "operationId": "getSession",
-      "fingerprint": "8affb601d1c9c76c40720786b9b225d3f65b6ea9c3751de6cc4c88ee6819c78a",
+      "fingerprint": "a346fbbf87cd301c628f2a6a62b5933762d5008642f336e8381a218af8461155",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.retrieve"
@@ -5879,7 +5879,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}",
       "operationId": "updateSession",
-      "fingerprint": "80875ebc06ec0b990340ba5ed6f962bdb984bd48cd721004ccb241f5c526c54d",
+      "fingerprint": "b3552eabcf0734c11d1835fd97d95a0fc33af2ebaad5f59af7809d09122c2c9a",
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.update"
@@ -6070,6 +6070,72 @@
       "typescript": {
         "status": "covered",
         "method": "Client.campaigns.recordConversion"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "operationId": "deleteFlowEndpoint",
+      "fingerprint": "c282b7d48c759117c33fbc797616541664c01da36679335444e53d48d37e4e6a",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).flows.deleteEndpoint"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flow-encryption-keys",
+      "operationId": "getFlowEncryptionKey",
+      "fingerprint": "2cef096982f4a550dff1c3cded7248685c28d433c36bd2304d99a193f8cda000",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).flows.encryptionKey"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "operationId": "getFlowEndpoint",
+      "fingerprint": "12354b56aedcccd9a81fae27d6deb93da3e6490e07192cb8137770312bafe5ff",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).flows.endpoint"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}/endpoint/receipts",
+      "operationId": "listFlowEndpointReceipts",
+      "fingerprint": "861ecbba5343f1b72688b9c8da9fb2a678de49cf10abf16794464e8870c68427",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).flows.endpointReceipts"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flow-encryption-keys/rotate",
+      "operationId": "rotateFlowEncryptionKey",
+      "fingerprint": "44534cbc6d6ee4f783e3f1782dfa4f638f5c94fe9cb176f93fb74c18dc8f2457",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).flows.rotateEncryptionKey"
+      }
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "operationId": "setFlowEndpoint",
+      "fingerprint": "cefa55fe9a7793bc12f590909c8620dd9b82a7f793750167505bce84143ae5a4",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.project(projectId).flows.setEndpoint"
       }
     }
   ]
