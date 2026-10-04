@@ -12,10 +12,9 @@ import {
   type TestServer,
 } from "./support/http-server.js";
 
-// The pinned contracts declare no Idempotency-Key or replay semantics for
-// these appends. A resend after a lost response would be processed as a new
-// append and report the first attempt's rows as duplicates, so the SDK must
-// send each append once.
+// The API records a successful append or audience create against its
+// Idempotency-Key and replays the original result on a retry, so the SDK
+// sends a key and retries with it like any other keyed write.
 
 const servers: TestServer[] = [];
 
@@ -23,15 +22,23 @@ afterEach(async () => {
   await Promise.all(servers.splice(0).map((server) => server.close()));
 });
 
-async function failingTransport(): Promise<{
-  transport: HttpTransport;
-  requests: RecordedRequest[];
-}> {
-  const server = await startTestServer(() => ({
-    status: 503,
-    headers: { "content-type": "application/json" },
-    body: '{"error":{"code":"unavailable","message":"Try again."}}',
-  }));
+async function transportWith(
+  respond: (attempt: number) => {
+    status: number;
+    headers?: Record<string, string>;
+    body: string;
+  },
+): Promise<{ transport: HttpTransport; requests: RecordedRequest[] }> {
+  let attempt = 0;
+  const server = await startTestServer(() => {
+    attempt += 1;
+    const { status, headers, body } = respond(attempt);
+    return {
+      status,
+      headers: { "content-type": "application/json", ...headers },
+      body,
+    };
+  });
   servers.push(server);
   return {
     requests: server.requests,
@@ -46,9 +53,14 @@ async function failingTransport(): Promise<{
   };
 }
 
+const unavailable = {
+  status: 503,
+  body: '{"error":{"code":"unavailable","message":"Try again."}}',
+};
+
 const recipients = { recipients: [{ phone: "+15551234567" }] };
 
-const appends: ReadonlyArray<
+const writes: ReadonlyArray<
   readonly [
     string,
     (transport: HttpTransport, options?: RequestOptions) => Promise<unknown>,
@@ -82,80 +94,75 @@ const appends: ReadonlyArray<
         options,
       ),
   ],
+  [
+    "Client.audiences.create",
+    (transport, options) =>
+      new AudiencesResource(transport).create(
+        { name: "September", members: recipients.recipients },
+        options,
+      ),
+  ],
 ];
 
-describe("appends without declared replay", () => {
-  it.each(appends)(
-    "%s sends once without a generated key on a retryable failure",
-    async (_name, append) => {
-      const { transport, requests } = await failingTransport();
+describe("replayable appends and audience create", () => {
+  it.each(writes)(
+    "%s retries a retryable failure with one generated key",
+    async (_name, write) => {
+      const { transport, requests } = await transportWith(() => unavailable);
 
-      await expect(append(transport)).rejects.toBeInstanceOf(
+      await expect(write(transport)).rejects.toBeInstanceOf(
         PolymorfaServerError,
       );
 
-      expect(requests).toHaveLength(1);
-      expect(requests[0]?.method).toBe("POST");
-      expect(requests[0]?.headers["idempotency-key"]).toBeUndefined();
+      expect(requests).toHaveLength(3);
+      const keys = requests.map(({ headers }) => headers["idempotency-key"]);
+      expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/u);
+      expect(new Set(keys).size).toBe(1);
     },
   );
 
-  it.each(appends)(
-    "%s is not retried even with a caller key",
-    async (_name, append) => {
-      const { transport, requests } = await failingTransport();
+  it.each(writes)(
+    "%s reuses the caller's key and returns the replayed result",
+    async (_name, write) => {
+      const { transport, requests } = await transportWith((attempt) =>
+        attempt === 1
+          ? unavailable
+          : {
+              status: 200,
+              headers: { "idempotent-replayed": "true" },
+              body: '{"data":{"added":1,"recipientCount":1}}',
+            },
+      );
+
+      const response = (await write(transport, {
+        idempotencyKey: "append-1",
+      })) as { data: unknown };
+
+      expect(response.data).toEqual({ data: { added: 1, recipientCount: 1 } });
+      expect(requests.map(({ headers }) => headers["idempotency-key"])).toEqual(
+        ["append-1", "append-1"],
+      );
+    },
+  );
+
+  it.each(writes)(
+    "%s respects a per-request retry limit",
+    async (_name, write) => {
+      const { transport, requests } = await transportWith(() => unavailable);
 
       await expect(
-        append(transport, { idempotencyKey: "append-1" }),
+        write(transport, { maxNetworkRetries: 0 }),
       ).rejects.toBeInstanceOf(PolymorfaServerError);
 
       expect(requests).toHaveLength(1);
-      expect(requests[0]?.headers["idempotency-key"]).toBe("append-1");
+      expect(requests[0]?.headers["idempotency-key"]).toMatch(
+        /^[0-9a-f-]{36}$/u,
+      );
     },
   );
-
-  it.each(appends)(
-    "%s retries only when the caller opts in for the request",
-    async (_name, append) => {
-      const { transport, requests } = await failingTransport();
-
-      await expect(
-        append(transport, { idempotencyKey: "append-1", maxNetworkRetries: 1 }),
-      ).rejects.toBeInstanceOf(PolymorfaServerError);
-
-      expect(requests).toHaveLength(2);
-    },
-  );
-
-  it.each(appends)(
-    "%s is not retried by a retry count without a key",
-    async (_name, append) => {
-      const { transport, requests } = await failingTransport();
-
-      await expect(
-        append(transport, { maxNetworkRetries: 2 }),
-      ).rejects.toBeInstanceOf(PolymorfaServerError);
-
-      expect(requests).toHaveLength(1);
-      expect(requests[0]?.headers["idempotency-key"]).toBeUndefined();
-    },
-  );
-
-  it("still retries a read on the same transport", async () => {
-    const { transport, requests } = await failingTransport();
-
-    await expect(
-      new MessagingCampaignsResource(transport).listRecipients(
-        "launch",
-        "campaign",
-      ),
-    ).rejects.toBeInstanceOf(PolymorfaServerError);
-
-    expect(requests).toHaveLength(3);
-  });
 
   it("still generates a replay key for a campaign create", async () => {
-    const { transport, requests } = await failingTransport();
+    const { transport, requests } = await transportWith(() => unavailable);
 
     await expect(
       new MessagingCampaignsResource(transport).create("launch", {
@@ -164,8 +171,8 @@ describe("appends without declared replay", () => {
     ).rejects.toBeInstanceOf(PolymorfaServerError);
 
     expect(requests).toHaveLength(3);
-    const keys = requests.map(({ headers }) => headers["idempotency-key"]);
-    expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/u);
-    expect(new Set(keys).size).toBe(1);
+    expect(
+      new Set(requests.map(({ headers }) => headers["idempotency-key"])).size,
+    ).toBe(1);
   });
 });

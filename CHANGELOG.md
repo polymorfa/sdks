@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- `MessagingClient.campaigns.addRecipients`, `Client.campaigns.addRecipients`,
+  `Client.audiences.addMembers` and `Client.audiences.create` send an
+  `Idempotency-Key` (generated unless you pass `idempotencyKey`) and retry
+  transient failures with it. The API replays the original result of a
+  successful request for 24 hours, so a retry does not add rows again or
+  report them as duplicates. Requires the API release with the append replay
+  contract.
 - Dynamic WhatsApp Flow endpoints (beta, Cloud onboarding enrollment, Official
   API Numbers only). `Client.project(projectId).flows` adds `endpoint`,
   `setEndpoint` (modes `forward`, `function` and `direct`; a forward endpoint's
