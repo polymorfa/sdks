@@ -83,10 +83,11 @@ const events = (provenance.acceptance.featureLinks ?? []).map((feature) => {
   const stage = channel === "stable" ? "stable_published" : "nightly_published";
   const identity = {
     featureId: feature.id,
+    deliveryLevel: "sdk",
     stage,
     sourceSha: provenance.acceptance.sourceSha,
     apiVersion: provenance.acceptance.apiVersion,
-    packages,
+    packageVersions: packages,
   };
   return {
     schemaVersion: 1,
