@@ -140,7 +140,8 @@ it("serializes singleton customer controls with both revisions and validates bef
     expectedBudgetRevision: 1,
     expectedPriorityRevision: 2,
   };
-  await client.billing.setResourceControls("customer", id, input);
+  const callerInput = { ...input, unrelatedMetadata: "do not send" };
+  await client.billing.setResourceControls("customer", id, callerInput);
   expect(server.requests.map((r) => [r.method, r.path])).toEqual([
     ["GET", `/platform/billing/controls/customer/${id}`],
     ["PUT", `/platform/billing/controls/customer/${id}`],
