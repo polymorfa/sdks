@@ -42,7 +42,7 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The current snapshots are byte-identical copies of the Messaging and Platform
-contracts at API coordinated stack commit `641d377772733ed7f67449deae41beebb38b309d`.
+contracts at API dev merge commit `171a9683ff45d11a4b5d3917dc428ad2722b0d99`.
 The full revision contains the inherited Logs and Usage contracts and all four
 public Analytics reads. The ledger contains 579 operations: 433 covered and
 146 excluded, with no missing, partial or changed fingerprints. Six reviewed

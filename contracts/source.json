@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "641d377772733ed7f67449deae41beebb38b309d",
-  "branch": "codex/analytics-workhorse-current-dev",
-  "published": false,
-  "note": "Full Messaging and Platform snapshots pin the coordinated Analytics stack head. SDK publication and API deployment remain separate gates.",
+  "commit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
+  "branch": "dev",
+  "published": true,
+  "note": "Full Messaging and Platform snapshots pin the merged API dev revision. SDK publication and API deployment remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",

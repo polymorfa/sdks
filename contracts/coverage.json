@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "641d377772733ed7f67449deae41beebb38b309d",
+  "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
   "excludedContracts": [
     {
       "family": "graph",
@@ -6347,7 +6347,7 @@
         "method": "Client.analytics.get"
       },
       "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sourceCommit": "641d377772733ed7f67449deae41beebb38b309d",
+      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
       "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8"
     },
     {
@@ -6361,7 +6361,7 @@
         "method": "Client.analytics.get"
       },
       "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sourceCommit": "641d377772733ed7f67449deae41beebb38b309d",
+      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
       "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8"
     },
     {
@@ -6376,7 +6376,7 @@
       "fingerprint": "520ce37bc6a198e313d9495ddd968ebb54cbbe5cc84f4d6bea636c43a4ea62c5",
       "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
       "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sourceCommit": "641d377772733ed7f67449deae41beebb38b309d"
+      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99"
     },
     {
       "family": "platform",
@@ -6390,7 +6390,7 @@
       "fingerprint": "56e2540bc5d78c3f458fbd363d63b101df49fcd273b7cc81e1fa9318d69b30b6",
       "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
       "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sourceCommit": "641d377772733ed7f67449deae41beebb38b309d"
+      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99"
     },
     {
       "family": "platform",
