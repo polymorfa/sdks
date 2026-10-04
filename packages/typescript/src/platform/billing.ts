@@ -79,7 +79,12 @@ export class BillingResource {
     return this.transport.request({
       method: "PUT",
       path: `/platform/billing/controls/${scope}/${billingId(resourceId)}`,
-      body: input,
+      body: {
+        limitCredits: input.limitCredits,
+        priority: input.priority,
+        expectedBudgetRevision: input.expectedBudgetRevision,
+        expectedPriorityRevision: input.expectedPriorityRevision,
+      },
       ...options,
     });
   }
