@@ -2,6 +2,41 @@
 
 ## Unreleased
 
+- Campaign content types: `variableMapping` (`CampaignVariableMapping`) on
+  Messaging and Platform create and update, `templateId` on Messaging update,
+  typed `messagesArray` (`CampaignMessage`, up to 10), and `trackedLinks`
+  (`CampaignTrackedLink`, beta). `LaunchCampaignRequest.skipMissingVariables`
+  skips recipients without a value instead of refusing the launch.
+  `CampaignRecipient` adds `messagesSent`, `nextMessageAt` and
+  `sequenceError`; `failureReason` adds `missing_variable`. Error codes add
+  `campaign_approval_required`, `campaign_approval_stale` and
+  `campaign_variables_missing`. Webhooks add
+  `campaign.recipient_link_opened` and an optional `messageIndex` on
+  `campaign.recipient_sent` and `campaign.recipient_failed`. Contracts are
+  pinned to API `dev` `e3d1d2d`.
+
+- `MessagingClient.campaigns.reschedule(projectSlug, campaignId, body)` and
+  `Client.campaigns.reschedule(campaignId, body)` move a launched campaign that
+  has not started sending, or start it now with `scheduledAt: null`. Each call
+  sends an `Idempotency-Key` and makes one attempt unless you set
+  `maxNetworkRetries`.
+- `Client.audiences.createFromCampaign` creates a follow-up audience from one
+  previous campaign outcome. The response includes matched and opted-out counts.
+- Campaign recipient lists expose a typed `failureReason` and can filter by
+  status and reason. Messaging and Platform campaign resources add
+  `exportRecipients`, which returns one CSV page and its continuation cursor.
+- `MessagingClient.campaigns.update(projectSlug, campaignId, body)` updates a
+  campaign through the Messaging API. It accepts draft name, audience, sender,
+  and schedule fields; the API refuses audience and schedule changes after
+  launch.
+- `MessagingClient.campaigns.addRecipients`, `Client.campaigns.addRecipients`,
+  `Client.audiences.addMembers` and `Client.audiences.create` send an
+  `Idempotency-Key` (generated unless you pass `idempotencyKey`) and retry
+  transient failures with it. The API replays the original result of a
+  successful request for 24 hours, so a retry does not add rows again or
+  report them as duplicates. Requires the API release with the append replay
+  contract.
+
 - Campaign reply flows (beta). `MessagingClient.campaigns.createReplyFlow`,
   `retrieveReplyFlow` and `setReplyFlow`, and the same three methods on
   `Client.campaigns` for the Platform API. Reply flow types include

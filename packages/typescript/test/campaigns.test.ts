@@ -18,6 +18,7 @@ import {
   type GetCampaignResponse,
   type ListCampaignRecipientsResponse,
   type ListCampaignsResponse,
+  type UpdateCampaignResponse,
 } from "../src/index.js";
 import {
   startTestServer,
@@ -58,6 +59,7 @@ const recipient = {
   status: "skipped",
   attempts: 0,
   lastError: "opted_out",
+  failureReason: "opted_out",
   externalMessageId: null,
   queuedAt: 1_724_000_000_000,
   sentAt: null,
@@ -118,6 +120,7 @@ async function campaignsServer(): Promise<{
                 data:
                   request.path.endsWith("/launch") ||
                   request.path.endsWith("/pause") ||
+                  request.path.endsWith("/reschedule") ||
                   request.path.endsWith("/resume") ||
                   request.path.endsWith("/stop")
                     ? {
@@ -245,6 +248,28 @@ describe("MessagingClient campaigns", () => {
     );
   });
 
+  it("updates a draft through the project-scoped PATCH route", async () => {
+    const { client, requests } = await campaignsServer();
+    const updated = await client.campaigns.update("launch/eu", campaign.id, {
+      name: "Autumn launch",
+      recipientListId: null,
+      senderConfig: { sessionIds: ["session-1"] },
+      scheduledAt: null,
+    });
+
+    expectTypeOf(updated).toEqualTypeOf<ApiResponse<UpdateCampaignResponse>>();
+    expect(requests[0]).toMatchObject({
+      method: "PATCH",
+      path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}`,
+      body: JSON.stringify({
+        name: "Autumn launch",
+        recipientListId: null,
+        senderConfig: { sessionIds: ["session-1"] },
+        scheduledAt: null,
+      }),
+    });
+  });
+
   it("submits durable lifecycle commands with operation IDs", async () => {
     const { client, requests } = await campaignsServer();
 
@@ -303,6 +328,54 @@ describe("MessagingClient campaigns", () => {
     );
   });
 
+  it("reschedules a waiting launch with the exact body and stable retry key", async () => {
+    const { client, requests } = await campaignsServer();
+    const response = await client.campaigns.reschedule(
+      "launch/eu",
+      campaign.id,
+      { scheduledAt: null },
+      { idempotencyKey: "start-now-august" },
+    );
+
+    expectTypeOf(response).toEqualTypeOf<
+      ApiResponse<CampaignOperationResponse>
+    >();
+    expect(requests[0]).toMatchObject({
+      method: "POST",
+      path: `/messaging/projects/launch%2Feu/campaigns/${campaign.id}/reschedule`,
+      body: '{"scheduledAt":null}',
+    });
+    expect(requests[0]?.headers["idempotency-key"]).toBe("start-now-august");
+    expect(response.data.data.operationId).toBe(
+      "018f0000-0000-7000-8000-000000000003",
+    );
+  });
+
+  it("returns a known reschedule conflict without replaying the write", async () => {
+    const server = await startTestServer(() => ({
+      status: 409,
+      body: JSON.stringify({
+        error: {
+          code: "campaign_state_conflict",
+          message: "Campaign already started.",
+        },
+      }),
+    }));
+    servers.push(server);
+    const client = new MessagingClient({
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      baseUrl: server.url,
+      maxNetworkRetries: 2,
+    });
+
+    await expect(
+      client.campaigns.reschedule("launch/eu", campaign.id, {
+        scheduledAt: null,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(server.requests).toHaveLength(1);
+  });
+
   it("requeues failed and optionally skipped recipients directly", async () => {
     const { client, requests } = await campaignsServer();
 
@@ -329,13 +402,18 @@ describe("MessagingClient campaigns", () => {
 });
 
 describe("MessagingClient campaign recipients", () => {
-  it("pages recipients and filters them by status", async () => {
+  it("pages recipients and filters them by status and stable failure reason", async () => {
     const { client, requests } = await campaignsServer();
 
     const page = await client.campaigns.listRecipients(
       "launch/eu",
       campaign.id,
-      { status: "skipped", cursor: "cursor-1", limit: 100 },
+      {
+        status: "skipped",
+        reason: "opted_out",
+        cursor: "cursor-1",
+        limit: 100,
+      },
     );
     await client.campaigns.listRecipients("launch/eu", campaign.id);
 
@@ -346,11 +424,12 @@ describe("MessagingClient campaign recipients", () => {
       CampaignRecipient | undefined
     >();
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      `GET /messaging/projects/launch%2Feu/campaigns/${campaign.id}/recipients?status=skipped&cursor=cursor-1&limit=100`,
+      `GET /messaging/projects/launch%2Feu/campaigns/${campaign.id}/recipients?status=skipped&reason=opted_out&cursor=cursor-1&limit=100`,
       `GET /messaging/projects/launch%2Feu/campaigns/${campaign.id}/recipients`,
     ]);
     expect(page.data.page).toEqual({ nextCursor: "cursor-2", hasMore: true });
     expect(page.data.data[0]?.lastError).toBe("opted_out");
+    expect(page.data.data[0]?.failureReason).toBe("opted_out");
   });
 
   it("reports duplicate and invalid entries when appending recipients", async () => {

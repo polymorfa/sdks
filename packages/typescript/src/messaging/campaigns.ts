@@ -1,4 +1,5 @@
 import { HttpTransport } from "../transport/http.js";
+import { campaignRecipientExportPage } from "../transport/campaign-recipient-export.js";
 import {
   withIdempotencyKey,
   withoutAutomaticRetry,
@@ -7,6 +8,7 @@ import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   AddCampaignRecipientsRequest,
   AddCampaignRecipientsResponse,
+  CampaignRecipientsCsvPage,
   CampaignAnalyticsResponse,
   CampaignOperationResponse,
   CampaignReplyFlowResponse,
@@ -15,12 +17,16 @@ import type {
   CreateCampaignReplyFlowRequest,
   CreateCampaignRequest,
   CreateCampaignResponse,
+  ExportCampaignRecipientsParams,
   GetCampaignResponse,
   LaunchCampaignRequest,
   ListCampaignRecipientsParams,
   ListCampaignRecipientsResponse,
   ListCampaignsResponse,
   RequeueCampaignRequest,
+  RescheduleCampaignRequest,
+  UpdateCampaignRequest,
+  UpdateCampaignResponse,
   SetCampaignReplyFlowRequest,
   SetCampaignReplyFlowResponse,
 } from "./types.js";
@@ -65,6 +71,21 @@ export class MessagingCampaignsResource {
     });
   }
 
+  /** Update draft fields. The API rejects schedule changes after launch. */
+  update(
+    projectSlug: string,
+    campaignId: string,
+    body: UpdateCampaignRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<UpdateCampaignResponse>> {
+    return this.transport.request({
+      method: "PATCH",
+      path: campaignPath(projectSlug, campaignId),
+      body,
+      ...options,
+    });
+  }
+
   analytics(
     projectSlug: string,
     campaignId: string,
@@ -88,6 +109,21 @@ export class MessagingCampaignsResource {
       path: `${campaignPath(projectSlug, campaignId)}/launch`,
       body,
       ...withIdempotencyKey(options),
+    });
+  }
+
+  /** Move a launched campaign that has not started sending, or start it now. */
+  reschedule(
+    projectSlug: string,
+    campaignId: string,
+    body: RescheduleCampaignRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CampaignOperationResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(projectSlug, campaignId)}/reschedule`,
+      body,
+      ...withoutAutomaticRetry(withIdempotencyKey(options)),
     });
   }
 
@@ -135,6 +171,7 @@ export class MessagingCampaignsResource {
       path: recipientsPath(projectSlug, campaignId),
       query: {
         ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.reason === undefined ? {} : { reason: params.reason }),
         ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
         ...(params.limit === undefined ? {} : { limit: params.limit }),
       },
@@ -143,14 +180,36 @@ export class MessagingCampaignsResource {
   }
 
   /**
+   * Export one CSV page. Continue with `nextCursor` and the same filters;
+   * each page carries its own header row and reflects outcomes when read.
+   */
+  exportRecipients(
+    projectSlug: string,
+    campaignId: string,
+    params: ExportCampaignRecipientsParams = {},
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CampaignRecipientsCsvPage>> {
+    return campaignRecipientExportPage(
+      this.transport,
+      `${recipientsPath(projectSlug, campaignId)}/export`,
+      {
+        ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.reason === undefined ? {} : { reason: params.reason }),
+        ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
+        ...(params.limit === undefined ? {} : { limit: params.limit }),
+      },
+      options,
+    );
+  }
+
+  /**
    * Add up to 1,000 recipients to a campaign that has not started sending.
    * Repeated phones are skipped and invalid entries are reported, not added.
    *
-   * The API declares no idempotent replay for this append, so by default the
-   * SDK sends it once and does not retry it. Setting both `maxNetworkRetries`
-   * and `idempotencyKey` on the request re-enables retries, and a retry can be
-   * processed as a new append. After a lost response, list the recipients before
-   * appending again.
+   * Safe to retry: the SDK sends an `Idempotency-Key` (a generated one unless
+   * you pass `idempotencyKey`) and reuses it on every automatic retry. Within
+   * 24 hours a retry of a successful append returns its original counts with
+   * `Idempotent-Replayed: true` instead of adding the recipients again.
    */
   addRecipients(
     projectSlug: string,
@@ -162,7 +221,7 @@ export class MessagingCampaignsResource {
       method: "POST",
       path: recipientsPath(projectSlug, campaignId),
       body,
-      ...withoutAutomaticRetry(options),
+      ...withIdempotencyKey(options),
     });
   }
 

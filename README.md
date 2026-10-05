@@ -152,7 +152,7 @@ The handwritten Messaging resources in this milestone are:
   participants, read a person's call permission on a Cloud API Number, check a
   destination before dialing, and read or update a session's call settings
 - `campaigns`: list, create (with inline recipients), retrieve, inspect
-  analytics, launch, pause, resume, stop, requeue, and page or append campaign
+  analytics, launch, reschedule, pause, resume, stop, requeue, and page or append campaign
   recipients through the Messaging control plane
 - `messages`: send every contract-defined message kind through one typed send
   union, mark seen, set typing state, react, and star
@@ -310,7 +310,7 @@ The organization view also exposes these management resources:
   batch; review and confirm a tier change, including the Hybrid Link
   resolution or merge; create a testing session; and retrieve or update the
   session Safe Mode override
-- `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
+- `campaigns`: list, create, retrieve, update, delete, reschedule, lifecycle actions,
   analytics, events, and paged or appended recipients. The single-campaign
   operations require the owning `projectId`. This resource is available only
   on organization clients. `create` requires `CreatePlatformCampaignRequest`
@@ -579,10 +579,11 @@ requests retry only when the caller supplies an idempotency key. The transport
 honors `Retry-After`, then uses bounded exponential backoff with jitter.
 
 Campaign recipient and audience member appends (`campaigns.addRecipients` on
-both clients and `audiences.addMembers`) are sent once. The API does not replay
-them, so a retry after a lost response would count the first attempt's rows as
-duplicates. They retry only when that request sets both `maxNetworkRetries`
-and `idempotencyKey`; the key does not make the API replay the append.
+both clients and `audiences.addMembers`) and `audiences.create` send an
+idempotency key, generated unless you pass `idempotencyKey`, and retry with it.
+Within 24 hours the API answers a retry of a successful request with the
+original result and `Idempotent-Replayed: true`, so the first attempt's rows are
+not added again or reported as duplicates.
 
 ## API versions and raw requests
 

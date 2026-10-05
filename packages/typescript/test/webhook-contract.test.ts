@@ -652,6 +652,7 @@ const PAYLOADS: {
       externalMessageId: "msg_1",
       variantKey: "a",
       attempt: 1,
+      messageIndex: 0,
     },
     [
       "campaignId",
@@ -727,9 +728,18 @@ const PAYLOADS: {
       attempts: 3,
       error: "send_failed",
       failedAt: 4,
+      messageIndex: 1,
     },
     ["campaignId", "recipientId", "phone", "attempts", "error", "failedAt"],
   ),
+  "campaign.recipient_link_opened": shape<
+    P["campaign.recipient_link_opened"]
+  >()({ ...campaign, recipientId: "rcp_1", linkKey: "offer", openedAt: 6 }, [
+    "campaignId",
+    "recipientId",
+    "linkKey",
+    "openedAt",
+  ]),
   "campaign.recipient_skipped": shape<P["campaign.recipient_skipped"]>()(
     {
       ...campaign,

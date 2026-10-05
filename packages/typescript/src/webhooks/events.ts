@@ -46,6 +46,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "campaign.paused",
   "campaign.recipient_delivered",
   "campaign.recipient_failed",
+  "campaign.recipient_link_opened",
   "campaign.recipient_read",
   "campaign.recipient_replied",
   "campaign.recipient_sent",
@@ -1029,6 +1030,8 @@ export interface CampaignRecipientSentPayload {
   readonly externalMessageId: string;
   readonly variantKey: string;
   readonly attempt: number;
+  /** Position in the campaign's message sequence, from 0; absent means 0. */
+  readonly messageIndex?: number;
 }
 
 /**
@@ -1076,6 +1079,21 @@ export interface CampaignRecipientFailedPayload {
   readonly attempts: number;
   readonly error: string;
   readonly failedAt: number;
+  /**
+   * Position of the failed message, from 0; absent means 0. Above 0, the
+   * earlier messages were sent and the recipient stays sent.
+   */
+  readonly messageIndex?: number;
+}
+
+/** First open of a tracked link by one recipient (beta link tracking). */
+export interface CampaignRecipientLinkOpenedPayload {
+  readonly campaignId: string;
+  readonly recipientId: string;
+  /** Key of the tracked link that was opened. */
+  readonly linkKey: string;
+  /** Unix seconds of the recipient's first open of this link. */
+  readonly openedAt: number;
 }
 
 export interface CampaignRecipientSkippedPayload {
@@ -1192,6 +1210,7 @@ export interface WebhookPayloadMap {
   readonly "campaign.recipient_failed": CampaignRecipientFailedPayload;
   readonly "campaign.recipient_read": CampaignRecipientReadPayload;
   readonly "campaign.recipient_replied": CampaignRecipientRepliedPayload;
+  readonly "campaign.recipient_link_opened": CampaignRecipientLinkOpenedPayload;
   readonly "campaign.recipient_sent": CampaignRecipientSentPayload;
   readonly "campaign.recipient_skipped": CampaignRecipientSkippedPayload;
   readonly "campaign.rescheduled": CampaignRescheduledPayload;

@@ -1,9 +1,12 @@
 import type {
   CampaignReplyFlowDefinition,
   CampaignRecipient,
+  CampaignRecipientFailureReason,
   CampaignRecipientInput,
   CampaignRecipientStatus,
   CampaignSendWindowRequest,
+  CampaignTrackedLink,
+  CampaignVariableMapping,
   InvalidRecipientRow,
 } from "../messaging/types.js";
 
@@ -192,12 +195,31 @@ export interface CreatePlatformCampaignRequest {
   /** Ignored when inline recipients are supplied. */
   readonly recipientCount?: number;
   // The API deliberately leaves these JSON values opaque.
+  /** How each content variable is filled. */
+  readonly variableMapping?: CampaignVariableMapping | null;
+  /** Tracked links, at most 5 (beta). */
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
+  /** Up to 10 composed messages, sent in order when there is no template. */
+  readonly messagesArray?: readonly CampaignMessage[];
+  // The API deliberately leaves these JSON values opaque.
   readonly composerBlueprint?: unknown;
-  readonly messagesArray?: unknown;
   readonly audienceRef?: unknown;
   readonly complianceConfig?: unknown;
   readonly variants?: unknown;
   readonly variantStrategy?: unknown;
+}
+
+/** One composed campaign message. */
+export interface CampaignMessage {
+  readonly version?: number;
+  /** Text with `{{variable}}` and `{{variable | fallback}}` placeholders. */
+  readonly source?: string;
+  readonly media?: Readonly<Record<string, unknown>>;
+  readonly buttons?: readonly Readonly<Record<string, unknown>>[];
+  readonly footer?: string;
+  /** Minimum wait after the previous message, 0 to 86,400 seconds. */
+  readonly delayAfterSec?: number;
+  readonly [field: string]: unknown;
 }
 
 export interface ListCampaignsParams {
@@ -228,15 +250,42 @@ export interface UpdatePlatformCampaignRequest {
   readonly recipientListId?: string | null;
   /** Replaces the send window; null removes it. */
   readonly sendWindow?: CampaignSendWindowRequest | null;
+  /** Template to send, or null for composed messages. Only before launch. */
+  readonly templateId?: string | null;
+  /** Replaces the whole mapping; null clears it. Only before launch. */
+  readonly variableMapping?: CampaignVariableMapping | null;
+  /** Replaces the composed messages. Only before launch. */
+  readonly messagesArray?: readonly CampaignMessage[];
+  /** Replaces the tracked links; null or [] removes them. Only while draft. */
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
   readonly [field: string]: unknown;
+}
+
+export interface ReschedulePlatformCampaignRequest {
+  /** Owning project for an organization API key. */
+  readonly projectId: string;
+  /** New start time in Unix milliseconds; null or a past time starts now. */
+  readonly scheduledAt: number | null;
 }
 
 export interface ListPlatformCampaignRecipientsParams {
   /** Owning project for this organization-client request. */
   readonly projectId: string;
   readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
   readonly cursor?: string;
   /** 1 to 100; the API defaults to 25. */
+  readonly limit?: number;
+}
+
+export interface ExportPlatformCampaignRecipientsParams {
+  /** Required with a team API key; project tokens are bound to one project. */
+  readonly projectId: string;
+  readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
+  /** Cursor from the previous page's `nextCursor`. Keep the same filters. */
+  readonly cursor?: string;
+  /** 1 to 1,000; the API defaults to 1,000. */
   readonly limit?: number;
 }
 
@@ -343,7 +392,34 @@ export interface AddPlatformCampaignRecipientsResult {
   readonly invalidRows: readonly InvalidRecipientRow[];
 }
 
-export type AudienceSource = "csv" | "manual" | "api";
+export type AudienceSource = "csv" | "manual" | "api" | "campaign";
+
+export type AudienceRetargetOutcome =
+  | "delivered"
+  | "not_delivered"
+  | "read"
+  | "not_read"
+  | "replied"
+  | "not_replied"
+  | "failed";
+
+export interface CreateAudienceFromCampaignRequest {
+  /** New audience name, 1 to 200 characters. */
+  readonly name: string;
+  /** Campaign whose recipients supply the snapshot. */
+  readonly campaignId: string;
+  /** Optional extra bound: the campaign must belong to this project. */
+  readonly projectId?: string;
+  readonly outcome: AudienceRetargetOutcome;
+}
+
+export interface AudienceFromCampaignResult extends Audience {
+  readonly source: "campaign";
+  readonly sourceCampaignId: string;
+  readonly outcome: AudienceRetargetOutcome;
+  readonly matchedCount: number;
+  readonly optedOutCount: number;
+}
 
 /** Column names in an uploaded spreadsheet, mapped onto recipient fields. */
 export interface AudienceImportMapping {

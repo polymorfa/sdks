@@ -1,4 +1,6 @@
 import { HttpTransport } from "../transport/http.js";
+import { campaignRecipientExportPage } from "../transport/campaign-recipient-export.js";
+import type { CampaignRecipientsCsvPage } from "../messaging/types.js";
 import {
   withIdempotencyKey,
   withoutAutomaticRetry,
@@ -11,6 +13,7 @@ import type {
   CampaignConversionReport,
   CreatePlatformCampaignReplyFlowRequest,
   CreatePlatformCampaignRequest,
+  ExportPlatformCampaignRecipientsParams,
   DataEnvelope,
   ListCampaignsParams,
   ListPlatformCampaignRecipientsParams,
@@ -19,6 +22,7 @@ import type {
   PlatformCampaignRecipientsEnvelope,
   PlatformPayload,
   RecordCampaignConversionRequest,
+  ReschedulePlatformCampaignRequest,
   SetPlatformCampaignReplyFlowRequest,
   UpdatePlatformCampaignRequest,
 } from "./types.js";
@@ -119,6 +123,20 @@ export class CampaignsResource {
     return this.action(campaignId, "launch", body, options);
   }
 
+  /** Move a launched campaign that has not started sending, or start it now. */
+  reschedule(
+    campaignId: string,
+    body: ReschedulePlatformCampaignRequest,
+    options: RequestOptions = {},
+  ): CampaignResponse {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(campaignId)}/reschedule`,
+      body,
+      ...withoutAutomaticRetry(withIdempotencyKey(options)),
+    });
+  }
+
   pause(
     campaignId: string,
     body?: PlatformPayload,
@@ -200,6 +218,7 @@ export class CampaignsResource {
       query: {
         projectId: params.projectId,
         ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.reason === undefined ? {} : { reason: params.reason }),
         ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
         ...(params.limit === undefined ? {} : { limit: params.limit }),
       },
@@ -207,14 +226,33 @@ export class CampaignsResource {
     });
   }
 
+  /** One CSV page; use `nextCursor` with the same filters for the next page. */
+  exportRecipients(
+    campaignId: string,
+    params: ExportPlatformCampaignRecipientsParams,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CampaignRecipientsCsvPage>> {
+    return campaignRecipientExportPage(
+      this.transport,
+      `${recipientsPath(campaignId)}/export`,
+      {
+        projectId: params.projectId,
+        ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.reason === undefined ? {} : { reason: params.reason }),
+        ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
+        ...(params.limit === undefined ? {} : { limit: params.limit }),
+      },
+      options,
+    );
+  }
+
   /**
    * Add up to 1,000 recipients to a campaign that has not started sending.
    *
-   * The API declares no idempotent replay for this append, so by default the
-   * SDK sends it once and does not retry it. Setting both `maxNetworkRetries`
-   * and `idempotencyKey` on the request re-enables retries, and a retry can be
-   * processed as a new append. After a lost response, list the recipients before
-   * appending again.
+   * Safe to retry: the SDK sends an `Idempotency-Key` (a generated one unless
+   * you pass `idempotencyKey`) and reuses it on every automatic retry. Within
+   * 24 hours a retry of a successful append returns its original counts with
+   * `Idempotent-Replayed: true` instead of adding the recipients again.
    */
   addRecipients(
     campaignId: string,
@@ -225,7 +263,7 @@ export class CampaignsResource {
       method: "POST",
       path: recipientsPath(campaignId),
       body,
-      ...withoutAutomaticRetry(options),
+      ...withIdempotencyKey(options),
     });
   }
 

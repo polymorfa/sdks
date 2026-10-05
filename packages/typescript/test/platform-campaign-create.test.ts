@@ -33,11 +33,16 @@ const body = {
   recipients: [{ phone: "+15551234567", variables: { plan: "pro" } }],
   recipientCount: 100,
   composerBlueprint: { steps: [null, { text: "Hello" }] },
-  messagesArray: [{ kind: "text", text: "Hello" }],
+  messagesArray: [
+    { version: 2, source: "Hello" },
+    { source: "Later", delayAfterSec: 60 },
+  ],
   audienceRef: null,
   complianceConfig: false,
   variants: ["a", "b"],
   variantStrategy: "round_robin",
+  variableMapping: { first_name: { source: "FirstName", fallback: "there" } },
+  trackedLinks: [{ key: "offer", url: "https://example.com/offer" }],
 } satisfies CreatePlatformCampaignRequest;
 
 it("covers exactly the pinned create request fields without closing opaque JSON", () => {
@@ -60,7 +65,6 @@ it("covers exactly the pinned create request fields without closing opaque JSON"
   );
   for (const field of [
     "composerBlueprint",
-    "messagesArray",
     "audienceRef",
     "complianceConfig",
     "variants",

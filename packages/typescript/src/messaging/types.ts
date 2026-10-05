@@ -107,6 +107,27 @@ export interface SuccessResponse {
   readonly message?: string;
 }
 
+/** How one content variable is filled. */
+export interface CampaignVariableBinding {
+  /** Recipient variable that fills it; defaults to the variable with the same name. */
+  readonly source?: string;
+  /** Sent when the recipient has no value; 1 to 1,024 characters, not blank. */
+  readonly fallback?: string;
+}
+
+/** Content variable name to binding, at most 50 entries. */
+export type CampaignVariableMapping = Readonly<
+  Record<string, CampaignVariableBinding>
+>;
+
+/** A named destination that messages reference as `{{link:<key>}}` (beta). */
+export interface CampaignTrackedLink {
+  /** 1 to 32 lowercase letters, digits or underscores. */
+  readonly key: string;
+  /** Absolute `https` URL with a public domain name. */
+  readonly url: string;
+}
+
 /** Project-scoped campaign summary returned by the Messaging API. */
 export interface Campaign {
   readonly id: string;
@@ -129,6 +150,10 @@ export interface Campaign {
   readonly updatedAt: number;
   /** When the campaign may send, or null when it has no send window. */
   readonly sendWindow: CampaignSendWindow | null;
+  /** Tracked links; empty when the campaign tracks none. */
+  readonly trackedLinks: readonly CampaignTrackedLink[];
+  /** How each content variable is filled, or null without a mapping. */
+  readonly variableMapping?: CampaignVariableMapping | null;
   /** Additional live repository fields omitted from the pinned OpenAPI schema. */
   readonly composerBlueprint?: unknown;
   readonly messages?: unknown;
@@ -196,6 +221,10 @@ export interface CreateCampaignRequest {
   readonly scheduledAt?: number;
   /** When the campaign may send; null or omitted sends at any time. */
   readonly sendWindow?: CampaignSendWindowRequest | null;
+  /** How each content variable is filled. */
+  readonly variableMapping?: CampaignVariableMapping;
+  /** Tracked links, at most 5 (beta). */
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
   /**
    * Up to 1,000 recipients to queue with the draft. Invalid entries reject the
    * whole request; use `campaigns.addRecipients` for partial acceptance.
@@ -203,8 +232,38 @@ export interface CreateCampaignRequest {
   readonly recipients?: readonly CampaignRecipientInput[];
 }
 
+/** Fields accepted by the Messaging API campaign update route. */
+export interface UpdateCampaignRequest {
+  readonly name?: string;
+  /** Attach an audience to an unlaunched draft, or detach it with null. */
+  readonly recipientListId?: string | null;
+  readonly senderConfig?: Readonly<Record<string, unknown>>;
+  /** Integer Unix milliseconds within the JavaScript Date range, or null to start at launch. Only editable before launch. */
+  readonly scheduledAt?: number | null;
+  /** Replaces the send window; null removes it. Only while draft or paused. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
+  /** Template to send, or null for composed messages. Only before launch. */
+  readonly templateId?: string | null;
+  /** Replaces the whole mapping; null clears it. Only before launch. */
+  readonly variableMapping?: CampaignVariableMapping | null;
+  /** Replaces the tracked links; null or [] removes them. Only while draft. */
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
+}
+
 export type CampaignRecipientStatus =
   "queued" | "sending" | "sent" | "delivered" | "read" | "failed" | "skipped";
+
+export type CampaignRecipientFailureReason =
+  | "opted_out"
+  | "cold_held"
+  | "campaign_cancelled"
+  | "invalid_recipient"
+  | "session_not_connected"
+  | "ack_timeout"
+  | "blocked_by_safety"
+  | "send_failed"
+  | "missing_variable"
+  | "other";
 
 export type InvalidRecipientReason =
   "missing_phone" | "invalid_phone" | "invalid_variables" | "invalid_entry";
@@ -235,8 +294,10 @@ export interface CampaignRecipient {
   readonly variantKey: string | null;
   readonly status: CampaignRecipientStatus;
   readonly attempts: number;
-  /** `opted_out` means the phone is on the organization's opt-out list. */
+  /** Legacy alias of `failureReason`; raw stored errors are never returned. */
   readonly lastError: string | null;
+  /** Stable, documented code for the last unsuccessful attempt. */
+  readonly failureReason: CampaignRecipientFailureReason | null;
   readonly externalMessageId: string | null;
   /** Epoch milliseconds, or null while the transition has not happened. */
   readonly queuedAt: number;
@@ -245,6 +306,12 @@ export interface CampaignRecipient {
   readonly readAt: number | null;
   readonly failedAt: number | null;
   readonly respondedAt: number | null;
+  /** Messages of the sequence sent so far; the timestamps above describe the first. */
+  readonly messagesSent: number;
+  /** Earliest send of the next message in Unix milliseconds, or null. */
+  readonly nextMessageAt: number | null;
+  /** Why the remaining messages will not be sent, such as `opted_out` or `sender_unavailable`. */
+  readonly sequenceError: string | null;
 }
 
 export interface CampaignRecipientPage {
@@ -254,9 +321,26 @@ export interface CampaignRecipientPage {
 
 export interface ListCampaignRecipientsParams {
   readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
   readonly cursor?: string;
   /** 1 to 100; the API defaults to 25. */
   readonly limit?: number;
+}
+
+export interface ExportCampaignRecipientsParams {
+  readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
+  /** Cursor from the previous page's `nextCursor`. Keep the same filters. */
+  readonly cursor?: string;
+  /** 1 to 1,000; the API defaults to 1,000. */
+  readonly limit?: number;
+}
+
+export interface CampaignRecipientsCsvPage {
+  /** CSV header and up to 1,000 recipient rows. */
+  readonly csv: string;
+  /** Null after the last page. */
+  readonly nextCursor: string | null;
 }
 
 export interface AddCampaignRecipientsRequest {
@@ -286,6 +370,16 @@ export interface CampaignStopOperation extends Campaign {
 export interface LaunchCampaignRequest {
   /** Epoch milliseconds. */
   readonly scheduledAt?: number;
+  /**
+   * Skip recipients that have no value and no fallback for a variable instead
+   * of refusing the launch with `campaign_variables_missing`.
+   */
+  readonly skipMissingVariables?: boolean;
+}
+
+export interface RescheduleCampaignRequest {
+  /** New start time in Unix milliseconds; null or a past time starts now. */
+  readonly scheduledAt: number | null;
 }
 
 export interface RequeueCampaignRequest {
@@ -304,6 +398,7 @@ export interface CampaignRequeueResult {
 export type ListCampaignsResponse = SuccessEnvelope<readonly Campaign[]>;
 export type GetCampaignResponse = SuccessEnvelope<Campaign>;
 export type CreateCampaignResponse = SuccessEnvelope<Campaign>;
+export type UpdateCampaignResponse = SuccessEnvelope<Campaign>;
 export type CampaignAnalyticsResponse = SuccessEnvelope<CampaignAnalytics>;
 export type CampaignOperationResponse = SuccessEnvelope<CampaignOperation>;
 export type CampaignRequeueResponse = SuccessEnvelope<CampaignRequeueResult>;

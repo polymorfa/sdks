@@ -37,6 +37,7 @@ export {
   type CampaignRecipientEngagementPayload,
   type CampaignRecipientFailedPayload,
   type CampaignRecipientReadPayload,
+  type CampaignRecipientLinkOpenedPayload,
   type CampaignRecipientRepliedPayload,
   type CampaignRecipientSentPayload,
   type CampaignRecipientSkippedPayload,

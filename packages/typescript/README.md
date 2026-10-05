@@ -1937,8 +1937,8 @@ message identifiers are URL-encoded by the SDK.
 
 ## Messaging campaigns
 
-`MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `analytics`,
-`listRecipients`, `addRecipients`, `launch`, `pause`, `resume`, `stop`, and
+`MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `update`, `analytics`,
+`listRecipients`, `exportRecipients`, `addRecipients`, `launch`, `reschedule`, `pause`, `resume`, `stop`, and
 `requeue`. Reads require `campaigns:read`; writes require `campaigns:manage`.
 Pass the project's slug as the first argument. Campaigns accept organization
 API keys or project tokens; browser client tokens cannot use these methods.
@@ -1963,22 +1963,47 @@ const appended = await messaging.campaigns.addRecipients(
 );
 console.log(appended.data.data.added, appended.data.data.invalidRows);
 
+await messaging.campaigns.update("support", created.data.data.id, {
+  name: "August follow-up",
+  recipientListId: null,
+});
+
+const firstStart = Date.now() + 24 * 60 * 60 * 1000;
 const launched = await messaging.campaigns.launch(
   "support",
   created.data.data.id,
-  { scheduledAt: Date.parse("2026-08-25T09:00:00Z") },
+  { scheduledAt: firstStart },
   { idempotencyKey: "campaign-august-launch" },
 );
 console.log(launched.data.data.operationId, launched.metadata.requestId);
+
+const moved = await messaging.campaigns.reschedule(
+  "support",
+  created.data.data.id,
+  { scheduledAt: firstStart + 60 * 60 * 1000 },
+  { idempotencyKey: "campaign-august-move" },
+);
+console.log(moved.data.data.scheduledAt, moved.data.data.operationId);
 ```
 
+Reschedule sends once by default, including when the API returns a campaign
+state conflict. If a response is lost, read the campaign before repeating the
+write with the same idempotency key.
+
 Create accepts inline recipients, an audience ID in `recipientListId`, or both.
+Update accepts `name`, `recipientListId`, `senderConfig`, and `scheduledAt`.
+Pass an integer Unix millisecond value within the JavaScript Date range for a
+non-null `scheduledAt`; the API returns 400 for an out-of-range value.
+Changing the audience or schedule is limited to an unlaunched draft. A sender
+change after launch must pass the live sender checks. The SDK sends PATCH once;
+after an uncertain response, retrieve the campaign before deciding on another
+write.
 Each append accepts up to 1,000 recipients before launch and reports duplicates
-and invalid rows. Appends have no declared replay contract: the SDK sends them
-once by default, generates no key, and requires both `maxNetworkRetries` and
-`idempotencyKey` to opt back into retries. A retry can report rows from an unseen
-successful first attempt as duplicates. List recipients before appending again
-after a lost response.
+and invalid rows. Each append sends an idempotency key, generated unless you pass
+`idempotencyKey`, and automatic retries reuse it. Within 24 hours a retry of a
+successful append returns its original counts with `Idempotent-Replayed: true`,
+even after the campaign has launched. Pass your own key when you retry across
+process restarts.
 
 Create on both surfaces, and Platform `update`, accept an optional
 `sendWindow` (`CampaignSendWindowRequest`): weekdays, up to four local
@@ -1986,21 +2011,36 @@ Create on both surfaces, and Platform `update`, accept an optional
 zones. Recipients outside the window stay queued until it next opens. `null`
 removes the window. Campaign records return the stored `sendWindow` or null.
 
-`listRecipients(projectSlug, campaignId, { status, cursor, limit })` returns
+`listRecipients(projectSlug, campaignId, { status, reason, cursor, limit })` returns
 `{ data, page }` inside the response's `data`. Read recipients from
 `response.data.data` and pass `response.data.page.nextCursor` into the next
-request while `page.hasMore` is true. Each recipient includes its send,
-delivery, read, failure and reply timestamps. Campaign `list` returns a complete
-array; recipient pagination does not change that method.
+request while `page.hasMore` is true. Each recipient includes a stable
+`failureReason` code, plus its send, delivery, read, failure and reply
+timestamps. Use `reason` to filter by that code. Campaign `list` returns a complete
+array; recipient pagination does not change that method. The legacy
+`lastError` field returns the same normalized code and never raw stored text.
 
-Launch, pause and resume return the campaign state with an `operationId`.
+`exportRecipients(projectSlug, campaignId, { status, reason, cursor, limit })`
+returns `{ csv, nextCursor }`. The CSV contains a header and up to 1,000 rows;
+pass `nextCursor` with the same filters to fetch another page. Each page reads
+outcomes when requested. The Platform method takes `campaignId` and a params
+object with `projectId` and the same filters. A failed request raises an SDK
+error; an unexpected success content type is rejected instead of returned as
+CSV.
+
+Launch, reschedule, pause and resume return the campaign state with an `operationId`.
 They accept the transition without waiting for sending to finish. Stop always
 cancels; its `operationId` is null when the campaign had no active delivery run
 and was cancelled immediately. Check for null before calling
 `Client.operations.wait(operationId)`. A launched campaign waiting for its
-scheduled start can be stopped, but its start time cannot be changed.
-Launch, pause, resume, and stop generate one idempotency key per call unless you
-pass one. Automatic retries reuse that key; a completed replay returns the
+scheduled start can move to another time through `reschedule`, or start now with
+`{ scheduledAt: null }`. Once sending starts, rescheduling returns a `409`
+state conflict. Platform `update` also refuses a changed `scheduledAt` after
+launch; use `reschedule` for that change. A team suspended by BanSafe receives
+`403 bansafe_org_suspended`.
+
+Launch, reschedule, pause, resume, and stop generate one idempotency key per call
+unless you pass one. Automatic retries reuse that key; a completed replay returns the
 API's `idempotency_completed` conflict, so inspect the campaign state after a
 lost response.
 
@@ -2054,8 +2094,30 @@ listing and append also require `projectId`. Platform
 `recipients` uses the same cursor-page shape. `Client.audiences` manages audience
 members, and `Client.optOuts` reads and replaces team keyword settings.
 
-`create` and `launch` generate an `Idempotency-Key` for each call. A supplied
-key is preserved across retries within the API's 24-hour replay window. If the
+`Client.audiences.createFromCampaign({ name, campaignId, outcome, projectId? })`
+creates a new audience from one previous campaign outcome. It requires a team
+API key with `campaigns:manage`; project tokens cannot use it. Outcomes are
+`delivered`, `not_delivered`, `read`, `not_read`, `replied`, `not_replied`, and
+`failed`. The result contains the new audience, `matchedCount`, and
+`optedOutCount`; opted-out numbers are omitted. The audience is a snapshot at
+the time of the request. A 404 means the source campaign is outside the team
+or optional project bound, and a 409 means no eligible recipient matched. This
+create has no idempotent replay contract, so after an uncertain response list
+audiences before trying again.
+
+For Platform rescheduling, pass the owning project in the body:
+
+```ts
+await client.campaigns.reschedule(
+  campaignId,
+  { projectId, scheduledAt: null },
+  { idempotencyKey: "start-campaign-now" },
+);
+```
+
+`create`, `launch` and `reschedule` generate an `Idempotency-Key` for each call.
+Reschedule sends once by default; a caller may explicitly set `maxNetworkRetries`
+while retaining the same key within the API's 24-hour replay window. If the
 outcome remains uncertain after that window, reconcile campaign state before
 starting another request; see [Idempotent sends](#idempotent-sends).
 `archive` returns a receipt for a completed, failed, or cancelled campaign;
@@ -2063,8 +2125,8 @@ other states return `409`. A pending final event or active delivery run also
 returns `409`; retry after both finish. Platform `delete` accepts draft,
 completed, failed, cancelled, or archived campaigns. A completed or failed
 campaign with a pending final event or active delivery run returns `409`.
-The Messaging API has no campaign update, deletion, archive, duplicate, or
-campaign event history method. The SDK does not substitute Platform routes for
+The Messaging API has no campaign deletion, archive, duplicate, or campaign
+event history method. The SDK does not substitute Platform routes for
 those operations.
 
 ## Chats
@@ -2149,6 +2211,8 @@ if (isEvent(event, "history.sync")) {
   console.log(event.payload.rung, event.payload.requires);
 } else if (isEvent(event, "campaign.stopped")) {
   console.log(event.payload.campaignId, event.payload.abandonedCount);
+} else if (isEvent(event, "campaign.rescheduled")) {
+  console.log(event.payload.previousScheduledAt, event.payload.scheduledAt);
 } else if (isEvent(event, "customer.pairing_link.connected")) {
   console.log(event.payload.customerId, event.payload.sessionId);
 }
