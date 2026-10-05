@@ -47,12 +47,11 @@ contracts at API dev merge commit `e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb`
 Campaign create, update and launch types add template variable mappings,
 tracked links, typed composed messages and `skipMissingVariables`; recipients
 add sequence progress; webhooks add `campaign.recipient_link_opened` and
-`messageIndex`. Seventeen new Campaigns operations (test send, STOP
-confirmation settings, audience profiles and imports, link reports, campaign
+`messageIndex`. Fourteen new Campaigns operations (test send, audience profiles and imports, link reports, campaign
 settings and approval reads) are recorded as
 missing until their methods follow. The three approval decisions and the
 threshold update are console routes and are excluded. The ledger contains 608
-operations: 451 covered, 0 partial, 17 missing and 140 excluded.
+operations: 454 covered, 0 partial, 14 missing and 140 excluded.
 
 The previous snapshots were byte-identical copies of the Messaging and Platform
 contracts at API dev merge commit `ff12a76fe44fa23bf71e00fc6454a51b1fdbb399`

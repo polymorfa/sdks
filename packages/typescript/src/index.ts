@@ -723,6 +723,13 @@ export { CustomersResource } from "./platform/customers.js";
 export { MediaResource } from "./platform/media.js";
 export { MembersResource } from "./platform/members.js";
 export { OptOutsResource } from "./platform/opt-outs.js";
+export type {
+  StopConfirmationLocale,
+  StopConfirmationSettings,
+  StopConfirmationStatus,
+  StopConfirmationSummary,
+  UpdateStopConfirmationSettingsRequest,
+} from "./platform/stop-confirmations.js";
 export {
   QuickLinkSettingsResource,
   type OrganizationQuickLinkSettings,

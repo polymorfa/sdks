@@ -4229,9 +4229,8 @@
       "operationId": "getStopConfirmationSettings",
       "fingerprint": "7ce61653f59ebf4864f323af86e0b94709225f4572d8d5ba6f397863ce77d383",
       "typescript": {
-        "status": "missing",
-        "reason": "New Campaigns operation; the TypeScript method follows in a later SDK change.",
-        "milestone": "campaigns"
+        "status": "covered",
+        "method": "Client.optOuts.getConfirmationSettings"
       }
     },
     {
@@ -4241,9 +4240,8 @@
       "operationId": "getStopConfirmationSummary",
       "fingerprint": "0fcf0ab6a73cf703092c7224512ed0e42d01e670e8c4dd455385b1f16a98d585",
       "typescript": {
-        "status": "missing",
-        "reason": "New Campaigns operation; the TypeScript method follows in a later SDK change.",
-        "milestone": "campaigns"
+        "status": "covered",
+        "method": "Client.optOuts.getConfirmationSummary"
       }
     },
     {
@@ -6616,9 +6614,8 @@
       "operationId": "updateStopConfirmationSettings",
       "fingerprint": "089b038c657664116a06a314e786ad14d38f51149048ac307410f3a36d48902b",
       "typescript": {
-        "status": "missing",
-        "reason": "New Campaigns operation; the TypeScript method follows in a later SDK change.",
-        "milestone": "campaigns"
+        "status": "covered",
+        "method": "Client.optOuts.updateConfirmationSettings"
       }
     },
     {
