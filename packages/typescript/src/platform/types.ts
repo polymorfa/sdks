@@ -1,9 +1,12 @@
 import type {
+  CampaignReplyFlowDefinition,
   CampaignRecipient,
   CampaignRecipientFailureReason,
   CampaignRecipientInput,
   CampaignRecipientStatus,
   CampaignSendWindowRequest,
+  CampaignTrackedLink,
+  CampaignVariableMapping,
   InvalidRecipientRow,
 } from "../messaging/types.js";
 
@@ -192,12 +195,31 @@ export interface CreatePlatformCampaignRequest {
   /** Ignored when inline recipients are supplied. */
   readonly recipientCount?: number;
   // The API deliberately leaves these JSON values opaque.
+  /** How each content variable is filled. */
+  readonly variableMapping?: CampaignVariableMapping | null;
+  /** Tracked links, at most 5 (beta). */
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
+  /** Up to 10 composed messages, sent in order when there is no template. */
+  readonly messagesArray?: readonly CampaignMessage[];
+  // The API deliberately leaves these JSON values opaque.
   readonly composerBlueprint?: unknown;
-  readonly messagesArray?: unknown;
   readonly audienceRef?: unknown;
   readonly complianceConfig?: unknown;
   readonly variants?: unknown;
   readonly variantStrategy?: unknown;
+}
+
+/** One composed campaign message. */
+export interface CampaignMessage {
+  readonly version?: number;
+  /** Text with `{{variable}}` and `{{variable | fallback}}` placeholders. */
+  readonly source?: string;
+  readonly media?: Readonly<Record<string, unknown>>;
+  readonly buttons?: readonly Readonly<Record<string, unknown>>[];
+  readonly footer?: string;
+  /** Minimum wait after the previous message, 0 to 86,400 seconds. */
+  readonly delayAfterSec?: number;
+  readonly [field: string]: unknown;
 }
 
 export interface ListCampaignsParams {
@@ -228,6 +250,14 @@ export interface UpdatePlatformCampaignRequest {
   readonly recipientListId?: string | null;
   /** Replaces the send window; null removes it. */
   readonly sendWindow?: CampaignSendWindowRequest | null;
+  /** Template to send, or null for composed messages. Only before launch. */
+  readonly templateId?: string | null;
+  /** Replaces the whole mapping; null clears it. Only before launch. */
+  readonly variableMapping?: CampaignVariableMapping | null;
+  /** Replaces the composed messages. Only before launch. */
+  readonly messagesArray?: readonly CampaignMessage[];
+  /** Replaces the tracked links; null or [] removes them. Only while draft. */
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
   readonly [field: string]: unknown;
 }
 
@@ -1590,4 +1620,27 @@ export interface UpdateProjectHealthPolicyRequest {
   readonly slowDownMps: number | null;
   readonly emailNotification: boolean;
   readonly webhookNotification: boolean;
+}
+
+export interface CreatePlatformCampaignReplyFlowRequest {
+  readonly name: string;
+  /** Existing flow key to add a revision to. Omit to start a new reply flow. */
+  readonly flowKey?: string;
+  /** Defaults to 1. Each key and revision can be created once. */
+  readonly revision?: number;
+  readonly definition: CampaignReplyFlowDefinition;
+  /** Required with a team API key. Project tokens derive the project. */
+  readonly projectId?: string;
+}
+
+export interface SetPlatformCampaignReplyFlowRequest {
+  /** Reply flow revision to run after replies, or `null` to detach it. */
+  readonly replyFlowId: string | null;
+  /** Required with a team API key. Project tokens derive the project. */
+  readonly projectId?: string;
+}
+
+export interface PlatformCampaignReplyFlowParams {
+  /** Required with a team API key. Project tokens derive the project. */
+  readonly projectId?: string;
 }

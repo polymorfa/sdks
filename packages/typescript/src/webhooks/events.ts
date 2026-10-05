@@ -44,7 +44,11 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "campaign.failed",
   "campaign.launched",
   "campaign.paused",
+  "campaign.recipient_delivered",
   "campaign.recipient_failed",
+  "campaign.recipient_link_opened",
+  "campaign.recipient_read",
+  "campaign.recipient_replied",
   "campaign.recipient_sent",
   "campaign.recipient_skipped",
   "campaign.rescheduled",
@@ -1026,6 +1030,46 @@ export interface CampaignRecipientSentPayload {
   readonly externalMessageId: string;
   readonly variantKey: string;
   readonly attempt: number;
+  /** Position in the campaign's message sequence, from 0; absent means 0. */
+  readonly messageIndex?: number;
+}
+
+/**
+ * Fields shared by `campaign.recipient_delivered`, `campaign.recipient_read`,
+ * and `campaign.recipient_replied`. Each event fires once per recipient, for
+ * the first transition only. Replies carry timing metadata, never message text.
+ */
+export interface CampaignRecipientEngagementPayload {
+  readonly campaignId: string;
+  readonly recipientId: string;
+  /** Recipient phone number in E.164. */
+  readonly phone: string;
+  /** Session key of the sending number. */
+  readonly sessionKey: string;
+  /** WhatsApp message ID of the campaign send. */
+  readonly externalMessageId: string;
+}
+
+export interface CampaignRecipientDeliveredPayload extends CampaignRecipientEngagementPayload {
+  /** Unix seconds of the first delivery receipt. */
+  readonly deliveredAt: number;
+}
+
+export interface CampaignRecipientReadPayload extends CampaignRecipientEngagementPayload {
+  /** Unix seconds of the first read receipt. */
+  readonly readAt: number;
+}
+
+export interface CampaignRecipientRepliedPayload extends Omit<
+  CampaignRecipientEngagementPayload,
+  "externalMessageId"
+> {
+  /** WhatsApp message ID of the campaign send, or `null` when unavailable. */
+  readonly externalMessageId: string | null;
+  /** Unix seconds of the first attributed reply. */
+  readonly repliedAt: number;
+  /** Milliseconds from the send to the first reply. */
+  readonly responseMs: number;
 }
 
 export interface CampaignRecipientFailedPayload {
@@ -1035,6 +1079,21 @@ export interface CampaignRecipientFailedPayload {
   readonly attempts: number;
   readonly error: string;
   readonly failedAt: number;
+  /**
+   * Position of the failed message, from 0; absent means 0. Above 0, the
+   * earlier messages were sent and the recipient stays sent.
+   */
+  readonly messageIndex?: number;
+}
+
+/** First open of a tracked link by one recipient (beta link tracking). */
+export interface CampaignRecipientLinkOpenedPayload {
+  readonly campaignId: string;
+  readonly recipientId: string;
+  /** Key of the tracked link that was opened. */
+  readonly linkKey: string;
+  /** Unix seconds of the recipient's first open of this link. */
+  readonly openedAt: number;
 }
 
 export interface CampaignRecipientSkippedPayload {
@@ -1147,7 +1206,11 @@ export interface WebhookPayloadMap {
   readonly "campaign.failed": CampaignFailedPayload;
   readonly "campaign.launched": CampaignLaunchedPayload;
   readonly "campaign.paused": CampaignPausedPayload;
+  readonly "campaign.recipient_delivered": CampaignRecipientDeliveredPayload;
   readonly "campaign.recipient_failed": CampaignRecipientFailedPayload;
+  readonly "campaign.recipient_read": CampaignRecipientReadPayload;
+  readonly "campaign.recipient_replied": CampaignRecipientRepliedPayload;
+  readonly "campaign.recipient_link_opened": CampaignRecipientLinkOpenedPayload;
   readonly "campaign.recipient_sent": CampaignRecipientSentPayload;
   readonly "campaign.recipient_skipped": CampaignRecipientSkippedPayload;
   readonly "campaign.rescheduled": CampaignRescheduledPayload;

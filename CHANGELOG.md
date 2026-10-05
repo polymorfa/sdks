@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Campaign content types: `variableMapping` (`CampaignVariableMapping`) on
+  Messaging and Platform create and update, `templateId` on Messaging update,
+  typed `messagesArray` (`CampaignMessage`, up to 10), and `trackedLinks`
+  (`CampaignTrackedLink`, beta). `LaunchCampaignRequest.skipMissingVariables`
+  skips recipients without a value instead of refusing the launch.
+  `CampaignRecipient` adds `messagesSent`, `nextMessageAt` and
+  `sequenceError`; `failureReason` adds `missing_variable`. Error codes add
+  `campaign_approval_required`, `campaign_approval_stale` and
+  `campaign_variables_missing`. Webhooks add
+  `campaign.recipient_link_opened` and an optional `messageIndex` on
+  `campaign.recipient_sent` and `campaign.recipient_failed`. Contracts are
+  pinned to API `dev` `e3d1d2d`.
+
 - `MessagingClient.campaigns.reschedule(projectSlug, campaignId, body)` and
   `Client.campaigns.reschedule(campaignId, body)` move a launched campaign that
   has not started sending, or start it now with `scheduledAt: null`. Each call
@@ -23,6 +36,24 @@
   successful request for 24 hours, so a retry does not add rows again or
   report them as duplicates. Requires the API release with the append replay
   contract.
+
+- Campaign reply flows (beta). `MessagingClient.campaigns.createReplyFlow`,
+  `retrieveReplyFlow` and `setReplyFlow`, and the same three methods on
+  `Client.campaigns` for the Platform API. Reply flow types include
+  `CampaignReplyFlowDefinition`, `CampaignReplyFlowSend` (text, buttons, list,
+  or an Official-only Flow form) and `CampaignReplyFlowMatch`. Creating a
+  revision is sent once and never retried, because a repeat returns `409`.
+  Contracts are pinned to API `dev` `ff12a76` (polymorfa/polymorfa#407).
+
+- Webhook payload types for `campaign.recipient_delivered`,
+  `campaign.recipient_read` and `campaign.recipient_replied`
+  (`CampaignRecipientDeliveredPayload`, `CampaignRecipientReadPayload`,
+  `CampaignRecipientRepliedPayload` and the shared
+  `CampaignRecipientEngagementPayload`). Replies carry timing metadata, not
+  message text, and `externalMessageId` is nullable on replies. The events
+  require the team's beta enrollment. Contracts are pinned to API `dev`
+  `8e319f6` (polymorfa/polymorfa#392).
+
 - Dynamic WhatsApp Flow endpoints (beta, Cloud onboarding enrollment, Official
   API Numbers only). `Client.project(projectId).flows` adds `endpoint`,
   `setEndpoint` (modes `forward`, `function` and `direct`; a forward endpoint's

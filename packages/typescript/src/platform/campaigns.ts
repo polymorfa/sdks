@@ -11,18 +11,25 @@ import type {
   AddPlatformCampaignRecipientsResult,
   CampaignConversion,
   CampaignConversionReport,
+  CreatePlatformCampaignReplyFlowRequest,
   CreatePlatformCampaignRequest,
   ExportPlatformCampaignRecipientsParams,
   DataEnvelope,
   ListCampaignsParams,
   ListPlatformCampaignRecipientsParams,
   PlatformCampaignParams,
+  PlatformCampaignReplyFlowParams,
   PlatformCampaignRecipientsEnvelope,
   PlatformPayload,
   RecordCampaignConversionRequest,
   ReschedulePlatformCampaignRequest,
+  SetPlatformCampaignReplyFlowRequest,
   UpdatePlatformCampaignRequest,
 } from "./types.js";
+import type {
+  CampaignReplyFlow,
+  CampaignReplyFlowAttachment,
+} from "../messaging/types.js";
 
 type CampaignResponse = Promise<ApiResponse<DataEnvelope<PlatformPayload>>>;
 type CampaignResult<T> = Promise<ApiResponse<DataEnvelope<T>>>;
@@ -295,6 +302,60 @@ export class CampaignsResource {
       method: "GET",
       path: `${campaignPath(campaignId)}/conversions`,
       query: campaignQuery(params),
+      ...options,
+    });
+  }
+
+  /**
+   * Beta: create an immutable reply flow revision, the steps a campaign runs
+   * after a recipient replies.
+   *
+   * Each flow key and revision can be created once; a repeat returns
+   * `409`. The SDK sends this request once and does not retry it. After a
+   * lost response, read the revision with `retrieveReplyFlow` or create the
+   * next revision.
+   */
+  createReplyFlow(
+    body: CreatePlatformCampaignReplyFlowRequest,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignReplyFlow> {
+    return this.transport.request({
+      method: "POST",
+      path: "/platform/campaign-reply-flows",
+      body,
+      ...withoutAutomaticRetry(options),
+    });
+  }
+
+  /** Beta: read one reply flow revision. */
+  retrieveReplyFlow(
+    replyFlowId: string,
+    params: PlatformCampaignReplyFlowParams = {},
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignReplyFlow> {
+    return this.transport.request({
+      method: "GET",
+      path: `/platform/campaign-reply-flows/${encodeURIComponent(replyFlowId)}`,
+      ...(params.projectId === undefined
+        ? {}
+        : { query: { projectId: params.projectId } }),
+      ...options,
+    });
+  }
+
+  /**
+   * Beta: attach a reply flow revision to a draft or scheduled campaign, or
+   * detach it with `replyFlowId: null`. Returns `409` after launch.
+   */
+  setReplyFlow(
+    campaignId: string,
+    body: SetPlatformCampaignReplyFlowRequest,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignReplyFlowAttachment> {
+    return this.transport.request({
+      method: "PUT",
+      path: `${campaignPath(campaignId)}/reply-flow`,
+      body,
       ...options,
     });
   }

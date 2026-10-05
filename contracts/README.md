@@ -42,27 +42,40 @@ published SDK package before updating their pinned dependency.
 ## Full snapshots
 
 The current snapshots are byte-identical copies of the Messaging and Platform
-contracts at API dev merge commit `ff112f9ea82329da1b5d4c54dcb8f6c3446566e4`
-(API PR #331). Moving from `171a9683ff45d11a4b5d3917dc428ad2722b0d99` adds
-the two paged recipient CSV export operations, covered by
-`MessagingClient.campaigns.exportRecipients` and
-`Client.campaigns.exportRecipients`. The two recipient list fingerprints change
-for the `reason` filter and `failureReason`. The Messaging campaign PATCH
-(API PR #332) and both reschedule actions (API PR #321) were already in the
-snapshot and move from excluded to covered by
-`MessagingClient.campaigns.update`, `MessagingClient.campaigns.reschedule` and
-`Client.campaigns.reschedule`. The ledger contains 581 operations: 444 covered
-and 137 excluded, with no missing, partial or changed fingerprints.
+contracts at API dev merge commit `e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb`
+(after polymorfa/polymorfa#330, #328, #335, #382, #408, #494, #482 and #488).
+Campaign create, update and launch types add template variable mappings,
+tracked links, typed composed messages and `skipMissingVariables`; recipients
+add sequence progress; webhooks add `campaign.recipient_link_opened` and
+`messageIndex`. Seventeen new Campaigns operations (test send, STOP
+confirmation settings, audience profiles and imports, link reports, campaign
+settings and approval reads) are recorded as
+missing until their methods follow. The three approval decisions and the
+threshold update are console routes and are excluded. The ledger contains 608
+operations: 451 covered, 0 partial, 17 missing and 140 excluded.
 
-This revision does not yet contain API PR #323 (`Idempotency-Key` replay on
-audience create, audience member append and campaign recipient append) or API
-PR #335 (`createAudienceFromCampaign`). The SDK already sends keys on those
-writes and exposes `Client.audiences.createFromCampaign`; the next repin adds
-the replay headers to four fingerprints and the new operation to the ledger.
+The previous snapshots were byte-identical copies of the Messaging and Platform
+contracts at API dev merge commit `ff12a76fe44fa23bf71e00fc6454a51b1fdbb399`
+(polymorfa/polymorfa#407). It adds six reply flow operations (create, read and
+attach on both API families), all covered. It also adds an optional
+`Idempotency-Key` to campaign recipient appends and audience creation and
+appends (polymorfa/polymorfa#323); those four methods are recorded as partial
+until polymorfa/sdks#305 sends the key. The ledger contains 587 operations: 439
+covered, 6 partial, 2 missing and 140 excluded.
 
-The preceding pin at `171a9683ff45d11a4b5d3917dc428ad2722b0d99` was described
-as follows. The full revision contains the inherited Logs and Usage contracts and all four
-public Analytics reads. The ledger contains 579 operations: 433 covered and
+The preceding repin at `8e319f6bb4e733e776278577840d8fb15805fe6d`
+(polymorfa/polymorfa#392) added the
+`campaign.recipient_delivered`, `campaign.recipient_read` and
+`campaign.recipient_replied` webhook payloads, which the TypeScript webhook
+types now cover. It also contains the recipient CSV export reads and optional
+recipient failure-reason fields from an earlier API merge. The ledger records
+those two export reads as missing and the two recipient list reads as partial
+until polymorfa/sdks#309 adds the methods and fields. The ledger then contained 581
+operations: 437 covered, 2 partial, 2 missing and 140 excluded.
+
+The preceding repin at `171a9683ff45d11a4b5d3917dc428ad2722b0d99`
+contained the inherited Logs and Usage contracts and all four
+public Analytics reads. The ledger then contained 579 operations: 433 covered and
 146 excluded, with no missing, partial or changed fingerprints. Six reviewed
 Console changes cover analytics projections, consent preferences, operational
 error vitals and shared drains. They require dashboard identity and remain
