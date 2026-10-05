@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "6b9fe148e613b5282c79c082ddbb174230157a28",
-  "branch": "t3code/campaigns-stop-confirmation",
-  "published": false,
-  "note": "Provisional exact local API source for optional STOP confirmations. Stacked API PR, SDK publication, CLI pin and deployment remain separate gates.",
+  "commit": "e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb",
+  "branch": "dev",
+  "published": true,
+  "note": "Full Messaging and Platform snapshots pin the merged API dev revision. SDK publication and API deployment remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "79543bf719017598c3e2497004d761056e919b3200abdaae1560893542816cc7"
+      "sha256": "02c95700d72cf294e06f7a5363a47b8fbde1e91775d243af035b1eb1576666e5"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "8d7ac39ae01065abac2a7e3a82e041fac0a59c700fbbfc880e0416765cff0c1f"
+      "sha256": "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b"
     }
   }
 }

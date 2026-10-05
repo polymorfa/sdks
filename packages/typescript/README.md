@@ -1,6 +1,7 @@
 # `@polymorfa/sdk`
 
-The handwritten Polymorfa server SDK for TypeScript and Node.js.
+The handwritten Polymorfa server SDK for TypeScript, Node.js, and server-side
+edge runtimes.
 
 Install the development prerelease from npm:
 
@@ -33,8 +34,11 @@ import {
 ```
 
 See the repository README for the complete development contract and current
-typed-resource coverage. This package has no runtime dependencies and requires
-Node.js 20 or newer.
+typed-resource coverage. This package has no runtime dependencies. On Node.js,
+it requires version 20 or newer. The package root also runs in Cloudflare
+Workers, Deno, and Bun with native `fetch` and `crypto.subtle`; keep server
+credentials in the runtime's secret store. Import `@polymorfa/sdk/node` only in
+Node.js applications that need its file helpers.
 
 ## Management client and project views
 
@@ -55,6 +59,12 @@ const project = platform.project("project_123");
 const events = await project.events.list({ limit: 25 });
 console.log(events.items, events.response.metadata.requestId);
 ```
+
+When the API applies its per-team request limit, response and error metadata
+expose `x-ratelimit-limit`, `x-ratelimit-remaining`, and `x-ratelimit-reset` in
+`metadata.headers`. The reset value is a Unix timestamp in seconds. On a
+rejected request, follow `retry-after` before retrying; the reset timestamp
+does not override it.
 
 A project token can construct only a project view and requires `projectId`:
 
@@ -305,10 +315,188 @@ const created = await messaging.templates.create("support", {
 await messaging.templates.preview("support", created.data.data.id, {
   values: { name: "Grace" },
 });
+
+await messaging.templates.submit("support", created.data.data.id, {
+  session: "number_123",
+});
 ```
 
 Keep this client on the server. Browser builders use an application-owned
 route, such as `createTemplateBuilderRoute` from `@polymorfa/nextjs`.
+Submission validates the saved definition before making one provider attempt.
+A successful response records the submission; it does not establish approval.
+If the request times out or loses its response, read the Number's template
+catalog before deciding whether another submission is needed. Local preview
+does not ask Meta to validate the template.
+
+## Flow drafts and provider lifecycle
+
+Use `client.project(projectId).flows` for project Flow drafts. A client created
+with a project token exposes the same resource for its configured project.
+`list`, `retrieve`, `create`, `update`, and `delete` manage local drafts. Retrieval
+returns `null` when the API has no matching draft; updates require the observed
+`expectedUpdatedAt` value. Draft methods and provider methods remain distinct.
+
+Every Flow method returns the unwrapped record in `response.data`. Prereleases
+up to `0.1.0-dev.20260927174827` returned `list` and `retrieve` inside a
+`{ data }` envelope; replace `response.data.data` with `response.data` when
+upgrading.
+
+```ts
+const flows = client.project(projectId).flows;
+const draft = await flows.create({
+  name: "Booking",
+  definition: flowJson,
+});
+const uploaded = await flows.upload(draft.data.id, {
+  sessionId: "support",
+  categories: ["APPOINTMENT_BOOKING"],
+  requestId: crypto.randomUUID(),
+});
+console.log(uploaded.data.operation?.state);
+```
+
+`upload`, `publish`, `deprecate`, `discard`, and `sync` operate on a Number in the
+same project; `receipts` reads its recorded operations. Reads require
+`sessions:read`; mutations require `sessions:manage`. Provider actions require
+the API's beta access and a compatible Number. Publishing uses the validated
+upload. Discard removes a provider draft; delete removes the local draft.
+
+Writes make one transport attempt even with retry options or an Idempotency-Key.
+The optional body `requestId` identifies one provider operation. A response can
+contain an `uncertain` receipt with HTTP 200; inspect its state. Use `sync` to
+reconcile provider state, preserving the original request identity. Do not repeat
+an uncertain write with a new ID. No provider lifecycle method enrolls a project
+or establishes deployed availability.
+
+## Official API Numbers
+
+These server methods require the matching API deployment and the team's beta
+access. An SDK method does not enroll a team. Keep server credentials out of
+browser code.
+
+`messaging.cloudTemplates` lists, retrieves, creates, edits and deletes Meta templates
+for a Number. It is separate from `messaging.templates`, which manages project
+drafts. Use an organization API key or project token; the SDK rejects browser
+client tokens before sending any of these requests. The native template API
+requires an enabled Official API connection. For a Hybrid Number it uses that
+exact connection and its WABA; a retired or disabled
+Official connection cannot supply authority. Retrieval accepts
+an optional language; the API defaults to `en_US`.
+Deleting a name deletes all its languages. Create, edit and delete make one attempt,
+even if an idempotency key or a retry override is supplied. Create and delete
+send your `idempotencyKey` to the API, so a manual retry with the same key
+returns `PolymorfaConflictError` (`idempotency_completed`) instead of writing
+again. Edit has no key; list or retrieve the template to reconcile an
+uncertain result before submitting another write.
+
+```ts
+const catalog = await messaging.cloudTemplates.list("support");
+const template = await messaging.cloudTemplates.retrieve(
+  "support",
+  "order_update",
+  {
+    language: "pt_BR",
+  },
+);
+```
+
+`messaging.officialGroups` (beta) manages WhatsApp groups created through the
+Official API: `list`, `create`, `retrieve`, `update`, `delete`,
+`getInviteLink`, `resetInviteLink`, `removeParticipants`, `listJoinRequests`,
+`approveJoinRequests`, `rejectJoinRequests` and `pin`. Groups require team
+enrollment and a Number whose WhatsApp Business Account is an Official Business
+Account; otherwise the API returns `whatsapp_groups_ineligible`. People join
+with the invite link and cannot be added. A group holds at most 8 participants
+besides your business. `create` returns a `requestId`; the group's conversation
+ID and invite link arrive in a `group.update` event with action `created`.
+Send to a group with `messages.send` and the group's conversation ID (text,
+media and templates only). Every change makes one attempt even with a retry
+override and passes your `idempotencyKey` to the API. Read the group before
+repeating an uncertain change. Use an organization API key or project token.
+
+```ts
+const { data } = await messaging.officialGroups.create("support", {
+  subject: "Order 1042",
+  joinApprovalRequired: true,
+});
+// Later, from the group.update webhook: group ID and invite link.
+await messaging.officialGroups.approveJoinRequests("support", groupId, [
+  joinRequestId,
+]);
+```
+
+`messaging.cloudCatalogs.list(wabaId, { version: "v26.0", limit: 25, after })`
+reads catalog IDs and names visible to the connected WABA credentials. It
+requires `sessions:read` and Graph access. The response retains opaque cursors;
+it does not expose upstream pagination URLs or grant merchant ownership. Use
+an organization API key or project token, with the latter confined to its project.
+
+`messaging.cloudCatalogs.listProducts(wabaId, catalogId, { version: "v26.0", limit: 25, after })`
+reads a page of product IDs, optional retailer IDs, names, and availability
+from a catalog linked to that WABA. It has the same server-credential and
+`sessions:read` requirements. Use the returned opaque `paging.cursors.after`
+to request the next page. The API rejects catalogs it cannot verify as linked;
+listing products does not grant permission to send them.
+
+`messaging.cloudMarketing.status(wabaId, { version: "v26.0" })` reads Meta's
+raw `marketing_messages_lite_api_status` and
+`marketing_messages_onboarding_status` strings through an Official API Number
+in the credential's project. It requires `sessions:read` and an organization
+API key or project token. The fields do not establish terms acceptance,
+recipient permission, eligibility, or permission to send.
+
+`messaging.flowEncryption.retrieve(phoneNumberId, { version: "v26.0" })` reads
+the registered public key and Meta signature status with `sessions:read`.
+`messaging.flowEncryption.register(phoneNumberId,
+{ businessPublicKey: publicKeyPem }, { version: "v26.0" })` replaces the key
+with `sessions:manage` on an eligible Official API Number. It makes one
+upstream attempt. Retain the matching private key on your endpoint and read the
+registered key after an uncertain outcome. Registration affects every dynamic
+Flow on the phone number; it does not enable dynamic Flow publishing.
+
+`messaging.cloudTemplates.update(number, name, { components }, { language })`
+submits an edit to one template language. A `202` response contains
+`{ accepted: true, name, language }`; it does not establish approval to send.
+Read the template again to inspect its status.
+
+`messaging.messages.setTyping(number, { conversation, state: "typing", id })`
+requires an inbound message ID on Official Numbers. It marks that message read
+and displays typing until a reply is sent or 25 seconds pass. Official Numbers
+reject `recording` and `paused`; Linked Device Numbers retain those states and
+do not require `id`.
+
+`messaging.quickLinks.retrieve(id)` preserves `onboarding.sync` request receipts
+and history-delivery observations. A connected Number does not establish that
+contacts or history were delivered. Accepted requests and `unknown` outcomes
+remain distinct; do not repeat a one-time sync request based on an unknown state.
+
+Narrow `session.status` payloads by `source: "meta"` before reading account
+notifications. They have `kind`, optional `wabaId`, and `value`, without a runtime
+`status`. Cloud `template.status` payloads have `kind` and optional provider
+fields such as `event`, `language`, `previousQualityScore`, and `newQualityScore`.
+Runtime notifications retain their own typed payloads. Webhook envelope IDs
+identify an occurrence; retain them when deduplicating a delivery retry.
+
+`messaging.chats.getServiceWindow(number, conversation)` reads `open`, `closed`
+or `unknown` with observation timestamps. It requires `chats:read` and service
+window beta enrollment, without requiring HMS. `unknown` does not establish
+permission to send; Meta still decides.
+
+`messaging.sessions.getMetaPricing(number, { since, until })` returns counts
+grouped by Meta's reported pricing classification. It requires `sessions:read`
+and the same beta access. Dates are ISO 8601, the default period is 30 days and
+the maximum is 93 days. Counts contain no invoice amounts or Polymorfa charges.
+Official API `message.ack` events can include `pricing`, typed as
+`MetaPricingReport`, preserving Meta's field names and optional values.
+
+`messaging.sessions.getCloudCredentialHealth(number)` returns redacted token,
+permission, registration and subscription checks with `sessions:read`.
+`messaging.sessions.reauthorizeCloudCredentials(number)` creates a QuickLink
+for the same Number and phone with `quicklink:manage`. The Number must already
+be stopped or disconnected and use a standalone Official API connection;
+the method never stops it. Reauthorization makes one attempt and does not
+automatically open or share the returned URL.
 
 ## Contacts
 
@@ -707,6 +895,21 @@ The voice resources are available only in this TypeScript SDK.
 
 ## Call analytics and call records
 
+The source SDK adds `platform.calls.retrieve(callId)` for stored call detail.
+It requires the matching API deployment and SDK publication. The `callId`
+argument accepts 1 to 128 printable ASCII characters without spaces; the SDK
+encodes it as one path segment. The response's `data` includes bounded metadata
+history, participant and connection lifetimes,
+media measurements and app-reported diagnostics. It returns no media or webhook
+deliveries. Project clients remain pinned to the call's original owning project;
+client tokens cannot use this read. Unknown measurements are `null` and
+`history.truncated` identifies incomplete retained history.
+
+```ts
+const detail = await platform.calls.retrieve("call_123");
+console.log(detail.data.history.events);
+```
+
 `Client.calls` reads call statistics and call detail records. It needs
 `sessions:read`. A team client covers every project of the team unless you
 pass `projectId`; a project client reads only its own project, and the SDK
@@ -944,7 +1147,8 @@ The source has one send route rather than separate routes for each message
 kind. `SendMessageRequest` is therefore a union of the exact typed payloads for
 text, image/file/voice/video media, polls, locations, contacts, phone-number
 requests, products, product lists, orders, lists, buttons, address messages,
-flows, and call permission requests. Template sends use `SendTemplateMessageRequest`. Select exactly one
+flows, call permission requests, and Brazil payment orders (`orderDetails` and
+`orderStatus`). Template sends use `SendTemplateMessageRequest`. Select exactly one
 message kind inside `content`; `conversation` selects its destination.
 
 ```ts
@@ -974,6 +1178,47 @@ Reply context uses `quotedMessage`; forwarding is represented by
 message list, search, or standalone forward/reply route in `messages`. Hosted
 message history is read through `MessagingClient.chats` as described below.
 
+### Brazil payment orders beta
+
+Teams enrolled in the beta can send Brazil orders with Pix, payment link or
+boleto instructions from Official API Numbers that Meta has made eligible for
+payments in Brazil. Polymorfa validates and relays the order; it does not
+collect, hold or confirm funds. Amounts are centavos with `offset: 100`, and
+with an itemized `order` the total must equal subtotal + tax + shipping -
+discount.
+
+```ts
+await messaging.messages.send("store", {
+  conversation: { phoneNumber: "+5511987654321" },
+  content: {
+    orderDetails: {
+      referenceId: "order-1522",
+      type: "digital-goods",
+      body: "Your order",
+      currency: "BRL",
+      totalAmount: { value: 5000, offset: 100 },
+      paymentSettings: {
+        pixDynamicCode: {
+          code: pixCopyAndPasteCode, // from your bank or payment provider
+          merchantName: "Loja Exemplo",
+          key: "39580525000189",
+          keyType: "CNPJ",
+        },
+      },
+    },
+  },
+});
+```
+
+After your payment provider confirms the payment, send `orderStatus` with the
+same `referenceId`, for example `{ order: { status: "processing" }, payment: {
+status: "captured" } }`. WhatsApp refuses an invalid status change with
+`order_status_transition_invalid` and a refused cancellation with
+`order_cancellation_failed` (both `409`). Use a new `referenceId` for every
+order; never resend an order after an uncertain result. `order.payment_updated`
+relays payment reports from WhatsApp and is not proof of settlement. Teams
+outside the beta receive `403 feature_unavailable`.
+
 ### Hosted message history beta
 
 `MessagingClient.chats.list(session, params)` lists stored conversations;
@@ -1000,14 +1245,22 @@ if (page.data.nextCursor) {
 console.log(page.metadata.headers["polymorfa-data-region"]);
 ```
 
-These four reads require an organization key or project token, a visible
+These conversation and message reads require an organization key or project token, a visible
 Number with hosted message storage enabled, team enrollment in
 `messaging.history`, and `chats:read` or `messages:read` as appropriate. The
 feature is an unreleased enrolled beta; an SDK method does not grant access.
 Client tokens are refused before transport. A disabled HMS Number yields
 `404 hms_not_enabled`; absent beta access yields `403 permission_denied`, and
-an unavailable regional read yields `503 service_unavailable`. Media entries
-carry an API download path, not a signed URL; downloading requires `media:read`.
+an unavailable regional read yields `503 service_unavailable`.
+
+For Official API media, `message.mediaRetrieval.state` reports whether a copy
+is `pending`, `stored`, or in a final state without a copy. A `stored` message
+has a media entry whose `url` is a message-scoped API path, not a signed URL.
+Download that copy with `messaging.chats.downloadMessageMedia(session, conversation, message.id)`
+or stream it with `downloadMessageMediaStream(session, conversation, message.id)`. These reads
+require both `messages:read` and `media:read`; a missing copy returns 404.
+`downloadMessageMedia` buffers the whole file, so prefer the stream for large
+media. Linked-device media paths still use `messaging.media.download(mediaId)`.
 
 Client tokens can call all five Messages operations only when the corresponding
 live rule is enabled: `send_message` for send and star, `send_reaction` for
@@ -1684,8 +1937,8 @@ message identifiers are URL-encoded by the SDK.
 
 ## Messaging campaigns
 
-`MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `analytics`,
-`listRecipients`, `addRecipients`, `launch`, `pause`, `resume`, `stop`, and
+`MessagingClient.campaigns` provides `list`, `create`, `retrieve`, `update`, `analytics`,
+`listRecipients`, `exportRecipients`, `addRecipients`, `launch`, `reschedule`, `pause`, `resume`, `stop`, and
 `requeue`. Reads require `campaigns:read`; writes require `campaigns:manage`.
 Pass the project's slug as the first argument. Campaigns accept organization
 API keys or project tokens; browser client tokens cannot use these methods.
@@ -1710,40 +1963,122 @@ const appended = await messaging.campaigns.addRecipients(
 );
 console.log(appended.data.data.added, appended.data.data.invalidRows);
 
+await messaging.campaigns.update("support", created.data.data.id, {
+  name: "August follow-up",
+  recipientListId: null,
+});
+
+const firstStart = Date.now() + 24 * 60 * 60 * 1000;
 const launched = await messaging.campaigns.launch(
   "support",
   created.data.data.id,
-  { scheduledAt: Date.parse("2026-08-25T09:00:00Z") },
+  { scheduledAt: firstStart },
   { idempotencyKey: "campaign-august-launch" },
 );
 console.log(launched.data.data.operationId, launched.metadata.requestId);
+
+const moved = await messaging.campaigns.reschedule(
+  "support",
+  created.data.data.id,
+  { scheduledAt: firstStart + 60 * 60 * 1000 },
+  { idempotencyKey: "campaign-august-move" },
+);
+console.log(moved.data.data.scheduledAt, moved.data.data.operationId);
 ```
 
-Create accepts inline recipients, an audience ID in `recipientListId`, or both.
-Each append accepts up to 1,000 recipients before launch and reports duplicates
-and invalid rows. Appends have no declared replay contract: the SDK sends them
-once by default, generates no key, and requires both `maxNetworkRetries` and
-`idempotencyKey` to opt back into retries. A retry can report rows from an unseen
-successful first attempt as duplicates. List recipients before appending again
-after a lost response.
+Reschedule sends once by default, including when the API returns a campaign
+state conflict. If a response is lost, read the campaign before repeating the
+write with the same idempotency key.
 
-`listRecipients(projectSlug, campaignId, { status, cursor, limit })` returns
+Create accepts inline recipients, an audience ID in `recipientListId`, or both.
+Update accepts `name`, `recipientListId`, `senderConfig`, and `scheduledAt`.
+Pass an integer Unix millisecond value within the JavaScript Date range for a
+non-null `scheduledAt`; the API returns 400 for an out-of-range value.
+Changing the audience or schedule is limited to an unlaunched draft. A sender
+change after launch must pass the live sender checks. The SDK sends PATCH once;
+after an uncertain response, retrieve the campaign before deciding on another
+write.
+Each append accepts up to 1,000 recipients before launch and reports duplicates
+and invalid rows. Each append sends an idempotency key, generated unless you pass
+`idempotencyKey`, and automatic retries reuse it. Within 24 hours a retry of a
+successful append returns its original counts with `Idempotent-Replayed: true`,
+even after the campaign has launched. Pass your own key when you retry across
+process restarts.
+
+Create on both surfaces, and Platform `update`, accept an optional
+`sendWindow` (`CampaignSendWindowRequest`): weekdays, up to four local
+`HH:MM` ranges, an optional IANA `timeZone`, and optional per-recipient time
+zones. Recipients outside the window stay queued until it next opens. `null`
+removes the window. Campaign records return the stored `sendWindow` or null.
+
+`listRecipients(projectSlug, campaignId, { status, reason, cursor, limit })` returns
 `{ data, page }` inside the response's `data`. Read recipients from
 `response.data.data` and pass `response.data.page.nextCursor` into the next
-request while `page.hasMore` is true. Each recipient includes its send,
-delivery, read, failure and reply timestamps. Campaign `list` returns a complete
-array; recipient pagination does not change that method.
+request while `page.hasMore` is true. Each recipient includes a stable
+`failureReason` code, plus its send, delivery, read, failure and reply
+timestamps. Use `reason` to filter by that code. Campaign `list` returns a complete
+array; recipient pagination does not change that method. The legacy
+`lastError` field returns the same normalized code and never raw stored text.
 
-Launch, pause and resume return the campaign state with an `operationId`.
+`exportRecipients(projectSlug, campaignId, { status, reason, cursor, limit })`
+returns `{ csv, nextCursor }`. The CSV contains a header and up to 1,000 rows;
+pass `nextCursor` with the same filters to fetch another page. Each page reads
+outcomes when requested. The Platform method takes `campaignId` and a params
+object with `projectId` and the same filters. A failed request raises an SDK
+error; an unexpected success content type is rejected instead of returned as
+CSV.
+
+Launch, reschedule, pause and resume return the campaign state with an `operationId`.
 They accept the transition without waiting for sending to finish. Stop always
 cancels; its `operationId` is null when the campaign had no active delivery run
 and was cancelled immediately. Check for null before calling
 `Client.operations.wait(operationId)`. A launched campaign waiting for its
-scheduled start can be stopped, but its start time cannot be changed.
-Launch, pause, resume, and stop generate one idempotency key per call unless you
-pass one. Automatic retries reuse that key; a completed replay returns the
+scheduled start can move to another time through `reschedule`, or start now with
+`{ scheduledAt: null }`. Once sending starts, rescheduling returns a `409`
+state conflict. Platform `update` also refuses a changed `scheduledAt` after
+launch; use `reschedule` for that change. A team suspended by BanSafe receives
+`403 bansafe_org_suspended`.
+
+Launch, reschedule, pause, resume, and stop generate one idempotency key per call
+unless you pass one. Automatic retries reuse that key; a completed replay returns the
 API's `idempotency_completed` conflict, so inspect the campaign state after a
 lost response.
+
+#### Campaign conversions (beta)
+
+Campaign conversion reporting is a beta: the team must be enrolled, or both
+methods answer `403`. Report a conversion your system observed for one
+recipient, named by its `id` from `client.campaigns.recipients`. Polymorfa never
+matches conversions by phone number.
+
+```ts
+const recorded = await client.campaigns.recordConversion(campaignId, {
+  projectId,
+  recipientId,
+  eventId: "order-1001",
+  eventType: "purchase",
+  occurredAt: "2026-10-01T10:00:00+02:00",
+  value: { amountMinor: 1999, currency: "USD" },
+});
+console.log(
+  recorded.data.data.attribution.outcome,
+  recorded.data.data.replayed,
+);
+
+const report = await client.campaigns.conversions(campaignId, { projectId });
+console.log(report.data.data.conversions.attributed, report.data.data.values);
+```
+
+A conversion is `attributed` when `occurredAt` is no earlier than the
+recipient's send time and at most 7 days after it. Otherwise it is
+`outside_window`, or `not_sent` when the recipient was never sent. A recipient
+on the team's opt-out list is recorded as `opted_out`, with no recipient link
+and no value. The decision is fixed when the conversion is recorded.
+`eventId` deduplicates per project: sending the same body again returns the
+original with `replayed: true`, so retries are safe. Changing any detail
+answers `409 idempotency_conflict`. Amounts are integer minor units of an ISO
+4217 currency. The report sums them per currency, as decimal strings, and never
+converts between currencies. Values are as reported, not verified payments.
 
 `requeue` moves eligible failed recipients, and optionally recipients skipped
 with an error, back into the queue. It returns the number moved. The API refuses
@@ -1759,8 +2094,30 @@ listing and append also require `projectId`. Platform
 `recipients` uses the same cursor-page shape. `Client.audiences` manages audience
 members, and `Client.optOuts` reads and replaces team keyword settings.
 
-`create` and `launch` generate an `Idempotency-Key` for each call. A supplied
-key is preserved across retries within the API's 24-hour replay window. If the
+`Client.audiences.createFromCampaign({ name, campaignId, outcome, projectId? })`
+creates a new audience from one previous campaign outcome. It requires a team
+API key with `campaigns:manage`; project tokens cannot use it. Outcomes are
+`delivered`, `not_delivered`, `read`, `not_read`, `replied`, `not_replied`, and
+`failed`. The result contains the new audience, `matchedCount`, and
+`optedOutCount`; opted-out numbers are omitted. The audience is a snapshot at
+the time of the request. A 404 means the source campaign is outside the team
+or optional project bound, and a 409 means no eligible recipient matched. This
+create has no idempotent replay contract, so after an uncertain response list
+audiences before trying again.
+
+For Platform rescheduling, pass the owning project in the body:
+
+```ts
+await client.campaigns.reschedule(
+  campaignId,
+  { projectId, scheduledAt: null },
+  { idempotencyKey: "start-campaign-now" },
+);
+```
+
+`create`, `launch` and `reschedule` generate an `Idempotency-Key` for each call.
+Reschedule sends once by default; a caller may explicitly set `maxNetworkRetries`
+while retaining the same key within the API's 24-hour replay window. If the
 outcome remains uncertain after that window, reconcile campaign state before
 starting another request; see [Idempotent sends](#idempotent-sends).
 `archive` returns a receipt for a completed, failed, or cancelled campaign;
@@ -1768,8 +2125,8 @@ other states return `409`. A pending final event or active delivery run also
 returns `409`; retry after both finish. Platform `delete` accepts draft,
 completed, failed, cancelled, or archived campaigns. A completed or failed
 campaign with a pending final event or active delivery run returns `409`.
-The Messaging API has no campaign update, deletion, archive, duplicate, or
-campaign event history method. The SDK does not substitute Platform routes for
+The Messaging API has no campaign deletion, archive, duplicate, or campaign
+event history method. The SDK does not substitute Platform routes for
 those operations.
 
 ## Chats
@@ -1809,6 +2166,17 @@ Use `webhooks.verify` with the exact raw request bytes before inspecting an
 inbound Messaging delivery. `isEvent` narrows known event names to their
 exported payload types:
 
+For an inbound Official API `message.received` event,
+`CloudMessagePayload.referral` contains Meta's optional `source_type`,
+`source_id`, `source_url`, and `ctwa_clid` strings. These fields identify a
+provider-reported referral source. They do not establish a conversion, order
+payment, or revenue.
+
+`CloudAccountStatusPayload.kind` also distinguishes
+`phone_number_name_update` from other Meta account notices. Its `value` retains
+the provider's display phone, decision, requested name, and rejection reason;
+the notice is not a runtime connection-state transition.
+
 ```ts
 const event = await webhooks.verify({
   body: rawBody,
@@ -1843,6 +2211,8 @@ if (isEvent(event, "history.sync")) {
   console.log(event.payload.rung, event.payload.requires);
 } else if (isEvent(event, "campaign.stopped")) {
   console.log(event.payload.campaignId, event.payload.abandonedCount);
+} else if (isEvent(event, "campaign.rescheduled")) {
+  console.log(event.payload.previousScheduledAt, event.payload.scheduledAt);
 } else if (isEvent(event, "customer.pairing_link.connected")) {
   console.log(event.payload.customerId, event.payload.sessionId);
 }
@@ -1851,7 +2221,8 @@ if (isEvent(event, "history.sync")) {
 The catalog also types Customer lifecycle events (`customer.*`), BanSafe events
 (`bansafe.health_threshold`, `bansafe.action`, `bansafe.incident`, and
 `bansafe.claim`), campaign progress and lifecycle events (`campaign.*`),
-`call.permission_changed`, `message.failed`, and `template.status`. `message.failed`
+`call.permission_changed`, `order.payment_updated`, `message.failed`, and
+`template.status`. `message.failed`
 reports `blocked_by_safety` when BanSafe stops a send, with an optional `code`
 and `retryAfter` in seconds. Unknown event names still parse as
 `UnknownWebhookEvent`.
@@ -1886,6 +2257,26 @@ organization and project scope:
 - `webhookDeliveries.list`, `retrieve`, `listAttempts`, `retrieveAttempt`, and
   `retry`
 - `operations.list`, `get`, `listTransitions`, `cancel`, and `wait`
+
+`platform.webhooks.test` accepts `TestOrganizationWebhookInput`, which has an
+optional `eventType` and no body or session ID. A project-bound client accepts
+`TestProjectWebhookInput`; when you supply a native event body, supply its
+project session ID too. Both methods send an `Idempotency-Key` for each test:
+
+```ts
+await platform.webhooks.test(
+  "team-webhook-id",
+  { eventType: "customer.created" },
+  { idempotencyKey: crypto.randomUUID() },
+);
+await platform
+  .project("project-id")
+  .webhooks.test(
+    "project-webhook-id",
+    { eventType: "message.received" },
+    { idempotencyKey: crypto.randomUUID() },
+  );
+```
 
 ```ts
 const deliveries = await project.webhookDeliveries.list({
@@ -2065,7 +2456,10 @@ does not change prices, modes or customer access. Package publication and live a
 ## Billing and usage
 
 `Client.billing` exposes the complete organization-key billing family.
-Reads require `sessions:read`. Credit quantities, including fields ending in
+Balance, usage, transaction and pricing reads require `sessions:read`.
+Spending limits and priority reads require `billing:read`; changes require
+`billing:manage` and Pay-As-You-Go. Project and client credentials cannot use
+these financial controls. Credit quantities, including fields ending in
 `Cents`, support up to six decimal places. They are not cash minor units.
 Team warnings follow the fixed one-day and two-hour insufficiency forecast;
 notification preferences are managed in the Console.
@@ -2112,6 +2506,67 @@ changes. Show a new quote for confirmation after a conflict; never silently
 purchase a replacement. Set `tierOverride: null` when quoting to restore project
 inheritance. The old `setTierOverride({tierOverride})` request and
 `billing.updateReminderSettings` method are removed.
+
+#### Hybrid Link Numbers
+
+A Hybrid Link Number (Linked Devices and Official API on one Number) needs a
+choice before it leaves Pro. Without `hybridResolution`, the quote fails with
+`PolymorfaConflictError` and `code === "hybrid_choice_required"`. This
+includes `tierOverride: null` when the project default lacks Hybrid Link.
+
+```ts
+// Keep one connection; the other is disconnected when Pro ends.
+await platform.sessions.quoteTierChange(sessionId, {
+  tierOverride: "standard",
+  hybridResolution: { action: "keep", transport: "linked_devices" },
+});
+
+// Split into two Standard Numbers. This Number keeps the Official API; Linked
+// Devices moves to a new Number named "support-linked" without re-pairing.
+await platform.sessions.quoteTierChange(sessionId, {
+  tierOverride: "standard",
+  hybridResolution: {
+    action: "split",
+    existingNumberTransport: "official_api",
+    newNumberName: "support-linked",
+  },
+});
+```
+
+The choice runs when the paid Pro window ends. To merge two Numbers that are
+the same WhatsApp Business number into one Hybrid Link Number, list the pairs
+and quote Pro on the Number that keeps its ID:
+
+```ts
+const pairs = await platform.projects.listHybridMergeCandidates(projectId);
+const pair = pairs.data.data.find((candidate) => candidate.eligible);
+if (pair) {
+  // A Number with hosted message storage cannot be absorbed; keep it instead.
+  const [first, second] = pair.numbers;
+  const [keep, absorb] = second.canBeAbsorbed
+    ? [first, second]
+    : [second, first];
+  await platform.sessions.quoteTierChange(keep.id, {
+    tierOverride: "pro",
+    hybridMerge: { absorbNumberId: absorb.id },
+  });
+}
+```
+
+Send either `hybridResolution` or `hybridMerge`, never both; the SDK rejects
+both before sending. `quote.hybridTransition` echoes the plan (`keep`, `split`
+or `merge`), the surviving Number and the effective time. After confirmation,
+`retrieveTierChange` reports `hybridTransition.status` (`scheduled`, `running`,
+`completed`, `failed` or `cancelled`) separately from the tier change status,
+plus `failureReason`, `newNumberId` for a completed split, and
+`metaDisconnectRequired`. A queued change that the API rejects at apply time
+because no choice is recorded reports `status: "rejected"` with
+`failureReason: "hybrid_choice_required"`; quote again with a choice. When that flag is true, disconnect the Official API in
+the WhatsApp Business app under Settings > Account > Business Platform. An
+ineligible pair or Number fails with `hybrid_transition_ineligible`; the reason
+appears only in the error message. A candidate's `ineligibleReason` explains why
+a pair cannot merge now. Listing candidates and merging require Hybrid Link
+access; without it the API returns `403 feature_unavailable`.
 
 ## Organization access and security
 
@@ -2279,6 +2734,31 @@ provided. The pinned handlers do not persist that header. A repeated stop can
 enqueue another stop command; a repeated delete reports only rows still found.
 QuickLink settings updates are state upserts and can safely converge on the
 same supplied values.
+
+## Number capabilities (beta)
+
+`sessions.getCapabilities` reads which WhatsApp features WhatsApp has enabled
+for one number, and the limits it applies, as of the number's last
+configuration sync. It needs `sessions:read` and team enrollment in the number
+capabilities beta; until then it throws `PolymorfaAuthorizationError` (403).
+
+```ts
+const { data } = await platform.sessions.getCapabilities("support");
+if (data.data.status === "synced") {
+  for (const capability of data.data.capabilities) {
+    if (capability.kind === "feature")
+      console.log(capability.key, capability.value);
+    else console.log(capability.key, capability.value, capability.unit);
+  }
+}
+```
+
+`status` is `unknown`, and every `value` is `null`, before the number's first
+sync, after a logout, while it waits to be paired, and after another WhatsApp
+account is linked, until that account's first sync. `source` says whether
+WhatsApp sent the setting (`server`), left its default (`client_default`) or
+the capability does not apply to the account type (`account_type`). Ignore
+keys you do not recognize; new keys can be added.
 
 ## Session creation and configuration
 
@@ -2481,3 +2961,127 @@ Only a new STOP opt-out can produce one acknowledgement. Suppression survives
 failed or unknown acknowledgement outcomes. Completed means provider acceptance,
 not confirmed delivery; unknown submissions are reconciled without resending.
 Installing the SDK does not enable this feature or establish hosted availability.
+
+## WhatsApp business analytics
+
+Source builds expose `client.analytics.get({ projectId, sessionId, start, end })`.
+Requires `sessions:read`; project-bound clients cannot read another project.
+A team owner or admin enables Analytics in the Console. Disabled results contain
+no business aggregates.
+
+```ts
+const { data } = await client.analytics.get({ sessionId: numberId });
+console.log(data.summary?.engagement.replyRate);
+console.log(data.summary?.calls.answerRate);
+console.log(data.summary?.calls.followUp);
+console.log(data.callSeries);
+```
+
+Messaging results include completed 24-hour receipt/reply cohorts, response
+queues, coarse metadata comparisons and observed phone/customer activity.
+Calls include outcomes, direction breakdowns, measured pickup and length timings,
+reported quality, failure categories and completed missed-call follow-up windows.
+Call results do not require messaging telemetry. Preserve `null` measurements;
+missing reports do not imply healthy quality. Disabling Analytics clears message
+and engagement aggregates and hides the call view; operational call history is
+retained separately. [Measurement definitions](https://docs.polymorfa.com/console/analytics).
+These source-build methods have not been published in a package release.
+
+## Analytics metrics export
+
+Source builds expose `client.analytics.metrics` on root and project clients:
+
+```ts
+const { data, metadata } = await client.analytics.metrics({
+  windowHours: 24,
+  format: "openmetrics",
+  segments: true,
+});
+```
+
+`data` is the metrics text; `metadata` retains HTTP status, request ID and headers.
+The method validates UUID filters and the 1–168-hour window. It uses `sessions:read`
+and the same Analytics opt-in. All metrics are gauges over completed UTC hours;
+never apply `rate()` or `increase()`. Disabled exports contain enablement and window
+metadata only. [Collector setup and definitions](https://docs.polymorfa.com/console/analytics-collectors).
+
+## Spending limits and funding order
+
+```ts
+const limits = await platform.billing.getLimits({ projectId });
+const number = limits.data.data.budgets.find((b) => b.scope === "number")!;
+await platform.billing.setLimit("number", number.resourceId, {
+  limitCredits: 1000,
+  expectedRevision: number.revision,
+});
+const priorities = await platform.billing.getPriorities();
+await platform.billing.reorderPriorities({
+  scope: "project",
+  resourceIds: priorities.data.data.projects.map((p) => p.id).reverse(),
+  expectedRevision: priorities.data.data.revision,
+});
+```
+
+`setPriority(scope, resourceId, {priority, expectedRevision})` changes one rank.
+For number order use `scope: "number"`, `projectId` and all its real number UUIDs.
+Orders are complete and highest first; saves are atomic and stale revisions
+return a conflict. Limits reset monthly at 00:00 UTC on the first day. Null
+removes a cap; zero blocks new charges. Paid windows remain intact. These
+methods do not grant permissions, paid access or deployed availability.
+Publication of this source revision is separate from API deployment.
+
+For one customer or number, read and save both controls without loading the
+organization directory:
+
+```typescript
+const {
+  data: { data: current },
+} = await platform.billing.getResourceControls("customer", customerId);
+await platform.billing.setResourceControls("customer", customerId, {
+  limitCredits: 1500,
+  priority: 25,
+  expectedBudgetRevision: current.budget.revision,
+  expectedPriorityRevision: current.priorityRevision,
+});
+```
+
+Both revisions are required; a conflict leaves both settings unchanged. Project
+priority takes precedence. Numbers inherit customer priority; a higher number
+priority overrides it within the project. A customer's assigned numbers share
+its monthly cap. `getLimits({scope:"project"})` and
+`getPriorities({scope:"project"})` avoid downloading number/customer directories.
+Real initial QuickLink creation accepts `billingControls:{limitCredits:250,
+priority:30}` before pairing admission, with team `billing:manage` authority.
+Testing and supplementary connections reject these fields. Package publication
+and API deployment remain separate gates.
+
+Read one project's funding controls and save its combined customer and number
+order:
+
+```typescript
+const {
+  data: { data: controls },
+} = await platform.billing.getPriorities({ projectId });
+const resources = [
+  ...controls.customers.map((customer) => ({
+    scope: "customer" as const,
+    resourceId: customer.id,
+    priority: customer.priority,
+  })),
+  ...controls.numbers.map((number) => ({
+    scope: "number" as const,
+    resourceId: number.id,
+    priority: number.priority,
+  })),
+].sort((first, second) => second.priority - first.priority);
+await platform.billing.reorderPriorities({
+  scope: "resource",
+  projectId,
+  resources: resources.map(({ scope, resourceId }) => ({ scope, resourceId })),
+  expectedRevision: controls.revision,
+});
+```
+
+Pass every active customer and real number, highest priority first. Duplicate,
+incomplete, or stale orders fail without partial changes. This operation never
+bypasses a spending cap.

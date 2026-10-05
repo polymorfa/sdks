@@ -173,12 +173,12 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "6b9fe148e613b5282c79c082ddbb174230157a28",
-      total: 512,
-      covered: 382,
+      sourceCommit: "e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb",
+      total: 608,
+      covered: 454,
       partial: 0,
-      missing: 0,
-      excluded: 130,
+      missing: 14,
+      excluded: 140,
       changed: 0,
     });
     const resolutions = (result.report?.resolutions ?? []) as Array<{
@@ -235,6 +235,7 @@ describe("coverage checker", () => {
     );
     expect(mappings).toEqual({
       exportCallRecords: { status: "covered", method: "Client.calls.export" },
+      getCallRecord: { status: "covered", method: "Client.calls.retrieve" },
       getCallStats: { status: "covered", method: "Client.calls.stats" },
       listCallRecords: { status: "covered", method: "Client.calls.list" },
     });
@@ -251,9 +252,11 @@ describe("coverage checker", () => {
       "listCampaigns",
       "createCampaign",
       "getCampaign",
+      "updateProjectCampaign",
       "getCampaignAnalytics",
       "launchCampaign",
       "pauseCampaign",
+      "rescheduleCampaign",
       "resumeCampaign",
       "stopCampaign",
       "requeueCampaign",
@@ -270,11 +273,13 @@ describe("coverage checker", () => {
       addProjectCampaignRecipients: "MessagingClient.campaigns.addRecipients",
       createCampaign: "MessagingClient.campaigns.create",
       getCampaign: "MessagingClient.campaigns.retrieve",
+      updateProjectCampaign: "MessagingClient.campaigns.update",
       getCampaignAnalytics: "MessagingClient.campaigns.analytics",
       launchCampaign: "MessagingClient.campaigns.launch",
       listCampaigns: "MessagingClient.campaigns.list",
       listProjectCampaignRecipients: "MessagingClient.campaigns.listRecipients",
       pauseCampaign: "MessagingClient.campaigns.pause",
+      rescheduleCampaign: "MessagingClient.campaigns.reschedule",
       requeueCampaign: "MessagingClient.campaigns.requeue",
       resumeCampaign: "MessagingClient.campaigns.resume",
       stopCampaign: "MessagingClient.campaigns.stop",

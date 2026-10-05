@@ -10,6 +10,7 @@ type LedgerEntry = {
   method: string;
   path: string;
   operationId: string;
+  sourceCommit?: string;
   typescript: { status: string; method?: string; reason?: string };
 };
 
@@ -186,7 +187,7 @@ const calls = [
 ] as const;
 
 describe("reconciled coverage evidence", () => {
-  it("pins byte-identical source snapshots and the ledger to one revision", () => {
+  it("pins reviewed snapshot hashes and the ledger baseline revision", () => {
     const source = JSON.parse(
       readFileSync(repositoryFile("contracts/source.json"), "utf8"),
     ) as {
@@ -196,7 +197,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("6b9fe148e613b5282c79c082ddbb174230157a28");
+    expect(source.commit).toBe("e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -207,6 +208,38 @@ describe("reconciled coverage evidence", () => {
         .update(readFileSync(repositoryFile(contract.snapshotPath)))
         .digest("hex");
       expect(hash, contract.snapshotPath).toBe(contract.sha256);
+    }
+  });
+
+  it("pins Analytics to the same full Platform source and snapshot hash", () => {
+    const source = JSON.parse(
+      readFileSync(repositoryFile("contracts/source.json"), "utf8"),
+    ) as {
+      commit: string;
+      contracts: { platform: { sha256: string } };
+      supplements?: unknown;
+    };
+    expect(source.supplements).toBeUndefined();
+    expect(source.contracts.platform.sha256).toBe(
+      "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b",
+    );
+    for (const id of [
+      "getWhatsAppAnalytics",
+      "getProjectWhatsAppAnalytics",
+      "exportWhatsAppAnalyticsMetrics",
+      "exportProjectWhatsAppAnalyticsMetrics",
+    ]) {
+      const operation = entry(id) as LedgerEntry & {
+        sourceContractSha256: string;
+        sdkContractSha256: string;
+      };
+      expect(operation.sourceCommit).toBe(source.commit);
+      expect(operation.sourceContractSha256).toBe(
+        source.contracts.platform.sha256,
+      );
+      expect(operation.sdkContractSha256).toBe(
+        source.contracts.platform.sha256,
+      );
     }
   });
 
@@ -349,6 +382,26 @@ describe("reconciled coverage evidence", () => {
     ).toBe(false);
   });
 
+  it("excludes the bounded number selector based on its dashboard identity contract", () => {
+    const operation = entry("listConsoleNumberOptions");
+    expect(operation).toMatchObject({
+      family: "platform",
+      method: "GET",
+      path: "/console/insights/number-options",
+      typescript: { status: "excluded" },
+    });
+    expect(operation.typescript.reason).toContain("dashboard identity");
+    expect(operation.typescript.method).toBeUndefined();
+    const platform = JSON.parse(
+      readFileSync(repositoryFile("contracts/openapi.platform.json"), "utf8"),
+    ) as {
+      paths: Record<string, Record<string, { security: unknown }>>;
+    };
+    expect(platform.paths[operation.path]!.get!.security).toEqual([
+      { ConsoleSession: [] },
+    ]);
+  });
+
   it("excludes the added Console routes based on their credential contract", () => {
     const platform = JSON.parse(
       readFileSync(repositoryFile("contracts/openapi.platform.json"), "utf8"),
@@ -369,6 +422,34 @@ describe("reconciled coverage evidence", () => {
       expect(
         platform.paths[operation.path]![operation.method.toLowerCase()]!
           .security,
+      ).toEqual([{ ConsoleSession: [] }]);
+    }
+  });
+
+  it("keeps inherited Logs operations excluded according to dashboard identity", () => {
+    const platform = JSON.parse(
+      readFileSync(repositoryFile("contracts/openapi.platform.json"), "utf8"),
+    ) as {
+      paths: Record<string, Record<string, { security: unknown }>>;
+    };
+    for (const operationId of [
+      "getConsoleAuditLogs",
+      "getLogCalendar",
+      "getProjectLogging",
+      "saveProjectDrain",
+      "saveProjectSampling",
+      "logsInsight",
+    ]) {
+      const operation = entry(operationId);
+      expect(operation.typescript.status, operationId).toBe("excluded");
+      expect(operation.typescript.reason, operationId).toContain(
+        "dashboard identity",
+      );
+      expect(operation.typescript.method, operationId).toBeUndefined();
+      expect(
+        platform.paths[operation.path]![operation.method.toLowerCase()]!
+          .security,
+        operationId,
       ).toEqual([{ ConsoleSession: [] }]);
     }
   });

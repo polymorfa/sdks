@@ -11,6 +11,9 @@ import {
   type ProjectWebhookDeliveryAttempt,
   type OrganizationWebhookDeliveryAttempt,
   type SessionLoggedOutPayload,
+  type RuntimeTemplateStatusPayload,
+  type CloudTemplateStatusPayload,
+  type CloudAccountStatusPayload,
   type WebhookPayloadMap,
 } from "../src/index.js";
 
@@ -121,6 +124,23 @@ interface Shape<T> {
   readonly required: readonly RequiredKeys<T>[];
 }
 
+const ORDER_PAYMENT_SAMPLE = {
+  kind: "payment_status",
+  reportedBy: "whatsapp",
+  providerEventId: "notification-1",
+  referenceId: "order-1522",
+  conversation: { phoneNumber: "+5511987654321" },
+  status: "captured",
+  amount: { value: 5500, offset: 100 },
+  currency: "BRL",
+  transaction: { id: "pg-order", status: "success", method: "pix" },
+  messageId: "wamid.PAY",
+  paymentMethod: "offsite_card_pay",
+  lastFourDigits: "5235",
+  credentialId: "1234567",
+  paymentTimestamp: 1726170122,
+} as const;
+
 function shape<T>() {
   return <const R extends readonly RequiredKeys<T>[]>(
     value: { readonly [K in keyof T]-?: Exclude<T[K], undefined> },
@@ -175,7 +195,11 @@ const campaign = { campaignId: "cmp_1" } as const;
 
 type P = WebhookPayloadMap;
 const PAYLOADS: {
-  readonly [K in Exclude<KnownWebhookEventType, LegacyEventType>]: Shape<P[K]>;
+  readonly [
+    K in Exclude<KnownWebhookEventType, LegacyEventType>
+  ]: K extends "template.status"
+    ? Shape<RuntimeTemplateStatusPayload>
+    : Shape<P[K]>;
 } = {
   "contact.opted_in": shape<P["contact.opted_in"]>()(
     {
@@ -305,6 +329,11 @@ const PAYLOADS: {
       "episodeId",
       "actionId",
     ],
+  ),
+  // Every property of both variants, checked against the contract schema.
+  "order.payment_updated": shape<P["order.payment_updated"]>()(
+    ORDER_PAYMENT_SAMPLE,
+    ["kind", "reportedBy", "providerEventId", "referenceId", "conversation"],
   ),
   "call.permission_changed": shape<P["call.permission_changed"]>()(
     {
@@ -527,7 +556,7 @@ const PAYLOADS: {
       "failureReason",
     ],
   ),
-  "template.status": shape<P["template.status"]>()(
+  "template.status": shape<RuntimeTemplateStatusPayload>()(
     {
       templateName: "order_update",
       templateId: "tpl_1",
@@ -558,6 +587,15 @@ const PAYLOADS: {
   "campaign.paused": shape<P["campaign.paused"]>()(
     { ...campaign, sentCount: 10, remainingCount: 5, pausedAt: 1 },
     ["campaignId", "sentCount", "remainingCount", "pausedAt"],
+  ),
+  "campaign.rescheduled": shape<P["campaign.rescheduled"]>()(
+    {
+      ...campaign,
+      previousScheduledAt: null,
+      scheduledAt: 1_790_000_003_000,
+      rescheduledAt: 1_790_000_003_000,
+    },
+    ["campaignId", "previousScheduledAt", "scheduledAt", "rescheduledAt"],
   ),
   "campaign.resumed": shape<P["campaign.resumed"]>()(
     {
@@ -614,6 +652,7 @@ const PAYLOADS: {
       externalMessageId: "msg_1",
       variantKey: "a",
       attempt: 1,
+      messageIndex: 0,
     },
     [
       "campaignId",
@@ -625,6 +664,62 @@ const PAYLOADS: {
       "attempt",
     ],
   ),
+  "campaign.recipient_delivered": shape<P["campaign.recipient_delivered"]>()(
+    {
+      ...campaign,
+      recipientId: "rcp_1",
+      phone: "+15551234567",
+      sessionKey: "support",
+      externalMessageId: "msg_1",
+      deliveredAt: 6,
+    },
+    [
+      "campaignId",
+      "recipientId",
+      "phone",
+      "sessionKey",
+      "externalMessageId",
+      "deliveredAt",
+    ],
+  ),
+  "campaign.recipient_read": shape<P["campaign.recipient_read"]>()(
+    {
+      ...campaign,
+      recipientId: "rcp_1",
+      phone: "+15551234567",
+      sessionKey: "support",
+      externalMessageId: "msg_1",
+      readAt: 7,
+    },
+    [
+      "campaignId",
+      "recipientId",
+      "phone",
+      "sessionKey",
+      "externalMessageId",
+      "readAt",
+    ],
+  ),
+  "campaign.recipient_replied": shape<P["campaign.recipient_replied"]>()(
+    {
+      ...campaign,
+      recipientId: "rcp_1",
+      phone: "+15551234567",
+      sessionKey: "support",
+      externalMessageId: null,
+      repliedAt: 8,
+      responseMs: 1_000,
+    },
+    [
+      "campaignId",
+      "recipientId",
+      "phone",
+      "sessionKey",
+      "externalMessageId",
+      "repliedAt",
+      "responseMs",
+    ],
+  ),
   "campaign.recipient_failed": shape<P["campaign.recipient_failed"]>()(
     {
       ...campaign,
@@ -633,9 +728,18 @@ const PAYLOADS: {
       attempts: 3,
       error: "send_failed",
       failedAt: 4,
+      messageIndex: 1,
     },
     ["campaignId", "recipientId", "phone", "attempts", "error", "failedAt"],
   ),
+  "campaign.recipient_link_opened": shape<
+    P["campaign.recipient_link_opened"]
+  >()({ ...campaign, recipientId: "rcp_1", linkKey: "offer", openedAt: 6 }, [
+    "campaignId",
+    "recipientId",
+    "linkKey",
+    "openedAt",
+  ]),
   "campaign.recipient_skipped": shape<P["campaign.recipient_skipped"]>()(
     {
       ...campaign,
@@ -698,6 +802,7 @@ type LegacyEventType = Exclude<
   | `bansafe.${string}`
   | `campaign.${string}`
   | "call.permission_changed"
+  | "order.payment_updated"
   | `voice.${string}`
   | "usage.recorded"
   | "message.failed"
@@ -705,6 +810,11 @@ type LegacyEventType = Exclude<
   | "template.status"
   | "session.logged_out"
 >;
+
+/** Union payloads whose PAYLOADS fixture covers one named alternative. */
+const UNION_FIXTURE_SCHEMAS: Readonly<Record<string, string>> = {
+  "template.status": "RuntimeTemplateStatusPayload",
+};
 
 function specEvents(): Map<string, string> {
   const events = new Map<string, string>();
@@ -732,9 +842,54 @@ describe("webhook catalog contract", () => {
     (type, fixture) => {
       const schemaName = specEvents().get(type);
       expect(schemaName, type).toBeDefined();
-      expectShape(messaging, schemaName!, fixture);
+      const variant = UNION_FIXTURE_SCHEMAS[type];
+      if (variant !== undefined) {
+        const union = resolveRef(messaging, { $ref: `#/${schemaName!}` });
+        expect(
+          (union.anyOf ?? union.oneOf ?? []).map((part) => part.$ref),
+          type,
+        ).toContain(`#/components/schemas/${variant}`);
+      }
+      expectShape(messaging, variant ?? schemaName!, fixture);
     },
   );
+
+  it("types the Meta template notification variant of template.status", () => {
+    expectShape(
+      messaging,
+      "CloudTemplateStatusPayload",
+      shape<CloudTemplateStatusPayload>()(
+        {
+          kind: "message_template_quality_update",
+          event: "YELLOW",
+          templateId: "1234567890",
+          templateName: "order_update",
+          language: "en_US",
+          reason: "NONE",
+          previousQualityScore: "GREEN",
+          newQualityScore: "YELLOW",
+          wabaId: "102290129340398",
+        },
+        ["kind"],
+      ),
+    );
+  });
+
+  it("types the Meta account notification variant of session.status", () => {
+    expectShape(
+      messaging,
+      "CloudAccountStatusPayload",
+      shape<CloudAccountStatusPayload>()(
+        {
+          source: "meta",
+          kind: "phone_number_name_update",
+          wabaId: "102290129340398",
+          value: { decision: "APPROVED" },
+        },
+        ["source", "kind", "value"],
+      ),
+    );
+  });
 
   it.each(Object.entries(PAYLOADS))(
     "%s parses from a signed delivery",
@@ -782,6 +937,43 @@ describe("webhook catalog contract", () => {
     expectTypeOf<P["bansafe.action"]["previousRung"]>().toEqualTypeOf<
       "none" | "notify" | "throttle" | "block_cold" | "suspend" | null
     >();
+  });
+
+  it("accepts raised-hand participant state in the pinned contract and signed delivery", async () => {
+    const participant = {
+      id: "participant-1",
+      audioMuted: false,
+      video: false,
+      state: "connected",
+      handRaised: true,
+    } as const;
+    const schema = messaging.components.schemas.CallParticipant!;
+    expect(violations(messaging, schema, participant)).toEqual([]);
+    expect(
+      violations(messaging, schema, { ...participant, handRaised: "yes" }),
+    ).toContain("$.handRaised is not a boolean");
+    const withoutHandRaised = {
+      id: participant.id,
+      audioMuted: participant.audioMuted,
+      video: participant.video,
+      state: participant.state,
+    };
+    expect(violations(messaging, schema, withoutHandRaised)).toEqual([]);
+
+    const body = Buffer.from(
+      JSON.stringify({
+        id: "evt_hand_raised",
+        session: "support",
+        timestamp: AT,
+        event: "call.participant_state",
+        payload: { callId: "call-1", participant },
+      }),
+    );
+    const event = await constructWebhookEvent(body, sign(body), secret);
+    if (!isEvent(event, "call.participant_state"))
+      throw new Error("Expected participant state event");
+    expectTypeOf(event.payload).toEqualTypeOf<P["call.participant_state"]>();
+    expect(event.payload.participant.handRaised).toBe(true);
   });
 
   it("types logged-out reasons and the required integer code from the pinned contract", async () => {

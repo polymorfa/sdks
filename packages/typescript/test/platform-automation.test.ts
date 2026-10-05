@@ -2,7 +2,10 @@ import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { Client } from "../src/client.js";
-import type { CreateAudienceRequest } from "../src/index.js";
+import type {
+  CreateAudienceFromCampaignRequest,
+  CreateAudienceRequest,
+} from "../src/index.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -167,6 +170,31 @@ describe("Client audiences", () => {
     );
   });
 
+  it("creates a campaign-outcome audience with exact organization route and body", async () => {
+    const { client, requests } = await platformServer();
+    const response = await client.audiences.createFromCampaign({
+      name: "Read follow-up",
+      campaignId: "campaign/1",
+      projectId: "project/1",
+      outcome: "read",
+    });
+
+    expect(response.metadata.requestId).toBe("req_platform_automation");
+    expect(requests[0]).toMatchObject({
+      method: "POST",
+      path: "/platform/audiences/from-campaign",
+      body: '{"name":"Read follow-up","campaignId":"campaign/1","projectId":"project/1","outcome":"read"}',
+    });
+    expect(requests[0]?.headers["idempotency-key"]).toBeUndefined();
+    const invalid: CreateAudienceFromCampaignRequest = {
+      name: "x",
+      campaignId: "x",
+      // @ts-expect-error the API accepts only its seven named outcomes
+      outcome: "clicked",
+    };
+    expect(invalid.outcome).toBe("clicked");
+  });
+
   it("types audience creation as members or a mapped file, never both", async () => {
     const { client, requests } = await platformServer();
     await client.audiences.create({ name: "Empty" });
@@ -215,6 +243,45 @@ describe("Client audiences", () => {
 });
 
 describe("Client campaigns", () => {
+  it("reschedules with the owning project in the body and an idempotency key", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.reschedule(
+      "campaign/a",
+      { projectId: "project/a", scheduledAt: 1_790_000_003_000 },
+      { idempotencyKey: "move-campaign-a" },
+    );
+    expect(requests[0]).toMatchObject({
+      method: "POST",
+      path: "/platform/campaigns/campaign%2Fa/reschedule",
+      body: '{"projectId":"project/a","scheduledAt":1790000003000}',
+    });
+    expect(requests[0]?.headers["idempotency-key"]).toBe("move-campaign-a");
+  });
+  it("does not replay a Platform reschedule on a known conflict", async () => {
+    const server = await startTestServer(() => ({
+      status: 409,
+      body: JSON.stringify({
+        error: {
+          code: "campaign_state_conflict",
+          message: "Campaign already started.",
+        },
+      }),
+    }));
+    servers.push(server);
+    const client = new Client({
+      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      baseUrl: server.url,
+      maxNetworkRetries: 2,
+    });
+
+    await expect(
+      client.campaigns.reschedule("campaign/a", {
+        projectId: "project/a",
+        scheduledAt: null,
+      }),
+    ).rejects.toMatchObject({ status: 409 });
+    expect(server.requests).toHaveLength(1);
+  });
   it("maps collection, encoded item, and project query operations", async () => {
     const { client, requests } = await platformServer();
     await client.campaigns.list({
@@ -338,6 +405,7 @@ describe("Client campaigns", () => {
     await client.campaigns.recipients("campaign/a", {
       projectId: "project/a",
       status: "skipped",
+      reason: "opted_out",
       cursor: "cur/1",
       limit: 100,
     });
@@ -348,7 +416,7 @@ describe("Client campaigns", () => {
     );
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /platform/campaigns/campaign%2Fa/recipients?projectId=project%2Fa&status=skipped&cursor=cur%2F1&limit=100",
+      "GET /platform/campaigns/campaign%2Fa/recipients?projectId=project%2Fa&status=skipped&reason=opted_out&cursor=cur%2F1&limit=100",
       "POST /platform/campaigns/campaign%2Fa/recipients",
     ]);
     expect(requests[1]?.body).toBe(
@@ -384,6 +452,47 @@ it("requires project scope on organization campaigns and omits campaigns from pr
     client.campaigns.recipients("campaign/a", { status: "queued" });
     // @ts-expect-error recipient append requires its owning project
     client.campaigns.addRecipients("campaign/a", { recipients: [] });
+    // @ts-expect-error conversion reports require project parameters
+    client.campaigns.conversions("campaign/a");
+    client.campaigns.recordConversion("campaign/a", {
+      // @ts-expect-error amounts are integer minor units with a currency, never a bare number
+      value: 19.99,
+      projectId: "project/a",
+      recipientId: "recipient/a",
+      eventId: "order-1",
+      eventType: "purchase",
+      occurredAt: "2026-10-01T10:00:00Z",
+    });
   };
   expect(invalidCalls).toBeTypeOf("function");
+});
+
+describe("Client campaign conversions (beta)", () => {
+  it("records a conversion and reads the per-campaign report", async () => {
+    const { client, requests } = await platformServer();
+    await client.campaigns.recordConversion("campaign/a", {
+      projectId: "project/a",
+      recipientId: "recipient-1",
+      eventId: "order-1001",
+      eventType: "purchase",
+      occurredAt: "2026-10-01T10:00:00+02:00",
+      value: { amountMinor: 1999, currency: "USD" },
+    });
+    await client.campaigns.conversions("campaign/a", {
+      projectId: "project/a",
+    });
+
+    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
+      "POST /platform/campaigns/campaign%2Fa/conversions",
+      "GET /platform/campaigns/campaign%2Fa/conversions?projectId=project%2Fa",
+    ]);
+    expect(JSON.parse(requests[0]?.body ?? "{}")).toEqual({
+      projectId: "project/a",
+      recipientId: "recipient-1",
+      eventId: "order-1001",
+      eventType: "purchase",
+      occurredAt: "2026-10-01T10:00:00+02:00",
+      value: { amountMinor: 1999, currency: "USD" },
+    });
+  });
 });

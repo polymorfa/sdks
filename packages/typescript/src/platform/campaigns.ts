@@ -1,4 +1,6 @@
 import { HttpTransport } from "../transport/http.js";
+import { campaignRecipientExportPage } from "../transport/campaign-recipient-export.js";
+import type { CampaignRecipientsCsvPage } from "../messaging/types.js";
 import {
   withIdempotencyKey,
   withoutAutomaticRetry,
@@ -7,17 +9,30 @@ import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   AddPlatformCampaignRecipientsRequest,
   AddPlatformCampaignRecipientsResult,
+  CampaignConversion,
+  CampaignConversionReport,
+  CreatePlatformCampaignReplyFlowRequest,
   CreatePlatformCampaignRequest,
+  ExportPlatformCampaignRecipientsParams,
   DataEnvelope,
   ListCampaignsParams,
   ListPlatformCampaignRecipientsParams,
   PlatformCampaignParams,
+  PlatformCampaignReplyFlowParams,
   PlatformCampaignRecipientsEnvelope,
   PlatformPayload,
+  RecordCampaignConversionRequest,
+  ReschedulePlatformCampaignRequest,
+  SetPlatformCampaignReplyFlowRequest,
   UpdatePlatformCampaignRequest,
 } from "./types.js";
+import type {
+  CampaignReplyFlow,
+  CampaignReplyFlowAttachment,
+} from "../messaging/types.js";
 
 type CampaignResponse = Promise<ApiResponse<DataEnvelope<PlatformPayload>>>;
+type CampaignResult<T> = Promise<ApiResponse<DataEnvelope<T>>>;
 type CampaignAction =
   "launch" | "pause" | "resume" | "stop" | "archive" | "duplicate" | "requeue";
 type CampaignRead = "analytics" | "events";
@@ -108,6 +123,20 @@ export class CampaignsResource {
     return this.action(campaignId, "launch", body, options);
   }
 
+  /** Move a launched campaign that has not started sending, or start it now. */
+  reschedule(
+    campaignId: string,
+    body: ReschedulePlatformCampaignRequest,
+    options: RequestOptions = {},
+  ): CampaignResponse {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(campaignId)}/reschedule`,
+      body,
+      ...withoutAutomaticRetry(withIdempotencyKey(options)),
+    });
+  }
+
   pause(
     campaignId: string,
     body?: PlatformPayload,
@@ -189,6 +218,7 @@ export class CampaignsResource {
       query: {
         projectId: params.projectId,
         ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.reason === undefined ? {} : { reason: params.reason }),
         ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
         ...(params.limit === undefined ? {} : { limit: params.limit }),
       },
@@ -196,14 +226,33 @@ export class CampaignsResource {
     });
   }
 
+  /** One CSV page; use `nextCursor` with the same filters for the next page. */
+  exportRecipients(
+    campaignId: string,
+    params: ExportPlatformCampaignRecipientsParams,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CampaignRecipientsCsvPage>> {
+    return campaignRecipientExportPage(
+      this.transport,
+      `${recipientsPath(campaignId)}/export`,
+      {
+        projectId: params.projectId,
+        ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.reason === undefined ? {} : { reason: params.reason }),
+        ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
+        ...(params.limit === undefined ? {} : { limit: params.limit }),
+      },
+      options,
+    );
+  }
+
   /**
    * Add up to 1,000 recipients to a campaign that has not started sending.
    *
-   * The API declares no idempotent replay for this append, so by default the
-   * SDK sends it once and does not retry it. Setting both `maxNetworkRetries`
-   * and `idempotencyKey` on the request re-enables retries, and a retry can be
-   * processed as a new append. After a lost response, list the recipients before
-   * appending again.
+   * Safe to retry: the SDK sends an `Idempotency-Key` (a generated one unless
+   * you pass `idempotencyKey`) and reuses it on every automatic retry. Within
+   * 24 hours a retry of a successful append returns its original counts with
+   * `Idempotent-Replayed: true` instead of adding the recipients again.
    */
   addRecipients(
     campaignId: string,
@@ -214,7 +263,100 @@ export class CampaignsResource {
       method: "POST",
       path: recipientsPath(campaignId),
       body,
+      ...withIdempotencyKey(options),
+    });
+  }
+
+  /**
+   * Beta: report a conversion your system observed for one campaign recipient.
+   *
+   * Credited to the campaign when `occurredAt` is within 7 days after the
+   * recipient was sent; the decision is made once and never recalculated.
+   * `eventId` deduplicates per project, so a retry with the same body returns
+   * the original conversion with `replayed: true`, and a different body is
+   * refused with `409 idempotency_conflict`. Retries are therefore safe.
+   */
+  recordConversion(
+    campaignId: string,
+    body: RecordCampaignConversionRequest,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignConversion> {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(campaignId)}/conversions`,
+      body,
+      ...options,
+    });
+  }
+
+  /**
+   * Beta: counts of a campaign's reported conversions by attribution outcome,
+   * and reported value per currency. Amounts are never converted or combined.
+   */
+  conversions(
+    campaignId: string,
+    params: PlatformCampaignParams,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignConversionReport> {
+    return this.transport.request({
+      method: "GET",
+      path: `${campaignPath(campaignId)}/conversions`,
+      query: campaignQuery(params),
+      ...options,
+    });
+  }
+
+  /**
+   * Beta: create an immutable reply flow revision, the steps a campaign runs
+   * after a recipient replies.
+   *
+   * Each flow key and revision can be created once; a repeat returns
+   * `409`. The SDK sends this request once and does not retry it. After a
+   * lost response, read the revision with `retrieveReplyFlow` or create the
+   * next revision.
+   */
+  createReplyFlow(
+    body: CreatePlatformCampaignReplyFlowRequest,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignReplyFlow> {
+    return this.transport.request({
+      method: "POST",
+      path: "/platform/campaign-reply-flows",
+      body,
       ...withoutAutomaticRetry(options),
+    });
+  }
+
+  /** Beta: read one reply flow revision. */
+  retrieveReplyFlow(
+    replyFlowId: string,
+    params: PlatformCampaignReplyFlowParams = {},
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignReplyFlow> {
+    return this.transport.request({
+      method: "GET",
+      path: `/platform/campaign-reply-flows/${encodeURIComponent(replyFlowId)}`,
+      ...(params.projectId === undefined
+        ? {}
+        : { query: { projectId: params.projectId } }),
+      ...options,
+    });
+  }
+
+  /**
+   * Beta: attach a reply flow revision to a draft or scheduled campaign, or
+   * detach it with `replyFlowId: null`. Returns `409` after launch.
+   */
+  setReplyFlow(
+    campaignId: string,
+    body: SetPlatformCampaignReplyFlowRequest,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignReplyFlowAttachment> {
+    return this.transport.request({
+      method: "PUT",
+      path: `${campaignPath(campaignId)}/reply-flow`,
+      body,
+      ...options,
     });
   }
 

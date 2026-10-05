@@ -2,11 +2,153 @@
 
 ## Unreleased
 
+- Campaign content types: `variableMapping` (`CampaignVariableMapping`) on
+  Messaging and Platform create and update, `templateId` on Messaging update,
+  typed `messagesArray` (`CampaignMessage`, up to 10), and `trackedLinks`
+  (`CampaignTrackedLink`, beta). `LaunchCampaignRequest.skipMissingVariables`
+  skips recipients without a value instead of refusing the launch.
+  `CampaignRecipient` adds `messagesSent`, `nextMessageAt` and
+  `sequenceError`; `failureReason` adds `missing_variable`. Error codes add
+  `campaign_approval_required`, `campaign_approval_stale` and
+  `campaign_variables_missing`. Webhooks add
+  `campaign.recipient_link_opened` and an optional `messageIndex` on
+  `campaign.recipient_sent` and `campaign.recipient_failed`. Contracts are
+  pinned to API `dev` `e3d1d2d`.
+
+- `MessagingClient.campaigns.reschedule(projectSlug, campaignId, body)` and
+  `Client.campaigns.reschedule(campaignId, body)` move a launched campaign that
+  has not started sending, or start it now with `scheduledAt: null`. Each call
+  sends an `Idempotency-Key` and makes one attempt unless you set
+  `maxNetworkRetries`.
+- `Client.audiences.createFromCampaign` creates a follow-up audience from one
+  previous campaign outcome. The response includes matched and opted-out counts.
+- Campaign recipient lists expose a typed `failureReason` and can filter by
+  status and reason. Messaging and Platform campaign resources add
+  `exportRecipients`, which returns one CSV page and its continuation cursor.
+- `MessagingClient.campaigns.update(projectSlug, campaignId, body)` updates a
+  campaign through the Messaging API. It accepts draft name, audience, sender,
+  and schedule fields; the API refuses audience and schedule changes after
+  launch.
+- `MessagingClient.campaigns.addRecipients`, `Client.campaigns.addRecipients`,
+  `Client.audiences.addMembers` and `Client.audiences.create` send an
+  `Idempotency-Key` (generated unless you pass `idempotencyKey`) and retry
+  transient failures with it. The API replays the original result of a
+  successful request for 24 hours, so a retry does not add rows again or
+  report them as duplicates. Requires the API release with the append replay
+  contract.
+
+- Campaign reply flows (beta). `MessagingClient.campaigns.createReplyFlow`,
+  `retrieveReplyFlow` and `setReplyFlow`, and the same three methods on
+  `Client.campaigns` for the Platform API. Reply flow types include
+  `CampaignReplyFlowDefinition`, `CampaignReplyFlowSend` (text, buttons, list,
+  or an Official-only Flow form) and `CampaignReplyFlowMatch`. Creating a
+  revision is sent once and never retried, because a repeat returns `409`.
+  Contracts are pinned to API `dev` `ff12a76` (polymorfa/polymorfa#407).
+
+- Webhook payload types for `campaign.recipient_delivered`,
+  `campaign.recipient_read` and `campaign.recipient_replied`
+  (`CampaignRecipientDeliveredPayload`, `CampaignRecipientReadPayload`,
+  `CampaignRecipientRepliedPayload` and the shared
+  `CampaignRecipientEngagementPayload`). Replies carry timing metadata, not
+  message text, and `externalMessageId` is nullable on replies. The events
+  require the team's beta enrollment. Contracts are pinned to API `dev`
+  `8e319f6` (polymorfa/polymorfa#392).
+
+- Dynamic WhatsApp Flow endpoints (beta, Cloud onboarding enrollment, Official
+  API Numbers only). `Client.project(projectId).flows` adds `endpoint`,
+  `setEndpoint` (modes `forward`, `function` and `direct`; a forward endpoint's
+  `signingSecret` is returned once), `deleteEndpoint`, `endpointReceipts`
+  (metadata only), `encryptionKey` and `rotateEncryptionKey` (managed key
+  custody per Number). Writes make one attempt. New
+  `verifyFlowForwardSignature` and `FLOW_FORWARD_SIGNATURE_HEADER` verify
+  forwarded requests at your endpoint. Contracts are pinned to API `dev`
+  `171a968`. API contract: polymorfa/polymorfa#428 and #434.
+
+- Added source-build `Client.analytics.metrics` for scoped Prometheus/OpenMetrics gauges, including denominators, observation times and coverage. Uses Analytics opt-in and `sessions:read`.
+
+- `Client.analytics.get` reads WhatsApp number activity, completed 24-hour read and reply cohorts, response times and connection vitals. Requires `sessions:read` and Analytics enabled by a team owner or admin. Missing coverage returns null rates.
+
+- Hybrid Link tier transitions. `Client.sessions.quoteTierChange` accepts
+  `hybridResolution` (`keep` one connection or `split` into two Numbers) for a
+  Hybrid Link Number leaving Pro, or `hybridMerge` to merge a same-number pair
+  on an upgrade to Pro. `NumberTierChange.quote.hybridTransition` reports the
+  plan and its `status`. `Client.projects.listHybridMergeCandidates` lists
+  mergeable pairs. `PolymorfaErrorCode` adds `hybrid_choice_required` and
+  `hybrid_transition_ineligible`.
+- `Session` gains optional `newChatCapping` (`NewChatCapping`): WhatsApp's
+  per-number new-chat cap, returned by `sessions.retrieve` for linked-device
+  numbers. API contract: polymorfa/polymorfa#403.
+- Brazil payment orders (beta, requires team enrollment, an Official API
+  Number and Meta payments eligibility in Brazil). `messages.send` accepts
+  `orderDetails` (Pix dynamic code, payment link or boleto, itemized or
+  total only) and `orderStatus` content. New types:
+  `OrderDetailsMessageContent`, `OrderStatusMessageContent`,
+  `OrderPaymentSettings`, `OrderDetailsItemization`, `PixDynamicCodePayment`,
+  `PaymentOrderAmount`, `PixKeyType`, `OrderStatus`, `OrderPaymentStatus`,
+  `SendOrderDetailsMessageRequest`, `SendOrderStatusMessageRequest` and
+  `OrderPaymentUpdatedPayload` (discriminated on `kind`) for the
+  `order.payment_updated` event. `MessageKind` adds `order_details` and
+  `order_status`. New error
+  codes: `order_status_transition_invalid` and `order_cancellation_failed`.
+  Polymorfa relays orders and payment reports; it does not process funds.
+  Contracts are pinned to API `dev` `e818ba6`.
+- Official groups (beta, requires team enrollment and an Official Business
+  Account). `MessagingClient.officialGroups` adds `list`, `create`, `retrieve`,
+  `update`, `delete`, `getInviteLink`, `resetInviteLink`, `removeParticipants`,
+  `listJoinRequests`, `approveJoinRequests`, `rejectJoinRequests` and `pin`.
+  Changes make one attempt and pass `idempotencyKey` through. New error codes:
+  `whatsapp_groups_ineligible`, `whatsapp_group_creation_paused`,
+  `whatsapp_group_limit_reached`, `whatsapp_group_full`,
+  `whatsapp_group_suspended` and `whatsapp_group_has_no_participants`.
+  `GroupUpdatePayload` and `GroupParticipantPayload` add optional Official
+  group fields. Contracts are pinned to API `dev` `ee217bf`.
+- Campaign conversion reporting (beta, requires team enrollment).
+  `Client.campaigns.recordConversion(campaignId, body)` reports a conversion
+  for a named campaign recipient, deduplicated by `eventId`.
+  `Client.campaigns.conversions(campaignId, { projectId })` returns counts by
+  attribution outcome and reported value per currency. New types:
+  `RecordCampaignConversionRequest`, `CampaignConversion`,
+  `CampaignConversionValue`, `CampaignConversionOutcome`,
+  `CampaignConversionReport` and `CampaignConversionCurrencyTotal`.
+- Official API consumers: Number-scoped Meta templates (`cloudTemplates`),
+  service windows, Meta pricing counts, Cloud credential health and
+  reauthorization, QuickLink sync receipts, typing with an inbound message ID,
+  the Flow provider lifecycle, linked catalogs and Flow encryption keys, and
+  the Meta lifecycle webhook payload variants. Provider writes make one
+  attempt. Contracts are pinned to API `dev` `29abb7b`.
+- Campaign records type the stored `sendWindow`; create and update requests
+  accept `CampaignSendWindowRequest`.
+- Breaking for Flow drafts: `flows.list` and `flows.retrieve` now return the
+  unwrapped record in `response.data`, like the other Flow methods. Replace
+  `response.data.data` with `response.data`.
+
+- `message.received` payload types include `replyChoice` (`kind` `button` or
+  `list` and the `id` you assigned) and `parentMessageId`, and the linked-device
+  message `type` union adds `button_reply`, `list_reply`, and
+  `native_flow_response`. `ReplyChoice` is exported.
+
+- Calls quality diagnostics respect their five-second send interval when a
+  connection closes, avoiding an extra report that the API can rate-limit.
+
+- Browser Calls uses its authenticated lifecycle socket for ICE candidates and
+  pauses remote candidate polling while connected. It falls back to HTTP when
+  that socket disconnects. The Calls example also displays call-control errors
+  and failed request IDs.
+- Team webhook tests accept an optional event type. The SDK now rejects a
+  supplied body or session ID before making that request. Project webhook
+  tests keep the paired native body and session ID input.
+
 - Retired the unproduced `bansafe.risk_changed`,
   `bansafe.health_changed`, and `bansafe.enforcement` webhook names and their
   test-event fixtures. The typed `bansafe.incident`, `bansafe.action`,
   `bansafe.health_threshold`, and `bansafe.claim` events remain available.
 
+- Added `Client.sessions.getCapabilities(sessionId)` and the
+  `SessionCapabilities` types. It reads which WhatsApp features and limits
+  WhatsApp has enabled for a number, as of the number's last configuration sync;
+  `status` is `unknown` and every value null before the first sync. It needs
+  `sessions:read` and enrollment in the number capabilities beta (403 until
+  then).
 - Browser Calls hold locally gathered ICE candidates until the platform
   answers the call's offer, then send them. Candidates sent earlier were
   refused with `409` because no media session existed yet, and were lost.

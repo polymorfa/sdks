@@ -1,7 +1,12 @@
 import type {
+  CampaignReplyFlowDefinition,
   CampaignRecipient,
+  CampaignRecipientFailureReason,
   CampaignRecipientInput,
   CampaignRecipientStatus,
+  CampaignSendWindowRequest,
+  CampaignTrackedLink,
+  CampaignVariableMapping,
   InvalidRecipientRow,
 } from "../messaging/types.js";
 
@@ -183,17 +188,38 @@ export interface CreatePlatformCampaignRequest {
   readonly senderConfig?: Readonly<Record<string, unknown>>;
   /** Scheduled start time in Unix milliseconds. */
   readonly scheduledAt?: number;
+  /** When the campaign may send; null or omitted sends at any time. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
   /** At most 1,000 recipients. */
   readonly recipients?: readonly CampaignRecipientInput[];
   /** Ignored when inline recipients are supplied. */
   readonly recipientCount?: number;
   // The API deliberately leaves these JSON values opaque.
+  /** How each content variable is filled. */
+  readonly variableMapping?: CampaignVariableMapping | null;
+  /** Tracked links, at most 5 (beta). */
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
+  /** Up to 10 composed messages, sent in order when there is no template. */
+  readonly messagesArray?: readonly CampaignMessage[];
+  // The API deliberately leaves these JSON values opaque.
   readonly composerBlueprint?: unknown;
-  readonly messagesArray?: unknown;
   readonly audienceRef?: unknown;
   readonly complianceConfig?: unknown;
   readonly variants?: unknown;
   readonly variantStrategy?: unknown;
+}
+
+/** One composed campaign message. */
+export interface CampaignMessage {
+  readonly version?: number;
+  /** Text with `{{variable}}` and `{{variable | fallback}}` placeholders. */
+  readonly source?: string;
+  readonly media?: Readonly<Record<string, unknown>>;
+  readonly buttons?: readonly Readonly<Record<string, unknown>>[];
+  readonly footer?: string;
+  /** Minimum wait after the previous message, 0 to 86,400 seconds. */
+  readonly delayAfterSec?: number;
+  readonly [field: string]: unknown;
 }
 
 export interface ListCampaignsParams {
@@ -222,20 +248,135 @@ export interface PlatformCampaignParams {
  */
 export interface UpdatePlatformCampaignRequest {
   readonly recipientListId?: string | null;
+  /** Replaces the send window; null removes it. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
+  /** Template to send, or null for composed messages. Only before launch. */
+  readonly templateId?: string | null;
+  /** Replaces the whole mapping; null clears it. Only before launch. */
+  readonly variableMapping?: CampaignVariableMapping | null;
+  /** Replaces the composed messages. Only before launch. */
+  readonly messagesArray?: readonly CampaignMessage[];
+  /** Replaces the tracked links; null or [] removes them. Only while draft. */
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
   readonly [field: string]: unknown;
+}
+
+export interface ReschedulePlatformCampaignRequest {
+  /** Owning project for an organization API key. */
+  readonly projectId: string;
+  /** New start time in Unix milliseconds; null or a past time starts now. */
+  readonly scheduledAt: number | null;
 }
 
 export interface ListPlatformCampaignRecipientsParams {
   /** Owning project for this organization-client request. */
   readonly projectId: string;
   readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
   readonly cursor?: string;
   /** 1 to 100; the API defaults to 25. */
   readonly limit?: number;
 }
 
+export interface ExportPlatformCampaignRecipientsParams {
+  /** Required with a team API key; project tokens are bound to one project. */
+  readonly projectId: string;
+  readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
+  /** Cursor from the previous page's `nextCursor`. Keep the same filters. */
+  readonly cursor?: string;
+  /** 1 to 1,000; the API defaults to 1,000. */
+  readonly limit?: number;
+}
+
 export type PlatformCampaignRecipientsEnvelope =
   CursorEnvelope<CampaignRecipient>;
+
+/** Reported value in integer minor units of one ISO 4217 currency. Never converted. */
+export interface CampaignConversionValue {
+  /** Amount in the currency's minor unit, for example cents for USD. 0 to 10^14. */
+  readonly amountMinor: number;
+  /** Uppercase ISO 4217 code, for example `USD`. */
+  readonly currency: string;
+}
+
+/**
+ * Body accepted by `campaigns.recordConversion` (beta: requires team enrollment
+ * in campaign conversion reporting).
+ */
+export interface RecordCampaignConversionRequest extends PlatformCampaignParams {
+  /** The campaign recipient the conversion belongs to, from `campaigns.recipients`. */
+  readonly recipientId: string;
+  /** Your unique ID for the conversion, such as an order ID. Deduplicates per project. */
+  readonly eventId: string;
+  /** Kind of conversion: 1 to 40 lowercase letters, digits or underscores, such as `purchase`. */
+  readonly eventType: string;
+  /** ISO 8601 date-time with an offset. Not in the future and not more than 90 days ago. */
+  readonly occurredAt: string;
+  readonly value?: CampaignConversionValue | null;
+}
+
+export type CampaignConversionOutcome =
+  "attributed" | "outside_window" | "not_sent" | "opted_out";
+
+export interface CampaignConversion {
+  readonly id: string;
+  readonly campaignId: string;
+  /** Null when the recipient opted out. */
+  readonly recipientId: string | null;
+  readonly eventType: string;
+  readonly occurredAt: string;
+  /** Null when no value was reported or the recipient opted out. */
+  readonly value: CampaignConversionValue | null;
+  /** Your system reported the conversion; it is not a verified payment. */
+  readonly evidence: "customer_reported";
+  readonly attribution: {
+    /**
+     * `attributed`: within 7 days after the recipient was sent. `outside_window`:
+     * before the send or later than 7 days. `not_sent`: never sent. `opted_out`:
+     * the recipient is on the team's opt-out list and is not linked.
+     */
+    readonly outcome: CampaignConversionOutcome;
+    readonly touchAt: string | null;
+    readonly windowDays: 7;
+  };
+  readonly recordedAt: string;
+  /** True when this `eventId` was already recorded and nothing new was written. */
+  readonly replayed: boolean;
+}
+
+export interface CampaignConversionCurrencyTotal {
+  readonly currency: string;
+  readonly evidence: "customer_reported";
+  readonly attributedConversions: number;
+  /** Decimal string of minor units; sums can exceed `Number.MAX_SAFE_INTEGER`. */
+  readonly attributedAmountMinor: string;
+  readonly unattributedConversions: number;
+  readonly unattributedAmountMinor: string;
+}
+
+export interface CampaignConversionReport {
+  readonly campaignId: string;
+  readonly model: {
+    readonly touch: "recipient_sent";
+    readonly windowDays: 7;
+    readonly correlation: "explicit_recipient";
+  };
+  readonly sentCount: number;
+  readonly conversions: {
+    readonly total: number;
+    readonly attributed: number;
+    readonly outsideWindow: number;
+    readonly notSent: number;
+    readonly optedOut: number;
+  };
+  /** Distinct recipients with at least one attributed conversion. */
+  readonly convertedRecipients: number;
+  /** `convertedRecipients / sentCount`; 0 when nothing was sent. */
+  readonly conversionRate: number;
+  /** One entry per currency, sorted by code. Currencies are never combined. */
+  readonly values: readonly CampaignConversionCurrencyTotal[];
+}
 
 export interface AddPlatformCampaignRecipientsRequest {
   readonly projectId: string;
@@ -251,7 +392,34 @@ export interface AddPlatformCampaignRecipientsResult {
   readonly invalidRows: readonly InvalidRecipientRow[];
 }
 
-export type AudienceSource = "csv" | "manual" | "api";
+export type AudienceSource = "csv" | "manual" | "api" | "campaign";
+
+export type AudienceRetargetOutcome =
+  | "delivered"
+  | "not_delivered"
+  | "read"
+  | "not_read"
+  | "replied"
+  | "not_replied"
+  | "failed";
+
+export interface CreateAudienceFromCampaignRequest {
+  /** New audience name, 1 to 200 characters. */
+  readonly name: string;
+  /** Campaign whose recipients supply the snapshot. */
+  readonly campaignId: string;
+  /** Optional extra bound: the campaign must belong to this project. */
+  readonly projectId?: string;
+  readonly outcome: AudienceRetargetOutcome;
+}
+
+export interface AudienceFromCampaignResult extends Audience {
+  readonly source: "campaign";
+  readonly sourceCampaignId: string;
+  readonly outcome: AudienceRetargetOutcome;
+  readonly matchedCount: number;
+  readonly optedOutCount: number;
+}
 
 /** Column names in an uploaded spreadsheet, mapped onto recipient fields. */
 export interface AudienceImportMapping {
@@ -689,14 +857,150 @@ export interface SessionTierOverrideRequest {
   readonly quoteId: string;
 }
 
-export interface NumberTierQuoteRequest {
+/** The two connections of a Hybrid Link Number. */
+export type HybridTransport = "linked_devices" | "official_api";
+
+/** Keep one connection of a Hybrid Link Number and retire the other. */
+export interface HybridKeepResolution {
+  readonly action: "keep";
+  readonly transport: HybridTransport;
+}
+
+/**
+ * Split a Hybrid Link Number into two Standard Numbers. The Number being
+ * quoted keeps `existingNumberTransport`; the other connection moves to a new
+ * Number named `newNumberName` without pairing or signing up again.
+ */
+export interface HybridSplitResolution {
+  readonly action: "split";
+  readonly existingNumberTransport: HybridTransport;
+  /** 1-64 characters: a letter or digit, then letters, digits, `.`, `_` or `-`. */
+  readonly newNumberName: string;
+}
+
+/** Required when a Hybrid Link Number moves to a tier without Hybrid Link. */
+export type HybridResolution = HybridKeepResolution | HybridSplitResolution;
+
+/**
+ * Merges another same-number Number into the quoted Number as a Hybrid Link
+ * Number. The quoted Number keeps its ID; `absorbNumberId` is removed after its
+ * connection moves.
+ */
+export interface HybridMerge {
+  readonly absorbNumberId: string;
+}
+
+interface NumberTierQuoteBase {
   readonly projectId?: string;
   readonly tierOverride: "free" | "standard" | "pro" | null;
+}
+
+/**
+ * A tier quote. Send `hybridResolution` when a Hybrid Link Number leaves Pro
+ * (otherwise the API returns `hybrid_choice_required`), or `hybridMerge`
+ * to merge a same-number pair on an upgrade to Pro. Never both.
+ */
+export type NumberTierQuoteRequest =
+  | (NumberTierQuoteBase & {
+      readonly hybridResolution?: undefined;
+      readonly hybridMerge?: undefined;
+    })
+  | (NumberTierQuoteBase & {
+      readonly hybridResolution: HybridResolution;
+      readonly hybridMerge?: undefined;
+    })
+  | (NumberTierQuoteBase & {
+      readonly hybridResolution?: undefined;
+      readonly hybridMerge: HybridMerge;
+    });
+
+/** Progress of the connection change, reported separately from the tier change. */
+export type NumberHybridTransitionStatus =
+  "scheduled" | "running" | "completed" | "failed" | "cancelled";
+
+interface NumberHybridTransitionBase {
+  /** The Number that keeps its ID. */
+  readonly survivingNumberId: string;
+  /** Present once the change has been confirmed. */
+  readonly status?: NumberHybridTransitionStatus;
+  readonly failureReason?: string | null;
+  /**
+   * True after an Official API connection that shares the number with the
+   * WhatsApp Business app is dropped. Disconnect it in the WhatsApp Business
+   * app under Settings > Account > Business Platform.
+   */
+  readonly metaDisconnectRequired?: boolean;
+  readonly effectiveAtMs?: number | null;
+}
+
+export interface NumberHybridKeepTransition extends NumberHybridTransitionBase {
+  readonly action: "keep";
+  readonly keepTransport: HybridTransport;
+}
+
+export interface NumberHybridSplitTransition extends NumberHybridTransitionBase {
+  readonly action: "split";
+  readonly existingNumberTransport: HybridTransport;
+  readonly newNumberName: string;
+  /** The Number created by a completed split. */
+  readonly newNumberId?: string;
+}
+
+export interface NumberHybridMergeTransition extends NumberHybridTransitionBase {
+  readonly action: "merge";
+  readonly absorbNumberId: string;
+}
+
+/** The Hybrid Link plan echoed by a tier quote, with its progress once confirmed. */
+export type NumberHybridTransition =
+  | NumberHybridKeepTransition
+  | NumberHybridSplitTransition
+  | NumberHybridMergeTransition;
+
+export type HybridMergeIneligibleReason =
+  | "deletion_in_progress"
+  | "not_coexistence"
+  | "different_customer"
+  | "connection_disabled"
+  | "not_connected"
+  | "transition_in_progress"
+  | "pairing_in_progress"
+  | "hms_enabled";
+
+export interface HybridMergeCandidateNumber {
+  readonly id: string;
+  readonly name: string;
+  readonly transport: HybridTransport;
+  readonly status: string;
+  /**
+   * False when this Number uses hosted message storage. It cannot be the
+   * absorbed Number; quote the merge on it so it keeps its ID.
+   */
+  readonly canBeAbsorbed: boolean;
+}
+
+/**
+ * Two Numbers in one project that are the same WhatsApp Business number.
+ * `ineligibleReason` explains a pair that cannot merge now.
+ */
+export interface HybridMergeCandidate {
+  /** One Linked Devices Number and one Official API Number. */
+  readonly numbers: readonly [
+    HybridMergeCandidateNumber,
+    HybridMergeCandidateNumber,
+  ];
+  readonly eligible: boolean;
+  readonly ineligibleReason?: HybridMergeIneligibleReason;
 }
 
 export interface NumberTierChange {
   readonly id: string;
   readonly status: "quoted" | "queued" | "applied" | "rejected";
+  /**
+   * Why a queued change was rejected, for example `hybrid_choice_required`
+   * when a Hybrid Link Number would leave Pro without a recorded choice, or
+   * `hybrid_transition_ineligible`. Quote again with a choice.
+   */
   readonly failureReason: string | null;
   readonly expiresAtMs: number;
   readonly quote: {
@@ -708,6 +1012,8 @@ export interface NumberTierChange {
     readonly action: "upgrade" | "downgrade" | "configure";
     readonly effectiveAtMs: number;
     readonly replacesWindowId: string | null;
+    /** Present when the change resolves or merges a Hybrid Link Number. */
+    readonly hybridTransition?: NumberHybridTransition;
   };
 }
 
@@ -1181,6 +1487,61 @@ export interface SafeModeApplied {
   readonly pacing: string | null;
 }
 
+/** `feature`: `value` is a boolean. `limit`: `value` is an integer in `unit`. */
+export type SessionCapabilityKind = "feature" | "limit";
+export type SessionCapabilityUnit =
+  "seconds" | "count" | "characters" | "members";
+/**
+ * `server`: WhatsApp sent a setting the value depends on. `client_default`:
+ * WhatsApp sent none, so its default applies. `account_type`: the capability
+ * does not apply to this account type.
+ */
+export type SessionCapabilitySource =
+  "server" | "client_default" | "account_type";
+
+interface SessionCapabilityBase {
+  /** Stable key such as `channels` or `messageEdit.windowSeconds`. New keys can be added. */
+  readonly key: string;
+  /** Null when `value` is null. */
+  readonly source: SessionCapabilitySource | null;
+}
+
+/** A WhatsApp feature: enabled (`true`), off (`false`) or unknown (`null`). */
+export interface SessionFeatureCapability extends SessionCapabilityBase {
+  readonly kind: "feature";
+  readonly unit: null;
+  readonly value: boolean | null;
+}
+
+/** A WhatsApp limit: an integer in `unit`, or `null` when unknown. */
+export interface SessionLimitCapability extends SessionCapabilityBase {
+  readonly kind: "limit";
+  readonly unit: SessionCapabilityUnit;
+  readonly value: number | null;
+}
+
+/** Narrow on `kind` to type `value` and `unit`. */
+export type SessionCapability =
+  SessionFeatureCapability | SessionLimitCapability;
+
+/** `unknown` before the first sync, after a logout, while waiting to be paired, and after another account is linked; every value is then null. */
+export type SessionCapabilitiesStatus = "synced" | "unknown";
+export type SessionAccountType = "business" | "personal";
+
+/**
+ * WhatsApp features and limits WhatsApp has enabled for one number, as of the
+ * number's last configuration sync (`syncedAt`). Beta: teams must enroll.
+ */
+export interface SessionCapabilities {
+  readonly session: string;
+  readonly projectId: string;
+  readonly status: SessionCapabilitiesStatus;
+  readonly syncedAt: string | null;
+  readonly checkedAt: string | null;
+  readonly accountType: SessionAccountType | null;
+  readonly capabilities: readonly SessionCapability[];
+}
+
 export interface SessionSafeMode {
   readonly session: string;
   readonly projectId: string;
@@ -1259,4 +1620,27 @@ export interface UpdateProjectHealthPolicyRequest {
   readonly slowDownMps: number | null;
   readonly emailNotification: boolean;
   readonly webhookNotification: boolean;
+}
+
+export interface CreatePlatformCampaignReplyFlowRequest {
+  readonly name: string;
+  /** Existing flow key to add a revision to. Omit to start a new reply flow. */
+  readonly flowKey?: string;
+  /** Defaults to 1. Each key and revision can be created once. */
+  readonly revision?: number;
+  readonly definition: CampaignReplyFlowDefinition;
+  /** Required with a team API key. Project tokens derive the project. */
+  readonly projectId?: string;
+}
+
+export interface SetPlatformCampaignReplyFlowRequest {
+  /** Reply flow revision to run after replies, or `null` to detach it. */
+  readonly replyFlowId: string | null;
+  /** Required with a team API key. Project tokens derive the project. */
+  readonly projectId?: string;
+}
+
+export interface PlatformCampaignReplyFlowParams {
+  /** Required with a team API key. Project tokens derive the project. */
+  readonly projectId?: string;
 }

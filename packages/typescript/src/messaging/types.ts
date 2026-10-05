@@ -31,8 +31,32 @@ export interface Session {
   readonly status: string;
   readonly statusReason?: string;
   readonly configuration?: import("./session-configuration.js").SessionConfigurationView;
+  /**
+   * WhatsApp's per-number new-chat cap. Returned by `sessions.retrieve` for
+   * linked-device numbers only; `null` until Polymorfa observed the number.
+   */
+  readonly newChatCapping?: NewChatCapping | null;
   readonly createdAt: string;
   readonly updatedAt: string;
+}
+
+/** WhatsApp's new-chat cap for a linked-device number, as WhatsApp configured and reported it. */
+export interface NewChatCapping {
+  /** Whether WhatsApp enabled a cap for the number; `null` when it cannot be decided. */
+  readonly enabled: boolean | null;
+  /** Whether Polymorfa holds back new-chat sends while the number is capped. */
+  readonly pacing: boolean;
+  /** The status WhatsApp last reported; `null` before it reported one. */
+  readonly status:
+    "none" | "first_warning" | "second_warning" | "capped" | null;
+  /** True while WhatsApp reports the number capped and Polymorfa paces it (`pacing`), until `resetsAt`. */
+  readonly capped: boolean;
+  readonly limit: number | null;
+  readonly used: number | null;
+  readonly remaining: number | null;
+  readonly cycleStartsAt: string | null;
+  readonly resetsAt: string | null;
+  readonly observedAt: string;
 }
 
 export interface UpdateSessionRequest {
@@ -83,6 +107,27 @@ export interface SuccessResponse {
   readonly message?: string;
 }
 
+/** How one content variable is filled. */
+export interface CampaignVariableBinding {
+  /** Recipient variable that fills it; defaults to the variable with the same name. */
+  readonly source?: string;
+  /** Sent when the recipient has no value; 1 to 1,024 characters, not blank. */
+  readonly fallback?: string;
+}
+
+/** Content variable name to binding, at most 50 entries. */
+export type CampaignVariableMapping = Readonly<
+  Record<string, CampaignVariableBinding>
+>;
+
+/** A named destination that messages reference as `{{link:<key>}}` (beta). */
+export interface CampaignTrackedLink {
+  /** 1 to 32 lowercase letters, digits or underscores. */
+  readonly key: string;
+  /** Absolute `https` URL with a public domain name. */
+  readonly url: string;
+}
+
 /** Project-scoped campaign summary returned by the Messaging API. */
 export interface Campaign {
   readonly id: string;
@@ -103,6 +148,12 @@ export interface Campaign {
   readonly completedAt: number | null;
   readonly createdAt: number;
   readonly updatedAt: number;
+  /** When the campaign may send, or null when it has no send window. */
+  readonly sendWindow: CampaignSendWindow | null;
+  /** Tracked links; empty when the campaign tracks none. */
+  readonly trackedLinks: readonly CampaignTrackedLink[];
+  /** How each content variable is filled, or null without a mapping. */
+  readonly variableMapping?: CampaignVariableMapping | null;
   /** Additional live repository fields omitted from the pinned OpenAPI schema. */
   readonly composerBlueprint?: unknown;
   readonly messages?: unknown;
@@ -111,6 +162,42 @@ export interface Campaign {
   readonly complianceConfig?: unknown;
   readonly variants?: unknown;
   readonly variantStrategy?: unknown;
+}
+
+export type CampaignWeekday =
+  | "monday"
+  | "tuesday"
+  | "wednesday"
+  | "thursday"
+  | "friday"
+  | "saturday"
+  | "sunday";
+
+/** Local `HH:MM` range; `start` is inclusive and `end` (up to `24:00`) exclusive. */
+export interface CampaignSendWindowRange {
+  readonly start: string;
+  readonly end: string;
+}
+
+/** Stored send window. Recipients outside it stay queued until it next opens. */
+export interface CampaignSendWindow {
+  readonly timeZone: string;
+  readonly days: readonly CampaignWeekday[];
+  readonly hours: readonly CampaignSendWindowRange[];
+  readonly recipientTimeZone: boolean;
+  readonly timeZoneVariable: string;
+}
+
+/** Send window input. Up to four non-overlapping ranges that do not cross midnight. */
+export interface CampaignSendWindowRequest {
+  /** IANA zone. Defaults to the team's time zone, or UTC. */
+  readonly timeZone?: string;
+  readonly days: readonly CampaignWeekday[];
+  readonly hours: readonly CampaignSendWindowRange[];
+  /** Evaluate the window in each recipient's own time zone. Defaults to false. */
+  readonly recipientTimeZone?: boolean;
+  /** Recipient variable holding an IANA zone. Defaults to `timeZone`. */
+  readonly timeZoneVariable?: string;
 }
 
 export interface CampaignAnalytics {
@@ -132,6 +219,12 @@ export interface CreateCampaignRequest {
   readonly senderConfig?: Readonly<Record<string, unknown>>;
   /** Epoch milliseconds. */
   readonly scheduledAt?: number;
+  /** When the campaign may send; null or omitted sends at any time. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
+  /** How each content variable is filled. */
+  readonly variableMapping?: CampaignVariableMapping;
+  /** Tracked links, at most 5 (beta). */
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
   /**
    * Up to 1,000 recipients to queue with the draft. Invalid entries reject the
    * whole request; use `campaigns.addRecipients` for partial acceptance.
@@ -139,8 +232,38 @@ export interface CreateCampaignRequest {
   readonly recipients?: readonly CampaignRecipientInput[];
 }
 
+/** Fields accepted by the Messaging API campaign update route. */
+export interface UpdateCampaignRequest {
+  readonly name?: string;
+  /** Attach an audience to an unlaunched draft, or detach it with null. */
+  readonly recipientListId?: string | null;
+  readonly senderConfig?: Readonly<Record<string, unknown>>;
+  /** Integer Unix milliseconds within the JavaScript Date range, or null to start at launch. Only editable before launch. */
+  readonly scheduledAt?: number | null;
+  /** Replaces the send window; null removes it. Only while draft or paused. */
+  readonly sendWindow?: CampaignSendWindowRequest | null;
+  /** Template to send, or null for composed messages. Only before launch. */
+  readonly templateId?: string | null;
+  /** Replaces the whole mapping; null clears it. Only before launch. */
+  readonly variableMapping?: CampaignVariableMapping | null;
+  /** Replaces the tracked links; null or [] removes them. Only while draft. */
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
+}
+
 export type CampaignRecipientStatus =
   "queued" | "sending" | "sent" | "delivered" | "read" | "failed" | "skipped";
+
+export type CampaignRecipientFailureReason =
+  | "opted_out"
+  | "cold_held"
+  | "campaign_cancelled"
+  | "invalid_recipient"
+  | "session_not_connected"
+  | "ack_timeout"
+  | "blocked_by_safety"
+  | "send_failed"
+  | "missing_variable"
+  | "other";
 
 export type InvalidRecipientReason =
   "missing_phone" | "invalid_phone" | "invalid_variables" | "invalid_entry";
@@ -171,8 +294,10 @@ export interface CampaignRecipient {
   readonly variantKey: string | null;
   readonly status: CampaignRecipientStatus;
   readonly attempts: number;
-  /** `opted_out` means the phone is on the organization's opt-out list. */
+  /** Legacy alias of `failureReason`; raw stored errors are never returned. */
   readonly lastError: string | null;
+  /** Stable, documented code for the last unsuccessful attempt. */
+  readonly failureReason: CampaignRecipientFailureReason | null;
   readonly externalMessageId: string | null;
   /** Epoch milliseconds, or null while the transition has not happened. */
   readonly queuedAt: number;
@@ -181,6 +306,12 @@ export interface CampaignRecipient {
   readonly readAt: number | null;
   readonly failedAt: number | null;
   readonly respondedAt: number | null;
+  /** Messages of the sequence sent so far; the timestamps above describe the first. */
+  readonly messagesSent: number;
+  /** Earliest send of the next message in Unix milliseconds, or null. */
+  readonly nextMessageAt: number | null;
+  /** Why the remaining messages will not be sent, such as `opted_out` or `sender_unavailable`. */
+  readonly sequenceError: string | null;
 }
 
 export interface CampaignRecipientPage {
@@ -190,9 +321,26 @@ export interface CampaignRecipientPage {
 
 export interface ListCampaignRecipientsParams {
   readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
   readonly cursor?: string;
   /** 1 to 100; the API defaults to 25. */
   readonly limit?: number;
+}
+
+export interface ExportCampaignRecipientsParams {
+  readonly status?: CampaignRecipientStatus;
+  readonly reason?: CampaignRecipientFailureReason;
+  /** Cursor from the previous page's `nextCursor`. Keep the same filters. */
+  readonly cursor?: string;
+  /** 1 to 1,000; the API defaults to 1,000. */
+  readonly limit?: number;
+}
+
+export interface CampaignRecipientsCsvPage {
+  /** CSV header and up to 1,000 recipient rows. */
+  readonly csv: string;
+  /** Null after the last page. */
+  readonly nextCursor: string | null;
 }
 
 export interface AddCampaignRecipientsRequest {
@@ -222,6 +370,16 @@ export interface CampaignStopOperation extends Campaign {
 export interface LaunchCampaignRequest {
   /** Epoch milliseconds. */
   readonly scheduledAt?: number;
+  /**
+   * Skip recipients that have no value and no fallback for a variable instead
+   * of refusing the launch with `campaign_variables_missing`.
+   */
+  readonly skipMissingVariables?: boolean;
+}
+
+export interface RescheduleCampaignRequest {
+  /** New start time in Unix milliseconds; null or a past time starts now. */
+  readonly scheduledAt: number | null;
 }
 
 export interface RequeueCampaignRequest {
@@ -240,6 +398,7 @@ export interface CampaignRequeueResult {
 export type ListCampaignsResponse = SuccessEnvelope<readonly Campaign[]>;
 export type GetCampaignResponse = SuccessEnvelope<Campaign>;
 export type CreateCampaignResponse = SuccessEnvelope<Campaign>;
+export type UpdateCampaignResponse = SuccessEnvelope<Campaign>;
 export type CampaignAnalyticsResponse = SuccessEnvelope<CampaignAnalytics>;
 export type CampaignOperationResponse = SuccessEnvelope<CampaignOperation>;
 export type CampaignRequeueResponse = SuccessEnvelope<CampaignRequeueResult>;
@@ -1587,7 +1746,11 @@ export type VoipParticipantReference = string;
 /** Body for `POST /messaging/voip/calls`. */
 export interface VoipPlaceCallRequest {
   /** Phone number in E.164 form or a WhatsApp user ID. */
-  readonly to: string;
+  readonly to?: string;
+  /** Ad-hoc group of 2 to 31 distinct people. Mutually exclusive with to. */
+  readonly participants?: readonly string[];
+  /** Public group ID; mutually exclusive with to and participants. */
+  readonly groupId?: string;
   /** Session that places the call. Required with a server credential. */
   readonly session?: string;
   readonly video?: boolean;
@@ -1603,6 +1766,37 @@ export interface VoipPlaceCallResult {
 }
 
 export type VoipPlaceCallResponse = SuccessEnvelope<VoipPlaceCallResult>;
+
+/** Server credentials only. Creates a reusable link without joining a call. */
+export interface VoipCreateCallLinkRequest {
+  readonly session: string;
+  readonly video?: boolean;
+}
+
+/** Keep the token private; send the media type that matches the link. */
+export interface VoipPreviewCallLinkRequest extends VoipCreateCallLinkRequest {
+  readonly token: string;
+}
+
+export interface VoipCreatedCallLink {
+  readonly session: string;
+  readonly token: string;
+  readonly url: string;
+  readonly video: boolean;
+}
+
+export interface VoipPreviewedCallLink {
+  readonly session: string;
+  readonly video: boolean;
+  readonly creator: ConversationIdentity;
+  readonly approvalRequired: boolean;
+  /** WhatsApp-reported role for this Number, not an API permission grant. */
+  readonly isAdmin: boolean;
+}
+
+export type VoipCreatedCallLinkResponse = SuccessEnvelope<VoipCreatedCallLink>;
+export type VoipPreviewedCallLinkResponse =
+  SuccessEnvelope<VoipPreviewedCallLink>;
 
 /** Body for `POST /messaging/voip/calls/{callId}/accept`. */
 export interface VoipAcceptCallRequest {
@@ -1713,6 +1907,7 @@ export interface VoipAddParticipantRequest {
 export type VoipParticipantState = "invited" | "ringing" | "connected" | "left";
 
 export interface VoipParticipant {
+  readonly handRaised?: boolean;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;
@@ -1910,7 +2105,9 @@ export type MessageKind =
   | "buttons"
   | "address_message"
   | "flow"
-  | "call_permission_request";
+  | "call_permission_request"
+  | "order_details"
+  | "order_status";
 
 export interface QuotedMessage {
   readonly id: string;
@@ -2188,6 +2385,141 @@ export interface SendCallPermissionRequestMessageRequest extends MessageSendCont
   };
 }
 
+/** An amount in centavos: `value` is the amount times `offset` (always 100 for BRL). */
+export interface PaymentOrderAmount {
+  readonly value: number;
+  readonly offset: 100;
+}
+
+export type PixKeyType = "CPF" | "CNPJ" | "EMAIL" | "PHONE" | "EVP";
+
+/**
+ * A Brazil order with payment instructions (payment orders beta, Official API
+ * Numbers only). Polymorfa validates and relays the order; it does not
+ * collect, hold or confirm funds. Use a new `referenceId` for every order.
+ */
+export interface PixDynamicCodePayment {
+  /** Dynamic Pix copy-and-paste code from your bank or payment provider. */
+  readonly code: string;
+  readonly merchantName: string;
+  readonly key: string;
+  readonly keyType: PixKeyType;
+}
+
+/** Ways to pay; provide at least one. */
+export type OrderPaymentSettings = {
+  readonly pixDynamicCode?: PixDynamicCodePayment;
+  /** HTTPS checkout link. */
+  readonly paymentLink?: { readonly uri: string };
+  /** Boleto digitable line of 47 or 48 digits. */
+  readonly boleto?: { readonly digitableLine: string };
+} & (
+  | { readonly pixDynamicCode: PixDynamicCodePayment }
+  | { readonly paymentLink: { readonly uri: string } }
+  | { readonly boleto: { readonly digitableLine: string } }
+);
+
+/** Itemized order lines and totals. */
+export interface OrderDetailsItemization {
+  readonly catalogId?: string;
+  readonly expiration?: {
+    /** Unix seconds, at least 300 seconds from now. */
+    readonly timestamp: number;
+    readonly description: string;
+  };
+  readonly items: readonly {
+    readonly retailerId: string;
+    readonly name: string;
+    readonly amount: PaymentOrderAmount;
+    readonly quantity: number;
+    readonly saleAmount?: PaymentOrderAmount;
+  }[];
+  /** Sum of each item's saleAmount (or amount) times quantity. */
+  readonly subtotal: PaymentOrderAmount;
+  readonly tax: PaymentOrderAmount & { readonly description?: string };
+  readonly shipping?: PaymentOrderAmount & { readonly description?: string };
+  readonly discount?: PaymentOrderAmount & {
+    readonly description?: string;
+    readonly programName?: string;
+  };
+}
+
+/**
+ * A Brazil order with payment instructions (payment orders beta, Official API
+ * Numbers only). Polymorfa validates and relays the order; it does not
+ * collect, hold or confirm funds. Use a new `referenceId` for every order.
+ */
+export type OrderDetailsMessageContent = {
+  /** 1 to 60 letters, digits, underscores, dashes or dots. */
+  readonly referenceId: string;
+  readonly type: "digital-goods" | "physical-goods";
+  /** At most 1,024 characters. */
+  readonly body: string;
+  /** At most 60 characters. */
+  readonly footer?: string;
+  readonly currency: "BRL";
+  /** With `order`, equals subtotal + tax + shipping - discount. */
+  readonly totalAmount: PaymentOrderAmount;
+  readonly paymentSettings: OrderPaymentSettings;
+} & (
+  | {
+      /** Itemized order. */
+      readonly order: OrderDetailsItemization;
+      /** HTTPS image shown as the thumbnail. */
+      readonly headerImageUrl?: string;
+    }
+  | { readonly order?: undefined; readonly headerImageUrl?: undefined }
+);
+
+export type OrderStatus =
+  | "pending"
+  | "processing"
+  | "partially_shipped"
+  | "shipped"
+  | "completed"
+  | "canceled";
+export type OrderPaymentStatus = "pending" | "captured" | "failed";
+
+/**
+ * Updates a Brazil order sent with `orderDetails`. Send `payment.status`
+ * after your payment provider confirms it; `captured` shows the order as paid.
+ * Provide `order`, `payment`, or both.
+ */
+export type OrderStatusMessageContent = {
+  readonly referenceId: string;
+  readonly body: string;
+  readonly footer?: string;
+} & (
+  | {
+      readonly order: {
+        readonly status: OrderStatus;
+        readonly description?: string;
+      };
+      readonly payment?: {
+        readonly status: OrderPaymentStatus;
+        readonly timestamp?: number;
+      };
+    }
+  | {
+      readonly order?: {
+        readonly status: OrderStatus;
+        readonly description?: string;
+      };
+      readonly payment: {
+        readonly status: OrderPaymentStatus;
+        readonly timestamp?: number;
+      };
+    }
+);
+
+export interface SendOrderDetailsMessageRequest extends MessageSendContext {
+  readonly content: { readonly orderDetails: OrderDetailsMessageContent };
+}
+
+export interface SendOrderStatusMessageRequest extends MessageSendContext {
+  readonly content: { readonly orderStatus: OrderStatusMessageContent };
+}
+
 export interface SendTemplateMessageRequest extends MessageSendContext {
   readonly content: { readonly template: MessageTemplateSend };
 }
@@ -2207,6 +2539,8 @@ export type SendMessageRequest =
   | SendAddressMessageRequest
   | SendFlowMessageRequest
   | SendCallPermissionRequestMessageRequest
+  | SendOrderDetailsMessageRequest
+  | SendOrderStatusMessageRequest
   | SendTemplateMessageRequest;
 
 export interface MessageOperation {
@@ -2250,6 +2584,8 @@ export interface SeenRequest {
 
 export interface TypingRequest {
   readonly conversation: ConversationReference;
+  /** Required on Official Numbers: an inbound message to mark read while showing typing. */
+  readonly id?: string;
   readonly state: "typing" | "recording" | "paused";
 }
 
@@ -2438,3 +2774,109 @@ export type ProjectTemplateResponse = SuccessEnvelope<ProjectTemplate>;
 export type ProjectTemplateOperationResponse = SuccessEnvelope<
   Readonly<Record<string, unknown>>
 >;
+
+/** A choice ID: 1 to 64 letters, digits, `.`, `_`, `:` or `-`, starting with a letter or digit. */
+export type CampaignReplyFlowChoiceId = string;
+
+/** What a reply flow step sends. `flow_form` is for Official numbers only. */
+export type CampaignReplyFlowSend =
+  | { readonly kind: "text"; readonly text: string }
+  | {
+      readonly kind: "buttons";
+      readonly body: string;
+      readonly footer?: string;
+      /** One to three reply buttons. */
+      readonly buttons: readonly {
+        readonly id: CampaignReplyFlowChoiceId;
+        readonly text: string;
+      }[];
+    }
+  | {
+      readonly kind: "list";
+      readonly body: string;
+      readonly buttonText: string;
+      readonly footer?: string;
+      /** One to ten rows. */
+      readonly rows: readonly {
+        readonly id: CampaignReplyFlowChoiceId;
+        readonly title: string;
+        readonly description?: string;
+      }[];
+    }
+  | {
+      readonly kind: "flow_form";
+      /** A published WhatsApp Flow. */
+      readonly flowId: string;
+      readonly body: string;
+      readonly buttonText: string;
+      readonly footer?: string;
+      readonly screen: string;
+    };
+
+/** How a reply selects a branch. */
+export type CampaignReplyFlowMatch =
+  | {
+      readonly kind: "choice";
+      readonly replyKind: "button" | "list";
+      readonly id: CampaignReplyFlowChoiceId;
+    }
+  | { readonly kind: "keyword"; readonly value: string }
+  | { readonly kind: "flow_submission" };
+
+export interface CampaignReplyFlowNode {
+  readonly id: string;
+  /** Omitted on the entry step, which waits for the first reply and sends nothing. */
+  readonly send?: CampaignReplyFlowSend;
+  /** Up to three branches. */
+  readonly edges: readonly {
+    readonly match: CampaignReplyFlowMatch;
+    readonly to: string;
+  }[];
+}
+
+/** An acyclic graph of 2 to 12 steps. */
+export interface CampaignReplyFlowDefinition {
+  readonly entryNodeId: string;
+  readonly nodes: readonly CampaignReplyFlowNode[];
+}
+
+/** An immutable reply flow revision. */
+export interface CampaignReplyFlow {
+  readonly id: string;
+  /** Groups the revisions of one reply flow. */
+  readonly flowKey: string;
+  readonly revision: number;
+  readonly name: string;
+  readonly definition: CampaignReplyFlowDefinition;
+  /** Unix milliseconds. */
+  readonly createdAt: number;
+}
+
+export interface CreateCampaignReplyFlowRequest {
+  readonly name: string;
+  /** Existing flow key to add a revision to. Omit to start a new reply flow. */
+  readonly flowKey?: string;
+  /** Defaults to 1. Each key and revision can be created once. */
+  readonly revision?: number;
+  readonly definition: CampaignReplyFlowDefinition;
+}
+
+export interface SetCampaignReplyFlowRequest {
+  /** Reply flow revision to run after replies, or `null` to detach it. */
+  readonly replyFlowId: string | null;
+}
+
+export interface CampaignReplyFlowAttachment {
+  readonly campaignId: string;
+  readonly replyFlowId: string | null;
+}
+
+export interface CampaignReplyFlowResponse {
+  readonly success: true;
+  readonly data: CampaignReplyFlow;
+}
+
+export interface SetCampaignReplyFlowResponse {
+  readonly success: true;
+  readonly data: CampaignReplyFlowAttachment;
+}
