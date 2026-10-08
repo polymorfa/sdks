@@ -65,6 +65,8 @@ export {
   type EmojiPickerCategory,
 } from "./emoji.js";
 export {
+  ATTACHMENT_KINDS,
+  type AttachmentKind,
   CHAT_ICONS,
   compareMessageTime,
   formatDayLabel,

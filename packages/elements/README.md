@@ -209,3 +209,8 @@ media connected until the call ends. `snapshot.error` clears when ending succeed
 See [chat components](../../docs/chat-components.md) for the inline `ChatWindow` /
 `pmfa-chat-window`, observed receipts, media, presentation filters and failure-preserving
 composer actions. History and sends remain owned by your authorized data source.
+
+The composer offers a named Photos, Videos, Audio and Documents picker, plus
+voice notes and ready-media previews. React uses `attachmentKinds`; Web Components
+use `attachment-kinds`. Supply authorized upload/send adapters and disable media
+when uploading is unavailable. See [the chat guide](../../docs/chat-components.md#compose-media).

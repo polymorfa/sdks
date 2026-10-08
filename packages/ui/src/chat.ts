@@ -9,6 +9,15 @@ export interface ChatLayoutMessage {
   readonly direction: "inbound" | "outbound";
 }
 
+/** File-picker hints, not server permissions or upload validation. */
+export const ATTACHMENT_KINDS = {
+  image: { accept: "image/*", label: "composer.images", icon: "image" },
+  video: { accept: "video/*", label: "composer.videos", icon: "video" },
+  audio: { accept: "audio/*", label: "composer.audio", icon: "mic" },
+  document: { accept: "", label: "composer.documents", icon: "file" },
+} as const;
+export type AttachmentKind = keyof typeof ATTACHMENT_KINDS;
+
 export type ChatLayoutEntry<T extends ChatLayoutMessage> =
   | {
       readonly kind: "date";
@@ -167,6 +176,7 @@ export function safeAttachmentUrl(
  * the `d` attribute of a single `<path>`.
  */
 export const CHAT_ICONS = {
+  image: "M3 3h18v18H3ZM3 16l5-5 4 4 3-3 6 6M8 7h.01",
   close: "M18 6 6 18M6 6l12 12",
   send: "M12 19V5M5 12l7-7 7 7",
   attach:

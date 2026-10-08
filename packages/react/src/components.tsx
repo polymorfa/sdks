@@ -15,6 +15,8 @@ import {
   type VoiceNoteRecorderSnapshot,
 } from "@polymorfa/browser";
 import {
+  ATTACHMENT_KINDS,
+  type AttachmentKind,
   CHAT_ICONS,
   EMOJI_CATEGORY_ICONS,
   EMOJI_PICKER_CATEGORIES,
@@ -851,14 +853,47 @@ function AttachmentChip({
   readonly onRemove: (id: string) => void;
 }) {
   const percent = Math.round(attachment.progress * 100);
+  const preview = isImageAttachment(attachment)
+    ? (safeAttachmentUrl(attachment.uploaded?.previewUrl) ??
+      safeAttachmentUrl(attachment.uploaded?.url))
+    : undefined;
+  const playerUrl = /^(audio|video)\//i.test(attachment.contentType)
+    ? safeAttachmentUrl(attachment.uploaded?.url)
+    : undefined;
   return (
     <li
       {...slots("attachmentChip", `pmfa-chip pmfa-chip-${attachment.status}`)}
       data-attachment-id={attachment.id}
     >
-      <Icon name={attachment.status === "failed" ? "failed" : "file"} />
+      {preview ? (
+        <img
+          className="pmfa-chip-preview"
+          src={preview}
+          alt={attachment.name}
+        />
+      ) : (
+        <Icon name={attachment.status === "failed" ? "failed" : "file"} />
+      )}
       <span className="pmfa-chip-body">
         <span className="pmfa-chip-name">{attachment.name}</span>
+        {playerUrl &&
+          (attachment.contentType.toLowerCase().startsWith("audio/") ? (
+            <audio
+              className="pmfa-chip-player"
+              controls
+              preload="none"
+              src={playerUrl}
+              aria-label={attachment.name}
+            />
+          ) : (
+            <video
+              className="pmfa-chip-player"
+              controls
+              preload="none"
+              src={playerUrl}
+              aria-label={attachment.name}
+            />
+          ))}
         {attachment.status === "uploading" && (
           <span
             className="pmfa-progress"
@@ -1300,6 +1335,8 @@ export interface ComposeBoxProps extends ControllerProps<MessageComposerControll
   readonly attachments?: boolean;
   /** File types the attach button offers, as for `<input accept>`. */
   readonly accept?: string;
+  /** Offer named file types. Omit to keep the single file picker. */
+  readonly attachmentKinds?: readonly AttachmentKind[];
   /** Allow picking several files at once. Defaults to `true`. */
   readonly multiple?: boolean;
   /** Resolves the reply banner's quoted message. */
@@ -1336,6 +1373,7 @@ export function ComposeBox({
   classNames,
   attachments = true,
   accept,
+  attachmentKinds,
   multiple = true,
   conversation,
   messages,
@@ -1357,6 +1395,9 @@ export function ComposeBox({
   const root = useShell(slots, "composer", "pmfa-composer", className);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const attachRef = useRef<HTMLDivElement>(null);
+  const attachButton = useRef<HTMLButtonElement>(null);
+  const [attachOpen, setAttachOpen] = useState(false);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
   const micRef = useRef<HTMLButtonElement>(null);
   const pendingCaret = useRef<number | undefined>(undefined);
@@ -1370,6 +1411,18 @@ export function ComposeBox({
   );
   const [activeOption, setActiveOption] = useState(0);
   const [announcement, setAnnouncement] = useState("");
+  useEffect(() => {
+    if (!attachOpen) return;
+    attachRef.current
+      ?.querySelector<HTMLButtonElement>(".pmfa-attachment-menu button")
+      ?.focus();
+    const outside = (event: PointerEvent) => {
+      if (!attachRef.current?.contains(event.target as Node))
+        setAttachOpen(false);
+    };
+    document.addEventListener("pointerdown", outside);
+    return () => document.removeEventListener("pointerdown", outside);
+  }, [attachOpen]);
   // A rejected file's message clears once the text changes, a send
   // succeeds, or the composer resets.
   const [previousSnapshot, setPreviousSnapshot] = useState(snapshot);
@@ -1725,8 +1778,9 @@ export function ComposeBox({
           </button>
         )}
         {attachments && (
-          <>
+          <div className="pmfa-attachment-picker" ref={attachRef}>
             <button
+              ref={attachButton}
               type="button"
               {...slots(
                 "composerAttach",
@@ -1734,10 +1788,50 @@ export function ComposeBox({
               )}
               aria-label={text(configuration, "composer.attach")}
               title={text(configuration, "composer.attach")}
-              onClick={() => fileRef.current?.click()}
+              aria-haspopup={attachmentKinds?.length ? "dialog" : undefined}
+              aria-expanded={attachmentKinds?.length ? attachOpen : undefined}
+              onClick={() => {
+                if (attachmentKinds?.length) setAttachOpen((open) => !open);
+                else {
+                  if (fileRef.current) fileRef.current.accept = accept ?? "";
+                  fileRef.current?.click();
+                }
+              }}
             >
               <Icon name="attach" />
             </button>
+            {attachOpen && attachmentKinds?.length && (
+              <div
+                className="pmfa-attachment-menu"
+                role="dialog"
+                aria-label={text(configuration, "composer.attach")}
+                onKeyDown={(event) => {
+                  if (event.key !== "Escape") return;
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setAttachOpen(false);
+                  attachButton.current?.focus();
+                }}
+              >
+                {attachmentKinds.map((kind) => (
+                  <button
+                    key={kind}
+                    type="button"
+                    className="pmfa-btn pmfa-btn-ghost"
+                    onClick={() => {
+                      if (fileRef.current)
+                        fileRef.current.accept = ATTACHMENT_KINDS[kind].accept;
+                      setAttachOpen(false);
+                      attachButton.current?.focus();
+                      fileRef.current?.click();
+                    }}
+                  >
+                    <Icon name={ATTACHMENT_KINDS[kind].icon} />
+                    {text(configuration, ATTACHMENT_KINDS[kind].label)}
+                  </button>
+                ))}
+              </div>
+            )}
             <input
               ref={fileRef}
               type="file"
@@ -1751,7 +1845,7 @@ export function ComposeBox({
                 event.currentTarget.value = "";
               }}
             />
-          </>
+          </div>
         )}
         <textarea
           ref={inputRef}

@@ -12,6 +12,8 @@ import {
   type VoiceNoteError,
 } from "@polymorfa/browser";
 import {
+  ATTACHMENT_KINDS,
+  type AttachmentKind,
   CHAT_ICONS,
   EMOJI_CATEGORY_ICONS,
   EMOJI_PICKER_CATEGORIES,
@@ -889,6 +891,7 @@ function flagAttribute(
 }
 
 interface ComposerOptions {
+  readonly attachmentKinds: () => readonly AttachmentKind[];
   readonly controller: () => MessageComposerController | undefined;
   readonly accept: () => string | undefined;
   readonly multiple: () => boolean;
@@ -936,6 +939,12 @@ class ComposerView {
   readonly #mic: HTMLButtonElement;
   readonly #emojiButton: HTMLButtonElement;
   readonly #attach: HTMLButtonElement;
+  readonly #attachmentPicker = document.createElement("div");
+  #attachmentMenu: HTMLDivElement | undefined;
+  readonly #attachmentOutside = (event: PointerEvent) => {
+    if (!event.composedPath().includes(this.#attachmentPicker))
+      this.#closeAttachments();
+  };
   readonly #file: HTMLInputElement;
   readonly #chips: HTMLUListElement;
   readonly #banner: HTMLDivElement;
@@ -1032,11 +1041,13 @@ class ComposerView {
     this.#emojiButton.setAttribute("aria-expanded", "false");
     const attach = host.decorate(
       iconButton(host.text("composer.attach"), "attach", "attach", () =>
-        this.#file.click(),
+        this.#toggleAttachments(),
       ),
       "composerAttach",
     );
     this.#attach = attach;
+    this.#attachmentPicker.className = "pmfa-attachment-picker";
+    this.#attachmentPicker.append(attach);
     this.#file = document.createElement("input");
     this.#file.type = "file";
     this.#file.className = "pmfa-sr";
@@ -1106,7 +1117,7 @@ class ComposerView {
     this.#row.append(
       actionSlot("start-actions", "pmfa-composer-start"),
       this.#emojiButton,
-      attach,
+      this.#attachmentPicker,
       this.#file,
       this.input,
       actionSlot("end-actions", "pmfa-composer-end"),
@@ -1208,6 +1219,18 @@ class ComposerView {
       this.input.style.setProperty("--pmfa-composer-max-rows", maxRows);
     this.#emojiButton.hidden = !this.options.emoji();
     this.#attach.hidden = !this.options.attachments();
+    if (this.#attach.hidden) this.#closeAttachments();
+    if (this.options.attachmentKinds().length) {
+      this.#attach.setAttribute("aria-haspopup", "dialog");
+      this.#attach.setAttribute(
+        "aria-expanded",
+        String(this.#attachmentMenu !== undefined),
+      );
+    } else {
+      this.#closeAttachments();
+      this.#attach.removeAttribute("aria-haspopup");
+      this.#attach.removeAttribute("aria-expanded");
+    }
     if (this.#emojiButton.hidden) this.#closeEmoji(false);
 
     const text = snapshot?.text ?? "";
@@ -1267,12 +1290,65 @@ class ComposerView {
 
   /** Stop recording, close popovers, and release the microphone. */
   dispose(): void {
+    this.#closeAttachments();
     this.#closeEmoji(false);
     this.#recorderUnsubscribe?.();
     this.#recorderUnsubscribe = undefined;
     this.#recorder?.dispose();
     this.#recorder = undefined;
     this.#syncRecording();
+  }
+
+  #closeAttachments(): void {
+    this.#attachmentMenu?.remove();
+    this.#attachmentMenu = undefined;
+    this.#attach.setAttribute("aria-expanded", "false");
+    document.removeEventListener("pointerdown", this.#attachmentOutside);
+  }
+
+  #toggleAttachments(): void {
+    const kinds = this.options.attachmentKinds();
+    if (!kinds.length) {
+      this.#file.accept = this.options.accept() ?? "";
+      this.#file.click();
+      return;
+    }
+    if (this.#attachmentMenu) {
+      this.#closeAttachments();
+      return;
+    }
+    const menu = document.createElement("div");
+    menu.className = "pmfa-attachment-menu";
+    menu.setAttribute("role", "dialog");
+    menu.setAttribute("aria-label", this.host.text("composer.attach"));
+    for (const kind of kinds) {
+      const choice = document.createElement("button");
+      choice.type = "button";
+      choice.className = "pmfa-btn pmfa-btn-ghost";
+      choice.append(
+        icon(ATTACHMENT_KINDS[kind].icon),
+        document.createTextNode(this.host.text(ATTACHMENT_KINDS[kind].label)),
+      );
+      choice.addEventListener("click", () => {
+        this.#file.accept = ATTACHMENT_KINDS[kind].accept;
+        this.#closeAttachments();
+        this.#attach.focus();
+        this.#file.click();
+      });
+      menu.append(choice);
+    }
+    menu.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      this.#closeAttachments();
+      this.#attach.focus();
+    });
+    this.#attachmentMenu = menu;
+    this.#attachmentPicker.append(menu);
+    this.#attach.setAttribute("aria-expanded", "true");
+    menu.querySelector<HTMLButtonElement>("button")?.focus();
+    document.addEventListener("pointerdown", this.#attachmentOutside);
   }
 
   #renderError(): void {
@@ -1702,6 +1778,43 @@ class ComposerView {
       chip.glyph.current = next;
       chip.glyph.name = glyphName;
     }
+    const preview = isImageAttachment(attachment)
+      ? (safeAttachmentUrl(attachment.uploaded?.previewUrl) ??
+        safeAttachmentUrl(attachment.uploaded?.url))
+      : undefined;
+    let image = chip.node.querySelector<HTMLImageElement>(".pmfa-chip-preview");
+    if (preview) {
+      if (!image) {
+        image = document.createElement("img");
+        image.className = "pmfa-chip-preview";
+        chip.node.prepend(image);
+      }
+      if (image.getAttribute("src") !== preview) image.src = preview;
+      image.alt = attachment.name;
+    } else image?.remove();
+    chip.glyph.current.style.display = preview ? "none" : "";
+    const playerUrl = /^(audio|video)\//i.test(attachment.contentType)
+      ? safeAttachmentUrl(attachment.uploaded?.url)
+      : undefined;
+    let player = chip.body.querySelector<HTMLMediaElement>(".pmfa-chip-player");
+    if (playerUrl) {
+      const tag = attachment.contentType.toLowerCase().startsWith("audio/")
+        ? "audio"
+        : "video";
+      if (player && player.tagName.toLowerCase() !== tag) {
+        player.remove();
+        player = null;
+      }
+      if (!player) {
+        player = document.createElement(tag);
+        player.className = "pmfa-chip-player";
+        player.controls = true;
+        player.preload = "none";
+        player.setAttribute("aria-label", attachment.name);
+        chip.body.insertBefore(player, chip.status);
+      }
+      if (player.getAttribute("src") !== playerUrl) player.src = playerUrl;
+    } else player?.remove();
     const percent = String(Math.round(attachment.progress * 100));
     if (attachment.status === "uploading") {
       chip.progress.setAttribute("aria-valuenow", percent);
@@ -1731,6 +1844,7 @@ class ComposerView {
 
 /** Attributes both composing elements read. */
 const COMPOSER_ATTRIBUTES = [
+  "attachment-kinds",
   "attachments",
   "accept",
   "multiple",
@@ -1953,6 +2067,15 @@ function composerOptions(
 ): ComposerOptions {
   return {
     ...base,
+    attachmentKinds: () => [
+      ...new Set(
+        (node.getAttribute("attachment-kinds") ?? "")
+          .split(/\s+/)
+          .filter((kind): kind is AttachmentKind =>
+            Object.hasOwn(ATTACHMENT_KINDS, kind),
+          ),
+      ),
+    ],
     accept: () => node.getAttribute("accept") ?? undefined,
     multiple: () => multipleAttribute(node),
     emoji: () => flagAttribute(node, "emoji", true),

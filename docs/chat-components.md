@@ -121,6 +121,51 @@ Without a safe URL, attachments remain metadata. Only absolute HTTP, HTTPS and
 blob URLs reach links or players; unsafe schemes are rejected. Your host controls
 media authorization, expiry, content security policy and retention.
 
+## Compose media
+
+`ComposeBox` and the composer inside `ChatWindow` accept images, video, audio
+and documents through your `ComposerActions.upload` adapter. The adapter receives
+the picked bytes, upload progress callback and abort signal. Return an authorized
+`MessageAttachment`; your send adapter receives its metadata alongside text and
+reply context. The components never upload to a default service.
+
+```tsx
+<ChatWindow
+  controller={conversation}
+  composerController={composer}
+  composerProps={{
+    attachments: true,
+    attachmentKinds: ["image", "video", "audio", "document"],
+    voiceNotes: true,
+    voiceNoteAutoSend: false,
+  }}
+/>
+```
+
+The named picker offers Photos, Videos, Audio and Documents. Omit
+`attachmentKinds` to retain the single file picker controlled by `accept`.
+These choices are file-picker hints, not upload validation or permissions.
+Your upload and send adapters enforce formats, sizes, authorization and transport
+capabilities. Disable `attachments` and `voiceNotes` when uploading is unavailable.
+
+Web Components use the same picker:
+
+```ts
+chatWindow.setAttribute("attachment-kinds", "image video audio document");
+chatWindow.setAttribute("voice-note-auto-send", "false");
+```
+
+Picked images show a thumbnail. Ready audio and video have playback controls;
+voice notes with auto-send disabled remain in the draft for review. Files can
+also be dropped or pasted. Remove an attachment to cancel its upload. Upload
+failure prevents sending; send failure preserves the ready files, caption and
+reply for retry. Only safe attachment URLs reach previews and players.
+
+Keep each conversation's composer controller while switching views if you want
+to preserve its media draft and retry identity. Dispose it when the owning inbox
+closes or authorization changes. Your host owns uploaded-object cleanup, URL
+expiry and regional storage; components do not infer a storage policy.
+
 ## Failed sends
 
 `ConversationController.send()` and `retry()` resolve to the resulting message,

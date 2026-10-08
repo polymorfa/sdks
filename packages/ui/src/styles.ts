@@ -388,6 +388,18 @@ a.pmfa-att-file:hover { background: color-mix(in srgb, currentColor 15%, transpa
   background: var(--pmfa-c-bg);
 }
 .pmfa-composer-row { display: flex; align-items: flex-end; gap: 6px; }
+.pmfa-attachment-picker { position: relative; flex: none; }
+.pmfa-attachment-menu {
+  position: absolute; bottom: calc(100% + 8px); inset-inline-start: 0; z-index: 30;
+  width: 190px; max-width: calc(100vw - 48px); padding: 6px;
+  border: 1px solid var(--pmfa-c-border); border-radius: 12px;
+  background: var(--pmfa-c-bg); color: var(--pmfa-c-fg);
+  box-shadow: 0 8px 28px #0002;
+}
+.pmfa-attachment-menu .pmfa-btn { width: 100%; min-height: 44px; justify-content: flex-start; gap: 12px; border-radius: 7px; }
+.pmfa-chip-preview { width: 56px; height: 56px; border-radius: 6px; object-fit: cover; }
+.pmfa-chip-player { display: block; width: 220px; max-width: 100%; }
+video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
 .pmfa-composer .pmfa-input {
   flex: 1;
   min-width: 0;

@@ -213,3 +213,39 @@ describe("pmfa-compose-box parity", () => {
     controller.dispose();
   });
 });
+
+describe("attachment type picker", () => {
+  it("offers the same media types and keyboard dismissal as React", () => {
+    const controller = composer();
+    const { box, root } = mount(controller, {
+      "attachment-kinds": "image video audio document",
+    });
+    const attach = root.querySelector<HTMLButtonElement>(
+      '[part~="composer-attach"]',
+    )!;
+    const input = root.querySelector<HTMLInputElement>('input[type="file"]')!;
+    const click = vi.spyOn(input, "click").mockImplementation(() => undefined);
+    for (const [label, accept] of [
+      ["Photos", "image/*"],
+      ["Videos", "video/*"],
+      ["Audio", "audio/*"],
+      ["Documents", ""],
+    ]) {
+      attach.click();
+      const button = [
+        ...root.querySelectorAll<HTMLButtonElement>(
+          ".pmfa-attachment-menu button",
+        ),
+      ].find((x) => x.textContent === label)!;
+      button.click();
+      expect(input.accept).toBe(accept);
+      expect(root.querySelector(".pmfa-attachment-menu")).toBeNull();
+    }
+    expect(click).toHaveBeenCalledTimes(4);
+    attach.click();
+    key(root.querySelector(".pmfa-attachment-menu")!, "Escape");
+    expect(root.activeElement).toBe(attach);
+    box.remove();
+    controller.dispose();
+  });
+});
