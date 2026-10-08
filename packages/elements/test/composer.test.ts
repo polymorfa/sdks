@@ -243,6 +243,16 @@ describe("attachment type picker", () => {
     }
     expect(click).toHaveBeenCalledTimes(4);
     attach.click();
+    const choices = root.querySelectorAll<HTMLButtonElement>(
+      ".pmfa-attachment-menu button",
+    );
+    choices[1]!.focus();
+    expect(attach.getAttribute("aria-expanded")).toBe("true");
+    root.querySelector("textarea")!.focus();
+    expect(root.querySelector(".pmfa-attachment-menu")).toBeNull();
+    expect(attach.getAttribute("aria-expanded")).toBe("false");
+    expect(root.activeElement).toBe(root.querySelector("textarea"));
+    attach.click();
     key(root.querySelector(".pmfa-attachment-menu")!, "Escape");
     expect(root.activeElement).toBe(attach);
     box.remove();

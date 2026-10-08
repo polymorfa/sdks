@@ -1048,6 +1048,10 @@ class ComposerView {
     this.#attach = attach;
     this.#attachmentPicker.className = "pmfa-attachment-picker";
     this.#attachmentPicker.append(attach);
+    this.#attachmentPicker.addEventListener("focusout", (event) => {
+      if (!this.#attachmentPicker.contains(event.relatedTarget as Node | null))
+        this.#closeAttachments();
+    });
     this.#file = document.createElement("input");
     this.#file.type = "file";
     this.#file.className = "pmfa-sr";

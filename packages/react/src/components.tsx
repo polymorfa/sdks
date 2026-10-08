@@ -1778,7 +1778,14 @@ export function ComposeBox({
           </button>
         )}
         {attachments && (
-          <div className="pmfa-attachment-picker" ref={attachRef}>
+          <div
+            className="pmfa-attachment-picker"
+            ref={attachRef}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget))
+                setAttachOpen(false);
+            }}
+          >
             <button
               ref={attachButton}
               type="button"

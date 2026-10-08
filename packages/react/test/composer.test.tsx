@@ -379,6 +379,16 @@ describe("ComposeBox attachment kinds", () => {
       }
       expect(click).toHaveBeenCalledTimes(4);
       act(() => attach.click());
+      const choices = view.host.querySelectorAll<HTMLButtonElement>(
+        ".pmfa-attachment-menu button",
+      );
+      act(() => choices[1]!.focus());
+      expect(attach.getAttribute("aria-expanded")).toBe("true");
+      act(() => view.host.querySelector("textarea")!.focus());
+      expect(view.host.querySelector(".pmfa-attachment-menu")).toBeNull();
+      expect(attach.getAttribute("aria-expanded")).toBe("false");
+      expect(document.activeElement).toBe(view.host.querySelector("textarea"));
+      act(() => attach.click());
       key(view.host.querySelector(".pmfa-attachment-menu")!, "Escape");
       expect(document.activeElement).toBe(attach);
       expect(controller.getSnapshot().attachments).toEqual([]);
