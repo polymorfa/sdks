@@ -1899,6 +1899,8 @@ export function ChatWindow({
   const conversation = useResolvedController(controller, createController);
   const slots = useSlots(classNames);
   const root = useShell(slots, "chatWindow", "pmfa-chat-window", className);
+  const snapshot = useController(conversation);
+  const configuration = usePolymorfa();
   const reply =
     onReply ??
     (composerController && !disabled
@@ -1906,9 +1908,29 @@ export function ChatWindow({
           composerController.setReplyTo(message.id)
       : undefined);
   return (
-    <section {...root} aria-label={text(usePolymorfa(), "chat.title")}>
+    <section
+      {...root}
+      aria-label={text(configuration, "chat.title")}
+      aria-busy={snapshot.status === "loading"}
+    >
       {header != null && (
         <div {...slots("chatHeader", "pmfa-chat-header")}>{header}</div>
+      )}
+      {snapshot.status === "error" && (
+        <div {...slots("error", "pmfa-error")} role="alert">
+          {snapshot.error ?? text(configuration, "chat.loadError")}
+          <button
+            type="button"
+            className="pmfa-btn"
+            onClick={() =>
+              void (snapshot.cursor
+                ? conversation.loadMore()
+                : conversation.load())
+            }
+          >
+            {text(configuration, "common.retry")}
+          </button>
+        </div>
       )}
       <MessageList
         controller={conversation}

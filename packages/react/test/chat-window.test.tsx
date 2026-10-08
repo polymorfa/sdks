@@ -104,3 +104,37 @@ it("renders an inline thread with observed receipts, safe media, and host-contro
   composer.dispose();
   conversation.dispose();
 });
+
+it("reports a history error and lets the host retry it", async () => {
+  const load = vi
+    .fn()
+    .mockRejectedValueOnce(new Error("History access unavailable"))
+    .mockResolvedValue({ messages: [] });
+  const conversation = new ConversationController({
+    load,
+    subscribe: () => () => undefined,
+    send: vi.fn(),
+  });
+  await conversation.load();
+  const host = document.createElement("div");
+  document.body.append(host);
+  const root = createRoot(host);
+  act(() =>
+    root.render(
+      <PolymorfaProvider>
+        <ChatWindow controller={conversation} />
+      </PolymorfaProvider>,
+    ),
+  );
+  expect(host.querySelector('[role="alert"]')?.textContent).toContain(
+    "History access unavailable",
+  );
+  await act(async () =>
+    (host.querySelector('[role="alert"] button') as HTMLButtonElement).click(),
+  );
+  expect(host.querySelector('[role="alert"]')).toBeNull();
+  expect(load).toHaveBeenCalledTimes(2);
+  act(() => root.unmount());
+  host.remove();
+  conversation.dispose();
+});
