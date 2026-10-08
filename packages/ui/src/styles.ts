@@ -790,6 +790,7 @@ a.pmfa-att-file:hover { background: color-mix(in srgb, currentColor 15%, transpa
 }
 
 .pmfa-drawer.pmfa-chat-window { position: static; inset: auto; z-index: auto; width: 100%; border: 0; border-radius: 0; box-shadow: none; animation: none; }
+@media (max-width: 600px) { .pmfa-btn-icon { min-width: 44px; min-height: 44px; } }
 /* Template builder */
 .pmfa-tb {
   container-type: inline-size;
