@@ -57,8 +57,10 @@ import {
   type SlotClassNames,
 } from "@polymorfa/ui";
 import {
+  createContext,
   memo,
   useCallback,
+  useContext,
   useEffect,
   useId,
   useLayoutEffect,
@@ -1011,6 +1013,17 @@ function hasFiles(event: DragEvent<HTMLElement>): boolean {
   return [...(event.dataTransfer?.types ?? [])].includes("Files");
 }
 
+type AddFiles = (files: FileList | readonly File[]) => void;
+
+/**
+ * Lets a chat window accept files dropped anywhere on it. The composer
+ * registers its own add-files path, so uploads keep the composer's adapter,
+ * accepted types and rejection handling.
+ */
+const FileDropContext = createContext<
+  { current: AddFiles | undefined } | undefined
+>(undefined);
+
 function rejectionCleared(
   previous: MessageComposerSnapshot,
   next: MessageComposerSnapshot,
@@ -1691,6 +1704,16 @@ export function ComposeBox({
     (id: string) => resolved.cancelAttachment(id),
     [resolved],
   );
+  const windowDrop = useContext(FileDropContext);
+  const latestAddFiles = useLatest(addFiles);
+  useEffect(() => {
+    if (windowDrop === undefined || !attachments) return;
+    const add: AddFiles = (files) => latestAddFiles.current(files);
+    windowDrop.current = add;
+    return () => {
+      if (windowDrop.current === add) windowDrop.current = undefined;
+    };
+  }, [windowDrop, attachments, latestAddFiles]);
 
   const replaceText = (value: string, nextCaret: number) => {
     pendingCaret.current = nextCaret;
@@ -2199,6 +2222,10 @@ export function ChatWindow({
   const root = useShell(slots, "chatWindow", "pmfa-chat-window", className);
   const snapshot = useController(conversation);
   const configuration = usePolymorfa();
+  const drop = useRef<AddFiles | undefined>(undefined);
+  const [dropping, setDropping] = useState(false);
+  const accepts = (event: DragEvent<HTMLElement>) =>
+    !disabled && drop.current !== undefined && hasFiles(event);
   const reply =
     onReply ??
     (composerController && !disabled
@@ -2210,7 +2237,35 @@ export function ChatWindow({
       {...root}
       aria-label={text(configuration, "chat.title")}
       aria-busy={snapshot.status === "loading"}
+      {...(dropping ? { "data-dropping": "" } : {})}
+      onDragEnter={(event) => {
+        if (!accepts(event)) return;
+        event.preventDefault();
+        setDropping(true);
+      }}
+      onDragOver={(event) => {
+        if (!accepts(event)) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "copy";
+      }}
+      onDragLeave={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null))
+          setDropping(false);
+      }}
+      onDrop={(event) => {
+        setDropping(false);
+        // The composer handles drops on itself and marks them handled.
+        if (event.defaultPrevented || !accepts(event)) return;
+        event.preventDefault();
+        drop.current?.(event.dataTransfer.files);
+      }}
     >
+      {dropping && (
+        <div className="pmfa-window-drop" aria-hidden="true">
+          <Icon name="attach" />
+          <span>{text(configuration, "composer.dropHint")}</span>
+        </div>
+      )}
       {header != null && (
         <div {...slots("chatHeader", "pmfa-chat-header")}>{header}</div>
       )}
@@ -2240,11 +2295,13 @@ export function ChatWindow({
         <div {...slots("chatFooter", "pmfa-chat-footer")}>
           {composerController && (
             <fieldset disabled={disabled}>
-              <ComposeBox
-                {...composerProps}
-                controller={composerController}
-                conversation={conversation}
-              />
+              <FileDropContext.Provider value={drop}>
+                <ComposeBox
+                  {...composerProps}
+                  controller={composerController}
+                  conversation={conversation}
+                />
+              </FileDropContext.Provider>
             </fieldset>
           )}
           {footer}

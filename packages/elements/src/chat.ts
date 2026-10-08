@@ -1611,6 +1611,17 @@ class ComposerView {
       .catch(() => undefined);
   }
 
+  /** Whether files dropped elsewhere on the chat can be attached here. */
+  acceptsFiles(): boolean {
+    return (
+      this.options.attachments() && this.options.controller() !== undefined
+    );
+  }
+
+  addFiles(files: FileList | null | undefined): void {
+    this.#addFiles(files);
+  }
+
   #addFiles(files: FileList | null | undefined): void {
     const controller = this.options.controller();
     if (files === null || files === undefined || controller === undefined)
@@ -2458,8 +2469,7 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
     const host = this.exposeHost();
     const panel = this.decorate(element("aside", "panel drawer"), "drawer");
     panel.setAttribute("role", this.isInline ? "region" : "dialog");
-    if (this.isInline) panel.classList.add("pmfa-chat-window");
-    else panel.setAttribute("aria-modal", "false");
+    if (!this.isInline) panel.setAttribute("aria-modal", "false");
     panel.setAttribute("aria-labelledby", this.#titleId);
     panel.tabIndex = -1;
     const header = this.decorate(element("header", "header"), "drawerHeader");
@@ -2520,6 +2530,38 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
     const slot = document.createElement("slot");
     footer.append(slot);
     panel.append(header, list.scroller, footer);
+    // Files dropped anywhere on the chat go through the composer's own path.
+    const overlay = span("pmfa-window-drop");
+    overlay.setAttribute("aria-hidden", "true");
+    overlay.append(icon("attach"), span("", this.text("composer.dropHint")));
+    const accepts = (event: DragEvent) =>
+      this.#composerView?.acceptsFiles() === true &&
+      [...(event.dataTransfer?.types ?? [])].includes("Files");
+    const dropping = (on: boolean) => {
+      panel.toggleAttribute("data-dropping", on);
+      if (on && !overlay.isConnected) panel.prepend(overlay);
+      if (!on) overlay.remove();
+    };
+    panel.addEventListener("dragenter", (event) => {
+      if (!accepts(event)) return;
+      event.preventDefault();
+      dropping(true);
+    });
+    panel.addEventListener("dragover", (event) => {
+      if (!accepts(event)) return;
+      event.preventDefault();
+      if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+    });
+    panel.addEventListener("dragleave", (event) => {
+      if (!panel.contains(event.relatedTarget as Node | null)) dropping(false);
+    });
+    panel.addEventListener("drop", (event) => {
+      dropping(false);
+      // The composer handles drops on itself and marks them handled.
+      if (event.defaultPrevented || !accepts(event)) return;
+      event.preventDefault();
+      this.#composerView?.addFiles(event.dataTransfer?.files);
+    });
     this.#parts = {
       generation: this.generation,
       panel,
@@ -2546,7 +2588,9 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
     }
     const parts = this.#partsFor();
     const { panel } = parts;
-    const className = this.rootClass("pmfa-drawer");
+    const className = this.rootClass(
+      this.isInline ? "pmfa-drawer pmfa-chat-window" : "pmfa-drawer",
+    );
     const extra = this.appearance().elements.drawer?.className;
     const full = extra === undefined ? className : `${className} ${extra}`;
     if (panel.className !== full) panel.className = full;

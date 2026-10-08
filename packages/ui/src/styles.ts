@@ -179,7 +179,31 @@ textarea.pmfa-input { min-height: 72px; resize: vertical; }
 .pmfa-error { margin: 0; color: var(--pmfa-c-danger); font-size: 0.875em; }
 
 /* Inline chat window: the host supplies a bounded height. */
-.pmfa-chat-window { display: flex; flex-direction: column; min-height: 0; min-width: 0; height: 100%; background: var(--pmfa-c-chat); color: var(--pmfa-c-fg); container-type: inline-size; }
+.pmfa-chat-window { position: relative; display: flex; flex-direction: column; min-height: 0; min-width: 0; height: 100%; background: var(--pmfa-c-chat); color: var(--pmfa-c-fg); container-type: inline-size; }
+.pmfa-drawer { position: relative; }
+/* Drop files anywhere on the chat; the overlay replaces the composer's own hint. */
+.pmfa-window-drop {
+  position: absolute;
+  inset: 8px;
+  z-index: 40;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 10px;
+  border: 2px dashed color-mix(in srgb, var(--pmfa-c-primary) 70%, transparent);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--pmfa-c-panel) 90%, transparent);
+  color: var(--pmfa-c-link);
+  font-size: 0.9375em;
+  font-weight: 600;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  animation: pmfa-pop 120ms ease-out;
+}
+.pmfa-window-drop .pmfa-icon { width: 32px; height: 32px; stroke-width: 1.75; }
+[data-dropping] .pmfa-composer[data-dragging] { outline: 0; background: transparent; }
+[data-dropping] .pmfa-composer[data-dragging] .pmfa-drop-hint { display: none; }
 .pmfa-chat-window > .pmfa-list { flex: 1; min-height: 0; }
 .pmfa-chat-header, .pmfa-chat-footer { flex: 0 0 auto; }
 .pmfa-chat-footer { border-top: 1px solid var(--pmfa-c-border); background: var(--pmfa-c-panel); padding-bottom: env(safe-area-inset-bottom); }
