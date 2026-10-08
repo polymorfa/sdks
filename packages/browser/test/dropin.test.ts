@@ -376,6 +376,32 @@ describe("createHandlerInboxSource", () => {
       await source.contact!({ id: "chat_1", lastActivity: 0, unreadCount: 0 }),
     ).toBeUndefined();
   });
+
+  it("reuses the same operation key across acknowledged-send retries", async () => {
+    const { client } = await readyClient({});
+    const messaging = client.messaging("support");
+    const send = vi.spyOn(messaging.messages, "send").mockResolvedValue({
+      data: { data: { id: "ack-1" } },
+    } as Awaited<ReturnType<typeof messaging.messages.send>>);
+    vi.spyOn(client, "messaging").mockReturnValue(messaging);
+    const source = createHandlerInboxSource(client, {
+      live: false,
+    }).conversation({
+      id: "recipient",
+      lastActivity: 0,
+      unreadCount: 0,
+    });
+    const draft = { clientId: "operation-1", text: "Hello" };
+    const signal = new AbortController().signal;
+    await source.send(draft, signal);
+    await source.send(draft, signal);
+    expect(send).toHaveBeenCalledTimes(2);
+    for (const [, options] of send.mock.calls) {
+      expect(options).toEqual({ idempotencyKey: "operation-1", signal });
+    }
+    send.mockRestore();
+    client.dispose();
+  });
 });
 
 describe("connectWhatsApp", () => {

@@ -600,6 +600,15 @@ function useStickToBottom(dependency: unknown) {
         : undefined;
     }
   }, []);
+  useEffect(() => {
+    const node = ref.current;
+    if (node === null || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      if (pinned.current) node.scrollTop = node.scrollHeight;
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
   const latest = () => {
     const node = ref.current;
     if (node) {

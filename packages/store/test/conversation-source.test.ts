@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   createStoreConversationSource,
+  toConversationMessage,
   type PolymorfaStore,
 } from "../src/index.js";
 import { BASE_TIME, event, openStore, received } from "./helpers.js";
@@ -329,4 +330,19 @@ it("preserves observed receipts when a conversation acknowledgement is cached", 
     page.messages.find((message) => message.id === "ack")?.receipt,
   ).toEqual(receipt);
   store.close();
+});
+
+it("keeps an observed read state when stored receipt timestamps omit state", () => {
+  expect(
+    toConversationMessage({
+      id: "read-message",
+      _t: BASE_TIME,
+      session: "support",
+      conversationId: "recipient",
+      createdAt: BASE_TIME,
+      fromMe: true,
+      status: "read",
+      receipt: { deliveredAt: BASE_TIME - 1_000 },
+    }).receipt,
+  ).toEqual({ state: "read", deliveredAt: BASE_TIME - 1_000 });
 });

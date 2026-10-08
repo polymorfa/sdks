@@ -69,3 +69,52 @@ it("composes an inline portable chat and leaves Escape to the host", async () =>
   composer.dispose();
   conversation.dispose();
 });
+
+it("keeps the reader position on resize and disconnects its observer", async () => {
+  let resize = () => {};
+  const disconnect = vi.fn();
+  const originalObserver = globalThis.ResizeObserver;
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      constructor(callback: () => void) {
+        resize = callback;
+      }
+      observe() {}
+      disconnect = disconnect;
+    },
+  );
+  defineChatElements();
+  const conversation = new ConversationController({
+    load: async () => ({ messages: [] }),
+    subscribe: () => () => undefined,
+    send: vi.fn(),
+  });
+  await conversation.load();
+  const node = document.createElement(
+    "pmfa-chat-window",
+  ) as PolymorfaChatWindowElement;
+  node.controller = conversation;
+  document.body.append(node);
+  await Promise.resolve();
+  try {
+    const list = node.shadowRoot!.querySelector(
+      '[role="log"]',
+    ) as HTMLDivElement;
+    Object.defineProperties(list, {
+      scrollHeight: { value: 1000 },
+      clientHeight: { value: 300 },
+    });
+    resize();
+    expect(list.scrollTop).toBe(1000);
+    list.scrollTop = 200;
+    list.dispatchEvent(new Event("scroll"));
+    resize();
+    expect(list.scrollTop).toBe(200);
+  } finally {
+    node.remove();
+    conversation.dispose();
+    vi.stubGlobal("ResizeObserver", originalObserver);
+  }
+  expect(disconnect).toHaveBeenCalledOnce();
+});

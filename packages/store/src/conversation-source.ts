@@ -47,10 +47,19 @@ export function toConversationMessage(row: StoredMessage): ConversationMessage {
       row.status === "pending" || row.status === "failed" ? row.status : "sent",
     ...(row.status === "delivered" ||
     row.status === "read" ||
-    row.status === "played"
-      ? { receipt: { state: row.status } }
+    row.status === "played" ||
+    row.receipt !== undefined
+      ? {
+          receipt: {
+            ...(row.status === "delivered" ||
+            row.status === "read" ||
+            row.status === "played"
+              ? { state: row.status }
+              : {}),
+            ...row.receipt,
+          },
+        }
       : {}),
-    ...(row.receipt === undefined ? {} : { receipt: row.receipt }),
     ...(row.replyTo === undefined ? {} : { replyTo: row.replyTo }),
     ...(row.attachments === undefined || row.attachments.length === 0
       ? {}

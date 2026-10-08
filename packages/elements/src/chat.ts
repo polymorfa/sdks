@@ -155,6 +155,7 @@ class MessageListView {
   #empty: HTMLLIElement | undefined;
   #pinned = true;
   #latest: HTMLButtonElement;
+  #resizeObserver: ResizeObserver | undefined;
 
   constructor(
     private readonly host: ViewHost,
@@ -193,6 +194,15 @@ class MessageListView {
   }
 
   update(snapshot: ConversationSnapshot | undefined): void {
+    if (
+      this.#resizeObserver === undefined &&
+      typeof ResizeObserver !== "undefined"
+    ) {
+      this.#resizeObserver = new ResizeObserver(() => {
+        if (this.#pinned) this.scroller.scrollTop = this.scroller.scrollHeight;
+      });
+      this.#resizeObserver.observe(this.scroller);
+    }
     const actions = this.actions();
     const messages = snapshot?.messages ?? [];
     const byId = new Map(messages.map((message) => [message.id, message]));
@@ -273,6 +283,11 @@ class MessageListView {
         this.scroller.scrollTop +=
           anchor.getBoundingClientRect().top - anchorTop;
     });
+  }
+
+  dispose(): void {
+    this.#resizeObserver?.disconnect();
+    this.#resizeObserver = undefined;
   }
 
   jump(id: string): void {
@@ -1783,10 +1798,16 @@ export class PolymorfaMessageListElement extends ChatElement<ConversationSnapsho
     if (this.isConnected) this.render();
   }
 
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.#view?.dispose();
+  }
+
   protected renderContent(
     snapshot: ConversationSnapshot | undefined,
   ): readonly Node[] {
     if (this.#view === undefined || this.stale(this.#viewGeneration)) {
+      this.#view?.dispose();
       this.#viewGeneration = this.generation;
       this.#view = new MessageListView(
         this.exposeHost(),
@@ -2073,6 +2094,7 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
     this.#composerUnsubscribe?.();
     this.#composerUnsubscribe = undefined;
     this.removeEventListener("keydown", this.#onKey);
+    this.#parts?.list.dispose();
     this.#composerView?.dispose();
   }
 
@@ -2113,6 +2135,7 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
   #partsFor(): DrawerParts {
     if (this.#parts !== undefined && !this.stale(this.#parts.generation))
       return this.#parts;
+    this.#parts?.list.dispose();
     const host = this.exposeHost();
     const panel = this.decorate(element("aside", "panel drawer"), "drawer");
     panel.setAttribute("role", this.isInline ? "region" : "dialog");
@@ -2195,6 +2218,7 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
     snapshot: ConversationSnapshot | undefined,
   ): readonly Node[] {
     if (!this.#open) {
+      this.#parts?.list.dispose();
       // A closed drawer must not keep a recording (and its microphone) alive.
       this.#composerView?.form.remove();
       this.#composerView?.dispose();

@@ -49,7 +49,9 @@ checks authorization on every request. Omit `composerController` for history onl
 
 The header and composer stay visible while history scrolls. Loading earlier
 messages preserves the visible message position. New messages stay in view when
-you are already at the bottom; otherwise use **Latest messages**. Quoted replies
+you are already at the bottom, including when the viewport or composer resizes;
+otherwise use **Latest messages**. The inline composer places the writing area
+above emoji, attachment and send controls. Quoted replies
 navigate to a loaded original. Missing history is not fetched implicitly by a quote.
 
 `messageFilter` affects presentation only. It never reloads the conversation,
@@ -128,6 +130,8 @@ failed result into a composer error, preserving text, attachments and reply
 context. Resubmitting an unchanged draft retries the same client operation ID;
 edited content creates a new operation. Your backend must use that ID for
 idempotency and reconcile uncertain outcomes before accepting another effect.
+The built-in handler inbox source sends that client operation ID as the
+messaging idempotency key on every attempt, including token-refresh retries.
 
 Retry accepts an optional abort signal. Disposal cancels owned requests; stale
 history completions cannot overwrite newer history. Controllers never supply

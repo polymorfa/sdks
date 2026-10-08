@@ -422,10 +422,10 @@ export function createHandlerInboxSource(
               : { quotedMessage: { id: outgoing.replyTo } }),
           } as Parameters<typeof messaging.messages.send>[0];
           const request = () =>
-            messaging.messages.send(
-              body,
-              signal === undefined ? {} : { signal },
-            );
+            messaging.messages.send(body, {
+              ...(signal === undefined ? {} : { signal }),
+              idempotencyKey: outgoing.clientId,
+            });
           let response;
           try {
             response = await request();

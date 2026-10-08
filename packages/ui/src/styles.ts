@@ -491,6 +491,34 @@ a.pmfa-att-file:hover { background: color-mix(in srgb, currentColor 15%, transpa
 .pmfa-send, .pmfa-voice { transition: transform 140ms ease, background-color 120ms ease; }
 .pmfa-voice { color: var(--pmfa-c-muted); }
 .pmfa-composer-row[hidden], .pmfa-recording[hidden] { display: none; }
+
+/* Inline windows use a writing area above the composer controls. */
+.pmfa-chat-window .pmfa-composer {
+  border: 1px solid var(--pmfa-c-border);
+  border-radius: var(--pmfa-r-l);
+  padding: 12px;
+}
+.pmfa-chat-window .pmfa-composer:focus-within {
+  border-color: color-mix(in srgb, var(--pmfa-c-fg) 40%, var(--pmfa-c-border));
+}
+.pmfa-chat-window .pmfa-composer-row { flex-wrap: wrap; gap: 4px; }
+.pmfa-chat-window .pmfa-composer .pmfa-input {
+  order: -1;
+  flex: 1 0 100%;
+  width: 100%;
+  min-height: 54px;
+  margin: 0;
+  padding: 4px 4px 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.pmfa-chat-window .pmfa-composer .pmfa-input:focus-visible { outline: none; }
+.pmfa-chat-window .pmfa-composer-end { margin-inline-start: auto; }
+.pmfa-chat-window .pmfa-send, .pmfa-chat-window .pmfa-voice { margin-inline-start: auto; border-radius: var(--pmfa-r-m); }
+.pmfa-chat-window .pmfa-composer-end + .pmfa-send, .pmfa-chat-window .pmfa-composer-end + .pmfa-voice { margin-inline-start: 4px; }
+.pmfa-chat-window :is(.pmfa-chat-footer, .pmfa-drawer-footer) { padding: 12px var(--pmfa-s-l) max(12px, env(safe-area-inset-bottom)); border-top: 0; }
+.pmfa-chat-window .pmfa-chat-footer > fieldset + * { margin-top: 8px; }
 @media (max-width: 360px) {
   .pmfa-composer { padding-inline: 4px; }
   .pmfa-composer .pmfa-input { margin-inline: 2px; padding-inline: 12px; }

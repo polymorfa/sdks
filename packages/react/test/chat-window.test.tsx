@@ -105,6 +105,59 @@ it("renders an inline thread with observed receipts, safe media, and host-contro
   conversation.dispose();
 });
 
+it("keeps latest messages in view on resize without pulling a reader from history", async () => {
+  let resize = () => {};
+  const disconnect = vi.fn();
+  const originalObserver = globalThis.ResizeObserver;
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      constructor(callback: () => void) {
+        resize = callback;
+      }
+      observe() {}
+      disconnect = disconnect;
+    },
+  );
+  const conversation = new ConversationController({
+    load: async () => ({ messages: [] }),
+    subscribe: () => () => undefined,
+    send: vi.fn(),
+  });
+  await conversation.load();
+  const host = document.createElement("div");
+  document.body.append(host);
+  const root = createRoot(host);
+  try {
+    act(() =>
+      root.render(
+        <PolymorfaProvider>
+          <ChatWindow controller={conversation} />
+        </PolymorfaProvider>,
+      ),
+    );
+    const list = host.querySelector('[role="log"]') as HTMLDivElement;
+    Object.defineProperties(list, {
+      scrollHeight: { value: 1000 },
+      clientHeight: { value: 300 },
+    });
+    resize();
+    expect(list.scrollTop).toBe(1000);
+    act(() => {
+      list.scrollTop = 200;
+      list.dispatchEvent(new Event("scroll", { bubbles: true }));
+    });
+    resize();
+    expect(list.scrollTop).toBe(200);
+  } finally {
+    act(() => root.unmount());
+    host.remove();
+    conversation.dispose();
+    vi.stubGlobal("ResizeObserver", originalObserver);
+  }
+  expect(disconnect).toHaveBeenCalledOnce();
+});
+
 it("reports a history error and lets the host retry it", async () => {
   const load = vi
     .fn()
