@@ -267,17 +267,9 @@ textarea.pmfa-input { min-height: 72px; resize: vertical; }
   font-size: 0.6875em;
   font-variant-numeric: tabular-nums;
 }
-.pmfa-msg:not(.pmfa-msg-end):not(.pmfa-msg-failed):not(.pmfa-msg-pending) > .pmfa-meta {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  min-height: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-}
 .pmfa-meta .pmfa-status { width: 14px; height: 14px; }
-.pmfa-msg-sent .pmfa-status { color: var(--pmfa-c-link); }
+.pmfa-msg-sent .pmfa-status { color: var(--pmfa-c-muted); }
+.pmfa-msg-sent .pmfa-status-read, .pmfa-msg-sent .pmfa-status-played { color: #0284c7; }
 .pmfa-msg-failed .pmfa-meta { color: var(--pmfa-c-danger); font-weight: 600; }
 .pmfa-msg-error { margin: 2px 8px 0; color: var(--pmfa-c-danger); font-size: 0.75em; }
 
