@@ -71,17 +71,22 @@ removes messages from state, changes subscriptions, or cancels an in-flight send
 ## Web Components
 
 ```ts
-import { defineChatElements } from "@polymorfa/elements";
+import {
+  defineChatElements,
+  type PolymorfaChatWindowElement,
+} from "@polymorfa/elements";
 
 defineChatElements();
-const window = document.createElement("pmfa-chat-window");
-window.setAttribute("heading", "Customer support");
-window.style.height = "min(720px, 80dvh)";
-window.controller = conversation;
+const chatWindow = document.createElement(
+  "pmfa-chat-window",
+) as PolymorfaChatWindowElement;
+chatWindow.setAttribute("heading", "Customer support");
+chatWindow.style.height = "min(720px, 80dvh)";
+chatWindow.controller = conversation;
 // Assign only after the host has confirmed sending is available.
-window.composerController = composer;
-window.messageFilter = (message) => message.direction === "inbound";
-container.append(window);
+chatWindow.composerController = composer;
+chatWindow.messageFilter = (message) => message.direction === "inbound";
+container.append(chatWindow);
 ```
 
 `pmfa-chat-window` uses the existing drawer's composer, reply events, configuration
