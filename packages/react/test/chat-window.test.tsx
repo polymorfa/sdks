@@ -108,6 +108,7 @@ it("renders an inline thread with observed receipts, safe media, and host-contro
 it("keeps latest messages in view on resize without pulling a reader from history", async () => {
   let resize = () => {};
   const disconnect = vi.fn();
+  const observe = vi.fn();
   const originalObserver = globalThis.ResizeObserver;
   vi.stubGlobal(
     "ResizeObserver",
@@ -115,7 +116,7 @@ it("keeps latest messages in view on resize without pulling a reader from histor
       constructor(callback: () => void) {
         resize = callback;
       }
-      observe() {}
+      observe = observe;
       disconnect = disconnect;
     },
   );
@@ -137,6 +138,8 @@ it("keeps latest messages in view on resize without pulling a reader from histor
       ),
     );
     const list = host.querySelector('[role="log"]') as HTMLDivElement;
+    expect(observe).toHaveBeenCalledWith(list);
+    expect(observe).toHaveBeenCalledWith(list.firstElementChild);
     Object.defineProperties(list, {
       scrollHeight: { value: 1000 },
       clientHeight: { value: 300 },

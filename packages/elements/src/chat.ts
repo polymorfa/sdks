@@ -202,6 +202,7 @@ class MessageListView {
         if (this.#pinned) this.scroller.scrollTop = this.scroller.scrollHeight;
       });
       this.#resizeObserver.observe(this.scroller);
+      this.#resizeObserver.observe(this.list);
     }
     const actions = this.actions();
     const messages = snapshot?.messages ?? [];

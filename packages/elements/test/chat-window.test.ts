@@ -73,6 +73,7 @@ it("composes an inline portable chat and leaves Escape to the host", async () =>
 it("keeps the reader position on resize and disconnects its observer", async () => {
   let resize = () => {};
   const disconnect = vi.fn();
+  const observe = vi.fn();
   const originalObserver = globalThis.ResizeObserver;
   vi.stubGlobal(
     "ResizeObserver",
@@ -80,7 +81,7 @@ it("keeps the reader position on resize and disconnects its observer", async () 
       constructor(callback: () => void) {
         resize = callback;
       }
-      observe() {}
+      observe = observe;
       disconnect = disconnect;
     },
   );
@@ -101,6 +102,8 @@ it("keeps the reader position on resize and disconnects its observer", async () 
     const list = node.shadowRoot!.querySelector(
       '[role="log"]',
     ) as HTMLDivElement;
+    expect(observe).toHaveBeenCalledWith(list);
+    expect(observe).toHaveBeenCalledWith(list.firstElementChild);
     Object.defineProperties(list, {
       scrollHeight: { value: 1000 },
       clientHeight: { value: 300 },

@@ -607,6 +607,7 @@ function useStickToBottom(dependency: unknown) {
       if (pinned.current) node.scrollTop = node.scrollHeight;
     });
     observer.observe(node);
+    if (node.firstElementChild) observer.observe(node.firstElementChild);
     return () => observer.disconnect();
   }, []);
   const latest = () => {
