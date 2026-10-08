@@ -319,6 +319,7 @@ function messageFromPayload(
               size: 0,
               contentType: mimeType ?? "application/octet-stream",
               url: mediaUrl,
+              voice: bool(payload.ptt),
             }),
           ],
   });

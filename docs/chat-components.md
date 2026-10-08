@@ -166,11 +166,30 @@ const observed = {
 };
 ```
 
-Image attachments display a preview. Audio and video use native browser controls,
-with `preload="none"`; they do not autoplay. Other files show their name and size.
-Without a safe URL, attachments remain metadata. Only absolute HTTP, HTTPS and
-blob URLs reach links or players; unsafe schemes are rejected. Your host controls
-media authorization, expiry, content security policy and retention.
+Image attachments display a preview. Audio uses the built-in player: a play
+button, a seekable track, elapsed and total time, and a speed control for voice
+notes. Video uses native browser controls. Players use `preload="none"` and never
+autoplay, so nothing downloads until someone presses play. Documents show a
+type badge, the file name and their details, such as `PDF · 12 pages · 2.4 MB`.
+
+Without a safe URL, an attachment remains metadata: audio shows a disabled
+player, and images and video show a placeholder with the file name. Only
+absolute HTTP, HTTPS and blob URLs reach links or players; unsafe schemes are
+rejected. Your host controls media authorization, expiry, content security
+policy and retention.
+
+Attachments accept optional presentation hints. The components never infer
+them: without `durationSeconds` no length is shown, and without `waveform` the
+player draws a plain track.
+
+| Field             | Effect                                                           |
+| ----------------- | ---------------------------------------------------------------- |
+| `voice`           | Draws an audio attachment as a voice note, with a speed control. |
+| `durationSeconds` | Shows the length before playback and on video placeholders.      |
+| `waveform`        | Observed levels from 0 to 1, resampled to the player's bars.     |
+| `pageCount`       | Adds the page count to a document's details.                     |
+
+`@polymorfa/store` sets `voice` from the `ptt` flag on message events.
 
 ## Compose media
 
@@ -235,7 +254,14 @@ server credentials or add a global content proxy.
 
 ## Styling and localization
 
-Use appearance variables, `classNames`, or Web Component `::part()` overrides.
+The default theme follows familiar messaging ergonomics: a tail on the first
+bubble of each run, 2px between messages from the same side and 12px when the
+side changes, and the time and receipt sharing the last line of text. Hover
+actions float beside the bubble, so showing them never reflows the thread.
+Touch screens always show them, and row menus in the conversation list.
+
+Use appearance variables, the chat variables listed in the `@polymorfa/ui`
+README, `classNames`, or Web Component `::part()` overrides.
 The new inline slots are `chatWindow`, `chatHeader`, `chatFooter`; `latestButton`
 styles the return-to-bottom control. Receipt labels and all controls use the
 host's locale dictionary. Read and played states use a semantic receipt color.

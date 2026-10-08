@@ -203,6 +203,64 @@ export function isImageAttachment(attachment: {
   return attachment.contentType.toLowerCase().startsWith("image/");
 }
 
+export type AttachmentPresentation =
+  "image" | "video" | "voice" | "audio" | "document";
+
+/** How a received or sent attachment is drawn inside a bubble. */
+export function attachmentPresentation(attachment: {
+  readonly contentType: string;
+  readonly voice?: boolean;
+}): AttachmentPresentation {
+  const type = attachment.contentType.toLowerCase();
+  if (type.startsWith("image/")) return "image";
+  if (type.startsWith("video/")) return "video";
+  if (type.startsWith("audio/")) return attachment.voice ? "voice" : "audio";
+  return "document";
+}
+
+/** `0:18`, `4:05` or `1:02:03`; `undefined` for a missing or invalid length. */
+export function formatDuration(
+  seconds: number | undefined,
+): string | undefined {
+  if (seconds === undefined || !Number.isFinite(seconds) || seconds < 0)
+    return undefined;
+  const total = Math.round(seconds);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = String(total % 60).padStart(2, "0");
+  return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
+}
+
+/** Upper-case extension of a file name, at most five characters, such as `PDF`. */
+export function fileExtension(name: string): string | undefined {
+  const match = /\.([a-z0-9]{1,5})$/i.exec(name.trim());
+  return match?.[1]?.toUpperCase();
+}
+
+/**
+ * Resample observed levels to `count` bars between 0.1 and 1. Returns an
+ * empty list when there are no usable levels, so no waveform is invented.
+ */
+export function waveformBars(
+  levels: readonly number[] | undefined,
+  count = 36,
+): readonly number[] {
+  const usable = (levels ?? []).filter((level) => Number.isFinite(level));
+  if (usable.length === 0 || count <= 0) return [];
+  const peak = Math.max(...usable.map((level) => Math.abs(level)), 0);
+  if (peak === 0) return Array.from({ length: count }, () => 0.1);
+  return Array.from({ length: count }, (_, index) => {
+    const start = Math.floor((index * usable.length) / count);
+    const end = Math.max(
+      start + 1,
+      Math.floor(((index + 1) * usable.length) / count),
+    );
+    const slice = usable.slice(start, end).map((level) => Math.abs(level));
+    const value = Math.max(...slice) / peak;
+    return Math.round(Math.max(0.1, Math.min(1, value)) * 100) / 100;
+  });
+}
+
 const SAFE_ATTACHMENT_PROTOCOLS = new Set(["https:", "http:", "blob:"]);
 
 /**
@@ -263,6 +321,11 @@ export const CHAT_ICONS = {
     "M23 7l-7 5 7 5V7ZM14 5H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z",
   link: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71",
   plus: "M12 5v14M5 12h14",
+  play: "M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z",
+  pause: "M8 5h2.5v14H8ZM13.5 5H16v14h-2.5Z",
+  chevron: "m6 9 6 6 6-6",
+  headphones:
+    "M3 18v-6a9 9 0 0 1 18 0v6M21 19a2 2 0 0 1-2 2h-1v-6h3ZM3 19a2 2 0 0 0 2 2h1v-6H3Z",
   inbox:
     "M22 12h-6l-2 3h-4l-2-3H2M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z",
 } as const;

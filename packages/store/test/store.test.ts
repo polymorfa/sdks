@@ -71,6 +71,28 @@ describe("createPolymorfaStore routing", () => {
     store.close();
   });
 
+  it("keeps the voice-note flag from a media message", async () => {
+    const store = await openStore();
+    await store.ingest([
+      event("message.received", {
+        id: "voice_1",
+        conversation: { ...chat, sender: { id: "contact_1" } },
+        fromMe: false,
+        timestamp: Math.floor((BASE_TIME + 1_000) / 1000),
+        type: "audio",
+        mimeType: "audio/ogg",
+        mediaUrl: "https://media.example/voice.ogg",
+        ptt: true,
+      }),
+    ]);
+    const [message] = await store.messages.list({ conversationId: "chat_1" });
+    expect(message?.attachments?.[0]).toMatchObject({
+      contentType: "audio/ogg",
+      voice: true,
+    });
+    store.close();
+  });
+
   it("files messages and updates the conversation summary", async () => {
     const store = await openStore();
     expect(store.mode).toBe("indexeddb");

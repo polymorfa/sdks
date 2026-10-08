@@ -71,6 +71,8 @@ export interface StoredAttachment {
   readonly contentType: string;
   readonly url?: string;
   readonly previewUrl?: string;
+  /** Recorded as a voice note (`ptt` on the message event). */
+  readonly voice?: boolean;
 }
 
 export interface StoredMessage extends StoredRow {

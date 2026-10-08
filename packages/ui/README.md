@@ -61,6 +61,29 @@ defineAppearance({
 });
 ```
 
+### Chat variables
+
+Chat surfaces derive their colors from the appearance variables. Set these CSS
+custom properties on any ancestor to override one surface. Each has a
+`--pmfa-dark-*` counterpart for the dark palette, such as
+`--pmfa-dark-bubble-outgoing`.
+
+| Variable                      | Default                                    |
+| ----------------------------- | ------------------------------------------ |
+| `--pmfa-chat-background`      | A light tint of the background and primary |
+| `--pmfa-chat-panel`           | The background color                       |
+| `--pmfa-chat-pattern`         | A faint dot grid; set `none` to remove it  |
+| `--pmfa-bubble-incoming`      | The background color                       |
+| `--pmfa-bubble-outgoing`      | The primary color at 13% on the background |
+| `--pmfa-bubble-outgoing-text` | The foreground color                       |
+| `--pmfa-bubble-radius`        | `8px`                                      |
+| `--pmfa-message-font-size`    | `0.9375em`                                 |
+| `--pmfa-receipt-read`         | A blue for read and played receipts        |
+| `--pmfa-unread`               | The primary color, for unread badges       |
+
+`--pmfa-chat-pattern`, `--pmfa-bubble-radius`, `--pmfa-message-font-size` and
+`--pmfa-unread` have no dark counterpart.
+
 ### Cascade layer
 
 Every bundled rule sits in `@layer polymorfa`. Any unlayered CSS in your app

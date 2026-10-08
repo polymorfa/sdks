@@ -32,10 +32,14 @@ import {
   type EmojiPickerCategory,
   type QuickReplyOption,
   type TextEdit,
+  attachmentPresentation,
+  fileExtension,
   formatDayLabel,
+  formatDuration,
   formatFileSize,
   formatMessageTime,
   isImageAttachment,
+  waveformBars,
   layoutMessages,
   messagePresentationStatus,
   safeAttachmentUrl,
@@ -383,7 +387,18 @@ class MessageListView {
         attachments.append(this.#attachmentNode(attachment));
       bubble.append(attachments);
     }
-    if (message.text !== "") bubble.append(span("pmfa-text", message.text));
+    if (message.text !== "") {
+      const textNode = span("pmfa-text", message.text);
+      // Reserves the width of the time and receipt on the last line.
+      const space = span(
+        "pmfa-meta-space",
+        formatMessageTime(message.createdAt, host.localeCode()) ?? "",
+      );
+      space.setAttribute("aria-hidden", "true");
+      if (outbound) space.append(span("pmfa-meta-space-icon"));
+      textNode.append(space);
+      bubble.append(textNode);
+    }
     row.append(bubble);
     const retry =
       retryable &&
@@ -469,7 +484,8 @@ class MessageListView {
     // Unsafe schemes such as `javascript:` never reach `href` or `src`.
     const url = safeAttachmentUrl(attachment.url);
     const source = safeAttachmentUrl(attachment.previewUrl) ?? url;
-    if (isImageAttachment(attachment) && source !== undefined) {
+    const kind = attachmentPresentation(attachment);
+    if (kind === "image" && source !== undefined) {
       const image = document.createElement("img");
       image.src = source;
       image.alt = attachment.name;
@@ -489,19 +505,30 @@ class MessageListView {
       link.append(image);
       return host.decorate(link, "attachment");
     }
-    if (url !== undefined && /^(audio|video)\//i.test(attachment.contentType)) {
+    if (kind === "voice" || kind === "audio")
+      return this.#audioNode(attachment, url, kind === "voice");
+    const duration = formatDuration(attachment.durationSeconds);
+    if (kind === "video" && url !== undefined) {
       const frame = host.decorate(element("div", "attachment"), "attachment");
-      frame.className = "pmfa-att pmfa-att-player";
-      const player = document.createElement(
-        attachment.contentType.toLowerCase().startsWith("audio/")
-          ? "audio"
-          : "video",
-      );
+      frame.className = "pmfa-att pmfa-att-media pmfa-att-player";
+      const player = document.createElement("video");
       player.controls = true;
       player.preload = "none";
       player.src = url;
       player.setAttribute("aria-label", attachment.name);
-      frame.append(player, span("pmfa-att-name", attachment.name));
+      frame.append(player);
+      return frame;
+    }
+    if (kind === "video" || kind === "image") {
+      const frame = host.decorate(element("div", "attachment"), "attachment");
+      frame.className = "pmfa-att pmfa-att-media pmfa-att-placeholder";
+      frame.append(
+        icon(kind === "video" ? "video" : "image"),
+        span("pmfa-att-name", attachment.name),
+        span("pmfa-sr", host.text("chat.mediaUnavailable")),
+      );
+      if (duration !== undefined)
+        frame.append(span("pmfa-att-duration", duration));
       return frame;
     }
     const node =
@@ -515,15 +542,173 @@ class MessageListView {
       node.rel = "noopener noreferrer";
       node.title = host.text("chat.openAttachment", { name: attachment.name });
     }
-    const badge = span("pmfa-att-icon");
-    badge.append(icon("file"));
+    const extension = fileExtension(attachment.name);
+    const tile = span("pmfa-att-tile");
+    if (extension !== undefined) tile.dataset.extension = extension;
+    tile.append(icon("file"));
     const body = span("pmfa-att-body");
-    body.append(
-      span("pmfa-att-name", attachment.name),
-      span("pmfa-att-size", formatFileSize(attachment.size, host.localeCode())),
-    );
-    node.append(badge, body);
+    body.append(span("pmfa-att-name", attachment.name));
+    const details = [
+      extension,
+      attachment.pageCount === undefined
+        ? undefined
+        : attachment.pageCount === 1
+          ? host.text("chat.onePage")
+          : host.text("chat.pages", {
+              count: attachment.pageCount.toLocaleString(host.localeCode()),
+            }),
+      attachment.size > 0
+        ? formatFileSize(attachment.size, host.localeCode())
+        : undefined,
+    ].filter((value) => value !== undefined);
+    if (details.length > 0)
+      body.append(span("pmfa-att-size", details.join(" · ")));
+    node.append(tile, body);
     return host.decorate(node, "attachment");
+  }
+
+  /**
+   * Voice note and audio player. A missing URL renders the same layout with a
+   * disabled control, so retained metadata never looks playable.
+   */
+  #audioNode(
+    attachment: MessageAttachment,
+    url: string | undefined,
+    voice: boolean,
+  ): HTMLElement {
+    const { host } = this;
+    const frame = host.decorate(element("div", "attachment"), "attachment");
+    frame.className = `pmfa-att pmfa-att-audio${voice ? " pmfa-att-voice" : ""}`;
+    frame.style.setProperty("--pmfa-progress", "0");
+    const label = voice ? host.text("chat.voiceNote") : attachment.name;
+    let total =
+      attachment.durationSeconds !== undefined && attachment.durationSeconds > 0
+        ? attachment.durationSeconds
+        : undefined;
+    if (!voice) {
+      const tile = span("pmfa-att-tile");
+      tile.setAttribute("aria-hidden", "true");
+      tile.append(icon("headphones"));
+      frame.append(tile);
+    }
+    const play = document.createElement("button");
+    play.type = "button";
+    play.className = "pmfa-play";
+    play.disabled = url === undefined;
+    const track = span("pmfa-track");
+    const bars = waveformBars(attachment.waveform);
+    const barNodes: HTMLSpanElement[] = [];
+    if (bars.length > 0) {
+      const wave = span("pmfa-wave");
+      wave.setAttribute("aria-hidden", "true");
+      for (const level of bars) {
+        const bar = document.createElement("span");
+        bar.style.height = `${level * 100}%`;
+        barNodes.push(bar);
+        wave.append(bar);
+      }
+      track.append(wave);
+    } else {
+      const line = span("pmfa-line");
+      line.setAttribute("aria-hidden", "true");
+      track.append(line);
+    }
+    const seek = document.createElement("input");
+    seek.type = "range";
+    seek.className = "pmfa-seek";
+    seek.min = "0";
+    seek.step = "any";
+    seek.setAttribute("aria-label", host.text("chat.position"));
+    const time = span("pmfa-att-time");
+    track.append(seek, time);
+    frame.append(play, track);
+    const audio =
+      url === undefined ? undefined : document.createElement("audio");
+    let position = 0;
+    const render = () => {
+      const playing = audio !== undefined && !audio.paused;
+      const progress = total === undefined ? 0 : Math.min(1, position / total);
+      frame.toggleAttribute("data-playing", playing);
+      frame.style.setProperty("--pmfa-progress", String(progress));
+      barNodes.forEach((bar, index) =>
+        bar.toggleAttribute(
+          "data-played",
+          (index + 0.5) / barNodes.length <= progress,
+        ),
+      );
+      play.replaceChildren(
+        icon(playing ? "pause" : "play", "pmfa-icon pmfa-icon-fill"),
+      );
+      play.setAttribute(
+        "aria-label",
+        `${host.text(playing ? "chat.pause" : "chat.play")}: ${label}`,
+      );
+      seek.max = String(total ?? 0);
+      seek.value = String(Math.min(position, total ?? 0));
+      seek.disabled = audio === undefined || total === undefined;
+      seek.setAttribute(
+        "aria-valuetext",
+        `${formatDuration(position) ?? "0:00"} / ${formatDuration(total) ?? ""}`,
+      );
+      time.textContent =
+        playing || position > 0
+          ? (formatDuration(position) ?? "")
+          : (formatDuration(total) ?? "");
+      if (audio === undefined)
+        time.append(span("pmfa-sr", ` ${host.text("chat.mediaUnavailable")}`));
+    };
+    if (audio !== undefined && url !== undefined) {
+      audio.preload = "none";
+      audio.src = url;
+      let rate = 1;
+      audio.addEventListener("play", render);
+      audio.addEventListener("pause", render);
+      audio.addEventListener("ended", () => {
+        position = 0;
+        render();
+      });
+      audio.addEventListener("timeupdate", () => {
+        position = audio.currentTime;
+        render();
+      });
+      audio.addEventListener("loadedmetadata", () => {
+        if (Number.isFinite(audio.duration) && audio.duration > 0)
+          total = audio.duration;
+        audio.playbackRate = rate;
+        render();
+      });
+      play.addEventListener("click", () => {
+        if (audio.paused) void audio.play().catch(render);
+        else audio.pause();
+      });
+      seek.addEventListener("input", () => {
+        position = Number(seek.value);
+        audio.currentTime = position;
+        render();
+      });
+      if (voice) {
+        const speed = document.createElement("button");
+        speed.type = "button";
+        speed.className = "pmfa-rate";
+        const label = () => {
+          speed.textContent = `${rate}×`;
+          speed.setAttribute(
+            "aria-label",
+            `${host.text("chat.speed")}: ${rate}×`,
+          );
+        };
+        label();
+        speed.addEventListener("click", () => {
+          rate = rate === 1 ? 1.5 : rate === 1.5 ? 2 : 1;
+          audio.playbackRate = rate;
+          label();
+        });
+        frame.append(speed);
+      }
+      frame.append(audio);
+    }
+    render();
+    return frame;
   }
 }
 

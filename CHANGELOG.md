@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Chat UI: `ChatWindow` and `<pmfa-chat-window>` render an inline thread and
+  composer. The React `ConversationListView` adds search, unread, draft and
+  archive filters, pinned ordering and row actions. Bubbles have tails on the
+  first message of each run, inline times and receipts, document cards and an
+  audio player with a seekable track and voice-note speed control.
+  `MessageAttachment` adds optional `voice`, `durationSeconds`, `waveform` and
+  `pageCount` hints, and `@polymorfa/store` sets `voice` from `ptt`. Outgoing
+  bubbles now use a tint of the primary color with foreground text; set
+  `--pmfa-bubble-outgoing` and `--pmfa-bubble-outgoing-text` to restore a solid
+  color. See `docs/chat-components.md`.
+
 - Campaign content types: `variableMapping` (`CampaignVariableMapping`) on
   Messaging and Platform create and update, `templateId` on Messaging update,
   typed `messagesArray` (`CampaignMessage`, up to 10), and `trackedLinks`

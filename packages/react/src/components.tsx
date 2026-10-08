@@ -36,11 +36,15 @@ import {
   type QuickReplyOption,
   ENGLISH_MESSAGES,
   appearanceToCssVariables,
+  attachmentPresentation,
+  fileExtension,
   formatDayLabel,
+  formatDuration,
   formatFileSize,
   formatMessageTime,
   injectComponentStyles,
   isImageAttachment,
+  waveformBars,
   layoutMessages,
   messagePresentationStatus,
   safeAttachmentUrl,
@@ -273,6 +277,152 @@ export type RenderAttachment = (
   message: ConversationMessage,
 ) => ReactNode;
 
+const PLAYBACK_RATES = [1, 1.5, 2] as const;
+
+/**
+ * Voice note and audio player. A missing URL renders the same layout with a
+ * disabled control, so retained metadata never looks playable.
+ */
+function AudioAttachment({
+  attachment,
+  url,
+  configuration,
+  slots,
+}: {
+  readonly attachment: MessageAttachment;
+  readonly url: string | undefined;
+  readonly configuration: Configuration;
+  readonly slots: Slots;
+}) {
+  const audio = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [position, setPosition] = useState(0);
+  const [length, setLength] = useState(attachment.durationSeconds);
+  const [rate, setRate] = useState<(typeof PLAYBACK_RATES)[number]>(1);
+  const voice = attachmentPresentation(attachment) === "voice";
+  const bars = useMemo(
+    () => waveformBars(attachment.waveform),
+    [attachment.waveform],
+  );
+  const total = length !== undefined && length > 0 ? length : undefined;
+  const progress = total === undefined ? 0 : Math.min(1, position / total);
+  const label = voice ? text(configuration, "chat.voiceNote") : attachment.name;
+  const toggle = () => {
+    const node = audio.current;
+    if (node === null) return;
+    if (node.paused) void node.play().catch(() => setPlaying(false));
+    else node.pause();
+  };
+  return (
+    <div
+      {...slots(
+        "attachment",
+        `pmfa-att pmfa-att-audio${voice ? " pmfa-att-voice" : ""}`,
+      )}
+      style={{ "--pmfa-progress": String(progress) } as CSSProperties}
+      data-playing={playing ? "" : undefined}
+    >
+      {!voice && (
+        <span className="pmfa-att-tile" aria-hidden="true">
+          <Icon name="headphones" />
+        </span>
+      )}
+      <button
+        type="button"
+        className="pmfa-play"
+        disabled={url === undefined}
+        aria-label={`${text(configuration, playing ? "chat.pause" : "chat.play")}: ${label}`}
+        onClick={toggle}
+      >
+        <Icon
+          name={playing ? "pause" : "play"}
+          className="pmfa-icon pmfa-icon-fill"
+        />
+      </button>
+      <span className="pmfa-track">
+        {bars.length > 0 ? (
+          <span className="pmfa-wave" aria-hidden="true">
+            {bars.map((level, index) => (
+              <span
+                key={index}
+                style={{ height: `${level * 100}%` }}
+                data-played={
+                  (index + 0.5) / bars.length <= progress ? "" : undefined
+                }
+              />
+            ))}
+          </span>
+        ) : (
+          <span className="pmfa-line" aria-hidden="true" />
+        )}
+        <input
+          type="range"
+          className="pmfa-seek"
+          min={0}
+          max={total ?? 0}
+          step="any"
+          value={Math.min(position, total ?? 0)}
+          disabled={url === undefined || total === undefined}
+          aria-label={text(configuration, "chat.position")}
+          aria-valuetext={`${formatDuration(position) ?? "0:00"} / ${formatDuration(total) ?? ""}`}
+          onChange={(event) => {
+            const next = Number(event.currentTarget.value);
+            if (audio.current) audio.current.currentTime = next;
+            setPosition(next);
+          }}
+        />
+        <span className="pmfa-att-time">
+          {playing || position > 0
+            ? formatDuration(position)
+            : (formatDuration(total) ?? "")}
+          {url === undefined && (
+            <span className="pmfa-sr">
+              {" "}
+              {text(configuration, "chat.mediaUnavailable")}
+            </span>
+          )}
+        </span>
+      </span>
+      {voice && url !== undefined && (
+        <button
+          type="button"
+          className="pmfa-rate"
+          aria-label={`${text(configuration, "chat.speed")}: ${rate}×`}
+          onClick={() => {
+            const next =
+              PLAYBACK_RATES[
+                (PLAYBACK_RATES.indexOf(rate) + 1) % PLAYBACK_RATES.length
+              ] ?? 1;
+            if (audio.current) audio.current.playbackRate = next;
+            setRate(next);
+          }}
+        >
+          {rate}×
+        </button>
+      )}
+      {url !== undefined && (
+        <audio
+          ref={audio}
+          preload="none"
+          src={url}
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onEnded={() => {
+            setPlaying(false);
+            setPosition(0);
+          }}
+          onTimeUpdate={(event) => setPosition(event.currentTarget.currentTime)}
+          onLoadedMetadata={(event) => {
+            const value = event.currentTarget.duration;
+            if (Number.isFinite(value) && value > 0) setLength(value);
+            event.currentTarget.playbackRate = rate;
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
 function AttachmentView({
   attachment,
   configuration,
@@ -285,7 +435,8 @@ function AttachmentView({
   // Unsafe schemes such as `javascript:` never reach `href` or `src`.
   const url = safeAttachmentUrl(attachment.url);
   const source = safeAttachmentUrl(attachment.previewUrl) ?? url;
-  if (isImageAttachment(attachment) && source !== undefined) {
+  const kind = attachmentPresentation(attachment);
+  if (kind === "image" && source !== undefined) {
     const image = (
       <img src={source} alt={attachment.name} loading="lazy" decoding="async" />
     );
@@ -302,38 +453,65 @@ function AttachmentView({
       </a>
     );
   }
-  if (url !== undefined && /^(audio|video)\//i.test(attachment.contentType)) {
+  if (kind === "voice" || kind === "audio")
     return (
-      <div {...slots("attachment", "pmfa-att pmfa-att-player")}>
-        {attachment.contentType.toLowerCase().startsWith("audio/") ? (
-          <audio
-            controls
-            preload="none"
-            src={url}
-            aria-label={attachment.name}
-          />
-        ) : (
-          <video
-            controls
-            preload="none"
-            src={url}
-            aria-label={attachment.name}
-          />
-        )}
-        <span className="pmfa-att-name">{attachment.name}</span>
+      <AudioAttachment
+        attachment={attachment}
+        url={url}
+        configuration={configuration}
+        slots={slots}
+      />
+    );
+  const duration = formatDuration(attachment.durationSeconds);
+  if (kind === "video" && url !== undefined)
+    return (
+      <div {...slots("attachment", "pmfa-att pmfa-att-media pmfa-att-player")}>
+        <video controls preload="none" src={url} aria-label={attachment.name} />
       </div>
     );
-  }
+  if (kind === "video" || kind === "image")
+    return (
+      <div
+        {...slots("attachment", "pmfa-att pmfa-att-media pmfa-att-placeholder")}
+      >
+        <Icon name={kind === "video" ? "video" : "image"} />
+        <span className="pmfa-att-name">{attachment.name}</span>
+        <span className="pmfa-sr">
+          {text(configuration, "chat.mediaUnavailable")}
+        </span>
+        {duration !== undefined && (
+          <span className="pmfa-att-duration">{duration}</span>
+        )}
+      </div>
+    );
+  const details = [
+    fileExtension(attachment.name),
+    attachment.pageCount === undefined
+      ? undefined
+      : attachment.pageCount === 1
+        ? text(configuration, "chat.onePage")
+        : text(configuration, "chat.pages", {
+            count: attachment.pageCount.toLocaleString(
+              configuration.locale.code,
+            ),
+          }),
+    attachment.size > 0
+      ? formatFileSize(attachment.size, configuration.locale.code)
+      : undefined,
+  ].filter((value) => value !== undefined);
   const body = (
     <>
-      <span className="pmfa-att-icon">
+      <span
+        className="pmfa-att-tile"
+        data-extension={fileExtension(attachment.name)}
+      >
         <Icon name="file" />
       </span>
       <span className="pmfa-att-body">
         <span className="pmfa-att-name">{attachment.name}</span>
-        <span className="pmfa-att-size">
-          {formatFileSize(attachment.size, configuration.locale.code)}
-        </span>
+        {details.length > 0 && (
+          <span className="pmfa-att-size">{details.join(" · ")}</span>
+        )}
       </span>
     </>
   );
@@ -460,7 +638,14 @@ const MessageItem = memo(function MessageItem({
                 </div>
               )}
               {message.text !== "" && (
-                <span className="pmfa-text">{message.text}</span>
+                <span className="pmfa-text">
+                  {message.text}
+                  {/* Reserves the width of the time and receipt on the last line. */}
+                  <span className="pmfa-meta-space" aria-hidden="true">
+                    {time}
+                    {outbound && <span className="pmfa-meta-space-icon" />}
+                  </span>
+                </span>
               )}
             </>
           )}

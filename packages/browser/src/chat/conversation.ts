@@ -15,6 +15,17 @@ export interface MessageAttachment {
   readonly url?: string;
   /** A smaller image to show inline; falls back to `url` for images. */
   readonly previewUrl?: string;
+  // The fields below are optional presentation hints from the data source.
+  // Renderers never infer them: no duration means none is shown, and no
+  // waveform means a plain track.
+  /** Recorded as a voice note rather than sent as an audio file. */
+  readonly voice?: boolean;
+  /** Audio or video length in seconds. */
+  readonly durationSeconds?: number;
+  /** Observed voice-note levels, each from 0 to 1. */
+  readonly waveform?: readonly number[];
+  /** Page count of a document. */
+  readonly pageCount?: number;
 }
 
 export interface ConversationMessage {
