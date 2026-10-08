@@ -27,3 +27,21 @@ fixture uses a local file and Blob URL. Chromium captured full-length PNGs at
 ## Failed send
 
 ![Failed send preserves the draft](images/chat-window/chats-failed-send-2x.png)
+
+## Native inbox
+
+![Mobile inbox with observed unread rows](images/chat-window/chats-inbox-mobile-2x.png)
+
+![Host-provided action menu](images/chat-window/chats-actions-desktop-2x.png)
+
+![Actual SDK draft previews](images/chat-window/chats-drafts-desktop-2x.png)
+
+![Inline quoted reply](images/chat-window/chats-reply-desktop-2x.png)
+
+![Mutation failure preserves observed state](images/chat-window/chats-action-failed-desktop-2x.png)
+
+![Dark theme and unread badge contrast](images/chat-window/chats-dark-desktop-2x.png)
+
+Action menus acknowledge local sample callbacks only. WhatsApp synchronization
+requires authorized host adapters and supported producer contracts; it is not
+performed by this preview.
