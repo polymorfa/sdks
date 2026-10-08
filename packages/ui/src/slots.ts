@@ -7,6 +7,9 @@ import type { Appearance, ElementAppearance } from "./appearance.js";
  * node's `part` attribute.
  */
 export const COMPONENT_SLOTS = [
+  "chatWindow",
+  "chatHeader",
+  "chatFooter",
   "messageList",
   "message",
   "bubble",
@@ -18,6 +21,7 @@ export const COMPONENT_SLOTS = [
   "replyQuote",
   "dateSeparator",
   "loadMore",
+  "latestButton",
   "empty",
   "composer",
   "composerInput",

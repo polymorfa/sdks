@@ -11,10 +11,12 @@ export {
 } from "./hooks.js";
 export {
   ChatDrawer,
+  ChatWindow,
   ComposeBox,
   MessageList,
   TemplateBuilder,
   type ChatDrawerProps,
+  type ChatWindowProps,
   type ComposeBoxProps,
   type MessageListProps,
   type RenderAttachment,

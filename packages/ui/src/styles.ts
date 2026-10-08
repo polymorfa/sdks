@@ -147,6 +147,18 @@ textarea.pmfa-input { min-height: 72px; resize: vertical; }
 .pmfa-input::placeholder { color: var(--pmfa-c-muted); opacity: 1; }
 .pmfa-error { margin: 0; color: var(--pmfa-c-danger); font-size: 0.875em; }
 
+/* Inline chat window: the host supplies a bounded height. */
+.pmfa-chat-window { display: flex; flex-direction: column; min-height: 0; min-width: 0; height: 100%; background: var(--pmfa-c-bg); color: var(--pmfa-c-fg); }
+.pmfa-chat-window > .pmfa-list { flex: 1; min-height: 0; }
+.pmfa-chat-header, .pmfa-chat-footer { flex: 0 0 auto; }
+.pmfa-chat-footer { border-top: 1px solid var(--pmfa-c-border); padding-bottom: env(safe-area-inset-bottom); }
+.pmfa-chat-footer fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.pmfa-status-read, .pmfa-status-played { color: #0284c7; }
+.pmfa-att-player { display: flex; flex-direction: column; gap: 6px; }
+.pmfa-att-player audio, .pmfa-att-player video { display: block; width: 100%; max-width: 100%; }
+.pmfa-att-player video { max-height: 320px; }
+.pmfa-latest { position: sticky; bottom: 8px; align-self: center; flex: 0 0 auto; min-height: 44px; background: var(--pmfa-c-bg); border: 1px solid var(--pmfa-c-border); box-shadow: 0 2px 8px rgb(0 0 0 / 0.08); }
+.pmfa-latest[hidden] { display: none; }
 /* Message list */
 .pmfa-list {
   display: flex;
@@ -777,6 +789,7 @@ a.pmfa-att-file:hover { background: color-mix(in srgb, currentColor 15%, transpa
   .pmfa-drawer { width: 100%; border-inline-start: 0; }
 }
 
+.pmfa-drawer.pmfa-chat-window { position: static; inset: auto; z-index: auto; width: 100%; border: 0; border-radius: 0; box-shadow: none; animation: none; }
 /* Template builder */
 .pmfa-tb {
   container-type: inline-size;

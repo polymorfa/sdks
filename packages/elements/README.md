@@ -203,3 +203,9 @@ controls and state.
 If a reject or hangup request fails, the call stays active and its controls remain
 available for retry. The UI shows a localized failure message and keeps existing
 media connected until the call ends. `snapshot.error` clears when ending succeeds.
+
+## Inline chat workspace
+
+See [chat components](../../docs/chat-components.md) for the inline `ChatWindow` /
+`pmfa-chat-window`, observed receipts, media, presentation filters and failure-preserving
+composer actions. History and sends remain owned by your authorized data source.

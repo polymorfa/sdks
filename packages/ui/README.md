@@ -179,3 +179,9 @@ element.configuration = {
   stylesheet: `.pmfa-msg-out .pmfa-bubble { border-end-end-radius: 18px; }`,
 };
 ```
+
+## Inline chat workspace
+
+See [chat components](../../docs/chat-components.md) for the inline `ChatWindow` /
+`pmfa-chat-window`, observed receipts, media, presentation filters and failure-preserving
+composer actions. History and sends remain owned by your authorized data source.

@@ -35,6 +35,7 @@ import {
   formatMessageTime,
   isImageAttachment,
   layoutMessages,
+  messagePresentationStatus,
   safeAttachmentUrl,
   type ChatIconName,
   type ComponentSlot,
@@ -108,6 +109,7 @@ interface ViewHost {
   localeCode(): string;
   rootClass(names: string): string;
   decorate<N extends Element>(node: N, slot: ComponentSlot): N;
+  messageFilter(): ((message: ConversationMessage) => boolean) | undefined;
 }
 
 function authorName(host: ViewHost, message?: ConversationMessage): string {
@@ -126,7 +128,7 @@ function snippet(host: ViewHost, message: ConversationMessage): string {
 
 interface ListActions {
   loadMore(): void;
-  retry?: ((clientId: string) => Promise<void>) | undefined;
+  retry?: ((clientId: string) => Promise<unknown>) | undefined;
   /** Present when messages offer a Reply action. */
   reply?: ((message: ConversationMessage) => void) | undefined;
 }
@@ -152,6 +154,7 @@ class MessageListView {
   #loadMore: HTMLLIElement | undefined;
   #empty: HTMLLIElement | undefined;
   #pinned = true;
+  #latest: HTMLButtonElement;
 
   constructor(
     private readonly host: ViewHost,
@@ -164,21 +167,37 @@ class MessageListView {
     this.scroller.setAttribute("role", "log");
     this.scroller.setAttribute("aria-live", "polite");
     this.scroller.setAttribute("aria-label", host.text("chat.title"));
+    this.#latest = host.decorate(
+      button(
+        host.text("chat.latest"),
+        "latest",
+        () => {
+          this.#pinned = true;
+          this.scroller.scrollTop = this.scroller.scrollHeight;
+          this.#latest.hidden = true;
+        },
+        "pmfa-btn pmfa-latest",
+      ),
+      "latestButton",
+    );
+    this.#latest.hidden = true;
     this.scroller.addEventListener("scroll", () => {
       const node = this.scroller;
       this.#pinned =
         node.scrollHeight - node.scrollTop - node.clientHeight < 32;
+      this.#latest.hidden = this.#pinned;
     });
     this.list = document.createElement("ol");
     this.list.className = "pmfa-items";
-    this.scroller.append(this.list);
+    this.scroller.append(this.list, this.#latest);
   }
 
   update(snapshot: ConversationSnapshot | undefined): void {
     const actions = this.actions();
     const messages = snapshot?.messages ?? [];
     const byId = new Map(messages.map((message) => [message.id, message]));
-    const entries = layoutMessages(messages);
+    const filter = this.host.messageFilter();
+    const entries = layoutMessages(filter ? messages.filter(filter) : messages);
     const nodes: Node[] = [];
     if (snapshot?.hasMore) nodes.push(this.#loadMoreNode());
     const seen = new Set<string>();
@@ -239,9 +258,20 @@ class MessageListView {
     if (entries.length === 0) nodes.push(this.#emptyNode());
     const pinned = this.#pinned || !this.scroller.isConnected;
     const offset = this.scroller.scrollTop;
+    const anchor = [
+      ...this.list.querySelectorAll<HTMLElement>("[data-message-id]"),
+    ].find(
+      (entry) =>
+        entry.getBoundingClientRect().bottom >
+        this.scroller.getBoundingClientRect().top,
+    );
+    const anchorTop = anchor?.getBoundingClientRect().top;
     reconcile(this.list, nodes);
     queueMicrotask(() => {
       this.scroller.scrollTop = pinned ? this.scroller.scrollHeight : offset;
+      if (!pinned && anchor?.isConnected && anchorTop !== undefined)
+        this.scroller.scrollTop +=
+          anchor.getBoundingClientRect().top - anchorTop;
     });
   }
 
@@ -380,14 +410,20 @@ class MessageListView {
       node.textContent = time;
       meta.append(node);
     }
-    if (outbound) meta.append(icon(message.status, "pmfa-icon pmfa-status"));
+    const presentation = messagePresentationStatus(message);
+    if (outbound)
+      meta.append(
+        icon(presentation, `pmfa-icon pmfa-status pmfa-status-${presentation}`),
+      );
     const status =
       message.status === "failed"
         ? host.text("chat.failed")
         : message.status === "pending"
           ? host.text("chat.sending")
           : outbound
-            ? host.text("chat.sent")
+            ? host.text(
+                `chat.${presentation === "pending" ? "sending" : presentation}`,
+              )
             : undefined;
     if (status !== undefined)
       meta.append(
@@ -428,6 +464,21 @@ class MessageListView {
       link.rel = "noopener noreferrer";
       link.append(image);
       return host.decorate(link, "attachment");
+    }
+    if (url !== undefined && /^(audio|video)\//i.test(attachment.contentType)) {
+      const frame = host.decorate(element("div", "attachment"), "attachment");
+      frame.className = "pmfa-att pmfa-att-player";
+      const player = document.createElement(
+        attachment.contentType.toLowerCase().startsWith("audio/")
+          ? "audio"
+          : "video",
+      );
+      player.controls = true;
+      player.preload = "none";
+      player.src = url;
+      player.setAttribute("aria-label", attachment.name);
+      frame.append(player, span("pmfa-att-name", attachment.name));
+      return frame;
     }
     const node =
       url === undefined
@@ -1678,6 +1729,16 @@ const COMPOSER_ATTRIBUTES = [
 
 /** Shared plumbing that hands the protected helpers to the views. */
 abstract class ChatElement<T extends object> extends PolymorfaElement<T> {
+  #messageFilter: ((message: ConversationMessage) => boolean) | undefined;
+  get messageFilter(): ((message: ConversationMessage) => boolean) | undefined {
+    return this.#messageFilter;
+  }
+  set messageFilter(
+    value: ((message: ConversationMessage) => boolean) | undefined,
+  ) {
+    this.#messageFilter = value;
+    this.render();
+  }
   #host: ViewHost | undefined;
   #hostGeneration = -1;
   /** @internal Hands the protected helpers to the shared views. */
@@ -1689,6 +1750,7 @@ abstract class ChatElement<T extends object> extends PolymorfaElement<T> {
         localeCode: () => this.locale().code,
         rootClass: (names) => this.rootClass(names),
         decorate: (node, slot) => this.decorate(node, slot),
+        messageFilter: () => this.messageFilter,
       };
     }
     return this.#host;
@@ -1909,6 +1971,9 @@ interface DrawerParts {
 }
 
 export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot> {
+  protected get isInline(): boolean {
+    return false;
+  }
   static readonly observedAttributes = [
     "heading",
     ...COMPOSER_ATTRIBUTES,
@@ -1937,6 +2002,7 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
   #titleId = `pmfa-drawer-title-${Math.random().toString(36).slice(2)}`;
   #onKey = (event: KeyboardEvent) => {
     if (
+      this.isInline ||
       !this.#open ||
       event.key !== "Escape" ||
       event.defaultPrevented ||
@@ -2049,8 +2115,9 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
       return this.#parts;
     const host = this.exposeHost();
     const panel = this.decorate(element("aside", "panel drawer"), "drawer");
-    panel.setAttribute("role", "dialog");
-    panel.setAttribute("aria-modal", "false");
+    panel.setAttribute("role", this.isInline ? "region" : "dialog");
+    if (this.isInline) panel.classList.add("pmfa-chat-window");
+    else panel.setAttribute("aria-modal", "false");
     panel.setAttribute("aria-labelledby", this.#titleId);
     panel.tabIndex = -1;
     const header = this.decorate(element("header", "header"), "drawerHeader");
@@ -2065,7 +2132,8 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
       "drawerClose",
     );
     close.removeAttribute("title");
-    header.append(heading, close);
+    header.append(heading);
+    if (!this.isInline) header.append(close);
     const list = new MessageListView(
       host,
       () => {
@@ -2192,6 +2260,13 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
   }
 }
 
+/** Inline variant of the same chat/composer functionality, with no close action. */
+export class PolymorfaChatWindowElement extends PolymorfaChatDrawerElement {
+  protected override get isInline(): boolean {
+    return true;
+  }
+}
+
 export function defineChatElements(
   registry: CustomElementRegistry = customElements,
 ): void {
@@ -2199,6 +2274,8 @@ export function defineChatElements(
     registry.define("pmfa-message-list", PolymorfaMessageListElement);
   if (registry.get("pmfa-compose-box") === undefined)
     registry.define("pmfa-compose-box", PolymorfaComposeBoxElement);
+  if (registry.get("pmfa-chat-window") === undefined)
+    registry.define("pmfa-chat-window", PolymorfaChatWindowElement);
   if (registry.get("pmfa-chat-drawer") === undefined)
     registry.define("pmfa-chat-drawer", PolymorfaChatDrawerElement);
 }

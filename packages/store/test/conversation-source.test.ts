@@ -308,3 +308,25 @@ describe("createStoreConversationSource with ConversationController", () => {
     store.close();
   });
 });
+
+it("preserves observed receipts when a conversation acknowledgement is cached", async () => {
+  const store = await openStore();
+  const receipt = { state: "read" as const, readAt: BASE_TIME + 2_000 };
+  const source = createStoreConversationSource(store, {
+    conversationId: "recipient",
+    send: async (draft) => ({
+      ...draft,
+      id: "ack",
+      createdAt: BASE_TIME,
+      direction: "outbound",
+      status: "sent",
+      receipt,
+    }),
+  });
+  await source.send({ clientId: "op", text: "Hello" });
+  const page = await source.load();
+  expect(
+    page.messages.find((message) => message.id === "ack")?.receipt,
+  ).toEqual(receipt);
+  store.close();
+});

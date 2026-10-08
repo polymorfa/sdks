@@ -27,6 +27,13 @@ export interface ConversationMessage {
   readonly replyTo?: string;
   readonly attachments?: readonly MessageAttachment[];
   readonly error?: string;
+  /** Observed receipts supplied by the data source. Sending never infers them. */
+  readonly receipt?: {
+    readonly state?: "delivered" | "read" | "played";
+    readonly deliveredAt?: number;
+    readonly readAt?: number;
+    readonly playedAt?: number;
+  };
 }
 
 export interface OutgoingMessage {
@@ -90,17 +97,19 @@ export class ConversationController extends ObservableController<ConversationSna
     this.assertActive();
     this.#abort.abort();
     this.#abort = new AbortController();
+    const request = this.#abort;
+    this.#unsubscribe?.();
+    this.#unsubscribe = undefined;
     this.transition({ status: "loading", messages: [], hasMore: false });
     try {
-      const page = await this.#source.load(undefined, this.#abort.signal);
-      if (this.#abort.signal.aborted) return;
+      const page = await this.#source.load(undefined, request.signal);
+      if (request.signal.aborted) return;
       this.transition(pageSnapshot(page));
-      this.#unsubscribe?.();
       this.#unsubscribe = this.#source.subscribe((event) =>
         this.#receive(event),
       );
     } catch (cause) {
-      if (!this.#abort.signal.aborted)
+      if (!request.signal.aborted)
         this.transition({
           status: "error",
           messages: [],
@@ -111,22 +120,25 @@ export class ConversationController extends ObservableController<ConversationSna
   }
 
   async loadMore(): Promise<void> {
+    this.assertActive();
+    const request = this.#abort;
     const current = this.getSnapshot();
     if (current.status === "loading_more" || current.cursor === undefined)
       return;
     this.transition({ ...conversationFields(current), status: "loading_more" });
     try {
-      const page = await this.#source.load(current.cursor, this.#abort.signal);
-      if (this.#abort.signal.aborted) return;
+      const page = await this.#source.load(current.cursor, request.signal);
+      if (request.signal.aborted) return;
       this.transition({
         status: "ready",
-        messages: mergeMessages(current.messages, page.messages),
+        messages: mergeMessages(this.getSnapshot().messages, page.messages),
         hasMore: page.nextCursor !== undefined,
         ...(page.nextCursor === undefined ? {} : { cursor: page.nextCursor }),
       });
     } catch (cause) {
+      if (request.signal.aborted) return;
       this.transition({
-        ...conversationFields(current),
+        ...conversationFields(this.getSnapshot()),
         status: "error",
         error: errorMessage(cause),
       });
@@ -140,18 +152,21 @@ export class ConversationController extends ObservableController<ConversationSna
   async send(
     input: Omit<OutgoingMessage, "clientId">,
     signal?: AbortSignal,
-  ): Promise<void> {
+  ): Promise<ConversationMessage> {
     const clientId = this.#createClientId();
-    await this.#send({ ...input, clientId }, false, signal);
+    return this.#send({ ...input, clientId }, false, signal);
   }
 
-  async retry(clientId: string): Promise<void> {
+  async retry(
+    clientId: string,
+    signal?: AbortSignal,
+  ): Promise<ConversationMessage> {
     const message = this.getSnapshot().messages.find(
       (candidate) => candidate.clientId === clientId,
     );
     if (message === undefined || message.status !== "failed")
       throw new Error(`Failed message ${clientId} was not found.`);
-    await this.#send(
+    return this.#send(
       {
         clientId,
         text: message.text,
@@ -161,6 +176,7 @@ export class ConversationController extends ObservableController<ConversationSna
           : { attachments: message.attachments }),
       },
       true,
+      signal,
     );
   }
 
@@ -174,7 +190,7 @@ export class ConversationController extends ObservableController<ConversationSna
     outgoing: OutgoingMessage,
     replacing: boolean,
     external?: AbortSignal,
-  ): Promise<void> {
+  ): Promise<ConversationMessage> {
     this.assertActive();
     const current = this.getSnapshot();
     const optimistic: ConversationMessage = {
@@ -197,24 +213,29 @@ export class ConversationController extends ObservableController<ConversationSna
       status: "ready",
       messages,
     });
-    const signal = eitherSignal(this.#abort.signal, external);
+    const request = this.#abort;
+    const signal = eitherSignal(request.signal, external);
     try {
       const acknowledged = await this.#source.send(outgoing, signal.signal);
-      if (!this.#abort.signal.aborted)
-        this.#replaceMessage(outgoing.clientId, {
-          ...acknowledged,
-          status: "sent",
-        });
+      if (signal.signal.aborted) throw new Error("Message send was cancelled.");
+      const result: ConversationMessage = {
+        ...acknowledged,
+        clientId: outgoing.clientId,
+        status: "sent",
+      };
+      this.#replaceMessage(outgoing.clientId, result);
+      return result;
     } catch (cause) {
-      if (!this.#abort.signal.aborted)
-        this.#replaceMessage(outgoing.clientId, {
-          ...optimistic,
-          status: "failed",
-          error:
-            external?.aborted === true
-              ? "Message send was cancelled."
-              : errorMessage(cause),
-        });
+      const result: ConversationMessage = {
+        ...optimistic,
+        status: "failed",
+        error: signal.signal.aborted
+          ? "Message send was cancelled."
+          : errorMessage(cause),
+      };
+      if (!request.signal.aborted)
+        this.#replaceMessage(outgoing.clientId, result);
+      return result;
     } finally {
       signal.release();
     }

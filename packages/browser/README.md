@@ -306,3 +306,9 @@ system audio is not captured. Capture ending stops sharing. Leaving stops saved
 camera and display tracks, and a replacement connection does not reacquire the
 display. The source uses the existing single video publisher, so it cannot
 replace another connection's camera. Display and camera are not sent together.
+
+## Inline chat workspace
+
+See [chat components](../../docs/chat-components.md) for the inline `ChatWindow` /
+`pmfa-chat-window`, observed receipts, media, presentation filters and failure-preserving
+composer actions. History and sends remain owned by your authorized data source.

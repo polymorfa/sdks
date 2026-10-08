@@ -175,6 +175,9 @@ export const CHAT_ICONS = {
   retry: "M3 12a9 9 0 1 0 2.64-6.36L3 8M3 3v5h5",
   pending: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 7v5l3 2",
   sent: "M20 6 9 17l-5-5",
+  delivered: "M18 6 7 17l-4-4M22 6 11 17l-2-2",
+  read: "M18 6 7 17l-4-4M22 6 11 17l-2-2",
+  played: "M9 5v14l10-7-10-7Z",
   failed: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 8v4M12 16h.01",
   smiley:
     "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01",
@@ -197,3 +200,27 @@ export const CHAT_ICONS = {
 } as const;
 
 export type ChatIconName = keyof typeof CHAT_ICONS;
+
+/** Transport errors take precedence; receipt state comes only from observed data. */
+export function messagePresentationStatus(message: {
+  readonly status: "pending" | "sent" | "failed";
+  readonly receipt?: {
+    readonly state?: "delivered" | "read" | "played";
+    readonly deliveredAt?: number;
+    readonly readAt?: number;
+    readonly playedAt?: number;
+  };
+}): "pending" | "sent" | "failed" | "delivered" | "read" | "played" {
+  if (message.status !== "sent") return message.status;
+  const receipt = message.receipt;
+  if (receipt?.state) return receipt.state;
+  for (const [key, status] of [
+    ["playedAt", "played"],
+    ["readAt", "read"],
+    ["deliveredAt", "delivered"],
+  ] as const) {
+    const time = receipt?.[key];
+    if (time !== undefined && Number.isFinite(time)) return status;
+  }
+  return "sent";
+}

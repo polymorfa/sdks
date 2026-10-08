@@ -184,6 +184,7 @@ export interface MessageInput {
   /** ID of the message this one replies to. */
   readonly replyTo?: string;
   readonly status?: StoredMessageStatus;
+  readonly receipt?: StoredMessage["receipt"];
   readonly attachments?: readonly StoredAttachment[];
 }
 
@@ -833,6 +834,7 @@ export async function createPolymorfaStore(
                 clientId: message.clientId,
                 replyTo: message.replyTo,
                 attachments: message.attachments,
+                receipt: message.receipt,
               }),
               // History reads are older than any live event for the message.
               message.createdAt,

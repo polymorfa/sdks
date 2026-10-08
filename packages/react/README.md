@@ -315,3 +315,9 @@ The component does not discover Numbers or mint credentials. Give each client
 its own token provider, authorized for that Number's session. Selection must
 never replace the token or session on an existing client. The session option
 does not override the session bound to the client token.
+
+## Inline chat workspace
+
+See [chat components](../../docs/chat-components.md) for the inline `ChatWindow` /
+`pmfa-chat-window`, observed receipts, media, presentation filters and failure-preserving
+composer actions. History and sends remain owned by your authorized data source.

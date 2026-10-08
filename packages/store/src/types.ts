@@ -92,6 +92,12 @@ export interface StoredMessage extends StoredRow {
   /** ID of the message this one replies to. */
   readonly replyTo?: string;
   readonly status: StoredMessageStatus;
+  readonly receipt?: {
+    readonly state?: "delivered" | "read" | "played";
+    readonly deliveredAt?: number;
+    readonly readAt?: number;
+    readonly playedAt?: number;
+  };
   /** Last acknowledgement type as reported, when it was not recognised. */
   readonly ackType?: string;
   readonly edited?: boolean;

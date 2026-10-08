@@ -40,6 +40,7 @@ import {
   injectComponentStyles,
   isImageAttachment,
   layoutMessages,
+  messagePresentationStatus,
   safeAttachmentUrl,
   slotClassName,
   themeClassName,
@@ -299,6 +300,28 @@ function AttachmentView({
       </a>
     );
   }
+  if (url !== undefined && /^(audio|video)\//i.test(attachment.contentType)) {
+    return (
+      <div {...slots("attachment", "pmfa-att pmfa-att-player")}>
+        {attachment.contentType.toLowerCase().startsWith("audio/") ? (
+          <audio
+            controls
+            preload="none"
+            src={url}
+            aria-label={attachment.name}
+          />
+        ) : (
+          <video
+            controls
+            preload="none"
+            src={url}
+            aria-label={attachment.name}
+          />
+        )}
+        <span className="pmfa-att-name">{attachment.name}</span>
+      </div>
+    );
+  }
   const body = (
     <>
       <span className="pmfa-att-icon">
@@ -363,13 +386,17 @@ const MessageItem = memo(function MessageItem({
 }: MessageItemProps) {
   const outbound = message.direction === "outbound";
   const time = formatMessageTime(message.createdAt, configuration.locale.code);
+  const presentation = messagePresentationStatus(message);
   const status =
     message.status === "failed"
       ? text(configuration, "chat.failed")
       : message.status === "pending"
         ? text(configuration, "chat.sending")
         : outbound
-          ? text(configuration, "chat.sent")
+          ? text(
+              configuration,
+              `chat.${presentation === "pending" ? "sending" : presentation}`,
+            )
           : undefined;
   const retry =
     canRetry &&
@@ -479,7 +506,10 @@ const MessageItem = memo(function MessageItem({
           </time>
         )}
         {outbound && (
-          <Icon name={message.status} className="pmfa-icon pmfa-status" />
+          <Icon
+            name={presentation}
+            className={`pmfa-icon pmfa-status pmfa-status-${presentation}`}
+          />
         )}
         {status !== undefined &&
           (message.status === "failed" ? (
@@ -522,6 +552,8 @@ function AttachmentItem({
 }
 
 interface ConversationViewProps {
+  /** Presentation-only: never reloads history or cancels a send. */
+  readonly messageFilter?: (message: ConversationMessage) => boolean;
   readonly renderMessage?: (message: ConversationMessage) => ReactNode;
   readonly renderAttachment?: RenderAttachment;
   /** Show a Reply action on each message. */
@@ -532,17 +564,51 @@ interface ConversationViewProps {
 function useStickToBottom(dependency: unknown) {
   const ref = useRef<HTMLDivElement>(null);
   const pinned = useRef(true);
+  const [atEnd, setAtEnd] = useState(true);
+  const anchor = useRef<{ id: string; top: number } | undefined>(undefined);
   useIsomorphicLayoutEffect(() => {
     const node = ref.current;
-    if (node !== null && pinned.current) node.scrollTop = node.scrollHeight;
+    if (node === null) return;
+    if (pinned.current) node.scrollTop = node.scrollHeight;
+    else if (anchor.current) {
+      const target = [
+        ...node.querySelectorAll<HTMLElement>("[data-message-id]"),
+      ].find((entry) => entry.dataset.messageId === anchor.current?.id);
+      if (target)
+        node.scrollTop +=
+          target.getBoundingClientRect().top - anchor.current.top;
+    }
   }, [dependency]);
   const onScroll = useCallback(() => {
     const node = ref.current;
-    if (node !== null)
+    if (node !== null) {
       pinned.current =
         node.scrollHeight - node.scrollTop - node.clientHeight < 32;
+      setAtEnd(pinned.current);
+      const visible = [
+        ...node.querySelectorAll<HTMLElement>("[data-message-id]"),
+      ].find(
+        (entry) =>
+          entry.getBoundingClientRect().bottom >
+          node.getBoundingClientRect().top,
+      );
+      anchor.current = visible?.dataset.messageId
+        ? {
+            id: visible.dataset.messageId,
+            top: visible.getBoundingClientRect().top,
+          }
+        : undefined;
+    }
   }, []);
-  return { ref, onScroll };
+  const latest = () => {
+    const node = ref.current;
+    if (node) {
+      pinned.current = true;
+      node.scrollTop = node.scrollHeight;
+      setAtEnd(true);
+    }
+  };
+  return { ref, onScroll, atEnd, latest };
 }
 
 function prefersReducedMotion(): boolean {
@@ -559,6 +625,7 @@ function ConversationLog({
   renderMessage,
   renderAttachment,
   onReply,
+  messageFilter,
 }: ConversationViewProps & {
   readonly controller: ConversationController;
   readonly rootProps: SlotProps & { readonly dir?: "ltr" | "rtl" };
@@ -568,8 +635,13 @@ function ConversationLog({
   const configuration = usePolymorfa();
   const scroll = useStickToBottom(snapshot.messages);
   const entries = useMemo(
-    () => layoutMessages(snapshot.messages),
-    [snapshot.messages],
+    () =>
+      layoutMessages(
+        messageFilter
+          ? snapshot.messages.filter(messageFilter)
+          : snapshot.messages,
+      ),
+    [snapshot.messages, messageFilter],
   );
   const byId = useMemo(
     () => new Map(snapshot.messages.map((message) => [message.id, message])),
@@ -673,6 +745,15 @@ function ConversationLog({
           )
         )}
       </ol>
+      {!scroll.atEnd && (
+        <button
+          type="button"
+          {...slots("latestButton", "pmfa-btn pmfa-latest")}
+          onClick={scroll.latest}
+        >
+          {text(configuration, "chat.latest")}
+        </button>
+      )}
     </div>
   );
 }
@@ -1787,6 +1868,70 @@ function requestAnimationFrameSafe(callback: () => void): void {
   if (typeof requestAnimationFrame === "function")
     requestAnimationFrame(callback);
   else setTimeout(callback, 0);
+}
+
+export interface ChatWindowProps extends MessageListProps {
+  readonly composerController?: MessageComposerController;
+  readonly composerProps?: Omit<
+    ComposeBoxProps,
+    "controller" | "createController" | "conversation"
+  >;
+  readonly header?: ReactNode;
+  readonly footer?: ReactNode;
+  /** Read-only until the host confirms sending is available. */
+  readonly disabled?: boolean;
+}
+
+/** Inline thread, without a modal, close action, or credential assumptions. */
+export function ChatWindow({
+  controller,
+  createController,
+  composerController,
+  composerProps,
+  header,
+  footer,
+  disabled = false,
+  className,
+  classNames,
+  onReply,
+  ...view
+}: ChatWindowProps) {
+  const conversation = useResolvedController(controller, createController);
+  const slots = useSlots(classNames);
+  const root = useShell(slots, "chatWindow", "pmfa-chat-window", className);
+  const reply =
+    onReply ??
+    (composerController && !disabled
+      ? (message: ConversationMessage) =>
+          composerController.setReplyTo(message.id)
+      : undefined);
+  return (
+    <section {...root} aria-label={text(usePolymorfa(), "chat.title")}>
+      {header != null && (
+        <div {...slots("chatHeader", "pmfa-chat-header")}>{header}</div>
+      )}
+      <MessageList
+        controller={conversation}
+        {...view}
+        {...(classNames ? { classNames } : {})}
+        {...(reply ? { onReply: reply } : {})}
+      />
+      {(composerController || footer != null) && (
+        <div {...slots("chatFooter", "pmfa-chat-footer")}>
+          {composerController && (
+            <fieldset disabled={disabled}>
+              <ComposeBox
+                {...composerProps}
+                controller={composerController}
+                conversation={conversation}
+              />
+            </fieldset>
+          )}
+          {footer}
+        </div>
+      )}
+    </section>
+  );
 }
 
 // ── Drawer ────────────────────────────────────────────────────────────

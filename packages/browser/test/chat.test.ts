@@ -309,3 +309,60 @@ describe("composer and conversation wiring", () => {
     });
   });
 });
+
+it("keeps a failed composer draft and retries the same operation; edits create a new operation", async () => {
+  const fixture = fixtureSource();
+  vi.mocked(fixture.source.send).mockRejectedValueOnce(new Error("offline"));
+  let sequence = 0;
+  const conversation = new ConversationController(fixture.source, {
+    createClientId: () => `op-${++sequence}`,
+  });
+  await conversation.load();
+  const composer = new MessageComposerController(
+    createConversationComposerActions(conversation, vi.fn()),
+  );
+  composer.setText("Keep my draft");
+  composer.setReplyTo("original");
+  await composer.submit();
+  expect(composer.getSnapshot()).toMatchObject({
+    text: "Keep my draft",
+    replyTo: "original",
+    error: "offline",
+  });
+  await composer.submit();
+  expect(
+    vi.mocked(fixture.source.send).mock.calls.map((call) => call[0].clientId),
+  ).toEqual(["op-1", "op-1"]);
+  expect(composer.getSnapshot().text).toBe("");
+  vi.mocked(fixture.source.send).mockRejectedValueOnce(new Error("offline"));
+  composer.setText("another");
+  await composer.submit();
+  composer.setText("edited");
+  await composer.submit();
+  expect(
+    vi
+      .mocked(fixture.source.send)
+      .mock.calls.slice(-2)
+      .map((call) => call[0].clientId),
+  ).toEqual(["op-2", "op-3"]);
+  composer.dispose();
+  conversation.dispose();
+});
+
+it("ignores stale history that resolves after a newer load", async () => {
+  const fixture = fixtureSource();
+  let complete!: (value: { messages: ReturnType<typeof message>[] }) => void;
+  vi.mocked(fixture.source.load).mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        complete = resolve;
+      }),
+  );
+  const conversation = new ConversationController(fixture.source);
+  const stale = conversation.load();
+  await conversation.load();
+  complete({ messages: [message("stale")] });
+  await stale;
+  expect(conversation.getSnapshot().messages).toEqual([]);
+  conversation.dispose();
+});

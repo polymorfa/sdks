@@ -45,6 +45,12 @@ export function toConversationMessage(row: StoredMessage): ConversationMessage {
     direction: row.fromMe ? "outbound" : "inbound",
     status:
       row.status === "pending" || row.status === "failed" ? row.status : "sent",
+    ...(row.status === "delivered" ||
+    row.status === "read" ||
+    row.status === "played"
+      ? { receipt: { state: row.status } }
+      : {}),
+    ...(row.receipt === undefined ? {} : { receipt: row.receipt }),
     ...(row.replyTo === undefined ? {} : { replyTo: row.replyTo }),
     ...(row.attachments === undefined || row.attachments.length === 0
       ? {}
@@ -63,6 +69,7 @@ function toInput(
     fromMe: message.direction === "outbound",
     text: message.text,
     status: message.status,
+    ...(message.receipt === undefined ? {} : { receipt: message.receipt }),
     ...(message.clientId === undefined ? {} : { clientId: message.clientId }),
     ...(message.replyTo === undefined ? {} : { replyTo: message.replyTo }),
     ...(message.attachments === undefined

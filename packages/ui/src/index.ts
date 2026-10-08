@@ -73,6 +73,7 @@ export {
   isImageAttachment,
   layoutMessages,
   messageDayKey,
+  messagePresentationStatus,
   safeAttachmentUrl,
   type ChatIconName,
   type ChatLayoutEntry,

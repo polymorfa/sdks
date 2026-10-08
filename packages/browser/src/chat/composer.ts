@@ -61,19 +61,38 @@ export function createConversationComposerActions(
   conversation: ConversationController,
   upload: ComposerActions["upload"],
 ): ComposerActions {
+  let failed:
+    { readonly clientId: string; readonly payload: string } | undefined;
   return {
     upload,
-    send: (draft, signal) =>
-      conversation.send(
-        {
-          text: draft.text,
-          ...(draft.replyTo === undefined ? {} : { replyTo: draft.replyTo }),
-          ...(draft.attachments.length === 0
-            ? {}
-            : { attachments: draft.attachments }),
-        },
-        signal,
-      ),
+    send: async (draft, signal) => {
+      const input = {
+        text: draft.text,
+        ...(draft.replyTo === undefined ? {} : { replyTo: draft.replyTo }),
+        ...(draft.attachments.length === 0
+          ? {}
+          : { attachments: draft.attachments }),
+      };
+      const payload = JSON.stringify(input);
+      const retryable =
+        failed?.payload === payload &&
+        conversation
+          .getSnapshot()
+          .messages.some(
+            (message) =>
+              message.clientId === failed?.clientId &&
+              message.status === "failed",
+          );
+      const result =
+        retryable && failed
+          ? await conversation.retry(failed.clientId, signal)
+          : await conversation.send(input, signal);
+      if (result.status === "failed") {
+        failed = { clientId: result.clientId ?? result.id, payload };
+        throw new Error(result.error ?? "Message send failed.");
+      }
+      failed = undefined;
+    },
   };
 }
 

@@ -1,0 +1,71 @@
+// @vitest-environment happy-dom
+import { expect, it, vi } from "vitest";
+import {
+  ConversationController,
+  MessageComposerController,
+  createConversationComposerActions,
+} from "@polymorfa/browser";
+import {
+  defineChatElements,
+  type PolymorfaChatWindowElement,
+} from "../src/index.js";
+
+it("composes an inline portable chat and leaves Escape to the host", async () => {
+  defineChatElements();
+  const conversation = new ConversationController({
+    load: async () => ({
+      messages: [
+        {
+          id: "one",
+          text: "Hello",
+          createdAt: 1,
+          direction: "outbound",
+          status: "sent",
+          receipt: { state: "delivered" },
+          attachments: [
+            {
+              id: "a",
+              name: "demo.mp4",
+              size: 12,
+              contentType: "video/mp4",
+              url: "https://media.example/demo.mp4",
+            },
+          ],
+        },
+      ],
+    }),
+    subscribe: () => () => undefined,
+    send: vi.fn(),
+  });
+  await conversation.load();
+  const composer = new MessageComposerController(
+    createConversationComposerActions(conversation, vi.fn()),
+  );
+  const node = document.createElement(
+    "pmfa-chat-window",
+  ) as PolymorfaChatWindowElement;
+  node.setAttribute("heading", "Marina");
+  node.controller = conversation;
+  node.composerController = composer;
+  document.body.append(node);
+  expect(node.shadowRoot?.querySelector('[role="dialog"]')).toBeNull();
+  expect(node.shadowRoot?.querySelector('[role="region"]')).not.toBeNull();
+  expect(
+    node.shadowRoot?.querySelector(".pmfa-status-delivered"),
+  ).not.toBeNull();
+  expect(node.shadowRoot?.querySelector("video")?.preload).toBe("none");
+  window.dispatchEvent(
+    new KeyboardEvent("keydown", {
+      key: "Escape",
+      bubbles: true,
+      cancelable: true,
+    }),
+  );
+  expect(node.open).toBe(true);
+  node.messageFilter = () => false;
+  expect(node.shadowRoot?.querySelector("[data-message-id]")).toBeNull();
+  expect(conversation.getSnapshot().messages).toHaveLength(1);
+  node.remove();
+  composer.dispose();
+  conversation.dispose();
+});
