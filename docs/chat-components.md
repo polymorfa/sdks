@@ -50,8 +50,9 @@ checks authorization on every request. Omit `composerController` for history onl
 The header and composer stay visible while history scrolls. Loading earlier
 messages preserves the visible message position. New messages stay in view when
 you are already at the bottom, including when the viewport or composer resizes;
-otherwise use **Latest messages**. The inline composer places the writing area
-above emoji, attachment and send controls. Quoted replies
+otherwise use **Latest messages**. The inline composer keeps emoji, attachments, the growing message field and
+mic/send controls in one row. Timestamps and observed receipt ticks sit inside
+message bubbles. Quoted replies
 navigate to a loaded original. Missing history is not fetched implicitly by a quote.
 
 `messageFilter` affects presentation only. It never reloads the conversation,
@@ -69,6 +70,56 @@ removes messages from state, changes subscriptions, or cancels an in-flight send
 
 `MessageList`, `ComposeBox`, and `ChatDrawer` remain available independently.
 `messageFilter` also applies to `MessageList` and `ChatDrawer`.
+
+## Controlled conversation list
+
+Use `ConversationListView` when your application owns the list's authorized
+regional source. `ConversationList` remains the `InboxController` wrapper.
+
+```tsx
+import { ConversationListView, PolymorfaProvider } from "@polymorfa/react";
+
+<PolymorfaProvider>
+  <ConversationListView
+    conversations={observedRows}
+    selectedId={selectedId}
+    onSelect={(row) => setSelectedId(row.id)}
+    drafts={draftPreviews}
+    actions={(row) => [row.archived ? "unarchive" : "archive"]}
+    onAction={applyWhatsAppAction}
+  />
+</PolymorfaProvider>;
+```
+
+The host supplies `observedRows`, draft text, selection and `applyWhatsAppAction`.
+Subscribe to your composer controllers for draft previews. **All**, **Unread**,
+**Drafts** and **Archived** filter the supplied rows. Search matches names,
+identifiers, scope labels, previews and drafts. Pinned rows sort first. Arrow
+keys, Home and End move row focus; Enter or Space opens a row.
+
+Supply observed `pinned`, `archived`, `markedUnread` and `unreadCount` values.
+They are never inferred from message delivery or read receipts. Optional
+`lastMessage.status` and `lastMessage.receipt` display outgoing acknowledgement
+ticks; unknown state displays no tick. `subtitle` identifies the owning Number
+or another short scope. These fields do not change the server wire contract.
+
+Both `actions` and `onAction` are required to show mutation controls. `actions`
+returns only the transitions your source supports and authorizes. Available UI
+values are `pin`, `unpin`, `archive`, `unarchive`, `mark-read` and `mark-unread`;
+these names do not imply a default API endpoint or grant. The callback awaits the
+Number's mutation and refreshes observed rows. The component does not update
+state optimistically or equate opening a row with a WhatsApp read. Rejected
+callbacks display an error and keep the supplied row state. The host enforces
+membership, Number/destination scope, transport capability and concurrent writes.
+
+Pass `onNewConversation` to offer **New chat**. Supply controlled `query` and
+`onQueryChange` to integrate application search. Pagination, retry and loading
+props remain available without introducing a second data source.
+
+`pmfa-inbox` has source-driven search, unread/archive filters, keyboard navigation
+and receipt-aware compact rows. The controlled list, draft previews and action
+callbacks described above are React APIs; Web Components do not expose those
+controlled-list adapters.
 
 ## Web Components
 

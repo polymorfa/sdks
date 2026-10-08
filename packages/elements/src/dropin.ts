@@ -14,6 +14,9 @@ import {
 } from "@polymorfa/browser";
 import {
   CHAT_ICONS,
+  filterInboxRows,
+  messagePresentationStatus,
+  type InboxFilter,
   formatDayLabel,
   formatMessageTime,
   type AppearanceInput,
@@ -300,6 +303,8 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
   #composerController: MessageComposerController | undefined;
   #shell: HTMLElement | undefined;
   #shellGeneration = -1;
+  #query = "";
+  #filter: InboxFilter = "all";
 
   get source(): InboxDataSource | undefined {
     return this.#source;
@@ -402,13 +407,75 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
     const list = this.#list!;
     list.className = "pmfa-inbox-list";
     this.decorate(list, "conversationList");
-    const focusedId = (this.root.activeElement as HTMLElement | null)?.dataset
-      ?.conversationId;
+    const active = this.root.activeElement as HTMLElement | null;
+    const focusedId = active?.dataset.conversationId;
+    const searchFocused = active?.hasAttribute("data-inbox-search");
+    const selection = searchFocused
+      ? ([
+          (active as HTMLInputElement).selectionStart,
+          (active as HTMLInputElement).selectionEnd,
+        ] as const)
+      : undefined;
+    const filterFocused = active?.dataset.inboxFilter;
     const head = element("div");
     head.className = "pmfa-inbox-head";
     const title = textElement("h2", this.text("inbox.title"));
     title.className = "pmfa-inbox-title";
     head.append(title);
+    const search = element("div");
+    search.className = "pmfa-search";
+    const input = document.createElement("input");
+    input.type = "search";
+    input.className = "pmfa-input";
+    input.dataset.inboxSearch = "";
+    input.setAttribute("aria-label", this.text("inbox.search"));
+    input.placeholder = this.text("inbox.search");
+    input.value = this.#query;
+    input.addEventListener("input", () => {
+      this.#query = input.value;
+      this.render();
+    });
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        list
+          .querySelector<HTMLButtonElement>("button[data-conversation-id]")
+          ?.focus();
+      }
+      if (event.key === "Escape") {
+        this.#query = "";
+        this.render();
+      }
+    });
+    search.append(icon("search"), input);
+    head.append(search);
+    const filters = element("div");
+    filters.className = "pmfa-inbox-filters";
+    filters.setAttribute("role", "group");
+    filters.setAttribute("aria-label", this.text("inbox.filters"));
+    const choices: InboxFilter[] = ["all", "unread"];
+    if (snapshot?.conversations.some((row) => row.archived))
+      choices.push("archived");
+    for (const value of choices) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.inboxFilter = value;
+      button.setAttribute("aria-pressed", String(this.#filter === value));
+      button.textContent = this.text(
+        value === "unread" ? "inbox.unreadFilter" : `inbox.${value}`,
+      );
+      button.addEventListener("click", () => {
+        this.#filter = value;
+        this.render();
+      });
+      filters.append(button);
+    }
+    head.append(filters);
+    const visible = filterInboxRows(
+      snapshot?.conversations ?? [],
+      this.#filter,
+      this.#query,
+    );
     const body: Node[] = [head];
     if (
       snapshot === undefined ||
@@ -430,23 +497,37 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
       retry.addEventListener("click", () => void controller?.load());
       state.append(textElement("p", this.text("inbox.loadError")), retry);
       body.push(state);
-    } else if (snapshot.conversations.length === 0) {
+    } else if (visible.length === 0) {
       const state = element("div");
       state.className = "pmfa-inbox-state";
       state.append(
         icon("inbox"),
-        document.createTextNode(this.text("inbox.empty")),
+        document.createTextNode(
+          this.text(
+            this.#query || this.#filter !== "all"
+              ? "inbox.noMatches"
+              : "inbox.empty",
+          ),
+        ),
       );
       body.push(this.decorate(state, "empty"));
     } else {
       const items = element("ul");
       items.className = "pmfa-convs";
-      for (const conversation of snapshot.conversations)
+      for (const conversation of visible)
         items.append(this.#row(conversation, snapshot, controller));
       body.push(items);
     }
     list.replaceChildren(...body);
-    if (focusedId !== undefined)
+    if (searchFocused) {
+      input.focus({ preventScroll: true });
+      if (selection?.[0] != null && selection[1] != null)
+        input.setSelectionRange(selection[0], selection[1]);
+    } else if (filterFocused)
+      filters
+        .querySelector<HTMLElement>(`[data-inbox-filter="${filterFocused}"]`)
+        ?.focus({ preventScroll: true });
+    else if (focusedId !== undefined)
       list
         .querySelector<HTMLElement>(
           `[data-conversation-id="${CSS.escape(focusedId)}"]`,
@@ -471,7 +552,8 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
     row.dataset.conversationId = conversation.id;
     if (conversation.id === snapshot.selectedId)
       row.setAttribute("aria-current", "true");
-    if (conversation.unreadCount > 0) row.dataset.unread = "";
+    if (conversation.unreadCount > 0 || conversation.markedUnread)
+      row.dataset.unread = "";
     const avatar = this.decorate(element("span"), "avatar");
     avatar.className = "pmfa-avatar";
     avatar.setAttribute("aria-hidden", "true");
@@ -501,17 +583,67 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
         : `${last.direction === "outbound" ? this.text("inbox.you") : ""}${last.text}`,
     );
     preview.className = "pmfa-conv-preview";
+    if (last?.direction === "outbound" && last.status !== undefined) {
+      preview.textContent = last.text;
+      preview.prepend(
+        icon(
+          messagePresentationStatus({
+            status: last.status,
+            ...(last.receipt === undefined ? {} : { receipt: last.receipt }),
+          }),
+        ),
+      );
+    }
     row.append(avatar, nameNode, time, preview);
-    if (conversation.unreadCount > 0) {
+    if (conversation.subtitle) {
+      const subtitle = textElement("span", conversation.subtitle);
+      subtitle.className = "pmfa-conv-subtitle";
+      row.append(subtitle);
+    }
+    const indicators = element("span");
+    indicators.className = "pmfa-conv-indicators";
+    if (conversation.pinned) indicators.append(icon("pin"));
+    if (conversation.unreadCount > 0 || conversation.markedUnread) {
       const badge = this.decorate(element("span"), "unreadBadge");
       badge.className = "pmfa-badge";
-      badge.textContent = String(Math.min(conversation.unreadCount, 99));
+      badge.textContent =
+        conversation.unreadCount > 99
+          ? "99+"
+          : conversation.unreadCount > 0
+            ? String(conversation.unreadCount)
+            : "";
       badge.setAttribute(
         "aria-label",
-        this.text("inbox.unread", { count: String(conversation.unreadCount) }),
+        this.text("inbox.unread", {
+          count: String(conversation.unreadCount || 1),
+        }),
       );
-      row.append(badge);
+      indicators.append(badge);
     }
+    row.append(indicators);
+    row.addEventListener("keydown", (event) => {
+      if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+      const rows = Array.from(
+        this.#list!.querySelectorAll<HTMLButtonElement>(
+          "button[data-conversation-id]",
+        ),
+      );
+      const index = rows.indexOf(row);
+      event.preventDefault();
+      rows[
+        Math.max(
+          0,
+          Math.min(
+            rows.length - 1,
+            event.key === "Home"
+              ? 0
+              : event.key === "End"
+                ? rows.length - 1
+                : index + (event.key === "ArrowDown" ? 1 : -1),
+          ),
+        )
+      ]?.focus();
+    });
     row.addEventListener("click", () => {
       controller?.select(conversation.id);
       this.dispatchEvent(

@@ -80,7 +80,7 @@ drawer.addEventListener("pmfa-close", () => drawer.remove());
   leaves focus alone unless it has the `autofocus` attribute. Escape closes
   the drawer only when pressed inside it, and not while an input method is
   composing text.
-- `pmfa-compose-box` attaches files from its paperclip button, a paste, or a
+- `pmfa-compose-box` attaches files from its attachment button, a paste, or a
   drop, shows upload progress and failures with a remove button, and shows a
   reply banner. Set its `conversation` or `messages` property so the banner
   can quote the message. The `accept` and `multiple` attributes apply to the

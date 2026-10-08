@@ -18,6 +18,60 @@ export const ATTACHMENT_KINDS = {
 } as const;
 export type AttachmentKind = keyof typeof ATTACHMENT_KINDS;
 
+export type InboxFilter = "all" | "unread" | "drafts" | "archived";
+export type InboxRowAction =
+  "pin" | "unpin" | "archive" | "unarchive" | "mark-read" | "mark-unread";
+
+/** Presentation only. Hosts supply observations and save any organization changes. */
+export function filterInboxRows<
+  T extends {
+    readonly id: string;
+    readonly name?: string;
+    readonly phoneNumber?: string;
+    readonly subtitle?: string;
+    readonly lastActivity: number;
+    readonly unreadCount: number;
+    readonly pinned?: boolean;
+    readonly archived?: boolean;
+    readonly markedUnread?: boolean;
+    readonly lastMessage?: { readonly text: string };
+  },
+>(
+  rows: readonly T[],
+  filter: InboxFilter,
+  query: string,
+  drafts: Readonly<Record<string, string>> = {},
+): readonly T[] {
+  const normalized = query.trim().toLocaleLowerCase();
+  return rows
+    .filter(
+      (row) =>
+        (filter === "archived"
+          ? row.archived === true
+          : row.archived !== true) &&
+        (filter !== "unread" ||
+          row.unreadCount > 0 ||
+          row.markedUnread === true) &&
+        (filter !== "drafts" || Boolean(drafts[row.id]?.trim())) &&
+        [
+          row.name,
+          row.phoneNumber,
+          row.subtitle,
+          row.lastMessage?.text,
+          drafts[row.id],
+        ].some(
+          (value) =>
+            normalized === "" ||
+            value?.toLocaleLowerCase().includes(normalized),
+        ),
+    )
+    .sort(
+      (a, b) =>
+        Number(Boolean(b.pinned)) - Number(Boolean(a.pinned)) ||
+        b.lastActivity - a.lastActivity,
+    );
+}
+
 export type ChatLayoutEntry<T extends ChatLayoutMessage> =
   | {
       readonly kind: "date";
@@ -176,6 +230,10 @@ export function safeAttachmentUrl(
  * the `d` attribute of a single `<path>`.
  */
 export const CHAT_ICONS = {
+  more: "M12 5h.01M12 12h.01M12 19h.01",
+  pin: "M16 3 21 8l-5 1-4 4-1 5-5-5 5-1 4-4ZM3 21l5-5",
+  archive: "M3 3h18v5H3ZM5 8v13h14V8M10 12h4",
+  down: "m7 5 5 5 5-5m-10 6 5 5 5-5",
   image: "M3 3h18v18H3ZM3 16l5-5 4 4 3-3 6 6M8 7h.01",
   close: "M18 6 6 18M6 6l12 12",
   send: "M12 19V5M5 12l7-7 7 7",

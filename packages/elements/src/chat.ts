@@ -183,6 +183,10 @@ class MessageListView {
       ),
       "latestButton",
     );
+    this.#latest.replaceChildren(
+      icon("down"),
+      span("pmfa-sr", host.text("chat.latest")),
+    );
     this.#latest.hidden = true;
     this.scroller.addEventListener("scroll", () => {
       const node = this.scroller;
@@ -355,6 +359,10 @@ class MessageListView {
     );
     item.dataset.messageId = message.id;
     item.tabIndex = -1;
+    const row = element("div");
+    row.className = "pmfa-row";
+    const bubble = host.decorate(element("div", "bubble"), "bubble");
+    bubble.classList.add("pmfa-bubble");
     if (quoted !== undefined) {
       const quote = host.decorate(
         button("", "quote", () => this.jump(quoted.id), "pmfa-quote"),
@@ -365,12 +373,9 @@ class MessageListView {
         span("pmfa-quote-name", authorName(host, quoted)),
         span("pmfa-quote-text", snippet(host, quoted)),
       );
-      item.append(quote);
+      bubble.append(quote);
     }
-    const row = element("div");
-    row.className = "pmfa-row";
-    const bubble = host.decorate(element("div", "bubble"), "bubble");
-    bubble.classList.add("pmfa-bubble");
+
     if ((message.attachments?.length ?? 0) > 0) {
       const attachments = element("div");
       attachments.className = "pmfa-atts";
@@ -449,7 +454,8 @@ class MessageListView {
           ? span("", status)
           : span("pmfa-sr", status),
       );
-    item.append(row, meta);
+    bubble.append(meta);
+    item.append(row);
     if (message.error !== undefined) {
       const error = span("pmfa-msg-error", message.error);
       error.setAttribute("role", "alert");
@@ -1040,7 +1046,7 @@ class ComposerView {
     this.#emojiButton.setAttribute("aria-haspopup", "dialog");
     this.#emojiButton.setAttribute("aria-expanded", "false");
     const attach = host.decorate(
-      iconButton(host.text("composer.attach"), "attach", "attach", () =>
+      iconButton(host.text("composer.attach"), "attach", "plus", () =>
         this.#toggleAttachments(),
       ),
       "composerAttach",

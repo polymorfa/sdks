@@ -13,6 +13,7 @@ import { resetPermissionWarnings } from "@polymorfa/browser/internal";
 import {
   CallButton,
   ConnectWhatsAppButton,
+  ConversationListView,
   Inbox,
   PolymorfaProvider,
   SessionStatus,
@@ -312,6 +313,150 @@ describe("<Inbox/>", () => {
   it("explains how to fix a missing provider", () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     expect(() => act(() => root.render(<Inbox />))).toThrow(/tokenEndpoint/);
+  });
+});
+
+describe("<ConversationListView/>", () => {
+  function rows() {
+    return [
+      ...host.querySelectorAll<HTMLButtonElement>(
+        "button[data-conversation-id]",
+      ),
+    ];
+  }
+  function filter(name: string) {
+    return [
+      ...host.querySelectorAll<HTMLButtonElement>(".pmfa-inbox-filters button"),
+    ].find((button) => button.textContent === name);
+  }
+  it("uses observed unread and archive state, actual drafts and pinned ordering", () => {
+    const supplied = [
+      ...conversations,
+      { ...conversations[1]!, id: "archived", archived: true },
+      { ...conversations[1]!, id: "pinned", pinned: true },
+    ];
+    const select = vi.fn();
+    act(() =>
+      root.render(
+        <PolymorfaProvider>
+          <ConversationListView
+            conversations={supplied}
+            drafts={{ chat_2: "Confirm delivery" }}
+            onSelect={select}
+          />
+        </PolymorfaProvider>,
+      ),
+    );
+    expect(rows().map((row) => row.dataset.conversationId)).toEqual([
+      "pinned",
+      "chat_1",
+      "chat_2",
+    ]);
+    expect(rows()[2]!.textContent).toContain("Draft: Confirm delivery");
+    click(filter("Unread"));
+    expect(rows().map((row) => row.dataset.conversationId)).toEqual(["chat_1"]);
+    click(filter("Drafts"));
+    expect(rows().map((row) => row.dataset.conversationId)).toEqual(["chat_2"]);
+    click(filter("Archived"));
+    expect(rows().map((row) => row.dataset.conversationId)).toEqual([
+      "archived",
+    ]);
+    click(rows()[0]);
+    expect(select).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "archived" }),
+    );
+  });
+  it("navigates rows by keyboard and exposes receipts only when supplied", () => {
+    act(() =>
+      root.render(
+        <PolymorfaProvider>
+          <ConversationListView
+            conversations={[
+              conversations[0]!,
+              {
+                ...conversations[1]!,
+                lastMessage: {
+                  ...conversations[1]!.lastMessage!,
+                  status: "sent",
+                  receipt: { state: "read" },
+                },
+              },
+            ]}
+            onSelect={vi.fn()}
+          />
+        </PolymorfaProvider>,
+      ),
+    );
+    rows()[0]!.focus();
+    act(() =>
+      rows()[0]!.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+      ),
+    );
+    expect(document.activeElement).toBe(rows()[1]);
+    expect(rows()[1]!.querySelector(".pmfa-conv-preview svg")).not.toBeNull();
+    expect(rows()[0]!.querySelector(".pmfa-conv-preview svg")).toBeNull();
+    act(() =>
+      rows()[1]!.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Home", bubbles: true }),
+      ),
+    );
+    expect(document.activeElement).toBe(rows()[0]);
+  });
+  it("offers authorized actions, awaits the adapter and preserves observed state on failure", async () => {
+    let reject!: (error: Error) => void;
+    const action = vi.fn(
+      () =>
+        new Promise<void>((_resolve, failed) => {
+          reject = failed;
+        }),
+    );
+    act(() =>
+      root.render(
+        <PolymorfaProvider>
+          <ConversationListView
+            conversations={conversations}
+            onSelect={vi.fn()}
+            onAction={action}
+            actions={() => ["archive"]}
+          />
+        </PolymorfaProvider>,
+      ),
+    );
+    const menu = host.querySelector<HTMLDetailsElement>("details")!;
+    const context = new MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => rows()[0]!.dispatchEvent(context));
+    expect(context.defaultPrevented).toBe(true);
+    expect(menu.open).toBe(true);
+    click(menu.querySelector("button"));
+    click(menu.querySelector("button"));
+    expect(action).toHaveBeenCalledTimes(1);
+    expect(action).toHaveBeenCalledWith(conversations[0], "archive");
+    expect(rows()).toHaveLength(2);
+    expect(menu.open).toBe(false);
+    expect(menu.parentElement!.getAttribute("aria-busy")).toBe("true");
+    expect(menu.querySelectorAll("button")).toHaveLength(1);
+    await act(async () => reject(new Error("Disconnected")));
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain(
+      "Could not update this chat",
+    );
+    expect(rows()).toHaveLength(2);
+  });
+  it("hides mutation controls without an adapter", () => {
+    act(() =>
+      root.render(
+        <PolymorfaProvider>
+          <ConversationListView
+            conversations={conversations}
+            onSelect={vi.fn()}
+          />
+        </PolymorfaProvider>,
+      ),
+    );
+    expect(host.querySelector("details")).toBeNull();
   });
 });
 

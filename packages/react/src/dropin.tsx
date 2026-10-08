@@ -19,6 +19,10 @@ import {
   type TemplateDraft,
 } from "@polymorfa/browser";
 import {
+  filterInboxRows,
+  messagePresentationStatus,
+  type InboxFilter,
+  type InboxRowAction,
   formatDayLabel,
   formatMessageTime,
   type SlotClassNames,
@@ -144,58 +148,171 @@ function conversationTime(
 
 // ── ConversationList ──────────────────────────────────────────────────
 
-export interface ConversationListProps {
-  readonly controller: InboxController;
-  readonly onSelect?: (conversation: InboxConversation) => void;
-  /** Heading above the list. Defaults to the locale's `inbox.title`. */
+export interface ConversationListViewProps {
+  readonly conversations: readonly InboxConversation[];
+  readonly selectedId?: string;
+  readonly onSelect: (conversation: InboxConversation) => void;
   readonly title?: ReactNode;
-  /** Show the search field. Defaults to `true`. */
   readonly search?: boolean;
+  /** Controlled search, when supplied. */
+  readonly query?: string;
+  readonly onQueryChange?: (query: string) => void;
+  readonly drafts?: Readonly<Record<string, string>>;
+  /** Confirm the mutation through the owning source, then refresh its rows. */
+  readonly onAction?: (
+    conversation: InboxConversation,
+    action: InboxRowAction,
+  ) => Promise<void>;
+  /** Only offer actions supported and authorized by the host. */
+  readonly actions?: (
+    conversation: InboxConversation,
+  ) => readonly InboxRowAction[];
+  readonly onNewConversation?: () => void;
+  readonly status?: InboxSnapshot["status"];
+  readonly onRetry?: () => void;
+  readonly hasMore?: boolean;
+  readonly onLoadMore?: () => void;
   readonly className?: string;
   readonly classNames?: SlotClassNames;
+}
+
+export interface ConversationListProps extends Omit<
+  ConversationListViewProps,
+  | "conversations"
+  | "selectedId"
+  | "onSelect"
+  | "status"
+  | "onRetry"
+  | "hasMore"
+  | "onLoadMore"
+> {
+  readonly controller: InboxController;
+  readonly onSelect?: (conversation: InboxConversation) => void;
 }
 
 /** The inbox's conversation list, usable on its own. */
 export function ConversationList({
   controller,
   onSelect,
-  title,
-  search = true,
-  className,
-  classNames,
+  ...props
 }: ConversationListProps) {
   const snapshot: InboxSnapshot = useController(controller);
+  return (
+    <ConversationListView
+      {...props}
+      conversations={snapshot.conversations}
+      {...(snapshot.selectedId === undefined
+        ? {}
+        : { selectedId: snapshot.selectedId })}
+      status={snapshot.status}
+      hasMore={snapshot.hasMore}
+      onRetry={() => void controller.load()}
+      onLoadMore={() => void controller.loadMore()}
+      onSelect={(conversation) => {
+        controller.select(conversation.id);
+        onSelect?.(conversation);
+      }}
+    />
+  );
+}
+
+/** Controlled inbox rows for hosts that own regional reads and mutations. */
+export function ConversationListView({
+  conversations,
+  selectedId,
+  onSelect,
+  title,
+  search = true,
+  query: controlledQuery,
+  onQueryChange,
+  drafts = {},
+  onAction,
+  actions,
+  onNewConversation,
+  status = "ready",
+  onRetry,
+  hasMore = false,
+  onLoadMore,
+  className,
+  classNames,
+}: ConversationListViewProps) {
   const configuration = usePolymorfa();
   const slots = useSlots(classNames);
-  const list = slots("conversationList", "pmfa-inbox-list");
-  const [query, setQuery] = useState("");
+  const list = useShell(
+    slots,
+    "conversationList",
+    "pmfa-inbox-list",
+    className,
+  );
+  const [localQuery, setLocalQuery] = useState("");
+  const query = controlledQuery ?? localQuery;
+  const setQuery = (value: string) => {
+    setLocalQuery(value);
+    onQueryChange?.(value);
+  };
+  const [filter, setFilter] = useState<InboxFilter>("all");
+  const [pending, setPending] = useState<string>();
+  const inFlight = useRef(false);
+  const [failure, setFailure] = useState<string>();
   const headingId = useId();
-  const normalized = query.trim().toLowerCase();
+  const listRef = useRef<HTMLUListElement>(null);
   const visible = useMemo(
-    () =>
-      normalized === ""
-        ? snapshot.conversations
-        : snapshot.conversations.filter((conversation) =>
-            [
-              conversation.name,
-              conversation.phoneNumber,
-              conversation.lastMessage?.text,
-            ].some((value) => value?.toLowerCase().includes(normalized)),
-          ),
-    [snapshot.conversations, normalized],
+    () => filterInboxRows(conversations, filter, query, drafts),
+    [conversations, filter, query, drafts],
   );
   const now = Date.now();
+  const filters: InboxFilter[] = ["all", "unread", "drafts"];
+  if (conversations.some((row) => row.archived) || onAction)
+    filters.push("archived");
+  function focusRow(index: number) {
+    const rows = listRef.current?.querySelectorAll<HTMLButtonElement>(
+      "button[data-conversation-id]",
+    );
+    rows?.[Math.max(0, Math.min(index, rows.length - 1))]?.focus();
+  }
+  async function perform(
+    conversation: InboxConversation,
+    action: InboxRowAction,
+    menu: HTMLDetailsElement,
+  ) {
+    if (!onAction || inFlight.current) return;
+    inFlight.current = true;
+    menu.open = false;
+    menu.querySelector<HTMLElement>("summary")?.focus();
+    setPending(conversation.id);
+    setFailure(undefined);
+    try {
+      await onAction(conversation, action);
+    } catch {
+      setFailure(conversation.id);
+    } finally {
+      inFlight.current = false;
+      setPending(undefined);
+    }
+  }
   return (
     <section
       {...list}
-      className={[list.className, className].filter(Boolean).join(" ")}
+      className={list.className}
       aria-labelledby={headingId}
       data-pmfa="conversation-list"
     >
       <div className="pmfa-inbox-head">
-        <h2 className="pmfa-inbox-title" id={headingId}>
-          {title ?? text(configuration, "inbox.title")}
-        </h2>
+        <div className="pmfa-inbox-heading">
+          <h2 className="pmfa-inbox-title" id={headingId}>
+            {title ?? text(configuration, "inbox.title")}
+          </h2>
+          {onNewConversation && (
+            <button
+              type="button"
+              className="pmfa-btn pmfa-btn-ghost pmfa-btn-icon"
+              aria-label={text(configuration, "inbox.newChat")}
+              onClick={onNewConversation}
+            >
+              <Icon name="plus" />
+            </button>
+          )}
+        </div>
         {search && (
           <div {...slots("conversationSearch", "pmfa-search")}>
             <Icon name="search" />
@@ -206,11 +323,41 @@ export function ConversationList({
               placeholder={text(configuration, "inbox.search")}
               aria-label={text(configuration, "inbox.search")}
               onChange={(event) => setQuery(event.currentTarget.value)}
+              onKeyDown={(event) => {
+                if (event.key === "ArrowDown") {
+                  event.preventDefault();
+                  focusRow(0);
+                }
+                if (event.key === "Escape") setQuery("");
+                if (event.key === "Enter" && visible[0]) {
+                  event.preventDefault();
+                  onSelect(visible[0]);
+                }
+              }}
             />
           </div>
         )}
+        <div
+          className="pmfa-inbox-filters"
+          role="group"
+          aria-label={text(configuration, "inbox.filters")}
+        >
+          {filters.map((value) => (
+            <button
+              type="button"
+              key={value}
+              aria-pressed={filter === value}
+              onClick={() => setFilter(value)}
+            >
+              {text(
+                configuration,
+                value === "unread" ? "inbox.unreadFilter" : `inbox.${value}`,
+              )}
+            </button>
+          ))}
+        </div>
       </div>
-      {snapshot.status === "loading" || snapshot.status === "idle" ? (
+      {status === "loading" || status === "idle" ? (
         <div className="pmfa-skeleton" aria-busy="true">
           <span />
           <span />
@@ -219,42 +366,81 @@ export function ConversationList({
             {text(configuration, "status.loading")}
           </span>
         </div>
-      ) : snapshot.status === "error" ? (
+      ) : status === "error" ? (
         <div className="pmfa-inbox-state" role="alert">
           <p className="pmfa-error">{text(configuration, "inbox.loadError")}</p>
-          <button
-            type="button"
-            {...slots("button", "pmfa-btn")}
-            onClick={() => void controller.load()}
-          >
-            {text(configuration, "common.retry")}
-          </button>
+          {onRetry && (
+            <button
+              type="button"
+              {...slots("button", "pmfa-btn")}
+              onClick={onRetry}
+            >
+              {text(configuration, "common.retry")}
+            </button>
+          )}
         </div>
       ) : visible.length === 0 ? (
         <div {...slots("empty", "pmfa-inbox-state")}>
-          <Icon name={normalized === "" ? "inbox" : "search"} />
+          <Icon name={query.trim() === "" ? "inbox" : "search"} />
           {text(
             configuration,
-            normalized === "" ? "inbox.empty" : "inbox.noMatches",
+            query.trim() === "" && filter === "all"
+              ? "inbox.empty"
+              : "inbox.noMatches",
           )}
         </div>
       ) : (
-        <ul className="pmfa-convs">
-          {visible.map((conversation) => {
-            const name = displayName(conversation);
-            const selected = conversation.id === snapshot.selectedId;
-            const last = conversation.lastMessage;
-            const unread = conversation.unreadCount;
+        <ul className="pmfa-convs" ref={listRef}>
+          {visible.map((conversation, index) => {
+            const name = displayName(conversation),
+              last = conversation.lastMessage;
+            const unread = conversation.unreadCount,
+              draft = drafts[conversation.id]?.trim();
+            const offered = onAction ? (actions?.(conversation) ?? []) : [];
             return (
-              <li key={conversation.id}>
+              <li
+                key={conversation.id}
+                className="pmfa-conv-entry"
+                aria-busy={pending === conversation.id || undefined}
+              >
                 <button
                   type="button"
                   {...slots("conversationItem", "pmfa-conv")}
-                  aria-current={selected ? "true" : undefined}
-                  {...(unread > 0 ? { "data-unread": "" } : {})}
-                  onClick={() => {
-                    controller.select(conversation.id);
-                    onSelect?.(conversation);
+                  data-conversation-id={conversation.id}
+                  aria-current={
+                    conversation.id === selectedId ? "true" : undefined
+                  }
+                  {...(unread > 0 || conversation.markedUnread
+                    ? { "data-unread": "" }
+                    : {})}
+                  onContextMenu={(event) => {
+                    if (offered.length === 0) return;
+                    const menu =
+                      event.currentTarget.parentElement?.querySelector<HTMLDetailsElement>(
+                        "details",
+                      );
+                    if (menu) {
+                      event.preventDefault();
+                      menu.open = true;
+                      menu.querySelector<HTMLElement>("summary")?.focus();
+                    }
+                  }}
+                  onClick={() => onSelect(conversation)}
+                  onKeyDown={(event) => {
+                    if (
+                      ["ArrowDown", "ArrowUp", "Home", "End"].includes(
+                        event.key,
+                      )
+                    ) {
+                      event.preventDefault();
+                      focusRow(
+                        event.key === "Home"
+                          ? 0
+                          : event.key === "End"
+                            ? visible.length - 1
+                            : index + (event.key === "ArrowDown" ? 1 : -1),
+                      );
+                    }
                   }}
                 >
                   <Avatar
@@ -276,27 +462,106 @@ export function ConversationList({
                       : ""}
                   </span>
                   <span className="pmfa-conv-preview">
-                    {last === undefined
-                      ? (conversation.phoneNumber ?? "")
-                      : `${last.direction === "outbound" ? text(configuration, "inbox.you") : ""}${last.text}`}
+                    {draft ? (
+                      <>
+                        <span className="pmfa-draft-label">
+                          {text(configuration, "inbox.draft")}:{" "}
+                        </span>
+                        {draft}
+                      </>
+                    ) : last ? (
+                      <>
+                        {last.direction === "outbound" &&
+                          last.status !== undefined && (
+                            <Icon
+                              name={messagePresentationStatus({
+                                status: last.status,
+                                ...(last.receipt === undefined
+                                  ? {}
+                                  : { receipt: last.receipt }),
+                              })}
+                            />
+                          )}
+                        {last.direction === "outbound" &&
+                        last.status === undefined
+                          ? text(configuration, "inbox.you")
+                          : ""}
+                        {last.text}
+                      </>
+                    ) : (
+                      (conversation.phoneNumber ?? "")
+                    )}
                   </span>
-                  {unread > 0 && (
-                    <span {...slots("unreadBadge", "pmfa-badge")}>
-                      <span aria-hidden="true">
-                        {unread > 99 ? "99+" : unread}
+                  <span className="pmfa-conv-indicators">
+                    {conversation.pinned && <Icon name="pin" />}
+                    {(unread > 0 || conversation.markedUnread) && (
+                      <span {...slots("unreadBadge", "pmfa-badge")}>
+                        <span aria-hidden="true">
+                          {unread > 99 ? "99+" : unread > 0 ? unread : ""}
+                        </span>
+                        <span className="pmfa-sr">
+                          {text(configuration, "inbox.unread", {
+                            count: String(unread > 0 ? unread : 1),
+                          })}
+                        </span>
                       </span>
-                      <span className="pmfa-sr">
-                        {text(configuration, "inbox.unread", {
-                          count: String(unread),
-                        })}
-                      </span>
+                    )}
+                  </span>
+                  {conversation.subtitle && (
+                    <span className="pmfa-conv-subtitle">
+                      {conversation.subtitle}
                     </span>
                   )}
                 </button>
+                {offered.length > 0 && (
+                  <details
+                    className="pmfa-conv-menu"
+                    onBlur={(event) => {
+                      if (!event.currentTarget.contains(event.relatedTarget))
+                        event.currentTarget.open = false;
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Escape") {
+                        event.currentTarget.open = false;
+                        event.currentTarget
+                          .querySelector<HTMLElement>("summary")
+                          ?.focus();
+                      }
+                    }}
+                  >
+                    <summary
+                      aria-label={text(configuration, "inbox.chatActions", {
+                        name,
+                      })}
+                    >
+                      <Icon name="more" />
+                    </summary>
+                    <div className="pmfa-conv-menu-items">
+                      {offered.map((action) => (
+                        <button
+                          key={action}
+                          type="button"
+                          disabled={pending !== undefined}
+                          onClick={(event) => {
+                            const menu = event.currentTarget.closest("details");
+                            if (menu) void perform(conversation, action, menu);
+                          }}
+                        >
+                          {text(configuration, `inbox.${action}`)}
+                        </button>
+                      ))}
+                    </div>
+                  </details>
+                )}
+                {failure === conversation.id && (
+                  <p className="pmfa-conv-error" role="alert">
+                    {text(configuration, "inbox.actionError")}
+                  </p>
+                )}
               </li>
             );
           })}
-          {snapshot.hasMore && normalized === "" && (
+          {hasMore && query.trim() === "" && onLoadMore && (
             <li
               className="pmfa-loadmore"
               style={{ alignItems: "center", padding: 8 }}
@@ -304,8 +569,8 @@ export function ConversationList({
               <button
                 type="button"
                 {...slots("loadMore", "pmfa-btn")}
-                disabled={snapshot.status === "loading_more"}
-                onClick={() => void controller.loadMore()}
+                disabled={status === "loading_more"}
+                onClick={onLoadMore}
               >
                 {text(configuration, "inbox.loadMore")}
               </button>

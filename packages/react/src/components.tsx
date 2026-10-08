@@ -423,25 +423,26 @@ const MessageItem = memo(function MessageItem({
       data-message-id={message.id}
       tabIndex={-1}
     >
-      {quoted !== undefined && (
-        <button
-          type="button"
-          {...slots("replyQuote", "pmfa-quote")}
-          onClick={() => onJump(quoted.id)}
-        >
-          <span className="pmfa-sr">
-            {text(configuration, "chat.jumpToReply")}
-          </span>
-          <span className="pmfa-quote-name">
-            {authorName(configuration, quoted)}
-          </span>
-          <span className="pmfa-quote-text">
-            {snippet(configuration, quoted)}
-          </span>
-        </button>
-      )}
       <div className="pmfa-row">
         <div {...slots("bubble", "pmfa-bubble")}>
+          {quoted !== undefined && (
+            <button
+              type="button"
+              {...slots("replyQuote", "pmfa-quote")}
+              onClick={() => onJump(quoted.id)}
+            >
+              <span className="pmfa-sr">
+                {text(configuration, "chat.jumpToReply")}
+              </span>
+              <span className="pmfa-quote-name">
+                {authorName(configuration, quoted)}
+              </span>
+              <span className="pmfa-quote-text">
+                {snippet(configuration, quoted)}
+              </span>
+            </button>
+          )}
+
           {custom ?? (
             <>
               {(message.attachments?.length ?? 0) > 0 && (
@@ -463,6 +464,25 @@ const MessageItem = memo(function MessageItem({
               )}
             </>
           )}
+          <span {...slots("messageMeta", "pmfa-meta")}>
+            {time !== undefined && (
+              <time dateTime={new Date(message.createdAt).toISOString()}>
+                {time}
+              </time>
+            )}
+            {outbound && (
+              <Icon
+                name={presentation}
+                className={`pmfa-icon pmfa-status pmfa-status-${presentation}`}
+              />
+            )}
+            {status !== undefined &&
+              (message.status === "failed" ? (
+                <span>{status}</span>
+              ) : (
+                <span className="pmfa-sr">{status}</span>
+              ))}
+          </span>
         </div>
         {(canReply || retry) && (
           <div
@@ -501,25 +521,6 @@ const MessageItem = memo(function MessageItem({
           </div>
         )}
       </div>
-      <span {...slots("messageMeta", "pmfa-meta")}>
-        {time !== undefined && (
-          <time dateTime={new Date(message.createdAt).toISOString()}>
-            {time}
-          </time>
-        )}
-        {outbound && (
-          <Icon
-            name={presentation}
-            className={`pmfa-icon pmfa-status pmfa-status-${presentation}`}
-          />
-        )}
-        {status !== undefined &&
-          (message.status === "failed" ? (
-            <span>{status}</span>
-          ) : (
-            <span className="pmfa-sr">{status}</span>
-          ))}
-      </span>
       {message.error !== undefined && (
         <span className="pmfa-msg-error" role="alert">
           {message.error}
@@ -763,7 +764,8 @@ function ConversationLog({
           {...slots("latestButton", "pmfa-btn pmfa-latest")}
           onClick={scroll.latest}
         >
-          {text(configuration, "chat.latest")}
+          <Icon name="down" />
+          <span className="pmfa-sr">{text(configuration, "chat.latest")}</span>
         </button>
       )}
     </div>
@@ -1805,7 +1807,7 @@ export function ComposeBox({
                 }
               }}
             >
-              <Icon name="attach" />
+              <Icon name="plus" />
             </button>
             {attachOpen && attachmentKinds?.length && (
               <div
