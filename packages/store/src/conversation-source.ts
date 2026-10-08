@@ -64,7 +64,42 @@ export function toConversationMessage(row: StoredMessage): ConversationMessage {
     ...(row.attachments === undefined || row.attachments.length === 0
       ? {}
       : { attachments: row.attachments }),
+    ...(row.linkPreview === undefined ? {} : { linkPreview: row.linkPreview }),
   };
+}
+
+/**
+ * Fold an HD upload into its standard parent: the parent's first matching
+ * picture or video gains an `hd` variant. Either may arrive first; a child
+ * whose parent has not arrived stays hidden, as the parent will show it.
+ */
+export function withHdVariant(
+  parent: ConversationMessage,
+  child: StoredMessage | undefined,
+): ConversationMessage {
+  const media = child?.attachments?.[0];
+  if (child?.association === undefined || media === undefined) return parent;
+  const kind = child.association.type === "hd_video" ? "video/" : "image/";
+  const index =
+    parent.attachments?.findIndex((attachment) =>
+      attachment.contentType.toLowerCase().startsWith(kind),
+    ) ?? -1;
+  if (parent.attachments === undefined || index === -1) return parent;
+  const attachments = [...parent.attachments];
+  const target = attachments[index]!;
+  attachments[index] = {
+    ...target,
+    hd: {
+      ...(media.url === undefined ? {} : { url: media.url }),
+      ...(media.previewUrl === undefined
+        ? {}
+        : { previewUrl: media.previewUrl }),
+      ...(media.size > 0 ? { size: media.size } : {}),
+      ...(media.width === undefined ? {} : { width: media.width }),
+      ...(media.height === undefined ? {} : { height: media.height }),
+    },
+  };
+  return { ...parent, attachments };
 }
 
 function toInput(
@@ -104,6 +139,8 @@ export function createStoreConversationSource(
   const listeners = new Set<(event: ConversationEvent) => void>();
   let buffered: ConversationEvent[] = [];
   let storeUnsubscribe: (() => void) | undefined;
+  // HD children seen in this conversation, keyed by their parent's ID.
+  const hdChildren = new Map<string, StoredMessage>();
 
   const emit = (event: ConversationEvent) => {
     if (listeners.size === 0) buffered.push(event);
@@ -121,6 +158,38 @@ export function createStoreConversationSource(
       upsertOptions,
     );
     return page;
+  };
+
+  /** Visible messages for stored rows, with HD children folded into parents. */
+  const present = async (
+    rows: readonly StoredMessage[],
+  ): Promise<ConversationMessage[]> => {
+    const children = new Map<string, StoredMessage>();
+    for (const row of rows)
+      if (row.association !== undefined) {
+        children.set(row.association.parentMessageId, row);
+        // Remember it for a parent that arrives later.
+        hdChildren.set(row.association.parentMessageId, row);
+      }
+    const visible = rows.filter((row) => row.association === undefined);
+    return Promise.all(
+      visible.map(async (row) =>
+        withHdVariant(
+          toConversationMessage(row),
+          children.get(row.id) ?? (await hdChildOf(row)),
+        ),
+      ),
+    );
+  };
+
+  /** A parent's HD child stored outside the current page, if any. */
+  const hdChildOf = async (
+    row: StoredMessage,
+  ): Promise<StoredMessage | undefined> => {
+    const media = row.attachments?.[0]?.contentType.toLowerCase() ?? "";
+    if (!media.startsWith("image/") && !media.startsWith("video/"))
+      return undefined;
+    return hdChildren.get(row.id);
   };
 
   const localPage = async (
@@ -141,7 +210,7 @@ export function createStoreConversationSource(
           ? undefined
           : REMOTE;
     return {
-      messages: rows.map(toConversationMessage),
+      messages: await present(rows),
       ...(nextCursor === undefined ? {} : { nextCursor }),
     };
   };
@@ -209,10 +278,38 @@ export function createStoreConversationSource(
             for (const row of rows) {
               if (row === undefined || row.conversationId !== conversationId)
                 continue;
+              if (row.association !== undefined) {
+                // A child refreshes its parent, which shows it as HD.
+                hdChildren.set(row.association.parentMessageId, row);
+                void store.messages
+                  .get(row.association.parentMessageId)
+                  .then((parent) => {
+                    if (
+                      parent !== undefined &&
+                      parent.conversationId === conversationId &&
+                      parent.deleted !== true &&
+                      parent.stub !== true
+                    )
+                      emit({
+                        type: "upsert",
+                        message: withHdVariant(
+                          toConversationMessage(parent),
+                          row,
+                        ),
+                      });
+                  }, options.onError);
+                continue;
+              }
               if (row.deleted === true)
                 emit({ type: "delete", messageId: row.id });
               else if (row.stub !== true)
-                emit({ type: "upsert", message: toConversationMessage(row) });
+                emit({
+                  type: "upsert",
+                  message: withHdVariant(
+                    toConversationMessage(row),
+                    hdChildren.get(row.id),
+                  ),
+                });
             }
           },
           (error: unknown) => options.onError?.(error),

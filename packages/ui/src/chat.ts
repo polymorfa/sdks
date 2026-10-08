@@ -261,6 +261,45 @@ export function waveformBars(
   });
 }
 
+/** Embedded thumbnails above this size are ignored rather than rendered. */
+const MAX_THUMBNAIL_BYTES = 32 * 1024;
+
+/**
+ * A `data:image/jpeg` URL for an embedded thumbnail, or `undefined` when the
+ * value is not plain base64 JPEG data within the size limit. Only this
+ * function builds data URLs; `safeAttachmentUrl` still rejects them.
+ */
+export function thumbnailDataUrl(
+  thumbnail:
+    { readonly contentType: string; readonly data: string } | undefined,
+): string | undefined {
+  if (thumbnail === undefined || thumbnail.contentType !== "image/jpeg")
+    return undefined;
+  const data = thumbnail.data;
+  if (
+    data.length === 0 ||
+    data.length > Math.ceil(MAX_THUMBNAIL_BYTES / 3) * 4 ||
+    !/^[A-Za-z0-9+/]+={0,2}$/.test(data) ||
+    data.length % 4 !== 0 ||
+    // JPEG data starts with FF D8 FF, which encodes as "/9j/".
+    !data.startsWith("/9j/")
+  )
+    return undefined;
+  return `data:image/jpeg;base64,${data}`;
+}
+
+/** The `host` of a link, for a compact label, or `undefined` if invalid. */
+export function linkHost(url: string): string | undefined {
+  try {
+    const parsed = new URL(url.trim());
+    return parsed.protocol === "https:" || parsed.protocol === "http:"
+      ? parsed.hostname.replace(/^www\./, "")
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 const SAFE_ATTACHMENT_PROTOCOLS = new Set(["https:", "http:", "blob:"]);
 
 /**
@@ -324,6 +363,7 @@ export const CHAT_ICONS = {
   play: "M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z",
   pause: "M8 5h2.5v14H8ZM13.5 5H16v14h-2.5Z",
   chevron: "m6 9 6 6 6-6",
+  download: "M12 4v11M7 10l5 5 5-5M5 20h14",
   headphones:
     "M3 18v-6a9 9 0 0 1 18 0v6M21 19a2 2 0 0 1-2 2h-1v-6h3ZM3 19a2 2 0 0 0 2 2h1v-6H3Z",
   inbox:

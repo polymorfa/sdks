@@ -4,6 +4,7 @@ import {
 } from "../controller.js";
 import type {
   ConversationController,
+  MediaQuality,
   MessageAttachment,
 } from "./conversation.js";
 
@@ -31,6 +32,8 @@ export function localAttachmentFromFile(
 }
 
 export interface ComposerAttachment extends LocalAttachment {
+  /** Requested send quality for a picture; see `setAttachmentQuality`. */
+  readonly quality?: MediaQuality;
   readonly status: "uploading" | "ready" | "failed";
   readonly progress: number;
   readonly uploaded?: MessageAttachment;
@@ -108,6 +111,8 @@ export interface MessageComposerSnapshot extends ControllerSnapshot {
 export interface MessageComposerOptions {
   readonly maxTextLength?: number;
   readonly maxAttachmentSize?: number;
+  /** Quality new pictures start with. Defaults to `standard`. */
+  readonly defaultMediaQuality?: MediaQuality;
   readonly now?: () => number;
 }
 
@@ -115,6 +120,7 @@ export class MessageComposerController extends ObservableController<MessageCompo
   readonly #actions: ComposerActions;
   readonly #maxTextLength: number;
   readonly #maxAttachmentSize: number;
+  readonly #defaultQuality: MediaQuality;
   readonly #uploads = new Map<string, AbortController>();
   #sendAbort: AbortController | undefined;
 
@@ -126,6 +132,28 @@ export class MessageComposerController extends ObservableController<MessageCompo
     this.#actions = actions;
     this.#maxTextLength = options.maxTextLength ?? 4096;
     this.#maxAttachmentSize = options.maxAttachmentSize ?? 25 * 1024 * 1024;
+    this.#defaultQuality = options.defaultMediaQuality ?? "standard";
+  }
+
+  /**
+   * Choose standard or HD for an attached picture. The choice travels with
+   * the draft as `quality`; the send adapter decides how to deliver HD.
+   */
+  setAttachmentQuality(id: string, quality: MediaQuality): void {
+    const current = this.getSnapshot();
+    const target = current.attachments.find((item) => item.id === id);
+    if (
+      target === undefined ||
+      !isPicture(target) ||
+      target.quality === quality
+    )
+      return;
+    this.transition({
+      ...composerFields(current),
+      attachments: current.attachments.map((item) =>
+        item.id === id ? { ...item, quality } : item,
+      ),
+    });
   }
 
   setText(text: string): void {
@@ -146,6 +174,7 @@ export class MessageComposerController extends ObservableController<MessageCompo
     this.#uploads.set(attachment.id, abort);
     this.#replaceAttachment({
       ...attachment,
+      ...(isPicture(attachment) ? { quality: this.#defaultQuality } : {}),
       status: "uploading",
       progress: 0,
     });
@@ -210,8 +239,11 @@ export class MessageComposerController extends ObservableController<MessageCompo
           ...(current.replyTo === undefined
             ? {}
             : { replyTo: current.replyTo }),
-          attachments: current.attachments.flatMap(({ uploaded }) =>
-            uploaded === undefined ? [] : [uploaded],
+          // Standard is the default send quality, so only HD is spelled out.
+          attachments: current.attachments.flatMap(({ uploaded, quality }) =>
+            uploaded === undefined
+              ? []
+              : [quality === "hd" ? { ...uploaded, quality } : uploaded],
           ),
         },
         abort.signal,
@@ -309,7 +341,12 @@ export class MessageComposerController extends ObservableController<MessageCompo
       ...composerFields(current),
       attachments: existing
         ? current.attachments.map((item) =>
-            item.id === attachment.id ? attachment : item,
+            item.id === attachment.id
+              ? // A quality chosen while uploading survives the upload result.
+                item.quality === undefined
+                ? attachment
+                : { ...attachment, quality: item.quality }
+              : item,
           )
         : [...current.attachments, attachment],
     });
@@ -325,6 +362,11 @@ function composerFields(snapshot: MessageComposerSnapshot) {
     ...(snapshot.replyTo === undefined ? {} : { replyTo: snapshot.replyTo }),
     ...(snapshot.error === undefined ? {} : { error: snapshot.error }),
   } as const;
+}
+
+function isPicture(attachment: { readonly contentType: string }): boolean {
+  const type = attachment.contentType.toLowerCase();
+  return type.startsWith("image/") && type !== "image/gif";
 }
 
 function errorMessage(cause: unknown): string {

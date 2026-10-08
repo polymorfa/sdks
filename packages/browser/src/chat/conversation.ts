@@ -6,6 +6,33 @@ import {
 export type MessageDirection = "inbound" | "outbound";
 export type MessageStatus = "pending" | "sent" | "failed";
 
+export type MediaQuality = "standard" | "hd";
+
+/** A small embedded JPEG, as carried inside WhatsApp media and link previews. */
+export interface MediaThumbnail {
+  readonly contentType: "image/jpeg";
+  /** Base64 JPEG bytes. */
+  readonly data: string;
+  readonly width?: number;
+  readonly height?: number;
+}
+
+/** Another quality of the same picture or video, such as its HD upload. */
+export interface MediaVariant {
+  readonly url?: string;
+  readonly previewUrl?: string;
+  readonly size?: number;
+  readonly width?: number;
+  readonly height?: number;
+}
+
+export interface LinkPreview {
+  readonly url: string;
+  readonly title?: string;
+  readonly description?: string;
+  readonly thumbnail?: MediaThumbnail;
+}
+
 export interface MessageAttachment {
   readonly id: string;
   readonly name: string;
@@ -26,6 +53,18 @@ export interface MessageAttachment {
   readonly waveform?: readonly number[];
   /** Page count of a document. */
   readonly pageCount?: number;
+  /** Pixel size of a picture or video. */
+  readonly width?: number;
+  readonly height?: number;
+  /** The embedded preview, shown blurred until the full file loads. */
+  readonly thumbnail?: MediaThumbnail;
+  /**
+   * The quality this attachment was sent at. On an outgoing draft, `hd` asks
+   * the send adapter for an HD pair: a standard picture first, then the HD one.
+   */
+  readonly quality?: MediaQuality;
+  /** The HD upload paired with this standard-quality picture or video. */
+  readonly hd?: MediaVariant;
 }
 
 export interface ConversationMessage {
@@ -37,6 +76,8 @@ export interface ConversationMessage {
   readonly status: MessageStatus;
   readonly replyTo?: string;
   readonly attachments?: readonly MessageAttachment[];
+  /** The preview WhatsApp attached to a link in the text. */
+  readonly linkPreview?: LinkPreview;
   readonly error?: string;
   /** Observed receipts supplied by the data source. Sending never infers them. */
   readonly receipt?: {

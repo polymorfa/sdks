@@ -11,7 +11,14 @@
   `pageCount` hints, and `@polymorfa/store` sets `voice` from `ptt`. Outgoing
   bubbles now use a tint of the primary color with foreground text; set
   `--pmfa-bubble-outgoing` and `--pmfa-bubble-outgoing-text` to restore a solid
-  color. See `docs/chat-components.md`.
+  color. Files dropped anywhere on a chat window attach through the composer.
+  Attachments add `width`, `height`, `thumbnail`, `quality` and an `hd`
+  variant, and messages add `linkPreview`: thumbnails show blurred until media
+  loads, an HD control upgrades a picture in place and switches back, link
+  previews render as cards, and attached pictures have an HD toggle
+  (`setAttachmentQuality`, `defaultMediaQuality`). `@polymorfa/store` maps these
+  fields from message events and folds HD uploads into their standard message in
+  either arrival order. See `docs/chat-components.md`.
 
 - Campaign content types: `variableMapping` (`CampaignVariableMapping`) on
   Messaging and Platform create and update, `templateId` on Messaging update,

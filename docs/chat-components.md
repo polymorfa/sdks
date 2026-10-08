@@ -191,6 +191,31 @@ player draws a plain track.
 
 `@polymorfa/store` sets `voice` from the `ptt` flag on message events.
 
+### Thumbnails, HD and link previews
+
+| Field                      | Effect                                                                                                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `width`, `height`          | Keeps a picture or video's proportions, between 0.71:1 and 4:1, before it loads.                                                                             |
+| `thumbnail`                | An embedded JPEG (`contentType: "image/jpeg"`, base64 `data`), shown blurred until the file loads and used as a video poster or document first-page preview. |
+| `hd`                       | The HD upload of the same picture or video (`url`, `size`, `width`, `height`).                                                                               |
+| `quality`                  | `hd` when the attachment itself is the HD upload; it then shows an HD badge.                                                                                 |
+| `linkPreview` (on message) | `url`, `title`, `description` and `thumbnail`; renders a card above the text.                                                                                |
+
+An `hd` variant never loads on its own. The **HD** control loads it, then
+replaces the standard picture in place; pressing it again switches back to
+standard without reloading. Videos switch source when pressed. Only base64
+JPEG data within 32 KiB becomes a thumbnail, and only HTTP and HTTPS links
+become preview cards. Allow `img-src data:` in your content security policy to
+show thumbnails.
+
+`@polymorfa/store` reads `width`, `height`, `seconds`, `waveform`, `pageCount`,
+`thumbnail`, `quality` and `linkPreview` from message events. It creates media
+attachments before a download URL exists, so thumbnails show immediately. An
+event with `association: { type: "hd_image" | "hd_video", parentMessageId }` is
+the HD upload of another message: the store hides it and shows it as that
+message's `hd` variant, whichever arrives first. An HD upload whose standard
+message has not arrived stays hidden until it does.
+
 ## Compose media
 
 `ComposeBox` and the composer inside `ChatWindow` accept images, video, audio
@@ -235,6 +260,20 @@ Keep each conversation's composer controller while switching views if you want
 to preserve its media draft and retry identity. Dispose it when the owning inbox
 closes or authorization changes. Your host owns uploaded-object cleanup, URL
 expiry and regional storage; components do not infer a storage policy.
+
+### Drag and drop and send quality
+
+Files dropped anywhere on `ChatWindow`, `<pmfa-chat-window>` or
+`<pmfa-chat-drawer>` attach through the composer, with the same upload adapter,
+accepted types and rejection messages as the attach button. A disabled window
+or a composer without attachments ignores drops.
+
+Each attached picture has an **HD** toggle. Pictures start in standard quality;
+set `defaultMediaQuality: "hd"` on `MessageComposerController` to start in HD,
+or call `setAttachmentQuality(id, quality)`. A draft attachment carries
+`quality: "hd"` only when HD is chosen. Your send adapter decides how to deliver
+it; the Polymorfa Messaging API sends a standard picture first, then the HD
+upload.
 
 ## Failed sends
 

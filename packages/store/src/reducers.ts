@@ -7,9 +7,11 @@ import type {
   StoredCall,
   StoredCallState,
   StoredConversation,
+  StoredLinkPreview,
   StoredMessage,
   StoredMessageStatus,
   StoredRow,
+  StoredThumbnail,
 } from "./types.js";
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
@@ -271,9 +273,64 @@ async function tombstone(
   delete row.text;
   delete row.caption;
   delete row.attachments;
+  delete row.linkPreview;
   delete row.mediaUrl;
   delete row.reactions;
   context.put("messages", row);
+}
+
+const MEDIA_TYPES = new Set(["image", "video", "audio", "document", "sticker"]);
+const positiveInt = (value: unknown): number | undefined => {
+  const n = num(value);
+  return n !== undefined && Number.isInteger(n) && n > 0 ? n : undefined;
+};
+
+/** An embedded JPEG thumbnail, or `undefined` when its shape is wrong. */
+function thumbnail(value: unknown): StoredThumbnail | undefined {
+  if (!isRecord(value) || value.contentType !== "image/jpeg") return undefined;
+  const data = str(value.data);
+  if (data === undefined || data.length === 0 || data.length > 44_000)
+    return undefined;
+  return pick({
+    contentType: "image/jpeg" as const,
+    data,
+    width: positiveInt(value.width),
+    height: positiveInt(value.height),
+  });
+}
+
+function waveform(value: unknown): readonly number[] | undefined {
+  if (!Array.isArray(value) || value.length === 0 || value.length > 64)
+    return undefined;
+  const levels = value.map(num);
+  return levels.every(
+    (level) => level !== undefined && level >= 0 && level <= 1,
+  )
+    ? (levels as number[])
+    : undefined;
+}
+
+function linkPreview(value: unknown): StoredLinkPreview | undefined {
+  if (!isRecord(value)) return undefined;
+  const url = str(value.url);
+  if (url === undefined || url.length === 0 || url.length > 4096)
+    return undefined;
+  return pick({
+    url,
+    title: str(value.title),
+    description: str(value.description),
+    thumbnail: thumbnail(value.thumbnail),
+  });
+}
+
+function association(value: unknown): StoredMessage["association"] {
+  if (!isRecord(value)) return undefined;
+  const parentMessageId = str(value.parentMessageId);
+  return (value.type === "hd_image" || value.type === "hd_video") &&
+    parentMessageId !== undefined &&
+    parentMessageId !== ""
+    ? { type: value.type, parentMessageId }
+    : undefined;
 }
 
 function messageFromPayload(
@@ -309,19 +366,36 @@ function messageFromPayload(
     filename,
     mediaUrl,
     edited: bool(payload.edited),
+    // Media metadata becomes an attachment even before a download URL
+    // exists, so pictures can show their embedded thumbnail and size.
     attachments:
-      mediaUrl === undefined
+      mediaUrl === undefined && !MEDIA_TYPES.has(type ?? "")
         ? undefined
         : [
             pick({
-              id: str(payload.media) ?? id,
+              // `media` is the opaque media descriptor, never an ID.
+              id: `${id}:media`,
               name: filename ?? type ?? "attachment",
-              size: 0,
+              size: positiveInt(payload.fileLength) ?? 0,
               contentType: mimeType ?? "application/octet-stream",
               url: mediaUrl,
               voice: bool(payload.ptt),
+              durationSeconds: positiveInt(payload.seconds),
+              waveform: waveform(payload.waveform),
+              pageCount: positiveInt(payload.pageCount),
+              width: positiveInt(payload.width),
+              height: positiveInt(payload.height),
+              thumbnail: thumbnail(payload.thumbnail),
+              quality:
+                payload.quality === "hd"
+                  ? ("hd" as const)
+                  : payload.quality === "standard"
+                    ? ("standard" as const)
+                    : undefined,
             }),
           ],
+    linkPreview: linkPreview(payload.linkPreview),
+    association: association(payload.association),
   });
 }
 

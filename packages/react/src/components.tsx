@@ -6,6 +6,7 @@ import {
   type ConversationMessage,
   type ConversationSnapshot,
   type LocalAttachment,
+  type MediaQuality,
   type MessageAttachment,
   type MessageComposerController,
   type MessageComposerSnapshot,
@@ -44,6 +45,8 @@ import {
   formatMessageTime,
   injectComponentStyles,
   isImageAttachment,
+  linkHost,
+  thumbnailDataUrl,
   waveformBars,
   layoutMessages,
   messagePresentationStatus,
@@ -425,6 +428,185 @@ function AudioAttachment({
   );
 }
 
+/** Keeps a picture's real proportions within the bubble's limits. */
+function pictureRatio(attachment: MessageAttachment): string | undefined {
+  const width = attachment.width ?? attachment.thumbnail?.width;
+  const height = attachment.height ?? attachment.thumbnail?.height;
+  if (!width || !height || width <= 0 || height <= 0) return undefined;
+  const ratio = Math.min(Math.max(width / height, 0.71), 4);
+  return String(ratio);
+}
+
+/**
+ * A picture or video. The embedded thumbnail shows blurred until the file
+ * loads. An HD variant loads only when asked for, then replaces the standard
+ * picture in place; the HD badge switches back.
+ */
+function PictureAttachment({
+  attachment,
+  kind,
+  url,
+  source,
+  configuration,
+  slots,
+}: {
+  readonly attachment: MessageAttachment;
+  readonly kind: "image" | "video";
+  readonly url: string | undefined;
+  readonly source: string | undefined;
+  readonly configuration: Configuration;
+  readonly slots: Slots;
+}) {
+  const thumbnail = thumbnailDataUrl(attachment.thumbnail);
+  const hdUrl = safeAttachmentUrl(attachment.hd?.url);
+  const [loaded, setLoaded] = useState(false);
+  const [hd, setHd] = useState<
+    "idle" | "loading" | "shown" | "standard" | "failed"
+  >("idle");
+  const showingHd = hd === "shown";
+  const ratio = pictureRatio(attachment);
+  const style = (
+    ratio === undefined ? undefined : { "--pmfa-ratio": ratio }
+  ) as CSSProperties | undefined;
+  const duration = formatDuration(attachment.durationSeconds);
+  const loadHd = () => {
+    if (hdUrl === undefined || hd === "loading") return;
+    if (hd === "standard") {
+      setHd("shown");
+      return;
+    }
+    if (kind === "video") {
+      setHd("shown");
+      return;
+    }
+    setHd("loading");
+    const probe = new Image();
+    probe.onload = () => setHd("shown");
+    probe.onerror = () => setHd("failed");
+    probe.src = hdUrl;
+  };
+  const display = kind === "image" ? (showingHd ? hdUrl : source) : undefined;
+  const link = showingHd ? hdUrl : url;
+  const media =
+    kind === "video" ? (
+      (showingHd ? hdUrl : url) !== undefined ? (
+        <video
+          key={showingHd ? "hd" : "standard"}
+          controls
+          preload="none"
+          src={showingHd ? hdUrl : url}
+          {...(thumbnail === undefined ? {} : { poster: thumbnail })}
+          aria-label={attachment.name}
+        />
+      ) : undefined
+    ) : display !== undefined ? (
+      <img
+        key={display}
+        src={display}
+        alt={attachment.name}
+        loading="lazy"
+        decoding="async"
+        data-loaded={loaded ? "" : undefined}
+        onLoad={() => setLoaded(true)}
+      />
+    ) : undefined;
+  const unavailable = media === undefined;
+  const frameClass = [
+    "pmfa-att pmfa-att-media",
+    kind === "video" && !unavailable ? "pmfa-att-player" : "",
+    unavailable ? "pmfa-att-placeholder" : "",
+    thumbnail !== undefined ? "pmfa-att-thumbed" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const content = (
+    <>
+      {thumbnail !== undefined && kind === "image" && !loaded && (
+        <img
+          className="pmfa-att-thumb"
+          src={thumbnail}
+          alt=""
+          aria-hidden="true"
+        />
+      )}
+      {thumbnail !== undefined && unavailable && kind === "video" && (
+        <img
+          className="pmfa-att-thumb"
+          src={thumbnail}
+          alt=""
+          aria-hidden="true"
+        />
+      )}
+      {media}
+      {unavailable && (
+        <>
+          <Icon name={kind === "video" ? "video" : "image"} />
+          {thumbnail === undefined && (
+            <span className="pmfa-att-name">{attachment.name}</span>
+          )}
+          <span className="pmfa-sr">
+            {attachment.name}. {text(configuration, "chat.mediaUnavailable")}
+          </span>
+        </>
+      )}
+      {duration !== undefined && unavailable && kind === "video" && (
+        <span className="pmfa-att-duration">{duration}</span>
+      )}
+    </>
+  );
+  const hdControl =
+    attachment.quality === "hd" ? (
+      <span className="pmfa-hd" title={text(configuration, "chat.hd")}>
+        {text(configuration, "chat.hd")}
+      </span>
+    ) : hdUrl !== undefined ? (
+      <button
+        type="button"
+        className="pmfa-hd"
+        data-state={hd}
+        aria-pressed={showingHd}
+        aria-label={text(
+          configuration,
+          hd === "loading"
+            ? "chat.loadingHd"
+            : hd === "failed"
+              ? "chat.hdFailed"
+              : showingHd
+                ? "chat.showStandard"
+                : hd === "standard"
+                  ? "chat.showHd"
+                  : "chat.loadHd",
+        )}
+        disabled={hd === "loading" || hd === "failed"}
+        onClick={() => (showingHd ? setHd("standard") : loadHd())}
+      >
+        {hd === "loading" ? (
+          <span className="pmfa-hd-spinner" aria-hidden="true" />
+        ) : (
+          !showingHd && hd !== "standard" && <Icon name="download" />
+        )}
+        {text(configuration, "chat.hd")}
+      </button>
+    ) : undefined;
+  return (
+    <div className="pmfa-att-frame" style={style}>
+      {link === undefined || kind === "video" ? (
+        <div {...slots("attachment", frameClass)}>{content}</div>
+      ) : (
+        <a
+          {...slots("attachment", frameClass)}
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {content}
+        </a>
+      )}
+      {hdControl}
+    </div>
+  );
+}
+
 function AttachmentView({
   attachment,
   configuration,
@@ -438,23 +620,6 @@ function AttachmentView({
   const url = safeAttachmentUrl(attachment.url);
   const source = safeAttachmentUrl(attachment.previewUrl) ?? url;
   const kind = attachmentPresentation(attachment);
-  if (kind === "image" && source !== undefined) {
-    const image = (
-      <img src={source} alt={attachment.name} loading="lazy" decoding="async" />
-    );
-    return url === undefined ? (
-      <div {...slots("attachment", "pmfa-att pmfa-att-media")}>{image}</div>
-    ) : (
-      <a
-        {...slots("attachment", "pmfa-att pmfa-att-media")}
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {image}
-      </a>
-    );
-  }
   if (kind === "voice" || kind === "audio")
     return (
       <AudioAttachment
@@ -464,27 +629,16 @@ function AttachmentView({
         slots={slots}
       />
     );
-  const duration = formatDuration(attachment.durationSeconds);
-  if (kind === "video" && url !== undefined)
+  if (kind === "image" || kind === "video")
     return (
-      <div {...slots("attachment", "pmfa-att pmfa-att-media pmfa-att-player")}>
-        <video controls preload="none" src={url} aria-label={attachment.name} />
-      </div>
-    );
-  if (kind === "video" || kind === "image")
-    return (
-      <div
-        {...slots("attachment", "pmfa-att pmfa-att-media pmfa-att-placeholder")}
-      >
-        <Icon name={kind === "video" ? "video" : "image"} />
-        <span className="pmfa-att-name">{attachment.name}</span>
-        <span className="pmfa-sr">
-          {text(configuration, "chat.mediaUnavailable")}
-        </span>
-        {duration !== undefined && (
-          <span className="pmfa-att-duration">{duration}</span>
-        )}
-      </div>
+      <PictureAttachment
+        attachment={attachment}
+        kind={kind}
+        url={url}
+        source={source}
+        configuration={configuration}
+        slots={slots}
+      />
     );
   const details = [
     fileExtension(attachment.name),
@@ -501,8 +655,17 @@ function AttachmentView({
       ? formatFileSize(attachment.size, configuration.locale.code)
       : undefined,
   ].filter((value) => value !== undefined);
+  const documentPreview = thumbnailDataUrl(attachment.thumbnail);
   const body = (
     <>
+      {documentPreview !== undefined && (
+        <img
+          className="pmfa-att-doc-preview"
+          src={documentPreview}
+          alt=""
+          decoding="async"
+        />
+      )}
       <span
         className="pmfa-att-tile"
         data-extension={fileExtension(attachment.name)}
@@ -530,6 +693,41 @@ function AttachmentView({
       })}
     >
       {body}
+    </a>
+  );
+}
+
+function LinkPreviewCard({
+  preview,
+  configuration,
+}: {
+  readonly preview: NonNullable<ConversationMessage["linkPreview"]>;
+  readonly configuration: Configuration;
+}) {
+  const host = linkHost(preview.url);
+  const href = safeAttachmentUrl(preview.url);
+  const thumbnail = thumbnailDataUrl(preview.thumbnail);
+  if (host === undefined || href === undefined) return null;
+  return (
+    <a
+      className="pmfa-link-preview"
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={text(configuration, "chat.openLink", { host })}
+    >
+      {thumbnail !== undefined && (
+        <img className="pmfa-link-thumb" src={thumbnail} alt="" />
+      )}
+      <span className="pmfa-link-body">
+        {preview.title && (
+          <span className="pmfa-link-title">{preview.title}</span>
+        )}
+        {preview.description && (
+          <span className="pmfa-link-description">{preview.description}</span>
+        )}
+        <span className="pmfa-link-host">{host}</span>
+      </span>
     </a>
   );
 }
@@ -625,6 +823,12 @@ const MessageItem = memo(function MessageItem({
 
           {custom ?? (
             <>
+              {message.linkPreview !== undefined && (
+                <LinkPreviewCard
+                  preview={message.linkPreview}
+                  configuration={configuration}
+                />
+              )}
               {(message.attachments?.length ?? 0) > 0 && (
                 <div className="pmfa-atts">
                   {message.attachments?.map((attachment) => (
@@ -1046,11 +1250,13 @@ function AttachmentChip({
   configuration,
   slots,
   onRemove,
+  onQuality,
 }: {
   readonly attachment: ComposerAttachment;
   readonly configuration: Configuration;
   readonly slots: Slots;
   readonly onRemove: (id: string) => void;
+  readonly onQuality: (id: string, quality: MediaQuality) => void;
 }) {
   const percent = Math.round(attachment.progress * 100);
   const preview = isImageAttachment(attachment)
@@ -1121,6 +1327,23 @@ function AttachmentChip({
             formatFileSize(attachment.size, configuration.locale.code)
           )}
         </span>
+        {attachment.quality !== undefined && attachment.status !== "failed" && (
+          <button
+            type="button"
+            className="pmfa-quality"
+            aria-pressed={attachment.quality === "hd"}
+            aria-label={text(configuration, "composer.hdQuality")}
+            title={text(configuration, "composer.hdQuality")}
+            onClick={() =>
+              onQuality(
+                attachment.id,
+                attachment.quality === "hd" ? "standard" : "hd",
+              )
+            }
+          >
+            {text(configuration, "chat.hd")}
+          </button>
+        )}
       </span>
       <button
         type="button"
@@ -1947,6 +2170,9 @@ export function ComposeBox({
               configuration={configuration}
               slots={slots}
               onRemove={remove}
+              onQuality={(id, quality) =>
+                resolved.setAttachmentQuality(id, quality)
+              }
             />
           ))}
         </ul>

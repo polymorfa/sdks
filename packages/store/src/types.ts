@@ -73,6 +73,29 @@ export interface StoredAttachment {
   readonly previewUrl?: string;
   /** Recorded as a voice note (`ptt` on the message event). */
   readonly voice?: boolean;
+  readonly durationSeconds?: number;
+  /** Observed voice-note levels, each from 0 to 1. */
+  readonly waveform?: readonly number[];
+  readonly pageCount?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly thumbnail?: StoredThumbnail;
+  readonly quality?: "standard" | "hd";
+}
+
+export interface StoredThumbnail {
+  readonly contentType: "image/jpeg";
+  /** Base64 JPEG bytes. */
+  readonly data: string;
+  readonly width?: number;
+  readonly height?: number;
+}
+
+export interface StoredLinkPreview {
+  readonly url: string;
+  readonly title?: string;
+  readonly description?: string;
+  readonly thumbnail?: StoredThumbnail;
 }
 
 export interface StoredMessage extends StoredRow {
@@ -90,6 +113,15 @@ export interface StoredMessage extends StoredRow {
   readonly filename?: string;
   readonly mediaUrl?: string;
   readonly attachments?: readonly StoredAttachment[];
+  readonly linkPreview?: StoredLinkPreview;
+  /**
+   * Set on the HD upload paired with a standard picture or video. The child
+   * is hidden and shown as its parent's HD variant.
+   */
+  readonly association?: {
+    readonly type: "hd_image" | "hd_video";
+    readonly parentMessageId: string;
+  };
   readonly clientId?: string;
   /** ID of the message this one replies to. */
   readonly replyTo?: string;

@@ -39,6 +39,8 @@ import {
   formatFileSize,
   formatMessageTime,
   isImageAttachment,
+  linkHost,
+  thumbnailDataUrl,
   waveformBars,
   layoutMessages,
   messagePresentationStatus,
@@ -380,6 +382,41 @@ class MessageListView {
       bubble.append(quote);
     }
 
+    const preview = message.linkPreview;
+    const previewHost =
+      preview === undefined ? undefined : linkHost(preview.url);
+    const previewHref =
+      preview === undefined ? undefined : safeAttachmentUrl(preview.url);
+    if (
+      preview !== undefined &&
+      previewHost !== undefined &&
+      previewHref !== undefined
+    ) {
+      const card = document.createElement("a");
+      card.className = "pmfa-link-preview";
+      card.href = previewHref;
+      card.target = "_blank";
+      card.rel = "noopener noreferrer";
+      card.setAttribute(
+        "aria-label",
+        host.text("chat.openLink", { host: previewHost }),
+      );
+      const thumbnail = thumbnailDataUrl(preview.thumbnail);
+      if (thumbnail !== undefined) {
+        const image = document.createElement("img");
+        image.className = "pmfa-link-thumb";
+        image.src = thumbnail;
+        image.alt = "";
+        card.append(image);
+      }
+      const body = span("pmfa-link-body");
+      if (preview.title) body.append(span("pmfa-link-title", preview.title));
+      if (preview.description)
+        body.append(span("pmfa-link-description", preview.description));
+      body.append(span("pmfa-link-host", previewHost));
+      card.append(body);
+      bubble.append(card);
+    }
     if ((message.attachments?.length ?? 0) > 0) {
       const attachments = element("div");
       attachments.className = "pmfa-atts";
@@ -485,52 +522,10 @@ class MessageListView {
     const url = safeAttachmentUrl(attachment.url);
     const source = safeAttachmentUrl(attachment.previewUrl) ?? url;
     const kind = attachmentPresentation(attachment);
-    if (kind === "image" && source !== undefined) {
-      const image = document.createElement("img");
-      image.src = source;
-      image.alt = attachment.name;
-      image.loading = "lazy";
-      image.decoding = "async";
-      if (url === undefined) {
-        const frame = document.createElement("div");
-        frame.className = "pmfa-att pmfa-att-media";
-        frame.append(image);
-        return host.decorate(frame, "attachment");
-      }
-      const link = document.createElement("a");
-      link.className = "pmfa-att pmfa-att-media";
-      link.href = url;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.append(image);
-      return host.decorate(link, "attachment");
-    }
     if (kind === "voice" || kind === "audio")
       return this.#audioNode(attachment, url, kind === "voice");
-    const duration = formatDuration(attachment.durationSeconds);
-    if (kind === "video" && url !== undefined) {
-      const frame = host.decorate(element("div", "attachment"), "attachment");
-      frame.className = "pmfa-att pmfa-att-media pmfa-att-player";
-      const player = document.createElement("video");
-      player.controls = true;
-      player.preload = "none";
-      player.src = url;
-      player.setAttribute("aria-label", attachment.name);
-      frame.append(player);
-      return frame;
-    }
-    if (kind === "video" || kind === "image") {
-      const frame = host.decorate(element("div", "attachment"), "attachment");
-      frame.className = "pmfa-att pmfa-att-media pmfa-att-placeholder";
-      frame.append(
-        icon(kind === "video" ? "video" : "image"),
-        span("pmfa-att-name", attachment.name),
-        span("pmfa-sr", host.text("chat.mediaUnavailable")),
-      );
-      if (duration !== undefined)
-        frame.append(span("pmfa-att-duration", duration));
-      return frame;
-    }
+    if (kind === "image" || kind === "video")
+      return this.#pictureNode(attachment, kind, url, source);
     const node =
       url === undefined
         ? document.createElement("div")
@@ -541,6 +536,15 @@ class MessageListView {
       node.target = "_blank";
       node.rel = "noopener noreferrer";
       node.title = host.text("chat.openAttachment", { name: attachment.name });
+    }
+    const documentPreview = thumbnailDataUrl(attachment.thumbnail);
+    if (documentPreview !== undefined) {
+      const preview = document.createElement("img");
+      preview.className = "pmfa-att-doc-preview";
+      preview.src = documentPreview;
+      preview.alt = "";
+      preview.decoding = "async";
+      node.append(preview);
     }
     const extension = fileExtension(attachment.name);
     const tile = span("pmfa-att-tile");
@@ -565,6 +569,173 @@ class MessageListView {
       body.append(span("pmfa-att-size", details.join(" · ")));
     node.append(tile, body);
     return host.decorate(node, "attachment");
+  }
+
+  /**
+   * A picture or video. The embedded thumbnail shows blurred until the file
+   * loads. An HD variant loads only when asked for, then replaces the standard
+   * picture in place; the HD badge switches back.
+   */
+  #pictureNode(
+    attachment: MessageAttachment,
+    kind: "image" | "video",
+    url: string | undefined,
+    source: string | undefined,
+  ): HTMLElement {
+    const { host } = this;
+    const wrapper = document.createElement("div");
+    wrapper.className = "pmfa-att-frame";
+    const width = attachment.width ?? attachment.thumbnail?.width;
+    const height = attachment.height ?? attachment.thumbnail?.height;
+    if (width && height && width > 0 && height > 0)
+      wrapper.style.setProperty(
+        "--pmfa-ratio",
+        String(Math.min(Math.max(width / height, 0.71), 4)),
+      );
+    const thumbnail = thumbnailDataUrl(attachment.thumbnail);
+    const hdUrl = safeAttachmentUrl(attachment.hd?.url);
+    let state: "idle" | "loading" | "shown" | "standard" | "failed" = "idle";
+    let frame: HTMLElement = document.createElement("div");
+    const thumbImage = () => {
+      const image = document.createElement("img");
+      image.className = "pmfa-att-thumb";
+      image.src = thumbnail ?? "";
+      image.alt = "";
+      image.setAttribute("aria-hidden", "true");
+      return image;
+    };
+    const build = () => {
+      const showingHd = state === "shown";
+      const link = showingHd ? hdUrl : url;
+      const display =
+        kind === "image" ? (showingHd ? hdUrl : source) : undefined;
+      const playable = kind === "video" ? (showingHd ? hdUrl : url) : undefined;
+      const unavailable =
+        kind === "image" ? display === undefined : playable === undefined;
+      const next: HTMLElement =
+        link === undefined || kind === "video"
+          ? document.createElement("div")
+          : document.createElement("a");
+      if (next instanceof HTMLAnchorElement && link !== undefined) {
+        next.href = link;
+        next.target = "_blank";
+        next.rel = "noopener noreferrer";
+      }
+      next.className = [
+        "pmfa-att pmfa-att-media",
+        kind === "video" && !unavailable ? "pmfa-att-player" : "",
+        unavailable ? "pmfa-att-placeholder" : "",
+        thumbnail !== undefined ? "pmfa-att-thumbed" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      if (kind === "image" && display !== undefined) {
+        const image = document.createElement("img");
+        if (thumbnail !== undefined) {
+          const placeholder = thumbImage();
+          next.append(placeholder);
+          image.addEventListener("load", () => {
+            image.toggleAttribute("data-loaded", true);
+            placeholder.remove();
+          });
+        }
+        image.src = display;
+        image.alt = attachment.name;
+        image.loading = "lazy";
+        image.decoding = "async";
+        next.append(image);
+      } else if (kind === "video" && playable !== undefined) {
+        const player = document.createElement("video");
+        player.controls = true;
+        player.preload = "none";
+        player.src = playable;
+        if (thumbnail !== undefined) player.poster = thumbnail;
+        player.setAttribute("aria-label", attachment.name);
+        next.append(player);
+      } else {
+        if (thumbnail !== undefined) next.append(thumbImage());
+        next.append(icon(kind === "video" ? "video" : "image"));
+        if (thumbnail === undefined)
+          next.append(span("pmfa-att-name", attachment.name));
+        next.append(
+          span(
+            "pmfa-sr",
+            `${attachment.name}. ${host.text("chat.mediaUnavailable")}`,
+          ),
+        );
+        const duration = formatDuration(attachment.durationSeconds);
+        if (kind === "video" && duration !== undefined)
+          next.append(span("pmfa-att-duration", duration));
+      }
+      host.decorate(next, "attachment");
+      frame.replaceWith(next);
+      frame = next;
+    };
+    const control = (): HTMLElement | undefined => {
+      if (attachment.quality === "hd") {
+        const badge = span("pmfa-hd", host.text("chat.hd"));
+        badge.title = host.text("chat.hd");
+        return badge;
+      }
+      if (hdUrl === undefined) return undefined;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "pmfa-hd";
+      const render = () => {
+        const showingHd = state === "shown";
+        button.dataset.state = state;
+        button.setAttribute("aria-pressed", String(showingHd));
+        button.disabled = state === "loading" || state === "failed";
+        button.setAttribute(
+          "aria-label",
+          host.text(
+            state === "loading"
+              ? "chat.loadingHd"
+              : state === "failed"
+                ? "chat.hdFailed"
+                : showingHd
+                  ? "chat.showStandard"
+                  : state === "standard"
+                    ? "chat.showHd"
+                    : "chat.loadHd",
+          ),
+        );
+        button.replaceChildren();
+        if (state === "loading") {
+          const spinner = span("pmfa-hd-spinner");
+          spinner.setAttribute("aria-hidden", "true");
+          button.append(spinner);
+        } else if (!showingHd && state !== "standard")
+          button.append(icon("download"));
+        button.append(host.text("chat.hd"));
+      };
+      const show = (next: typeof state) => {
+        state = next;
+        render();
+        build();
+      };
+      button.addEventListener("click", () => {
+        if (state === "shown") return show("standard");
+        if (state === "standard" || kind === "video") return show("shown");
+        if (state === "loading") return;
+        state = "loading";
+        render();
+        const probe = new Image();
+        probe.onload = () => show("shown");
+        probe.onerror = () => {
+          state = "failed";
+          render();
+        };
+        probe.src = hdUrl;
+      });
+      render();
+      return button;
+    };
+    wrapper.append(frame);
+    build();
+    const hd = control();
+    if (hd !== undefined) wrapper.append(hd);
+    return wrapper;
   }
 
   /**
@@ -2044,6 +2215,24 @@ class ComposerView {
       chip.status.className = "pmfa-chip-status";
       setText(chip.status, formatFileSize(attachment.size, host.localeCode()));
     }
+    let quality = chip.body.querySelector<HTMLButtonElement>(".pmfa-quality");
+    if (attachment.quality !== undefined && attachment.status !== "failed") {
+      if (!quality) {
+        quality = document.createElement("button");
+        quality.type = "button";
+        quality.className = "pmfa-quality";
+        quality.textContent = host.text("chat.hd");
+        quality.title = host.text("composer.hdQuality");
+        quality.setAttribute("aria-label", host.text("composer.hdQuality"));
+        chip.body.append(quality);
+      }
+      const hd = attachment.quality === "hd";
+      quality.setAttribute("aria-pressed", String(hd));
+      quality.onclick = () =>
+        this.options
+          .controller()
+          ?.setAttachmentQuality(attachment.id, hd ? "standard" : "hd");
+    } else quality?.remove();
     return chip.node;
   }
 }
