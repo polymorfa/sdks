@@ -1,0 +1,38 @@
+[
+  {
+    "file": "chats-desktop-2x.png",
+    "capturedAt": "2026-10-08T04:14:14.657Z",
+    "source": "4bdb6ca8cc67f69394e1b6ea3f07b200038c7c86",
+    "sdkSource": "79a2f51db8ed9a48b88bcbfaff8ec2e8a20279dd",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  },
+  {
+    "file": "chats-mobile-2x.png",
+    "capturedAt": "2026-10-08T04:14:15.675Z",
+    "source": "4bdb6ca8cc67f69394e1b6ea3f07b200038c7c86",
+    "sdkSource": "79a2f51db8ed9a48b88bcbfaff8ec2e8a20279dd",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  },
+  {
+    "file": "chats-failed-send-2x.png",
+    "capturedAt": "2026-10-08T04:14:16.318Z",
+    "source": "4bdb6ca8cc67f69394e1b6ea3f07b200038c7c86",
+    "sdkSource": "79a2f51db8ed9a48b88bcbfaff8ec2e8a20279dd",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  }
+]
