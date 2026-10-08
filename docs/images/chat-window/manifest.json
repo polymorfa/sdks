@@ -1,9 +1,10 @@
 [
   {
     "file": "chats-desktop-2x.png",
-    "capturedAt": "2026-10-08T04:14:14.657Z",
-    "source": "4bdb6ca8cc67f69394e1b6ea3f07b200038c7c86",
-    "sdkSource": "79a2f51db8ed9a48b88bcbfaff8ec2e8a20279dd",
+    "capturedAt": "2026-10-08T11:54:29.850Z",
+    "route": "chats",
+    "source": "8e10c0d32a798d191b3db28c3e42b00cd0be1150",
+    "sdkSource": "4e6bd720ba62e64a00c1d20f94f5ee6208418ac4",
     "viewport": {
       "width": 1440,
       "height": 1000
@@ -13,9 +14,10 @@
   },
   {
     "file": "chats-mobile-2x.png",
-    "capturedAt": "2026-10-08T04:14:15.675Z",
-    "source": "4bdb6ca8cc67f69394e1b6ea3f07b200038c7c86",
-    "sdkSource": "79a2f51db8ed9a48b88bcbfaff8ec2e8a20279dd",
+    "capturedAt": "2026-10-08T11:54:30.771Z",
+    "route": "chats",
+    "source": "8e10c0d32a798d191b3db28c3e42b00cd0be1150",
+    "sdkSource": "4e6bd720ba62e64a00c1d20f94f5ee6208418ac4",
     "viewport": {
       "width": 390,
       "height": 844
@@ -25,9 +27,10 @@
   },
   {
     "file": "chats-failed-send-2x.png",
-    "capturedAt": "2026-10-08T04:14:16.318Z",
-    "source": "4bdb6ca8cc67f69394e1b6ea3f07b200038c7c86",
-    "sdkSource": "79a2f51db8ed9a48b88bcbfaff8ec2e8a20279dd",
+    "capturedAt": "2026-10-08T11:54:31.384Z",
+    "route": "chats",
+    "source": "8e10c0d32a798d191b3db28c3e42b00cd0be1150",
+    "sdkSource": "4e6bd720ba62e64a00c1d20f94f5ee6208418ac4",
     "viewport": {
       "width": 1440,
       "height": 1000
