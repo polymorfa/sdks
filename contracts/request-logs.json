@@ -1,0 +1,353 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "sourceCommit": "f97fb511cf3cd7bf14fbccf21a679c0f7a6ebbf3",
+  "sourcePath": "apps/api/docs/openapi.management.json",
+  "sourceSha256": "4fcbc7c71829c75163a60dc21e864ca438eb9903b0741f1c2d8052abd6cbd485",
+  "scope": "Project request log operation and its referenced schemas only; all other SDK operations retain contracts/source.json",
+  "published": false,
+  "paths": {
+    "/platform/projects/{projectId}/request-logs": {
+      "get": {
+        "operationId": "listProjectRequestLogs",
+        "tags": ["logs"],
+        "summary": "List project request logs",
+        "description": "Lists API and MCP requests made to the exact project in the route from the last 30 days. Without `after`, requests are newest first and `page.nextCursor` returns older requests. Pass `page.followCursor` as `after` to receive only newer requests, oldest first; this is how you tail the log. A request appears about two seconds after it completes. Reads of the request log are not listed.\n\nRequires `logs:read`. Project tokens only access resources in their own project.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "project",
+        "x-excluded-from-public": false,
+        "x-required-scope": "logs:read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "ConsoleSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Requests per page, from 1 to 100.",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "`page.nextCursor` from an earlier page. Lists older requests with the same filters. Cannot be combined with filters or `after`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "description": "`page.followCursor` from an earlier page. Lists newer requests, oldest first, with the same filters. Cannot be combined with filters or `cursor`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "description": "Earliest request time. Requests older than 30 days are never listed.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "description": "Latest request time.",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated HTTP status codes or classes, for example `404,5xx`.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-5]([0-9]{2}|[xX]{2})(,[1-5]([0-9]{2}|[xX]{2})){0,9}$"
+            }
+          },
+          {
+            "name": "method",
+            "in": "query",
+            "required": false,
+            "description": "Comma-separated HTTP methods, for example `POST,DELETE`.",
+            "schema": {
+              "type": "string",
+              "pattern": "^(GET|POST|PUT|PATCH|DELETE)(,(GET|POST|PUT|PATCH|DELETE)){0,9}$"
+            }
+          },
+          {
+            "name": "route",
+            "in": "query",
+            "required": false,
+            "description": "Exact route pattern, for example `/messaging/:session/messages`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "description": "`api` for direct API requests or `mcp` for requests made through MCP.",
+            "schema": {
+              "type": "string",
+              "enum": ["api", "mcp"]
+            }
+          },
+          {
+            "name": "credentialId",
+            "in": "query",
+            "required": false,
+            "description": "ID of the team API key or project token that made the request.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "requestId",
+            "in": "query",
+            "required": false,
+            "description": "Request ID from the `X-Request-Id` response header.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            }
+          },
+          {
+            "name": "traceId",
+            "in": "query",
+            "required": false,
+            "description": "W3C trace ID from the `X-Trace-Id` response header or your own `traceparent`. Matched case-insensitively.",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{32}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Stable request correlation identifier."
+              },
+              "X-Trace-Id": {
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{32}$"
+                },
+                "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+              },
+              "Polymorfa-Version": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/RequestLog"
+                      }
+                    },
+                    "page": {
+                      "$ref": "#/components/schemas/RequestLogPageMetadata"
+                    }
+                  },
+                  "required": ["data", "page"]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    }
+  },
+  "schemas": {
+    "RequestLog": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "One API or MCP request. IP addresses, user agents, headers and bodies are never included.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "projectId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the request was recorded."
+        },
+        "method": {
+          "type": "string",
+          "description": "HTTP method."
+        },
+        "route": {
+          "type": "string",
+          "description": "Matched route pattern, for example `/messaging/:session/messages`. Path values are not included."
+        },
+        "status": {
+          "type": "integer",
+          "nullable": true,
+          "description": "HTTP response status."
+        },
+        "durationMs": {
+          "type": "integer",
+          "nullable": true
+        },
+        "result": {
+          "type": "string",
+          "enum": ["success", "failure"],
+          "description": "`failure` for any status of 400 or above."
+        },
+        "source": {
+          "type": "string",
+          "enum": ["api", "mcp"]
+        },
+        "requestId": {
+          "type": "string",
+          "nullable": true,
+          "description": "Value of the `X-Request-Id` response header."
+        },
+        "traceId": {
+          "type": "string",
+          "nullable": true,
+          "pattern": "^[0-9a-f]{32}$",
+          "description": "W3C trace ID, also returned in the `X-Trace-Id` response header. When you send a valid `traceparent` header, this is your trace ID."
+        },
+        "errorCode": {
+          "type": "string",
+          "nullable": true,
+          "description": "Error code from the response body of a failed request."
+        },
+        "mcpTool": {
+          "type": "string",
+          "nullable": true,
+          "description": "MCP tool name for requests made through MCP."
+        },
+        "credential": {
+          "type": "object",
+          "nullable": true,
+          "additionalProperties": false,
+          "description": "Credential that made the request. Client tokens have no listed record, so their `id` and `last4` are null. Null when the key or token no longer exists.",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["team_key", "project_token", "client_token"]
+            },
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            },
+            "last4": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          "required": ["type", "id", "last4"]
+        }
+      },
+      "required": [
+        "id",
+        "projectId",
+        "createdAt",
+        "method",
+        "route",
+        "status",
+        "durationMs",
+        "result",
+        "source",
+        "requestId",
+        "traceId",
+        "errorCode",
+        "mcpTool",
+        "credential"
+      ]
+    },
+    "RequestLogPageMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "nextCursor": {
+          "type": "string",
+          "nullable": true,
+          "description": "Pass as `cursor` to list older requests."
+        },
+        "hasMore": {
+          "type": "boolean"
+        },
+        "followCursor": {
+          "type": "string",
+          "description": "Pass as `after` to list requests newer than this page. Valid for 24 hours."
+        }
+      },
+      "required": ["nextCursor", "hasMore", "followCursor"]
+    }
+  }
+}
