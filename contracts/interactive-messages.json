@@ -31,9 +31,7 @@
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": [
-                        "url"
-                      ]
+                      "enum": ["url"]
                     },
                     "text": {
                       "type": "string",
@@ -45,20 +43,14 @@
                       "format": "uri"
                     }
                   },
-                  "required": [
-                    "type",
-                    "text",
-                    "url"
-                  ]
+                  "required": ["type", "text", "url"]
                 },
                 {
                   "type": "object",
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": [
-                        "call"
-                      ]
+                      "enum": ["call"]
                     },
                     "text": {
                       "type": "string",
@@ -69,20 +61,14 @@
                       "pattern": "^\\+?\\d{6,20}$"
                     }
                   },
-                  "required": [
-                    "type",
-                    "text",
-                    "phoneNumber"
-                  ]
+                  "required": ["type", "text", "phoneNumber"]
                 },
                 {
                   "type": "object",
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": [
-                        "reply"
-                      ]
+                      "enum": ["reply"]
                     },
                     "text": {
                       "type": "string",
@@ -93,20 +79,14 @@
                       "minLength": 1
                     }
                   },
-                  "required": [
-                    "type",
-                    "text",
-                    "id"
-                  ]
+                  "required": ["type", "text", "id"]
                 },
                 {
                   "type": "object",
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": [
-                        "copy"
-                      ]
+                      "enum": ["copy"]
                     },
                     "text": {
                       "type": "string",
@@ -117,20 +97,14 @@
                       "minLength": 1
                     }
                   },
-                  "required": [
-                    "type",
-                    "text",
-                    "copyCode"
-                  ]
+                  "required": ["type", "text", "copyCode"]
                 },
                 {
                   "type": "object",
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": [
-                        "catalog"
-                      ]
+                      "enum": ["catalog"]
                     },
                     "text": {
                       "type": "string",
@@ -145,11 +119,7 @@
                       "minLength": 0
                     }
                   },
-                  "required": [
-                    "type",
-                    "text",
-                    "businessPhoneNumber"
-                  ]
+                  "required": ["type", "text", "businessPhoneNumber"]
                 }
               ]
             },
@@ -157,16 +127,11 @@
             "maxItems": 10
           }
         },
-        "required": [
-          "body",
-          "buttons"
-        ],
+        "required": ["body", "buttons"],
         "description": "Linked Devices support up to 10 reply buttons or up to 3 CTA buttons; reply and CTA buttons cannot be mixed. On an official WhatsApp Business number, at most 3 `reply` buttons are sent; other button types return `501`. There, `body` allows at most 1,024 characters, `title` and `footer` at most 60, and each button needs a unique `id` and a unique `text` of at most 20 characters. Every number also limits each button `id` to 256 UTF-8 bytes. Content outside any limit returns `400`."
       }
     },
-    "required": [
-      "buttons"
-    ],
+    "required": ["buttons"],
     "additionalProperties": false
   },
   "listContent": {
@@ -218,34 +183,23 @@
                         "minLength": 0
                       }
                     },
-                    "required": [
-                      "id",
-                      "title"
-                    ]
+                    "required": ["id", "title"]
                   },
                   "minItems": 1,
                   "maxItems": 30
                 }
               },
-              "required": [
-                "rows"
-              ]
+              "required": ["rows"]
             },
             "minItems": 1,
             "maxItems": 10
           }
         },
-        "required": [
-          "title",
-          "buttonText",
-          "sections"
-        ],
+        "required": ["title", "buttonText", "sections"],
         "description": "On an official WhatsApp Business number, `title` is the header (at most 60 characters) and `description` the body (at most 1,024 characters); without `description`, `title` is the body. There, each section title allows at most 24 characters and is required when the list has more than one section, lists allow at most 10 rows in total, row titles at most 24 characters, row IDs at most 200, row descriptions at most 72, `buttonText` at most 20 and `footer` at most 60. Every number also limits `buttonText` to 64 UTF-8 bytes, row `id` to 256 bytes and `title` and `description` to 256 and 4,096 bytes, so multibyte text reaches those byte limits before the character limits. Content outside any limit returns `400`."
       }
     },
-    "required": [
-      "list"
-    ],
+    "required": ["list"],
     "additionalProperties": false
   }
 }
