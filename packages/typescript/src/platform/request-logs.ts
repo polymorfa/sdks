@@ -102,6 +102,7 @@ export interface RequestLogPage {
 
 const MIN_INTERVAL_MS = 1_000;
 const MAX_INTERVAL_MS = 60_000;
+const MAX_RETRY_WAIT_MS = 300_000;
 
 /** Read and follow a project's API request log (`logs:read`). */
 export class RequestLogsResource {
@@ -192,7 +193,12 @@ export class RequestLogsResource {
       signal,
     );
     if (first === undefined) return;
-    if (backfill > 0) yield* [...first.items].reverse();
+    if (backfill > 0) {
+      for (const log of [...first.items].reverse()) {
+        if (signal?.aborted) return;
+        yield log;
+      }
+    }
     let after = first.followCursor;
     while (!signal?.aborted) {
       const page = await this.withRateLimit(
@@ -208,7 +214,10 @@ export class RequestLogsResource {
         signal,
       );
       if (page === undefined) return;
-      yield* page.items;
+      for (const log of page.items) {
+        if (signal?.aborted) return;
+        yield log;
+      }
       after = page.followCursor;
       if (!page.hasMore && !(await sleep(intervalMs, signal))) return;
     }
@@ -225,13 +234,8 @@ export class RequestLogsResource {
       } catch (error) {
         if (signal?.aborted) return undefined;
         if (!(error instanceof PolymorfaRateLimitError)) throw error;
-        const seconds = Number(error.metadata?.headers["retry-after"]);
-        const waitMs =
-          Number.isFinite(seconds) && seconds > 0
-            ? seconds * 1_000
-            : MAX_INTERVAL_MS;
-        if (!(await sleep(Math.min(waitMs, MAX_INTERVAL_MS * 5), signal)))
-          return undefined;
+        const waitMs = retryAfterMs(error.metadata?.headers["retry-after"]);
+        if (!(await sleep(waitMs, signal))) return undefined;
       }
     }
   }
@@ -269,8 +273,23 @@ export class RequestLogsResource {
   }
 }
 
+/** Same inclusion rule as `filterQuery`: empty lists send no filter. */
 function hasFilters(filters: RequestLogFilters): boolean {
-  return Object.values(filters).some((value) => value !== undefined);
+  return Object.keys(filterQuery(filters)).length > 0;
+}
+
+/** `Retry-After` as delta-seconds (including 0) or an HTTP-date; 60 s when absent or invalid. */
+export function retryAfterMs(
+  header: string | undefined,
+  now: number = Date.now(),
+): number {
+  const value = header?.trim();
+  if (value !== undefined && /^\d+$/.test(value))
+    return Math.min(Number(value) * 1_000, MAX_RETRY_WAIT_MS);
+  const date = value === undefined ? NaN : Date.parse(value);
+  if (Number.isFinite(date))
+    return Math.min(Math.max(date - now, 0), MAX_RETRY_WAIT_MS);
+  return MAX_INTERVAL_MS;
 }
 
 function filterQuery(filters: RequestLogFilters): Record<string, string> {

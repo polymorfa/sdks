@@ -8,6 +8,7 @@ import {
   RequestLogsResource,
   type RequestLog,
 } from "../src/index.js";
+import { retryAfterMs } from "../src/platform/request-logs.js";
 import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import {
   startTestServer,
@@ -252,5 +253,47 @@ describe("Client.requestLogs.tail", () => {
     await expect(
       client.requestLogs.tail({ projectId: PROJECT, backfill: 101 }).next(),
     ).rejects.toBeInstanceOf(PolymorfaValidationError);
+  });
+
+  it("stops yielding a fetched page as soon as the signal aborts", async () => {
+    const controller = new AbortController();
+    const { client } = await logServer((_request, index) =>
+      index === 0
+        ? page([], "follow-1")
+        : page([entry("a"), entry("b"), entry("c")], "follow-2"),
+    );
+    const seen: string[] = [];
+    for await (const log of client.requestLogs.tail({
+      projectId: PROJECT,
+      intervalMs: 1_000,
+      signal: controller.signal,
+    })) {
+      seen.push(log.id);
+      controller.abort();
+    }
+    expect(seen).toEqual(["a"]);
+  });
+
+  it("reads Retry-After as delta-seconds, including zero, or an HTTP-date", () => {
+    const now = Date.parse("2026-10-10T12:00:00.000Z");
+    expect(retryAfterMs("0", now)).toBe(0);
+    expect(retryAfterMs("7", now)).toBe(7_000);
+    expect(retryAfterMs("Sat, 10 Oct 2026 12:00:05 GMT", now)).toBe(5_000);
+    expect(retryAfterMs("Sat, 10 Oct 2026 11:59:00 GMT", now)).toBe(0);
+    expect(retryAfterMs(undefined, now)).toBe(60_000);
+    expect(retryAfterMs("soon", now)).toBe(60_000);
+  });
+
+  it("accepts a cursor alongside empty filter lists", async () => {
+    const { client, requests } = await logServer(() => page([], "f"));
+    await client.requestLogs.list({
+      projectId: PROJECT,
+      cursor: "older-1",
+      status: [],
+      method: [],
+    });
+    expect(new URL(requests[0]!.path, "http://localhost").search).toBe(
+      "?cursor=older-1",
+    );
   });
 });
