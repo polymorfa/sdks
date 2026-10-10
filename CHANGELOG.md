@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Test number phone controls. `MessagingClient.testing` adds `getPhone`
+  (online state and linked companions), `sendPhoneMessage` (a text from the
+  simulated phone to another Test number in the project) and
+  `unlinkPhoneDevice`. Requires Test numbers access. API contract:
+  polymorfa/polymorfa#526.
+
 - Dynamic WhatsApp Flow endpoints (beta, Cloud onboarding enrollment, Official
   API Numbers only). `Client.project(projectId).flows` adds `endpoint`,
   `setEndpoint` (modes `forward`, `function` and `direct`; a forward endpoint's

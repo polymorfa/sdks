@@ -2822,6 +2822,36 @@ ID, so a retry after an uncertain response never creates a second event or
 duplicate webhook deliveries. With a key, the SDK also retries network and
 5xx failures.
 
+### Test number phone
+
+Each Test number has a simulated phone that acts as its main device. Use it
+to see which companions are linked, to send a message as the phone, or to
+unlink a companion as a person would from Linked devices.
+
+```ts
+const { data: phone } = await messaging.testing.getPhone(
+  projectId,
+  "my-test-number",
+);
+console.log(phone.online, phone.devices); // [{ deviceId: 33 }, ...]
+
+// Sent over the simulated network to another connected Test number in the
+// same project. The sender's companions receive the sent copy.
+await messaging.testing.sendPhoneMessage(projectId, "my-test-number", {
+  to: "+15550100002",
+  text: "hello from the phone",
+});
+
+await messaging.testing.unlinkPhoneDevice(projectId, "my-test-number", 74);
+```
+
+`getPhone` needs `sandbox:read`; `sendPhoneMessage` and `unlinkPhoneDevice`
+need `sandbox:write`. All three need an organization API key or project token
+and Test numbers access. Real numbers, an offline phone and recipients outside
+the project are refused with a `PolymorfaValidationError`. Phone messages share
+the 30-per-minute project limit with test events. Device 0 is the phone and
+cannot be unlinked.
+
 Trusted servers continue an issued Meta Cloud API invitation with
 `messaging.cloudOnboarding.advance({ quicklinkId, projectId, result })`.
 `result` contains the Embedded Signup authorization code, selected WABA and phone
