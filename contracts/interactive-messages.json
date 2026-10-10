@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "c3d8ac300b0ed34fee854bcd06b90e0bffd82c5c",
+  "commit": "eb5fc63a8d2f59077b681d138fe5436109cd9723",
   "sourcePath": "apps/api/docs/openapi.json",
   "sourceSha256": "a4cf9a2f34bba7eab3112deccd40b50ad0df838425eb48b09762ef8f857b62b4",
   "releaseStatus": "draft; requires accepted API revision and staging acceptance",
@@ -132,6 +132,74 @@
       }
     },
     "required": ["buttons"],
+    "additionalProperties": false
+  },
+  "listContent": {
+    "type": "object",
+    "properties": {
+      "list": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 0
+          },
+          "buttonText": {
+            "type": "string",
+            "minLength": 1
+          },
+          "footer": {
+            "type": "string",
+            "minLength": 0
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 0
+                },
+                "rows": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "description": {
+                        "type": "string",
+                        "minLength": 0
+                      }
+                    },
+                    "required": ["id", "title"]
+                  },
+                  "minItems": 1,
+                  "maxItems": 30
+                }
+              },
+              "required": ["rows"]
+            },
+            "minItems": 1,
+            "maxItems": 10
+          }
+        },
+        "required": ["title", "buttonText", "sections"],
+        "description": "On an official WhatsApp Business number, `title` is the header (at most 60 characters) and `description` the body (at most 1,024 characters); without `description`, `title` is the body. There, each section title allows at most 24 characters and is required when the list has more than one section, lists allow at most 10 rows in total, row titles at most 24 characters, row IDs at most 200, row descriptions at most 72, `buttonText` at most 20 and `footer` at most 60. Every number also limits `buttonText` to 64 UTF-8 bytes, row `id` to 256 bytes and `title` and `description` to 256 and 4,096 bytes, so multibyte text reaches those byte limits before the character limits. Content outside any limit returns `400`."
+      }
+    },
+    "required": ["list"],
     "additionalProperties": false
   }
 }
