@@ -12,7 +12,8 @@ import type {
 } from "../transport/types.js";
 
 export type RequestLogSource = "api" | "mcp";
-export type RequestLogCredentialType = "team_key" | "project_token";
+export type RequestLogCredentialType =
+  "team_key" | "project_token" | "client_token";
 export type RequestLogMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 /** One API or MCP request made to a project. */
@@ -34,10 +35,12 @@ export interface RequestLog {
   readonly traceId: string | null;
   readonly errorCode: string | null;
   readonly mcpTool: string | null;
+  /** Null when the key or token no longer exists. */
   readonly credential: {
     readonly type: RequestLogCredentialType;
-    readonly id: string;
-    readonly last4: string;
+    /** Null for client tokens, which have no listed record. */
+    readonly id: string | null;
+    readonly last4: string | null;
   } | null;
 }
 
