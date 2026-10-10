@@ -2017,6 +2017,33 @@ pass one. Automatic retries reuse that key; a completed replay returns the
 API's `idempotency_completed` conflict, so inspect the campaign state after a
 lost response.
 
+#### Weighted message variation (beta)
+
+Give a campaign two to five alternatives in `messageVariations`
+(`CampaignMessageVariation`) on create or update, on both surfaces. Each
+recipient receives one, chosen by weight, and keeps it across retries. Weights
+are integers from 1 to 99 that add up to 100, and every alternative uses the
+same `{{variable}}` placeholders and inline fallbacks. Alternatives send only
+from linked-device numbers and change only on an unlaunched draft; `null`
+clears them. A team that is not enrolled receives `403 feature_unavailable`.
+
+```ts
+await messaging.campaigns.update(projectSlug, campaignId, {
+  messageVariations: [
+    {
+      key: "hello",
+      weight: 60,
+      blueprint: { version: 2, source: "Hello {{first_name | there}}!" },
+    },
+    {
+      key: "hi",
+      weight: 40,
+      blueprint: { version: 2, source: "Hi {{first_name | there}}!" },
+    },
+  ],
+});
+```
+
 #### Campaign conversions (beta)
 
 Campaign conversion reporting is a beta: the team must be enrolled, or both

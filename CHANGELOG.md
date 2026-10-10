@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Weighted message variation (beta). Messaging and Platform campaign create
+  and update accept `messageVariations`, two to five weighted alternatives
+  (`CampaignMessageVariation`), and campaigns return it. `null` clears the
+  alternatives on an unlaunched draft. A team that is not enrolled receives
+  `403 feature_unavailable`. API contract: polymorfa/polymorfa#409.
 - `Client.requestLogs` reads a project's API request log (`logs:read`):
   `list` with status, method, route, source, credential, request ID and trace
   ID filters, `follow` for newer requests, and `tail`, an async iterator that

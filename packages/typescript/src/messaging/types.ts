@@ -107,6 +107,29 @@ export interface SuccessResponse {
   readonly message?: string;
 }
 
+/** The message one weighted alternative sends, in the composed-message format. */
+export interface CampaignMessageVariationBlueprint {
+  readonly version: 2;
+  /**
+   * 1 to 4,096 characters. Every alternative must use the same `{{variable}}`
+   * placeholders and inline fallbacks.
+   */
+  readonly source: string;
+  readonly [field: string]: unknown;
+}
+
+/**
+ * One weighted message alternative (beta). Each recipient receives one
+ * alternative, chosen by weight, and keeps it across retries.
+ */
+export interface CampaignMessageVariation {
+  /** Unique in the campaign: a lowercase letter, then up to 15 of `a-z`, `0-9`, `_`, `-`. */
+  readonly key: string;
+  /** Integer from 1 to 99; the weights of all alternatives add up to 100. */
+  readonly weight: number;
+  readonly blueprint: CampaignMessageVariationBlueprint;
+}
+
 /** Project-scoped campaign summary returned by the Messaging API. */
 export interface Campaign {
   readonly id: string;
@@ -137,6 +160,8 @@ export interface Campaign {
   readonly complianceConfig?: unknown;
   readonly variants?: unknown;
   readonly variantStrategy?: unknown;
+  /** Weighted message alternatives, or null when the campaign sends one message. */
+  readonly messageVariations?: readonly CampaignMessageVariation[] | null;
 }
 
 export type CampaignSendWindowDay =
@@ -213,6 +238,11 @@ export interface CreateCampaignRequest {
    * whole request; use `campaigns.addRecipients` for partial acceptance.
    */
   readonly recipients?: readonly CampaignRecipientInput[];
+  /**
+   * Two to five weighted alternatives for linked-device numbers (beta). A team
+   * that is not enrolled receives `403 feature_unavailable`.
+   */
+  readonly messageVariations?: readonly CampaignMessageVariation[] | null;
 }
 
 export type CampaignRecipientStatus =
@@ -311,6 +341,8 @@ interface UpdateCampaignChanges {
    * paused edit requires in-flight sends to have settled.
    */
   readonly sendWindow?: CampaignSendWindowRequest | null;
+  /** Replaces the weighted alternatives; null clears them. Only an unlaunched draft. */
+  readonly messageVariations?: readonly CampaignMessageVariation[] | null;
 }
 
 /** At least one draft field must be supplied. */
@@ -323,6 +355,9 @@ export type UpdateCampaignRequest =
   | (UpdateCampaignChanges & { readonly scheduledAt: number | null })
   | (UpdateCampaignChanges & {
       readonly sendWindow: CampaignSendWindowRequest | null;
+    })
+  | (UpdateCampaignChanges & {
+      readonly messageVariations: readonly CampaignMessageVariation[] | null;
     });
 
 export interface RescheduleCampaignRequest {

@@ -326,6 +326,8 @@ export type {
   CampaignSendWindow,
   CampaignSendWindowDay,
   CampaignSendWindowRange,
+  CampaignMessageVariation,
+  CampaignMessageVariationBlueprint,
   CampaignSendWindowRequest,
   CampaignAnalyticsResponse,
   CampaignOperation,

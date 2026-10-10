@@ -3,6 +3,7 @@ import type {
   CampaignRecipient,
   CampaignRecipientInput,
   CampaignRecipientStatus,
+  CampaignMessageVariation,
   CampaignSendWindowRequest,
   InvalidRecipientRow,
 } from "../messaging/types.js";
@@ -198,6 +199,8 @@ export interface CreatePlatformCampaignRequest {
   readonly complianceConfig?: unknown;
   readonly variants?: unknown;
   readonly variantStrategy?: unknown;
+  /** Two to five weighted alternatives for linked-device numbers (beta). */
+  readonly messageVariations?: readonly CampaignMessageVariation[] | null;
 }
 
 /**
@@ -246,6 +249,8 @@ export interface UpdatePlatformCampaignRequest {
   readonly scheduledAt?: number | null;
   /** Null removes the window. Only while the campaign is a draft or paused. */
   readonly sendWindow?: CampaignSendWindowRequest | null;
+  /** Replaces the weighted alternatives; null clears them. Only an unlaunched draft. */
+  readonly messageVariations?: readonly CampaignMessageVariation[] | null;
   readonly [field: string]: unknown;
 }
 

@@ -1,0 +1,216 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "9dc523d940edc5954a37ad85647b89be1cd58e3c",
+  "note": "Weighted message variation beta (PR #409). Adds messageVariations to Messaging and Platform campaigns; the full snapshots stay pinned to contracts/source.json until the next repin.",
+  "sources": {
+    "messaging": {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sourceSha256": "6bed8a76365e254bf0c14790a371b4a371e001e3692204726ffad12143849e6c",
+      "schemas": {
+        "CampaignMessageVariation": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,15}$",
+              "description": "Identifier of the alternative, unique in the campaign: a lowercase letter, then up to 15 lowercase letters, digits, `_` or `-`.",
+              "example": "short"
+            },
+            "weight": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 99,
+              "description": "Share of recipients who receive this alternative, in percent. The weights of all alternatives add up to 100.",
+              "example": 50
+            },
+            "blueprint": {
+              "$ref": "#/components/schemas/CampaignMessageVariationBlueprint"
+            }
+          },
+          "required": ["key", "weight", "blueprint"],
+          "additionalProperties": false
+        },
+        "CampaignMessageVariationBlueprint": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "number",
+              "enum": [2]
+            },
+            "source": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096,
+              "description": "The message text, 1 to 4,096 characters. Every alternative must use the same `{{variable}}` placeholders and inline fallbacks."
+            }
+          },
+          "required": ["version", "source"],
+          "description": "The message this alternative sends, in the composed-message format."
+        }
+      },
+      "fields": {
+        "Campaign": {
+          "type": "array",
+          "nullable": true,
+          "items": {
+            "$ref": "#/components/schemas/CampaignMessageVariation"
+          },
+          "description": "Weighted message alternatives, or null when the campaign sends one message."
+        },
+        "CreateCampaignRequest": {
+          "type": "array",
+          "nullable": true,
+          "items": {
+            "$ref": "#/components/schemas/CampaignMessageVariation"
+          },
+          "minItems": 2,
+          "maxItems": 5,
+          "description": "Two to five message alternatives for linked-device numbers. Each recipient receives one, chosen by weight, and keeps it across retries. Cannot be combined with composed messages, a template or an A/B test. A beta; a team that is not enrolled gets `403 feature_unavailable`."
+        },
+        "UpdateCampaignRequest": {
+          "type": "array",
+          "nullable": true,
+          "items": {
+            "$ref": "#/components/schemas/CampaignMessageVariation"
+          },
+          "minItems": 2,
+          "maxItems": 5,
+          "description": "Replaces the weighted message alternatives; null clears them. Only an unlaunched draft can change it."
+        }
+      }
+    },
+    "platform": {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "sourceSha256": "2c376cddc6e50719f9066b2117b59b14db80aabf4c8edfc0c65421b0f515c3d1",
+      "schemas": {
+        "CampaignMessageVariations": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "key": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,15}$",
+                "description": "Identifier of the alternative, unique in the campaign."
+              },
+              "weight": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 99,
+                "description": "Share of recipients who receive this alternative, in percent. The weights add up to 100."
+              },
+              "blueprint": {
+                "type": "object",
+                "required": ["version", "source"],
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "enum": [2]
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096
+                  }
+                },
+                "additionalProperties": true
+              }
+            },
+            "required": ["key", "weight", "blueprint"]
+          }
+        }
+      },
+      "fields": {
+        "PlatformCampaign": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "key": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,15}$",
+                "description": "Identifier of the alternative, unique in the campaign."
+              },
+              "weight": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 99,
+                "description": "Share of recipients who receive this alternative, in percent. The weights add up to 100."
+              },
+              "blueprint": {
+                "type": "object",
+                "required": ["version", "source"],
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "enum": [2]
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096
+                  }
+                },
+                "additionalProperties": true
+              }
+            },
+            "required": ["key", "weight", "blueprint"]
+          },
+          "nullable": true,
+          "description": "Weighted message alternatives, or null when the campaign sends one message."
+        },
+        "CreatePlatformCampaignRequest": {
+          "$ref": "#/components/schemas/CampaignMessageVariations",
+          "description": "Two to five message alternatives for linked-device numbers. Each recipient receives one, chosen by weight, and keeps it across retries. Cannot be combined with composed messages, a template or an A/B test. A beta; a team that is not enrolled gets `403 feature_unavailable`."
+        },
+        "UpdatePlatformCampaignRequest": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "key": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]{0,15}$",
+                "description": "Identifier of the alternative, unique in the campaign."
+              },
+              "weight": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 99,
+                "description": "Share of recipients who receive this alternative, in percent. The weights add up to 100."
+              },
+              "blueprint": {
+                "type": "object",
+                "required": ["version", "source"],
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "enum": [2]
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4096
+                  }
+                },
+                "additionalProperties": true
+              }
+            },
+            "required": ["key", "weight", "blueprint"]
+          },
+          "nullable": true,
+          "description": "Replaces the weighted linked-device alternatives; null clears them. Only while the campaign is an unlaunched draft."
+        }
+      }
+    }
+  }
+}
