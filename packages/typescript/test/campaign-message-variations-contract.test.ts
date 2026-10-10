@@ -108,9 +108,10 @@ describe("campaign message variation contract supplement", () => {
     expectTypeOf<
       CreateCampaignRequest["messageVariations"]
     >().toEqualTypeOf<List>();
+    // The Platform create schema is a non-nullable array; only update clears.
     expectTypeOf<
       CreatePlatformCampaignRequest["messageVariations"]
-    >().toEqualTypeOf<List>();
+    >().toEqualTypeOf<readonly CampaignMessageVariation[] | undefined>();
     expectTypeOf<
       UpdatePlatformCampaignRequest["messageVariations"]
     >().toEqualTypeOf<List>();

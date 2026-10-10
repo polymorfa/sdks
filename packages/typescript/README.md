@@ -2028,7 +2028,8 @@ that waits for the winner. When the test window ends, the winner by
 `winnerCriterion` is sent to the reserve; if no variant is clearly ahead, the
 campaign pauses with the reserve unsent. `experimentOutcome` on the campaign
 and `experiment` in analytics report the result. Send `null` for both fields to
-make an unlaunched draft a broadcast again. A team that is not enrolled
+make an unlaunched draft a broadcast again. An A/B campaign cannot also use a template or
+weighted message alternatives. A team that is not enrolled
 receives `403 feature_unavailable`.
 
 ```ts
@@ -2065,7 +2066,8 @@ Give a campaign two to five alternatives in `messageVariations`
 (`CampaignMessageVariation`) on create or update, on both surfaces. Each
 recipient receives one, chosen by weight, and keeps it across retries. Weights
 are integers from 1 to 99 that add up to 100, and every alternative uses the
-same `{{variable}}` placeholders and inline fallbacks. Alternatives send only
+same `{{variable}}` placeholders and inline fallbacks. A campaign with alternatives cannot also use
+a template, composed messages or A/B variants. Alternatives send only
 from linked-device numbers and change only on an unlaunched draft; `null`
 clears them. A team that is not enrolled receives `403 feature_unavailable`.
 

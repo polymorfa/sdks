@@ -204,8 +204,11 @@ export interface CreatePlatformCampaignRequest {
   /** Two to four A/B variants (beta); requires `variantStrategy`. */
   readonly variants?: readonly CampaignVariant[];
   readonly variantStrategy?: CampaignVariantStrategy;
-  /** Two to five weighted alternatives for linked-device numbers (beta). */
-  readonly messageVariations?: readonly CampaignMessageVariation[] | null;
+  /**
+   * Two to five weighted alternatives for linked-device numbers (beta). Cannot
+   * be combined with a template, composed messages or A/B variants.
+   */
+  readonly messageVariations?: readonly CampaignMessageVariation[];
 }
 
 /**
