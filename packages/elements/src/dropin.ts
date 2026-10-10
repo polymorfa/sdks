@@ -431,11 +431,18 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
     input.setAttribute("aria-label", this.text("inbox.search"));
     input.placeholder = this.text("inbox.search");
     input.value = this.#query;
-    input.addEventListener("input", () => {
+    input.addEventListener("input", (event) => {
+      this.#query = input.value;
+      // Re-rendering replaces this input and would cancel an IME composition.
+      if ((event as InputEvent).isComposing) return;
+      this.render();
+    });
+    input.addEventListener("compositionend", () => {
       this.#query = input.value;
       this.render();
     });
     input.addEventListener("keydown", (event) => {
+      if (event.isComposing) return;
       if (event.key === "ArrowDown") {
         event.preventDefault();
         list

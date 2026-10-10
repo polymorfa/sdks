@@ -35,6 +35,35 @@ export interface StoreConversationSourceOptions {
 const LOCAL = "store:local:";
 const REMOTE = "store:remote";
 
+const RECEIPT_RANK = { delivered: 1, read: 2, played: 3 } as const;
+type ReceiptState = keyof typeof RECEIPT_RANK;
+
+const isReceiptState = (value: unknown): value is ReceiptState =>
+  value === "delivered" || value === "read" || value === "played";
+
+/**
+ * The stored receipt with the furthest state seen. Acknowledgements advance
+ * `status` without touching a receipt cached from history, so neither may
+ * move the other back.
+ */
+function receiptOf(
+  row: StoredMessage,
+): Pick<ConversationMessage, "receipt"> | Record<string, never> {
+  const fromStatus = isReceiptState(row.status) ? row.status : undefined;
+  const fromReceipt = row.receipt?.state;
+  if (fromStatus === undefined && row.receipt === undefined) return {};
+  const state =
+    fromStatus === undefined
+      ? fromReceipt
+      : fromReceipt === undefined ||
+          RECEIPT_RANK[fromStatus] >= RECEIPT_RANK[fromReceipt]
+        ? fromStatus
+        : fromReceipt;
+  return {
+    receipt: { ...row.receipt, ...(state === undefined ? {} : { state }) },
+  };
+}
+
 /** Maps a stored row to the `@polymorfa/browser` message shape. */
 export function toConversationMessage(row: StoredMessage): ConversationMessage {
   return {
@@ -45,21 +74,7 @@ export function toConversationMessage(row: StoredMessage): ConversationMessage {
     direction: row.fromMe ? "outbound" : "inbound",
     status:
       row.status === "pending" || row.status === "failed" ? row.status : "sent",
-    ...(row.status === "delivered" ||
-    row.status === "read" ||
-    row.status === "played" ||
-    row.receipt !== undefined
-      ? {
-          receipt: {
-            ...(row.status === "delivered" ||
-            row.status === "read" ||
-            row.status === "played"
-              ? { state: row.status }
-              : {}),
-            ...row.receipt,
-          },
-        }
-      : {}),
+    ...receiptOf(row),
     ...(row.replyTo === undefined ? {} : { replyTo: row.replyTo }),
     ...(row.attachments === undefined || row.attachments.length === 0
       ? {}
@@ -119,6 +134,9 @@ function toInput(
     ...(message.attachments === undefined
       ? {}
       : { attachments: message.attachments }),
+    ...(message.linkPreview === undefined
+      ? {}
+      : { linkPreview: message.linkPreview }),
   };
 }
 
@@ -141,6 +159,8 @@ export function createStoreConversationSource(
   let storeUnsubscribe: (() => void) | undefined;
   // HD children seen in this conversation, keyed by their parent's ID.
   const hdChildren = new Map<string, StoredMessage>();
+  // IDs of messages already returned from a local page.
+  const shown = new Set<string>();
 
   const emit = (event: ConversationEvent) => {
     if (listeners.size === 0) buffered.push(event);
@@ -160,6 +180,23 @@ export function createStoreConversationSource(
     return page;
   };
 
+  /** Re-emits a stored parent so it shows its HD child. */
+  const refreshParent = async (child: StoredMessage): Promise<void> => {
+    const parentId = child.association?.parentMessageId;
+    if (parentId === undefined) return;
+    const parent = await store.messages.get(parentId);
+    if (
+      parent !== undefined &&
+      parent.conversationId === conversationId &&
+      parent.deleted !== true &&
+      parent.stub !== true
+    )
+      emit({
+        type: "upsert",
+        message: withHdVariant(toConversationMessage(parent), child),
+      });
+  };
+
   /** Visible messages for stored rows, with HD children folded into parents. */
   const present = async (
     rows: readonly StoredMessage[],
@@ -172,7 +209,7 @@ export function createStoreConversationSource(
         hdChildren.set(row.association.parentMessageId, row);
       }
     const visible = rows.filter((row) => row.association === undefined);
-    return Promise.all(
+    const messages = await Promise.all(
       visible.map(async (row) =>
         withHdVariant(
           toConversationMessage(row),
@@ -180,6 +217,15 @@ export function createStoreConversationSource(
         ),
       ),
     );
+    // A child on this page whose parent an earlier page already returned:
+    // that parent was shown without HD, so refresh it.
+    for (const [parentId, child] of children)
+      if (shown.has(parentId) && !visible.some((row) => row.id === parentId))
+        await refreshParent(child).catch((error: unknown) =>
+          options.onError?.(error),
+        );
+    for (const row of visible) shown.add(row.id);
+    return messages;
   };
 
   /** A parent's HD child stored outside the current page, if any. */
@@ -218,6 +264,7 @@ export function createStoreConversationSource(
   return {
     async load(cursor, signal) {
       if (cursor === undefined) {
+        shown.clear();
         const local = await localPage(undefined);
         if (options.load === undefined) return local;
         const remote = remotePage(undefined, signal);
@@ -281,23 +328,9 @@ export function createStoreConversationSource(
               if (row.association !== undefined) {
                 // A child refreshes its parent, which shows it as HD.
                 hdChildren.set(row.association.parentMessageId, row);
-                void store.messages
-                  .get(row.association.parentMessageId)
-                  .then((parent) => {
-                    if (
-                      parent !== undefined &&
-                      parent.conversationId === conversationId &&
-                      parent.deleted !== true &&
-                      parent.stub !== true
-                    )
-                      emit({
-                        type: "upsert",
-                        message: withHdVariant(
-                          toConversationMessage(parent),
-                          row,
-                        ),
-                      });
-                  }, options.onError);
+                void refreshParent(row).catch((error: unknown) =>
+                  options.onError?.(error),
+                );
                 continue;
               }
               if (row.deleted === true)

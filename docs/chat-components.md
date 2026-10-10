@@ -214,7 +214,8 @@ attachments before a download URL exists, so thumbnails show immediately. An
 event with `association: { type: "hd_image" | "hd_video", parentMessageId }` is
 the HD upload of another message: the store hides it and shows it as that
 message's `hd` variant, whichever arrives first. An HD upload whose standard
-message has not arrived stays hidden until it does.
+message has not arrived stays hidden until it does. HD uploads do not add to
+the unread count or replace the conversation preview.
 
 ## Compose media
 

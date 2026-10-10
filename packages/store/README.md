@@ -166,9 +166,9 @@ fourth `key` argument that changes when the query inputs change.
 ## Privacy
 
 - Nothing is stored until your application calls `createPolymorfaStore()`.
-- Message text, captions, media URLs, contact names, and raw event payloads
-  are written to the device. Anyone with access to the browser profile can
-  read them unless you pass `encrypt` and `decrypt`.
+- Message text, captions, link previews, media URLs, contact names, and raw
+  event payloads are written to the device. Anyone with access to the browser
+  profile can read them unless you pass `encrypt` and `decrypt`.
 - `encrypt` receives the fields in `SENSITIVE_FIELDS` for each row and
   returns a structured-cloneable value. Indexed fields (IDs, times, unread
   counts, status) stay readable so queries work. Keep the key out of

@@ -157,6 +157,38 @@ describe("<pmfa-inbox>", () => {
     ).toBe("Ada Lovelace");
   });
 
+  it("keeps the search input during an IME composition", async () => {
+    const client = definePolymorfa({
+      client: new PolymorfaClient({ fetch: tokenFetch(["read_messages"]) }),
+    });
+    await client.refresh();
+    const inbox = document.createElement("pmfa-inbox") as PolymorfaInboxElement;
+    inbox.source = source;
+    document.body.append(inbox);
+    await vi.waitFor(() =>
+      expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(2),
+    );
+    const search = inbox.shadowRoot!.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    )!;
+    search.focus();
+    search.value = "Ada";
+    search.dispatchEvent(
+      new InputEvent("input", { bubbles: true, isComposing: true }),
+    );
+    // Replacing the focused input would cancel the composition.
+    expect(inbox.shadowRoot!.querySelector('input[type="search"]')).toBe(
+      search,
+    );
+    expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(2);
+    search.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", isComposing: true }),
+    );
+    expect(search.value).toBe("Ada");
+    search.dispatchEvent(new CompositionEvent("compositionend"));
+    expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(1);
+  });
+
   it("renders the list and opens a read-only thread without send_message", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const client = definePolymorfa({

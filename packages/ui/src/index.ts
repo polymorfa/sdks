@@ -70,6 +70,7 @@ export {
   CHAT_ICONS,
   compareMessageTime,
   filterInboxRows,
+  inboxDraft,
   type InboxFilter,
   type InboxRowAction,
   attachmentPresentation,

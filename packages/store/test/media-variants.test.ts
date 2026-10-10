@@ -123,3 +123,55 @@ describe("media metadata and HD pairing", () => {
     });
   }
 });
+
+describe("HD children and conversation bookkeeping", () => {
+  it("does not count an HD child as unread or use it as the preview", async () => {
+    const store = await openStore();
+    await store.ingest([
+      media("parent", 1_000, { caption: "beach" }),
+      media("child", 1_500, {
+        quality: "hd",
+        association: { type: "hd_image", parentMessageId: "parent" },
+      }),
+    ]);
+    const conversation = await store.conversations.get(chat.id);
+    expect(conversation?.unreadCount).toBe(1);
+    expect(conversation?.lastMessage?.id).toBe("parent");
+    store.close();
+  });
+
+  it("refreshes an already shown parent when its HD child is on a later page", async () => {
+    const store = await openStore();
+    // Same timestamp: the parent sorts first, so the child is on page two.
+    await store.ingest([
+      media("p-parent", 1_000, { mediaUrl: "https://cdn.example/sd.jpg" }),
+      media("c-child", 1_000, {
+        mediaUrl: "https://cdn.example/hd.jpg",
+        quality: "hd",
+        association: { type: "hd_image", parentMessageId: "p-parent" },
+      }),
+      media("older", 500, { mediaUrl: "https://cdn.example/old.jpg" }),
+    ]);
+    const controller = new ConversationController(
+      createStoreConversationSource(store, {
+        conversationId: chat.id,
+        pageSize: 1,
+        send: vi.fn(),
+      }),
+    );
+    await controller.load();
+    expect(
+      controller.getSnapshot().messages[0]?.attachments?.[0]?.hd,
+    ).toBeUndefined();
+    await controller.loadMore();
+    await vi.waitFor(() => {
+      const messages = controller.getSnapshot().messages;
+      expect(messages.map(({ id }) => id)).toEqual(["p-parent"]);
+      expect(messages[0]?.attachments?.[0]?.hd?.url).toBe(
+        "https://cdn.example/hd.jpg",
+      );
+    });
+    controller.dispose();
+    store.close();
+  });
+});

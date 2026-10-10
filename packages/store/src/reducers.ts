@@ -221,7 +221,9 @@ export async function upsertMessage(
   else if (existing !== undefined) next = { ...next, status: existing.status };
   context.put("messages", next);
 
-  if (next.stub === true) return;
+  // An HD child is shown as its parent's variant, so it neither counts as
+  // unread nor becomes the conversation preview.
+  if (next.stub === true || next.association !== undefined) return;
   let summary: StoredConversation = conversation;
   if (createdAt >= conversation.lastActivity) {
     summary = {

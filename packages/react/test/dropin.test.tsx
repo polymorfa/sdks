@@ -366,6 +366,54 @@ describe("<ConversationListView/>", () => {
       expect.objectContaining({ id: "archived" }),
     );
   });
+  it("ignores Enter while an IME composition is active in search", () => {
+    const select = vi.fn();
+    act(() =>
+      root.render(
+        <PolymorfaProvider>
+          <ConversationListView
+            conversations={conversations}
+            onSelect={select}
+          />
+        </PolymorfaProvider>,
+      ),
+    );
+    const search = host.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    )!;
+    act(() =>
+      search.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Enter",
+          isComposing: true,
+          bubbles: true,
+        }),
+      ),
+    );
+    expect(select).not.toHaveBeenCalled();
+    act(() =>
+      search.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+      ),
+    );
+    expect(select).toHaveBeenCalledTimes(1);
+  });
+  it("renders rows whose IDs name inherited properties", () => {
+    act(() =>
+      root.render(
+        <PolymorfaProvider>
+          <ConversationListView
+            conversations={[{ ...conversations[0]!, id: "constructor" }]}
+            onSelect={vi.fn()}
+          />
+        </PolymorfaProvider>,
+      ),
+    );
+    expect(rows().map((row) => row.dataset.conversationId)).toEqual([
+      "constructor",
+    ]);
+    expect(rows()[0]!.textContent).not.toContain("Draft:");
+  });
   it("navigates rows by keyboard and exposes receipts only when supplied", () => {
     act(() =>
       root.render(

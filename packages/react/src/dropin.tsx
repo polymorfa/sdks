@@ -20,6 +20,7 @@ import {
 } from "@polymorfa/browser";
 import {
   filterInboxRows,
+  inboxDraft,
   messagePresentationStatus,
   type InboxFilter,
   type InboxRowAction,
@@ -324,6 +325,8 @@ export function ConversationListView({
               aria-label={text(configuration, "inbox.search")}
               onChange={(event) => setQuery(event.currentTarget.value)}
               onKeyDown={(event) => {
+                // Keys confirm or navigate IME candidates while composing.
+                if (event.nativeEvent.isComposing) return;
                 if (event.key === "ArrowDown") {
                   event.preventDefault();
                   focusRow(0);
@@ -395,7 +398,7 @@ export function ConversationListView({
             const name = displayName(conversation),
               last = conversation.lastMessage;
             const unread = conversation.unreadCount,
-              draft = drafts[conversation.id]?.trim();
+              draft = inboxDraft(drafts, conversation.id)?.trim();
             const offered = onAction ? (actions?.(conversation) ?? []) : [];
             return (
               <li

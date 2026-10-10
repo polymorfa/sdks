@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   attachmentPresentation,
   fileExtension,
+  filterInboxRows,
   formatDuration,
+  inboxDraft,
   waveformBars,
 } from "../src/index.js";
 
@@ -50,5 +52,40 @@ describe("chat attachment presentation", () => {
     expect(many).toHaveLength(10);
     expect(many.at(-1)).toBe(1);
     expect(many.every((level) => level >= 0.1 && level <= 1)).toBe(true);
+  });
+
+  it("handles waveforms longer than the argument limit", () => {
+    const levels = Array.from({ length: 500_000 }, (_, i) => (i % 100) / 100);
+    levels[250_000] = -2;
+    const bars = waveformBars(levels, 4);
+    expect(bars).toHaveLength(4);
+    expect(bars[2]).toBe(1);
+  });
+});
+
+describe("inbox drafts", () => {
+  const row = (id: string) => ({
+    id,
+    name: id,
+    unreadCount: 0,
+    lastActivity: 1,
+  });
+
+  it("reads only own draft entries", () => {
+    expect(inboxDraft({ a: "hi" }, "a")).toBe("hi");
+    expect(inboxDraft({}, "constructor")).toBeUndefined();
+    expect(inboxDraft({}, "toString")).toBeUndefined();
+    expect(inboxDraft(undefined, "a")).toBeUndefined();
+  });
+
+  it("searches and filters rows whose IDs name inherited properties", () => {
+    const rows = [row("constructor"), row("__proto__"), row("plain")];
+    expect(filterInboxRows(rows, "all", "zzz").map(({ id }) => id)).toEqual([]);
+    expect(filterInboxRows(rows, "drafts", "")).toEqual([]);
+    expect(
+      filterInboxRows(rows, "drafts", "", { plain: "later" }).map(
+        ({ id }) => id,
+      ),
+    ).toEqual(["plain"]);
   });
 });

@@ -23,6 +23,20 @@ export type InboxRowAction =
   "pin" | "unpin" | "archive" | "unarchive" | "mark-read" | "mark-unread";
 
 /** Presentation only. Hosts supply observations and save any organization changes. */
+/**
+ * The draft saved for a conversation. Reads only own entries, so a row ID
+ * such as `constructor` never picks up an inherited property.
+ */
+export function inboxDraft(
+  drafts: Readonly<Record<string, string>> | undefined,
+  id: string,
+): string | undefined {
+  if (drafts === undefined || !Object.prototype.hasOwnProperty.call(drafts, id))
+    return undefined;
+  const draft = drafts[id];
+  return typeof draft === "string" ? draft : undefined;
+}
+
 export function filterInboxRows<
   T extends {
     readonly id: string;
@@ -43,6 +57,7 @@ export function filterInboxRows<
   drafts: Readonly<Record<string, string>> = {},
 ): readonly T[] {
   const normalized = query.trim().toLocaleLowerCase();
+  const draftOf = (id: string) => inboxDraft(drafts, id);
   return rows
     .filter(
       (row) =>
@@ -52,13 +67,13 @@ export function filterInboxRows<
         (filter !== "unread" ||
           row.unreadCount > 0 ||
           row.markedUnread === true) &&
-        (filter !== "drafts" || Boolean(drafts[row.id]?.trim())) &&
+        (filter !== "drafts" || Boolean(draftOf(row.id)?.trim())) &&
         [
           row.name,
           row.phoneNumber,
           row.subtitle,
           row.lastMessage?.text,
-          drafts[row.id],
+          draftOf(row.id),
         ].some(
           (value) =>
             normalized === "" ||
@@ -247,7 +262,9 @@ export function waveformBars(
 ): readonly number[] {
   const usable = (levels ?? []).filter((level) => Number.isFinite(level));
   if (usable.length === 0 || count <= 0) return [];
-  const peak = Math.max(...usable.map((level) => Math.abs(level)), 0);
+  // Loops, not spreads: a long waveform must not exceed the argument limit.
+  let peak = 0;
+  for (const level of usable) peak = Math.max(peak, Math.abs(level));
   if (peak === 0) return Array.from({ length: count }, () => 0.1);
   return Array.from({ length: count }, (_, index) => {
     const start = Math.floor((index * usable.length) / count);
@@ -255,8 +272,10 @@ export function waveformBars(
       start + 1,
       Math.floor(((index + 1) * usable.length) / count),
     );
-    const slice = usable.slice(start, end).map((level) => Math.abs(level));
-    const value = Math.max(...slice) / peak;
+    let high = 0;
+    for (let at = start; at < end; at += 1)
+      high = Math.max(high, Math.abs(usable[at]!));
+    const value = high / peak;
     return Math.round(Math.max(0.1, Math.min(1, value)) * 100) / 100;
   });
 }
