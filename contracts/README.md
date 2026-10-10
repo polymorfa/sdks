@@ -564,3 +564,11 @@ The full Platform snapshot, each Analytics operation and `source.json` pin the
 same API source revision. Reconciliation tests check exact snapshot hashes and
 strict operation fingerprints. Counts do not establish package publication or
 customer access.
+
+## AB props capabilities
+
+`abprops-capabilities.json` pins the stored group read and canonical number-change
+webhook to backend source `f4947a5bb3dd1b51efd90c95be760ed5c4861d18`. Both consumers use this exact
+revision. The full legacy snapshots retain their recorded revision; unrelated
+API drift is not declared covered by this scoped update. The capability methods
+remain subject to the enrolled beta. Source integration does not publish a package.

@@ -3018,3 +3018,22 @@ await platform.billing.reorderPriorities({
 Pass every active customer and real number, highest priority first. Duplicate,
 incomplete, or stale orders fail without partial changes. This operation never
 bypasses a spending cap.
+
+### Group capabilities (enrolled beta)
+
+`messaging.groups.getCapabilities(session, groupId)` reads the linked number's
+stored group configuration. It requires `groups:read`, current group membership,
+and enrollment in the number-capabilities beta. `unknown` returns null values
+until a successful group configuration sync for the current linked account.
+The read does not open the chat or synchronize configuration.
+
+The three feature keys are `polls.endTime`, `polls.hideVoters`, and
+`polls.creatorEdit`. Each combines the number's gate with the group gate. They
+describe WhatsApp configuration; they do not grant permission to edit polls.
+
+`session.capabilities_updated` carries `SessionCapabilitiesUpdatedPayload`:
+the canonical number capability view and `changedKeys`. Routine checks and
+configuration changes that do not change capabilities produce no event. Treat
+the event ID as the deduplication key. Eligibility is checked before publication
+and delivery; withdrawn events wait for re-enablement and expire after seven days.
+These additions require an API and SDK release containing this contract.

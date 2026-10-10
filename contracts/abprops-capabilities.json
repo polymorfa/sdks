@@ -1,0 +1,566 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "sourceCommit": "f4947a5bb3dd1b51efd90c95be760ed5c4861d18",
+  "sourcePath": "apps/api/docs/openapi.json",
+  "sourceSha256": "62fc7613fc73e9259edd35ff995220fc4fd7a7b1e99a5f0a47a1df7ee3029407",
+  "published": false,
+  "scope": "Group capability read and canonical session capability webhook only. Other SDK contracts retain their recorded source revisions.",
+  "openapi": "3.0.3",
+  "paths": {
+    "/messaging/{session}/groups/{id}/capabilities": {
+      "get": {
+        "operationId": "getGroupCapabilities",
+        "tags": ["Groups"],
+        "summary": "Read stored WhatsApp group capabilities",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "groups:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,18}$"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Account-bound stored group capabilities. Unknown until a successful group sync. Requires current group membership and the enrolled number-capabilities beta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetGroupCapabilitiesResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request \u2014 request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">groups:read</Badge>"
+        },
+        "x-protocols": ["Linked Device API"],
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `groups:read`"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "GetGroupCapabilitiesResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [true]
+          },
+          "data": {
+            "$ref": "#/components/schemas/GroupCapabilities"
+          }
+        },
+        "required": ["success", "data"]
+      },
+      "GroupCapabilities": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["synced", "unknown"]
+          },
+          "syncedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "checkedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "enum": [
+                    "polls.endTime",
+                    "polls.hideVoters",
+                    "polls.creatorEdit"
+                  ]
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": ["feature"]
+                },
+                "unit": {},
+                "value": {
+                  "type": "boolean",
+                  "nullable": true
+                },
+                "source": {
+                  "type": "string",
+                  "nullable": true,
+                  "enum": ["server", "client_default", null]
+                }
+              },
+              "required": ["key", "kind", "unit", "value", "source"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["status", "syncedAt", "checkedAt", "capabilities"],
+        "additionalProperties": false
+      },
+      "PublicError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request_error",
+                  "authentication_error",
+                  "permission_error",
+                  "conflict_error",
+                  "rate_limit_error",
+                  "api_error",
+                  "upstream_error"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_parameter",
+                  "invalid_credential",
+                  "entitlement_required",
+                  "cloud_template_authority_restricted",
+                  "gate_limit_reached",
+                  "method_not_allowed",
+                  "permission_denied",
+                  "missing_scope",
+                  "resource_not_found",
+                  "hms_not_enabled",
+                  "media_fetch_failed",
+                  "resource_gone",
+                  "feature_unavailable",
+                  "stream_cursor_invalid",
+                  "stream_cursor_expired",
+                  "stream_connection_limit_reached",
+                  "state_conflict",
+                  "hybrid_routing_paused",
+                  "hybrid_choice_required",
+                  "hybrid_transition_ineligible",
+                  "hybrid_automation_unavailable",
+                  "hybrid_transport_unavailable",
+                  "hybrid_target_reference_unavailable",
+                  "send_outcome_unknown",
+                  "idempotency_conflict",
+                  "idempotency_in_progress",
+                  "idempotency_completed",
+                  "idempotency_outcome_unknown",
+                  "call_claimed",
+                  "call_not_ringing",
+                  "connection_limit",
+                  "unsupported_for_connection",
+                  "call_permission_required",
+                  "invalid_sip_trunk",
+                  "calls_disabled",
+                  "call_recipient_opted_out",
+                  "call_destination_blocked",
+                  "call_permission_request_limited",
+                  "call_permission_granted",
+                  "order_status_transition_invalid",
+                  "order_cancellation_failed",
+                  "call_opt_out_limit",
+                  "number_restricted",
+                  "sip_trunk_in_use",
+                  "sip_trunk_revision_conflict",
+                  "sip_trunk_limit",
+                  "sip_unavailable",
+                  "voice_not_enabled",
+                  "provider_credential_invalid",
+                  "provider_unavailable",
+                  "asset_not_ready",
+                  "voice_asset_in_use",
+                  "voice_asset_revision_conflict",
+                  "voice_unavailable",
+                  "rate_limit_exceeded",
+                  "internal_error",
+                  "operation_not_supported",
+                  "upstream_failure",
+                  "service_unavailable",
+                  "credential_verification_unavailable",
+                  "session_not_ready",
+                  "command_dispatch_failed",
+                  "result_unknown",
+                  "recipient_not_on_whatsapp",
+                  "conversation_window_closed",
+                  "template_not_approved",
+                  "media_too_large",
+                  "whatsapp_rate_limited",
+                  "new_chat_limit_reached",
+                  "whatsapp_account_restricted",
+                  "whatsapp_groups_ineligible",
+                  "whatsapp_group_creation_paused",
+                  "whatsapp_group_limit_reached",
+                  "whatsapp_group_full",
+                  "whatsapp_group_suspended",
+                  "whatsapp_group_has_no_participants",
+                  "bansafe_suspended",
+                  "bansafe_org_suspended",
+                  "bansafe_cold_blocked",
+                  "bansafe_cold_held",
+                  "bansafe_throttled",
+                  "bansafe_daily_allowance_reached",
+                  "bansafe_accounting_unavailable",
+                  "bansafe_send_outcome_unknown",
+                  "campaigns_not_entitled",
+                  "campaign_throughput_capped",
+                  "campaign_approval_required",
+                  "campaign_approval_stale",
+                  "campaign_variables_missing"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "param": {
+                "type": "string",
+                "nullable": true
+              },
+              "request_id": {
+                "type": "string",
+                "description": "Matches the X-Request-Id response header. Include it when you contact support."
+              },
+              "request_log_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+              }
+            },
+            "required": ["type", "code", "message", "param", "request_id"]
+          },
+          "data": {
+            "type": "string",
+            "nullable": true,
+            "enum": [null],
+            "description": "Always null for a failed request."
+          },
+          "docs": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": ["error", "data", "docs"]
+      },
+      "SessionCapabilitiesUpdatedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": ["session.capabilities_updated"],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/SessionCapabilitiesUpdatedPayload"
+          }
+        },
+        "required": ["id", "session", "timestamp", "event", "payload"]
+      },
+      "SessionCapabilitiesUpdatedPayload": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["synced", "unknown"]
+          },
+          "syncedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "checkedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "accountType": {
+            "type": "string",
+            "nullable": true,
+            "enum": ["business", "personal", null]
+          },
+          "capabilities": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "maxLength": 128
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": ["feature", "limit"]
+                },
+                "unit": {
+                  "type": "string",
+                  "nullable": true,
+                  "enum": ["seconds", "count", "characters", "members", null]
+                },
+                "value": {
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {}
+                  ]
+                },
+                "source": {
+                  "type": "string",
+                  "nullable": true,
+                  "enum": ["server", "client_default", "account_type", null]
+                }
+              },
+              "required": ["key", "kind", "unit", "value", "source"],
+              "additionalProperties": false
+            },
+            "maxItems": 100
+          },
+          "changedKeys": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 128
+            },
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "session",
+          "projectId",
+          "status",
+          "syncedAt",
+          "checkedAt",
+          "accountType",
+          "capabilities",
+          "changedKeys"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

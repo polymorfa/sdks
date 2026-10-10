@@ -117,6 +117,7 @@ export {
   type WebhookEvent,
   type WebhookEventOf,
   type WebhookPayloadMap,
+  type SessionCapabilitiesUpdatedPayload,
 } from "./events.js";
 export {
   FLOW_FORWARD_SIGNATURE_HEADER,

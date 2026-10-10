@@ -19,6 +19,8 @@ import type {
   VoiceAudioSource,
 } from "../platform/voice.js";
 
+import type { SessionCapabilities } from "../platform/types.js";
+
 export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "bansafe.action",
   "bansafe.claim",
@@ -94,6 +96,7 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "newsletter.update",
   "order.payment_updated",
   "presence.update",
+  "session.capabilities_updated",
   "session.connected",
   "session.logged_out",
   "session.phone_offline",
@@ -1216,6 +1219,7 @@ export interface WebhookPayloadMap {
   readonly "message.vote": PollVotePayload;
   readonly "newsletter.update": NewsletterUpdatePayload;
   readonly "presence.update": PresenceUpdatePayload;
+  readonly "session.capabilities_updated": SessionCapabilitiesUpdatedPayload;
   readonly "session.connected": SessionConnectedPayload;
   readonly "session.logged_out": SessionLoggedOutPayload;
   readonly "session.phone_offline": SessionPhoneOfflinePayload;
@@ -1256,4 +1260,9 @@ export function isEvent<TEvent extends KnownWebhookEventType>(
   type: TEvent,
 ): event is WebhookEventOf<TEvent, WebhookPayloadMap[TEvent]> {
   return event.event === type;
+}
+
+/** Canonical capability view after a semantic change, plus the changed keys. */
+export interface SessionCapabilitiesUpdatedPayload extends SessionCapabilities {
+  readonly changedKeys: readonly string[];
 }
