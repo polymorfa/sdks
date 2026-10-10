@@ -107,6 +107,75 @@ export interface SuccessResponse {
   readonly message?: string;
 }
 
+/** The outcome that decides an A/B test (beta). */
+export type CampaignWinnerCriterion = "delivery" | "read" | "reply";
+
+/** The message one A/B variant sends, in the composed-message format. */
+export interface CampaignVariantMessage {
+  readonly version: 2;
+  /** 1 to 4,096 characters. `{{variable}}` placeholders are filled per recipient. */
+  readonly source: string;
+  readonly [field: string]: unknown;
+}
+
+/** One A/B test variant (beta). */
+export interface CampaignVariant {
+  /** Unique in the campaign: a lowercase letter, then up to 15 of `a-z`, `0-9`, `_`, `-`. */
+  readonly key: string;
+  /** Name shown in results, 1 to 100 characters. */
+  readonly label: string;
+  /** Integer from 1 to 99: share of the test group; the weights add up to 100. */
+  readonly weight: number;
+  readonly blueprint: CampaignVariantMessage;
+}
+
+/** How an A/B test runs (beta). */
+export interface CampaignVariantStrategy {
+  readonly winnerCriterion: CampaignWinnerCriterion;
+  /** 0 to 30: recipients who receive nothing (`skipped`, `experiment_holdout`). */
+  readonly holdoutPercent: number;
+  /** 5 to 50; defaults to 20. The rest of the audience, the reserve, waits for the winner. */
+  readonly testSlicePercent?: number;
+  /** Must be true: the winner is sent to the reserve automatically. */
+  readonly autoPromote: true;
+  /** 15 to 1,440 minutes from the start of sending until the test is decided. */
+  readonly testWindowMinutes: number;
+}
+
+/**
+ * The saved A/B result. An inconclusive test pauses the campaign with the
+ * reserve unsent; the campaign cannot resume.
+ */
+export type CampaignExperimentOutcome =
+  | { readonly state: "promoted"; readonly winnerKey: string }
+  | {
+      readonly state: "inconclusive";
+      readonly reason: "insufficient_evidence";
+    };
+
+/** Test-cohort counts for one A/B variant. */
+export interface CampaignExperimentVariantResult {
+  readonly key: string;
+  readonly label: string;
+  readonly weight: number;
+  readonly assigned: number;
+  readonly sent: number;
+  readonly delivered: number;
+  readonly read: number;
+  readonly replied: number;
+  /** The criterion count divided by `sent`, counting every result received so far. */
+  readonly outcomeRate: number;
+}
+
+/** A/B results by variant; null for a campaign that is not an A/B test. */
+export interface CampaignExperimentResults {
+  readonly criterion: CampaignWinnerCriterion;
+  readonly outcome: CampaignExperimentOutcome | null;
+  readonly holdoutCount: number;
+  readonly reserveCount: number;
+  readonly variants: readonly CampaignExperimentVariantResult[];
+}
+
 /** The message one weighted alternative sends, in the composed-message format. */
 export interface CampaignMessageVariationBlueprint {
   readonly version: 2;
@@ -158,8 +227,11 @@ export interface Campaign {
   readonly audienceRef?: unknown;
   readonly senderConfig?: unknown;
   readonly complianceConfig?: unknown;
-  readonly variants?: unknown;
-  readonly variantStrategy?: unknown;
+  /** A/B variants (beta), or null for a campaign that is not an A/B test. */
+  readonly variants?: readonly CampaignVariant[] | null;
+  readonly variantStrategy?: CampaignVariantStrategy | null;
+  /** The saved A/B result, or null before a decision and for other campaigns. */
+  readonly experimentOutcome?: CampaignExperimentOutcome | null;
   /** Weighted message alternatives, or null when the campaign sends one message. */
   readonly messageVariations?: readonly CampaignMessageVariation[] | null;
 }
@@ -222,6 +294,8 @@ export interface CampaignAnalytics {
   readonly skippedCount: number;
   readonly respondedCount: number;
   readonly responseRate: number;
+  /** A/B results (beta); null for a campaign that is not an A/B test. */
+  readonly experiment?: CampaignExperimentResults | null;
 }
 
 export interface CreateCampaignRequest {
@@ -243,6 +317,12 @@ export interface CreateCampaignRequest {
    * that is not enrolled receives `403 feature_unavailable`.
    */
   readonly messageVariations?: readonly CampaignMessageVariation[] | null;
+  /**
+   * Two to four A/B variants (beta) with `variantStrategy`. A team that is not
+   * enrolled receives `403 feature_unavailable`.
+   */
+  readonly variants?: readonly CampaignVariant[] | null;
+  readonly variantStrategy?: CampaignVariantStrategy | null;
 }
 
 export type CampaignRecipientStatus =
@@ -343,6 +423,9 @@ interface UpdateCampaignChanges {
   readonly sendWindow?: CampaignSendWindowRequest | null;
   /** Replaces the weighted alternatives; null clears them. Only an unlaunched draft. */
   readonly messageVariations?: readonly CampaignMessageVariation[] | null;
+  /** Replaces the A/B variants; null with a null strategy makes a broadcast. Only an unlaunched draft. */
+  readonly variants?: readonly CampaignVariant[] | null;
+  readonly variantStrategy?: CampaignVariantStrategy | null;
 }
 
 /** At least one draft field must be supplied. */
@@ -358,6 +441,12 @@ export type UpdateCampaignRequest =
     })
   | (UpdateCampaignChanges & {
       readonly messageVariations: readonly CampaignMessageVariation[] | null;
+    })
+  | (UpdateCampaignChanges & {
+      readonly variants: readonly CampaignVariant[] | null;
+    })
+  | (UpdateCampaignChanges & {
+      readonly variantStrategy: CampaignVariantStrategy | null;
     });
 
 export interface RescheduleCampaignRequest {

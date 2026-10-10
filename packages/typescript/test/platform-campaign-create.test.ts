@@ -37,8 +37,26 @@ const body = {
   messagesArray: [{ kind: "text", text: "Hello" }],
   audienceRef: null,
   complianceConfig: false,
-  variants: ["a", "b"],
-  variantStrategy: "round_robin",
+  variants: [
+    {
+      key: "a",
+      label: "A",
+      weight: 50,
+      blueprint: { version: 2, source: "Hello" },
+    },
+    {
+      key: "b",
+      label: "B",
+      weight: 50,
+      blueprint: { version: 2, source: "Hi" },
+    },
+  ],
+  variantStrategy: {
+    winnerCriterion: "read",
+    holdoutPercent: 0,
+    autoPromote: true,
+    testWindowMinutes: 60,
+  },
 } satisfies CreatePlatformCampaignRequest;
 
 it("covers exactly the pinned create request fields without closing opaque JSON", () => {

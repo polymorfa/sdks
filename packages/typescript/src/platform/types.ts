@@ -3,8 +3,12 @@ import type {
   CampaignRecipient,
   CampaignRecipientInput,
   CampaignRecipientStatus,
+  CampaignAnalytics,
+  CampaignExperimentResults,
   CampaignMessageVariation,
   CampaignSendWindowRequest,
+  CampaignVariant,
+  CampaignVariantStrategy,
   InvalidRecipientRow,
 } from "../messaging/types.js";
 
@@ -197,8 +201,9 @@ export interface CreatePlatformCampaignRequest {
   readonly messagesArray?: unknown;
   readonly audienceRef?: unknown;
   readonly complianceConfig?: unknown;
-  readonly variants?: unknown;
-  readonly variantStrategy?: unknown;
+  /** Two to four A/B variants (beta); requires `variantStrategy`. */
+  readonly variants?: readonly CampaignVariant[];
+  readonly variantStrategy?: CampaignVariantStrategy;
   /** Two to five weighted alternatives for linked-device numbers (beta). */
   readonly messageVariations?: readonly CampaignMessageVariation[] | null;
 }
@@ -251,7 +256,19 @@ export interface UpdatePlatformCampaignRequest {
   readonly sendWindow?: CampaignSendWindowRequest | null;
   /** Replaces the weighted alternatives; null clears them. Only an unlaunched draft. */
   readonly messageVariations?: readonly CampaignMessageVariation[] | null;
+  /** Replaces the A/B variants; null with a null strategy makes a broadcast. Only an unlaunched draft. */
+  readonly variants?: readonly CampaignVariant[] | null;
+  readonly variantStrategy?: CampaignVariantStrategy | null;
   readonly [field: string]: unknown;
+}
+
+/** Campaign analytics on the Platform API, with A/B results (beta). */
+export interface PlatformCampaignAnalytics extends CampaignAnalytics {
+  /** Mean time from send to first reply in milliseconds; null before the first reply. */
+  readonly averageResponseTimeMs: number | null;
+  readonly minResponseTimeMs: number | null;
+  readonly maxResponseTimeMs: number | null;
+  readonly experiment: CampaignExperimentResults | null;
 }
 
 export interface ListPlatformCampaignRecipientsParams {

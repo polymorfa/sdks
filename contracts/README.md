@@ -601,3 +601,11 @@ campaign create, update and response schemas from API `dev` merge commit
 both source paths and file hashes. `campaign-message-variations-contract.test.ts`
 checks the SDK types against it. The full snapshots stay pinned to
 `contracts/source.json` until the next repin.
+
+## Campaign A/B test supplement
+
+`campaign-ab-tests.json` records the A/B variant, strategy, outcome and result
+schemas, and the related Messaging and Platform campaign and analytics fields,
+from API `dev` merge commit `8d248b578a7c76034b30a5a97349adcd15ce5c55`
+(polymorfa/polymorfa#406), with both source paths and file hashes.
+`campaign-ab-tests-contract.test.ts` checks the SDK types against it.

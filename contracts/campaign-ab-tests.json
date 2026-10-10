@@ -1,0 +1,657 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "8d248b578a7c76034b30a5a97349adcd15ce5c55",
+  "note": "Campaign A/B tests beta (PR #406). Adds variants, variantStrategy, experimentOutcome and analytics experiment results to Messaging and Platform campaigns; the full snapshots stay pinned to contracts/source.json until the next repin.",
+  "sources": {
+    "messaging": {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sourceSha256": "866cdadb12cdae7c3e9b1aca91fce3f664500bb6fb95381c26deaa1b9e111679",
+      "schemas": {
+        "CampaignVariant": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,15}$",
+              "description": "Identifier of the variant, unique in the campaign: a lowercase letter, then up to 15 lowercase letters, digits, `_` or `-`.",
+              "example": "a"
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "description": "Name shown in results, 1 to 100 characters.",
+              "example": "Short intro"
+            },
+            "weight": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 99,
+              "description": "Share of the test group that receives this variant, in percent. The weights of all variants add up to 100.",
+              "example": 50
+            },
+            "blueprint": {
+              "$ref": "#/components/schemas/CampaignVariantMessage"
+            }
+          },
+          "required": ["key", "label", "weight", "blueprint"],
+          "additionalProperties": false
+        },
+        "CampaignVariantMessage": {
+          "type": "object",
+          "properties": {
+            "version": {
+              "type": "integer"
+            },
+            "source": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4096,
+              "description": "The message text, 1 to 4,096 characters. `{{variable}}` placeholders are filled per recipient, as in composed messages.",
+              "example": "Hi {{first_name}}, your offer is ready."
+            }
+          },
+          "required": ["version", "source"],
+          "description": "The message this variant sends, in the composed-message format."
+        },
+        "CampaignVariantStrategy": {
+          "type": "object",
+          "nullable": true,
+          "properties": {
+            "winnerCriterion": {
+              "type": "string",
+              "enum": ["delivery", "read", "reply"],
+              "description": "The outcome that decides the winner: the share of sent test messages that were delivered, read or replied to by the test deadline."
+            },
+            "holdoutPercent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30,
+              "description": "Percent of recipients, 0 to 30, who receive no message. They are marked `skipped` with `lastError` `experiment_holdout` at launch."
+            },
+            "testSlicePercent": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 50,
+              "default": 20,
+              "description": "Percent of recipients, 5 to 50, who receive a variant during the test. Defaults to 20. The rest, the reserve, wait for the winner."
+            },
+            "autoPromote": {
+              "type": "boolean",
+              "enum": [true],
+              "description": "Must be `true`: after the test window the winner is sent to the reserve automatically."
+            },
+            "testWindowMinutes": {
+              "type": "integer",
+              "minimum": 15,
+              "maximum": 1440,
+              "description": "Minutes from the start of sending until the test is decided, 15 to 1,440."
+            }
+          },
+          "required": [
+            "winnerCriterion",
+            "holdoutPercent",
+            "autoPromote",
+            "testWindowMinutes"
+          ],
+          "additionalProperties": false
+        },
+        "CampaignExperimentOutcome": {
+          "type": "object",
+          "nullable": true,
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": ["promoted", "inconclusive"]
+            },
+            "winnerKey": {
+              "type": "string",
+              "description": "The winning variant's `key`; only when `state` is `promoted`."
+            },
+            "reason": {
+              "type": "string",
+              "enum": ["insufficient_evidence"],
+              "description": "Only when `state` is `inconclusive`."
+            }
+          },
+          "required": ["state"],
+          "description": "The saved A/B result. `promoted` names the variant sent to the reserve. `inconclusive` means the test paused the campaign with the reserve unsent; the campaign cannot resume, so stop it or duplicate it."
+        },
+        "CampaignExperimentResults": {
+          "type": "object",
+          "nullable": true,
+          "properties": {
+            "criterion": {
+              "type": "string",
+              "enum": ["delivery", "read", "reply"]
+            },
+            "outcome": {
+              "$ref": "#/components/schemas/CampaignExperimentOutcome"
+            },
+            "holdoutCount": {
+              "type": "integer",
+              "description": "Recipients held out; they receive no message."
+            },
+            "reserveCount": {
+              "type": "integer",
+              "description": "Recipients who wait for the winner."
+            },
+            "variants": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "weight": {
+                    "type": "integer"
+                  },
+                  "assigned": {
+                    "type": "integer",
+                    "description": "Test recipients assigned this variant."
+                  },
+                  "sent": {
+                    "type": "integer"
+                  },
+                  "delivered": {
+                    "type": "integer"
+                  },
+                  "read": {
+                    "type": "integer"
+                  },
+                  "replied": {
+                    "type": "integer"
+                  },
+                  "outcomeRate": {
+                    "type": "number",
+                    "description": "The `criterion` count divided by `sent`, counting every result received so far."
+                  }
+                },
+                "required": [
+                  "key",
+                  "label",
+                  "weight",
+                  "assigned",
+                  "sent",
+                  "delivered",
+                  "read",
+                  "replied",
+                  "outcomeRate"
+                ]
+              }
+            }
+          },
+          "required": [
+            "criterion",
+            "outcome",
+            "holdoutCount",
+            "reserveCount",
+            "variants"
+          ],
+          "description": "A/B results by variant; null for a broadcast. The decision counts only results received by the test deadline, so `outcomeRate` can differ from the rate the decision used."
+        }
+      },
+      "fields": {
+        "Campaign.variants": {
+          "type": "array",
+          "nullable": true,
+          "items": {
+            "$ref": "#/components/schemas/CampaignVariant"
+          },
+          "description": "The A/B variants; null for a broadcast."
+        },
+        "Campaign.variantStrategy": {
+          "$ref": "#/components/schemas/CampaignVariantStrategy"
+        },
+        "Campaign.experimentOutcome": {
+          "$ref": "#/components/schemas/CampaignExperimentOutcome"
+        },
+        "CreateCampaignRequest.variants": {
+          "type": "array",
+          "nullable": true,
+          "items": {
+            "$ref": "#/components/schemas/CampaignVariant"
+          },
+          "minItems": 2,
+          "maxItems": 4,
+          "description": "Two to four messages to test. Requires `variantStrategy` and cannot be combined with `templateId`. A/B tests are a beta; a team that is not enrolled gets `403 feature_unavailable`. Omit, or send null with a null `variantStrategy`, for a broadcast."
+        },
+        "CreateCampaignRequest.variantStrategy": {
+          "$ref": "#/components/schemas/CampaignVariantStrategy"
+        },
+        "UpdateCampaignRequest.variants": {
+          "type": "array",
+          "nullable": true,
+          "items": {
+            "$ref": "#/components/schemas/CampaignVariant"
+          },
+          "minItems": 2,
+          "maxItems": 4,
+          "description": "Replaces the A/B variants. Null, together with a null `variantStrategy`, makes the draft a broadcast. Only an unlaunched draft can change it."
+        },
+        "UpdateCampaignRequest.variantStrategy": {
+          "$ref": "#/components/schemas/CampaignVariantStrategy"
+        },
+        "CampaignAnalytics.experiment": {
+          "$ref": "#/components/schemas/CampaignExperimentResults"
+        }
+      }
+    },
+    "platform": {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "sourceSha256": "d94b0793b30abbba87fb6943a10fb79323909f0c59c7465747aeb9b9e4505127",
+      "schemas": {
+        "CampaignVariant": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "key": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,15}$",
+              "description": "Identifier of the variant, unique in the campaign: a lowercase letter, then up to 15 lowercase letters, digits, `_` or `-`.",
+              "example": "a"
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "description": "Name shown in results, 1 to 100 characters after trimming."
+            },
+            "weight": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 99,
+              "description": "Share of the test group that receives this variant, in percent. The weights of all variants add up to 100."
+            },
+            "blueprint": {
+              "type": "object",
+              "additionalProperties": true,
+              "description": "The message this variant sends, in the composed-message format.",
+              "properties": {
+                "version": {
+                  "type": "integer",
+                  "enum": [2]
+                },
+                "source": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4096,
+                  "description": "The message text. `{{variable}}` placeholders are filled per recipient, as in composed messages."
+                }
+              },
+              "required": ["version", "source"]
+            }
+          },
+          "required": ["key", "label", "weight", "blueprint"]
+        },
+        "CampaignVariantStrategy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "winnerCriterion": {
+              "type": "string",
+              "enum": ["delivery", "read", "reply"],
+              "description": "The outcome that decides the winner: the share of sent test messages that were delivered, read or replied to by the test deadline."
+            },
+            "holdoutPercent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30,
+              "description": "Percent of recipients who receive no message. They are marked `skipped` with `lastError` `experiment_holdout` at launch."
+            },
+            "testSlicePercent": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 50,
+              "default": 20,
+              "description": "Percent of recipients who receive a variant during the test. The rest, the reserve, wait for the winner."
+            },
+            "autoPromote": {
+              "type": "boolean",
+              "enum": [true],
+              "description": "Must be `true`: after the test window the winner is sent to the reserve automatically."
+            },
+            "testWindowMinutes": {
+              "type": "integer",
+              "minimum": 15,
+              "maximum": 1440,
+              "description": "Minutes from the start of sending until the test is decided."
+            }
+          },
+          "required": [
+            "winnerCriterion",
+            "holdoutPercent",
+            "autoPromote",
+            "testWindowMinutes"
+          ]
+        },
+        "CampaignExperimentOutcome": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The saved A/B result. `promoted` names the variant sent to the reserve. `inconclusive` means the test paused the campaign with the reserve unsent; the campaign cannot resume, so stop it or duplicate it.",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": ["promoted", "inconclusive"]
+            },
+            "winnerKey": {
+              "type": "string",
+              "description": "The winning variant's `key`; only when `state` is `promoted`."
+            },
+            "reason": {
+              "type": "string",
+              "enum": ["insufficient_evidence"],
+              "description": "Only when `state` is `inconclusive`."
+            }
+          },
+          "required": ["state"]
+        },
+        "PlatformCampaignAnalytics": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "campaignId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "recipientCount": {
+              "type": "integer"
+            },
+            "sentCount": {
+              "type": "integer"
+            },
+            "deliveredCount": {
+              "type": "integer"
+            },
+            "readCount": {
+              "type": "integer"
+            },
+            "failedCount": {
+              "type": "integer"
+            },
+            "skippedCount": {
+              "type": "integer"
+            },
+            "respondedCount": {
+              "type": "integer"
+            },
+            "responseRate": {
+              "type": "number",
+              "description": "`respondedCount` divided by `sentCount`; 0 before the first send."
+            },
+            "averageResponseTimeMs": {
+              "type": "number",
+              "nullable": true,
+              "description": "Mean time from send to first reply in milliseconds; null before the first reply."
+            },
+            "minResponseTimeMs": {
+              "type": "number",
+              "nullable": true
+            },
+            "maxResponseTimeMs": {
+              "type": "number",
+              "nullable": true
+            },
+            "experiment": {
+              "type": "object",
+              "nullable": true,
+              "additionalProperties": false,
+              "description": "A/B results by variant; null for a broadcast. The decision counts only results received by the test deadline, so `outcomeRate` can differ from the rate the decision used.",
+              "properties": {
+                "criterion": {
+                  "type": "string",
+                  "enum": ["delivery", "read", "reply"]
+                },
+                "outcome": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "description": "The saved A/B result. `promoted` names the variant sent to the reserve. `inconclusive` means the test paused the campaign with the reserve unsent; the campaign cannot resume, so stop it or duplicate it.",
+                  "properties": {
+                    "state": {
+                      "type": "string",
+                      "enum": ["promoted", "inconclusive"]
+                    },
+                    "winnerKey": {
+                      "type": "string",
+                      "description": "The winning variant's `key`; only when `state` is `promoted`."
+                    },
+                    "reason": {
+                      "type": "string",
+                      "enum": ["insufficient_evidence"],
+                      "description": "Only when `state` is `inconclusive`."
+                    }
+                  },
+                  "required": ["state"],
+                  "nullable": true
+                },
+                "holdoutCount": {
+                  "type": "integer",
+                  "description": "Recipients held out; they receive no message."
+                },
+                "reserveCount": {
+                  "type": "integer",
+                  "description": "Recipients who wait for the winner."
+                },
+                "variants": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "label": {
+                        "type": "string"
+                      },
+                      "weight": {
+                        "type": "integer"
+                      },
+                      "assigned": {
+                        "type": "integer",
+                        "description": "Test recipients assigned this variant."
+                      },
+                      "sent": {
+                        "type": "integer"
+                      },
+                      "delivered": {
+                        "type": "integer"
+                      },
+                      "read": {
+                        "type": "integer"
+                      },
+                      "replied": {
+                        "type": "integer"
+                      },
+                      "outcomeRate": {
+                        "type": "number",
+                        "description": "The `criterion` count divided by `sent`, counting every result received so far."
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "label",
+                      "weight",
+                      "assigned",
+                      "sent",
+                      "delivered",
+                      "read",
+                      "replied",
+                      "outcomeRate"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "criterion",
+                "outcome",
+                "holdoutCount",
+                "reserveCount",
+                "variants"
+              ]
+            }
+          },
+          "required": [
+            "campaignId",
+            "recipientCount",
+            "sentCount",
+            "deliveredCount",
+            "readCount",
+            "failedCount",
+            "skippedCount",
+            "respondedCount",
+            "responseRate",
+            "averageResponseTimeMs",
+            "minResponseTimeMs",
+            "maxResponseTimeMs",
+            "experiment"
+          ]
+        }
+      },
+      "fields": {
+        "PlatformCampaign.variants": {
+          "type": "array",
+          "nullable": true,
+          "items": {
+            "$ref": "#/components/schemas/CampaignVariant"
+          },
+          "description": "The A/B variants; null for a broadcast."
+        },
+        "PlatformCampaign.variantStrategy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "winnerCriterion": {
+              "type": "string",
+              "enum": ["delivery", "read", "reply"],
+              "description": "The outcome that decides the winner: the share of sent test messages that were delivered, read or replied to by the test deadline."
+            },
+            "holdoutPercent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30,
+              "description": "Percent of recipients who receive no message. They are marked `skipped` with `lastError` `experiment_holdout` at launch."
+            },
+            "testSlicePercent": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 50,
+              "default": 20,
+              "description": "Percent of recipients who receive a variant during the test. The rest, the reserve, wait for the winner."
+            },
+            "autoPromote": {
+              "type": "boolean",
+              "enum": [true],
+              "description": "Must be `true`: after the test window the winner is sent to the reserve automatically."
+            },
+            "testWindowMinutes": {
+              "type": "integer",
+              "minimum": 15,
+              "maximum": 1440,
+              "description": "Minutes from the start of sending until the test is decided."
+            }
+          },
+          "required": [
+            "winnerCriterion",
+            "holdoutPercent",
+            "autoPromote",
+            "testWindowMinutes"
+          ],
+          "nullable": true,
+          "description": "How the A/B test runs; null for a broadcast."
+        },
+        "PlatformCampaign.experimentOutcome": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The saved A/B result, or null before a decision and for a broadcast.",
+          "properties": {
+            "state": {
+              "type": "string",
+              "enum": ["promoted", "inconclusive"]
+            },
+            "winnerKey": {
+              "type": "string",
+              "description": "The winning variant's `key`; only when `state` is `promoted`."
+            },
+            "reason": {
+              "type": "string",
+              "enum": ["insufficient_evidence"],
+              "description": "Only when `state` is `inconclusive`."
+            }
+          },
+          "required": ["state"],
+          "nullable": true
+        },
+        "CreatePlatformCampaignRequest.variants": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "items": {
+            "$ref": "#/components/schemas/CampaignVariant"
+          },
+          "description": "Two to four messages to test. Requires `variantStrategy` and cannot be combined with `templateId`. A/B tests are a beta; a team that is not enrolled gets `403 feature_unavailable`."
+        },
+        "CreatePlatformCampaignRequest.variantStrategy": {
+          "$ref": "#/components/schemas/CampaignVariantStrategy"
+        },
+        "UpdatePlatformCampaignRequest.variants": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 4,
+          "nullable": true,
+          "items": {
+            "$ref": "#/components/schemas/CampaignVariant"
+          },
+          "description": "Replaces the A/B variants. `null`, together with a null `variantStrategy`, makes the draft a broadcast. Only while the campaign is an unlaunched draft."
+        },
+        "UpdatePlatformCampaignRequest.variantStrategy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "winnerCriterion": {
+              "type": "string",
+              "enum": ["delivery", "read", "reply"],
+              "description": "The outcome that decides the winner: the share of sent test messages that were delivered, read or replied to by the test deadline."
+            },
+            "holdoutPercent": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 30,
+              "description": "Percent of recipients who receive no message. They are marked `skipped` with `lastError` `experiment_holdout` at launch."
+            },
+            "testSlicePercent": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 50,
+              "default": 20,
+              "description": "Percent of recipients who receive a variant during the test. The rest, the reserve, wait for the winner."
+            },
+            "autoPromote": {
+              "type": "boolean",
+              "enum": [true],
+              "description": "Must be `true`: after the test window the winner is sent to the reserve automatically."
+            },
+            "testWindowMinutes": {
+              "type": "integer",
+              "minimum": 15,
+              "maximum": 1440,
+              "description": "Minutes from the start of sending until the test is decided."
+            }
+          },
+          "required": [
+            "winnerCriterion",
+            "holdoutPercent",
+            "autoPromote",
+            "testWindowMinutes"
+          ],
+          "nullable": true,
+          "description": "Replaces how the A/B test runs. Only while the campaign is an unlaunched draft."
+        }
+      }
+    }
+  }
+}
