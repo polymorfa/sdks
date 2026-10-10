@@ -9,9 +9,7 @@
     "/platform/projects/{projectId}/request-logs": {
       "get": {
         "operationId": "listProjectRequestLogs",
-        "tags": [
-          "logs"
-        ],
+        "tags": ["logs"],
         "summary": "List project request logs",
         "description": "Lists API and MCP requests made to the exact project in the route from the last 30 days. Without `after`, requests are newest first and `page.nextCursor` returns older requests. Pass `page.followCursor` as `after` to receive only newer requests, oldest first; this is how you tail the log. A request appears about two seconds after it completes. Reads of the request log are not listed.\n\nRequires `logs:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
@@ -128,10 +126,7 @@
             "description": "`api` for direct API requests or `mcp` for requests made through MCP.",
             "schema": {
               "type": "string",
-              "enum": [
-                "api",
-                "mcp"
-              ]
+              "enum": ["api", "mcp"]
             }
           },
           {
@@ -205,10 +200,7 @@
                       "$ref": "#/components/schemas/RequestLogPageMetadata"
                     }
                   },
-                  "required": [
-                    "data",
-                    "page"
-                  ]
+                  "required": ["data", "page"]
                 }
               }
             }
@@ -270,18 +262,12 @@
         },
         "result": {
           "type": "string",
-          "enum": [
-            "success",
-            "failure"
-          ],
+          "enum": ["success", "failure"],
           "description": "`failure` for any status of 400 or above."
         },
         "source": {
           "type": "string",
-          "enum": [
-            "api",
-            "mcp"
-          ]
+          "enum": ["api", "mcp"]
         },
         "requestId": {
           "type": "string",
@@ -312,11 +298,7 @@
           "properties": {
             "type": {
               "type": "string",
-              "enum": [
-                "team_key",
-                "project_token",
-                "client_token"
-              ]
+              "enum": ["team_key", "project_token", "client_token"]
             },
             "id": {
               "type": "string",
@@ -328,11 +310,7 @@
               "nullable": true
             }
           },
-          "required": [
-            "type",
-            "id",
-            "last4"
-          ]
+          "required": ["type", "id", "last4"]
         }
       },
       "required": [
@@ -369,11 +347,7 @@
           "description": "Pass as `after` to list requests newer than this page. Valid for 24 hours."
         }
       },
-      "required": [
-        "nextCursor",
-        "hasMore",
-        "followCursor"
-      ]
+      "required": ["nextCursor", "hasMore", "followCursor"]
     }
   },
   "family": "platform"
