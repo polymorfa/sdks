@@ -1,0 +1,205 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "10d5db5fc7bb7190c134d12191800d6a48fcf9f7",
+  "sourcePath": "apps/api/docs/openapi.json",
+  "sourceSha256": "a4cf9a2f34bba7eab3112deccd40b50ad0df838425eb48b09762ef8f857b62b4",
+  "releaseStatus": "draft; requires accepted API revision and staging acceptance",
+  "buttonsContent": {
+    "type": "object",
+    "properties": {
+      "buttons": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 0
+          },
+          "body": {
+            "type": "string",
+            "minLength": 1
+          },
+          "footer": {
+            "type": "string",
+            "minLength": 0
+          },
+          "buttons": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["url"]
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "url": {
+                      "type": "string",
+                      "maxLength": 2048,
+                      "format": "uri"
+                    }
+                  },
+                  "required": ["type", "text", "url"]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["call"]
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "phoneNumber": {
+                      "type": "string",
+                      "pattern": "^\\+?\\d{6,20}$"
+                    }
+                  },
+                  "required": ["type", "text", "phoneNumber"]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["reply"]
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["type", "text", "id"]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["copy"]
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "copyCode": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["type", "text", "copyCode"]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["catalog"]
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "businessPhoneNumber": {
+                      "type": "string",
+                      "pattern": "^\\+?\\d{6,20}$"
+                    },
+                    "catalogProductId": {
+                      "type": "string",
+                      "minLength": 0
+                    }
+                  },
+                  "required": ["type", "text", "businessPhoneNumber"]
+                }
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 10
+          }
+        },
+        "required": ["body", "buttons"],
+        "description": "Linked Devices support up to 10 reply buttons or up to 3 CTA buttons; reply and CTA buttons cannot be mixed. On an official WhatsApp Business number, at most 3 `reply` buttons are sent; other button types return `501`. There, `body` allows at most 1,024 characters, `title` and `footer` at most 60, and each button needs a unique `id` and a unique `text` of at most 20 characters. Every number also limits each button `id` to 256 UTF-8 bytes. Content outside any limit returns `400`."
+      }
+    },
+    "required": ["buttons"],
+    "additionalProperties": false
+  },
+  "listContent": {
+    "type": "object",
+    "properties": {
+      "list": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 0
+          },
+          "buttonText": {
+            "type": "string",
+            "minLength": 1
+          },
+          "footer": {
+            "type": "string",
+            "minLength": 0
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 0
+                },
+                "rows": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "description": {
+                        "type": "string",
+                        "minLength": 0
+                      }
+                    },
+                    "required": ["id", "title"]
+                  },
+                  "minItems": 1,
+                  "maxItems": 30
+                }
+              },
+              "required": ["rows"]
+            },
+            "minItems": 1,
+            "maxItems": 10
+          }
+        },
+        "required": ["title", "buttonText", "sections"],
+        "description": "On an official WhatsApp Business number, `title` is the header (at most 60 characters) and `description` the body (at most 1,024 characters); without `description`, `title` is the body. There, each section title allows at most 24 characters and is required when the list has more than one section, lists allow at most 10 rows in total, row titles at most 24 characters, row IDs at most 200, row descriptions at most 72, `buttonText` at most 20 and `footer` at most 60. Every number also limits `buttonText` to 64 UTF-8 bytes, row `id` to 256 bytes and `title` and `description` to 256 and 4,096 bytes, so multibyte text reaches those byte limits before the character limits. Content outside any limit returns `400`."
+      }
+    },
+    "required": ["list"],
+    "additionalProperties": false
+  }
+}

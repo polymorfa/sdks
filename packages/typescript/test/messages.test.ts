@@ -419,3 +419,33 @@ it("surfaces an uncertain accepted operation once and reads its status without a
   ).toBe("unknown");
   expect(server.requests.map((value) => value.method)).toEqual(["POST", "GET"]);
 });
+
+it("preserves ten linked replies and three CTA parameters without truncation", async () => {
+  const { client, requests } = await messagesServer();
+  const combinations: MessageButton[][] = [
+    Array.from({ length: 10 }, (_, index) => ({
+      type: "reply",
+      id: `reply-${index}`,
+      text: `Choice ${index}`,
+    })),
+    [
+      { type: "url", text: "Open", url: "https://example.test" },
+      { type: "copy", text: "Copy", copyCode: "SYNTHETIC" },
+      {
+        type: "catalog",
+        text: "Catalog",
+        businessPhoneNumber: "+15551234567",
+        catalogProductId: "123",
+      },
+    ],
+  ];
+  for (const buttons of combinations) {
+    const body: SendButtonsMessageRequest = {
+      transport: "linked_devices",
+      conversation: { phoneNumber: "+15551234567" },
+      content: { buttons: { body: "Choose", buttons } },
+    };
+    await client.messages.send("number", body);
+    expect(JSON.parse(requests.at(-1)!.body)).toEqual(body);
+  }
+});

@@ -2299,6 +2299,8 @@ export type MessageButton =
       readonly catalogProductId?: string;
     };
 
+/** Linked Devices accepts ten replies or three CTAs, without mixing them.
+ * Official API replies remain limited to three. The API validates routing. */
 export interface ButtonsMessageContent {
   readonly title?: string;
   readonly body: string;
