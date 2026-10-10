@@ -16,8 +16,11 @@ wire operations; it does not establish provider delivery or deployed access.
 
 ## Interactive button candidate
 
-`interactive-buttons.json` pins the button branch to draft API PR #562.
+## Interactive message candidate
+
+`interactive-messages.json` pins button and list branches to draft API PR #562.
 Linked Devices accepts ten replies or three CTAs, without mixing them.
+Native list bounds follow the thirty-row contract; Official lists retain ten rows.
 Official API replies retain the three-button limit. SDK arrays preserve all
 parameters. Replace the draft pin with the accepted API revision and verify
 matching staging before package publication.
