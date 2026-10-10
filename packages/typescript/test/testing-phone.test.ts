@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { afterEach, expect, it, vi } from "vitest";
 import {
   MessagingClient,
@@ -114,4 +115,49 @@ it("surfaces an offline phone as a validation error", async () => {
       text: "hi",
     }),
   ).rejects.toBeInstanceOf(PolymorfaValidationError);
+});
+
+const contract = JSON.parse(
+  readFileSync(
+    new URL("../../../contracts/testing-phone.json", import.meta.url),
+    "utf8",
+  ),
+) as {
+  operations: Record<string, { method: string; path: string }>;
+  schemas: Record<
+    string,
+    { properties: Record<string, unknown>; required: string[] }
+  >;
+};
+
+it("matches the pinned Testing phone contract", () => {
+  const route = (operationId: string) => contract.operations[operationId]!;
+  expect(route("getTestingPhone")).toMatchObject({
+    method: "GET",
+    path: "/messaging/testing/{projectId}/numbers/{session}/phone",
+  });
+  expect(route("sendTestingPhoneMessage")).toMatchObject({
+    method: "POST",
+    path: "/messaging/testing/{projectId}/numbers/{session}/phone/messages",
+  });
+  expect(route("unlinkTestingPhoneDevice")).toMatchObject({
+    method: "POST",
+    path: "/messaging/testing/{projectId}/numbers/{session}/phone/devices/{deviceId}/unlink",
+  });
+  const fields = (name: string) =>
+    Object.keys(contract.schemas[name]!.properties).sort();
+  const phone: TestingPhone = {
+    session: "s",
+    phone: "+1",
+    online: true,
+    devices: [],
+  };
+  expect(fields("TestingPhoneState")).toEqual(Object.keys(phone).sort());
+  expect(fields("TestingPhoneMessageRequest")).toEqual(["text", "to"]);
+  expect(fields("TestingPhoneMessage")).toEqual(["messageId", "session", "to"]);
+  expect(fields("TestingPhoneUnlink")).toEqual([
+    "deviceId",
+    "session",
+    "unlinked",
+  ]);
 });

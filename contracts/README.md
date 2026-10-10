@@ -42,6 +42,16 @@ override, and `call_restricted` in `callEndReason`. The retired BanSafe test
 fixtures are absent. CLI consumers require a
 published SDK package before updating their pinned dependency.
 
+## Testing phone supplement
+
+`testing-phone.json` records the three Test number phone operations
+(`getTestingPhone`, `sendTestingPhoneMessage`, `unlinkTestingPhoneDevice`) and
+their schemas from API `dev` merge commit
+`2f1510f901aca1d68398a6dc9dbf243348c672c0` (polymorfa/polymorfa#526), with the
+source path and file hash. `MessagingClient.testing.getPhone`,
+`sendPhoneMessage` and `unlinkPhoneDevice` use this revision; a contract test
+compares their paths and fields. The full snapshots are not repinned here.
+
 ## Full snapshots
 
 The current snapshots are byte-identical copies of the Messaging and Platform
