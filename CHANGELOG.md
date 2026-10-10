@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Campaign A/B tests (beta). Messaging and Platform campaign create and
+  update accept `variants` (`CampaignVariant`, two to four) and
+  `variantStrategy` (`CampaignVariantStrategy`); campaigns return them with
+  `experimentOutcome`. Campaign analytics include `experiment` results by
+  variant, and Platform `campaigns.analytics` now returns
+  `PlatformCampaignAnalytics` instead of an untyped object. A team that is not
+  enrolled receives `403 feature_unavailable`. API contract:
+  polymorfa/polymorfa#406.
+- Weighted message variation (beta). Messaging and Platform campaign create
+  and update accept `messageVariations`, two to five weighted alternatives
+  (`CampaignMessageVariation`), and campaigns return it. `null` clears the
+  alternatives on an unlaunched draft. A team that is not enrolled receives
+  `403 feature_unavailable`. API contract: polymorfa/polymorfa#409.
 - `Client.requestLogs` reads a project's API request log (`logs:read`):
   `list` with status, method, route, source, credential, request ID and trace
   ID filters, `follow` for newer requests, and `tail`, an async iterator that

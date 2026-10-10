@@ -2017,6 +2017,77 @@ pass one. Automatic retries reuse that key; a completed replay returns the
 API's `idempotency_completed` conflict, so inspect the campaign state after a
 lost response.
 
+#### A/B tests (beta)
+
+Give a draft two to four `variants` (`CampaignVariant`) and a
+`variantStrategy` (`CampaignVariantStrategy`) on create or update, on both
+surfaces. Each variant has a `key`, a `label`, an integer `weight` (the
+weights add up to 100) and a `blueprint`. At launch, recipients are split into
+an optional holdout, a test group that receives the variants, and a reserve
+that waits for the winner. When the test window ends, the winner by
+`winnerCriterion` is sent to the reserve; if no variant is clearly ahead, the
+campaign pauses with the reserve unsent. `experimentOutcome` on the campaign
+and `experiment` in analytics report the result. Send `null` for both fields to
+make an unlaunched draft a broadcast again. An A/B campaign cannot also use a template or
+weighted message alternatives. A team that is not enrolled
+receives `403 feature_unavailable`.
+
+```ts
+await messaging.campaigns.update(projectSlug, campaignId, {
+  variants: [
+    {
+      key: "a",
+      label: "Short",
+      weight: 50,
+      blueprint: { version: 2, source: "Hi {{first_name | there}}!" },
+    },
+    {
+      key: "b",
+      label: "Long",
+      weight: 50,
+      blueprint: {
+        version: 2,
+        source: "Hello {{first_name | there}}, your offer is ready.",
+      },
+    },
+  ],
+  variantStrategy: {
+    winnerCriterion: "read",
+    holdoutPercent: 0,
+    autoPromote: true,
+    testWindowMinutes: 120,
+  },
+});
+```
+
+#### Weighted message variation (beta)
+
+Give a campaign two to five alternatives in `messageVariations`
+(`CampaignMessageVariation`) on create or update, on both surfaces. Each
+recipient receives one, chosen by weight, and keeps it across retries. Weights
+are integers from 1 to 99 that add up to 100, and every alternative uses the
+same `{{variable}}` placeholders and inline fallbacks. A campaign with alternatives cannot also use
+a template, composed messages or A/B variants. Alternatives send only
+from linked-device numbers and change only on an unlaunched draft; `null`
+clears them. A team that is not enrolled receives `403 feature_unavailable`.
+
+```ts
+await messaging.campaigns.update(projectSlug, campaignId, {
+  messageVariations: [
+    {
+      key: "hello",
+      weight: 60,
+      blueprint: { version: 2, source: "Hello {{first_name | there}}!" },
+    },
+    {
+      key: "hi",
+      weight: 40,
+      blueprint: { version: 2, source: "Hi {{first_name | there}}!" },
+    },
+  ],
+});
+```
+
 #### Campaign conversions (beta)
 
 Campaign conversion reporting is a beta: the team must be enrolled, or both
