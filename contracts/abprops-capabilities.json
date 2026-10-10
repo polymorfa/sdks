@@ -568,5 +568,6 @@
         "additionalProperties": false
       }
     }
-  }
+  },
+  "family": "messaging"
 }
