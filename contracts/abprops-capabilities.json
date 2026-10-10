@@ -1,8 +1,8 @@
 {
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "98d1a5703813e22381c8e49612dfc2135869650f",
+  "sourceCommit": "7aafb98390d163b5319eed163a5186df9f38e19e",
   "sourcePath": "apps/api/docs/openapi.json",
-  "sourceSha256": "1342405a5c2ed20038076bacb5c326153a86cfddc8eaebd4c2f4dcea49049eb9",
+  "sourceSha256": "5ee46592f918aeee05fbf264e080a71b5afbdfe5c64f5a966a0fb3c159fb5f09",
   "published": false,
   "scope": "Group capability read and canonical session capability webhook only. Other SDK contracts retain their recorded source revisions.",
   "openapi": "3.0.3",
@@ -39,7 +39,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Account-bound stored group capabilities. Unknown until a successful group sync. Requires current group membership and the enrolled number-capabilities beta.",
+            "description": "Account-bound stored group capabilities. Unknown until successful number and group syncs for the linked account. Requires current group membership and the enrolled number-capabilities beta.",
             "content": {
               "application/json": {
                 "schema": {
@@ -204,6 +204,38 @@
                   },
                   "data": null,
                   "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "503": {
+            "description": "The stored capability reader, identity resolution or command dispatch is temporarily unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
                 }
               }
             },

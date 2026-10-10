@@ -568,7 +568,7 @@ customer access.
 ## AB props capabilities
 
 `abprops-capabilities.json` pins the stored group read and canonical number-change
-webhook to backend source `98d1a5703813e22381c8e49612dfc2135869650f`. Both consumers use this exact
+webhook to backend source `7aafb98390d163b5319eed163a5186df9f38e19e`. Both consumers use this exact
 revision. The full legacy snapshots retain their recorded revision; unrelated
 API drift is not declared covered by this scoped update. The capability methods
 remain subject to the enrolled beta. Source integration does not publish a package.
