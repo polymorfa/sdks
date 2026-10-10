@@ -1,5 +1,14 @@
 # Contract coverage
 
+## Request log supplement
+
+`request-logs.json` pins `GET /platform/projects/{projectId}/request-logs` and
+its `RequestLog` and `RequestLogPageMetadata` schemas to API merge commit
+`f97fb511cf3cd7bf14fbccf21a679c0f7a6ebbf3` (polymorfa/polymorfa#549).
+`Client.requestLogs` is checked against it in `request-logs-contract.test.ts`.
+The release gate requires this pin to match the global source before
+publication, so the method publishes only with a reconciled, accepted contract.
+
 ## Message provider references
 
 Native message receipts, webhook references, acknowledgements, history, and
@@ -41,6 +50,16 @@ It includes `session.restriction_updated`, its boolean `restrictionActive`
 override, and `call_restricted` in `callEndReason`. The retired BanSafe test
 fixtures are absent. CLI consumers require a
 published SDK package before updating their pinned dependency.
+
+## Testing phone supplement
+
+`testing-phone.json` records the three Test number phone operations
+(`getTestingPhone`, `sendTestingPhoneMessage`, `unlinkTestingPhoneDevice`) and
+their schemas from API `dev` merge commit
+`2f1510f901aca1d68398a6dc9dbf243348c672c0` (polymorfa/polymorfa#526), with the
+source path and file hash. `MessagingClient.testing.getPhone`,
+`sendPhoneMessage` and `unlinkPhoneDevice` use this revision; a contract test
+compares their paths and fields. The full snapshots are not repinned here.
 
 ## Full snapshots
 

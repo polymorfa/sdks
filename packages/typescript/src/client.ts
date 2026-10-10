@@ -49,6 +49,7 @@ import { PlatformSessionsResource } from "./platform/sessions.js";
 import { SipTrunksResource } from "./platform/sip-trunks.js";
 import { VoiceResource } from "./platform/voice.js";
 import { UsageResource } from "./platform/usage.js";
+import { RequestLogsResource } from "./platform/request-logs.js";
 
 export type EventsResourceFor<O extends ClientOwner> = EventsResource<O>;
 export type WebhooksResourceFor<O extends ClientOwner> = WebhooksResource<O>;
@@ -72,6 +73,8 @@ export interface ClientBase<O extends ClientOwner> {
   readonly voice: VoiceResource<O>;
   /** Metered usage and usage gates. */
   readonly usage: UsageResource;
+  /** A project's API request log (`logs:read`). */
+  readonly requestLogs: RequestLogsResource;
   readonly analytics: AnalyticsResource;
   readonly calls: PlatformCallsResource<O>;
   readonly callRetention: CallRetentionResource;
@@ -132,6 +135,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
   readonly sipTrunks: SipTrunksResource<ClientOwner>;
   readonly voice: VoiceResource<ClientOwner>;
   readonly usage: UsageResource;
+  readonly requestLogs: RequestLogsResource;
   readonly analytics: AnalyticsResource;
   readonly calls: PlatformCallsResource<ClientOwner>;
   readonly callRetention: CallRetentionResource;
@@ -197,6 +201,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       projectId !== null && credential.type !== "projectToken",
     );
     this.usage = new UsageResource(this.#transport, projectId);
+    this.requestLogs = new RequestLogsResource(this.#transport, projectId);
     this.analytics = new AnalyticsResource(this.#transport, projectId);
     this.calls = new PlatformCallsResource(this.#transport, projectId);
     this.callRetention = new CallRetentionResource(this.#transport);

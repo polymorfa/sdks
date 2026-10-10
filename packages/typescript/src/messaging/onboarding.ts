@@ -1,10 +1,17 @@
-import { PolymorfaConfigurationError } from "../errors.js";
+import {
+  PolymorfaConfigurationError,
+  PolymorfaValidationError,
+} from "../errors.js";
 import type { MessagingCredential } from "../credentials.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
+  SendTestingPhoneMessageRequest,
+  SendTestingPhoneMessageResponse,
   TestEventFixtureInfo,
   TestingHistoryMessage,
+  TestingPhone,
+  UnlinkTestingPhoneDeviceResponse,
   TriggerTestEventRequest,
   TriggerTestEventResponse,
 } from "./testing-configuration.js";
@@ -99,6 +106,70 @@ export class TestingResource {
       ...options,
     });
   }
+
+  /**
+   * Read a Test number's simulated phone: whether it is online and which
+   * companions are linked to it. Real numbers are refused with a 400 error.
+   */
+  getPhone(
+    projectId: string,
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<TestingPhone>> {
+    assertServerCredential(this.credentialType);
+    return this.transport.request({
+      method: "GET",
+      path: phonePath(projectId, session),
+      ...options,
+    });
+  }
+
+  /**
+   * Send a text message from a Test number's phone to another connected Test
+   * number in the same project. The message travels the simulated WhatsApp
+   * network, so its companions receive the sent copy and the recipient gets a
+   * normal inbound message. Counts toward the Testing rate limit.
+   */
+  sendPhoneMessage(
+    projectId: string,
+    session: string,
+    input: SendTestingPhoneMessageRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SendTestingPhoneMessageResponse>> {
+    assertServerCredential(this.credentialType);
+    return this.transport.request({
+      method: "POST",
+      path: `${phonePath(projectId, session)}/messages`,
+      body: input,
+      ...options,
+    });
+  }
+
+  /**
+   * Unlink a companion from a Test number's phone, as a person would from
+   * Linked devices. The companion is logged out. The phone itself (device 0)
+   * cannot be unlinked.
+   */
+  unlinkPhoneDevice(
+    projectId: string,
+    session: string,
+    deviceId: number,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<UnlinkTestingPhoneDeviceResponse>> {
+    assertServerCredential(this.credentialType);
+    if (!Number.isInteger(deviceId) || deviceId < 1 || deviceId > 99)
+      throw new PolymorfaValidationError(
+        "deviceId must be a companion device ID from 1 to 99.",
+      );
+    return this.transport.request({
+      method: "POST",
+      path: `${phonePath(projectId, session)}/devices/${deviceId}/unlink`,
+      ...options,
+    });
+  }
+}
+function phonePath(projectId: string, session: string): string {
+  return `/messaging/testing/${encodeURIComponent(projectId)}/numbers/${encodeURIComponent(session)}/phone`;
 }
 function assertServerCredential(type: MessagingCredential["type"]): void {
   if (type === "clientToken")

@@ -668,6 +668,18 @@ export { ApiKeysResource } from "./platform/api-keys.js";
 export { AuditLogsResource } from "./platform/audit-logs.js";
 export { BillingResource } from "./platform/billing.js";
 export { UsageResource } from "./platform/usage.js";
+export { RequestLogsResource } from "./platform/request-logs.js";
+export type {
+  FollowRequestLogsParams,
+  ListRequestLogsParams,
+  RequestLog,
+  RequestLogCredentialType,
+  RequestLogFilters,
+  RequestLogMethod,
+  RequestLogPage,
+  RequestLogSource,
+  TailRequestLogsParams,
+} from "./platform/request-logs.js";
 export type {
   CallUsageDimensions,
   UsageGate,

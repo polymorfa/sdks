@@ -73,6 +73,7 @@ export function expectedContract() {
       readFileSync(join(root, "contracts/analytics-device-signals.json")),
     ),
     JSON.parse(readFileSync(join(root, "contracts/abprops-capabilities.json"))),
+    JSON.parse(readFileSync(join(root, "contracts/request-logs.json"))),
   ]);
   const apiVersion = /NATIVE_API_VERSION = "([^"]+)"/.exec(
     readFileSync(join(root, "packages/typescript/src/version.ts"), "utf8"),
