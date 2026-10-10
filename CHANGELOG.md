@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- `ClientRules.maxConcurrency` and `ClientRules.maxSetupsPerMinute` are
+  deprecated and have no effect. Client tokens use the same call limits as
+  every credential: the shared per-Number outbound limit and usage limits.
+  Use `allowedNumber` and the `voip_*` actions to restrict what a client token
+  can reach. The Calls example no longer sets either field.
 - Dynamic WhatsApp Flow endpoints (beta, Cloud onboarding enrollment, Official
   API Numbers only). `Client.project(projectId).flows` adds `endpoint`,
   `setEndpoint` (modes `forward`, `function` and `direct`; a forward endpoint's

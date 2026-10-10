@@ -1650,9 +1650,9 @@ export interface ClientRules {
    * inbound message (300 to 604800).
    */
   readonly conversationTtlSeconds: number;
-  /** Calls: max distinct in-flight calls per token (0 = unlimited). */
+  /** @deprecated Has no effect; returns the stored value. Client tokens use the same call limits as every credential. */
   readonly maxConcurrency: number;
-  /** Polymorfa Calls: call setups per minute per ephemeral id (0 = platform default of 10). */
+  /** @deprecated Has no effect; returns the stored value. Client tokens use the same call limits as every credential. */
   readonly maxSetupsPerMinute: number;
   /** Calls: comma-separated E.164 destination allowlist (empty = any). */
   readonly allowedNumber: string;
@@ -1677,9 +1677,9 @@ export interface SetClientRulesRequest {
    * 86400 (24 hours).
    */
   readonly conversationTtlSeconds?: number;
-  /** Calls: max distinct in-flight calls per token (0 = unlimited). */
+  /** @deprecated Has no effect. Client tokens use the same call limits as every credential. */
   readonly maxConcurrency?: number;
-  /** Polymorfa Calls: call setups per minute per ephemeral id (0 = platform default). */
+  /** @deprecated Has no effect. Client tokens use the same call limits as every credential. */
   readonly maxSetupsPerMinute?: number;
   /** Calls: comma-separated E.164 destination allowlist (empty = any). */
   readonly allowedNumber?: string;

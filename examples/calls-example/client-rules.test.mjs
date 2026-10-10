@@ -115,8 +115,6 @@ test("configure helper uses bounded Calls-only rules when GET returns 404", asyn
     allowedOrigins: "http://127.0.0.1:5273",
     enabled: true,
     conversationTtlSeconds: 86400,
-    maxConcurrency: 1,
-    maxSetupsPerMinute: 2,
     allowedNumber: "+12025550123",
   });
 });

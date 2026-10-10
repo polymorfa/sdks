@@ -52,8 +52,6 @@ export async function configureCallsExampleRules(
       allowedOrigins: LOCAL_ORIGIN,
       enabled: true,
       conversationTtlSeconds: 86400,
-      maxConcurrency: 1,
-      maxSetupsPerMinute: 2,
       allowedNumber: testCallee,
     });
   } catch (cause) {
