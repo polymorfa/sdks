@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- `Client.requestLogs` reads a project's API request log (`logs:read`):
+  `list` with status, method, route, source, credential, request ID and trace
+  ID filters, `follow` for newer requests, and `tail`, an async iterator that
+  polls for new requests and honours `Retry-After`. Not usable until the API
+  release that adds the request log is deployed.
 - Test number phone controls. `MessagingClient.testing` adds `getPhone`
   (online state and linked companions), `sendPhoneMessage` (a text from the
   simulated phone to another Test number in the project) and

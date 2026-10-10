@@ -439,6 +439,37 @@ scoped read does not establish OS, model or device ownership. See the
 windowed gauges for platform message counts/shares and owned-device list coverage.
 Do not apply `rate()` or `increase()` to overlapping windows.
 
+### Request logs
+
+`client.requestLogs` reads a project's API and MCP requests from the last 30
+days (`logs:read`). A team client passes `projectId`; a project client reads
+only its own project.
+
+```ts
+const page = await client.requestLogs.list({
+  projectId,
+  status: ["4xx", "5xx"],
+  limit: 20,
+});
+// page.nextCursor lists older requests; page.followCursor lists newer ones.
+
+const controller = new AbortController();
+for await (const log of client.requestLogs.tail({
+  projectId,
+  backfill: 10,
+  intervalMs: 2000,
+  signal: controller.signal,
+})) {
+  console.log(log.createdAt, log.method, log.route, log.status, log.traceId);
+}
+```
+
+`tail` yields new requests oldest first. It polls every `intervalMs` (1,000 to
+60,000) while idle, reads again at once while more requests are waiting, and
+waits for `Retry-After` when the API rate limits reads. Entries carry the
+request ID and the W3C trace ID returned in `X-Trace-Id`. See
+[Read and tail request logs](https://docs.polymorfa.com/api/request-logs).
+
 ## Call consent
 
 Polymorfa checks every call against the team's call policy before the
