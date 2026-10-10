@@ -74,9 +74,16 @@ test("new feature contracts cannot publish against an older accepted source", ()
   const source = {
     repository: "polymorfa/polymorfa",
     commit: "a".repeat(40),
-    contracts: { platform: { sha256: "b".repeat(64) } },
+    contracts: {
+      platform: {
+        sha256: "b".repeat(64),
+        sourcePath: "apps/api/docs/openapi.management.json",
+      },
+    },
   };
   const pin = {
+    family: "platform",
+    sourcePath: source.contracts.platform.sourcePath,
     repository: source.repository,
     sourceCommit: source.commit,
     sourceSha256: source.contracts.platform.sha256,
@@ -96,4 +103,40 @@ test("new feature contracts cannot publish against an older accepted source", ()
       ]),
     /hash mismatch/,
   );
+});
+
+test("Messaging feature pins cannot borrow Platform acceptance or bypass a publication hold", () => {
+  const source = {
+    repository: "polymorfa/polymorfa",
+    commit: "a".repeat(40),
+    contracts: {
+      messaging: {
+        sha256: "b".repeat(64),
+        sourcePath: "apps/api/docs/openapi.json",
+      },
+      platform: {
+        sha256: "c".repeat(64),
+        sourcePath: "apps/api/docs/openapi.management.json",
+      },
+    },
+  };
+  const pin = {
+    repository: source.repository,
+    sourceCommit: source.commit,
+    family: "messaging",
+    sourcePath: source.contracts.messaging.sourcePath,
+    sourceSha256: source.contracts.messaging.sha256,
+    published: true,
+  };
+  validateFeatureContractPins(source, [pin]);
+  for (const delta of [
+    { family: "platform" },
+    { family: undefined },
+    { published: false },
+    { sourceSha256: source.contracts.platform.sha256 },
+    { sourcePath: source.contracts.platform.sourcePath },
+  ])
+    assert.throws(() =>
+      validateFeatureContractPins(source, [{ ...pin, ...delta }]),
+    );
 });

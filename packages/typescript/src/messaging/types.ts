@@ -2723,3 +2723,18 @@ export type ProjectTemplateResponse = SuccessEnvelope<ProjectTemplate>;
 export type ProjectTemplateOperationResponse = SuccessEnvelope<
   Readonly<Record<string, unknown>>
 >;
+
+/** Stored Linked Devices group settings. Reading requires current membership. */
+export interface GroupCapabilities {
+  readonly status: "synced" | "unknown";
+  readonly syncedAt: string | null;
+  readonly checkedAt: string | null;
+  readonly capabilities: readonly {
+    readonly key: "polls.endTime" | "polls.hideVoters" | "polls.creatorEdit";
+    readonly kind: "feature";
+    readonly unit: null;
+    readonly value: boolean | null;
+    readonly source: "server" | "client_default" | null;
+  }[];
+}
+export type GetGroupCapabilitiesResponse = SuccessEnvelope<GroupCapabilities>;

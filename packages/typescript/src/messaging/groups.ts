@@ -7,6 +7,7 @@ import type {
   GetGroupJoinInfoResponse,
   GetGroupParticipantsResponse,
   GetGroupResponse,
+  GetGroupCapabilitiesResponse,
   GroupAdminOnlySettingRequest,
   GroupJoinApprovalRequest,
   GroupMemberAddModeRequest,
@@ -64,6 +65,15 @@ export class GroupsResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetGroupResponse>> {
     return this.get(groupPath(session, groupId), options);
+  }
+
+  /** Enrolled number-capabilities beta. Unknown until a group sync; no chat open. */
+  getCapabilities(
+    session: string,
+    groupId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<GetGroupCapabilitiesResponse>> {
+    return this.get(`${groupPath(session, groupId)}/capabilities`, options);
   }
 
   delete(

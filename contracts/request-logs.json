@@ -349,5 +349,6 @@
       },
       "required": ["nextCursor", "hasMore", "followCursor"]
     }
-  }
+  },
+  "family": "platform"
 }

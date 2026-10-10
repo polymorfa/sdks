@@ -43,10 +43,24 @@ export function validateFeatureContractPins(source, pins) {
       source.commit,
       "Feature contract source has not been reconciled with the release contract",
     );
+    assert.ok(
+      ["messaging", "platform"].includes(pin.family),
+      "Feature contract family is required",
+    );
+    assert.notEqual(
+      pin.published,
+      false,
+      "Feature contract is held from publication",
+    );
+    assert.equal(
+      pin.sourcePath,
+      source.contracts[pin.family]?.sourcePath,
+      "Feature contract source path mismatch",
+    );
     assert.equal(
       pin.sourceSha256,
-      source.contracts.platform.sha256,
-      "Feature Platform contract hash mismatch",
+      source.contracts[pin.family]?.sha256,
+      "Feature contract hash mismatch",
     );
   }
 }
@@ -58,6 +72,7 @@ export function expectedContract() {
     JSON.parse(
       readFileSync(join(root, "contracts/analytics-device-signals.json")),
     ),
+    JSON.parse(readFileSync(join(root, "contracts/abprops-capabilities.json"))),
     JSON.parse(readFileSync(join(root, "contracts/request-logs.json"))),
   ]);
   const apiVersion = /NATIVE_API_VERSION = "([^"]+)"/.exec(

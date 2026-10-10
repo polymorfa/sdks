@@ -15,6 +15,7 @@ import {
   type CloudTemplateStatusPayload,
   type CloudAccountStatusPayload,
   type WebhookPayloadMap,
+  type GroupCapabilities,
 } from "../src/index.js";
 
 interface Schema {
@@ -40,7 +41,22 @@ const load = (family: "messaging" | "platform") =>
   JSON.parse(
     readFileSync(resolve(root, `contracts/openapi.${family}.json`), "utf8"),
   ) as OpenApiDocument;
-const messaging = load("messaging");
+const baselineMessaging = load("messaging");
+const abpropsContract = JSON.parse(
+  readFileSync(resolve(root, "contracts/abprops-capabilities.json"), "utf8"),
+) as OpenApiDocument;
+// Consume the capability event from its exact scoped source revision.
+const messaging: OpenApiDocument = {
+  components: {
+    schemas: {
+      ...baselineMessaging.components.schemas,
+      SessionCapabilitiesUpdatedPayload:
+        abpropsContract.components.schemas.SessionCapabilitiesUpdatedPayload!,
+      SessionCapabilitiesUpdatedEvent:
+        abpropsContract.components.schemas.SessionCapabilitiesUpdatedEvent!,
+    },
+  },
+};
 const platform = load("platform");
 
 function resolveRef(document: OpenApiDocument, schema: Schema): Schema {
@@ -201,6 +217,36 @@ const PAYLOADS: {
     ? Shape<RuntimeTemplateStatusPayload>
     : Shape<P[K]>;
 } = {
+  "session.capabilities_updated": shape<P["session.capabilities_updated"]>()(
+    {
+      session: "support",
+      projectId: IDS.project,
+      status: "synced",
+      syncedAt: AT,
+      checkedAt: AT,
+      accountType: "personal",
+      capabilities: [
+        {
+          key: "polls.endTime",
+          kind: "feature",
+          unit: null,
+          value: true,
+          source: "server",
+        },
+      ],
+      changedKeys: ["polls.endTime"],
+    },
+    [
+      "session",
+      "projectId",
+      "status",
+      "syncedAt",
+      "checkedAt",
+      "accountType",
+      "capabilities",
+      "changedKeys",
+    ],
+  ),
   "contact.opted_in": shape<P["contact.opted_in"]>()(
     {
       phone: "+15551234567",
@@ -741,6 +787,7 @@ type LegacyEventType = Exclude<
   | `voice.${string}`
   | "usage.recorded"
   | "message.failed"
+  | "session.capabilities_updated"
   | "session.restriction_updated"
   | "template.status"
   | "session.logged_out"
@@ -767,6 +814,29 @@ const sign = (body: Buffer) =>
   createHmac("sha256", secret).update(body).digest("hex");
 
 describe("webhook catalog contract", () => {
+  it("matches the stored group view to the same scoped capability contract", () => {
+    expectShape(
+      abpropsContract,
+      "GroupCapabilities",
+      shape<GroupCapabilities>()(
+        {
+          status: "unknown",
+          syncedAt: null,
+          checkedAt: null,
+          capabilities: [
+            {
+              key: "polls.endTime",
+              kind: "feature",
+              unit: null,
+              value: null,
+              source: null,
+            },
+          ],
+        },
+        ["status", "syncedAt", "checkedAt", "capabilities"],
+      ),
+    );
+  });
   it("lists exactly the events the pinned Messaging contract defines", () => {
     const spec = [...specEvents().keys()];
     expect(spec.sort()).toEqual([...KNOWN_WEBHOOK_EVENT_TYPES].sort());
