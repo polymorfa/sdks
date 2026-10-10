@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   createStoreConversationSource,
+  toConversationMessage,
   type PolymorfaStore,
 } from "../src/index.js";
 import { BASE_TIME, event, openStore, received } from "./helpers.js";
@@ -307,4 +308,96 @@ describe("createStoreConversationSource with ConversationController", () => {
     controller.dispose();
     store.close();
   });
+});
+
+it("preserves observed receipts when a conversation acknowledgement is cached", async () => {
+  const store = await openStore();
+  const receipt = { state: "read" as const, readAt: BASE_TIME + 2_000 };
+  const source = createStoreConversationSource(store, {
+    conversationId: "recipient",
+    send: async (draft) => ({
+      ...draft,
+      id: "ack",
+      createdAt: BASE_TIME,
+      direction: "outbound",
+      status: "sent",
+      receipt,
+    }),
+  });
+  await source.send({ clientId: "op", text: "Hello" });
+  const page = await source.load();
+  expect(
+    page.messages.find((message) => message.id === "ack")?.receipt,
+  ).toEqual(receipt);
+  store.close();
+});
+
+it("keeps an observed read state when stored receipt timestamps omit state", () => {
+  expect(
+    toConversationMessage({
+      id: "read-message",
+      _t: BASE_TIME,
+      session: "support",
+      conversationId: "recipient",
+      createdAt: BASE_TIME,
+      fromMe: true,
+      status: "read",
+      receipt: { deliveredAt: BASE_TIME - 1_000 },
+    }).receipt,
+  ).toEqual({ state: "read", deliveredAt: BASE_TIME - 1_000 });
+});
+
+it("keeps the furthest receipt state between status and a cached receipt", () => {
+  const row = {
+    id: "m",
+    _t: BASE_TIME,
+    session: "support",
+    conversationId: "recipient",
+    createdAt: BASE_TIME,
+    fromMe: true,
+  };
+  // An acknowledgement advanced the status past a receipt cached from history.
+  expect(
+    toConversationMessage({
+      ...row,
+      status: "read",
+      receipt: { state: "delivered", deliveredAt: BASE_TIME + 1 },
+    }).receipt,
+  ).toEqual({ state: "read", deliveredAt: BASE_TIME + 1 });
+  // A cached receipt ahead of the status is not moved back either.
+  expect(
+    toConversationMessage({
+      ...row,
+      status: "delivered",
+      receipt: { state: "played", playedAt: BASE_TIME + 2 },
+    }).receipt,
+  ).toEqual({ state: "played", playedAt: BASE_TIME + 2 });
+  expect(
+    toConversationMessage({ ...row, status: "sent" }).receipt,
+  ).toBeUndefined();
+});
+
+it("keeps link previews from the backend for later local loads", async () => {
+  const store = await openStore();
+  const linkPreview = {
+    url: "https://example.com/a",
+    title: "Example",
+    description: "An example page",
+  };
+  const source = createStoreConversationSource(store, {
+    conversationId: "chat_1",
+    load: async () => ({
+      messages: [{ ...remote("r1", 1_000, "see example"), linkPreview }],
+    }),
+    send: vi.fn(),
+  });
+  await source.load();
+  expect((await store.messages.get("r1"))?.linkPreview).toEqual(linkPreview);
+  const offline = createStoreConversationSource(store, {
+    conversationId: "chat_1",
+    send: vi.fn(),
+  });
+  const page = await offline.load();
+  expect(page.messages[0]?.linkPreview).toEqual(linkPreview);
+  store.close();
 });

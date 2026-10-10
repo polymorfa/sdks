@@ -80,7 +80,7 @@ drawer.addEventListener("pmfa-close", () => drawer.remove());
   leaves focus alone unless it has the `autofocus` attribute. Escape closes
   the drawer only when pressed inside it, and not while an input method is
   composing text.
-- `pmfa-compose-box` attaches files from its paperclip button, a paste, or a
+- `pmfa-compose-box` attaches files from its attachment button, a paste, or a
   drop, shows upload progress and failures with a remove button, and shows a
   reply banner. Set its `conversation` or `messages` property so the banner
   can quote the message. The `accept` and `multiple` attributes apply to the
@@ -203,3 +203,15 @@ controls and state.
 If a reject or hangup request fails, the call stays active and its controls remain
 available for retry. The UI shows a localized failure message and keeps existing
 media connected until the call ends. `snapshot.error` clears when ending succeeds.
+
+## Inline chat workspace
+
+See [chat components](../../docs/chat-components.md) for the inline `ChatWindow` /
+`pmfa-chat-window`, observed receipts, media, presentation filters and failure-preserving
+composer actions. History and sends remain owned by your authorized data source.
+
+Configure `attachment-kinds` to offer a named Photos, Videos, Audio and Documents
+picker. Without that attribute, the composer uses the single picker controlled by
+`accept`. Voice notes and ready-media previews are also available. Supply
+authorized upload/send adapters and disable media
+when uploading is unavailable. See [the chat guide](../../docs/chat-components.md#compose-media).

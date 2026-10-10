@@ -30,6 +30,7 @@ import {
   type StoredConversation,
   type StoredEvent,
   type StoredLabel,
+  type StoredLinkPreview,
   type StoredMessage,
   type StoredMessageStatus,
   type StoredPresence,
@@ -75,6 +76,7 @@ export const SENSITIVE_FIELDS: Readonly<
     "filename",
     "mediaUrl",
     "attachments",
+    "linkPreview",
     "pushName",
     "reactions",
     "votes",
@@ -184,7 +186,9 @@ export interface MessageInput {
   /** ID of the message this one replies to. */
   readonly replyTo?: string;
   readonly status?: StoredMessageStatus;
+  readonly receipt?: StoredMessage["receipt"];
   readonly attachments?: readonly StoredAttachment[];
+  readonly linkPreview?: StoredLinkPreview;
 }
 
 export interface ListOptions {
@@ -833,6 +837,8 @@ export async function createPolymorfaStore(
                 clientId: message.clientId,
                 replyTo: message.replyTo,
                 attachments: message.attachments,
+                linkPreview: message.linkPreview,
+                receipt: message.receipt,
               }),
               // History reads are older than any live event for the message.
               message.createdAt,

@@ -121,6 +121,74 @@ describe("definePolymorfa", () => {
 });
 
 describe("<pmfa-inbox>", () => {
+  it("filters observed unread rows and preserves search focus while typing", async () => {
+    const client = definePolymorfa({
+      client: new PolymorfaClient({ fetch: tokenFetch(["read_messages"]) }),
+    });
+    await client.refresh();
+    const inbox = document.createElement("pmfa-inbox") as PolymorfaInboxElement;
+    inbox.source = source;
+    document.body.append(inbox);
+    await vi.waitFor(() =>
+      expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(2),
+    );
+    const search = inbox.shadowRoot!.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    )!;
+    search.focus();
+    search.value = "Ada";
+    search.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(1);
+    expect(
+      inbox.shadowRoot!.activeElement?.getAttribute("data-inbox-search"),
+    ).not.toBeNull();
+    const input = inbox.shadowRoot!.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    )!;
+    input.value = "";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    const unread = inbox.shadowRoot!.querySelector<HTMLButtonElement>(
+      '[data-inbox-filter="unread"]',
+    )!;
+    unread.click();
+    expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(1);
+    expect(
+      inbox.shadowRoot!.querySelector(".pmfa-conv-name")?.textContent,
+    ).toBe("Ada Lovelace");
+  });
+
+  it("keeps the search input during an IME composition", async () => {
+    const client = definePolymorfa({
+      client: new PolymorfaClient({ fetch: tokenFetch(["read_messages"]) }),
+    });
+    await client.refresh();
+    const inbox = document.createElement("pmfa-inbox") as PolymorfaInboxElement;
+    inbox.source = source;
+    document.body.append(inbox);
+    await vi.waitFor(() =>
+      expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(2),
+    );
+    const search = inbox.shadowRoot!.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    )!;
+    search.focus();
+    search.value = "Ada";
+    search.dispatchEvent(
+      new InputEvent("input", { bubbles: true, isComposing: true }),
+    );
+    // Replacing the focused input would cancel the composition.
+    expect(inbox.shadowRoot!.querySelector('input[type="search"]')).toBe(
+      search,
+    );
+    expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(2);
+    search.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", isComposing: true }),
+    );
+    expect(search.value).toBe("Ada");
+    search.dispatchEvent(new CompositionEvent("compositionend"));
+    expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(1);
+  });
+
   it("renders the list and opens a read-only thread without send_message", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const client = definePolymorfa({

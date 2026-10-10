@@ -12,6 +12,8 @@ import {
   type VoiceNoteError,
 } from "@polymorfa/browser";
 import {
+  ATTACHMENT_KINDS,
+  type AttachmentKind,
   CHAT_ICONS,
   EMOJI_CATEGORY_ICONS,
   EMOJI_PICKER_CATEGORIES,
@@ -30,11 +32,18 @@ import {
   type EmojiPickerCategory,
   type QuickReplyOption,
   type TextEdit,
+  attachmentPresentation,
+  fileExtension,
   formatDayLabel,
+  formatDuration,
   formatFileSize,
   formatMessageTime,
   isImageAttachment,
+  linkHost,
+  thumbnailDataUrl,
+  waveformBars,
   layoutMessages,
+  messagePresentationStatus,
   safeAttachmentUrl,
   type ChatIconName,
   type ComponentSlot,
@@ -108,6 +117,7 @@ interface ViewHost {
   localeCode(): string;
   rootClass(names: string): string;
   decorate<N extends Element>(node: N, slot: ComponentSlot): N;
+  messageFilter(): ((message: ConversationMessage) => boolean) | undefined;
 }
 
 function authorName(host: ViewHost, message?: ConversationMessage): string {
@@ -126,7 +136,7 @@ function snippet(host: ViewHost, message: ConversationMessage): string {
 
 interface ListActions {
   loadMore(): void;
-  retry?: ((clientId: string) => Promise<void>) | undefined;
+  retry?: ((clientId: string) => Promise<unknown>) | undefined;
   /** Present when messages offer a Reply action. */
   reply?: ((message: ConversationMessage) => void) | undefined;
 }
@@ -152,6 +162,8 @@ class MessageListView {
   #loadMore: HTMLLIElement | undefined;
   #empty: HTMLLIElement | undefined;
   #pinned = true;
+  #latest: HTMLButtonElement;
+  #resizeObserver: ResizeObserver | undefined;
 
   constructor(
     private readonly host: ViewHost,
@@ -164,21 +176,51 @@ class MessageListView {
     this.scroller.setAttribute("role", "log");
     this.scroller.setAttribute("aria-live", "polite");
     this.scroller.setAttribute("aria-label", host.text("chat.title"));
+    this.#latest = host.decorate(
+      button(
+        host.text("chat.latest"),
+        "latest",
+        () => {
+          this.#pinned = true;
+          this.scroller.scrollTop = this.scroller.scrollHeight;
+          this.#latest.hidden = true;
+        },
+        "pmfa-btn pmfa-latest",
+      ),
+      "latestButton",
+    );
+    this.#latest.replaceChildren(
+      icon("down"),
+      span("pmfa-sr", host.text("chat.latest")),
+    );
+    this.#latest.hidden = true;
     this.scroller.addEventListener("scroll", () => {
       const node = this.scroller;
       this.#pinned =
         node.scrollHeight - node.scrollTop - node.clientHeight < 32;
+      this.#latest.hidden = this.#pinned;
     });
     this.list = document.createElement("ol");
     this.list.className = "pmfa-items";
-    this.scroller.append(this.list);
+    this.scroller.append(this.list, this.#latest);
   }
 
   update(snapshot: ConversationSnapshot | undefined): void {
+    if (
+      this.#resizeObserver === undefined &&
+      typeof ResizeObserver !== "undefined"
+    ) {
+      this.#resizeObserver = new ResizeObserver(() => {
+        if (this.#pinned) this.scroller.scrollTop = this.scroller.scrollHeight;
+      });
+      this.#resizeObserver.observe(this.scroller);
+      this.#resizeObserver.observe(this.list);
+    }
     const actions = this.actions();
     const messages = snapshot?.messages ?? [];
     const byId = new Map(messages.map((message) => [message.id, message]));
-    const entries = layoutMessages(messages);
+    const filter = this.host.messageFilter();
+    const entries = layoutMessages(filter ? messages.filter(filter) : messages);
     const nodes: Node[] = [];
     if (snapshot?.hasMore) nodes.push(this.#loadMoreNode());
     const seen = new Set<string>();
@@ -239,10 +281,26 @@ class MessageListView {
     if (entries.length === 0) nodes.push(this.#emptyNode());
     const pinned = this.#pinned || !this.scroller.isConnected;
     const offset = this.scroller.scrollTop;
+    const anchor = [
+      ...this.list.querySelectorAll<HTMLElement>("[data-message-id]"),
+    ].find(
+      (entry) =>
+        entry.getBoundingClientRect().bottom >
+        this.scroller.getBoundingClientRect().top,
+    );
+    const anchorTop = anchor?.getBoundingClientRect().top;
     reconcile(this.list, nodes);
     queueMicrotask(() => {
       this.scroller.scrollTop = pinned ? this.scroller.scrollHeight : offset;
+      if (!pinned && anchor?.isConnected && anchorTop !== undefined)
+        this.scroller.scrollTop +=
+          anchor.getBoundingClientRect().top - anchorTop;
     });
+  }
+
+  dispose(): void {
+    this.#resizeObserver?.disconnect();
+    this.#resizeObserver = undefined;
   }
 
   jump(id: string): void {
@@ -307,6 +365,10 @@ class MessageListView {
     );
     item.dataset.messageId = message.id;
     item.tabIndex = -1;
+    const row = element("div");
+    row.className = "pmfa-row";
+    const bubble = host.decorate(element("div", "bubble"), "bubble");
+    bubble.classList.add("pmfa-bubble");
     if (quoted !== undefined) {
       const quote = host.decorate(
         button("", "quote", () => this.jump(quoted.id), "pmfa-quote"),
@@ -317,12 +379,44 @@ class MessageListView {
         span("pmfa-quote-name", authorName(host, quoted)),
         span("pmfa-quote-text", snippet(host, quoted)),
       );
-      item.append(quote);
+      bubble.append(quote);
     }
-    const row = element("div");
-    row.className = "pmfa-row";
-    const bubble = host.decorate(element("div", "bubble"), "bubble");
-    bubble.classList.add("pmfa-bubble");
+
+    const preview = message.linkPreview;
+    const previewHost =
+      preview === undefined ? undefined : linkHost(preview.url);
+    const previewHref =
+      preview === undefined ? undefined : safeAttachmentUrl(preview.url);
+    if (
+      preview !== undefined &&
+      previewHost !== undefined &&
+      previewHref !== undefined
+    ) {
+      const card = document.createElement("a");
+      card.className = "pmfa-link-preview";
+      card.href = previewHref;
+      card.target = "_blank";
+      card.rel = "noopener noreferrer";
+      card.setAttribute(
+        "aria-label",
+        host.text("chat.openLink", { host: previewHost }),
+      );
+      const thumbnail = thumbnailDataUrl(preview.thumbnail);
+      if (thumbnail !== undefined) {
+        const image = document.createElement("img");
+        image.className = "pmfa-link-thumb";
+        image.src = thumbnail;
+        image.alt = "";
+        card.append(image);
+      }
+      const body = span("pmfa-link-body");
+      if (preview.title) body.append(span("pmfa-link-title", preview.title));
+      if (preview.description)
+        body.append(span("pmfa-link-description", preview.description));
+      body.append(span("pmfa-link-host", previewHost));
+      card.append(body);
+      bubble.append(card);
+    }
     if ((message.attachments?.length ?? 0) > 0) {
       const attachments = element("div");
       attachments.className = "pmfa-atts";
@@ -330,7 +424,18 @@ class MessageListView {
         attachments.append(this.#attachmentNode(attachment));
       bubble.append(attachments);
     }
-    if (message.text !== "") bubble.append(span("pmfa-text", message.text));
+    if (message.text !== "") {
+      const textNode = span("pmfa-text", message.text);
+      // Reserves the width of the time and receipt on the last line.
+      const space = span(
+        "pmfa-meta-space",
+        formatMessageTime(message.createdAt, host.localeCode()) ?? "",
+      );
+      space.setAttribute("aria-hidden", "true");
+      if (outbound) space.append(span("pmfa-meta-space-icon"));
+      textNode.append(space);
+      bubble.append(textNode);
+    }
     row.append(bubble);
     const retry =
       retryable &&
@@ -380,14 +485,20 @@ class MessageListView {
       node.textContent = time;
       meta.append(node);
     }
-    if (outbound) meta.append(icon(message.status, "pmfa-icon pmfa-status"));
+    const presentation = messagePresentationStatus(message);
+    if (outbound)
+      meta.append(
+        icon(presentation, `pmfa-icon pmfa-status pmfa-status-${presentation}`),
+      );
     const status =
       message.status === "failed"
         ? host.text("chat.failed")
         : message.status === "pending"
           ? host.text("chat.sending")
           : outbound
-            ? host.text("chat.sent")
+            ? host.text(
+                `chat.${presentation === "pending" ? "sending" : presentation}`,
+              )
             : undefined;
     if (status !== undefined)
       meta.append(
@@ -395,7 +506,8 @@ class MessageListView {
           ? span("", status)
           : span("pmfa-sr", status),
       );
-    item.append(row, meta);
+    bubble.append(meta);
+    item.append(row);
     if (message.error !== undefined) {
       const error = span("pmfa-msg-error", message.error);
       error.setAttribute("role", "alert");
@@ -409,26 +521,11 @@ class MessageListView {
     // Unsafe schemes such as `javascript:` never reach `href` or `src`.
     const url = safeAttachmentUrl(attachment.url);
     const source = safeAttachmentUrl(attachment.previewUrl) ?? url;
-    if (isImageAttachment(attachment) && source !== undefined) {
-      const image = document.createElement("img");
-      image.src = source;
-      image.alt = attachment.name;
-      image.loading = "lazy";
-      image.decoding = "async";
-      if (url === undefined) {
-        const frame = document.createElement("div");
-        frame.className = "pmfa-att pmfa-att-media";
-        frame.append(image);
-        return host.decorate(frame, "attachment");
-      }
-      const link = document.createElement("a");
-      link.className = "pmfa-att pmfa-att-media";
-      link.href = url;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.append(image);
-      return host.decorate(link, "attachment");
-    }
+    const kind = attachmentPresentation(attachment);
+    if (kind === "voice" || kind === "audio")
+      return this.#audioNode(attachment, url, kind === "voice");
+    if (kind === "image" || kind === "video")
+      return this.#pictureNode(attachment, kind, url, source);
     const node =
       url === undefined
         ? document.createElement("div")
@@ -440,15 +537,349 @@ class MessageListView {
       node.rel = "noopener noreferrer";
       node.title = host.text("chat.openAttachment", { name: attachment.name });
     }
-    const badge = span("pmfa-att-icon");
-    badge.append(icon("file"));
+    const documentPreview = thumbnailDataUrl(attachment.thumbnail);
+    if (documentPreview !== undefined) {
+      const preview = document.createElement("img");
+      preview.className = "pmfa-att-doc-preview";
+      preview.src = documentPreview;
+      preview.alt = "";
+      preview.decoding = "async";
+      node.append(preview);
+    }
+    const extension = fileExtension(attachment.name);
+    const tile = span("pmfa-att-tile");
+    if (extension !== undefined) tile.dataset.extension = extension;
+    tile.append(icon("file"));
     const body = span("pmfa-att-body");
-    body.append(
-      span("pmfa-att-name", attachment.name),
-      span("pmfa-att-size", formatFileSize(attachment.size, host.localeCode())),
-    );
-    node.append(badge, body);
+    body.append(span("pmfa-att-name", attachment.name));
+    const details = [
+      extension,
+      attachment.pageCount === undefined
+        ? undefined
+        : attachment.pageCount === 1
+          ? host.text("chat.onePage")
+          : host.text("chat.pages", {
+              count: attachment.pageCount.toLocaleString(host.localeCode()),
+            }),
+      attachment.size > 0
+        ? formatFileSize(attachment.size, host.localeCode())
+        : undefined,
+    ].filter((value) => value !== undefined);
+    if (details.length > 0)
+      body.append(span("pmfa-att-size", details.join(" · ")));
+    node.append(tile, body);
     return host.decorate(node, "attachment");
+  }
+
+  /**
+   * A picture or video. The embedded thumbnail shows blurred until the file
+   * loads. An HD variant loads only when asked for, then replaces the standard
+   * picture in place; the HD badge switches back.
+   */
+  #pictureNode(
+    attachment: MessageAttachment,
+    kind: "image" | "video",
+    url: string | undefined,
+    source: string | undefined,
+  ): HTMLElement {
+    const { host } = this;
+    const wrapper = document.createElement("div");
+    wrapper.className = "pmfa-att-frame";
+    const width = attachment.width ?? attachment.thumbnail?.width;
+    const height = attachment.height ?? attachment.thumbnail?.height;
+    if (width && height && width > 0 && height > 0)
+      wrapper.style.setProperty(
+        "--pmfa-ratio",
+        String(Math.min(Math.max(width / height, 0.71), 4)),
+      );
+    const thumbnail = thumbnailDataUrl(attachment.thumbnail);
+    const hdUrl = safeAttachmentUrl(attachment.hd?.url);
+    let state: "idle" | "loading" | "shown" | "standard" | "failed" = "idle";
+    let frame: HTMLElement = document.createElement("div");
+    const thumbImage = () => {
+      const image = document.createElement("img");
+      image.className = "pmfa-att-thumb";
+      image.src = thumbnail ?? "";
+      image.alt = "";
+      image.setAttribute("aria-hidden", "true");
+      return image;
+    };
+    const build = () => {
+      const showingHd = state === "shown";
+      const link = showingHd ? hdUrl : url;
+      const display =
+        kind === "image" ? (showingHd ? hdUrl : source) : undefined;
+      const playable = kind === "video" ? (showingHd ? hdUrl : url) : undefined;
+      const unavailable =
+        kind === "image" ? display === undefined : playable === undefined;
+      const next: HTMLElement =
+        link === undefined || kind === "video"
+          ? document.createElement("div")
+          : document.createElement("a");
+      if (next instanceof HTMLAnchorElement && link !== undefined) {
+        next.href = link;
+        next.target = "_blank";
+        next.rel = "noopener noreferrer";
+      }
+      next.className = [
+        "pmfa-att pmfa-att-media",
+        kind === "video" && !unavailable ? "pmfa-att-player" : "",
+        unavailable ? "pmfa-att-placeholder" : "",
+        thumbnail !== undefined ? "pmfa-att-thumbed" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      if (kind === "image" && display !== undefined) {
+        const image = document.createElement("img");
+        if (thumbnail !== undefined) {
+          const placeholder = thumbImage();
+          next.append(placeholder);
+          image.addEventListener("load", () => {
+            image.toggleAttribute("data-loaded", true);
+            placeholder.remove();
+          });
+        }
+        image.src = display;
+        image.alt = attachment.name;
+        image.loading = "lazy";
+        image.decoding = "async";
+        next.append(image);
+      } else if (kind === "video" && playable !== undefined) {
+        const player = document.createElement("video");
+        player.controls = true;
+        player.preload = "none";
+        player.src = playable;
+        if (thumbnail !== undefined) player.poster = thumbnail;
+        player.setAttribute("aria-label", attachment.name);
+        next.append(player);
+      } else {
+        if (thumbnail !== undefined) next.append(thumbImage());
+        next.append(icon(kind === "video" ? "video" : "image"));
+        if (thumbnail === undefined)
+          next.append(span("pmfa-att-name", attachment.name));
+        next.append(
+          span(
+            "pmfa-sr",
+            `${attachment.name}. ${host.text("chat.mediaUnavailable")}`,
+          ),
+        );
+        const duration = formatDuration(attachment.durationSeconds);
+        if (kind === "video" && duration !== undefined)
+          next.append(span("pmfa-att-duration", duration));
+      }
+      host.decorate(next, "attachment");
+      frame.replaceWith(next);
+      frame = next;
+    };
+    const control = (): HTMLElement | undefined => {
+      if (attachment.quality === "hd") {
+        const badge = span("pmfa-hd", host.text("chat.hd"));
+        badge.title = host.text("chat.hd");
+        return badge;
+      }
+      if (hdUrl === undefined) return undefined;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "pmfa-hd";
+      const render = () => {
+        const showingHd = state === "shown";
+        button.dataset.state = state;
+        button.setAttribute("aria-pressed", String(showingHd));
+        button.disabled = state === "loading" || state === "failed";
+        button.setAttribute(
+          "aria-label",
+          host.text(
+            state === "loading"
+              ? "chat.loadingHd"
+              : state === "failed"
+                ? "chat.hdFailed"
+                : showingHd
+                  ? "chat.showStandard"
+                  : state === "standard"
+                    ? "chat.showHd"
+                    : "chat.loadHd",
+          ),
+        );
+        button.replaceChildren();
+        if (state === "loading") {
+          const spinner = span("pmfa-hd-spinner");
+          spinner.setAttribute("aria-hidden", "true");
+          button.append(spinner);
+        } else if (!showingHd && state !== "standard")
+          button.append(icon("download"));
+        button.append(host.text("chat.hd"));
+      };
+      const show = (next: typeof state) => {
+        state = next;
+        render();
+        build();
+      };
+      button.addEventListener("click", () => {
+        if (state === "shown") return show("standard");
+        if (state === "standard" || kind === "video") return show("shown");
+        if (state === "loading") return;
+        state = "loading";
+        render();
+        const probe = new Image();
+        probe.onload = () => show("shown");
+        probe.onerror = () => {
+          state = "failed";
+          render();
+        };
+        probe.src = hdUrl;
+      });
+      render();
+      return button;
+    };
+    wrapper.append(frame);
+    build();
+    const hd = control();
+    if (hd !== undefined) wrapper.append(hd);
+    return wrapper;
+  }
+
+  /**
+   * Voice note and audio player. A missing URL renders the same layout with a
+   * disabled control, so retained metadata never looks playable.
+   */
+  #audioNode(
+    attachment: MessageAttachment,
+    url: string | undefined,
+    voice: boolean,
+  ): HTMLElement {
+    const { host } = this;
+    const frame = host.decorate(element("div", "attachment"), "attachment");
+    frame.className = `pmfa-att pmfa-att-audio${voice ? " pmfa-att-voice" : ""}`;
+    frame.style.setProperty("--pmfa-progress", "0");
+    const label = voice ? host.text("chat.voiceNote") : attachment.name;
+    let total =
+      attachment.durationSeconds !== undefined && attachment.durationSeconds > 0
+        ? attachment.durationSeconds
+        : undefined;
+    if (!voice) {
+      const tile = span("pmfa-att-tile");
+      tile.setAttribute("aria-hidden", "true");
+      tile.append(icon("headphones"));
+      frame.append(tile);
+    }
+    const play = document.createElement("button");
+    play.type = "button";
+    play.className = "pmfa-play";
+    play.disabled = url === undefined;
+    const track = span("pmfa-track");
+    const bars = waveformBars(attachment.waveform);
+    const barNodes: HTMLSpanElement[] = [];
+    if (bars.length > 0) {
+      const wave = span("pmfa-wave");
+      wave.setAttribute("aria-hidden", "true");
+      for (const level of bars) {
+        const bar = document.createElement("span");
+        bar.style.height = `${level * 100}%`;
+        barNodes.push(bar);
+        wave.append(bar);
+      }
+      track.append(wave);
+    } else {
+      const line = span("pmfa-line");
+      line.setAttribute("aria-hidden", "true");
+      track.append(line);
+    }
+    const seek = document.createElement("input");
+    seek.type = "range";
+    seek.className = "pmfa-seek";
+    seek.min = "0";
+    seek.step = "any";
+    seek.setAttribute("aria-label", host.text("chat.position"));
+    const time = span("pmfa-att-time");
+    track.append(seek, time);
+    frame.append(play, track);
+    const audio =
+      url === undefined ? undefined : document.createElement("audio");
+    let position = 0;
+    const render = () => {
+      const playing = audio !== undefined && !audio.paused;
+      const progress = total === undefined ? 0 : Math.min(1, position / total);
+      frame.toggleAttribute("data-playing", playing);
+      frame.style.setProperty("--pmfa-progress", String(progress));
+      barNodes.forEach((bar, index) =>
+        bar.toggleAttribute(
+          "data-played",
+          (index + 0.5) / barNodes.length <= progress,
+        ),
+      );
+      play.replaceChildren(
+        icon(playing ? "pause" : "play", "pmfa-icon pmfa-icon-fill"),
+      );
+      play.setAttribute(
+        "aria-label",
+        `${host.text(playing ? "chat.pause" : "chat.play")}: ${label}`,
+      );
+      seek.max = String(total ?? 0);
+      seek.value = String(Math.min(position, total ?? 0));
+      seek.disabled = audio === undefined || total === undefined;
+      seek.setAttribute(
+        "aria-valuetext",
+        `${formatDuration(position) ?? "0:00"} / ${formatDuration(total) ?? ""}`,
+      );
+      time.textContent =
+        playing || position > 0
+          ? (formatDuration(position) ?? "")
+          : (formatDuration(total) ?? "");
+      if (audio === undefined)
+        time.append(span("pmfa-sr", ` ${host.text("chat.mediaUnavailable")}`));
+    };
+    if (audio !== undefined && url !== undefined) {
+      audio.preload = "none";
+      audio.src = url;
+      let rate = 1;
+      audio.addEventListener("play", render);
+      audio.addEventListener("pause", render);
+      audio.addEventListener("ended", () => {
+        position = 0;
+        render();
+      });
+      audio.addEventListener("timeupdate", () => {
+        position = audio.currentTime;
+        render();
+      });
+      audio.addEventListener("loadedmetadata", () => {
+        if (Number.isFinite(audio.duration) && audio.duration > 0)
+          total = audio.duration;
+        audio.playbackRate = rate;
+        render();
+      });
+      play.addEventListener("click", () => {
+        if (audio.paused) void audio.play().catch(render);
+        else audio.pause();
+      });
+      seek.addEventListener("input", () => {
+        position = Number(seek.value);
+        audio.currentTime = position;
+        render();
+      });
+      if (voice) {
+        const speed = document.createElement("button");
+        speed.type = "button";
+        speed.className = "pmfa-rate";
+        const label = () => {
+          speed.textContent = `${rate}×`;
+          speed.setAttribute(
+            "aria-label",
+            `${host.text("chat.speed")}: ${rate}×`,
+          );
+        };
+        label();
+        speed.addEventListener("click", () => {
+          rate = rate === 1 ? 1.5 : rate === 1.5 ? 2 : 1;
+          audio.playbackRate = rate;
+          label();
+        });
+        frame.append(speed);
+      }
+      frame.append(audio);
+    }
+    render();
+    return frame;
   }
 }
 
@@ -822,6 +1253,7 @@ function flagAttribute(
 }
 
 interface ComposerOptions {
+  readonly attachmentKinds: () => readonly AttachmentKind[];
   readonly controller: () => MessageComposerController | undefined;
   readonly accept: () => string | undefined;
   readonly multiple: () => boolean;
@@ -869,6 +1301,12 @@ class ComposerView {
   readonly #mic: HTMLButtonElement;
   readonly #emojiButton: HTMLButtonElement;
   readonly #attach: HTMLButtonElement;
+  readonly #attachmentPicker = document.createElement("div");
+  #attachmentMenu: HTMLDivElement | undefined;
+  readonly #attachmentOutside = (event: PointerEvent) => {
+    if (!event.composedPath().includes(this.#attachmentPicker))
+      this.#closeAttachments();
+  };
   readonly #file: HTMLInputElement;
   readonly #chips: HTMLUListElement;
   readonly #banner: HTMLDivElement;
@@ -964,12 +1402,18 @@ class ComposerView {
     this.#emojiButton.setAttribute("aria-haspopup", "dialog");
     this.#emojiButton.setAttribute("aria-expanded", "false");
     const attach = host.decorate(
-      iconButton(host.text("composer.attach"), "attach", "attach", () =>
-        this.#file.click(),
+      iconButton(host.text("composer.attach"), "attach", "plus", () =>
+        this.#toggleAttachments(),
       ),
       "composerAttach",
     );
     this.#attach = attach;
+    this.#attachmentPicker.className = "pmfa-attachment-picker";
+    this.#attachmentPicker.append(attach);
+    this.#attachmentPicker.addEventListener("focusout", (event) => {
+      if (!this.#attachmentPicker.contains(event.relatedTarget as Node | null))
+        this.#closeAttachments();
+    });
     this.#file = document.createElement("input");
     this.#file.type = "file";
     this.#file.className = "pmfa-sr";
@@ -1039,7 +1483,7 @@ class ComposerView {
     this.#row.append(
       actionSlot("start-actions", "pmfa-composer-start"),
       this.#emojiButton,
-      attach,
+      this.#attachmentPicker,
       this.#file,
       this.input,
       actionSlot("end-actions", "pmfa-composer-end"),
@@ -1141,6 +1585,18 @@ class ComposerView {
       this.input.style.setProperty("--pmfa-composer-max-rows", maxRows);
     this.#emojiButton.hidden = !this.options.emoji();
     this.#attach.hidden = !this.options.attachments();
+    if (this.#attach.hidden) this.#closeAttachments();
+    if (this.options.attachmentKinds().length) {
+      this.#attach.setAttribute("aria-haspopup", "dialog");
+      this.#attach.setAttribute(
+        "aria-expanded",
+        String(this.#attachmentMenu !== undefined),
+      );
+    } else {
+      this.#closeAttachments();
+      this.#attach.removeAttribute("aria-haspopup");
+      this.#attach.removeAttribute("aria-expanded");
+    }
     if (this.#emojiButton.hidden) this.#closeEmoji(false);
 
     const text = snapshot?.text ?? "";
@@ -1200,12 +1656,65 @@ class ComposerView {
 
   /** Stop recording, close popovers, and release the microphone. */
   dispose(): void {
+    this.#closeAttachments();
     this.#closeEmoji(false);
     this.#recorderUnsubscribe?.();
     this.#recorderUnsubscribe = undefined;
     this.#recorder?.dispose();
     this.#recorder = undefined;
     this.#syncRecording();
+  }
+
+  #closeAttachments(): void {
+    this.#attachmentMenu?.remove();
+    this.#attachmentMenu = undefined;
+    this.#attach.setAttribute("aria-expanded", "false");
+    document.removeEventListener("pointerdown", this.#attachmentOutside);
+  }
+
+  #toggleAttachments(): void {
+    const kinds = this.options.attachmentKinds();
+    if (!kinds.length) {
+      this.#file.accept = this.options.accept() ?? "";
+      this.#file.click();
+      return;
+    }
+    if (this.#attachmentMenu) {
+      this.#closeAttachments();
+      return;
+    }
+    const menu = document.createElement("div");
+    menu.className = "pmfa-attachment-menu";
+    menu.setAttribute("role", "dialog");
+    menu.setAttribute("aria-label", this.host.text("composer.attach"));
+    for (const kind of kinds) {
+      const choice = document.createElement("button");
+      choice.type = "button";
+      choice.className = "pmfa-btn pmfa-btn-ghost";
+      choice.append(
+        icon(ATTACHMENT_KINDS[kind].icon),
+        document.createTextNode(this.host.text(ATTACHMENT_KINDS[kind].label)),
+      );
+      choice.addEventListener("click", () => {
+        this.#file.accept = ATTACHMENT_KINDS[kind].accept;
+        this.#closeAttachments();
+        this.#attach.focus();
+        this.#file.click();
+      });
+      menu.append(choice);
+    }
+    menu.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      this.#closeAttachments();
+      this.#attach.focus();
+    });
+    this.#attachmentMenu = menu;
+    this.#attachmentPicker.append(menu);
+    this.#attach.setAttribute("aria-expanded", "true");
+    menu.querySelector<HTMLButtonElement>("button")?.focus();
+    document.addEventListener("pointerdown", this.#attachmentOutside);
   }
 
   #renderError(): void {
@@ -1271,6 +1780,17 @@ class ComposerView {
       .controller()
       ?.submit()
       .catch(() => undefined);
+  }
+
+  /** Whether files dropped elsewhere on the chat can be attached here. */
+  acceptsFiles(): boolean {
+    return (
+      this.options.attachments() && this.options.controller() !== undefined
+    );
+  }
+
+  addFiles(files: FileList | null | undefined): void {
+    this.#addFiles(files);
   }
 
   #addFiles(files: FileList | null | undefined): void {
@@ -1635,6 +2155,43 @@ class ComposerView {
       chip.glyph.current = next;
       chip.glyph.name = glyphName;
     }
+    const preview = isImageAttachment(attachment)
+      ? (safeAttachmentUrl(attachment.uploaded?.previewUrl) ??
+        safeAttachmentUrl(attachment.uploaded?.url))
+      : undefined;
+    let image = chip.node.querySelector<HTMLImageElement>(".pmfa-chip-preview");
+    if (preview) {
+      if (!image) {
+        image = document.createElement("img");
+        image.className = "pmfa-chip-preview";
+        chip.node.prepend(image);
+      }
+      if (image.getAttribute("src") !== preview) image.src = preview;
+      image.alt = attachment.name;
+    } else image?.remove();
+    chip.glyph.current.style.display = preview ? "none" : "";
+    const playerUrl = /^(audio|video)\//i.test(attachment.contentType)
+      ? safeAttachmentUrl(attachment.uploaded?.url)
+      : undefined;
+    let player = chip.body.querySelector<HTMLMediaElement>(".pmfa-chip-player");
+    if (playerUrl) {
+      const tag = attachment.contentType.toLowerCase().startsWith("audio/")
+        ? "audio"
+        : "video";
+      if (player && player.tagName.toLowerCase() !== tag) {
+        player.remove();
+        player = null;
+      }
+      if (!player) {
+        player = document.createElement(tag);
+        player.className = "pmfa-chip-player";
+        player.controls = true;
+        player.preload = "none";
+        player.setAttribute("aria-label", attachment.name);
+        chip.body.insertBefore(player, chip.status);
+      }
+      if (player.getAttribute("src") !== playerUrl) player.src = playerUrl;
+    } else player?.remove();
     const percent = String(Math.round(attachment.progress * 100));
     if (attachment.status === "uploading") {
       chip.progress.setAttribute("aria-valuenow", percent);
@@ -1658,12 +2215,31 @@ class ComposerView {
       chip.status.className = "pmfa-chip-status";
       setText(chip.status, formatFileSize(attachment.size, host.localeCode()));
     }
+    let quality = chip.body.querySelector<HTMLButtonElement>(".pmfa-quality");
+    if (attachment.quality !== undefined && attachment.status !== "failed") {
+      if (!quality) {
+        quality = document.createElement("button");
+        quality.type = "button";
+        quality.className = "pmfa-quality";
+        quality.textContent = host.text("chat.hd");
+        quality.title = host.text("composer.hdQuality");
+        quality.setAttribute("aria-label", host.text("composer.hdQuality"));
+        chip.body.append(quality);
+      }
+      const hd = attachment.quality === "hd";
+      quality.setAttribute("aria-pressed", String(hd));
+      quality.onclick = () =>
+        this.options
+          .controller()
+          ?.setAttachmentQuality(attachment.id, hd ? "standard" : "hd");
+    } else quality?.remove();
     return chip.node;
   }
 }
 
 /** Attributes both composing elements read. */
 const COMPOSER_ATTRIBUTES = [
+  "attachment-kinds",
   "attachments",
   "accept",
   "multiple",
@@ -1678,6 +2254,16 @@ const COMPOSER_ATTRIBUTES = [
 
 /** Shared plumbing that hands the protected helpers to the views. */
 abstract class ChatElement<T extends object> extends PolymorfaElement<T> {
+  #messageFilter: ((message: ConversationMessage) => boolean) | undefined;
+  get messageFilter(): ((message: ConversationMessage) => boolean) | undefined {
+    return this.#messageFilter;
+  }
+  set messageFilter(
+    value: ((message: ConversationMessage) => boolean) | undefined,
+  ) {
+    this.#messageFilter = value;
+    this.render();
+  }
   #host: ViewHost | undefined;
   #hostGeneration = -1;
   /** @internal Hands the protected helpers to the shared views. */
@@ -1689,6 +2275,7 @@ abstract class ChatElement<T extends object> extends PolymorfaElement<T> {
         localeCode: () => this.locale().code,
         rootClass: (names) => this.rootClass(names),
         decorate: (node, slot) => this.decorate(node, slot),
+        messageFilter: () => this.messageFilter,
       };
     }
     return this.#host;
@@ -1721,10 +2308,16 @@ export class PolymorfaMessageListElement extends ChatElement<ConversationSnapsho
     if (this.isConnected) this.render();
   }
 
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.#view?.dispose();
+  }
+
   protected renderContent(
     snapshot: ConversationSnapshot | undefined,
   ): readonly Node[] {
     if (this.#view === undefined || this.stale(this.#viewGeneration)) {
+      this.#view?.dispose();
       this.#viewGeneration = this.generation;
       this.#view = new MessageListView(
         this.exposeHost(),
@@ -1869,6 +2462,15 @@ function composerOptions(
 ): ComposerOptions {
   return {
     ...base,
+    attachmentKinds: () => [
+      ...new Set(
+        (node.getAttribute("attachment-kinds") ?? "")
+          .split(/\s+/)
+          .filter((kind): kind is AttachmentKind =>
+            Object.hasOwn(ATTACHMENT_KINDS, kind),
+          ),
+      ),
+    ],
     accept: () => node.getAttribute("accept") ?? undefined,
     multiple: () => multipleAttribute(node),
     emoji: () => flagAttribute(node, "emoji", true),
@@ -1909,6 +2511,9 @@ interface DrawerParts {
 }
 
 export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot> {
+  protected get isInline(): boolean {
+    return false;
+  }
   static readonly observedAttributes = [
     "heading",
     ...COMPOSER_ATTRIBUTES,
@@ -1937,6 +2542,7 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
   #titleId = `pmfa-drawer-title-${Math.random().toString(36).slice(2)}`;
   #onKey = (event: KeyboardEvent) => {
     if (
+      this.isInline ||
       !this.#open ||
       event.key !== "Escape" ||
       event.defaultPrevented ||
@@ -2007,6 +2613,7 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
     this.#composerUnsubscribe?.();
     this.#composerUnsubscribe = undefined;
     this.removeEventListener("keydown", this.#onKey);
+    this.#parts?.list.dispose();
     this.#composerView?.dispose();
   }
 
@@ -2047,10 +2654,11 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
   #partsFor(): DrawerParts {
     if (this.#parts !== undefined && !this.stale(this.#parts.generation))
       return this.#parts;
+    this.#parts?.list.dispose();
     const host = this.exposeHost();
     const panel = this.decorate(element("aside", "panel drawer"), "drawer");
-    panel.setAttribute("role", "dialog");
-    panel.setAttribute("aria-modal", "false");
+    panel.setAttribute("role", this.isInline ? "region" : "dialog");
+    if (!this.isInline) panel.setAttribute("aria-modal", "false");
     panel.setAttribute("aria-labelledby", this.#titleId);
     panel.tabIndex = -1;
     const header = this.decorate(element("header", "header"), "drawerHeader");
@@ -2065,7 +2673,8 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
       "drawerClose",
     );
     close.removeAttribute("title");
-    header.append(heading, close);
+    header.append(heading);
+    if (!this.isInline) header.append(close);
     const list = new MessageListView(
       host,
       () => {
@@ -2110,6 +2719,38 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
     const slot = document.createElement("slot");
     footer.append(slot);
     panel.append(header, list.scroller, footer);
+    // Files dropped anywhere on the chat go through the composer's own path.
+    const overlay = span("pmfa-window-drop");
+    overlay.setAttribute("aria-hidden", "true");
+    overlay.append(icon("attach"), span("", this.text("composer.dropHint")));
+    const accepts = (event: DragEvent) =>
+      this.#composerView?.acceptsFiles() === true &&
+      [...(event.dataTransfer?.types ?? [])].includes("Files");
+    const dropping = (on: boolean) => {
+      panel.toggleAttribute("data-dropping", on);
+      if (on && !overlay.isConnected) panel.prepend(overlay);
+      if (!on) overlay.remove();
+    };
+    panel.addEventListener("dragenter", (event) => {
+      if (!accepts(event)) return;
+      event.preventDefault();
+      dropping(true);
+    });
+    panel.addEventListener("dragover", (event) => {
+      if (!accepts(event)) return;
+      event.preventDefault();
+      if (event.dataTransfer) event.dataTransfer.dropEffect = "copy";
+    });
+    panel.addEventListener("dragleave", (event) => {
+      if (!panel.contains(event.relatedTarget as Node | null)) dropping(false);
+    });
+    panel.addEventListener("drop", (event) => {
+      dropping(false);
+      // The composer handles drops on itself and marks them handled.
+      if (event.defaultPrevented || !accepts(event)) return;
+      event.preventDefault();
+      this.#composerView?.addFiles(event.dataTransfer?.files);
+    });
     this.#parts = {
       generation: this.generation,
       panel,
@@ -2127,6 +2768,7 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
     snapshot: ConversationSnapshot | undefined,
   ): readonly Node[] {
     if (!this.#open) {
+      this.#parts?.list.dispose();
       // A closed drawer must not keep a recording (and its microphone) alive.
       this.#composerView?.form.remove();
       this.#composerView?.dispose();
@@ -2135,7 +2777,9 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
     }
     const parts = this.#partsFor();
     const { panel } = parts;
-    const className = this.rootClass("pmfa-drawer");
+    const className = this.rootClass(
+      this.isInline ? "pmfa-drawer pmfa-chat-window" : "pmfa-drawer",
+    );
     const extra = this.appearance().elements.drawer?.className;
     const full = extra === undefined ? className : `${className} ${extra}`;
     if (panel.className !== full) panel.className = full;
@@ -2192,6 +2836,13 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
   }
 }
 
+/** Inline variant of the same chat/composer functionality, with no close action. */
+export class PolymorfaChatWindowElement extends PolymorfaChatDrawerElement {
+  protected override get isInline(): boolean {
+    return true;
+  }
+}
+
 export function defineChatElements(
   registry: CustomElementRegistry = customElements,
 ): void {
@@ -2199,6 +2850,8 @@ export function defineChatElements(
     registry.define("pmfa-message-list", PolymorfaMessageListElement);
   if (registry.get("pmfa-compose-box") === undefined)
     registry.define("pmfa-compose-box", PolymorfaComposeBoxElement);
+  if (registry.get("pmfa-chat-window") === undefined)
+    registry.define("pmfa-chat-window", PolymorfaChatWindowElement);
   if (registry.get("pmfa-chat-drawer") === undefined)
     registry.define("pmfa-chat-drawer", PolymorfaChatDrawerElement);
 }

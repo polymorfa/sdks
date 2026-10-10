@@ -107,7 +107,7 @@ images) so the message list can show it.
   scrolls to and focuses it. Failed outbound messages offer Retry, which
   calls `controller.retry(clientId)`. Pass `onReply` to offer Reply on every
   message.
-- **Composer.** `ComposeBox` attaches files from the paperclip button, a
+- **Composer.** `ComposeBox` attaches files from the attachment button, a
   paste, or a drop onto the composer. Pending files show upload progress,
   a failed state, and a remove button. A rejected file, such as one over the
   size limit, shows as the composer error. When a reply target is set, a
@@ -315,3 +315,22 @@ The component does not discover Numbers or mint credentials. Give each client
 its own token provider, authorized for that Number's session. Selection must
 never replace the token or session on an existing client. The session option
 does not override the session bound to the client token.
+
+## Controlled inbox rows
+
+`ConversationListView` renders host-supplied `InboxConversation` rows with
+search, unread/draft/archive filters, observed receipts, pinned ordering and
+keyboard navigation. Supply both `actions` and `onAction` to show authorized
+WhatsApp mutations; errors keep the observed state. There is no default mutation
+transport. [Read the list adapter contract](../../docs/chat-components.md#controlled-conversation-list).
+
+## Inline chat workspace
+
+See [chat components](../../docs/chat-components.md) for the inline `ChatWindow` /
+`pmfa-chat-window`, observed receipts, media, presentation filters and failure-preserving
+composer actions. History and sends remain owned by your authorized data source.
+
+The composer offers a named Photos, Videos, Audio and Documents picker, plus
+voice notes and ready-media previews. React uses `attachmentKinds`; Web Components
+use `attachment-kinds`. Supply authorized upload/send adapters and disable media
+when uploading is unavailable. See [the chat guide](../../docs/chat-components.md#compose-media).

@@ -1,0 +1,158 @@
+[
+  {
+    "file": "chats-desktop-2x.png",
+    "capturedAt": "2026-10-08T14:22:45.736Z",
+    "route": "chats",
+    "source": "1666604a71e2815fc94bc8379b43ac6788aa490c",
+    "sdkSource": "e96217ad0653aedfffbe0cb72173f708c121b449",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  },
+  {
+    "file": "chats-mobile-2x.png",
+    "capturedAt": "2026-10-08T14:22:48.251Z",
+    "route": "chats",
+    "source": "1666604a71e2815fc94bc8379b43ac6788aa490c",
+    "sdkSource": "e96217ad0653aedfffbe0cb72173f708c121b449",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  },
+  {
+    "file": "chats-dark-desktop-2x.png",
+    "capturedAt": "2026-10-08T14:22:48.031Z",
+    "route": "chats",
+    "source": "1666604a71e2815fc94bc8379b43ac6788aa490c",
+    "sdkSource": "e96217ad0653aedfffbe0cb72173f708c121b449",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  },
+  {
+    "file": "chats-failed-send-2x.png",
+    "capturedAt": "2026-10-08T14:22:48.814Z",
+    "route": "chats",
+    "source": "1666604a71e2815fc94bc8379b43ac6788aa490c",
+    "sdkSource": "e96217ad0653aedfffbe0cb72173f708c121b449",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  },
+  {
+    "file": "chats-media-picker-desktop-2x.png",
+    "capturedAt": "2026-10-08T14:22:49.723Z",
+    "route": "chats",
+    "source": "1666604a71e2815fc94bc8379b43ac6788aa490c",
+    "sdkSource": "e96217ad0653aedfffbe0cb72173f708c121b449",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  },
+  {
+    "file": "chats-media-picker-mobile-2x.png",
+    "capturedAt": "2026-10-08T14:22:49.977Z",
+    "route": "chats",
+    "source": "1666604a71e2815fc94bc8379b43ac6788aa490c",
+    "sdkSource": "e96217ad0653aedfffbe0cb72173f708c121b449",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  },
+  {
+    "file": "chats-media-draft-desktop-2x.png",
+    "capturedAt": "2026-10-08T14:22:50.267Z",
+    "route": "chats",
+    "source": "1666604a71e2815fc94bc8379b43ac6788aa490c",
+    "sdkSource": "e96217ad0653aedfffbe0cb72173f708c121b449",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  },
+  {
+    "file": "chats-inbox-mobile-2x.png",
+    "capturedAt": "2026-10-08T14:22:45.989Z",
+    "route": "chats",
+    "source": "1666604a71e2815fc94bc8379b43ac6788aa490c",
+    "sdkSource": "e96217ad0653aedfffbe0cb72173f708c121b449",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  },
+  {
+    "file": "chats-actions-desktop-2x.png",
+    "capturedAt": "2026-10-08T14:22:46.295Z",
+    "route": "chats",
+    "source": "1666604a71e2815fc94bc8379b43ac6788aa490c",
+    "sdkSource": "e96217ad0653aedfffbe0cb72173f708c121b449",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  },
+  {
+    "file": "chats-action-failed-desktop-2x.png",
+    "capturedAt": "2026-10-08T14:22:46.632Z",
+    "route": "chats",
+    "source": "1666604a71e2815fc94bc8379b43ac6788aa490c",
+    "sdkSource": "e96217ad0653aedfffbe0cb72173f708c121b449",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  },
+  {
+    "file": "chats-reply-desktop-2x.png",
+    "capturedAt": "2026-10-08T14:22:46.987Z",
+    "route": "chats",
+    "source": "1666604a71e2815fc94bc8379b43ac6788aa490c",
+    "sdkSource": "e96217ad0653aedfffbe0cb72173f708c121b449",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  },
+  {
+    "file": "chats-drafts-desktop-2x.png",
+    "capturedAt": "2026-10-08T14:22:47.327Z",
+    "route": "chats",
+    "source": "1666604a71e2815fc94bc8379b43ac6788aa490c",
+    "sdkSource": "e96217ad0653aedfffbe0cb72173f708c121b449",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "scale": 2,
+    "fixture": "Local synthetic people and messages. Candidate SDK build. No regional access or WhatsApp sends."
+  }
+]

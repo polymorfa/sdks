@@ -18,12 +18,14 @@ export {
   type StoredConversation,
   type StoredEvent,
   type StoredLabel,
+  type StoredLinkPreview,
   type StoredMessage,
   type StoredMessageStatus,
   type StoredPresence,
   type StoredRow,
   type StoredSession,
   type StoredTemplate,
+  type StoredThumbnail,
 } from "./types.js";
 export {
   DEFAULT_RETENTION,

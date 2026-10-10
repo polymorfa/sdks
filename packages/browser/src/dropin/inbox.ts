@@ -19,10 +19,18 @@ export interface InboxConversation {
   readonly name?: string;
   readonly phoneNumber?: string;
   readonly avatarUrl?: string;
+  /** Observed organization from the host source. UI actions must await that source. */
+  readonly pinned?: boolean;
+  readonly archived?: boolean;
+  readonly markedUnread?: boolean;
+  /** Owning Number or another short scope label. */
+  readonly subtitle?: string;
   readonly lastMessage?: {
     readonly text: string;
     readonly createdAt: number;
     readonly direction: "inbound" | "outbound";
+    readonly status?: ConversationMessage["status"];
+    readonly receipt?: ConversationMessage["receipt"];
   };
   /** Epoch milliseconds of the newest activity. */
   readonly lastActivity: number;
@@ -422,10 +430,10 @@ export function createHandlerInboxSource(
               : { quotedMessage: { id: outgoing.replyTo } }),
           } as Parameters<typeof messaging.messages.send>[0];
           const request = () =>
-            messaging.messages.send(
-              body,
-              signal === undefined ? {} : { signal },
-            );
+            messaging.messages.send(body, {
+              ...(signal === undefined ? {} : { signal }),
+              idempotencyKey: outgoing.clientId,
+            });
           let response;
           try {
             response = await request();
