@@ -1,8 +1,8 @@
 {
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "205369ff8f5ecb71dd085a190d8ec80aa2b9e483",
+  "sourceCommit": "45c810c100ffa8379d12260184ee3b8fdfe9d84e",
   "sourcePath": "apps/api/docs/openapi.json",
-  "sourceSha256": "dcee7d1cba358d9127d87ff0d9eaf0496adc36a77dd4ef0088e5feb1e9c9e47a",
+  "sourceSha256": "53b2c76e344052152b3fc627a478adcd79130b7876d528aac8056b13e555b127",
   "published": false,
   "scope": "Group capability read and canonical session capability webhook only. Other SDK contracts retain their recorded source revisions.",
   "openapi": "3.0.3",
