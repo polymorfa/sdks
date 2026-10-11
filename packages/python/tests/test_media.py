@@ -1,0 +1,67 @@
+import hashlib
+import json
+from pathlib import Path
+import hmac
+from dataclasses import replace
+
+import pytest
+from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
+from polymorfa import ConfigurationError, Credential, MediaIntegrityError
+from polymorfa.media import (
+    MediaDescriptor,
+    decrypt_whatsapp_media,
+    derive_whatsapp_media_keys,
+    decode_whatsapp_media,
+)
+
+
+@pytest.mark.parametrize("prefix", ["pt", "ct", "ls", "at", "wst", "sd"])
+def test_reject_wrong_principal_even_at_organization_length(prefix):
+    key = f"pmfa_{prefix}_" + "a" * (72 - len(prefix) - 1)
+    with pytest.raises(ConfigurationError):
+        Credential("organization_api_key", key)
+
+
+def test_media_integrity_before_release():
+    key, plaintext = bytes(range(32)), b"A verified private attachment"
+    iv, cipher_key, mac_key = derive_whatsapp_media_keys(key, "image")
+    padder = padding.PKCS7(128).padder()
+    padded = padder.update(plaintext) + padder.finalize()
+    cipher = Cipher(algorithms.AES(cipher_key), modes.CBC(iv)).encryptor()
+    ciphertext = cipher.update(padded) + cipher.finalize()
+    encrypted = ciphertext + hmac.new(mac_key, iv + ciphertext, hashlib.sha256).digest()[:10]
+    descriptor = MediaDescriptor(
+        "image",
+        key,
+        file_sha256=hashlib.sha256(plaintext).digest(),
+        file_enc_sha256=hashlib.sha256(encrypted).digest(),
+        file_length=len(plaintext),
+    )
+    assert decrypt_whatsapp_media(encrypted, descriptor) == plaintext
+    with pytest.raises(MediaIntegrityError) as caught:
+        decrypt_whatsapp_media(encrypted[:-1] + bytes([encrypted[-1] ^ 1]), descriptor)
+    assert caught.value.code == "media_enc_hash_mismatch"
+    with pytest.raises(MediaIntegrityError) as caught:
+        decrypt_whatsapp_media(encrypted, replace(descriptor, file_sha256=b"x" * 32))
+    assert caught.value.code == "media_hash_mismatch"
+    with pytest.raises(MediaIntegrityError) as caught:
+        decrypt_whatsapp_media(encrypted, descriptor, max_bytes=1)
+    assert caught.value.code == "media_too_large"
+
+
+@pytest.mark.parametrize(
+    "vector",
+    json.loads(
+        (Path(__file__).resolve().parents[3] / "contracts/fixtures/whatsapp-media.json").read_text()
+    )["fixtures"],
+)
+def test_independent_shipped_media_vectors(vector):
+    descriptor = decode_whatsapp_media(vector["descriptor"], vector["kind"])
+    assert descriptor.media_kind == vector["kind"]
+    iv, key, mac = derive_whatsapp_media_keys(descriptor.media_key, descriptor.media_kind)
+    assert (iv.hex(), key.hex(), mac.hex()) == (vector["iv"], vector["cipherKey"], vector["macKey"])
+    assert decrypt_whatsapp_media(bytes.fromhex(vector["encrypted"]), descriptor) == bytes.fromhex(
+        vector["plaintext"]
+    )
