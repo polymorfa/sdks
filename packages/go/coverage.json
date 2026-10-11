@@ -1934,9 +1934,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/optouts/{phone}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.OptOuts.Delete",
+      "testFile": "security_optouts_test.go"
     },
     {
       "family": "platform",
@@ -2302,25 +2302,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/audit",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.AuditLogs.List",
+      "testFile": "security_optouts_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bans",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SessionBans.List",
+      "testFile": "security_optouts_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bans/active",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SessionBans.ListActive",
+      "testFile": "security_optouts_test.go"
     },
     {
       "family": "platform",
@@ -2430,57 +2430,57 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/billing",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.Retrieve",
+      "testFile": "billing_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/billing/controls/{scope}/{resourceId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.GetResourceControls",
+      "testFile": "billing_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/billing/limits",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.GetLimits",
+      "testFile": "billing_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/billing/pricing",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.ListPricing",
+      "testFile": "billing_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/billing/priorities",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.GetPriorities",
+      "testFile": "billing_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/billing/transactions",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.ListTransactions",
+      "testFile": "billing_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/billing/usage",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.Usage",
+      "testFile": "billing_test.go"
     },
     {
       "family": "platform",
@@ -2758,9 +2758,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/incidents",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SecurityIncidents.List",
+      "testFile": "security_optouts_test.go"
     },
     {
       "family": "platform",
@@ -2814,17 +2814,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/optouts",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.OptOuts.List",
+      "testFile": "security_optouts_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/optouts/settings",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.OptOuts.GetSettings",
+      "testFile": "security_optouts_test.go"
     },
     {
       "family": "platform",
@@ -3901,9 +3901,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/incidents/{incidentId}/acknowledge",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SecurityIncidents.Acknowledge",
+      "testFile": "security_optouts_test.go"
     },
     {
       "family": "platform",
@@ -3925,17 +3925,17 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/optouts",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.OptOuts.Create",
+      "testFile": "security_optouts_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/optouts/batch",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.OptOuts.CreateBatch",
+      "testFile": "security_optouts_test.go"
     },
     {
       "family": "platform",
@@ -4307,33 +4307,33 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/billing/controls/{scope}/{resourceId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.SetResourceControls",
+      "testFile": "billing_test.go"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/billing/limits/{scope}/{resourceId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.SetLimit",
+      "testFile": "billing_test.go"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/billing/priorities",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.ReorderPriorities",
+      "testFile": "billing_test.go"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/billing/priorities/{scope}/{resourceId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.SetPriority",
+      "testFile": "billing_test.go"
     },
     {
       "family": "platform",
@@ -4371,9 +4371,9 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/optouts/settings",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.OptOuts.UpdateSettings",
+      "testFile": "security_optouts_test.go"
     },
     {
       "family": "platform",
