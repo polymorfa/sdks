@@ -1886,17 +1886,17 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/flows/{flowId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.Delete",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/flows/{flowId}/endpoint",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.DeleteEndpoint",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
@@ -2646,49 +2646,49 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/flow-encryption-keys",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.EncryptionKey",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.List",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.Retrieve",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}/endpoint",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.Endpoint",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}/endpoint/receipts",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.EndpointReceipts",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}/receipts",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.Receipts",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
@@ -3285,9 +3285,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/flows/{flowId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.Update",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
@@ -3813,57 +3813,57 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/flow-encryption-keys/rotate",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.RotateEncryptionKey",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.Create",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/deprecate",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.Deprecate",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/discard",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.Discard",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/publish",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.Publish",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/sync",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.Sync",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/upload",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.Upload",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",
@@ -4355,9 +4355,9 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/flows/{flowId}/endpoint",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.SetEndpoint",
+      "testFile": "flows_test.go"
     },
     {
       "family": "platform",

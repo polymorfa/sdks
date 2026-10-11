@@ -511,16 +511,18 @@ func request[T any](ctx context.Context, t *transport, method, path string, q ur
 }
 func unwrapped[T any](ctx context.Context, t *transport, method, path string, q url.Values, body any, o RequestOptions) (Response[T], error) {
 	r, err := request[struct {
-		Data *T `json:"data"`
+		Data json.RawMessage `json:"data"`
 	}](ctx, t, method, path, q, body, o)
 	result := Response[T]{Metadata: r.Metadata}
 	if err != nil {
 		return result, err
 	}
-	if r.Data.Data == nil {
+	if len(r.Data.Data) == 0 {
 		return result, &Error{Kind: ServerError, Code: "invalid_response", Message: "The Polymorfa API returned an invalid data envelope.", Metadata: r.Metadata}
 	}
-	result.Data = *r.Data.Data
+	if err := json.Unmarshal(r.Data.Data, &result.Data); err != nil {
+		return result, &Error{Kind: ServerError, Code: "invalid_response", Message: "The API returned invalid resource data.", Metadata: r.Metadata}
+	}
 	return result, nil
 }
 
