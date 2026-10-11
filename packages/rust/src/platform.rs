@@ -18,6 +18,27 @@ impl OrganizationClient {
             http: HttpTransport::new(credential, options)?,
         })
     }
+    pub fn organizations(&self) -> crate::organization::Organizations<'_> {
+        crate::organization::Organizations(&self.http)
+    }
+    pub fn members(&self) -> crate::organization::Members<'_> {
+        crate::organization::Members(&self.http)
+    }
+    pub fn api_keys(&self) -> crate::organization::ApiKeys<'_> {
+        crate::organization::ApiKeys(&self.http)
+    }
+    pub fn project_tokens(&self) -> crate::organization::ProjectTokens<'_> {
+        crate::organization::ProjectTokens(&self.http)
+    }
+    pub fn audit_logs(&self) -> crate::organization::AuditLogs<'_> {
+        crate::organization::AuditLogs(&self.http)
+    }
+    pub fn security_incidents(&self) -> crate::organization::SecurityIncidents<'_> {
+        crate::organization::SecurityIncidents(&self.http)
+    }
+    pub fn billing(&self) -> crate::billing::Billing<'_> {
+        crate::billing::Billing(&self.http)
+    }
     pub fn project(&self, project_id: impl Into<String>) -> Result<ProjectClient> {
         ProjectClient::from_transport(self.http.clone(), project_id.into())
     }

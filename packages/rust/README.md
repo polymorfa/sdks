@@ -58,7 +58,11 @@ sessions, all merged message content variants, hosted chat/message history with 
 media streaming and service windows, Linked Devices groups and Channels, QuickLinks, webhooks, contacts, profile, privacy,
 presence, identities, labels, quick replies, core projects and project safety/warmup/insurance/health policies, events, media and
 VoIP controls, Official API credential health/pricing, Hybrid Link controls and
-client-token grants/rules, resolved session configuration and sparse revision
+client-token grants/rules, Official API group management and template catalogs,
+project draft templates, catalog/product/marketing and Flow encryption helpers,
+embedded signup continuation and simulated Test phone/events, resolved observation
+policies, organization identity/credential metadata/audit/security reads and
+revision-guarded billing controls, resolved session configuration and sparse revision
 patches, organization Number batches/tier quotes/safety/capabilities, owner-bound
 QuickLink/default configuration and team call retention, and Platform webhook/delivery/operation resources in both owner scopes.
 All pinned known webhook event types expose typed payloads, with provider

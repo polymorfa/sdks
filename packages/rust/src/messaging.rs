@@ -15,6 +15,33 @@ impl MessagingClient {
             http: HttpTransport::new(credential, options)?,
         })
     }
+    pub fn cloud_catalogs(&self) -> crate::cloud_graph::CloudCatalogs<'_> {
+        crate::cloud_graph::CloudCatalogs(&self.http)
+    }
+    pub fn cloud_marketing(&self) -> crate::cloud_graph::CloudMarketing<'_> {
+        crate::cloud_graph::CloudMarketing(&self.http)
+    }
+    pub fn flow_encryption(&self) -> crate::cloud_graph::FlowEncryption<'_> {
+        crate::cloud_graph::FlowEncryption(&self.http)
+    }
+    pub fn official_groups(&self) -> crate::official_groups::OfficialGroups<'_> {
+        crate::official_groups::OfficialGroups(&self.http)
+    }
+    pub fn templates(&self) -> crate::templates::Templates<'_> {
+        crate::templates::Templates(&self.http)
+    }
+    pub fn cloud_templates(&self) -> crate::templates::CloudTemplates<'_> {
+        crate::templates::CloudTemplates(&self.http)
+    }
+    pub fn cloud_onboarding(&self) -> crate::onboarding::CloudOnboarding<'_> {
+        crate::onboarding::CloudOnboarding(&self.http)
+    }
+    pub fn testing(&self) -> crate::onboarding::Testing<'_> {
+        crate::onboarding::Testing(&self.http)
+    }
+    pub fn observation_policies(&self) -> crate::observation::ObservationPolicies<'_> {
+        crate::observation::ObservationPolicies(&self.http)
+    }
     pub fn ban_safe(&self) -> crate::policies::MessagingBanSafe<'_> {
         crate::policies::MessagingBanSafe(&self.http)
     }
