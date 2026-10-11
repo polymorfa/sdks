@@ -20,7 +20,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -56,7 +56,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -92,7 +92,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -127,9 +127,8 @@
         "method": "MessagingClient.quickReplies.delete"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.QuickReplies.Delete"
       },
       "python": {
         "status": "missing",
@@ -164,7 +163,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -200,7 +199,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -236,7 +235,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -271,9 +270,8 @@
         "method": "MessagingClient.labels.delete"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Labels.Delete"
       },
       "python": {
         "status": "missing",
@@ -308,7 +306,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -344,7 +342,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -380,7 +378,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -416,7 +414,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -451,9 +449,8 @@
         "method": "MessagingClient.quickLinks.cancel"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.QuickLinks.Cancel"
       },
       "python": {
         "status": "missing",
@@ -487,9 +484,8 @@
         "method": "MessagingClient.voip.end"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.End"
       },
       "python": {
         "status": "missing",
@@ -524,7 +520,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -560,7 +556,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -596,7 +592,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -632,7 +628,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -668,7 +664,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -704,7 +700,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -740,7 +736,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -776,7 +772,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -812,7 +808,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -848,7 +844,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -883,9 +879,8 @@
         "method": "MessagingClient.quickReplies.list"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.QuickReplies.List"
       },
       "python": {
         "status": "missing",
@@ -919,9 +914,8 @@
         "method": "MessagingClient.voip.retrieveCallPermission"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.RetrieveCallPermission"
       },
       "python": {
         "status": "missing",
@@ -956,7 +950,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -992,7 +986,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1028,7 +1022,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1064,7 +1058,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1100,7 +1094,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1136,7 +1130,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1172,7 +1166,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1208,7 +1202,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1244,7 +1238,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1280,7 +1274,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1316,7 +1310,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1352,7 +1346,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1388,7 +1382,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1424,7 +1418,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1460,7 +1454,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1496,7 +1490,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1532,7 +1526,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1568,7 +1562,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1604,7 +1598,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1640,7 +1634,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1676,7 +1670,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1712,7 +1706,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1748,7 +1742,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1784,7 +1778,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1819,9 +1813,8 @@
         "method": "MessagingClient.hybridLink.state"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.HybridLink.State"
       },
       "python": {
         "status": "missing",
@@ -1856,7 +1849,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1891,9 +1884,8 @@
         "method": "MessagingClient.labels.list"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Labels.List"
       },
       "python": {
         "status": "missing",
@@ -1927,9 +1919,8 @@
         "method": "MessagingClient.labels.listForChat"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Labels.ListForChat"
       },
       "python": {
         "status": "missing",
@@ -1964,7 +1955,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -1999,9 +1990,8 @@
         "method": "MessagingClient.observationPolicies.retrieveForSession"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.ObservationPolicies.RetrieveForSession"
       },
       "python": {
         "status": "missing",
@@ -2036,7 +2026,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2072,7 +2062,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2108,7 +2098,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2144,7 +2134,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2179,9 +2169,8 @@
         "method": "MessagingClient.messages.operationStatus"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Messages.OperationStatus"
       },
       "python": {
         "status": "missing",
@@ -2215,9 +2204,8 @@
         "method": "MessagingClient.sessions.qr"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Sessions.QR"
       },
       "python": {
         "status": "missing",
@@ -2252,7 +2240,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2288,7 +2276,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2324,7 +2312,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2360,7 +2348,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2396,7 +2384,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2432,7 +2420,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2468,7 +2456,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2504,7 +2492,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2540,7 +2528,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2576,7 +2564,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2612,7 +2600,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2648,7 +2636,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2683,9 +2671,8 @@
         "method": "MessagingClient.media.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Media.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -2720,7 +2707,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2756,7 +2743,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2791,9 +2778,8 @@
         "method": "MessagingClient.observationPolicies.retrieveForProject"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.ObservationPolicies.RetrieveForProject"
       },
       "python": {
         "status": "missing",
@@ -2828,7 +2814,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2864,7 +2850,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2900,7 +2886,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2936,7 +2922,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -2972,7 +2958,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3008,7 +2994,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3044,7 +3030,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3080,7 +3066,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3115,9 +3101,8 @@
         "method": "MessagingClient.quickLinks.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.QuickLinks.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -3151,9 +3136,8 @@
         "method": "MessagingClient.quickLinks.availability"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.QuickLinks.Availability"
       },
       "python": {
         "status": "missing",
@@ -3187,9 +3171,8 @@
         "method": "MessagingClient.hybridLink.getPolicy"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.HybridLink.GetPolicy"
       },
       "python": {
         "status": "missing",
@@ -3224,7 +3207,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3291,7 +3274,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3327,7 +3310,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3363,7 +3346,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3400,8 +3383,7 @@
       },
       "go": {
         "status": "excluded",
-        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
-        "milestone": "not-server-sdk"
+        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs."
       },
       "python": {
         "status": "excluded",
@@ -3437,8 +3419,7 @@
       },
       "go": {
         "status": "excluded",
-        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
-        "milestone": "not-server-sdk"
+        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs."
       },
       "python": {
         "status": "excluded",
@@ -3473,7 +3454,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3509,7 +3490,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3545,7 +3526,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3581,7 +3562,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3617,7 +3598,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3653,7 +3634,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3720,7 +3701,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3787,7 +3768,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3823,7 +3804,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3859,7 +3840,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3895,7 +3876,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3931,7 +3912,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -3967,7 +3948,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4003,7 +3984,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4038,9 +4019,8 @@
         "method": "MessagingClient.quickReplies.create"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.QuickReplies.Create"
       },
       "python": {
         "status": "missing",
@@ -4074,9 +4054,8 @@
         "method": "MessagingClient.calls.reject"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.Reject"
       },
       "python": {
         "status": "missing",
@@ -4111,7 +4090,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4147,7 +4126,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4183,7 +4162,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4219,7 +4198,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4255,7 +4234,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4291,7 +4270,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4327,7 +4306,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4363,7 +4342,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4399,7 +4378,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4435,7 +4414,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4471,7 +4450,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4507,7 +4486,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4543,7 +4522,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4579,7 +4558,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4615,7 +4594,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4651,7 +4630,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4687,7 +4666,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4723,7 +4702,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4759,7 +4738,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4795,7 +4774,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4831,7 +4810,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -4866,9 +4845,8 @@
         "method": "MessagingClient.labels.create"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Labels.Create"
       },
       "python": {
         "status": "missing",
@@ -4902,9 +4880,8 @@
         "method": "MessagingClient.messages.react"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Messages.React"
       },
       "python": {
         "status": "missing",
@@ -4938,9 +4915,8 @@
         "method": "MessagingClient.messages.markSeen"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Messages.MarkSeen"
       },
       "python": {
         "status": "missing",
@@ -4974,9 +4950,8 @@
         "method": "MessagingClient.messages.send"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Messages.Send"
       },
       "python": {
         "status": "missing",
@@ -5010,9 +4985,8 @@
         "method": "MessagingClient.messages.star"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Messages.Star"
       },
       "python": {
         "status": "missing",
@@ -5046,9 +5020,8 @@
         "method": "MessagingClient.messages.setTyping"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Messages.SetTyping"
       },
       "python": {
         "status": "missing",
@@ -5083,7 +5056,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5119,7 +5092,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5155,7 +5128,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5191,7 +5164,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5227,7 +5200,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5263,7 +5236,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5298,9 +5271,8 @@
         "method": "MessagingClient.sessions.requestPairingCode"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Sessions.RequestPairingCode"
       },
       "python": {
         "status": "missing",
@@ -5335,7 +5307,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5371,7 +5343,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5407,7 +5379,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5443,7 +5415,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5509,9 +5481,8 @@
         "method": "MessagingClient.media.persist"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Media.Persist"
       },
       "python": {
         "status": "missing",
@@ -5546,7 +5517,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5582,7 +5553,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5618,7 +5589,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5654,7 +5625,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5690,7 +5661,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5757,7 +5728,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5793,7 +5764,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5829,7 +5800,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5865,7 +5836,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5901,7 +5872,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -5936,9 +5907,8 @@
         "method": "MessagingClient.quickLinks.create"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.QuickLinks.Create"
       },
       "python": {
         "status": "missing",
@@ -5973,7 +5943,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -6009,7 +5979,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -6044,9 +6014,8 @@
         "method": "MessagingClient.voip.createCallLink"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.CreateCallLink"
       },
       "python": {
         "status": "missing",
@@ -6080,9 +6049,8 @@
         "method": "MessagingClient.voip.previewCallLink"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.PreviewCallLink"
       },
       "python": {
         "status": "missing",
@@ -6116,9 +6084,8 @@
         "method": "MessagingClient.voip.place"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.Place"
       },
       "python": {
         "status": "missing",
@@ -6152,9 +6119,8 @@
         "method": "MessagingClient.voip.accept"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.Accept"
       },
       "python": {
         "status": "missing",
@@ -6219,9 +6185,8 @@
         "method": "MessagingClient.voip.setHandRaised"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.SetHandRaised"
       },
       "python": {
         "status": "missing",
@@ -6255,9 +6220,8 @@
         "method": "MessagingClient.voip.leave"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.Leave"
       },
       "python": {
         "status": "missing",
@@ -6322,9 +6286,8 @@
         "method": "MessagingClient.voip.addParticipant"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.AddParticipant"
       },
       "python": {
         "status": "missing",
@@ -6358,9 +6321,8 @@
         "method": "MessagingClient.voip.ringParticipant"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.RingParticipant"
       },
       "python": {
         "status": "missing",
@@ -6394,9 +6356,8 @@
         "method": "MessagingClient.voip.sendReaction"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.SendReaction"
       },
       "python": {
         "status": "missing",
@@ -6430,9 +6391,8 @@
         "method": "MessagingClient.voip.reject"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.Reject"
       },
       "python": {
         "status": "missing",
@@ -6497,9 +6457,8 @@
         "method": "MessagingClient.voip.report"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.Report"
       },
       "python": {
         "status": "missing",
@@ -6533,9 +6492,8 @@
         "method": "MessagingClient.voip.check"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.Check"
       },
       "python": {
         "status": "missing",
@@ -6570,7 +6528,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -6607,8 +6565,7 @@
       },
       "go": {
         "status": "excluded",
-        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
-        "milestone": "not-server-sdk"
+        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs."
       },
       "python": {
         "status": "excluded",
@@ -6675,8 +6632,7 @@
       },
       "go": {
         "status": "excluded",
-        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
-        "milestone": "not-server-sdk"
+        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs."
       },
       "python": {
         "status": "excluded",
@@ -6712,8 +6668,7 @@
       },
       "go": {
         "status": "excluded",
-        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
-        "milestone": "not-server-sdk"
+        "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs."
       },
       "python": {
         "status": "excluded",
@@ -6903,7 +6858,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -6939,7 +6894,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -6975,7 +6930,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7010,9 +6965,8 @@
         "method": "MessagingClient.quickReplies.replace"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.QuickReplies.Replace"
       },
       "python": {
         "status": "missing",
@@ -7047,7 +7001,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7083,7 +7037,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7119,7 +7073,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7155,7 +7109,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7191,7 +7145,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7227,7 +7181,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7263,7 +7217,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7299,7 +7253,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7335,7 +7289,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7370,9 +7324,8 @@
         "method": "MessagingClient.hybridLink.setPaused"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.HybridLink.SetPaused"
       },
       "python": {
         "status": "missing",
@@ -7406,9 +7359,8 @@
         "method": "MessagingClient.labels.update"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Labels.Update"
       },
       "python": {
         "status": "missing",
@@ -7442,9 +7394,8 @@
         "method": "MessagingClient.labels.replaceForChat"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Labels.ReplaceForChat"
       },
       "python": {
         "status": "missing",
@@ -7479,7 +7430,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7515,7 +7466,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7551,7 +7502,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7587,7 +7538,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7623,7 +7574,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7659,7 +7610,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7695,7 +7646,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7731,7 +7682,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7767,7 +7718,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7803,7 +7754,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -7838,9 +7789,8 @@
         "method": "MessagingClient.hybridLink.setPolicy"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.HybridLink.SetPolicy"
       },
       "python": {
         "status": "missing",
@@ -7875,7 +7825,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -8314,7 +8264,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -8350,7 +8300,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -8385,9 +8335,8 @@
         "method": "Client.callOptOuts.delete"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.CallOptOuts.Delete"
       },
       "python": {
         "status": "missing",
@@ -8422,7 +8371,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -8458,7 +8407,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -8494,7 +8443,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -8530,7 +8479,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -8566,7 +8515,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -8602,7 +8551,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -8637,9 +8586,8 @@
         "method": "Client.apiKeys.deactivate"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.APIKeys.Deactivate"
       },
       "python": {
         "status": "missing",
@@ -8674,7 +8622,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -8710,7 +8658,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -8745,9 +8693,8 @@
         "method": "Client.project(projectId).webhooks.delete"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Webhooks.Delete"
       },
       "python": {
         "status": "missing",
@@ -8781,9 +8728,8 @@
         "method": "MessagingClient.clientTokens.deleteRules"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.ClientTokens.DeleteRules"
       },
       "python": {
         "status": "missing",
@@ -8817,9 +8763,8 @@
         "method": "Client.sessions.delete"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Sessions.Delete"
       },
       "python": {
         "status": "missing",
@@ -8854,7 +8799,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -8891,8 +8836,7 @@
       },
       "go": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
-        "milestone": "credential-boundary"
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client."
       },
       "python": {
         "status": "excluded",
@@ -8927,7 +8871,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -8963,7 +8907,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -8998,9 +8942,8 @@
         "method": "Client.webhooks.delete"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Webhooks.Delete"
       },
       "python": {
         "status": "missing",
@@ -10244,7 +10187,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10280,7 +10223,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10316,7 +10259,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10352,7 +10295,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10388,7 +10331,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10424,7 +10367,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10460,7 +10403,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10496,7 +10439,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10532,7 +10475,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10568,7 +10511,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10604,7 +10547,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10640,7 +10583,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10676,7 +10619,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10712,7 +10655,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10748,7 +10691,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10784,7 +10727,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10820,7 +10763,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10856,7 +10799,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10892,7 +10835,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10928,7 +10871,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -10964,7 +10907,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11000,7 +10943,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11036,7 +10979,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11072,7 +11015,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11108,7 +11051,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11144,7 +11087,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11179,9 +11122,8 @@
         "method": "Client.callOptOuts.list"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.CallOptOuts.List"
       },
       "python": {
         "status": "missing",
@@ -11215,9 +11157,8 @@
         "method": "Client.callPolicy.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.CallPolicy.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -11251,9 +11192,8 @@
         "method": "Client.callRetention.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.CallRetention.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -11288,7 +11228,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11324,7 +11264,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11360,7 +11300,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11396,7 +11336,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11432,7 +11372,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11468,7 +11408,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11504,7 +11444,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11540,7 +11480,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11576,7 +11516,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11612,7 +11552,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11648,7 +11588,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11684,7 +11624,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11720,7 +11660,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11756,7 +11696,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11792,7 +11732,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11828,7 +11768,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11863,9 +11803,8 @@
         "method": "Client.events.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Events.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -11900,7 +11839,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11936,7 +11875,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -11972,7 +11911,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12008,7 +11947,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12044,7 +11983,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12080,7 +12019,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12116,7 +12055,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12152,7 +12091,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12188,7 +12127,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12224,7 +12163,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12260,7 +12199,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12296,7 +12235,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12332,7 +12271,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12368,7 +12307,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12404,7 +12343,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12439,9 +12378,8 @@
         "method": "Client.apiKeys.list"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.APIKeys.List"
       },
       "python": {
         "status": "missing",
@@ -12476,7 +12414,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12511,9 +12449,8 @@
         "method": "Client.members.list"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Members.List"
       },
       "python": {
         "status": "missing",
@@ -12548,7 +12485,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12583,9 +12520,8 @@
         "method": "Client.operations.get"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Operations.Get"
       },
       "python": {
         "status": "missing",
@@ -12620,7 +12556,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12656,7 +12592,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12692,7 +12628,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12727,9 +12663,8 @@
         "method": "Client.projects.list"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Projects.List"
       },
       "python": {
         "status": "missing",
@@ -12764,7 +12699,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12800,7 +12735,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12835,9 +12770,8 @@
         "method": "Client.project(projectId).events.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Events.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -12872,7 +12806,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12908,7 +12842,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12944,7 +12878,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -12980,7 +12914,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13016,7 +12950,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13051,9 +12985,8 @@
         "method": "Client.project(projectId).operations.get"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Operations.Get"
       },
       "python": {
         "status": "missing",
@@ -13088,7 +13021,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13124,7 +13057,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13160,7 +13093,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13196,7 +13129,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13231,9 +13164,8 @@
         "method": "Client.project(projectId).webhookDeliveries.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.WebhookDeliveries.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -13268,7 +13200,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13303,9 +13235,8 @@
         "method": "Client.project(projectId).webhookDeliveries.retrieveAttempt"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.WebhookDeliveries.RetrieveAttempt"
       },
       "python": {
         "status": "missing",
@@ -13340,7 +13271,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13375,9 +13306,8 @@
         "method": "Client.project(projectId).webhooks.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Webhooks.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -13412,7 +13342,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13448,7 +13378,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13483,9 +13413,8 @@
         "method": "Client.sessions.list"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Sessions.List"
       },
       "python": {
         "status": "missing",
@@ -13519,9 +13448,8 @@
         "method": "MessagingClient.voip.retrieveCallSettings"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.RetrieveCallSettings"
       },
       "python": {
         "status": "missing",
@@ -13555,9 +13483,8 @@
         "method": "MessagingClient.clientTokens.retrieveRules"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.ClientTokens.RetrieveRules"
       },
       "python": {
         "status": "missing",
@@ -13591,9 +13518,8 @@
         "method": "Client.sessions.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Sessions.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -13628,7 +13554,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13663,9 +13589,8 @@
         "method": "MessagingClient.sessions.account"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Sessions.Account"
       },
       "python": {
         "status": "missing",
@@ -13700,7 +13625,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13736,7 +13661,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13772,7 +13697,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13808,7 +13733,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13844,7 +13769,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -13879,9 +13804,8 @@
         "method": "Client.organizations.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Organizations.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -13917,8 +13841,7 @@
       },
       "go": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
-        "milestone": "credential-boundary"
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client."
       },
       "python": {
         "status": "excluded",
@@ -13954,8 +13877,7 @@
       },
       "go": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
-        "milestone": "credential-boundary"
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client."
       },
       "python": {
         "status": "excluded",
@@ -13989,9 +13911,8 @@
         "method": "Client.projectTokens.list"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.ProjectTokens.List"
       },
       "python": {
         "status": "missing",
@@ -14026,7 +13947,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14062,7 +13983,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14098,7 +14019,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14134,7 +14055,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14170,7 +14091,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14206,7 +14127,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14242,7 +14163,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14278,7 +14199,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14313,9 +14234,8 @@
         "method": "Client.webhookDeliveries.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.WebhookDeliveries.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -14350,7 +14270,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14385,9 +14305,8 @@
         "method": "Client.webhookDeliveries.retrieveAttempt"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.WebhookDeliveries.RetrieveAttempt"
       },
       "python": {
         "status": "missing",
@@ -14422,7 +14341,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14457,9 +14376,8 @@
         "method": "Client.webhooks.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Webhooks.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -14711,7 +14629,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14747,7 +14665,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14783,7 +14701,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14819,7 +14737,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14854,9 +14772,8 @@
         "method": "Client.project(projectId).webhooks.update"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Webhooks.Update"
       },
       "python": {
         "status": "missing",
@@ -14891,7 +14808,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14927,7 +14844,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -14964,8 +14881,7 @@
       },
       "go": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
-        "milestone": "credential-boundary"
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client."
       },
       "python": {
         "status": "excluded",
@@ -15000,7 +14916,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -15035,9 +14951,8 @@
         "method": "Client.webhooks.update"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Webhooks.Update"
       },
       "python": {
         "status": "missing",
@@ -16250,7 +16165,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16286,7 +16201,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16322,7 +16237,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16358,7 +16273,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16394,7 +16309,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16429,9 +16344,8 @@
         "method": "Client.callOptOuts.create"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.CallOptOuts.Create"
       },
       "python": {
         "status": "missing",
@@ -16465,9 +16379,8 @@
         "method": "Client.callOptOuts.import"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.CallOptOuts.Import"
       },
       "python": {
         "status": "missing",
@@ -16502,7 +16415,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16538,7 +16451,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16574,7 +16487,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16610,7 +16523,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16646,7 +16559,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16682,7 +16595,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16718,7 +16631,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16754,7 +16667,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16821,7 +16734,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16857,7 +16770,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16892,9 +16805,8 @@
         "method": "MessagingClient.clientTokens.mint"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.ClientTokens.Mint"
       },
       "python": {
         "status": "missing",
@@ -16929,7 +16841,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -16965,7 +16877,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17001,7 +16913,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17037,7 +16949,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17073,7 +16985,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17108,9 +17020,8 @@
         "method": "Client.events.replay"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Events.Replay"
       },
       "python": {
         "status": "missing",
@@ -17145,7 +17056,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17181,7 +17092,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17217,7 +17128,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17253,7 +17164,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17289,7 +17200,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17325,7 +17236,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17361,7 +17272,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17397,7 +17308,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17433,7 +17344,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17469,7 +17380,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17505,7 +17416,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17541,7 +17452,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17577,7 +17488,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17612,9 +17523,8 @@
         "method": "Client.operations.cancel"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Operations.Cancel"
       },
       "python": {
         "status": "missing",
@@ -17649,7 +17559,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17685,7 +17595,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17720,9 +17630,8 @@
         "method": "Client.projects.create"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Projects.Create"
       },
       "python": {
         "status": "missing",
@@ -17757,7 +17666,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17792,9 +17701,8 @@
         "method": "Client.project(projectId).events.replay"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Events.Replay"
       },
       "python": {
         "status": "missing",
@@ -17829,7 +17737,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -17864,9 +17772,8 @@
         "method": "Client.project(projectId).operations.cancel"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Operations.Cancel"
       },
       "python": {
         "status": "missing",
@@ -17900,9 +17807,8 @@
         "method": "Client.projects.approveProductionEnrollment"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Projects.ApproveProductionEnrollment"
       },
       "python": {
         "status": "missing",
@@ -17936,9 +17842,8 @@
         "method": "Client.projects.cancelProductionEnrollment"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Projects.CancelProductionEnrollment"
       },
       "python": {
         "status": "missing",
@@ -17972,9 +17877,8 @@
         "method": "Client.projects.requestProductionEnrollment"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Projects.RequestProductionEnrollment"
       },
       "python": {
         "status": "missing",
@@ -18008,9 +17912,8 @@
         "method": "Client.project(projectId).webhookDeliveries.retry"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.WebhookDeliveries.Retry"
       },
       "python": {
         "status": "missing",
@@ -18044,9 +17947,8 @@
         "method": "Client.project(projectId).webhooks.create"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Webhooks.Create"
       },
       "python": {
         "status": "missing",
@@ -18080,9 +17982,8 @@
         "method": "Client.project(projectId).webhooks.rotateSecret"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Webhooks.RotateSecret"
       },
       "python": {
         "status": "missing",
@@ -18116,9 +18017,8 @@
         "method": "Client.project(projectId).webhooks.test"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Webhooks.Test"
       },
       "python": {
         "status": "missing",
@@ -18154,8 +18054,7 @@
       },
       "go": {
         "status": "excluded",
-        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
-        "milestone": "security-design"
+        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
       },
       "python": {
         "status": "excluded",
@@ -18191,8 +18090,7 @@
       },
       "go": {
         "status": "excluded",
-        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
-        "milestone": "security-design"
+        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
       },
       "python": {
         "status": "excluded",
@@ -18228,8 +18126,7 @@
       },
       "go": {
         "status": "excluded",
-        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
-        "milestone": "security-design"
+        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
       },
       "python": {
         "status": "excluded",
@@ -18263,9 +18160,8 @@
         "method": "MessagingClient.sessions.logout"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Sessions.Logout"
       },
       "python": {
         "status": "missing",
@@ -18299,9 +18195,8 @@
         "method": "MessagingClient.sessions.restart"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Sessions.Restart"
       },
       "python": {
         "status": "missing",
@@ -18335,9 +18230,8 @@
         "method": "Client.sessions.start"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Sessions.Start"
       },
       "python": {
         "status": "missing",
@@ -18371,9 +18265,8 @@
         "method": "Client.sessions.stop"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Sessions.Stop"
       },
       "python": {
         "status": "missing",
@@ -18408,7 +18301,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -18445,8 +18338,7 @@
       },
       "go": {
         "status": "excluded",
-        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
-        "milestone": "security-design"
+        "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
       },
       "python": {
         "status": "excluded",
@@ -18481,7 +18373,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -18517,7 +18409,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -18553,7 +18445,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -18589,7 +18481,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -18626,8 +18518,7 @@
       },
       "go": {
         "status": "excluded",
-        "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
-        "milestone": "credential-boundary"
+        "reason": "This dashboard-only route does not accept the organization server API key used by Client."
       },
       "python": {
         "status": "excluded",
@@ -18662,7 +18553,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -18698,7 +18589,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -18734,7 +18625,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -18770,7 +18661,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -18806,7 +18697,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -18841,9 +18732,8 @@
         "method": "Client.webhookDeliveries.retry"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.WebhookDeliveries.Retry"
       },
       "python": {
         "status": "missing",
@@ -18877,9 +18767,8 @@
         "method": "Client.webhooks.create"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Webhooks.Create"
       },
       "python": {
         "status": "missing",
@@ -18913,9 +18802,8 @@
         "method": "Client.webhooks.rotateSecret"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Webhooks.RotateSecret"
       },
       "python": {
         "status": "missing",
@@ -18949,9 +18837,8 @@
         "method": "Client.webhooks.test"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Webhooks.Test"
       },
       "python": {
         "status": "missing",
@@ -19389,7 +19276,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -19425,7 +19312,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -19461,7 +19348,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -19497,7 +19384,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -19532,9 +19419,8 @@
         "method": "Client.callPolicy.update"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.CallPolicy.Update"
       },
       "python": {
         "status": "missing",
@@ -19568,9 +19454,8 @@
         "method": "Client.callRetention.update"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.CallRetention.Update"
       },
       "python": {
         "status": "missing",
@@ -19605,7 +19490,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -19641,7 +19526,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -19677,7 +19562,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -19713,7 +19598,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -19749,7 +19634,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -19785,7 +19670,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -19821,7 +19706,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -19857,7 +19742,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -19893,7 +19778,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -19928,9 +19813,8 @@
         "method": "MessagingClient.voip.updateCallSettings"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.VoIP.UpdateCallSettings"
       },
       "python": {
         "status": "missing",
@@ -19964,9 +19848,8 @@
         "method": "MessagingClient.clientTokens.updateRules"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.ClientTokens.UpdateRules"
       },
       "python": {
         "status": "missing",
@@ -20000,9 +19883,8 @@
         "method": "Client.sessions.update"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Sessions.Update"
       },
       "python": {
         "status": "missing",
@@ -20037,7 +19919,7 @@
       },
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -20076,7 +19958,7 @@
       "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -20115,7 +19997,7 @@
       "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -20154,7 +20036,7 @@
       "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -20193,7 +20075,7 @@
       "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
       "go": {
         "status": "missing",
-        "reason": "Handwritten resource and native wire test have not been verified.",
+        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
         "milestone": "server-sdk-parity"
       },
       "python": {
@@ -20249,5 +20131,12 @@
       }
     }
   ],
-  "languages": ["typescript", "go", "python", "php", "dotnet", "rust"]
+  "languages": [
+    "typescript",
+    "go",
+    "python",
+    "php",
+    "dotnet",
+    "rust"
+  ]
 }
