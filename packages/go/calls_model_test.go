@@ -161,6 +161,8 @@ func TestCallsFollowNativeOrchestration(t *testing.T) {
 				t.Error("client media identity boundary")
 			}
 			wsjson.Write(r.Context(), conn, map[string]any{"type": "ready", "sampleRate": 16000, "video": true})
+			wsjson.Write(r.Context(), conn, MediaControlFrame{Type: "video_source", Source: 42, ConnectionID: "connection_other", ConnectionParticipant: "server:other"})
+			wsjson.Write(r.Context(), conn, MediaControlFrame{Type: "keyframe_request"})
 			conn.Write(r.Context(), websocket.MessageBinary, EncodeAudioFrame([]int16{-2, 3}))
 			for {
 				var frame MediaControlFrame
@@ -232,12 +234,15 @@ func TestCallsFollowNativeOrchestration(t *testing.T) {
 	}
 	firstConnection := <-connectionIDs
 	audio := make(chan []int16, 8)
+	controls := make(chan string, 16)
 	go func() {
 		for {
 			select {
 			case e := <-call.Events():
 				if e.Type == "audio" {
 					audio <- e.Audio
+				} else if e.Type == "video_source" || e.Type == "keyframe_request" {
+					controls <- e.Type
 				}
 			case <-ctx.Done():
 				return
@@ -264,6 +269,19 @@ func TestCallsFollowNativeOrchestration(t *testing.T) {
 	case <-ctx.Done():
 		t.Fatal("audio discarded during media acknowledgement")
 	}
+	for _, expected := range []string{"video_source", "keyframe_request"} {
+		select {
+		case kind := <-controls:
+			if kind != expected {
+				t.Fatal(kind)
+			}
+		case <-ctx.Done():
+			t.Fatal("source/keyframe event lost")
+		}
+	}
+	if source := call.Snapshot().VideoSources[42]; source.ConnectionParticipant != "server:other" || call.Snapshot().SampleRate != 16000 {
+		t.Fatal("typed source/rate lost")
+	}
 	close(mediaClose)
 	select {
 	case secondConnection := <-connectionIDs:
@@ -282,7 +300,7 @@ func TestCallsFollowNativeOrchestration(t *testing.T) {
 	if err = call.Leave(ctx); err != nil {
 		t.Fatal(err)
 	}
-	if call.Snapshot().State != "ended" || call.Snapshot().EndReason != "left" {
+	if call.Snapshot().State != "ended" || call.Snapshot().EndReason != "left" || len(call.Snapshot().VideoSources) != 0 {
 		t.Fatal(call.Snapshot())
 	}
 	lifecycleMu.Lock()

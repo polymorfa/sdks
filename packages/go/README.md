@@ -21,6 +21,15 @@ Pass `context.Context` to each request. Each `Response[T]` includes typed data a
 
 `CursorPage[T]` loads the first page and follows cursors lazily through `All(ctx)` or `NextPage(ctx)`. Developer event streams expose typed frames, resume cursors, gaps, reconnect callbacks and manual acknowledgements. `Raw` provides an explicit JSON escape hatch; a project view confines raw paths and credentials to its project.
 
+`RequestLogs().List` reads typed project request-log pages and retains nullable
+status, durations and removed credentials. `Follow` advances the follow cursor;
+`Tail` yields backfill chronologically and follows new requests, with bounded
+rate-limit waits and context cancellation. Organization callers select a project;
+project views reject foreign selections. API `logs:read` permission still applies.
+`Events().LiveSource` adapts retained webhook bodies to cancellable subscriptions.
+It skips events without retained payloads, passes their resume cursor to the
+listener, reports terminal errors, and closes its reader before `Done` completes.
+
 `ConstructWebhookEvent` verifies HMAC against exact raw bytes before parsing. `TypedPayload` exposes all 84 known event names through a closed interface with concrete payload types. Unknown event names and payloads survive decoding. Separate helpers verify local-forward and Flow-forward signatures with their timestamp rules. Native webhooks do not include timestamp replay protection. `WebhookHandler` integrates with `net/http`, enforces POST and a body bound, and verifies `X-Webhook-Signature` before invoking the application. Applications must handle duplicate deliveries according to their own persistence model.
 
 Media downloads expose bytes or an `io.ReadCloser`, filenames and API metadata. Storage redirects receive no bearer credential, caller headers or cookie jar. WhatsApp media helpers parse supported descriptors, enforce HTTPS CDN hosts and size limits, derive HKDF keys, verify the ten-byte MAC and hashes, then decrypt AES-CBC before releasing bytes. `VerifyBeforeRelease` buffers plaintext until integrity checks pass. `VerifyStreaming` releases plaintext incrementally and reports final integrity failures through the reader; discard the output if the final read fails. File helpers write private sibling files and install them only after successful verification. API file helpers also enforce byte limits and preserve existing destinations on failure.
@@ -41,3 +50,13 @@ WhatsApp media behavior was checked against TypeScript SDK source and Cellar's s
 This is shipped-client protocol evidence, not proof of a current server or live-provider download. No live API credentials, real WhatsApp media, registry release or deployment were exercised.
 
 `write_coverage.py` reconciles manually authored public-method wire fixtures with the pinned ledger. It emits coverage metadata only; SDK resources and types are handwritten. Operations remain missing until both the typed method and its request/response fixture pass. Direct-media history and self-hosted-storage contracts are not ported from unmerged customer-owned TypeScript branches.
+
+The neutral Calls media interface is `Call.WriteAudio`, `Call.WriteVideo` and
+`Call.Events`. Audio events contain signed 16-bit PCM at `Call.Snapshot().SampleRate`.
+Video events retain H.264 bytes, source handle, microsecond timestamp and keyframe
+flag; `video_source`, `video_source_removed` and `keyframe_request` controls reach
+the same event channel. `Snapshot().VideoSources` provides typed owners and labels
+and clears on media disconnection or call end. Outgoing video uses source zero.
+Applications provide their own capture, codecs and playback; these server interfaces
+do not create browser media devices. The actual WebSocket tests cover PCM/H.264
+framing and source/keyframe controls.

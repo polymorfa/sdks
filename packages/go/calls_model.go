@@ -525,6 +525,8 @@ func (c *Call) finish(reason string) {
 	c.snapshot.State = "ended"
 	c.snapshot.EndReason = reason
 	c.snapshot.EndedAt = time.Now()
+	c.snapshot.VideoSources = map[uint32]CallVideoSource{}
+	c.snapshot.RemoteAudioMuted = nil
 	media := c.media
 	c.media = nil
 	c.mu.Unlock()

@@ -61,6 +61,9 @@ type EventStream struct {
 
 func (r *Events) streamPath(project string) (string, error) {
 	if r.prefix != "/platform" {
+		if project != "" && r.prefix != "/platform/projects/"+escaped(project) {
+			return "", validation("This client streams only its own project's events.")
+		}
 		return r.prefix + "/events/stream", nil
 	}
 	if err := validateProjectID(project); err != nil {
@@ -198,18 +201,18 @@ func (s *EventStream) consume(ctx context.Context, yield func(EventStreamItem, e
 				}
 			case "event":
 				item := EventStreamItem{Event: frame.Event, StreamID: frame.StreamID, Sequence: frame.Sequence, Cursor: frame.Cursor}
+				s.setCursor(frame.Cursor)
 				if frame.Event.Payload != nil {
 					bytes, e := base64.StdEncoding.DecodeString(frame.Event.Payload.Data)
 					if e != nil {
-						return validation("Invalid stream payload encoding."), false
+						return &Error{Kind: ServerError, Code: "invalid_response", Message: "Invalid stream payload encoding.", Metadata: md}, false
 					}
 					event, e := ParseVerifiedWebhookEvent(bytes)
 					if e != nil {
-						return e, false
+						return &Error{Kind: ServerError, Code: "invalid_response", Message: "Invalid streamed webhook payload.", Metadata: md, Cause: e}, false
 					}
 					item.Webhook = &event
 				}
-				s.setCursor(frame.Cursor)
 				s.mu.Lock()
 				s.delivered++
 				s.mu.Unlock()

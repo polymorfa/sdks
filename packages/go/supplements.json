@@ -78,6 +78,13 @@
       "fixturePath": "/platform/campaigns/campaign/reschedule",
       "status": "covered",
       "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "OrganizationClient.RequestLogs.List / ProjectClient.RequestLogs.List / RequestLogs.Follow",
+      "method": "GET",
+      "fixturePath": "/platform/projects/project/request-logs",
+      "status": "covered",
+      "testFile": "request_logs_test.go"
     }
   ],
   "helpers": [
@@ -135,6 +142,26 @@
       "sdkMethod": "ParseContentDispositionFilename / GraphTransportHeaders",
       "status": "covered",
       "testFile": "content_disposition_test.go"
+    },
+    {
+      "sdkMethod": "KnownErrorCodes / IsKnownErrorCode",
+      "status": "covered",
+      "testFile": "error_codes_test.go"
+    },
+    {
+      "sdkMethod": "CallsClient.PlacePhone / PlaceParticipants / PlaceGroup credential-bound placement",
+      "status": "covered",
+      "testFile": "calls_placement_test.go"
+    },
+    {
+      "sdkMethod": "RequestLogs.Tail / RequestLogRetryAfter",
+      "status": "covered",
+      "testFile": "request_logs_test.go"
+    },
+    {
+      "sdkMethod": "Events.LiveSource / NewEventStreamSource / LiveEventSubscription.Cancel",
+      "status": "covered",
+      "testFile": "event_source_test.go"
     }
   ]
 }
