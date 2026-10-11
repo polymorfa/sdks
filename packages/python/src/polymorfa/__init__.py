@@ -1,5 +1,13 @@
 """Polymorfa server SDK. No package publication is implied by local availability."""
 
+from .calls import (
+    AudioFrame,
+    MediaSocket,
+    VideoFrame,
+    decode_media_frame,
+    encode_audio_frame,
+    encode_video_frame,
+)
 from .client import AsyncClient, AsyncMessagingClient, AsyncProjectClient
 from .errors import (
     AuthenticationError,
@@ -19,6 +27,16 @@ from .errors import (
     WebhookSignatureError,
 )
 from .events import EventStream, StreamedEvent
+from .integrations import django_webhook_event, fastapi_webhook_event
+from .media import (
+    MediaDescriptor,
+    decode_whatsapp_media,
+    decrypt_whatsapp_media,
+    derive_whatsapp_media_keys,
+    download_whatsapp_media,
+    is_whatsapp_media_url,
+    whatsapp_media_urls,
+)
 from .transport import (
     API_VERSION,
     SDK_VERSION,
@@ -37,6 +55,7 @@ __all__ = [
     "AsyncClient",
     "AsyncMessagingClient",
     "AsyncProjectClient",
+    "AudioFrame",
     "AuthenticationError",
     "AuthorizationError",
     "CancelledError",
@@ -46,7 +65,9 @@ __all__ = [
     "Credential",
     "CursorPage",
     "EventStream",
+    "MediaDescriptor",
     "MediaIntegrityError",
+    "MediaSocket",
     "NotFoundError",
     "PaymentRequiredError",
     "PolymorfaError",
@@ -57,8 +78,20 @@ __all__ = [
     "StreamedEvent",
     "TimeoutError",
     "ValidationError",
+    "VideoFrame",
     "WebhookEvent",
     "WebhookSignatureError",
     "construct_webhook_event",
+    "decode_media_frame",
+    "decode_whatsapp_media",
+    "decrypt_whatsapp_media",
+    "derive_whatsapp_media_keys",
+    "django_webhook_event",
+    "download_whatsapp_media",
+    "encode_audio_frame",
+    "encode_video_frame",
+    "fastapi_webhook_event",
+    "is_whatsapp_media_url",
     "verify_webhook_signature",
+    "whatsapp_media_urls",
 ]

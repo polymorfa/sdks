@@ -60,3 +60,23 @@ Run package checks with `uv sync --extra test`, `uv run ruff check`,
 `uv run ruff format --check`, `uv run mypy src/polymorfa`, `uv run pytest`, and
 `uv run python -m build`. These checks exercise local mock contracts. They
 do not establish production availability or registry publication.
+
+`client.client_tokens.mint` accepts either a session target or a Customer
+ID, and `retrieve_rules`, `update_rules`, and `delete_rules` manage session
+client rules. These methods require a server credential. Customer token
+access remains subject to the API's beta eligibility and ownership checks.
+
+`decode_whatsapp_media`, `download_whatsapp_media` and
+`decrypt_whatsapp_media` support image, video, audio, document and sticker
+payloads. Downloading requires a plaintext hash, validates encrypted hashes
+and the media MAC, limits bytes, confines redirects to WhatsApp CDN hosts,
+and uses a connection without API credentials. The media key is hidden in
+object representations.
+
+Install the `calls` extra to use `MediaSocket` with native WebSockets.
+The socket authenticates in its first frame, uses `pmfa.calls.v2`, and sends
+or receives PCM and H.264 media. This is the media attachment primitive;
+application call orchestration and additional lifecycle helpers remain
+unfinished. Install the `fastapi` or `django` extras for framework examples;
+`fastapi_webhook_event` and `django_webhook_event` verify the raw request body.
+See `examples/python` in the source tree for executable application examples.

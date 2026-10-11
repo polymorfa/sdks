@@ -195,8 +195,8 @@ final class HttpTransport
                 }
                 try {
                     // Storage receives the signed capability URL alone, never API headers.
-                    $storage = $this->http->request('GET', $location, ['http_errors' => false, 'allow_redirects' => false,
-                        'headers' => [], 'timeout' => $options->timeout ?? $this->timeout]);
+                    $storage = $this->http->send(new \GuzzleHttp\Psr7\Request('GET', $location), ['http_errors' => false, 'allow_redirects' => false,
+                        'headers' => null, 'auth' => null, 'timeout' => $options->timeout ?? $this->timeout]);
                     try {
                         if ($storage->getStatusCode() >= 300) {
                             throw new ServerException('Storage download failed.', status: $storage->getStatusCode());

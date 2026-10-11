@@ -209,7 +209,7 @@ async def test_typed_resource_routes() -> None:
             "POST",
             "/messaging/support/messages/seen",
             {"conversation": {"id": "user_1"}, "id": "msg_1"},
-            {"success": True},
+            {"success": True, "data": {"status": "OK"}},
             lambda c: c.messages.mark_seen(
                 "support", {"conversation": {"id": "user_1"}, "id": "msg_1"}
             ),
@@ -218,7 +218,7 @@ async def test_typed_resource_routes() -> None:
             "POST",
             "/messaging/support/messages/typing",
             {"conversation": {"id": "user_1"}, "state": "typing"},
-            {"success": True},
+            {"success": True, "data": {"status": "OK"}},
             lambda c: c.messages.set_typing(
                 "support", {"conversation": {"id": "user_1"}, "state": "typing"}
             ),
@@ -227,7 +227,7 @@ async def test_typed_resource_routes() -> None:
             "POST",
             "/messaging/support/messages/star",
             {"conversation": {"id": "user_1"}, "id": "msg_1", "star": True},
-            {"success": True},
+            {"success": True, "data": {"status": "OK"}},
             lambda c: c.messages.star(
                 "support", {"conversation": {"id": "user_1"}, "id": "msg_1", "star": True}
             ),

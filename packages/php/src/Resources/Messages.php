@@ -6,8 +6,10 @@ namespace Polymorfa\Resources;
 
 use Polymorfa\ApiResponse;
 use Polymorfa\RequestOptions;
+use Polymorfa\Models;
 
 /**
+ * @phpstan-import-type Success from Models
  * @phpstan-type Conversation array{id?:string,phoneNumber?:string,bsuid?:string,username?:string}
  * @phpstan-type MessageRequest array{conversation:Conversation,content:array<string,mixed>,transport?:string,replyTo?:string}
  * @phpstan-type Receipt array{success:bool,data:array{id:string,whatsapp_ids:array<string,string>,conversation:Conversation,timestamp:string,status:string,type?:string}}
@@ -47,27 +49,30 @@ final class Messages extends Resource
     /**
  * @param array{conversation:Conversation,id:string} $body
  *
- * @return ApiResponse<array<string,mixed>> */
+ * @return ApiResponse<array{success:bool,data:array{status:string}}> */
     public function markSeen(string $session, array $body, ?RequestOptions $options = null): ApiResponse
     {
+        /** @var ApiResponse<array{success:bool,data:array{status:string}}> */
         return $this->request('POST', '/messaging/' . self::segment($session) . '/messages/seen', $body, options: $options);
     }
 
     /**
  * @param array{conversation:Conversation,id?:string,state:'typing'|'recording'|'paused'} $body
  *
- * @return ApiResponse<array<string,mixed>> */
+ * @return ApiResponse<array{success:bool,data:array{status:string}}> */
     public function setTyping(string $session, array $body, ?RequestOptions $options = null): ApiResponse
     {
+        /** @var ApiResponse<array{success:bool,data:array{status:string}}> */
         return $this->request('POST', '/messaging/' . self::segment($session) . '/messages/typing', $body, options: $options);
     }
 
     /**
  * @param array{conversation:Conversation,id:string,star:bool} $body
  *
- * @return ApiResponse<array<string,mixed>> */
+ * @return ApiResponse<array{success:bool,data:array{status:'OK'}}> */
     public function star(string $session, array $body, ?RequestOptions $options = null): ApiResponse
     {
+        /** @var ApiResponse<array{success:bool,data:array{status:'OK'}}> */
         return $this->request('POST', '/messaging/' . self::segment($session) . '/messages/star', $body, options: $options);
     }
 

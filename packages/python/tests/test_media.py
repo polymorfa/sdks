@@ -65,3 +65,45 @@ def test_independent_shipped_media_vectors(vector):
     assert decrypt_whatsapp_media(bytes.fromhex(vector["encrypted"]), descriptor) == bytes.fromhex(
         vector["plaintext"]
     )
+
+
+async def test_cdn_download_fallback_and_safe_redirects():
+    import httpx
+
+    from polymorfa.media import download_whatsapp_media, is_whatsapp_media_url, whatsapp_media_urls
+
+    vectors = json.loads(
+        (Path(__file__).resolve().parents[3] / "contracts/fixtures/whatsapp-media.json").read_text()
+    )["fixtures"]
+    vector = vectors[0]
+    descriptor = decode_whatsapp_media(vector["descriptor"], "image")
+    requests = []
+
+    def handler(request):
+        requests.append(request)
+        assert "authorization" not in request.headers and "polymorfa-version" not in request.headers
+        assert request.headers["origin"] == "https://web.whatsapp.com"
+        assert request.headers["referer"] == "https://web.whatsapp.com/"
+        if len(requests) == 1:
+            return httpx.Response(404)
+        if len(requests) == 2:
+            assert dict(request.url.params)["mms-type"] == "image"
+            return httpx.Response(302, headers={"location": "https://cdn.whatsapp.net/verified"})
+        return httpx.Response(200, content=bytes.fromhex(vector["encrypted"]))
+
+    assert await download_whatsapp_media(
+        descriptor, http_transport=httpx.MockTransport(handler)
+    ) == bytes.fromhex(vector["plaintext"])
+    assert len(requests) == 3 and len(whatsapp_media_urls(descriptor)) == 2
+    assert not is_whatsapp_media_url("https://mmg.whatsapp.com/file")
+    assert not is_whatsapp_media_url("https://mmg.whatsapp.net:444/file")
+
+    def unsafe(request):
+        return httpx.Response(302, headers={"location": "https://evil.test/file"})
+
+    with pytest.raises(MediaIntegrityError):
+        await download_whatsapp_media(descriptor, http_transport=httpx.MockTransport(unsafe))
+    with pytest.raises(MediaIntegrityError):
+        await download_whatsapp_media(
+            replace(descriptor, file_sha256=None), http_transport=httpx.MockTransport(handler)
+        )

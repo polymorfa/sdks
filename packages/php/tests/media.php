@@ -32,5 +32,28 @@ foreach (['https://evil.test/m','https://whatsapp.net.evil.test/m','https://u:p@
     check(!WhatsAppMedia::isMediaUrl($url), 'Reject media URL '.$url);
 }
 check(WhatsAppMedia::isMediaUrl('https://mmg.whatsapp.net/m'), 'Allow canonical media URL');
-raises(fn () => WhatsAppMedia::decode('AAAA','image'),MediaIntegrityException::class);
+raises(fn () => WhatsAppMedia::decode('AAAA', 'image'), MediaIntegrityException::class);
 echo count($mediaVectors)." independent WhatsApp media vectors and integrity checks passed.\n";
+
+$vector = $mediaVectors[0];
+$descriptor = WhatsAppMedia::decode($vector['descriptor'], 'image');
+$attempts = 0;
+$http = new GuzzleHttp\Client(['headers' => ['Authorization' => 'Bearer do-not-forward','Polymorfa-Version' => 'do-not-forward'],'handler' => function ($request, $options) use (&$attempts, $vector) {
+    ++$attempts;
+    check(!$request->hasHeader('Authorization') && !$request->hasHeader('Polymorfa-Version'), 'CDN never gets API defaults');
+    check($request->getHeaderLine('Origin') === 'https://web.whatsapp.com' && $request->getHeaderLine('Referer') === 'https://web.whatsapp.com/', 'CDN web origin headers');
+    if ($attempts === 1) {
+        return GuzzleHttp\Promise\Create::promiseFor(new GuzzleHttp\Psr7\Response(404));
+    }
+    if ($attempts === 2) {
+        parse_str($request->getUri()->getQuery(), $query);
+        check($query['mms-type'] === 'image' && isset($query['hash']), 'Direct path capability parameters');
+        return GuzzleHttp\Promise\Create::promiseFor(new GuzzleHttp\Psr7\Response(302, ['Location' => 'https://cdn.whatsapp.net/verified']));
+    }
+    $options['sink']->write(hex2bin($vector['encrypted']));
+    return GuzzleHttp\Promise\Create::promiseFor(new GuzzleHttp\Psr7\Response(200));
+}]);
+check(WhatsAppMedia::download($descriptor, http:$http) === hex2bin($vector['plaintext']) && $attempts === 3, 'Verified CDN fallback and redirect');
+$unsafe = new GuzzleHttp\Client(['handler' => fn () => GuzzleHttp\Promise\Create::promiseFor(new GuzzleHttp\Psr7\Response(302, ['Location' => 'https://evil.test/file']))]);
+raises(fn () => WhatsAppMedia::download($descriptor, http:$unsafe), MediaIntegrityException::class);
+echo "CDN fallback, host confinement and credential isolation checks passed.\n";

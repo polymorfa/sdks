@@ -55,11 +55,11 @@ $cases = [
         fn ($c) => $c->messages->send('support', ['conversation' => ['phoneNumber' => '+15551234567'], 'content' => ['text' => 'Hello']], new RequestOptions(idempotencyKey: 'send_1'))],
     ['POST', '/messaging/support/messages/react', ['conversation' => ['id' => 'user_1'], 'id' => 'msg_1', 'reaction' => '👍'], $receipt,
         fn ($c) => $c->messages->react('support', ['conversation' => ['id' => 'user_1'], 'id' => 'msg_1', 'reaction' => '👍'])],
-    ['POST', '/messaging/support/messages/seen', ['conversation' => ['id' => 'user_1'], 'id' => 'msg_1'], ['success' => true],
+    ['POST', '/messaging/support/messages/seen', ['conversation' => ['id' => 'user_1'], 'id' => 'msg_1'], ['success' => true,'data' => ['status' => 'OK']],
         fn ($c) => $c->messages->markSeen('support', ['conversation' => ['id' => 'user_1'], 'id' => 'msg_1'])],
-    ['POST', '/messaging/support/messages/typing', ['conversation' => ['id' => 'user_1'], 'state' => 'typing'], ['success' => true],
+    ['POST', '/messaging/support/messages/typing', ['conversation' => ['id' => 'user_1'], 'state' => 'typing'], ['success' => true,'data' => ['status' => 'OK']],
         fn ($c) => $c->messages->setTyping('support', ['conversation' => ['id' => 'user_1'], 'state' => 'typing'])],
-    ['POST', '/messaging/support/messages/star', ['conversation' => ['id' => 'user_1'], 'id' => 'msg_1', 'star' => true], ['success' => true],
+    ['POST', '/messaging/support/messages/star', ['conversation' => ['id' => 'user_1'], 'id' => 'msg_1', 'star' => true], ['success' => true,'data' => ['status' => 'OK']],
         fn ($c) => $c->messages->star('support', ['conversation' => ['id' => 'user_1'], 'id' => 'msg_1', 'star' => true])],
     ['GET', '/messaging/support/operations/op_1', null, ['success' => true, 'data' => ['operationId' => 'op_1', 'status' => 'pending']], fn ($c) => $c->messages->operationStatus('support', 'op_1')],
     ['GET', '/messaging/support/pair/qr?format=json', null, ['success' => true, 'data' => ['qr' => 'qr_1']], fn ($c) => $c->sessions->qr('support')],
@@ -123,3 +123,7 @@ require __DIR__ . '/wire.php';
 require __DIR__ . '/contacts.php';
 require __DIR__ . '/media.php';
 require __DIR__ . '/groups.php';
+require __DIR__ . '/sessions.php';
+require __DIR__ . '/integrations_calls.php';
+
+require __DIR__."/client_tokens.php";

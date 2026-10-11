@@ -44,3 +44,22 @@ composer build
 ```
 
 Tests require Node.js to run the shared local HTTP fixture server. `Dockerfile.test` supplies PHP 8.2, cURL, Composer and Node. `POLYMORFA_BUILD_DIR` selects the destination for the standalone source archive.
+
+`$client->clientTokens->mint()` accepts one session or Customer target.
+`retrieveRules()`, `updateRules()` and `deleteRules()` manage session client
+rules. These methods require server credentials; API eligibility and
+ownership checks govern Customer tokens.
+
+`WhatsAppMedia::decode()`, `download()` and `decrypt()` handle existing media
+for image, video, audio, document and sticker messages. Downloading requires
+a plaintext hash and checks the encrypted hash, MAC, plaintext hash and
+size. CDN fallback and redirects remain within WhatsApp CDN hosts and never
+receive API credentials. Media key values are hidden in debug output.
+
+Install `phrity/websocket:^4.0` to use `MediaSocket` with native sockets.
+It authenticates in the first frame and uses `pmfa.calls.v2` for PCM and
+H.264 media. Applications drive this synchronous socket's receive loop;
+additional lifecycle orchestration remains unfinished.
+`WebhookRequest::fromSymfony()`, `fromLaravel()` and `fromPsr()` authenticate
+raw framework bodies; install the relevant framework package. Application
+examples are in `examples/php` in the source tree.

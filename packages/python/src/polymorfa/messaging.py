@@ -24,6 +24,7 @@ from .models import (
     ContactCheck,
     ContactInfo,
     ContactPicture,
+    DataEnvelope,
     Envelope,
     HistoryChat,
     HistoryChatsParams,
@@ -33,9 +34,11 @@ from .models import (
     MessageOperation,
     MessageReceipt,
     MessageResponse,
+    OperationAccepted,
     PairCode,
     PairCodeResult,
     PictureSource,
+    PlatformSession,
     PresenceData,
     PresenceSetResult,
     PresenceSubscription,
@@ -48,8 +51,14 @@ from .models import (
     Seen,
     SendMessage,
     Session,
+    SessionAccount,
+    SessionRemoved,
+    SessionStarting,
+    SessionStopping,
     SessionUpdate,
     Star,
+    StarResult,
+    StatusResult,
     Success,
     Typing,
     Webhook,
@@ -114,21 +123,21 @@ class Messages(Resource):
 
     async def mark_seen(
         self, session: str, body: Seen, *, options: RequestOptions = O
-    ) -> ApiResponse[Success]:
+    ) -> ApiResponse[Envelope[StatusResult]]:
         return await self._request(
             "POST", f"/messaging/{segment(session)}/messages/seen", body=body, options=options
         )
 
     async def set_typing(
         self, session: str, body: Typing, *, options: RequestOptions = O
-    ) -> ApiResponse[Success]:
+    ) -> ApiResponse[Envelope[StatusResult]]:
         return await self._request(
             "POST", f"/messaging/{segment(session)}/messages/typing", body=body, options=options
         )
 
     async def star(
         self, session: str, body: Star, *, options: RequestOptions = O
-    ) -> ApiResponse[Success]:
+    ) -> ApiResponse[Envelope[StarResult]]:
         return await self._request(
             "POST", f"/messaging/{segment(session)}/messages/star", body=body, options=options
         )
@@ -147,7 +156,7 @@ class Messages(Resource):
 class Sessions(Resource):
     async def list(
         self, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[builtins.list[Session]]]:
+    ) -> ApiResponse[DataEnvelope[builtins.list[PlatformSession]]]:
         self._server()
         return await self._request("GET", "/platform/sessions", options=options)
 
@@ -165,31 +174,41 @@ class Sessions(Resource):
             "PUT", f"/platform/sessions/{segment(session)}", body=body, options=options
         )
 
-    async def delete(self, session: str, *, options: RequestOptions = O) -> ApiResponse[Success]:
+    async def delete(
+        self, session: str, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[SessionRemoved]]:
         self._server()
         return await self._request(
             "DELETE", f"/platform/sessions/{segment(session)}", options=options
         )
 
-    async def start(self, session: str, *, options: RequestOptions = O) -> ApiResponse[Success]:
+    async def start(
+        self, session: str, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[SessionStarting]]:
         self._server()
         return await self._request(
             "POST", f"/platform/sessions/{segment(session)}/start", options=options
         )
 
-    async def stop(self, session: str, *, options: RequestOptions = O) -> ApiResponse[Success]:
+    async def stop(
+        self, session: str, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[SessionStopping]]:
         self._server()
         return await self._request(
             "POST", f"/platform/sessions/{segment(session)}/stop", options=options
         )
 
-    async def restart(self, session: str, *, options: RequestOptions = O) -> ApiResponse[Success]:
+    async def restart(
+        self, session: str, *, options: RequestOptions = O
+    ) -> ApiResponse[OperationAccepted]:
         self._server()
         return await self._request(
             "POST", f"/platform/sessions/{segment(session)}/restart", options=options
         )
 
-    async def logout(self, session: str, *, options: RequestOptions = O) -> ApiResponse[Success]:
+    async def logout(
+        self, session: str, *, options: RequestOptions = O
+    ) -> ApiResponse[OperationAccepted]:
         self._server()
         return await self._request(
             "POST", f"/platform/sessions/{segment(session)}/logout", options=options
@@ -197,7 +216,7 @@ class Sessions(Resource):
 
     async def account(
         self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[SessionAccount]]:
         self._server()
         return await self._request(
             "GET", f"/platform/sessions/{segment(session)}/me", options=options

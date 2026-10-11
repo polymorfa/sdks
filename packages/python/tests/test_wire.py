@@ -74,6 +74,8 @@ async def test_shared_wire_scenario(fixture_url, scenario):
                 with pytest.raises(PolymorfaError) as caught:
                     await run()
                 assert caught.value.code == outcome.get("code", caught.value.code)
+                if "metadataRequestId" in outcome:
+                    assert caught.value.metadata.request_id == outcome["metadataRequestId"]
                 if "operationId" in outcome:
                     assert caught.value.metadata.operation_id == outcome["operationId"]
                 if "requestId" in outcome:

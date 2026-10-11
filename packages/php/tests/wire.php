@@ -40,13 +40,16 @@ try {
         };
         if (isset($outcome['error'])) {
             $types = ['server' => Polymorfa\ServerException::class, 'timeout' => Polymorfa\TimeoutException::class,
-                'cancelled' => Polymorfa\CancelledException::class, 'validation' => Polymorfa\ValidationException::class,
+                'connection' => Polymorfa\ConnectionException::class, 'cancelled' => Polymorfa\CancelledException::class, 'validation' => Polymorfa\ValidationException::class,
                 'authentication' => Polymorfa\AuthenticationException::class, 'authorization' => Polymorfa\AuthorizationException::class,
                 'payment_required' => Polymorfa\PaymentRequiredException::class, 'not_found' => Polymorfa\NotFoundException::class,
                 'conflict' => Polymorfa\ConflictException::class, 'rate_limit' => Polymorfa\RateLimitException::class];
             $error = raises($run, $types[$outcome['error']]);
             if (isset($outcome['code'])) {
                 check($error->errorCode === $outcome['code'], 'Wire error code');
+            }
+            if (isset($outcome['metadataRequestId'])) {
+                check($error->metadata->requestId === $outcome['metadataRequestId'], 'Wire body metadata request ID');
             }
             if (isset($outcome['operationId'])) {
                 check($error->metadata->operationId === $outcome['operationId'], 'Wire admitted operation metadata');

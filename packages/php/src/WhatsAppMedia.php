@@ -142,50 +142,101 @@ final class WhatsAppMedia
         $host = strtolower($parsed['host']);
         return $host === 'whatsapp.net' || str_ends_with($host, '.whatsapp.net');
     }
-    public static function download(MediaDescriptor $descriptor, int $maxBytes = self::MAX_BYTES, ?CancellationToken $cancellation = null, ?ClientInterface $http = null): string
+    /** @return list<string> */
+    public static function candidateUrls(MediaDescriptor $descriptor): array
     {
-        $url = $descriptor->url;
-        if ($url === null && $descriptor->directPath !== null) {
-            if (!str_starts_with($descriptor->directPath, '/') || str_starts_with($descriptor->directPath, '//') || str_contains($descriptor->directPath, '\\')) {
+        $urls = [];
+        if ($descriptor->url !== null && $descriptor->url !== '') {
+            if (!self::isMediaUrl($descriptor->url)) {
                 self::invalid();
             }
-            $url = 'https://mmg.whatsapp.net'.$descriptor->directPath;
+            $urls[] = $descriptor->url;
         }
-        if ($url === null || !self::isMediaUrl($url)) {
-            throw new ConfigurationException('mediaUrl');
+        $path = $descriptor->directPath;
+        if ($path !== null && $path !== '') {
+            if (!str_starts_with($path, '/') || str_starts_with($path, '//') || str_contains($path, '\\')) {
+                self::invalid();
+            }
+            $hash = rtrim(strtr(base64_encode($descriptor->fileEncSha256 ?? ''), '+/', '-_'), '=');
+            $kind = $descriptor->mediaKind === 'sticker' ? 'image' : $descriptor->mediaKind;
+            $fallback = 'https://mmg.whatsapp.net'.$path.(str_contains($path, '?') ? '&' : '?').'hash='.rawurlencode($hash).'&mms-type='.$kind.'&__wa-mms=';
+            if (!self::isMediaUrl($fallback)) {
+                self::invalid();
+            }
+            if (!in_array($fallback, $urls, true)) {
+                $urls[] = $fallback;
+            }
         }
+        if ($urls === []) {
+            self::invalid();
+        }
+        return $urls;
+    }
+    public static function download(MediaDescriptor $descriptor, int $maxBytes = self::MAX_BYTES, ?CancellationToken $cancellation = null, ?ClientInterface $http = null): string
+    {
         if ($maxBytes <= 0) {
             throw new ConfigurationException('maxBytes');
+        }
+        if ($descriptor->fileSha256 === null) {
+            self::invalid();
         }
         if ($descriptor->fileLength !== null && $descriptor->fileLength > $maxBytes) {
             self::fail('media_too_large');
         }
-        $cancellation?->throwIfCancelled();
         $limit = (intdiv(min($maxBytes, $descriptor->fileLength ?? $maxBytes), 16) + 1) * 16 + 10;
-        $downloaded = '';
-        // A separate session receives no API credentials, cookies or authorization defaults.
         $client = $http ?? new Client(['allow_redirects' => false]);
-        try {
-            $response = $client->request('GET', $url, ['http_errors' => false,'allow_redirects' => false,'timeout' => 30,'headers' => [],
-                'sink' => \GuzzleHttp\Psr7\FnStream::decorate(\GuzzleHttp\Psr7\Utils::streamFor(''), ['write' => function (string $chunk) use (&$downloaded, $limit, $cancellation): int {
-                    $cancellation?->throwIfCancelled();
-                    if (strlen($downloaded) + strlen($chunk) > $limit) {
-                        self::fail('media_too_large');
+        $urls = self::candidateUrls($descriptor);
+        $status = null;
+        foreach ($urls as $url) {
+            for ($hop = 0;$hop <= 3;++$hop) {
+                $downloaded = '';
+                $cancellation?->throwIfCancelled();
+                try {
+                    $response = $client->send(new \GuzzleHttp\Psr7\Request('GET', $url, ['Origin' => 'https://web.whatsapp.com', 'Referer' => 'https://web.whatsapp.com/']), ['http_errors' => false,'allow_redirects' => false,'timeout' => 30,
+                        'headers' => null, 'auth' => null,
+                        'sink' => \GuzzleHttp\Psr7\FnStream::decorate(\GuzzleHttp\Psr7\Utils::streamFor(''), ['write' => function (string $chunk) use (&$downloaded, $limit, $cancellation): int {
+                            $cancellation?->throwIfCancelled();
+                            if (strlen($downloaded) + strlen($chunk) > $limit) {
+                                self::fail('media_too_large');
+                            }
+                            $downloaded .= $chunk;
+                            return strlen($chunk);
+                        }]),'progress' => static function () use ($cancellation): void {
+                            $cancellation?->throwIfCancelled();
+                        }]);
+                    try {
+                        $status = $response->getStatusCode();
+                        if (in_array($status, [301,302,303,307,308], true)) {
+                            $location = $response->getHeaderLine('Location');
+                            $next = (string)\GuzzleHttp\Psr7\UriResolver::resolve(new \GuzzleHttp\Psr7\Uri($url), new \GuzzleHttp\Psr7\Uri($location));
+                            if ($location === '' || !self::isMediaUrl($next)) {
+                                self::invalid();
+                            }
+                            if ($hop === 3) {
+                                throw new ConnectionException('Too many media redirects.', 'connection_error');
+                            }
+                            $url = $next;
+                            continue;
+                        }
+                        if ($status !== 200) {
+                            break;
+                        }
+                        $contentLength = $response->getHeaderLine('Content-Length');
+                        if (is_numeric($contentLength) && (int)$contentLength > $limit) {
+                            self::fail('media_too_large');
+                        }
+                        $cancellation?->throwIfCancelled();
+                        return self::decrypt($downloaded, $descriptor, $maxBytes);
+                    } finally {
+                        $response->getBody()->close();
                     }
-                    $downloaded .= $chunk;
-                    return strlen($chunk);
-                }]),'progress' => static function () use ($cancellation): void {
+                } catch (TransferException) {
                     $cancellation?->throwIfCancelled();
-                }]);
-            if ($response->getStatusCode() !== 200) {
-                throw new ConnectionException('WhatsApp media download failed.', 'media_download_failed', status:$response->getStatusCode());
+                    break;
+                }
             }
-            $cancellation?->throwIfCancelled();
-            return self::decrypt($downloaded, $descriptor, $maxBytes);
-        } catch (TransferException) {
-            $cancellation?->throwIfCancelled();
-            throw new ConnectionException('WhatsApp media download failed.', 'media_download_failed');
         }
+        throw new ConnectionException('WhatsApp media download failed.', 'media_download_failed', status:$status);
     }
     public static function isKind(string $mediaKind): bool
     {

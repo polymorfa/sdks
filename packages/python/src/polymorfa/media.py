@@ -12,7 +12,7 @@ import hashlib
 import hmac
 from dataclasses import dataclass, field
 from typing import Literal, cast
-from urllib.parse import urlsplit
+from urllib.parse import urlencode, urljoin, urlsplit
 
 import httpx
 from cryptography.hazmat.primitives import hashes, padding
@@ -123,6 +123,8 @@ def decode_whatsapp_media(encoded: str, media_kind: MediaKind) -> MediaDescripto
         while offset < len(raw):
             tag = varint()
             number, wire = tag >> 3, tag & 7
+            if number == 0:
+                raise ValueError
             name = _FIELDS[media_kind].get(number)
             if wire == 0:
                 value: object = varint()
@@ -146,7 +148,14 @@ def decode_whatsapp_media(encoded: str, media_kind: MediaKind) -> MediaDescripto
                 if (
                     wire != 2
                     or not isinstance(value, bytes)
-                    or len(value) > (8192 if name in ("url", "direct_path") else 4096)
+                    or len(value)
+                    > (
+                        8192
+                        if name in ("url", "direct_path")
+                        else 255
+                        if name == "mimetype"
+                        else 4096
+                    )
                 ):
                     raise ValueError
                 value = value.decode("utf-8", errors="strict")
@@ -224,50 +233,116 @@ def decrypt_whatsapp_media(
     return plaintext
 
 
+def is_whatsapp_media_url(url: str) -> bool:
+    try:
+        parsed = urlsplit(url)
+        host = parsed.hostname
+        return (
+            parsed.scheme == "https"
+            and not parsed.username
+            and not parsed.password
+            and parsed.port in (None, 443)
+            and host is not None
+            and (host == "whatsapp.net" or host.endswith(".whatsapp.net"))
+        )
+    except ValueError:
+        return False
+
+
+def whatsapp_media_urls(descriptor: MediaDescriptor) -> tuple[str, ...]:
+    urls = []
+    if descriptor.url:
+        if not is_whatsapp_media_url(descriptor.url):
+            raise MediaIntegrityError("Invalid WhatsApp CDN URL.", code="media_invalid_descriptor")
+        urls.append(descriptor.url)
+    if descriptor.direct_path:
+        path = descriptor.direct_path
+        if not path.startswith("/") or path.startswith("//") or "\\" in path:
+            raise MediaIntegrityError("Invalid media direct path.", code="media_invalid_descriptor")
+        digest = base64.urlsafe_b64encode(descriptor.file_enc_sha256 or b"").rstrip(b"=").decode()
+        kind = {
+            "image": "image",
+            "video": "video",
+            "audio": "audio",
+            "document": "document",
+            "sticker": "image",
+        }[descriptor.media_kind]
+        url = (
+            "https://mmg.whatsapp.net"
+            + path
+            + ("&" if "?" in path else "?")
+            + urlencode({"hash": digest, "mms-type": kind, "__wa-mms": ""})
+        )
+        if not is_whatsapp_media_url(url):
+            raise MediaIntegrityError("Invalid media direct path.", code="media_invalid_descriptor")
+        if url not in urls:
+            urls.append(url)
+    if not urls:
+        raise MediaIntegrityError("Missing media location.", code="media_invalid_descriptor")
+    return tuple(urls)
+
+
 async def download_whatsapp_media(
     descriptor: MediaDescriptor,
     *,
     max_bytes: int = MAX_BYTES,
     http_transport: httpx.AsyncBaseTransport | None = None,
 ) -> bytes:
-    url = descriptor.url or (
-        "https://mmg.whatsapp.net" + descriptor.direct_path if descriptor.direct_path else ""
-    )
-    parsed = urlsplit(url)
-    if (
-        parsed.scheme != "https"
-        or parsed.username
-        or parsed.password
-        or parsed.fragment
-        or not parsed.hostname
-        or not (
-            parsed.hostname == "whatsapp.net"
-            or parsed.hostname.endswith(".whatsapp.net")
-            or parsed.hostname == "whatsapp.com"
-            or parsed.hostname.endswith(".whatsapp.com")
-        )
-    ):
-        raise MediaIntegrityError("Invalid WhatsApp CDN URL.", code="media_invalid_descriptor")
     if isinstance(max_bytes, bool) or max_bytes <= 0:
         raise ConfigurationError("max_bytes")
+    if descriptor.file_length is not None and descriptor.file_length > max_bytes:
+        raise MediaIntegrityError("Media exceeds size limit.", code="media_too_large")
+    if descriptor.file_sha256 is None:
+        raise MediaIntegrityError("Missing media plaintext hash.", code="media_invalid_descriptor")
+    urls = whatsapp_media_urls(descriptor)
     limit = min(
         max_bytes, descriptor.file_length if descriptor.file_length is not None else max_bytes
     )
     encrypted_limit = (limit // 16 + 1) * 16 + 10
-    data = bytearray()
     try:
-        async with (
-            httpx.AsyncClient(
-                transport=http_transport, trust_env=False, follow_redirects=False
-            ) as client,
-            client.stream("GET", url, headers={"Origin": "https://web.whatsapp.com"}) as response,
-        ):
-            if response.status_code >= 300:
-                raise ConnectionError("WhatsApp media download failed.", code="connection_error")
-            async for chunk in response.aiter_bytes():
-                if len(data) + len(chunk) > encrypted_limit:
-                    raise MediaIntegrityError("Media exceeds size limit.", code="media_too_large")
-                data.extend(chunk)
+        async with httpx.AsyncClient(
+            transport=http_transport, trust_env=False, follow_redirects=False
+        ) as client:
+            for index, url in enumerate(urls):
+                current = url
+                for hop in range(4):
+                    async with client.stream(
+                        "GET",
+                        current,
+                        headers={
+                            "Origin": "https://web.whatsapp.com",
+                            "Referer": "https://web.whatsapp.com/",
+                        },
+                    ) as response:
+                        if response.status_code in (301, 302, 303, 307, 308):
+                            location = response.headers.get("location")
+                            next_url = urljoin(current, location) if location else ""
+                            if not is_whatsapp_media_url(next_url):
+                                raise MediaIntegrityError(
+                                    "Invalid media redirect.", code="media_invalid_descriptor"
+                                )
+                            current = next_url
+                            if hop == 3:
+                                raise ConnectionError(
+                                    "Too many media redirects.", code="connection_error"
+                                )
+                            continue
+                        if response.status_code != 200:
+                            if index + 1 < len(urls):
+                                break
+                            raise ConnectionError(
+                                "WhatsApp media download failed.",
+                                code="connection_error",
+                                status=response.status_code,
+                            )
+                        data = bytearray()
+                        async for chunk in response.aiter_bytes():
+                            if len(data) + len(chunk) > encrypted_limit:
+                                raise MediaIntegrityError(
+                                    "Media exceeds size limit.", code="media_too_large"
+                                )
+                            data.extend(chunk)
+                        return decrypt_whatsapp_media(bytes(data), descriptor, max_bytes=max_bytes)
     except httpx.TransportError:
         raise ConnectionError("WhatsApp media download failed.", code="connection_error") from None
-    return decrypt_whatsapp_media(bytes(data), descriptor, max_bytes=max_bytes)
+    raise ConnectionError("WhatsApp media download failed.", code="connection_error")

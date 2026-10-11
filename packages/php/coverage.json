@@ -1102,9 +1102,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/messages/seen",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$messages->markSeen",
+      "testFile": "tests/run.php"
     },
     {
       "family": "messaging",
@@ -1118,17 +1118,17 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/messages/star",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$messages->star",
+      "testFile": "tests/run.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/messages/typing",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$messages->setTyping",
+      "testFile": "tests/run.php"
     },
     {
       "family": "messaging",
@@ -1982,17 +1982,17 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/sessions/{session}/client-rules",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$clientTokens->deleteRules",
+      "testFile": "tests/client_tokens.php"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/sessions/{sessionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$sessions->delete",
+      "testFile": "tests/sessions.php"
     },
     {
       "family": "platform",
@@ -3070,9 +3070,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$sessions->list",
+      "testFile": "tests/sessions.php"
     },
     {
       "family": "platform",
@@ -3086,17 +3086,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{session}/client-rules",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$clientTokens->retrieveRules",
+      "testFile": "tests/client_tokens.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{sessionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$sessions->retrieve",
+      "testFile": "tests/sessions.php"
     },
     {
       "family": "platform",
@@ -3110,9 +3110,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/me",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$sessions->account",
+      "testFile": "tests/sessions.php"
     },
     {
       "family": "platform",
@@ -3878,9 +3878,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/client-tokens",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$clientTokens->mint",
+      "testFile": "tests/client_tokens.php"
     },
     {
       "family": "platform",
@@ -4182,33 +4182,33 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/logout",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$sessions->logout",
+      "testFile": "tests/sessions.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/restart",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$sessions->restart",
+      "testFile": "tests/sessions.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/start",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$sessions->start",
+      "testFile": "tests/sessions.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/stop",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$sessions->stop",
+      "testFile": "tests/sessions.php"
     },
     {
       "family": "platform",
@@ -4574,17 +4574,17 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/sessions/{session}/client-rules",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$clientTokens->updateRules",
+      "testFile": "tests/client_tokens.php"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$sessions->update",
+      "testFile": "tests/sessions.php"
     },
     {
       "family": "platform",

@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Generic, Literal, TypedDict, TypeVar
+from typing import Generic, Literal, TypeVar
 
-from typing_extensions import NotRequired
+from typing_extensions import NotRequired, TypedDict
 
+from .configuration import ConfigurationPatch, ConfigurationView
 from .transport import JsonObject
 
 T = TypeVar("T")
@@ -39,9 +40,44 @@ class SendMessageOptions(SendMessage, total=False):
     replyTo: str
 
 
+class LinkedDeviceIds(TypedDict):
+    linked_devices: str
+    official_api: NotRequired[str]
+
+
+class OfficialApiIds(TypedDict):
+    official_api: str
+    linked_devices: NotRequired[str]
+
+
+WhatsAppMessageIds = LinkedDeviceIds | OfficialApiIds
+RoutingReason = Literal[
+    "explicit_transport",
+    "template",
+    "target_reference",
+    "only_eligible_transport",
+    "session_rule",
+    "project_rule",
+    "team_rule",
+    "default_linked_devices",
+]
+
+
+class StatusResult(TypedDict):
+    status: str
+
+
+class StarResult(TypedDict):
+    status: Literal["OK"]
+
+
 class MessageReceipt(TypedDict):
     id: str
-    whatsapp_ids: dict[str, str]
+    whatsapp_ids: WhatsAppMessageIds
+    whatsapp_id: NotRequired[str]
+    transport: NotRequired[Literal["linked_devices", "official_api"]]
+    routingReason: NotRequired[RoutingReason]
+    operationId: NotRequired[str]
     conversation: Conversation
     timestamp: str
     status: str
@@ -60,6 +96,7 @@ class Seen(TypedDict):
 
 class Reaction(Seen):
     reaction: str
+    transport: NotRequired[Literal["auto", "linked_devices", "official_api"]]
 
 
 class Star(Seen):
@@ -68,15 +105,21 @@ class Star(Seen):
 
 class Typing(TypedDict):
     conversation: Conversation
+    id: NotRequired[str]
     state: Literal["typing", "recording", "paused"]
 
 
-class MessageOperation(TypedDict, total=False):
+class OperationReceipt(TypedDict):
+    whatsapp_ids: WhatsAppMessageIds
+    timestamp: str
+
+
+class MessageOperation(TypedDict):
     operationId: str
     status: Literal["pending", "unknown", "completed", "rejected"]
-    transport: str
-    rejectionCode: str
-    receipt: MessageReceipt
+    transport: NotRequired[Literal["linked_devices", "official_api"]]
+    rejectionCode: NotRequired[Literal["hybrid_authority_unavailable"]]
+    receipt: NotRequired[OperationReceipt]
 
 
 class Session(TypedDict):
@@ -88,10 +131,14 @@ class Session(TypedDict):
     status: str
     createdAt: str
     updatedAt: str
+    externalId: NotRequired[str]
+    statusReason: NotRequired[str]
+    configuration: NotRequired[ConfigurationView]
+    newChatCapping: NotRequired[NewChatCapping | None]
 
 
 class SessionUpdate(TypedDict):
-    configuration: JsonObject
+    configuration: ConfigurationPatch
     revision: int
 
 
@@ -565,3 +612,68 @@ class PresenceSubscription(TypedDict):
 
 class AsyncAccepted(TypedDict):
     requestId: str
+
+
+class NewChatCapping(TypedDict):
+    enabled: bool | None
+    pacing: bool
+    status: Literal["none", "first_warning", "second_warning", "capped"] | None
+    capped: bool
+    limit: int | None
+    used: int | None
+    remaining: int | None
+    cycleStartsAt: str | None
+    resetsAt: str | None
+    observedAt: str
+
+
+class PlatformSession(TypedDict):
+    _id: str
+    _creationTime: int
+    projectId: str
+    sessionId: str
+    name: str
+    phone: str | None
+    platform: str | None
+    isBusiness: bool
+    testMode: bool
+    tierOverride: Literal["free", "standard", "pro", "scale"] | None
+    status: str
+    messageCount: int
+    lastActiveAt: int | None
+    paidUntil: int | None
+
+
+class SessionStarting(TypedDict):
+    starting: Literal[True]
+    sessionId: str
+
+
+class SessionStopping(TypedDict):
+    stopping: Literal[True]
+    sessionId: str
+
+
+class SessionRemoved(TypedDict):
+    removed: Literal[True]
+    sessionId: str
+
+
+class SessionAccount(Conversation):
+    pushName: str
+    businessName: NotRequired[str]
+    phonePlatform: NotRequired[Literal["android", "ios", "meta_cloud", "unknown"]]
+    accountType: NotRequired[
+        Literal["whatsapp_app", "business_app", "meta_cloud", "meta_coexistence"]
+    ]
+    profilePicUrl: NotRequired[str]
+
+
+class OperationAccepted(TypedDict):
+    success: Literal[True]
+    message: str
+    operationId: str
+
+
+class DataEnvelope(TypedDict, Generic[T]):
+    data: T

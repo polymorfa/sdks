@@ -6,7 +6,7 @@ namespace Polymorfa;
 
 final readonly class Credential
 {
-    private function __construct(public string $kind, private string $value)
+    private function __construct(public string $kind, #[\SensitiveParameter] private string $value)
     {
         if ($kind === 'organization_api_key' && preg_match('/^pmfa_(pt|ct|ls|at|wst|sd)_/', $value)) {
             throw new ConfigurationException('credential');
