@@ -134,17 +134,7 @@ async fn media_socket_authentication_audio_video_controls_and_cancellation() {
     let base = format!("http://{}", listener.local_addr().unwrap());
     let server = tokio::spawn(async move {
         let (socket, _) = listener.accept().await.unwrap();
-        let mut ws = accept_hdr_async(socket, |req: &Request, mut response: Response| {
-            assert_eq!(req.uri().to_string(), "/voip/calls/call%2Fone/media");
-            assert!(req.headers().get("authorization").is_none());
-            assert_eq!(req.headers()["sec-websocket-protocol"], "pmfa.calls.v2");
-            response
-                .headers_mut()
-                .insert("sec-websocket-protocol", "pmfa.calls.v2".parse().unwrap());
-            Ok(response)
-        })
-        .await
-        .unwrap();
+        let mut ws = accept_hdr_async(socket, media_handshake).await.unwrap();
         let auth = ws.next().await.unwrap().unwrap();
         assert_eq!(
             serde_json::from_str::<serde_json::Value>(auth.to_text().unwrap()).unwrap(),
@@ -235,16 +225,7 @@ async fn lifecycle_socket_authentication_candidates_events_and_revocation() {
     let base = format!("http://{}", listener.local_addr().unwrap());
     let server = tokio::spawn(async move {
         let (socket, _) = listener.accept().await.unwrap();
-        let mut ws = accept_hdr_async(socket, |req: &Request, response: Response| {
-            assert_eq!(
-                req.uri().to_string(),
-                "/voip/ws?session=s%2Fone&participant=bot"
-            );
-            assert!(req.headers().get("authorization").is_none());
-            Ok(response)
-        })
-        .await
-        .unwrap();
+        let mut ws = accept_hdr_async(socket, lifecycle_handshake).await.unwrap();
         let auth = ws.next().await.unwrap().unwrap();
         assert_eq!(
             serde_json::from_str::<serde_json::Value>(auth.to_text().unwrap()).unwrap(),
@@ -313,4 +294,35 @@ fn media_protocol_rejects_invalid_known_and_future_frames() {
     }
     assert!(decode_media(&[1, 0]).is_none());
     assert!(decode_media(&[2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]).is_none());
+}
+
+// tungstenite fixes this callback's error type to an unboxed HTTP response.
+// The SDK's own public errors stay boxed; these handshake fixtures cannot alter
+// the upstream callback contract and never construct an error response.
+#[allow(clippy::result_large_err)]
+fn media_handshake(
+    req: &Request,
+    mut response: Response,
+) -> std::result::Result<Response, tokio_tungstenite::tungstenite::handshake::server::ErrorResponse>
+{
+    assert_eq!(req.uri().to_string(), "/voip/calls/call%2Fone/media");
+    assert!(req.headers().get("authorization").is_none());
+    assert_eq!(req.headers()["sec-websocket-protocol"], "pmfa.calls.v2");
+    response
+        .headers_mut()
+        .insert("sec-websocket-protocol", "pmfa.calls.v2".parse().unwrap());
+    Ok(response)
+}
+#[allow(clippy::result_large_err)]
+fn lifecycle_handshake(
+    req: &Request,
+    response: Response,
+) -> std::result::Result<Response, tokio_tungstenite::tungstenite::handshake::server::ErrorResponse>
+{
+    assert_eq!(
+        req.uri().to_string(),
+        "/voip/ws?session=s%2Fone&participant=bot"
+    );
+    assert!(req.headers().get("authorization").is_none());
+    Ok(response)
 }
