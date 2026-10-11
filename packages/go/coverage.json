@@ -70,9 +70,9 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/official-groups/{group}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.Delete",
+      "testFile": "official_groups_test.go"
     },
     {
       "family": "messaging",
@@ -86,9 +86,9 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/templates/{name}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.Delete",
+      "testFile": "cloud_templates_test.go"
     },
     {
       "family": "messaging",
@@ -454,33 +454,33 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.List",
+      "testFile": "official_groups_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups/{group}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.Retrieve",
+      "testFile": "official_groups_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups/{group}/invite-link",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.GetInviteLink",
+      "testFile": "official_groups_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups/{group}/join-requests",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.ListJoinRequests",
+      "testFile": "official_groups_test.go"
     },
     {
       "family": "messaging",
@@ -542,17 +542,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/templates",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.List",
+      "testFile": "cloud_templates_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/templates/{name}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.Retrieve",
+      "testFile": "cloud_templates_test.go"
     },
     {
       "family": "messaging",
@@ -803,17 +803,17 @@
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/official-groups/{group}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.Update",
+      "testFile": "official_groups_test.go"
     },
     {
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/templates/{name}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.Update",
+      "testFile": "cloud_templates_test.go"
     },
     {
       "family": "messaging",
@@ -1129,49 +1129,49 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.Create",
+      "testFile": "official_groups_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/invite-link/reset",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.ResetInviteLink",
+      "testFile": "official_groups_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/join-requests/approve",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.ApproveJoinRequests",
+      "testFile": "official_groups_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/join-requests/reject",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.RejectJoinRequests",
+      "testFile": "official_groups_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/participants/remove",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.RemoveParticipants",
+      "testFile": "official_groups_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/pins",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.Pin",
+      "testFile": "official_groups_test.go"
     },
     {
       "family": "messaging",
@@ -1201,9 +1201,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/templates",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.Create",
+      "testFile": "cloud_templates_test.go"
     },
     {
       "family": "messaging",
@@ -1926,9 +1926,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/media/{mediaId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Media.Delete",
+      "testFile": "settings_test.go"
     },
     {
       "family": "platform",
@@ -2750,9 +2750,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/gates",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Usage.ListGates",
+      "testFile": "settings_test.go"
     },
     {
       "family": "platform",
@@ -2774,9 +2774,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/media/{mediaId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Media.Retrieve",
+      "testFile": "settings_test.go"
     },
     {
       "family": "platform",
@@ -2855,16 +2855,16 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/events/{eventId}",
       "status": "covered",
-      "sdkMethod": "ProjectClient.Events.Retrieve",
-      "testFile": "developer_test.go"
+      "sdkMethod": "ProjectClient.Events.Stream",
+      "testFile": "event_stream_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/events/stream",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Events.Stream",
+      "testFile": "event_stream_test.go"
     },
     {
       "family": "platform",
@@ -2982,17 +2982,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/quicklink",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.QuickLinkSettings.Retrieve",
+      "testFile": "settings_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/session-configuration",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SessionConfiguration.Retrieve",
+      "testFile": "settings_test.go"
     },
     {
       "family": "platform",
@@ -3116,17 +3116,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/usage",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Usage.Summary",
+      "testFile": "settings_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/usage/records",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Usage.ListRecords",
+      "testFile": "settings_test.go"
     },
     {
       "family": "platform",
@@ -3909,9 +3909,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/media/uploads",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Media.CreateUpload",
+      "testFile": "settings_test.go"
     },
     {
       "family": "platform",
@@ -3965,9 +3965,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/events/stream/{streamId}/ack",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Events.AcknowledgeStream",
+      "testFile": "event_stream_test.go"
     },
     {
       "family": "platform",
@@ -4411,17 +4411,17 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/quicklink",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.QuickLinkSettings.Update",
+      "testFile": "settings_test.go"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/session-configuration",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SessionConfiguration.Update",
+      "testFile": "settings_test.go"
     },
     {
       "family": "platform",

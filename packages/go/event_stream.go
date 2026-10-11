@@ -3,11 +3,13 @@ package polymorfa
 import (
 	"bufio"
 	"context"
+	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io"
 	"iter"
+	"math/big"
 	"net/http"
 	"net/url"
 	"strings"
@@ -49,11 +51,12 @@ type EventStreamAcknowledgementReceipt struct {
 	Replayed           bool   `json:"replayed"`
 }
 type EventStream struct {
-	t      *transport
-	path   string
-	params EventStreamParams
-	mu     sync.Mutex
-	cursor string
+	t         *transport
+	path      string
+	params    EventStreamParams
+	mu        sync.Mutex
+	cursor    string
+	delivered uint64
 }
 
 func (r *Events) streamPath(project string) (string, error) {
@@ -103,7 +106,16 @@ func (s *EventStream) Items(ctx context.Context) iter.Seq2[EventStreamItem, erro
 			if ctx.Err() != nil {
 				return
 			}
+			s.mu.Lock()
+			before := s.delivered
+			s.mu.Unlock()
 			err, stopped := s.consume(ctx, yield)
+			s.mu.Lock()
+			madeProgress := s.delivered > before
+			s.mu.Unlock()
+			if madeProgress {
+				delay = s.params.InitialDelay
+			}
 			if stopped || ctx.Err() != nil {
 				return
 			}
@@ -112,10 +124,17 @@ func (s *EventStream) Items(ctx context.Context) iter.Seq2[EventStreamItem, erro
 				yield(EventStreamItem{}, err)
 				return
 			}
-			if s.params.OnReconnect != nil {
-				s.params.OnReconnect(err, delay)
+			if errors.As(err, &apiError) && apiError.Code == "stream_expiry" {
+				delay = s.params.InitialDelay
 			}
-			if sleep(ctx, delay) != nil {
+			wait := streamJitter(delay)
+			if apiError != nil && apiError.Metadata.Headers.Get("Retry-After") != "" {
+				wait = min(retryDelay(&http.Response{Header: apiError.Metadata.Headers}, 1), s.params.MaxDelay)
+			}
+			if s.params.OnReconnect != nil {
+				s.params.OnReconnect(err, wait)
+			}
+			if sleep(ctx, wait) != nil {
 				return
 			}
 			delay = min(delay*2, s.params.MaxDelay)
@@ -123,6 +142,8 @@ func (s *EventStream) Items(ctx context.Context) iter.Seq2[EventStreamItem, erro
 	}
 }
 func (s *EventStream) consume(ctx context.Context, yield func(EventStreamItem, error) bool) (error, bool) {
+	streamCtx, cancel := context.WithCancelCause(ctx)
+	defer cancel(nil)
 	q := url.Values{}
 	if len(s.params.Types) > 0 {
 		q.Set("types", strings.Join(s.params.Types, ","))
@@ -134,7 +155,7 @@ func (s *EventStream) consume(ctx context.Context, yield func(EventStreamItem, e
 	if cursor := s.Cursor(); cursor != "" {
 		h.Set("Last-Event-ID", cursor)
 	}
-	resp, md, err := s.t.open(ctx, "GET", s.path, q, nil, noRetry(RequestOptions{Headers: h, Timeout: s.params.Timeout}), true)
+	resp, md, err := s.t.open(streamCtx, "GET", s.path, q, nil, noRetry(RequestOptions{Headers: h, Timeout: s.params.Timeout}), true)
 	if err != nil {
 		return err, false
 	}
@@ -142,7 +163,9 @@ func (s *EventStream) consume(ctx context.Context, yield func(EventStreamItem, e
 	if resp.StatusCode >= 300 || !strings.Contains(resp.Header.Get("Content-Type"), "text/event-stream") {
 		return &Error{Kind: ServerError, Code: "invalid_response", Message: "Expected an SSE event stream.", Metadata: md}, false
 	}
-	scanner := bufio.NewScanner(resp.Body)
+	watch := newStreamWatchdog(resp.Body, cancel)
+	defer watch.close()
+	scanner := bufio.NewScanner(watch)
 	scanner.Split(splitSSELines)
 	scanner.Buffer(make([]byte, 4096), 1<<20)
 	var data []string
@@ -153,14 +176,15 @@ func (s *EventStream) consume(ctx context.Context, yield func(EventStreamItem, e
 				continue
 			}
 			var frame struct {
-				Type            string        `json:"type"`
-				Event           PlatformEvent `json:"event"`
-				StreamID        string        `json:"streamId"`
-				Sequence        int64         `json:"sequence"`
-				Cursor          string        `json:"cursor"`
-				Reason          string        `json:"reason"`
-				MissedEvents    int64         `json:"missedEvents"`
-				RequestedCursor *string       `json:"requestedCursor"`
+				HeartbeatIntervalMS int64         `json:"heartbeatIntervalMs"`
+				Type                string        `json:"type"`
+				Event               PlatformEvent `json:"event"`
+				StreamID            string        `json:"streamId"`
+				Sequence            int64         `json:"sequence"`
+				Cursor              string        `json:"cursor"`
+				Reason              string        `json:"reason"`
+				MissedEvents        int64         `json:"missedEvents"`
+				RequestedCursor     *string       `json:"requestedCursor"`
 			}
 			err := json.Unmarshal([]byte(strings.Join(data, "\n")), &frame)
 			data = nil
@@ -168,6 +192,10 @@ func (s *EventStream) consume(ctx context.Context, yield func(EventStreamItem, e
 				return &Error{Kind: ServerError, Code: "invalid_response", Message: "Invalid event stream frame."}, false
 			}
 			switch frame.Type {
+			case "ready":
+				if frame.HeartbeatIntervalMS > 0 {
+					watch.setInterval(time.Duration(frame.HeartbeatIntervalMS) * time.Millisecond)
+				}
 			case "event":
 				item := EventStreamItem{Event: frame.Event, StreamID: frame.StreamID, Sequence: frame.Sequence, Cursor: frame.Cursor}
 				if frame.Event.Payload != nil {
@@ -182,6 +210,9 @@ func (s *EventStream) consume(ctx context.Context, yield func(EventStreamItem, e
 					item.Webhook = &event
 				}
 				s.setCursor(frame.Cursor)
+				s.mu.Lock()
+				s.delivered++
+				s.mu.Unlock()
 				if !yield(item, nil) {
 					return nil, true
 				}
@@ -199,7 +230,9 @@ func (s *EventStream) consume(ctx context.Context, yield func(EventStreamItem, e
 				}
 			case "revoked":
 				return &Error{Kind: AuthorizationError, Code: "stream_revoked", Message: "Event stream authorization was revoked."}, false
-			case "expiry", "dropped":
+			case "expiry":
+				return &Error{Kind: ConnectionError, Code: "stream_expiry", Message: "Event stream expired."}, false
+			case "dropped":
 				return io.EOF, false
 			}
 			continue
@@ -215,6 +248,9 @@ func (s *EventStream) consume(ctx context.Context, yield func(EventStreamItem, e
 		if field == "data" {
 			data = append(data, value)
 		}
+	}
+	if cause := context.Cause(streamCtx); cause != nil {
+		return cause, false
 	}
 	if err := scanner.Err(); err != nil {
 		return &Error{Kind: ConnectionError, Message: "Event stream connection closed."}, false
@@ -242,3 +278,47 @@ func splitSSELines(data []byte, atEOF bool) (advance int, token []byte, err erro
 	}
 	return 0, nil, nil
 }
+
+func streamJitter(ceiling time.Duration) time.Duration {
+	n, err := rand.Int(rand.Reader, big.NewInt(int64(ceiling/2)+1))
+	if err != nil {
+		return ceiling
+	}
+	return ceiling/2 + time.Duration(n.Int64())
+}
+
+type streamWatchdog struct {
+	reader   io.Reader
+	mu       sync.Mutex
+	timer    *time.Timer
+	interval time.Duration
+	closed   bool
+}
+
+func newStreamWatchdog(r io.Reader, cancel context.CancelCauseFunc) *streamWatchdog {
+	w := &streamWatchdog{reader: r, interval: 30 * time.Second}
+	w.timer = time.AfterFunc(w.interval, func() {
+		cancel(&Error{Kind: ConnectionError, Code: "heartbeat_missed", Message: "Event stream heartbeat was missed."})
+	})
+	return w
+}
+func (w *streamWatchdog) Read(p []byte) (int, error) {
+	n, err := w.reader.Read(p)
+	if n > 0 {
+		w.mu.Lock()
+		if !w.closed {
+			w.timer.Reset(w.interval)
+		}
+		w.mu.Unlock()
+	}
+	return n, err
+}
+func (w *streamWatchdog) setInterval(interval time.Duration) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	w.interval = interval * 2
+	if !w.closed {
+		w.timer.Reset(w.interval)
+	}
+}
+func (w *streamWatchdog) close() { w.mu.Lock(); defer w.mu.Unlock(); w.closed = true; w.timer.Stop() }

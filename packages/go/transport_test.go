@@ -501,3 +501,55 @@ func TestSharedWireFixtures(t *testing.T) {
 		})
 	}
 }
+
+func TestOperationAdmissionIsFinal(t *testing.T) {
+	for _, code := range []int{409, 429, 503} {
+		t.Run(http.StatusText(code), func(t *testing.T) {
+			attempts := 0
+			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				attempts++
+				w.Header().Set("Content-Type", "application/json")
+				w.Header().Set("X-Polymorfa-Operation-Id", "operation-admitted")
+				w.Header().Set("Retry-After", "0")
+				w.WriteHeader(code)
+				io.WriteString(w, `{"error":{"code":"admitted","message":"Operation admitted"}}`)
+			}))
+			defer s.Close()
+			_, err := mustMessaging(t, s.URL).Raw(context.Background(), RawRequest{Method: "POST", Path: "/write", Options: RequestOptions{IdempotencyKey: "stable"}})
+			var e *Error
+			if !errors.As(err, &e) || e.Metadata.OperationID != "operation-admitted" || attempts != 1 {
+				t.Fatal(attempts, err)
+			}
+		})
+	}
+	for _, failure := range []string{"timeout", "truncated"} {
+		t.Run(failure, func(t *testing.T) {
+			attempts := 0
+			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				attempts++
+				w.Header().Set("Content-Type", "application/json")
+				w.Header().Set("X-Polymorfa-Operation-Id", "operation-admitted")
+				w.Header().Set("X-Request-Id", "request-admitted")
+				w.Header().Set("Content-Length", "100")
+				io.WriteString(w, `{"data":`)
+				w.(http.Flusher).Flush()
+				if failure == "timeout" {
+					time.Sleep(50 * time.Millisecond)
+				}
+			}))
+			defer s.Close()
+			_, err := mustMessaging(t, s.URL).Raw(context.Background(), RawRequest{Method: "GET", Path: "/body", Options: RequestOptions{Timeout: 10 * time.Millisecond}})
+			var e *Error
+			if !errors.As(err, &e) || e.Metadata.OperationID != "operation-admitted" || e.RequestID != "request-admitted" || !strings.Contains(e.Message, "Query the operation status") || attempts != 1 {
+				t.Fatal(attempts, err)
+			}
+			want := ConnectionError
+			if failure == "timeout" {
+				want = TimeoutError
+			}
+			if e.Kind != want {
+				t.Fatal(e.Kind)
+			}
+		})
+	}
+}

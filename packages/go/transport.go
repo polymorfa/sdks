@@ -308,6 +308,10 @@ func (t *transport) open(ctx context.Context, method, path string, q url.Values,
 		for k, v := range o.Headers {
 			req.Header[k] = append([]string(nil), v...)
 		}
+		if t.config.Credential.Value != "" {
+			req.Header.Set("Authorization", "Bearer "+t.config.Credential.Value)
+		}
+		req.Header.Set("Polymorfa-Version", version)
 		if key != "" {
 			req.Header.Set("Idempotency-Key", key)
 		}
@@ -333,7 +337,7 @@ func (t *transport) open(ctx context.Context, method, path string, q url.Values,
 		}
 		md := metadata(resp, attempt)
 		retryable := resp.StatusCode == 408 || resp.StatusCode == 409 || resp.StatusCode == 429 || resp.StatusCode >= 500
-		if safe && retryable && attempt <= retries && resp.Header.Get("Idempotent-Replayed") != "true" {
+		if safe && retryable && attempt <= retries && resp.Header.Get("Idempotent-Replayed") != "true" && len(resp.Header.Values("X-Polymorfa-Operation-Id")) == 0 {
 			delay := retryDelay(resp, attempt)
 			io.Copy(io.Discard, io.LimitReader(resp.Body, 65536))
 			resp.Body.Close()
@@ -424,7 +428,7 @@ func retryDelay(r *http.Response, attempt int) time.Duration {
 func decodeError(r *http.Response, md Metadata) error {
 	e := &Error{Status: r.StatusCode, RequestID: md.RequestID, Metadata: md, RateLimitReason: r.Header.Get("Polymorfa-RateLimit-Reason"), Message: fmt.Sprintf("Polymorfa API returned HTTP %d.", r.StatusCode)}
 	switch r.StatusCode {
-	case 400, 422:
+	case 400, 413, 422:
 		e.Kind = ValidationError
 	case 401:
 		e.Kind = AuthenticationError
@@ -442,6 +446,7 @@ func decodeError(r *http.Response, md Metadata) error {
 		e.Kind = ServerError
 	}
 	var v struct {
+		Docs  string `json:"docs"`
 		Error struct {
 			Code          string          `json:"code"`
 			Message       string          `json:"message"`
@@ -461,6 +466,9 @@ func decodeError(r *http.Response, md Metadata) error {
 		}
 		e.RequestLogURL = v.Error.RequestLogURL
 		e.DocURL = v.Error.Docs
+		if e.DocURL == "" {
+			e.DocURL = v.Docs
+		}
 		e.Details = v.Error.Details
 	}
 	return e
@@ -485,10 +493,13 @@ func request[T any](ctx context.Context, t *transport, method, path string, q ur
 	dec := json.NewDecoder(resp.Body)
 	if err := dec.Decode(&result.Data); err != nil {
 		if ctx.Err() != nil {
-			return result, contextError(ctx, err)
+			return result, responseBodyError(ctx, resp, md, err)
 		}
 		if resp.Request != nil && resp.Request.Context().Err() != nil {
-			return result, networkError(err, true)
+			return result, responseBodyError(ctx, resp, md, err)
+		}
+		if md.OperationID != "" || err == io.ErrUnexpectedEOF {
+			return result, responseBodyError(ctx, resp, md, err)
 		}
 		return result, &Error{Kind: ServerError, Code: "invalid_response", Message: "The Polymorfa API returned invalid JSON.", Metadata: md, Cause: err}
 	}
@@ -511,4 +522,29 @@ func unwrapped[T any](ctx context.Context, t *transport, method, path string, q 
 	}
 	result.Data = *r.Data.Data
 	return result, nil
+}
+
+func responseBodyError(ctx context.Context, r *http.Response, md Metadata, cause error) error {
+	var e *Error
+	if ctx.Err() != nil {
+		e = contextError(ctx, cause).(*Error)
+	} else {
+		timeout := r.Request != nil && r.Request.Context().Err() != nil
+		e = networkError(cause, timeout).(*Error)
+	}
+	e.Metadata, e.RequestID, e.Status = md, md.RequestID, md.Status
+	if e.Kind == TimeoutError {
+		e.Code = "request_timeout"
+	} else if e.Kind == CancelledError {
+		e.Code = "request_cancelled"
+	} else {
+		e.Code = "connection_error"
+	}
+	if md.OperationID != "" && e.Kind != CancelledError {
+		e.Message = "The response body could not be read. Query the operation status before retrying."
+		if e.Kind == TimeoutError {
+			e.Message = "The response body timed out. Query the operation status before retrying."
+		}
+	}
+	return e
 }
