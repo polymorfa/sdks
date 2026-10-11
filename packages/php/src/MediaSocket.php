@@ -36,8 +36,9 @@ final class MediaSocket
         $this->url = preg_replace('/^http/', 'ws', rtrim($baseUrl, '/')).'/voip/calls/'.rawurlencode($callId).'/media';
         $this->connector = \Closure::fromCallable($connector ?? static fn (string $url, ?string $protocol, float $timeout): CallSocket => new NativeCallSocket($url, $protocol, $timeout));
     }
-    public function connect(): void
+    public function connect(?CancellationToken $cancellation = null): void
     {
+        $cancellation?->throwIfCancelled();
         if ($this->connected) {
             return;
         }
@@ -50,7 +51,11 @@ final class MediaSocket
             $this->socket->send(json_encode($auth, JSON_THROW_ON_ERROR));
             $deadline = microtime(true) + $this->readyTimeout;
             while (microtime(true) < $deadline) {
-                $received = $this->socket->receive();
+                $cancellation?->throwIfCancelled();
+                $received = $this->socket instanceof PollingCallSocket ? $this->socket->poll(min(0.1, max(0.001, $deadline - microtime(true)))) : $this->socket->receive();
+                if ($received === null) {
+                    continue;
+                }
                 if ($received['binary']) {
                     continue;
                 }
@@ -63,7 +68,7 @@ final class MediaSocket
                     if ($code === 'call_claimed') {
                         throw new ConflictException('Call claimed by another participant.', $code);
                     }
-                    throw new AuthorizationException('Call media connection refused.', $code);
+                    throw CallsSocketErrors::control($code);
                 }
                 if (($control['type'] ?? '') === 'ready') {
                     if (!is_int($control['sampleRate'] ?? null) || $control['sampleRate'] <= 0 || !is_bool($control['video'] ?? null)) {
@@ -157,6 +162,27 @@ final class MediaSocket
                 }
             }
         }
+    }
+    /** @return AudioFrame|VideoFrame|array<string,mixed>|null */
+    public function poll(float $timeout): AudioFrame|VideoFrame|array|null
+    {
+        $socket = $this->attached();
+        if (!$socket instanceof PollingCallSocket) {
+            throw new ConfigurationException('pollingSocket');
+        }
+        $received = $socket->poll($timeout);
+        if ($received === null) {
+            return null;
+        }
+        if ($received['binary']) {
+            return self::decodeFrame($received['data']);
+        }
+        $control = json_decode($received['data'], true);
+        if (!is_array($control) || array_is_list($control)) {
+            return null;
+        }
+        /** @var array<string,mixed> $control */
+        return $control;
     }
     public function ping(): void
     {
