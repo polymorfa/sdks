@@ -45,6 +45,19 @@ const baselineMessaging = load("messaging");
 const abpropsContract = JSON.parse(
   readFileSync(resolve(root, "contracts/abprops-capabilities.json"), "utf8"),
 ) as OpenApiDocument;
+const pausedReasonsContract = JSON.parse(
+  readFileSync(resolve(root, "contracts/campaign-paused-reasons.json"), "utf8"),
+) as {
+  readonly commit: string;
+  readonly sources: {
+    readonly messaging: {
+      readonly sourcePath: string;
+      readonly sourceSha256: string;
+      readonly schemas: Readonly<Record<string, Schema>>;
+    };
+  };
+};
+const pausedReasons = pausedReasonsContract.sources.messaging.schemas;
 // Consume the capability event from its exact scoped source revision.
 const messaging: OpenApiDocument = {
   components: {
@@ -54,6 +67,10 @@ const messaging: OpenApiDocument = {
         abpropsContract.components.schemas.SessionCapabilitiesUpdatedPayload!,
       SessionCapabilitiesUpdatedEvent:
         abpropsContract.components.schemas.SessionCapabilitiesUpdatedEvent!,
+      // Campaign pause reasons and skip timestamps from their merged API revision.
+      CampaignPausedPayload: pausedReasons.CampaignPausedPayload!,
+      CampaignRecipientSkippedPayload:
+        pausedReasons.CampaignRecipientSkippedPayload!,
     },
   },
 };
@@ -631,7 +648,15 @@ const PAYLOADS: {
     ["campaignId", "name", "recipientCount", "scheduled", "launchedAt"],
   ),
   "campaign.paused": shape<P["campaign.paused"]>()(
-    { ...campaign, sentCount: 10, remainingCount: 5, pausedAt: 1 },
+    {
+      ...campaign,
+      sentCount: 10,
+      remainingCount: 5,
+      pausedAt: 1,
+      reason:
+        "WhatsApp lowered the messaging limit of a number this campaign sends from.",
+      code: "messaging_limit_dropped",
+    },
     ["campaignId", "sentCount", "remainingCount", "pausedAt"],
   ),
   "campaign.rescheduled": shape<P["campaign.rescheduled"]>()(
@@ -726,8 +751,8 @@ const PAYLOADS: {
       ...campaign,
       recipientId: "rcp_1",
       phone: "+15551234567",
-      reason: "opted_out",
-      skippedAt: 5,
+      reason: "whatsapp_marketing_limit",
+      skippedAt: 1_790_000_004_000,
     },
     ["campaignId", "recipientId", "phone", "reason", "skippedAt"],
   ),
