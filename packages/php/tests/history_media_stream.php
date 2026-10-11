@@ -43,16 +43,17 @@ nativeCases([
         }
     }, 'cancelled', ['bodyDelaySeconds' => 0.2]],
     ['GET', $historyPath, null, 'AB', static function ($client) {
-        $download = $client->chats->downloadMessageMediaStream('support/one', 'chat/one', 'message/one', new Polymorfa\RequestOptions(timeout: 0.05, maxNetworkRetries: 2));
+        // Allow response admission first; the three-second body delay exceeds this budget.
+        $download = $client->chats->downloadMessageMediaStream('support/one', 'chat/one', 'message/one', new Polymorfa\RequestOptions(timeout: 1, maxNetworkRetries: 2));
         try {
             check($download->body->read(1) === 'A', 'Native history timeout follows a real admitted body prefix');
             $error = raises(fn () => $download->body->getContents(), Polymorfa\ConnectionException::class);
-            check($error->metadata->operationId === 'history_operation' && $error->metadata->requestId === 'native_request' && $error->metadata->attempts === 1, 'History body read failure retains admission and request metadata without restarting stream');
+            check($error->metadata->operationId === 'history_operation' && $error->metadata->requestId === 'native_request' && $error->metadata->attempts === 1, 'History body read failure retains admission and request metadata without restarting stream: '.json_encode(['operationId' => $error->metadata?->operationId, 'requestId' => $error->metadata?->requestId, 'attempts' => $error->metadata?->attempts], JSON_THROW_ON_ERROR));
             return new Polymorfa\ApiResponse('body_failure', $error->metadata);
         } finally {
             $download->close();
         }
-    }, 'body_failure', ['bodyDelaySeconds' => 0.2, 'responseHeaders' => ['X-Polymorfa-Operation-Id' => 'history_operation']]],
+    }, 'body_failure', ['bodyDelaySeconds' => 3, 'responseHeaders' => ['X-Polymorfa-Operation-Id' => 'history_operation']]],
 ], static fn ($provided, $url) => new Polymorfa\MessagingClient($provided, baseUrl: $url));
 
 foreach ([Polymorfa\Credential::clientToken('pmfa_ct_fixture'), $credential] as $historyCredential) {
