@@ -23,6 +23,7 @@ pub mod errors;
 pub mod groups;
 pub mod history;
 pub mod media;
+pub mod media_stream;
 pub mod message_content;
 pub mod messaging;
 pub mod models;

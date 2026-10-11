@@ -216,3 +216,13 @@ pub const POLYMORFA_ERROR_CODES: &[&str] = &[
 pub fn is_known_error_code(code: &str) -> bool {
     POLYMORFA_ERROR_CODES.contains(&code)
 }
+
+impl From<std::io::Error> for Error {
+    fn from(_: std::io::Error) -> Self {
+        Self::local(
+            ErrorKind::Connection,
+            "The I/O operation failed.",
+            "connection_error",
+        )
+    }
+}

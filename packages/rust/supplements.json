@@ -1,0 +1,176 @@
+{
+  "schemaVersion": 1,
+  "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9",
+  "operations": [
+    {
+      "sdkMethod": "MessagingClient.cloud_catalogs().list",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/product_catalogs",
+      "status": "covered",
+      "testFile": "tests/cloud_graph.rs"
+    },
+    {
+      "sdkMethod": "MessagingClient.cloud_catalogs().list_products",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/product_catalogs/123/products",
+      "status": "covered",
+      "testFile": "tests/cloud_graph.rs"
+    },
+    {
+      "sdkMethod": "MessagingClient.cloud_marketing().status",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/marketing_messages/status",
+      "status": "covered",
+      "testFile": "tests/cloud_graph.rs"
+    },
+    {
+      "sdkMethod": "MessagingClient.flow_encryption().retrieve",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/phone/whatsapp_business_encryption",
+      "status": "covered",
+      "testFile": "tests/cloud_graph.rs"
+    },
+    {
+      "sdkMethod": "MessagingClient.flow_encryption().register",
+      "method": "POST",
+      "fixturePath": "/graph/whatsapp/v26.0/phone/whatsapp_business_encryption",
+      "status": "covered",
+      "testFile": "tests/cloud_graph.rs"
+    },
+    {
+      "sdkMethod": "MessagingClient.testing().get_phone",
+      "method": "GET",
+      "fixturePath": "/messaging/testing/project/numbers/support/phone",
+      "status": "covered",
+      "testFile": "tests/onboarding.rs"
+    },
+    {
+      "sdkMethod": "MessagingClient.testing().send_phone_message",
+      "method": "POST",
+      "fixturePath": "/messaging/testing/project/numbers/support/phone/messages",
+      "status": "covered",
+      "testFile": "tests/onboarding.rs"
+    },
+    {
+      "sdkMethod": "MessagingClient.testing().unlink_phone_device",
+      "method": "POST",
+      "fixturePath": "/messaging/testing/project/numbers/support/phone/devices/2/unlink",
+      "status": "covered",
+      "testFile": "tests/onboarding.rs"
+    },
+    {
+      "sdkMethod": "MessagingClient.campaigns().update",
+      "method": "PATCH",
+      "fixturePath": "/messaging/projects/project/campaigns/campaign",
+      "status": "covered",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "sdkMethod": "MessagingClient.campaigns().reschedule",
+      "method": "POST",
+      "fixturePath": "/messaging/projects/project/campaigns/campaign/reschedule",
+      "status": "covered",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "sdkMethod": "PlatformClient.campaigns().reschedule",
+      "method": "POST",
+      "fixturePath": "/platform/campaigns/campaign/reschedule",
+      "status": "covered",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "sdkMethod": "PlatformClient.request_logs().list",
+      "method": "GET",
+      "fixturePath": "/platform/projects/project/request-logs",
+      "status": "covered",
+      "testFile": "tests/request_logs.rs"
+    }
+  ],
+  "helpers": [
+    {
+      "sdkMethod": "Events.live_source / EventStream.live_source / EventStreamSource.subscribe / EventSubscription.close",
+      "status": "covered",
+      "testFile": "tests/events.rs",
+      "behavior": "Native HTTP retained payloads, bodyless skips, resume cursor, CR/CRLF fragmentation, revocation callbacks, isolated unsubscribe and socket closure."
+    },
+    {
+      "sdkMethod": "Events.stream / Events.list (after_offset) / Events.acknowledge_stream",
+      "status": "covered",
+      "testFile": "tests/events.rs",
+      "behavior": "Native SSE checkpoint resume, retention gaps, expiry reconnect, manual acknowledgement, revoked termination, offset pagination and cancellation."
+    },
+    {
+      "sdkMethod": "PlatformClient.request_logs / ProjectClient.request_logs / RequestLogs.list / follow / tail",
+      "status": "covered",
+      "testFile": "tests/request_logs.rs",
+      "behavior": "Typed native HTTP filters, cursor/project isolation, chronological backfill, follow paging, retry budgets and cancellation."
+    },
+    {
+      "sdkMethod": "VoiceAudio.upload / VoiceAudio.upload_stream",
+      "status": "covered",
+      "testFile": "tests/voice_upload.rs",
+      "behavior": "Native asset create/storage PUT/complete flow, exact bytes, fresh completion identity, isolated signed storage redirects, bounded upload validation and failure redaction."
+    },
+    {
+      "sdkMethod": "CallsClient / Call.answer / CallsClient.place / Call.leave / Call.send_reaction / Call.set_hand_raised / Call.snapshot",
+      "status": "covered",
+      "testFile": "tests/calls_runtime.rs",
+      "behavior": "Native lifecycle/media WebSocket and HTTP orchestration, client-grant identity omission, claim state, early events, token refresh, stable reconnect and media preferences, typed participant/video owner snapshots."
+    },
+    {
+      "sdkMethod": "CallsTokenSource.get / invalidate",
+      "status": "covered",
+      "testFile": "tests/calls_token.rs",
+      "behavior": "Cached credentials, async single-flight, refresh generations and independent cancellation."
+    },
+    {
+      "sdkMethod": "MediaSocket.read / write_audio / write_video / set_media_state",
+      "status": "covered",
+      "testFile": "tests/calls.rs",
+      "behavior": "Native authentication-first WebSocket framing, PCM16, H264 full u64 timestamps, outgoing source zero, typed source and keyframe frames, cancellation and credential-free handshake."
+    },
+    {
+      "sdkMethod": "CallReporter.error / quality / stop",
+      "status": "covered",
+      "testFile": "tests/calls_diagnostics.rs",
+      "behavior": "Typed technical diagnostics, sanitization, rate and numeric bounds, detached requests and permanent refusal."
+    },
+    {
+      "sdkMethod": "Media.download_stream / download / download_url",
+      "status": "covered",
+      "testFile": "tests/media.rs",
+      "behavior": "Native API and storage body streams, redirect credential confinement, response metadata, filename decoding and signed expiry."
+    },
+    {
+      "sdkMethod": "MediaDecryptor / decrypt_stream / MediaDownloadStream.into_bytes / write_to_file / Media.download_from_whatsapp_stream / download_from_whatsapp_message",
+      "status": "covered",
+      "testFile": "tests/media_stream.rs",
+      "behavior": "Five independent vectors and9 fragment sizes in both verification modes; native CA-validated HTTPS CDN requests, signed redirects and host confinement; bounded sizes, pending cancellation, Unix atomic file preservation and aborted-future cleanup."
+    },
+    {
+      "sdkMethod": "construct_event / WebhookEvent / KnownWebhookPayload",
+      "status": "covered",
+      "testFile": "tests/webhook_payloads.rs",
+      "behavior": "Native raw-body HMAC verification, all84 handwritten known payload discriminators, nested variants and future-event preservation."
+    },
+    {
+      "sdkMethod": "POLYMORFA_ERROR_CODES / is_known_error_code",
+      "status": "covered",
+      "testFile": "tests/errors_catalog.rs",
+      "behavior": "All89 pinned documented error codes, open future-code preservation and public export."
+    },
+    {
+      "sdkMethod": "VoiceAudio.wait_until_ready",
+      "status": "covered",
+      "testFile": "tests/voice.rs",
+      "behavior": "Native HTTP polling observes ready assets and rejects failed status without releasing an unready asset."
+    },
+    {
+      "sdkMethod": "verify_flow_forward_signature / create_fixture",
+      "status": "covered",
+      "testFile": "tests/webhook_utilities.rs",
+      "behavior": "Independent signature vectors, exact raw-body tamper refusal, timestamp text/grammar/skew/fractional tolerance, fixture JSON/header shape and known/unknown payload preservation."
+    }
+  ]
+}

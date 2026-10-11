@@ -608,6 +608,20 @@ impl Media<'_> {
     ) -> Result<crate::media::MediaDownload> {
         crate::media::download(descriptor, options).await
     }
+    pub async fn download_from_whatsapp_stream(
+        &self,
+        input: &crate::media::WhatsAppMediaInput,
+        options: crate::media::MediaDownloadOptions,
+    ) -> Result<crate::media::MediaDownloadStream> {
+        crate::media::download_stream_input(input, options).await
+    }
+    pub async fn download_from_whatsapp_message(
+        &self,
+        message: &crate::media::WhatsAppMediaMessage,
+        options: crate::media::MediaDownloadOptions,
+    ) -> Result<crate::media::MediaDownload> {
+        crate::media::download(&message.descriptor()?, options).await
+    }
     pub async fn download_stream(
         &self,
         media_id: &str,

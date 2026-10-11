@@ -72,6 +72,118 @@ fn verify(body: &[u8], signature: &str, secret: &[u8]) -> bool {
     mac.update(body);
     mac.verify_slice(&expected).is_ok()
 }
+
+/// Header on a decrypted WhatsApp Flow request forwarded to your endpoint.
+pub const FLOW_FORWARD_SIGNATURE_HEADER: &str = "x-polymorfa-flow-signature";
+
+#[derive(Clone, Copy, Debug)]
+pub struct VerifyFlowForwardSignatureOptions {
+    /// Allowed age or clock skew in seconds, including fractional seconds.
+    pub tolerance_seconds: f64,
+    /// Current Unix time in milliseconds. None uses the system clock.
+    pub now_millis: Option<f64>,
+}
+impl Default for VerifyFlowForwardSignatureOptions {
+    fn default() -> Self {
+        Self {
+            tolerance_seconds: 300.0,
+            now_millis: None,
+        }
+    }
+}
+
+/// Verify the exact forwarded Flow body and its timestamp without parsing JSON.
+/// The original timestamp text is signed, including any leading zeroes.
+pub fn verify_flow_forward_signature(
+    raw_body: &[u8],
+    signature_header: Option<&str>,
+    secret: &str,
+    options: VerifyFlowForwardSignatureOptions,
+) -> bool {
+    if secret.is_empty() {
+        return false;
+    }
+    let Some((time, hash)) = signature_header
+        .and_then(|header| {
+            header
+                .trim_matches(|c| {
+                    matches!(c,
+                        '\u{0009}'..='\u{000d}' | ' ' | '\u{00a0}' | '\u{1680}' |
+                        '\u{2000}'..='\u{200a}' | '\u{2028}' | '\u{2029}' | '\u{202f}' |
+                        '\u{205f}' | '\u{3000}' | '\u{feff}'
+                    )
+                })
+                .strip_prefix("t=")
+        })
+        .and_then(|header| header.split_once(",v1="))
+    else {
+        return false;
+    };
+    if time.is_empty()
+        || time.len() > 12
+        || !time.bytes().all(|b| b.is_ascii_digit())
+        || hash.len() != 64
+        || !hash.bytes().all(|b| b.is_ascii_hexdigit())
+    {
+        return false;
+    }
+    let Ok(timestamp) = time.parse::<f64>() else {
+        return false;
+    };
+    let now_millis = options.now_millis.unwrap_or_else(|| {
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|time| time.as_secs_f64() * 1000.0)
+            .unwrap_or(f64::NAN)
+    });
+    let now_seconds = now_millis / 1000.0;
+    if !options.tolerance_seconds.is_finite()
+        || !now_seconds.is_finite()
+        || options.tolerance_seconds < 0.0
+        || (now_seconds - timestamp).abs() > options.tolerance_seconds
+    {
+        return false;
+    }
+    let mut signed = format!("{time}.").into_bytes();
+    signed.extend_from_slice(raw_body);
+    verify(&signed, hash, secret.as_bytes())
+}
+
+/// Signed bytes and headers for exercising your webhook handler locally.
+/// Body contents may contain customer data; this type deliberately has no Debug.
+pub struct WebhookFixture {
+    pub body: Vec<u8>,
+    pub content_type: &'static str,
+    pub signature: String,
+    pub headers: std::collections::BTreeMap<String, String>,
+}
+
+pub fn create_fixture(event: &WebhookEvent, secret: &str) -> Result<WebhookFixture> {
+    let body = serde_json::to_vec(event.envelope()).map_err(|_| {
+        Error::local(
+            ErrorKind::Validation,
+            "Webhook fixture event cannot be encoded.",
+            "invalid_webhook_event",
+        )
+    })?;
+    // HMAC accepts an empty key for fixture generation, as the pinned TS helper
+    // does. Verification deliberately refuses an empty configured secret.
+    let mut mac =
+        Hmac::<Sha256>::new_from_slice(secret.as_bytes()).map_err(|_| signature_error())?;
+    mac.update(&body);
+    let signature = hex::encode(mac.finalize().into_bytes());
+    let content_type = "application/json";
+    let headers = std::collections::BTreeMap::from([
+        ("content-type".into(), content_type.into()),
+        ("x-webhook-signature".into(), signature.clone()),
+    ]);
+    Ok(WebhookFixture {
+        body,
+        content_type,
+        signature,
+        headers,
+    })
+}
 pub fn construct_event(raw_body: &[u8], signature: &str, secret: &str) -> Result<WebhookEvent> {
     if !verify_signature(raw_body, signature, secret) {
         return Err(signature_error());

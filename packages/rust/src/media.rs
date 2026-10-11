@@ -137,6 +137,7 @@ pub struct MediaKeys {
 #[derive(Clone)]
 pub struct MediaDownloadOptions {
     pub max_bytes: usize,
+    pub verify: crate::media_stream::MediaVerifyMode,
     pub timeout: Duration,
     pub cancellation: CancellationToken,
     pub configure_http:
@@ -146,6 +147,7 @@ impl Default for MediaDownloadOptions {
     fn default() -> Self {
         Self {
             max_bytes: DEFAULT_MAX_BYTES,
+            verify: crate::media_stream::MediaVerifyMode::BeforeRelease,
             timeout: Duration::from_secs(30),
             cancellation: CancellationToken::new(),
             configure_http: None,
@@ -383,7 +385,7 @@ pub fn decrypt(
     }
     Ok(plaintext)
 }
-fn encrypted_limit(max_bytes: usize, file_length: Option<u64>) -> Result<usize> {
+pub(crate) fn encrypted_limit(max_bytes: usize, file_length: Option<u64>) -> Result<usize> {
     if max_bytes == 0 {
         return Err(crate::transport::configuration("max_bytes"));
     }
@@ -452,10 +454,13 @@ pub fn candidate_urls(descriptor: &MediaDescriptor) -> Result<Vec<String>> {
 }
 /// Download directly from allowed WhatsApp hosts without Polymorfa credentials.
 /// Errors omit descriptor URLs, keys, ciphertext, and message contents.
-pub async fn download(
+pub async fn download_stream(
     descriptor: &MediaDescriptor,
     options: MediaDownloadOptions,
-) -> Result<MediaDownload> {
+) -> Result<MediaDownloadStream> {
+    if options.timeout.is_zero() {
+        return Err(crate::transport::configuration("media timeout"));
+    }
     let limit = encrypted_limit(options.max_bytes, descriptor.file_length)?;
     let sha = descriptor.file_sha256.as_ref().ok_or_else(invalid)?;
     let urls = candidate_urls(descriptor)?;
@@ -524,7 +529,8 @@ pub async fn download(
                         candidate.status().as_u16()
                     ),
                     "media_download_failed",
-                );
+                )
+                .with_local_status(candidate.status().as_u16());
             }
             break;
         }
@@ -540,39 +546,34 @@ pub async fn download(
                 "Media exceeds the permitted size.",
             ));
         }
-        let mut encrypted = Vec::new();
-        let mut stream = response.bytes_stream();
-        loop {
-            let next = tokio::select! { _=options.cancellation.cancelled()=>return Err(crate::transport::cancelled()),result=tokio::time::timeout(options.timeout,stream.next())=>result.map_err(|_|Error::local(ErrorKind::Timeout,"Media stream timed out.","request_timeout"))? };
-            match next {
-                None => break,
-                Some(Ok(bytes)) => {
-                    if bytes.len() > limit - encrypted.len() {
-                        return Err(integrity(
-                            "media_too_large",
-                            "Media exceeds the permitted size.",
-                        ));
-                    }
-                    encrypted.extend_from_slice(&bytes);
-                }
-                Some(Err(_)) => {
-                    return Err(Error::local(
-                        ErrorKind::Connection,
-                        "WhatsApp media stream interrupted.",
-                        "connection_error",
-                    ))
+        let cancellation = options.cancellation.clone();
+        let timeout = options.timeout;
+        let source = async_stream::try_stream! {
+            let mut stream = response.bytes_stream();
+            loop {
+                let next = tokio::select! { _=cancellation.cancelled()=>Err(crate::transport::cancelled()), result=tokio::time::timeout(timeout,stream.next())=>result.map_err(|_|Error::local(ErrorKind::Timeout,"Media stream timed out.","request_timeout")) }?;
+                match next {
+                    None=>break,
+                    Some(Ok(chunk))=>yield chunk,
+                    Some(Err(_))=>Err(Error::local(ErrorKind::Connection,"WhatsApp media stream interrupted.","connection_error"))?,
                 }
             }
-        }
-        let bytes = decrypt(
-            &encrypted,
-            &keys,
-            Some(sha),
-            descriptor.file_enc_sha256.as_ref(),
-            options.max_bytes,
+        };
+        let body = crate::media_stream::decrypt_stream(
+            Box::pin(source),
+            keys,
+            crate::media_stream::MediaDecryptOptions {
+                file_sha256: Some(*sha),
+                file_enc_sha256: descriptor.file_enc_sha256,
+                file_length: descriptor.file_length,
+                max_bytes: options.max_bytes,
+                verify: options.verify,
+                cancellation: options.cancellation,
+            },
         )?;
-        return Ok(MediaDownload {
-            bytes,
+        return Ok(MediaDownloadStream {
+            max_bytes: options.max_bytes,
+            body,
             media_kind: descriptor.media_kind,
             mimetype: descriptor
                 .mimetype
@@ -583,4 +584,92 @@ pub async fn download(
         });
     }
     Err(last_error)
+}
+
+/// Typed message input from the merged message webhook contract. The descriptor
+/// carries keys and signed CDN URLs and deliberately does not implement Debug.
+#[derive(Clone, serde::Serialize, serde::Deserialize)]
+pub struct WhatsAppMediaMessage {
+    #[serde(rename = "type")]
+    pub message_type: String,
+    pub media: Option<String>,
+}
+impl WhatsAppMediaMessage {
+    pub fn descriptor(&self) -> Result<MediaDescriptor> {
+        let media = self.media.as_deref().ok_or_else(invalid)?;
+        decode_descriptor(media, self.message_type.parse()?)
+    }
+}
+pub enum WhatsAppMediaInput {
+    Descriptor(MediaDescriptor),
+    Message(WhatsAppMediaMessage),
+}
+impl WhatsAppMediaInput {
+    pub fn descriptor(&self) -> Result<MediaDescriptor> {
+        match self {
+            Self::Descriptor(descriptor) => Ok(descriptor.clone()),
+            Self::Message(message) => message.descriptor(),
+        }
+    }
+}
+pub struct MediaDownloadStream {
+    max_bytes: usize,
+    pub body: crate::media_stream::MediaByteStream,
+    pub media_kind: MediaKind,
+    pub mimetype: String,
+    pub file_name: Option<String>,
+    pub file_length: Option<u64>,
+}
+impl MediaDownloadStream {
+    /// Buffer the stream and return only after its terminal verification succeeds.
+    pub async fn into_bytes(mut self) -> Result<MediaDownload> {
+        let mut bytes = Vec::new();
+        while let Some(chunk) = self.body.next().await {
+            bytes.extend_from_slice(&chunk?);
+        }
+        Ok(MediaDownload {
+            bytes,
+            media_kind: self.media_kind,
+            mimetype: self.mimetype,
+            file_name: self.file_name,
+            file_length: self.file_length,
+        })
+    }
+    /// Promote a private sibling file only after complete stream verification.
+    pub async fn write_to_file(
+        self,
+        path: impl AsRef<std::path::Path>,
+        cancellation: CancellationToken,
+    ) -> Result<()> {
+        crate::media_stream::write_to_file(
+            self.body,
+            path,
+            crate::media_stream::MediaFileOptions {
+                max_bytes: self.max_bytes,
+                cancellation,
+            },
+        )
+        .await
+    }
+}
+pub async fn download(
+    descriptor: &MediaDescriptor,
+    options: MediaDownloadOptions,
+) -> Result<MediaDownload> {
+    download_stream(descriptor, options)
+        .await?
+        .into_bytes()
+        .await
+}
+pub async fn download_input(
+    input: &WhatsAppMediaInput,
+    options: MediaDownloadOptions,
+) -> Result<MediaDownload> {
+    download(&input.descriptor()?, options).await
+}
+pub async fn download_stream_input(
+    input: &WhatsAppMediaInput,
+    options: MediaDownloadOptions,
+) -> Result<MediaDownloadStream> {
+    download_stream(&input.descriptor()?, options).await
 }
