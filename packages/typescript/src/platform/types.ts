@@ -6,6 +6,8 @@ import type {
   CampaignAnalytics,
   CampaignExperimentResults,
   CampaignMessageVariation,
+  CampaignFollowUp,
+  CampaignFollowUpReport,
   CampaignSendWindowRequest,
   CampaignVariant,
   CampaignVariantStrategy,
@@ -209,6 +211,8 @@ export interface CreatePlatformCampaignRequest {
    * be combined with a template, composed messages or A/B variants.
    */
   readonly messageVariations?: readonly CampaignMessageVariation[];
+  /** One receipt-timed follow-up (beta). Requires a single first message. */
+  readonly followUp?: CampaignFollowUp | null;
 }
 
 /**
@@ -262,6 +266,8 @@ export interface UpdatePlatformCampaignRequest {
   /** Replaces the A/B variants; null with a null strategy makes a broadcast. Only an unlaunched draft. */
   readonly variants?: readonly CampaignVariant[] | null;
   readonly variantStrategy?: CampaignVariantStrategy | null;
+  /** Replaces the follow-up (beta); null removes it. Only an unlaunched draft. */
+  readonly followUp?: CampaignFollowUp | null;
   readonly [field: string]: unknown;
 }
 
@@ -272,6 +278,7 @@ export interface PlatformCampaignAnalytics extends CampaignAnalytics {
   readonly minResponseTimeMs: number | null;
   readonly maxResponseTimeMs: number | null;
   readonly experiment: CampaignExperimentResults | null;
+  readonly followUps: CampaignFollowUpReport;
 }
 
 export interface ListPlatformCampaignRecipientsParams {
