@@ -79,6 +79,76 @@ type CampaignMessageVariation struct {
 	Weight    int               `json:"weight"`
 	Blueprint CampaignBlueprint `json:"blueprint"`
 }
+
+// CampaignFollowUpMessage sends text or a message template. Set Text for type
+// "text" or TemplateID for type "template". Text supports campaign variables,
+// but the API refuses tracked links.
+type CampaignFollowUpMessage struct {
+	Type       string `json:"type"`
+	Text       string `json:"text,omitempty"`
+	TemplateID string `json:"templateId,omitempty"`
+}
+
+// CampaignFollowUp configures one receipt-timed follow-up (beta). The first
+// delivery starts the wait; the first read restarts it before sending starts.
+// Replies and opt-outs cancel it. The API enforces enrollment and bounds.
+type CampaignFollowUp struct {
+	// DelaySeconds is optional, 60 through 604800; the API defaults to 86400.
+	DelaySeconds *int `json:"delaySeconds,omitempty"`
+	// ExpirySeconds is optional, 86400 through 2592000 and longer than the delay;
+	// the API defaults to 604800. Expiry starts at the first message's send.
+	ExpirySeconds *int                    `json:"expirySeconds,omitempty"`
+	Message       CampaignFollowUpMessage `json:"message"`
+}
+
+type CampaignFollowUpStatus string
+
+const (
+	CampaignFollowUpWaitingReceipt CampaignFollowUpStatus = "waiting_receipt"
+	CampaignFollowUpScheduled      CampaignFollowUpStatus = "scheduled"
+	CampaignFollowUpSending        CampaignFollowUpStatus = "sending"
+	CampaignFollowUpSent           CampaignFollowUpStatus = "sent"
+	CampaignFollowUpCancelled      CampaignFollowUpStatus = "cancelled"
+	CampaignFollowUpExpired        CampaignFollowUpStatus = "expired"
+	CampaignFollowUpFailed         CampaignFollowUpStatus = "failed"
+	CampaignFollowUpOutcomeUnknown CampaignFollowUpStatus = "outcome_unknown"
+)
+
+// CampaignFollowUpSummary describes one recipient's follow-up. Times are Unix
+// milliseconds; a nil anchor means that no delivery or read receipt timed it.
+type CampaignFollowUpSummary struct {
+	ID               string                 `json:"id"`
+	NumberID         string                 `json:"numberId"`
+	Status           CampaignFollowUpStatus `json:"status"`
+	AnchorKind       *string                `json:"anchorKind"`
+	FirstDeliveredAt *int64                 `json:"firstDeliveredAt"`
+	FirstReadAt      *int64                 `json:"firstReadAt"`
+	DueAt            *int64                 `json:"dueAt"`
+	ExpiresAt        int64                  `json:"expiresAt"`
+	SentAt           *int64                 `json:"sentAt"`
+	DeliveredAt      *int64                 `json:"deliveredAt"`
+	ReadAt           *int64                 `json:"readAt"`
+	RepliedAt        *int64                 `json:"repliedAt"`
+	Reason           *string                `json:"reason"`
+	CommandID        *string                `json:"commandId"`
+}
+
+// CampaignFollowUpReport counts follow-up outcomes separately from first messages.
+type CampaignFollowUpReport struct {
+	Total     int    `json:"total"`
+	Waiting   int    `json:"waiting"`
+	Scheduled int    `json:"scheduled"`
+	Sending   int    `json:"sending"`
+	Sent      int    `json:"sent"`
+	Delivered int    `json:"delivered"`
+	Read      int    `json:"read"`
+	Replied   int    `json:"replied"`
+	Cancelled int    `json:"cancelled"`
+	Expired   int    `json:"expired"`
+	Failed    int    `json:"failed"`
+	Unknown   int    `json:"unknown"`
+	NextDueAt *int64 `json:"nextDueAt"`
+}
 type CampaignSendWindowRange struct {
 	Start string `json:"start"`
 	End   string `json:"end"`
@@ -124,6 +194,7 @@ type Campaign struct {
 	VariantStrategy   *CampaignVariantStrategy   `json:"variantStrategy,omitempty"`
 	ExperimentOutcome *CampaignExperimentOutcome `json:"experimentOutcome,omitempty"`
 	MessageVariations []CampaignMessageVariation `json:"messageVariations,omitempty"`
+	FollowUp          *CampaignFollowUp          `json:"followUp,omitempty"`
 }
 type PlatformCampaign struct {
 	Campaign
@@ -151,7 +222,7 @@ func (v *PlatformCampaign) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &all); err != nil {
 		return err
 	}
-	for _, k := range []string{"id", "name", "status", "templateId", "recipientListId", "recipientCount", "sentCount", "deliveredCount", "readCount", "failedCount", "skippedCount", "scheduledAt", "launchedAt", "completedAt", "createdAt", "updatedAt", "sendWindow", "composerBlueprint", "messages", "audienceRef", "senderConfig", "complianceConfig", "variants", "variantStrategy", "experimentOutcome", "messageVariations"} {
+	for _, k := range []string{"id", "name", "status", "templateId", "recipientListId", "recipientCount", "sentCount", "deliveredCount", "readCount", "failedCount", "skippedCount", "scheduledAt", "launchedAt", "completedAt", "createdAt", "updatedAt", "sendWindow", "composerBlueprint", "messages", "audienceRef", "senderConfig", "complianceConfig", "variants", "variantStrategy", "experimentOutcome", "messageVariations", "followUp"} {
 		delete(all, k)
 	}
 	v.Extra = all
@@ -169,12 +240,14 @@ type CampaignAnalytics struct {
 	RespondedCount int                        `json:"respondedCount"`
 	ResponseRate   float64                    `json:"responseRate"`
 	Experiment     *CampaignExperimentResults `json:"experiment,omitempty"`
+	FollowUps      *CampaignFollowUpReport    `json:"followUps,omitempty"`
 }
 type PlatformCampaignAnalytics struct {
 	CampaignAnalytics
-	AverageResponseTimeMS *float64 `json:"averageResponseTimeMs"`
-	MinResponseTimeMS     *float64 `json:"minResponseTimeMs"`
-	MaxResponseTimeMS     *float64 `json:"maxResponseTimeMs"`
+	FollowUps             CampaignFollowUpReport `json:"followUps"`
+	AverageResponseTimeMS *float64               `json:"averageResponseTimeMs"`
+	MinResponseTimeMS     *float64               `json:"minResponseTimeMs"`
+	MaxResponseTimeMS     *float64               `json:"maxResponseTimeMs"`
 }
 type CreateCampaignRequest struct {
 	Name              string                                `json:"name"`
@@ -187,6 +260,7 @@ type CreateCampaignRequest struct {
 	MessageVariations *Nullable[[]CampaignMessageVariation] `json:"messageVariations,omitempty"`
 	Variants          *Nullable[[]CampaignVariant]          `json:"variants,omitempty"`
 	VariantStrategy   *Nullable[CampaignVariantStrategy]    `json:"variantStrategy,omitempty"`
+	FollowUp          *Nullable[CampaignFollowUp]           `json:"followUp,omitempty"`
 }
 type CreatePlatformCampaignRequest struct {
 	ProjectID         string                               `json:"projectId"`
@@ -205,6 +279,7 @@ type CreatePlatformCampaignRequest struct {
 	Variants          []CampaignVariant                    `json:"variants,omitempty"`
 	VariantStrategy   *CampaignVariantStrategy             `json:"variantStrategy,omitempty"`
 	MessageVariations []CampaignMessageVariation           `json:"messageVariations,omitempty"`
+	FollowUp          *Nullable[CampaignFollowUp]          `json:"followUp,omitempty"`
 }
 type UpdateCampaignRequest struct {
 	Name              *string                               `json:"name,omitempty"`
@@ -215,6 +290,7 @@ type UpdateCampaignRequest struct {
 	MessageVariations *Nullable[[]CampaignMessageVariation] `json:"messageVariations,omitempty"`
 	Variants          *Nullable[[]CampaignVariant]          `json:"variants,omitempty"`
 	VariantStrategy   *Nullable[CampaignVariantStrategy]    `json:"variantStrategy,omitempty"`
+	FollowUp          *Nullable[CampaignFollowUp]           `json:"followUp,omitempty"`
 }
 type UpdatePlatformCampaignRequest struct {
 	UpdateCampaignRequest
@@ -236,20 +312,21 @@ func (v UpdatePlatformCampaignRequest) MarshalJSON() ([]byte, error) {
 }
 
 type CampaignRecipient struct {
-	ID                string          `json:"id"`
-	Phone             string          `json:"phone"`
-	Variables         PlatformPayload `json:"variables"`
-	VariantKey        *string         `json:"variantKey"`
-	Status            string          `json:"status"`
-	Attempts          int             `json:"attempts"`
-	LastError         *string         `json:"lastError"`
-	ExternalMessageID *string         `json:"externalMessageId"`
-	QueuedAt          int64           `json:"queuedAt"`
-	SentAt            *int64          `json:"sentAt"`
-	DeliveredAt       *int64          `json:"deliveredAt"`
-	ReadAt            *int64          `json:"readAt"`
-	FailedAt          *int64          `json:"failedAt"`
-	RespondedAt       *int64          `json:"respondedAt"`
+	ID                string                   `json:"id"`
+	Phone             string                   `json:"phone"`
+	Variables         PlatformPayload          `json:"variables"`
+	VariantKey        *string                  `json:"variantKey"`
+	Status            string                   `json:"status"`
+	Attempts          int                      `json:"attempts"`
+	LastError         *string                  `json:"lastError"`
+	ExternalMessageID *string                  `json:"externalMessageId"`
+	QueuedAt          int64                    `json:"queuedAt"`
+	SentAt            *int64                   `json:"sentAt"`
+	DeliveredAt       *int64                   `json:"deliveredAt"`
+	ReadAt            *int64                   `json:"readAt"`
+	FailedAt          *int64                   `json:"failedAt"`
+	RespondedAt       *int64                   `json:"respondedAt"`
+	FollowUp          *CampaignFollowUpSummary `json:"followUp,omitempty"`
 }
 type ListCampaignRecipientsParams struct {
 	ListParams

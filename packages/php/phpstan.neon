@@ -3,3 +3,4 @@ parameters:
     paths:
         - src
         - tests/webhook_types.php
+        - tests/campaign_followup_types.php

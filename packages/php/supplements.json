@@ -153,6 +153,12 @@
       "status": "covered",
       "testFile": "tests/event_stream.php",
       "behavior": "Native wire resumed cursor and exact typed webhook delivery; skips absent payloads; cooperative pump, graceful close and terminal error callback."
+    },
+    {
+      "sdkMethod": "Campaign receipt-timed follow-up configuration, recipient summary and analytics report",
+      "status": "covered",
+      "testFile": "tests/campaign_followups.php",
+      "behavior": "Both audience create/update/clear/omit bodies, optional returned timing, typed recipient receipt timestamps and nullable fields, follow-up counts separate from first-message counts."
     }
   ]
 }

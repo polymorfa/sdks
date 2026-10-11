@@ -162,6 +162,12 @@
       "sdkMethod": "Events.LiveSource / NewEventStreamSource / LiveEventSubscription.Cancel",
       "status": "covered",
       "testFile": "event_source_test.go"
+    },
+    {
+      "sdkMethod": "Campaign receipt-timed follow-up configuration, recipient summary and analytics report",
+      "status": "covered",
+      "testFile": "campaign_followups_test.go",
+      "behavior": "Both audience create/update/clear/omit bodies, optional returned timing, typed recipient receipt timestamps and nullable fields, follow-up counts separate from first-message counts."
     }
   ]
 }

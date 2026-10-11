@@ -1,6 +1,6 @@
 # Polymorfa Go SDK
 
-Handwritten server SDK for Go 1.24 or newer. This source checkout is under development and has not been published. The checked coverage manifest records native request/response evidence for all 439 primary operations supported by TypeScript SDK commit `ff51567105b64bf6997e7330ba8eb502d875e7b9`, plus three campaign supplements in the ledger. Eight additional Graph and testing-phone routes have typed wire tests. This evidence describes SDK contracts, not deployed feature availability.
+Handwritten server SDK for Go 1.24 or newer. This source checkout is under development and has not been published. The checked coverage manifest records native request/response evidence for all 439 primary operations supported by TypeScript SDK commit `daac84b1bd24c9460a2bcad555629a5466d85e2c`, plus three campaign supplements in the ledger. Eight additional Graph and testing-phone routes have typed wire tests. This evidence describes SDK contracts, not deployed feature availability.
 
 The module import is `github.com/polymorfa/sdks/packages/go`. This corrects the proposed `github.com/polymorfa/sdks/go` name to match the actual repository subdirectory. A release from this layout needs a `packages/go/vX.Y.Z` tag. Do not advertise an installation version until that version exists. For local work, use the `replace` directive in `examples/go/send-message/go.mod`.
 
@@ -60,3 +60,34 @@ and clears on media disconnection or call end. Outgoing video uses source zero.
 Applications provide their own capture, codecs and playback; these server interfaces
 do not create browser media devices. The actual WebSocket tests cover PCM/H.264
 framing and source/keyframe controls.
+
+## Campaign follow-ups (beta)
+
+Both campaign surfaces accept `CampaignFollowUp` on create and update. A nil
+`FollowUp` request field omits the setting; `&Nullable[CampaignFollowUp]{}` sends
+`null` to remove it from an unlaunched draft. Set `Message.Type` to `"text"` and
+`Message.Text`, or to `"template"` and `Message.TemplateID`.
+
+```go
+followUp := polymorfa.CampaignFollowUp{
+    Message: polymorfa.CampaignFollowUpMessage{Type: "text", Text: "Hi {{first_name}}, still interested?"},
+}
+_, err := client.Campaigns().Update(ctx, projectSlug, campaignID, polymorfa.UpdateCampaignRequest{
+    FollowUp: &polymorfa.Nullable[polymorfa.CampaignFollowUp]{Value: &followUp},
+})
+```
+
+The first delivery starts the delay; the first read restarts it before sending
+starts. Replies and opt-outs cancel the follow-up, and expired waits never send.
+`DelaySeconds` accepts 60 through 604800 and defaults at the API to 86400.
+`ExpirySeconds` accepts 86400 through 2592000, defaults to 604800, and must exceed
+the delay. Expiry starts at the first send. Returned timing fields remain optional.
+A campaign must send a single first message; follow-up text cannot contain tracked
+links. The API enforces beta enrollment and returns `403 feature_unavailable`
+when the team is not enrolled.
+
+`CampaignRecipient.FollowUp` retains typed status, receipt anchor, due/expiry times
+and reason. `CampaignAnalytics.FollowUps` is optional; the Platform report is
+required. `CampaignFollowUpReport` counts these outcomes separately from the first
+message. Follow-up timestamps are Unix milliseconds. Native fixture verification
+covers the merged contract; no live follow-up campaign or publication was exercised.

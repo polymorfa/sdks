@@ -226,3 +226,35 @@ the cursor beside each delivery, and reports terminal errors through `onError`.
 remaining wait budget, with a one-second allowance for the final state read.
 An exhausted budget returns the latest observed state when available; caller
 cancellation always propagates.
+
+## Campaign follow-ups (beta)
+
+Both campaign resources accept a `followUp` array on create or update. Omit it to
+leave the setting unchanged, or send `null` to remove it from an unlaunched draft.
+PHPStan's `CampaignModels` types include `FollowUp`, the text/template
+`FollowUpMessage` union, `FollowUpStatus`, `FollowUpSummary` and `FollowUpReport`.
+
+```php
+$client->campaigns->update($projectSlug, $campaignId, [
+    'followUp' => [
+        'message' => ['type' => 'text', 'text' => 'Hi {{first_name}}, still interested?'],
+    ],
+]);
+```
+
+For a template, use `['type' => 'template', 'templateId' => $templateId]`.
+The first delivery starts the delay; the first read restarts it before sending
+starts. Replies and opt-outs cancel the follow-up, and expired waits never send.
+`delaySeconds` accepts 60 through 604800 and defaults at the API to 86400.
+`expirySeconds` accepts 86400 through 2592000, defaults to 604800, and must exceed
+the delay. Expiry starts at the first send. Returned timing fields stay optional.
+The campaign must send a single first message; follow-up text cannot contain
+tracked links. The API enforces beta enrollment and returns
+`403 feature_unavailable` when the team is not enrolled.
+
+Each recipient's nullable `followUp` includes its status, receipt anchor,
+due/expiry times and reason. Analytics `followUps` counts outcomes separately
+from first-message counts; it is optional on Messaging and required on Platform.
+Follow-up timestamps are Unix milliseconds. Native fixtures and PHPStan consumer
+checks verify the merged contract; no live follow-up campaign or publication was
+exercised.

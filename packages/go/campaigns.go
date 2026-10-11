@@ -46,7 +46,7 @@ func (r *MessagingCampaigns) Retrieve(ctx context.Context, project, id string, o
 	return request[Envelope[Campaign]](ctx, r.t, "GET", messagingCampaignPath(project, id), nil, nil, options(o))
 }
 func (r *MessagingCampaigns) Update(ctx context.Context, project, id string, b UpdateCampaignRequest, o ...RequestOptions) (Response[Envelope[Campaign]], error) {
-	if b.Name == nil && b.RecipientListID == nil && b.SenderConfig == nil && b.ScheduledAt == nil && b.SendWindow == nil && b.MessageVariations == nil && b.Variants == nil && b.VariantStrategy == nil {
+	if b.Name == nil && b.RecipientListID == nil && b.SenderConfig == nil && b.ScheduledAt == nil && b.SendWindow == nil && b.MessageVariations == nil && b.Variants == nil && b.VariantStrategy == nil && b.FollowUp == nil {
 		return Response[Envelope[Campaign]]{}, validation("At least one campaign field is required.")
 	}
 	return request[Envelope[Campaign]](ctx, r.t, "PATCH", messagingCampaignPath(project, id), nil, b, appendOnce(options(o)))
