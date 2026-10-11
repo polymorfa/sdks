@@ -42,6 +42,11 @@ final readonly class RequestOptions
         );
     }
 
+    public function withoutAutomaticRetry(): self
+    {
+        return $this->maxNetworkRetries !== null ? $this : $this->withoutRetries();
+    }
+
     public function withoutRetries(): self
     {
         return new self($this->timeout, 0, $this->apiVersion, $this->idempotencyKey, $this->headers, $this->cancellation);

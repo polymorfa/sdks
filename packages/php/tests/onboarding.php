@@ -36,4 +36,4 @@ nativeCases([
 nativeCases([
  ['GET','/messaging/bridge/route',null,['wsUrl' => 'wss://fixture.invalid/bridge','region' => 'US','kind' => 'sandbox','signal' => 'customer','tokenKind' => 'project','expiresAt' => 100],fn ($c) => $c->routes->resolve()],
 ], fn ($credential, $url) => new Polymorfa\BridgeClient($credential, baseUrl:$url), Polymorfa\Credential::projectToken('pmfa_pt_'.str_repeat('a', 93).'A'));
-raises(fn () => new Polymorfa\BridgeClient($credential),Polymorfa\ConfigurationException::class);
+raises(fn () => new Polymorfa\BridgeClient($credential), Polymorfa\ConfigurationException::class);

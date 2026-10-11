@@ -86,17 +86,17 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/templates/{name}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::cloudTemplates.delete",
+      "testFile": "tests/templates.php"
     },
     {
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::templates.delete",
+      "testFile": "tests/templates.php"
     },
     {
       "family": "messaging",
@@ -542,17 +542,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/templates",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::cloudTemplates.list",
+      "testFile": "tests/templates.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/templates/{name}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::cloudTemplates.retrieve",
+      "testFile": "tests/templates.php"
     },
     {
       "family": "messaging",
@@ -646,49 +646,49 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::campaigns.list",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::campaigns.retrieve",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/analytics",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::campaigns.analytics",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::campaigns.listRecipients",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/templates",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::templates.list",
+      "testFile": "tests/templates.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::templates.retrieve",
+      "testFile": "tests/templates.php"
     },
     {
       "family": "messaging",
@@ -814,25 +814,25 @@
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/templates/{name}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::cloudTemplates.update",
+      "testFile": "tests/templates.php"
     },
     {
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
-      "status": "excluded",
-      "reason": "Messaging campaign update is owned by SDK PR #307.",
-      "milestone": "excluded-contract"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::campaigns.update",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::templates.update",
+      "testFile": "tests/templates.php"
     },
     {
       "family": "messaging",
@@ -1206,9 +1206,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/templates",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::cloudTemplates.create",
+      "testFile": "tests/templates.php"
     },
     {
       "family": "messaging",
@@ -1238,89 +1238,89 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::campaigns.create",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/launch",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::campaigns.launch",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/pause",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::campaigns.pause",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::campaigns.addRecipients",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/requeue",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::campaigns.requeue",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reschedule",
-      "status": "excluded",
-      "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges.",
-      "milestone": "excluded-contract"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::campaigns.reschedule",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/resume",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::campaigns.resume",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/stop",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::campaigns.stop",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::templates.create",
+      "testFile": "tests/templates.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates/{id}/preview",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::templates.preview",
+      "testFile": "tests/templates.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates/{id}/submit",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::templates.submit",
+      "testFile": "tests/templates.php"
     },
     {
       "family": "messaging",
@@ -1878,17 +1878,17 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/audiences/{listId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::audiences.delete",
+      "testFile": "tests/audiences.php"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/audiences/{listId}/members/{phone}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::audiences.deleteMember",
+      "testFile": "tests/audiences.php"
     },
     {
       "family": "platform",
@@ -1902,9 +1902,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/campaigns/{campaignId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.delete",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
@@ -2350,25 +2350,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/audiences",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::audiences.list",
+      "testFile": "tests/audiences.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/audiences/{listId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::audiences.retrieve",
+      "testFile": "tests/audiences.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/audiences/{listId}/members",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::audiences.listMembers",
+      "testFile": "tests/audiences.php"
     },
     {
       "family": "platform",
@@ -2614,49 +2614,49 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.list",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.retrieve",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/analytics",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.analytics",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/conversions",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.conversions",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/events",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.events",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/recipients",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.recipients",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
@@ -3350,9 +3350,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/campaigns/{campaignId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.update",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
@@ -3734,25 +3734,25 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/audiences",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::audiences.create",
+      "testFile": "tests/audiences.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/audiences/{listId}/members",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::audiences.addMembers",
+      "testFile": "tests/audiences.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/audiences/uploads",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::audiences.createUpload",
+      "testFile": "tests/audiences.php"
     },
     {
       "family": "platform",
@@ -3790,89 +3790,89 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.create",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/archive",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.archive",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/conversions",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.recordConversion",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/duplicate",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.duplicate",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/launch",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.launch",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/pause",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.pause",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/recipients",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.addRecipients",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/requeue",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.requeue",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/reschedule",
-      "status": "excluded",
-      "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges.",
-      "milestone": "excluded-contract"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.reschedule",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/resume",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.resume",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/stop",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.stop",
+      "testFile": "tests/campaigns.php"
     },
     {
       "family": "platform",

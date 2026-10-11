@@ -28,4 +28,4 @@ $client = new Polymorfa\MessagingClient($credential, http:mocked([jsonResponse([
 raises(fn () => $client->officialGroups->delete('session', 'group', new Polymorfa\RequestOptions(idempotencyKey:'safe_key', maxNetworkRetries:3)), Polymorfa\ServerException::class);
 check(count($history) === 1, 'Official group change sent once despite keyed retry override');
 $client = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_'.str_repeat('a', 64)));
-raises(fn () => $client->officialGroups->list('session'),Polymorfa\ConfigurationException::class);
+raises(fn () => $client->officialGroups->list('session'), Polymorfa\ConfigurationException::class);

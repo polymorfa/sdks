@@ -16,6 +16,8 @@ final readonly class Client
     public PlatformSessions $sessions;
     public Projects $projects;
     public Events $events;
+    public Resources\Audiences $audiences;
+    public Resources\Campaigns $campaigns;
     public Resources\RequestLogs $requestLogs;
     public Resources\Operations $operations;
     public Resources\WebhookDeliveries $webhookDeliveries;
@@ -50,6 +52,8 @@ final readonly class Client
         }
         $this->transport = new HttpTransport($credential, $baseUrl, $apiVersion, $timeout, $maxNetworkRetries, $proxy, $http);
         $this->media = new Resources\PlatformMedia($this->transport);
+        $this->audiences = new Resources\Audiences($this->transport);
+        $this->campaigns = new Resources\Campaigns($this->transport);
         $this->requestLogs = new Resources\RequestLogs($this->transport);
         $this->quickLinkSettings = new Resources\QuickLinkSettings($this->transport);
         $this->sessionConfiguration = new Resources\SessionConfiguration($this->transport);

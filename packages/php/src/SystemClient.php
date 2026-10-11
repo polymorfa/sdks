@@ -27,6 +27,6 @@ final readonly class SystemClient
     }
     /** @return ApiResponse<array{status:string}> */
     public function ping(?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{status:string}> */ return $this->transport->request('GET','/ping',options:$options);
+    { /** @var ApiResponse<array{status:string}> */ return $this->transport->request('GET', '/ping', options:$options);
     }
 }

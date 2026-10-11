@@ -141,3 +141,15 @@ Number eligibility and enrollment. `hybridLink`, `observationPolicies`,
 `cloudOnboarding` and `testing` follow the existing server contracts.
 `SystemClient` sends credential-free liveness and version probes; `BridgeClient`
 accepts only a project token and resolves regional Bridge routes.
+
+Both campaign resources keep the API's campaign fields, recipient delivery
+history, send windows, A/B variants and conversion reports typed. Messaging
+creates and lifecycle actions create one invocation idempotency key. Platform
+create sends once and ignores retry/key overrides. Recipient and audience
+appends default to one attempt; an explicit retry override and key can re-enable
+retries, which the API may process as another append. Reconcile a lost response
+before appending again. Conversion report totals remain decimal strings of minor
+units and currencies remain separate.
+
+`ApiResponse` suppresses payload contents in `var_dump` to protect one-time
+secrets and signed URLs. Access `data` explicitly when consuming a response.

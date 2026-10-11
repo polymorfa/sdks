@@ -97,7 +97,7 @@ final class OfficialGroups extends Resource
         $this->server();
         /** @var ApiResponse<array{success:true,data:array{accepted:true}}> */ return $this->request('POST', $this->path($session, $group).'/pins', $body, options:($options ?? new RequestOptions())->withoutRetries());
     }
-    private function path(string $session,?string $group = null): string
+    private function path(string $session, ?string $group = null): string
     {
         return '/messaging/'.self::segment($session).'/official-groups'.($group === null ? '' : '/'.self::segment($group));
     }
