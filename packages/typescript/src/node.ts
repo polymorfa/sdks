@@ -3,14 +3,15 @@
  * `node:crypto` and `node:fs`, so keep it out of browser bundles.
  */
 import {
+  createCipheriv,
   createDecipheriv,
   createHash,
   createHmac,
   randomUUID,
   timingSafeEqual,
 } from "node:crypto";
-import { createWriteStream } from "node:fs";
-import { access, link, rename, unlink } from "node:fs/promises";
+import { createReadStream, createWriteStream } from "node:fs";
+import { access, link, rename, stat, unlink } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
 import { Readable, Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
@@ -22,6 +23,11 @@ import {
   PolymorfaConflictError,
   PolymorfaMediaIntegrityError,
 } from "./errors.js";
+import type {
+  WhatsAppMediaEncryptionDigest,
+  WhatsAppMediaEncryptor,
+} from "./media/encrypt.js";
+import type { WhatsAppMediaSource } from "./media/upload.js";
 import {
   downloadWhatsAppMedia,
   type ResolvedDecryptOptions,
@@ -165,6 +171,115 @@ export const nodeMediaCrypto: WhatsAppMediaCrypto = Object.freeze({
     );
   },
 });
+
+/**
+ * Incremental `node:crypto` encryption backend. Plaintext is encrypted as it
+ * arrives; only the final partial block is held back. The HMAC and both
+ * SHA-256 digests are computed on the fly, matching WhatsApp Web's
+ * `encryptAndHmac` (Cellar whatsapp-1049257521 WAMediaCrypto.js:75-101).
+ */
+export const nodeMediaEncryptor: WhatsAppMediaEncryptor = Object.freeze({
+  incremental: true,
+  encrypt(
+    plaintext: ReadableStream<Uint8Array>,
+    keys: WhatsAppMediaKeys,
+    options: { readonly maxBytes: number },
+  ) {
+    const reader = plaintext.getReader();
+    const cipher = createCipheriv("aes-256-cbc", keys.cipherKey, keys.iv);
+    const mac = createHmac("sha256", keys.macKey).update(keys.iv);
+    const encHash = createHash("sha256");
+    const plainHash = createHash("sha256");
+    let fileLength = 0;
+    let encryptedLength = 0;
+    let settle!: {
+      resolve: (value: WhatsAppMediaEncryptionDigest) => void;
+      reject: (reason: unknown) => void;
+    };
+    const digest = new Promise<WhatsAppMediaEncryptionDigest>(
+      (resolve, reject) => {
+        settle = { resolve, reject };
+      },
+    );
+    digest.catch(() => undefined);
+    const emit = (
+      controller: ReadableStreamDefaultController<Uint8Array>,
+      chunk: Uint8Array,
+    ) => {
+      if (chunk.length === 0) return;
+      encHash.update(chunk);
+      encryptedLength += chunk.length;
+      controller.enqueue(chunk);
+    };
+    const body = new ReadableStream<Uint8Array>(
+      {
+        async pull(controller) {
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) {
+                const last = new Uint8Array(cipher.final());
+                mac.update(last);
+                emit(controller, last);
+                const tag = new Uint8Array(mac.digest().subarray(0, MAC_LENGTH));
+                emit(controller, tag);
+                settle.resolve(
+                  Object.freeze({
+                    fileSha256: new Uint8Array(plainHash.digest()),
+                    fileEncSha256: new Uint8Array(encHash.digest()),
+                    fileLength,
+                    encryptedLength,
+                  }),
+                );
+                controller.close();
+                return;
+              }
+              fileLength += value.length;
+              if (fileLength > options.maxBytes) {
+                throw integrity(
+                  "The media exceeds the permitted size.",
+                  "media_too_large",
+                );
+              }
+              plainHash.update(value);
+              const out = new Uint8Array(cipher.update(value));
+              if (out.length === 0) continue;
+              mac.update(out);
+              emit(controller, out);
+              return;
+            }
+          } catch (error) {
+            settle.reject(error);
+            await reader.cancel(error).catch(() => undefined);
+            throw error;
+          }
+        },
+        async cancel(reason) {
+          settle.reject(reason);
+          await reader.cancel(reason);
+        },
+      },
+      { highWaterMark: 0 },
+    );
+    return { body, digest };
+  },
+});
+
+/**
+ * Re-readable upload source for a file on disk. Each upload pass opens the
+ * file again, so large files are never held in memory.
+ */
+export async function whatsAppMediaFileSource(
+  path: string,
+): Promise<WhatsAppMediaSource> {
+  assertServerRuntime();
+  const { size } = await stat(path);
+  return Object.freeze({
+    size,
+    open: () =>
+      Readable.toWeb(createReadStream(path)) as ReadableStream<Uint8Array>,
+  });
+}
 
 export interface WriteToFileOptions {
   readonly signal?: AbortSignal;

@@ -35,5 +35,12 @@ export function encodeRequestBody(body: unknown): {
   if (body instanceof Uint8Array) {
     return { body: Uint8Array.from(body).buffer };
   }
+  // Streams and blobs are sent as-is. The caller sets content-type.
+  if (body instanceof ReadableStream) {
+    return { body };
+  }
+  if (typeof Blob !== "undefined" && body instanceof Blob) {
+    return { body };
+  }
   return { body: JSON.stringify(body), contentType: "application/json" };
 }

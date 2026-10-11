@@ -35,6 +35,13 @@ export interface WhatsAppMediaMessage {
 
 export type WhatsAppMediaInput = WhatsAppMediaMessage | WhatsAppMediaDescriptor;
 
+/**
+ * Key-derivation and CDN type of an encrypted WhatsApp blob. `ptt` is a voice
+ * note (audio keys, `/mms/ptt`); `history` is a history sync chunk
+ * (`md-msg-hist`).
+ */
+export type WhatsAppMediaKeyType = WhatsAppMediaKind | "ptt" | "history";
+
 export interface WhatsAppMediaKeys {
   readonly iv: Uint8Array;
   readonly cipherKey: Uint8Array;
@@ -106,21 +113,30 @@ const BLOCK = 16;
 const FALLBACK_HOST = "mmg.whatsapp.net";
 const WEB_ORIGIN = "https://web.whatsapp.com";
 
-const HKDF_INFO: Readonly<Record<WhatsAppMediaKind, string>> = {
+// HKDF info labels. Cellar whatsapp-1049257521 WAMediaHkdfInfo.js:4-14:
+// image/sticker -> Image Keys, video/gif -> Video Keys, audio/ptt -> Audio
+// Keys, document -> Document Keys, md-msg-hist -> History Keys.
+const HKDF_INFO: Readonly<Record<WhatsAppMediaKeyType, string>> = {
   image: "WhatsApp Image Keys",
   video: "WhatsApp Video Keys",
   audio: "WhatsApp Audio Keys",
+  ptt: "WhatsApp Audio Keys",
   document: "WhatsApp Document Keys",
-  // Stickers use image keys (whatsmeow download.go classToMediaType).
   sticker: "WhatsApp Image Keys",
+  history: "WhatsApp History Keys",
 };
 
-const MMS_TYPE: Readonly<Record<WhatsAppMediaKind, string>> = {
+// `mms-type` query value of a CDN download. History chunks download as
+// `md-msg-hist` (WAWebParseProtocolHistorySyncNotificationMessageProto.js:17,
+// WAWebMmsClientFormatDownloadUrl.js:19-23).
+const MMS_TYPE: Readonly<Record<WhatsAppMediaKeyType, string>> = {
   image: "image",
   video: "video",
   audio: "audio",
+  ptt: "ptt",
   document: "document",
   sticker: "image",
+  history: "md-msg-hist",
 };
 
 interface FieldMap {
@@ -378,15 +394,24 @@ function buffer(bytes: Uint8Array): ArrayBuffer {
   return bytes.slice().buffer;
 }
 
-/** HKDF-SHA256(mediaKey, info, 112): iv [0,16), cipherKey [16,48), macKey [48,80). */
+function asKeyType(type: string): WhatsAppMediaKeyType {
+  if (Object.hasOwn(HKDF_INFO, type)) return type as WhatsAppMediaKeyType;
+  throw invalid(`Media type ${JSON.stringify(type)} is not supported.`);
+}
+
+/**
+ * HKDF-SHA256(mediaKey, info, 112): iv [0,16), cipherKey [16,48), macKey
+ * [48,80). The last 32 bytes are the unused refKey (Cellar
+ * whatsapp-1049257521 WAMediaCrypto.js:27-36).
+ */
 export async function deriveWhatsAppMediaKeys(
   mediaKey: Uint8Array,
-  mediaKind: WhatsAppMediaKind,
+  mediaKind: WhatsAppMediaKeyType,
 ): Promise<WhatsAppMediaKeys> {
   if (!(mediaKey instanceof Uint8Array) || mediaKey.length !== 32) {
     throw invalid("mediaKey must be 32 bytes.");
   }
-  const info = HKDF_INFO[asKind(mediaKind)];
+  const info = HKDF_INFO[asKeyType(mediaKind)];
   const material = await subtle().importKey(
     "raw",
     buffer(mediaKey),
@@ -423,7 +448,8 @@ export function timingSafeEqualBytes(a: Uint8Array, b: Uint8Array): boolean {
   return difference === 0;
 }
 
-async function readAll(
+/** @internal */
+export async function readAll(
   stream: ReadableStream<Uint8Array>,
 ): Promise<Uint8Array> {
   const chunks: Uint8Array[] = [];
@@ -641,7 +667,8 @@ function limitStream(
   );
 }
 
-function toStream(
+/** @internal */
+export function toStream(
   input: Uint8Array | ArrayBuffer | ReadableStream<Uint8Array>,
 ): ReadableStream<Uint8Array> {
   if (input instanceof ReadableStream) return input;
@@ -750,7 +777,13 @@ function base64Url(bytes: Uint8Array): string {
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_");
 }
 
-function candidateUrls(descriptor: WhatsAppMediaDescriptor): string[] {
+interface CdnObject {
+  readonly url?: string;
+  readonly directPath?: string;
+  readonly fileEncSha256?: Uint8Array;
+}
+
+function candidateUrls(descriptor: CdnObject, mmsType: string): string[] {
   const urls: string[] = [];
   if (descriptor.url !== undefined && descriptor.url.length > 0) {
     if (!isWhatsAppMediaUrl(descriptor.url)) {
@@ -769,7 +802,7 @@ function candidateUrls(descriptor: WhatsAppMediaDescriptor): string[] {
       descriptor.fileEncSha256 === undefined
         ? ""
         : base64Url(descriptor.fileEncSha256);
-    const fallback = `https://${FALLBACK_HOST}${path}${separator}hash=${encodeURIComponent(hashParam)}&mms-type=${MMS_TYPE[descriptor.mediaKind]}&__wa-mms=`;
+    const fallback = `https://${FALLBACK_HOST}${path}${separator}hash=${encodeURIComponent(hashParam)}&mms-type=${mmsType}&__wa-mms=`;
     if (!isWhatsAppMediaUrl(fallback)) {
       throw invalid("directPath does not form a valid media URL.");
     }
@@ -824,6 +857,45 @@ export async function downloadWhatsAppMedia(
   options: WhatsAppMediaDownloadOptions = {},
 ): Promise<WhatsAppMediaDownload> {
   const descriptor = descriptorFrom(input);
+  const body = await downloadEncryptedBlob(
+    descriptor,
+    descriptor.mediaKind,
+    options,
+  );
+  const mimetype = descriptor.mimetype ?? DEFAULT_MIME[descriptor.mediaKind];
+  return Object.freeze({
+    body,
+    mediaKind: descriptor.mediaKind,
+    mimetype,
+    ...(descriptor.fileName === undefined
+      ? {}
+      : { fileName: descriptor.fileName }),
+    ...(descriptor.fileLength === undefined
+      ? {}
+      : { fileLength: descriptor.fileLength }),
+    arrayBuffer: async () => buffer(await readAll(body)),
+    blob: async () =>
+      new Blob([buffer(await readAll(body))], { type: mimetype }),
+  });
+}
+
+/** CDN object plus the keys and hashes needed to verify it. */
+export interface EncryptedBlobDescriptor extends CdnObject {
+  readonly mediaKey: Uint8Array;
+  readonly fileSha256?: Uint8Array;
+  readonly fileLength?: number;
+}
+
+/**
+ * Downloads an encrypted blob from the WhatsApp CDN and returns the verified
+ * plaintext stream. Shared by media downloads and history chunk downloads.
+ * @internal
+ */
+export async function downloadEncryptedBlob(
+  descriptor: EncryptedBlobDescriptor,
+  keyType: WhatsAppMediaKeyType,
+  options: WhatsAppMediaDownloadOptions,
+): Promise<ReadableStream<Uint8Array>> {
   const crypto = options.crypto ?? webCryptoMediaCrypto;
   const verify = resolveVerify(options.verify, crypto);
   const maxBytes = resolveLimit(options.maxBytes);
@@ -832,12 +904,9 @@ export async function downloadWhatsAppMedia(
     // whatsmeow treats a missing plaintext hash as a verification failure.
     throw invalid("The media descriptor has no fileSha256.");
   }
-  const urls = candidateUrls(descriptor);
+  const urls = candidateUrls(descriptor, MMS_TYPE[asKeyType(keyType)]);
   const fetcher = options.fetch ?? globalThis.fetch;
-  const keys = await deriveWhatsAppMediaKeys(
-    descriptor.mediaKey,
-    descriptor.mediaKind,
-  );
+  const keys = await deriveWhatsAppMediaKeys(descriptor.mediaKey, keyType);
 
   let failure: unknown;
   let response: Response | undefined;
@@ -879,28 +948,9 @@ export async function downloadWhatsAppMedia(
         controller.close();
       },
     });
-  const body = crypto.decrypt(
-    limitStream(source, limit, options.signal),
-    keys,
-    {
-      fileSha256: descriptor.fileSha256,
-      fileEncSha256: descriptor.fileEncSha256,
-      verify,
-    },
-  );
-  const mimetype = descriptor.mimetype ?? DEFAULT_MIME[descriptor.mediaKind];
-  return Object.freeze({
-    body,
-    mediaKind: descriptor.mediaKind,
-    mimetype,
-    ...(descriptor.fileName === undefined
-      ? {}
-      : { fileName: descriptor.fileName }),
-    ...(descriptor.fileLength === undefined
-      ? {}
-      : { fileLength: descriptor.fileLength }),
-    arrayBuffer: async () => buffer(await readAll(body)),
-    blob: async () =>
-      new Blob([buffer(await readAll(body))], { type: mimetype }),
+  return crypto.decrypt(limitStream(source, limit, options.signal), keys, {
+    fileSha256: descriptor.fileSha256,
+    fileEncSha256: descriptor.fileEncSha256,
+    verify,
   });
 }
