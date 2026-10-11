@@ -70,9 +70,9 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/official-groups/{group}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
     },
     {
       "family": "messaging",
@@ -86,17 +86,17 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/templates/{name}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
     },
     {
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
     },
     {
       "family": "messaging",
@@ -406,9 +406,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/hybrid-link",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.HybridLink.StateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
     },
     {
       "family": "messaging",
@@ -446,41 +446,41 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/observation-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ObservationPolicies.RetrieveForSessionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups/{group}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups/{group}/invite-link",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.GetInviteLinkAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups/{group}/join-requests",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.ListJoinRequestsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
     },
     {
       "family": "messaging",
@@ -542,17 +542,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/templates",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/templates/{name}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
     },
     {
       "family": "messaging",
@@ -622,9 +622,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/observation-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ObservationPolicies.RetrieveForProjectAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
     },
     {
       "family": "messaging",
@@ -678,17 +678,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/templates",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
     },
     {
       "family": "messaging",
@@ -710,17 +710,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/routing/hybrid",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.HybridLink.GetPolicyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/testing/{projectId}/events/fixtures",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.ListEventFixturesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
     },
     {
       "family": "messaging",
@@ -803,17 +803,17 @@
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/official-groups/{group}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
     },
     {
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/templates/{name}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
     },
     {
       "family": "messaging",
@@ -826,9 +826,9 @@
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
     },
     {
       "family": "messaging",
@@ -1129,49 +1129,49 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/invite-link/reset",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.ResetInviteLinkAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/join-requests/approve",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.ApproveJoinRequestsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/join-requests/reject",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.RejectJoinRequestsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/participants/remove",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.RemoveParticipantsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/pins",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.PinAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
     },
     {
       "family": "messaging",
@@ -1201,17 +1201,17 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/templates",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/cloud-api/embedded-signup",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudOnboarding.AdvanceAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
     },
     {
       "family": "messaging",
@@ -1295,25 +1295,25 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates/{id}/preview",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.PreviewAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates/{id}/submit",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.SubmitAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
     },
     {
       "family": "messaging",
@@ -1327,17 +1327,17 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/testing/{projectId}/events",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.TriggerEventAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/testing/{projectId}/history-fixtures",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.CreateHistoryFixtureAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
     },
     {
       "family": "messaging",
@@ -1635,9 +1635,9 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/hybrid-link",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.HybridLink.SetPausedAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
     },
     {
       "family": "messaging",
@@ -1739,9 +1739,9 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/routing/hybrid",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.HybridLink.SetPolicyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
     },
     {
       "family": "messaging",

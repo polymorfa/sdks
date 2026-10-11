@@ -10,11 +10,18 @@ public sealed class MessagingClient : IDisposable
     public QuickLinks QuickLinks { get; }
     public MessagingWebhooks Webhooks { get; }
     public Calls Calls { get; }
+    public CloudOnboarding CloudOnboarding { get; }
+    public Testing Testing { get; }
+    public ObservationPolicies ObservationPolicies { get; }
+    public HybridLink HybridLink { get; }
+    public Templates Templates { get; }
+    public CloudTemplates CloudTemplates { get; }
     public Business Business { get; }
     public Channels Channels { get; }
     public QuickReplies QuickReplies { get; }
     public MessagingBanSafe BanSafe { get; }
     public Contacts Contacts { get; }
+    public OfficialGroups OfficialGroups { get; }
     public Groups Groups { get; }
     public Chats Chats { get; }
     public Labels Labels { get; }
@@ -28,7 +35,7 @@ public sealed class MessagingClient : IDisposable
     public MessagingClient(Credential credential, ClientOptions? options = null)
     {
         if (credential.Kind != CredentialKind.ClientToken) credential.RequireServer();
-        http = new(credential, options ?? new()); Sessions = new(http); Messages = new(http); QuickLinks = new(http); Webhooks = new(http); Calls = new(http); Business = new(http); Channels = new(http); QuickReplies = new(http); BanSafe = new(http); Contacts = new(http); Groups = new(http); Chats = new(http); Labels = new(http); Presence = new(http); Profile = new(http); Privacy = new(http); ClientTokens = new(http); Identities = new(http); Users = new(http); Media = new(http);
+        http = new(credential, options ?? new()); Sessions = new(http); Messages = new(http); QuickLinks = new(http); Webhooks = new(http); Calls = new(http); CloudOnboarding = new(http); Testing = new(http); ObservationPolicies = new(http); HybridLink = new(http); Templates = new(http); CloudTemplates = new(http); Business = new(http); Channels = new(http); QuickReplies = new(http); BanSafe = new(http); Contacts = new(http); OfficialGroups = new(http); Groups = new(http); Chats = new(http); Labels = new(http); Presence = new(http); Profile = new(http); Privacy = new(http); ClientTokens = new(http); Identities = new(http); Users = new(http); Media = new(http);
     }
     public Task<ApiResponse<T>> RawAsync<T>(HttpMethod method, string path, JsonElement? body = null, RequestOptions? options = null, IReadOnlyList<KeyValuePair<string, string>>? query = null) => http.RequestAsync<T>(method, path, body, options, query);
     public void Dispose() => http.Dispose();
