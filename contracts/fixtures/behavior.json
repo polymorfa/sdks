@@ -1,0 +1,955 @@
+{
+  "schemaVersion": 1,
+  "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9",
+  "apiVersion": "2026-09-22",
+  "organizationCredential": "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "projectCredential": "pmfa_pt_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaA",
+  "scenarios": [
+    {
+      "id": "sessions-list",
+      "request": {
+        "method": "GET",
+        "path": "/platform/sessions",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        },
+        "query": {}
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22"
+          },
+          "body": {
+            "data": [
+              {
+                "_id": "number_fixture",
+                "_creationTime": 1787133600000,
+                "projectId": "project_fixture",
+                "sessionId": "session_fixture",
+                "name": "support",
+                "phone": null,
+                "platform": null,
+                "isBusiness": false,
+                "testMode": true,
+                "tierOverride": null,
+                "status": "CONNECTED",
+                "messageCount": 0,
+                "lastActiveAt": null,
+                "paidUntil": null
+              }
+            ]
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1
+      }
+    },
+    {
+      "id": "query-encoding",
+      "request": {
+        "method": "GET",
+        "path": "/platform/sessions",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        },
+        "query": {
+          "limit": "25",
+          "active": "true",
+          "tag": ["alpha", "beta"],
+          "search": "a & b"
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1
+      }
+    },
+    {
+      "id": "message-send",
+      "request": {
+        "method": "POST",
+        "path": "/messaging/support/messages/send",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22",
+          "idempotency-key": "send-fixture"
+        },
+        "body": {
+          "conversation": {
+            "phoneNumber": "+15551234567"
+          },
+          "content": {
+            "text": "Hello"
+          }
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22"
+          },
+          "body": {
+            "success": true,
+            "data": {
+              "id": "msg_fixture",
+              "whatsapp_ids": {
+                "linked_devices": "provider_fixture"
+              },
+              "conversation": {
+                "id": "user_fixture"
+              },
+              "timestamp": "2026-08-19T10:00:00Z",
+              "status": "sent",
+              "type": "text"
+            }
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1
+      }
+    },
+    {
+      "id": "safe-retry",
+      "request": {
+        "method": "GET",
+        "path": "/platform/sessions",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        },
+        "query": {}
+      },
+      "responses": [
+        {
+          "status": 503,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          }
+        },
+        {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 2
+      }
+    },
+    {
+      "id": "rate-limit-retry",
+      "request": {
+        "method": "GET",
+        "path": "/platform/sessions",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        },
+        "query": {}
+      },
+      "responses": [
+        {
+          "status": 429,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "retry-after": "0"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          }
+        },
+        {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 2
+      }
+    },
+    {
+      "id": "unsafe-no-retry",
+      "request": {
+        "method": "POST",
+        "path": "/messaging/fixtures/mutation",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        },
+        "body": {
+          "fixture": true
+        }
+      },
+      "responses": [
+        {
+          "status": 503,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          }
+        },
+        {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "error": "server"
+      }
+    },
+    {
+      "id": "idempotent-retry",
+      "request": {
+        "method": "POST",
+        "path": "/messaging/fixtures/mutation",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22",
+          "idempotency-key": "fixture-stable-key"
+        },
+        "body": {
+          "fixture": true
+        }
+      },
+      "responses": [
+        {
+          "status": 503,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "retry-after": "0"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          }
+        },
+        {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 2
+      }
+    },
+    {
+      "id": "replayed-final",
+      "request": {
+        "method": "POST",
+        "path": "/messaging/fixtures/mutation",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22",
+          "idempotency-key": "fixture-stable-key"
+        },
+        "body": {
+          "fixture": true
+        }
+      },
+      "responses": [
+        {
+          "status": 503,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "idempotent-replayed": "true"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          }
+        },
+        {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "error": "server"
+      }
+    },
+    {
+      "id": "error-400",
+      "request": {
+        "method": "GET",
+        "path": "/messaging/fixtures/error",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        }
+      },
+      "responses": [
+        {
+          "status": 400,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "retry-after": "0"
+          },
+          "body": {
+            "error": {
+              "code": "fixture_error",
+              "message": "Fixture rejection",
+              "request_id": "req_body",
+              "request_log_url": "https://console.polymorfa.com/logs/fixture"
+            },
+            "docs": "https://docs.polymorfa.com/errors"
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "maxNetworkRetries": 0,
+        "error": "validation",
+        "code": "fixture_error",
+        "requestId": "req_body",
+        "metadataRequestId": "req_fixture"
+      }
+    },
+    {
+      "id": "error-401",
+      "request": {
+        "method": "GET",
+        "path": "/messaging/fixtures/error",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        }
+      },
+      "responses": [
+        {
+          "status": 401,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "retry-after": "0"
+          },
+          "body": {
+            "error": {
+              "code": "fixture_error",
+              "message": "Fixture rejection",
+              "request_id": "req_body",
+              "request_log_url": "https://console.polymorfa.com/logs/fixture"
+            },
+            "docs": "https://docs.polymorfa.com/errors"
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "maxNetworkRetries": 0,
+        "error": "authentication",
+        "code": "fixture_error",
+        "requestId": "req_body",
+        "metadataRequestId": "req_fixture"
+      }
+    },
+    {
+      "id": "error-402",
+      "request": {
+        "method": "GET",
+        "path": "/messaging/fixtures/error",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        }
+      },
+      "responses": [
+        {
+          "status": 402,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "retry-after": "0"
+          },
+          "body": {
+            "error": {
+              "code": "fixture_error",
+              "message": "Fixture rejection",
+              "request_id": "req_body",
+              "request_log_url": "https://console.polymorfa.com/logs/fixture"
+            },
+            "docs": "https://docs.polymorfa.com/errors"
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "maxNetworkRetries": 0,
+        "error": "payment_required",
+        "code": "fixture_error",
+        "requestId": "req_body",
+        "metadataRequestId": "req_fixture"
+      }
+    },
+    {
+      "id": "error-403",
+      "request": {
+        "method": "GET",
+        "path": "/messaging/fixtures/error",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        }
+      },
+      "responses": [
+        {
+          "status": 403,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "retry-after": "0"
+          },
+          "body": {
+            "error": {
+              "code": "fixture_error",
+              "message": "Fixture rejection",
+              "request_id": "req_body",
+              "request_log_url": "https://console.polymorfa.com/logs/fixture"
+            },
+            "docs": "https://docs.polymorfa.com/errors"
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "maxNetworkRetries": 0,
+        "error": "authorization",
+        "code": "fixture_error",
+        "requestId": "req_body",
+        "metadataRequestId": "req_fixture"
+      }
+    },
+    {
+      "id": "error-404",
+      "request": {
+        "method": "GET",
+        "path": "/messaging/fixtures/error",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        }
+      },
+      "responses": [
+        {
+          "status": 404,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "retry-after": "0"
+          },
+          "body": {
+            "error": {
+              "code": "fixture_error",
+              "message": "Fixture rejection",
+              "request_id": "req_body",
+              "request_log_url": "https://console.polymorfa.com/logs/fixture"
+            },
+            "docs": "https://docs.polymorfa.com/errors"
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "maxNetworkRetries": 0,
+        "error": "not_found",
+        "code": "fixture_error",
+        "requestId": "req_body",
+        "metadataRequestId": "req_fixture"
+      }
+    },
+    {
+      "id": "error-409",
+      "request": {
+        "method": "GET",
+        "path": "/messaging/fixtures/error",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        }
+      },
+      "responses": [
+        {
+          "status": 409,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "retry-after": "0"
+          },
+          "body": {
+            "error": {
+              "code": "fixture_error",
+              "message": "Fixture rejection",
+              "request_id": "req_body",
+              "request_log_url": "https://console.polymorfa.com/logs/fixture"
+            },
+            "docs": "https://docs.polymorfa.com/errors"
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "maxNetworkRetries": 0,
+        "error": "conflict",
+        "code": "fixture_error",
+        "requestId": "req_body",
+        "metadataRequestId": "req_fixture"
+      }
+    },
+    {
+      "id": "error-422",
+      "request": {
+        "method": "GET",
+        "path": "/messaging/fixtures/error",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        }
+      },
+      "responses": [
+        {
+          "status": 422,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "retry-after": "0"
+          },
+          "body": {
+            "error": {
+              "code": "fixture_error",
+              "message": "Fixture rejection",
+              "request_id": "req_body",
+              "request_log_url": "https://console.polymorfa.com/logs/fixture"
+            },
+            "docs": "https://docs.polymorfa.com/errors"
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "maxNetworkRetries": 0,
+        "error": "validation",
+        "code": "fixture_error",
+        "requestId": "req_body",
+        "metadataRequestId": "req_fixture"
+      }
+    },
+    {
+      "id": "error-429",
+      "request": {
+        "method": "GET",
+        "path": "/messaging/fixtures/error",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        }
+      },
+      "responses": [
+        {
+          "status": 429,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "retry-after": "0"
+          },
+          "body": {
+            "error": {
+              "code": "fixture_error",
+              "message": "Fixture rejection",
+              "request_id": "req_body",
+              "request_log_url": "https://console.polymorfa.com/logs/fixture"
+            },
+            "docs": "https://docs.polymorfa.com/errors"
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "maxNetworkRetries": 0,
+        "error": "rate_limit",
+        "code": "fixture_error",
+        "requestId": "req_body",
+        "metadataRequestId": "req_fixture"
+      }
+    },
+    {
+      "id": "error-500",
+      "request": {
+        "method": "GET",
+        "path": "/messaging/fixtures/error",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        }
+      },
+      "responses": [
+        {
+          "status": 500,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "retry-after": "0"
+          },
+          "body": {
+            "error": {
+              "code": "fixture_error",
+              "message": "Fixture rejection",
+              "request_id": "req_body",
+              "request_log_url": "https://console.polymorfa.com/logs/fixture"
+            },
+            "docs": "https://docs.polymorfa.com/errors"
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "maxNetworkRetries": 0,
+        "error": "server",
+        "code": "fixture_error",
+        "requestId": "req_body",
+        "metadataRequestId": "req_fixture"
+      }
+    },
+    {
+      "id": "html-error",
+      "request": {
+        "method": "GET",
+        "path": "/messaging/fixtures/error",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        }
+      },
+      "responses": [
+        {
+          "status": 502,
+          "headers": {
+            "content-type": "text/html",
+            "x-request-id": "req_proxy"
+          },
+          "rawBody": "<html>proxy failure</html>"
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "maxNetworkRetries": 0,
+        "error": "server"
+      }
+    },
+    {
+      "id": "timeout",
+      "request": {
+        "method": "GET",
+        "path": "/platform/sessions",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        },
+        "query": {}
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          },
+          "delayMs": 250
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "timeoutMs": 20,
+        "maxNetworkRetries": 0,
+        "error": "timeout"
+      }
+    },
+    {
+      "id": "cancellation",
+      "request": {
+        "method": "GET",
+        "path": "/platform/sessions",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        },
+        "query": {}
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          },
+          "delayMs": 250
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "cancelAfterMs": 20,
+        "maxNetworkRetries": 0,
+        "error": "cancelled"
+      }
+    },
+    {
+      "id": "no-content",
+      "request": {
+        "method": "DELETE",
+        "path": "/messaging/fixtures/item",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22"
+        }
+      },
+      "responses": [
+        {
+          "status": 204,
+          "headers": {
+            "x-request-id": "req_empty"
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "data": null
+      }
+    },
+    {
+      "id": "request-version",
+      "request": {
+        "method": "GET",
+        "path": "/platform/sessions",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-10-01"
+        },
+        "query": {}
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-10-01"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1
+      }
+    }
+  ],
+  "webhooks": [
+    {
+      "id": "native-unknown",
+      "protocol": "native",
+      "body": "{\"id\":\"evt_fixture\",\"session\":\"support\",\"timestamp\":\"2026-08-19T10:00:00Z\",\"event\":\"future.ready\",\"payload\":{\"capability\":42}}",
+      "secret": "fixture-secret",
+      "signature": "8b9682c1aee07cf45ce4b83983c2c224000ae4f8289c1ff38169bec4a52c6edd",
+      "valid": true,
+      "event": "future.ready"
+    },
+    {
+      "id": "native-prefixed",
+      "protocol": "native",
+      "body": "{\"id\":\"evt_fixture\",\"session\":\"support\",\"timestamp\":\"2026-08-19T10:00:00Z\",\"event\":\"future.ready\",\"payload\":{\"capability\":42}}",
+      "secret": "fixture-secret",
+      "signature": "sha256=8b9682c1aee07cf45ce4b83983c2c224000ae4f8289c1ff38169bec4a52c6edd",
+      "valid": true
+    },
+    {
+      "id": "native-replay",
+      "protocol": "native",
+      "body": "{\"id\":\"evt_fixture\",\"session\":\"support\",\"timestamp\":\"2026-08-19T10:00:00Z\",\"event\":\"future.ready\",\"payload\":{\"capability\":42}}",
+      "secret": "fixture-secret",
+      "signature": "8b9682c1aee07cf45ce4b83983c2c224000ae4f8289c1ff38169bec4a52c6edd",
+      "valid": true,
+      "note": "A repeated native signature stays valid; application event-ID deduplication is separate."
+    },
+    {
+      "id": "native-mutated",
+      "protocol": "native",
+      "body": "{\"id\":\"evt_fixture\",\"session\":\"support\",\"timestamp\":\"2026-08-19T10:00:00Z\",\"event\":\"future.ready\",\"payload\":{\"capability\":42}} ",
+      "secret": "fixture-secret",
+      "signature": "8b9682c1aee07cf45ce4b83983c2c224000ae4f8289c1ff38169bec4a52c6edd",
+      "valid": false
+    },
+    {
+      "id": "native-malformed",
+      "protocol": "native",
+      "body": "{\"id\":\"evt_fixture\",\"session\":\"support\",\"timestamp\":\"2026-08-19T10:00:00Z\",\"event\":\"future.ready\",\"payload\":{\"capability\":42}}",
+      "secret": "fixture-secret",
+      "signature": "not-hex",
+      "valid": false
+    },
+    {
+      "id": "native-empty-secret",
+      "protocol": "native",
+      "body": "{\"id\":\"evt_fixture\",\"session\":\"support\",\"timestamp\":\"2026-08-19T10:00:00Z\",\"event\":\"future.ready\",\"payload\":{\"capability\":42}}",
+      "secret": "",
+      "signature": "8b9682c1aee07cf45ce4b83983c2c224000ae4f8289c1ff38169bec4a52c6edd",
+      "valid": false
+    },
+    {
+      "id": "local-10",
+      "protocol": "local",
+      "body": "{\"id\":\"evt_fixture\",\"session\":\"support\",\"timestamp\":\"2026-08-19T10:00:00Z\",\"event\":\"future.ready\",\"payload\":{\"capability\":42}}",
+      "secret": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc",
+      "signature": "t=1787133600,v1=39cfb3e51cfd49878194a4f47c3277877e8b68d78fe90822f07a04f6b73b154b",
+      "nowUnixSeconds": 1787133610,
+      "toleranceSeconds": 300,
+      "valid": true
+    },
+    {
+      "id": "local-300",
+      "protocol": "local",
+      "body": "{\"id\":\"evt_fixture\",\"session\":\"support\",\"timestamp\":\"2026-08-19T10:00:00Z\",\"event\":\"future.ready\",\"payload\":{\"capability\":42}}",
+      "secret": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc",
+      "signature": "t=1787133600,v1=39cfb3e51cfd49878194a4f47c3277877e8b68d78fe90822f07a04f6b73b154b",
+      "nowUnixSeconds": 1787133900,
+      "toleranceSeconds": 300,
+      "valid": true
+    },
+    {
+      "id": "local-301",
+      "protocol": "local",
+      "body": "{\"id\":\"evt_fixture\",\"session\":\"support\",\"timestamp\":\"2026-08-19T10:00:00Z\",\"event\":\"future.ready\",\"payload\":{\"capability\":42}}",
+      "secret": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc",
+      "signature": "t=1787133600,v1=39cfb3e51cfd49878194a4f47c3277877e8b68d78fe90822f07a04f6b73b154b",
+      "nowUnixSeconds": 1787133901,
+      "toleranceSeconds": 300,
+      "valid": false
+    },
+    {
+      "id": "local--301",
+      "protocol": "local",
+      "body": "{\"id\":\"evt_fixture\",\"session\":\"support\",\"timestamp\":\"2026-08-19T10:00:00Z\",\"event\":\"future.ready\",\"payload\":{\"capability\":42}}",
+      "secret": "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc",
+      "signature": "t=1787133600,v1=39cfb3e51cfd49878194a4f47c3277877e8b68d78fe90822f07a04f6b73b154b",
+      "nowUnixSeconds": 1787133299,
+      "toleranceSeconds": 300,
+      "valid": false
+    }
+  ]
+}

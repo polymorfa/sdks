@@ -5,3 +5,8 @@ coverage/
 contracts/openapi.messaging.json
 contracts/openapi.platform.json
 package-lock.json
+packages/go/
+packages/python/
+packages/php/
+packages/rust/
+packages/dotnet/
