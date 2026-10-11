@@ -38,8 +38,8 @@ public sealed record PollMessage(string Title, IReadOnlyList<string> Options, bo
 public sealed record LocationMessage(double Lat, double Long, string? Address = null);
 public sealed record ContactMessage(string Vcard);
 public sealed record WhatsAppMessageIds([property: JsonPropertyName("linked_devices")] string? LinkedDevices, [property: JsonPropertyName("official_api")] string? OfficialApi);
-public sealed record MessageReceipt(string Id, [property: JsonPropertyName("whatsapp_ids")] WhatsAppMessageIds WhatsAppIds, ConversationReference Conversation, string Timestamp, string Status, string? Transport = null, string? RoutingReason = null);
-public sealed record MessageResponse(string Id, [property: JsonPropertyName("whatsapp_ids")] WhatsAppMessageIds WhatsAppIds, ConversationReference Conversation, string Timestamp, string Status, string Type, MessageContent? Content = null, string? MediaId = null, string? Transport = null, string? RoutingReason = null);
+public sealed record MessageReceipt(string Id, [property: JsonPropertyName("whatsapp_ids")] WhatsAppMessageIds WhatsAppIds, ConversationReference Conversation, string Timestamp, string Status, string? Transport = null, string? RoutingReason = null, string? OperationId = null, [property: JsonPropertyName("whatsapp_id")] string? WhatsAppId = null);
+public sealed record MessageResponse(string Id, [property: JsonPropertyName("whatsapp_ids")] WhatsAppMessageIds WhatsAppIds, ConversationReference Conversation, string Timestamp, string Status, string Type, MessageContent? Content = null, string? MediaId = null, string? Transport = null, string? RoutingReason = null, string? OperationId = null, [property: JsonPropertyName("whatsapp_id")] string? WhatsAppId = null);
 public sealed record SeenRequest(ConversationReference Conversation, string Id);
 public sealed record TypingRequest(ConversationReference Conversation, string State, string? Id = null);
 public sealed record ReactRequest(ConversationReference Conversation, string Id, string Reaction, string? Transport = null);
@@ -48,11 +48,21 @@ public sealed record MessageOperation(string OperationId, string Status, string?
 public sealed record MessageOperationReceipt([property: JsonPropertyName("whatsapp_ids")] WhatsAppMessageIds WhatsAppIds, string Timestamp);
 
 public sealed record CreateQuickLinkRequest(string? Purpose = null, string? Session = null, string? ProjectId = null, string? CustomerId = null, string? ExternalId = null, string? ConnectionGoal = null, string? AddConnection = null, QuickLinkConfiguration? Configuration = null, BillingControls? BillingControls = null);
-public sealed record BillingControls(decimal? LimitCredits, int Priority);
-public sealed record QuickLinkConfiguration(string? ConnectionPreference = null, string? ConnectionEnforcement = null, IReadOnlyList<string>? Methods = null, string? DefaultMethod = null, string? PrefillPhone = null, bool? AllowPhoneChange = null, QuickLinkHistorySync? HistorySync = null);
+public sealed record BillingControls([property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] decimal? LimitCredits, int Priority);
+public sealed record TestingProfile(string? Name = null, string? Status = null);
+public sealed record TestingConfiguration(TestingProfile? Profile = null, string? AccountType = null, string? ReplyBehavior = null, string? FailureScenario = null, string? HistoryFixtureId = null);
+public sealed record QuickLinkTesting(string? Country = null, TestingConfiguration? Configuration = null, IReadOnlyList<string>? Editable = null);
+public sealed record QuickLinkConfiguration(string? ConnectionPreference = null, string? ConnectionEnforcement = null, IReadOnlyList<string>? Methods = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<string> DefaultMethod = default, string? PrefillPhone = null, bool? AllowPhoneChange = null, QuickLinkHistorySync? HistorySync = null, ObservationOverride? Observation = null, HmsConfiguration? Hms = null, QuickLinkTesting? Testing = null);
 public sealed record QuickLinkHistorySync(string? Consent = null, string? Mode = null, bool? RequestFull = null);
-public sealed record QuickLink(string Purpose, string ConnectionGoal, string? AddConnection, string Id, string Url, string Session, string? ExpiresAt);
-public sealed record QuickLinkStatus(string Purpose, string ConnectionGoal, string? AddConnection, string? HybridPhase, string Id, string Status, string Session, string? ExpiresAt, string? OpenedAt, string? ConnectedAt, string? Phone, string? ErrorCode, JsonElement? Onboarding);
+public sealed record QuickLink(string Purpose, string ConnectionGoal, string? AddConnection, string Id, string Url, string Session, string? ExpiresAt)
+{
+    public override string ToString() => $"QuickLink {{ Id = {Id}, Url = [REDACTED] }}";
+}
+public sealed record QuickLinkStatus(string Purpose, string ConnectionGoal, string? AddConnection, string? HybridPhase, string Id, string Status, string Session, string? ExpiresAt, string? OpenedAt, string? ConnectedAt, string? Phone, string? ErrorCode, QuickLinkOnboarding? Onboarding);
+public sealed record CloudContactSyncStatus(string Request, bool ReceiptRecorded);
+public sealed record CloudHistorySyncStatus(string Request, bool ReceiptRecorded, string Delivery);
+public sealed record CloudSyncStatus(CloudContactSyncStatus Contacts, CloudHistorySyncStatus History);
+public sealed record QuickLinkOnboarding(string Stage, string? Connection, bool? Coexistence, string ContactsSync, string HistorySync, double HistoryProgress, CloudSyncStatus Sync, string? ErrorCode);
 public sealed record HybridQuickLinkAvailability(bool Allowed, string? AddConnection, IReadOnlyList<ConnectionStatus> Connections, string? ResumeQuickLinkId);
 public sealed record ConnectionStatus(string Kind, string Status, bool Enabled);
 

@@ -127,9 +127,8 @@
         "method": "MessagingClient::$quickReplies->delete"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.QuickReplies.DeleteAsync"
       },
       "rust": {
         "status": "covered",
@@ -159,9 +158,8 @@
         "method": "MessagingClient::$channels->delete"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Channels.DeleteAsync"
       },
       "rust": {
         "status": "covered",
@@ -375,9 +373,8 @@
         "method": "MessagingClient.templates.delete"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Templates.Delete"
       },
       "python": {
         "status": "missing",
@@ -447,14 +444,12 @@
         "method": "MessagingClient.VoIP.End"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.end"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->end"
       },
       "dotnet": {
         "status": "covered",
@@ -810,9 +805,8 @@
         "method": "MessagingClient::$quickReplies->list"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.QuickReplies.ListAsync"
       },
       "rust": {
         "status": "covered",
@@ -834,14 +828,12 @@
         "method": "MessagingClient.VoIP.RetrieveCallPermission"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.retrieve_call_permission"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->retrieveCallPermission"
       },
       "dotnet": {
         "status": "covered",
@@ -875,9 +867,8 @@
         "method": "MessagingClient::$channels->list"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Channels.ListAsync"
       },
       "rust": {
         "status": "covered",
@@ -907,9 +898,8 @@
         "method": "MessagingClient::$channels->retrieve"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Channels.RetrieveAsync"
       },
       "rust": {
         "status": "covered",
@@ -939,9 +929,8 @@
         "method": "MessagingClient::$channels->listMessageUpdates"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Channels.ListMessageUpdatesAsync"
       },
       "rust": {
         "status": "covered",
@@ -971,9 +960,8 @@
         "method": "MessagingClient::$channels->listMessages"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Channels.ListMessagesAsync"
       },
       "rust": {
         "status": "covered",
@@ -1163,9 +1151,8 @@
         "method": "MessagingClient::$chats->getServiceWindow"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Chats.GetServiceWindowAsync"
       },
       "rust": {
         "status": "covered",
@@ -1195,9 +1182,8 @@
         "method": "MessagingClient::$sessions->getCloudCredentialHealth"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Sessions.GetCloudCredentialHealthAsync"
       },
       "rust": {
         "status": "covered",
@@ -1664,9 +1650,8 @@
         "method": "MessagingClient.identities.resolve"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Identities.ResolveAsync"
       },
       "rust": {
         "status": "covered",
@@ -1760,9 +1745,8 @@
         "method": "MessagingClient::$sessions->getMetaPricing"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Sessions.GetMetaPricingAsync"
       },
       "rust": {
         "status": "covered",
@@ -1968,9 +1952,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Messages.OperationStatusAsync"
       },
       "rust": {
         "status": "covered",
@@ -2160,9 +2143,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.BanSafe.GetSessionSafeModeAsync"
       },
       "rust": {
         "status": "missing",
@@ -2263,9 +2245,8 @@
         "method": "MessagingClient::$users->getSecurityCode"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Users.GetSecurityCodeAsync"
       },
       "rust": {
         "status": "covered",
@@ -2467,9 +2448,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.BanSafe.GetProjectHealthPolicyAsync"
       },
       "rust": {
         "status": "missing",
@@ -2502,9 +2482,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.BanSafe.GetProjectInsuranceEvidenceAsync"
       },
       "rust": {
         "status": "missing",
@@ -2572,9 +2551,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.BanSafe.GetProjectSafeModeAsync"
       },
       "rust": {
         "status": "missing",
@@ -2607,9 +2585,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.BanSafe.GetProjectWarmupPlanAsync"
       },
       "rust": {
         "status": "missing",
@@ -2628,9 +2605,8 @@
         "method": "MessagingClient.campaigns.list"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Campaigns.List"
       },
       "python": {
         "status": "missing",
@@ -2664,9 +2640,8 @@
         "method": "MessagingClient.campaigns.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Campaigns.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -2700,9 +2675,8 @@
         "method": "MessagingClient.campaigns.analytics"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Campaigns.Analytics"
       },
       "python": {
         "status": "missing",
@@ -2736,9 +2710,8 @@
         "method": "MessagingClient.campaigns.listRecipients"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Campaigns.ListRecipients"
       },
       "python": {
         "status": "missing",
@@ -2772,9 +2745,8 @@
         "method": "MessagingClient.templates.list"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Templates.List"
       },
       "python": {
         "status": "missing",
@@ -2808,9 +2780,8 @@
         "method": "MessagingClient.templates.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Templates.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -3415,9 +3386,8 @@
         "method": "MessagingClient.templates.update"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Templates.Update"
       },
       "python": {
         "status": "missing",
@@ -3721,9 +3691,8 @@
         "method": "MessagingClient::$quickReplies->create"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.QuickReplies.CreateAsync"
       },
       "rust": {
         "status": "covered",
@@ -3787,9 +3756,8 @@
         "method": "MessagingClient::$channels->create"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Channels.CreateAsync"
       },
       "rust": {
         "status": "covered",
@@ -3819,9 +3787,8 @@
         "method": "MessagingClient::$channels->follow"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Channels.FollowAsync"
       },
       "rust": {
         "status": "covered",
@@ -3851,9 +3818,8 @@
         "method": "MessagingClient::$channels->subscribeToLiveUpdates"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Channels.SubscribeToLiveUpdatesAsync"
       },
       "rust": {
         "status": "covered",
@@ -3883,9 +3849,8 @@
         "method": "MessagingClient::$channels->reactToMessage"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Channels.ReactToMessageAsync"
       },
       "rust": {
         "status": "covered",
@@ -3915,9 +3880,8 @@
         "method": "MessagingClient::$channels->markMessageViewed"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Channels.MarkMessageViewedAsync"
       },
       "rust": {
         "status": "covered",
@@ -3947,9 +3911,8 @@
         "method": "MessagingClient::$channels->mute"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Channels.MuteAsync"
       },
       "rust": {
         "status": "covered",
@@ -3979,9 +3942,8 @@
         "method": "MessagingClient::$channels->unfollow"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Channels.UnfollowAsync"
       },
       "rust": {
         "status": "covered",
@@ -4011,9 +3973,8 @@
         "method": "MessagingClient::$channels->unmute"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Channels.UnmuteAsync"
       },
       "rust": {
         "status": "covered",
@@ -4107,9 +4068,8 @@
         "method": "MessagingClient::$sessions->reauthorizeCloudCredentials"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Sessions.ReauthorizeCloudCredentialsAsync"
       },
       "rust": {
         "status": "covered",
@@ -4481,9 +4441,8 @@
         "method": "MessagingClient.messages.react"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Messages.ReactAsync"
       },
       "rust": {
         "status": "covered",
@@ -4513,9 +4472,8 @@
         "method": "MessagingClient::$messages->markSeen"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Messages.MarkSeenAsync"
       },
       "rust": {
         "status": "covered",
@@ -4579,9 +4537,8 @@
         "method": "MessagingClient::$messages->star"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Messages.StarAsync"
       },
       "rust": {
         "status": "covered",
@@ -4611,9 +4568,8 @@
         "method": "MessagingClient::$messages->setTyping"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Messages.SetTypingAsync"
       },
       "rust": {
         "status": "covered",
@@ -5075,9 +5031,8 @@
         "method": "MessagingClient.campaigns.create"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Campaigns.Create"
       },
       "python": {
         "status": "missing",
@@ -5111,9 +5066,8 @@
         "method": "MessagingClient.campaigns.launch"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Campaigns.Launch"
       },
       "python": {
         "status": "missing",
@@ -5147,9 +5101,8 @@
         "method": "MessagingClient.campaigns.pause"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Campaigns.Pause"
       },
       "python": {
         "status": "missing",
@@ -5183,9 +5136,8 @@
         "method": "MessagingClient.campaigns.addRecipients"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Campaigns.AddRecipients"
       },
       "python": {
         "status": "missing",
@@ -5219,9 +5171,8 @@
         "method": "MessagingClient.campaigns.requeue"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Campaigns.Requeue"
       },
       "python": {
         "status": "missing",
@@ -5289,9 +5240,8 @@
         "method": "MessagingClient.campaigns.resume"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Campaigns.Resume"
       },
       "python": {
         "status": "missing",
@@ -5325,9 +5275,8 @@
         "method": "MessagingClient.campaigns.stop"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Campaigns.Stop"
       },
       "python": {
         "status": "missing",
@@ -5361,9 +5310,8 @@
         "method": "MessagingClient.templates.create"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Templates.Create"
       },
       "python": {
         "status": "missing",
@@ -5397,9 +5345,8 @@
         "method": "MessagingClient.templates.preview"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Templates.Preview"
       },
       "python": {
         "status": "missing",
@@ -5433,9 +5380,8 @@
         "method": "MessagingClient.templates.submit"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.Templates.Submit"
       },
       "python": {
         "status": "missing",
@@ -5577,14 +5523,12 @@
         "method": "MessagingClient.VoIP.CreateCallLink"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.create_call_link"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->createCallLink"
       },
       "dotnet": {
         "status": "covered",
@@ -5610,14 +5554,12 @@
         "method": "MessagingClient.VoIP.PreviewCallLink"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.preview_call_link"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->previewCallLink"
       },
       "dotnet": {
         "status": "covered",
@@ -5643,14 +5585,12 @@
         "method": "MessagingClient.VoIP.Place"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.place"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->place"
       },
       "dotnet": {
         "status": "covered",
@@ -5676,14 +5616,12 @@
         "method": "MessagingClient.VoIP.Accept"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.accept"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->accept"
       },
       "dotnet": {
         "status": "covered",
@@ -5743,14 +5681,12 @@
         "method": "MessagingClient.VoIP.SetHandRaised"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.set_hand_raised"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->setHandRaised"
       },
       "dotnet": {
         "status": "covered",
@@ -5776,14 +5712,12 @@
         "method": "MessagingClient.VoIP.Leave"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.leave"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->leave"
       },
       "dotnet": {
         "status": "covered",
@@ -5843,14 +5777,12 @@
         "method": "MessagingClient.VoIP.AddParticipant"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.add_participant"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->addParticipant"
       },
       "dotnet": {
         "status": "covered",
@@ -5876,14 +5808,12 @@
         "method": "MessagingClient.VoIP.RingParticipant"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.ring_participant"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->ringParticipant"
       },
       "dotnet": {
         "status": "covered",
@@ -5909,14 +5839,12 @@
         "method": "MessagingClient.VoIP.SendReaction"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.send_reaction"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->sendReaction"
       },
       "dotnet": {
         "status": "covered",
@@ -5942,14 +5870,12 @@
         "method": "MessagingClient.VoIP.Reject"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.reject"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->reject"
       },
       "dotnet": {
         "status": "covered",
@@ -6009,14 +5935,12 @@
         "method": "MessagingClient.VoIP.Report"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.report"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->report"
       },
       "dotnet": {
         "status": "covered",
@@ -6042,14 +5966,12 @@
         "method": "MessagingClient.VoIP.Check"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.check"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->check"
       },
       "dotnet": {
         "status": "covered",
@@ -6522,9 +6444,8 @@
         "method": "MessagingClient::$quickReplies->replace"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.QuickReplies.ReplaceAsync"
       },
       "rust": {
         "status": "covered",
@@ -7090,9 +7011,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.BanSafe.UpdateSessionSafeModeAsync"
       },
       "rust": {
         "status": "missing",
@@ -7125,9 +7045,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.BanSafe.UpdateProjectHealthPolicyAsync"
       },
       "rust": {
         "status": "missing",
@@ -7160,9 +7079,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.BanSafe.UpdateProjectInsuranceEvidenceAsync"
       },
       "rust": {
         "status": "missing",
@@ -7195,9 +7113,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.BanSafe.UpdateProjectSafeModeAsync"
       },
       "rust": {
         "status": "missing",
@@ -7230,9 +7147,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient.BanSafe.UpdateProjectWarmupPlanAsync"
       },
       "rust": {
         "status": "missing",
@@ -7865,9 +7781,8 @@
         "method": "Client.campaigns.delete"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Delete"
       },
       "python": {
         "status": "missing",
@@ -7949,9 +7864,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.DeleteAsync"
       },
       "rust": {
         "status": "missing",
@@ -7984,9 +7898,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.DeleteEndpointAsync"
       },
       "rust": {
         "status": "missing",
@@ -8089,9 +8002,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.ApiKeys.DeactivateAsync"
       },
       "rust": {
         "status": "missing",
@@ -8225,9 +8137,8 @@
         "method": "MessagingClient::$clientTokens->deleteRules"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.ClientTokens.DeleteRulesAsync"
       },
       "rust": {
         "status": "covered",
@@ -9893,9 +9804,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.AuditLogs.ListAsync"
       },
       "rust": {
         "status": "missing",
@@ -9928,9 +9838,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.SessionBans.ListAsync"
       },
       "rust": {
         "status": "missing",
@@ -9963,9 +9872,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.SessionBans.ListActiveAsync"
       },
       "rust": {
         "status": "missing",
@@ -9984,9 +9892,8 @@
         "method": "Client.banSafe.listClaims"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.ListClaims"
       },
       "python": {
         "status": "missing",
@@ -10020,9 +9927,8 @@
         "method": "Client.banSafe.getClaim"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.GetClaim"
       },
       "python": {
         "status": "missing",
@@ -10056,9 +9962,8 @@
         "method": "Client.banSafe.listCollection"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.ListCollection"
       },
       "python": {
         "status": "missing",
@@ -10092,9 +9997,8 @@
         "method": "Client.banSafe.listEnforcement"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.ListEnforcement"
       },
       "python": {
         "status": "missing",
@@ -10128,9 +10032,8 @@
         "method": "Client.banSafe.listFindings"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.ListFindings"
       },
       "python": {
         "status": "missing",
@@ -10164,9 +10067,8 @@
         "method": "Client.banSafe.listHealth"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.ListHealth"
       },
       "python": {
         "status": "missing",
@@ -10200,9 +10102,8 @@
         "method": "Client.banSafe.listHealthActions"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.ListHealthActions"
       },
       "python": {
         "status": "missing",
@@ -10236,9 +10137,8 @@
         "method": "Client.banSafe.getHealth"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.GetHealth"
       },
       "python": {
         "status": "missing",
@@ -10272,9 +10172,8 @@
         "method": "Client.banSafe.listHealthHistory"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.ListHealthHistory"
       },
       "python": {
         "status": "missing",
@@ -10308,9 +10207,8 @@
         "method": "Client.banSafe.listIncidents"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.ListIncidents"
       },
       "python": {
         "status": "missing",
@@ -10344,9 +10242,8 @@
         "method": "Client.banSafe.listSignals"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.ListSignals"
       },
       "python": {
         "status": "missing",
@@ -10380,9 +10277,8 @@
         "method": "Client.banSafe.getTelemetry"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.GetTelemetry"
       },
       "python": {
         "status": "missing",
@@ -10416,9 +10312,8 @@
         "method": "Client.banSafe.listTelemetryHistory"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.ListTelemetryHistory"
       },
       "python": {
         "status": "missing",
@@ -10791,9 +10686,8 @@
         "method": "Client.calls.list"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Calls.List"
       },
       "python": {
         "status": "missing",
@@ -10827,9 +10721,8 @@
         "method": "Client.calls.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Calls.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -10863,9 +10756,8 @@
         "method": "Client.calls.export"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Calls.Export"
       },
       "python": {
         "status": "missing",
@@ -10899,9 +10791,8 @@
         "method": "Client.calls.stats"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Calls.Stats"
       },
       "python": {
         "status": "missing",
@@ -10935,9 +10826,8 @@
         "method": "Client.campaigns.list"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.List"
       },
       "python": {
         "status": "missing",
@@ -10971,9 +10861,8 @@
         "method": "Client.campaigns.retrieve"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Retrieve"
       },
       "python": {
         "status": "missing",
@@ -11007,9 +10896,8 @@
         "method": "Client.campaigns.analytics"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Analytics"
       },
       "python": {
         "status": "missing",
@@ -11043,9 +10931,8 @@
         "method": "Client.campaigns.conversions"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Conversions"
       },
       "python": {
         "status": "missing",
@@ -11079,9 +10966,8 @@
         "method": "Client.campaigns.events"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Events"
       },
       "python": {
         "status": "missing",
@@ -11115,9 +11001,8 @@
         "method": "Client.campaigns.recipients"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Recipients"
       },
       "python": {
         "status": "missing",
@@ -11401,9 +11286,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.EncryptionKeyAsync"
       },
       "rust": {
         "status": "missing",
@@ -11436,9 +11320,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.ListAsync"
       },
       "rust": {
         "status": "missing",
@@ -11471,9 +11354,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.RetrieveAsync"
       },
       "rust": {
         "status": "missing",
@@ -11506,9 +11388,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.EndpointAsync"
       },
       "rust": {
         "status": "missing",
@@ -11541,9 +11422,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.EndpointReceiptsAsync"
       },
       "rust": {
         "status": "missing",
@@ -11576,9 +11456,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.ReceiptsAsync"
       },
       "rust": {
         "status": "missing",
@@ -11861,9 +11740,8 @@
         "milestone": "server-sdk-parity"
       },
       "rust": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.usage.list_gates"
       }
     },
     {
@@ -11891,9 +11769,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.SecurityIncidents.ListAsync"
       },
       "rust": {
         "status": "missing",
@@ -11926,9 +11803,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.ApiKeys.ListAsync"
       },
       "rust": {
         "status": "missing",
@@ -11996,9 +11872,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Members.ListAsync"
       },
       "rust": {
         "status": "missing",
@@ -12367,9 +12242,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Projects.GetHealthPolicyAsync"
       },
       "rust": {
         "status": "missing",
@@ -12402,9 +12276,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Projects.ListHybridMergeCandidatesAsync"
       },
       "rust": {
         "status": "missing",
@@ -12437,9 +12310,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Projects.GetInsuranceEvidenceAsync"
       },
       "rust": {
         "status": "missing",
@@ -12571,9 +12443,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Projects.GetSafeModeAsync"
       },
       "rust": {
         "status": "missing",
@@ -12606,9 +12477,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Projects.GetWarmupPlanAsync"
       },
       "rust": {
         "status": "missing",
@@ -12927,14 +12797,12 @@
         "method": "MessagingClient.VoIP.RetrieveCallSettings"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.retrieve_call_settings"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->retrieveCallSettings"
       },
       "dotnet": {
         "status": "covered",
@@ -12968,9 +12836,8 @@
         "method": "MessagingClient::$clientTokens->retrieveRules"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.ClientTokens.RetrieveRulesAsync"
       },
       "rust": {
         "status": "covered",
@@ -13266,9 +13133,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Organizations.RetrieveAsync"
       },
       "rust": {
         "status": "missing",
@@ -13371,9 +13237,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.ProjectTokens.ListAsync"
       },
       "rust": {
         "status": "missing",
@@ -13411,9 +13276,8 @@
         "milestone": "server-sdk-parity"
       },
       "rust": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.usage.summary"
       }
     },
     {
@@ -13446,9 +13310,8 @@
         "milestone": "server-sdk-parity"
       },
       "rust": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.usage.list_records"
       }
     },
     {
@@ -14073,9 +13936,8 @@
         "method": "Client.campaigns.update"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Update"
       },
       "python": {
         "status": "missing",
@@ -14157,9 +14019,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.UpdateAsync"
       },
       "rust": {
         "status": "missing",
@@ -15813,9 +15674,8 @@
         "method": "Client.banSafe.createIncident"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.CreateIncident"
       },
       "python": {
         "status": "missing",
@@ -15849,9 +15709,8 @@
         "method": "Client.banSafe.retractIncident"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.BanSafe.RetractIncident"
       },
       "python": {
         "status": "missing",
@@ -15953,9 +15812,8 @@
         "method": "Client.campaigns.create"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Create"
       },
       "python": {
         "status": "missing",
@@ -15989,9 +15847,8 @@
         "method": "Client.campaigns.archive"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Archive"
       },
       "python": {
         "status": "missing",
@@ -16025,9 +15882,8 @@
         "method": "Client.campaigns.recordConversion"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.RecordConversion"
       },
       "python": {
         "status": "missing",
@@ -16061,9 +15917,8 @@
         "method": "Client.campaigns.duplicate"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Duplicate"
       },
       "python": {
         "status": "missing",
@@ -16097,9 +15952,8 @@
         "method": "Client.campaigns.launch"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Launch"
       },
       "python": {
         "status": "missing",
@@ -16133,9 +15987,8 @@
         "method": "Client.campaigns.pause"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Pause"
       },
       "python": {
         "status": "missing",
@@ -16169,9 +16022,8 @@
         "method": "Client.campaigns.addRecipients"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.AddRecipients"
       },
       "python": {
         "status": "missing",
@@ -16205,9 +16057,8 @@
         "method": "Client.campaigns.requeue"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Requeue"
       },
       "python": {
         "status": "missing",
@@ -16275,9 +16126,8 @@
         "method": "Client.campaigns.resume"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Resume"
       },
       "python": {
         "status": "missing",
@@ -16311,9 +16161,8 @@
         "method": "Client.campaigns.stop"
       },
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Campaigns.Stop"
       },
       "python": {
         "status": "missing",
@@ -16359,9 +16208,8 @@
         "method": "MessagingClient::$clientTokens->mint"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.ClientTokens.MintAsync"
       },
       "rust": {
         "status": "covered",
@@ -16596,9 +16444,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.RotateEncryptionKeyAsync"
       },
       "rust": {
         "status": "missing",
@@ -16631,9 +16478,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.CreateAsync"
       },
       "rust": {
         "status": "missing",
@@ -16666,9 +16512,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.DeprecateAsync"
       },
       "rust": {
         "status": "missing",
@@ -16701,9 +16546,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.DiscardAsync"
       },
       "rust": {
         "status": "missing",
@@ -16736,9 +16580,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.PublishAsync"
       },
       "rust": {
         "status": "missing",
@@ -16771,9 +16614,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.SyncAsync"
       },
       "rust": {
         "status": "missing",
@@ -16806,9 +16648,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.UploadAsync"
       },
       "rust": {
         "status": "missing",
@@ -16981,9 +16822,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.SecurityIncidents.AcknowledgeAsync"
       },
       "rust": {
         "status": "missing",
@@ -18975,9 +18815,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Flows.SetEndpointAsync"
       },
       "rust": {
         "status": "missing",
@@ -19080,9 +18919,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Projects.UpdateHealthPolicyAsync"
       },
       "rust": {
         "status": "missing",
@@ -19115,9 +18953,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Projects.UpdateInsuranceEvidenceAsync"
       },
       "rust": {
         "status": "missing",
@@ -19150,9 +18987,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Projects.UpdateSafeModeAsync"
       },
       "rust": {
         "status": "missing",
@@ -19185,9 +19021,8 @@
         "milestone": "server-sdk-parity"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Projects.UpdateWarmupPlanAsync"
       },
       "rust": {
         "status": "missing",
@@ -19277,14 +19112,12 @@
         "method": "MessagingClient.VoIP.UpdateCallSettings"
       },
       "python": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "AsyncMessagingClient.voip.update_call_settings"
       },
       "php": {
-        "status": "missing",
-        "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "MessagingClient::$voip->updateCallSettings"
       },
       "dotnet": {
         "status": "covered",
@@ -19318,9 +19151,8 @@
         "method": "MessagingClient::$clientTokens->updateRules"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.ClientTokens.UpdateRulesAsync"
       },
       "rust": {
         "status": "covered",
@@ -19405,9 +19237,8 @@
       "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
       "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Analytics.Get"
       },
       "python": {
         "status": "missing",
@@ -19444,9 +19275,8 @@
       "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
       "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Analytics.Get"
       },
       "python": {
         "status": "missing",
@@ -19483,9 +19313,8 @@
       "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
       "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "OrganizationClient.Analytics.Metrics"
       },
       "python": {
         "status": "missing",
@@ -19522,9 +19351,8 @@
       "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
       "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
       "go": {
-        "status": "missing",
-        "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-        "milestone": "server-sdk-parity"
+        "status": "covered",
+        "method": "ProjectClient.Analytics.Metrics"
       },
       "python": {
         "status": "missing",

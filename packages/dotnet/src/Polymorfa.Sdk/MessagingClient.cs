@@ -11,6 +11,9 @@ public sealed class MessagingClient : IDisposable
     public MessagingWebhooks Webhooks { get; }
     public Calls Calls { get; }
     public Business Business { get; }
+    public Channels Channels { get; }
+    public QuickReplies QuickReplies { get; }
+    public MessagingBanSafe BanSafe { get; }
     public Contacts Contacts { get; }
     public Groups Groups { get; }
     public Chats Chats { get; }
@@ -24,12 +27,13 @@ public sealed class MessagingClient : IDisposable
     public MessagingMedia Media { get; }
     public MessagingClient(Credential credential, ClientOptions? options = null)
     {
-        http = new(credential, options ?? new()); Sessions = new(http); Messages = new(http); QuickLinks = new(http); Webhooks = new(http); Calls = new(http); Business = new(http); Contacts = new(http); Groups = new(http); Chats = new(http); Labels = new(http); Presence = new(http); Profile = new(http); Privacy = new(http); ClientTokens = new(http); Identities = new(http); Users = new(http); Media = new(http);
+        if (credential.Kind != CredentialKind.ClientToken) credential.RequireServer();
+        http = new(credential, options ?? new()); Sessions = new(http); Messages = new(http); QuickLinks = new(http); Webhooks = new(http); Calls = new(http); Business = new(http); Channels = new(http); QuickReplies = new(http); BanSafe = new(http); Contacts = new(http); Groups = new(http); Chats = new(http); Labels = new(http); Presence = new(http); Profile = new(http); Privacy = new(http); ClientTokens = new(http); Identities = new(http); Users = new(http); Media = new(http);
     }
     public Task<ApiResponse<T>> RawAsync<T>(HttpMethod method, string path, JsonElement? body = null, RequestOptions? options = null, IReadOnlyList<KeyValuePair<string, string>>? query = null) => http.RequestAsync<T>(method, path, body, options, query);
     public void Dispose() => http.Dispose();
 }
-public sealed class MessagingSessions
+public sealed partial class MessagingSessions
 {
     private readonly HttpTransport http;
     internal MessagingSessions(HttpTransport http) => this.http = http;
@@ -70,7 +74,7 @@ public sealed class QuickLinks
     {
         http.Credential.RequireServer(); body ??= new();
         if (body.Purpose == "add_connection" && string.IsNullOrWhiteSpace(body.Session)) throw new PolymorfaValidationException("An add_connection link requires session.", "invalid_parameter");
-        if (body.BillingControls is { } billing && (billing.Priority < 0 || billing.Priority > 1_000_000 || billing.LimitCredits < 0 || billing.LimitCredits > 1_000_000 || billing.LimitCredits is decimal limit && decimal.Round(limit, 6) != limit || body.Purpose == "add_connection")) throw new PolymorfaValidationException("Invalid billingControls.", "invalid_parameter");
+        if (body.BillingControls is { } billing && (billing.Priority < 0 || billing.Priority > 1_000_000 || billing.LimitCredits < 0 || billing.LimitCredits > 1_000_000 || billing.LimitCredits is decimal limit && decimal.Round(limit, 6) != limit || body.Purpose == "add_connection" || body.Configuration?.Testing is not null)) throw new PolymorfaValidationException("Invalid billingControls.", "invalid_parameter");
         return http.RequestAsync<SuccessEnvelope<QuickLink>>(HttpMethod.Post, "/messaging/quicklinks", body, options);
     }
     public Task<ApiResponse<SuccessEnvelope<QuickLinkStatus>>> RetrieveAsync(string id, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<SuccessEnvelope<QuickLinkStatus>>(HttpMethod.Get, $"/messaging/quicklinks/{Uri.EscapeDataString(id)}", null, options); }

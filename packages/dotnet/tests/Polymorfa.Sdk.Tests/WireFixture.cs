@@ -10,6 +10,8 @@ internal sealed class WireFixture : IDisposable
     public string? Authorization { get; init; }
     public IReadOnlyDictionary<string, string>? ExpectedHeaders { get; init; }
     public int FragmentBytes { get; init; }
+    public IReadOnlyList<string> AbsentHeaders { get; init; } = [];
+    public IReadOnlyList<string> RequiredHeaders { get; init; } = [];
     public WireFixture() { listener.Start(); Url = new($"http://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}"); }
     public async Task ServeAsync(string method, string path, string? body, string response, int status = 200, IReadOnlyDictionary<string, string>? responseHeaders = null, string? absentHeader = null, IReadOnlyDictionary<string, string>? expectedHeaders = null)
     {
@@ -30,6 +32,8 @@ internal sealed class WireFixture : IDisposable
         if (absentHeader is not null && headers.ContainsKey(absentHeader)) throw new Exception("Sensitive header reached storage.");
         foreach (var expectedHeader in expectedHeaders ?? ExpectedHeaders ?? new Dictionary<string, string>())
             if (!headers.TryGetValue(expectedHeader.Key, out var value) || value != expectedHeader.Value) throw new Exception("Native header differs: " + expectedHeader.Key);
+        foreach (var absent in AbsentHeaders) if (headers.ContainsKey(absent)) throw new Exception("Unexpected native header: " + absent);
+        foreach (var required in RequiredHeaders) if (!headers.TryGetValue(required, out var requiredValue) || string.IsNullOrEmpty(requiredValue)) throw new Exception("Missing native header: " + required);
         var length = headers.TryGetValue("content-length", out var rawLength) ? int.Parse(rawLength) : 0;
         var input = new byte[length]; await stream.ReadExactlyAsync(input, timeout.Token);
         if (body is null) { if (length != 0) throw new Exception("Unexpected native body."); }

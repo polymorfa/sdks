@@ -42,6 +42,8 @@ public sealed class ProjectClient : IDisposable
     private readonly HttpTransport http;
     private readonly bool ownsTransport;
     public string ProjectId { get; }
+    public ProjectSettings Settings { get; }
+    public Flows Flows { get; }
     public ConfigurationResource Configuration { get; }
     public SipTrunks SipTrunks { get; }
     public Operations Operations { get; }
@@ -55,7 +57,7 @@ public sealed class ProjectClient : IDisposable
     internal ProjectClient(HttpTransport http, string projectId)
     {
         if (string.IsNullOrWhiteSpace(projectId)) throw new PolymorfaConfigurationException("A non-empty projectId is required.");
-        this.http = http; ProjectId = projectId; Configuration = new(http, projectId); SipTrunks = new(http, projectId); Operations = new(http, projectId); CallRetention = new(http); Events = new(http, Prefix, ProjectId); Webhooks = new(http, ProjectId); WebhookDeliveries = new(http, ProjectId);
+        this.http = http; ProjectId = projectId; Settings = new(http, projectId); Flows = new(http, projectId); Configuration = new(http, projectId); SipTrunks = new(http, projectId); Operations = new(http, projectId); CallRetention = new(http); Events = new(http, Prefix, ProjectId); Webhooks = new(http, ProjectId); WebhookDeliveries = new(http, ProjectId);
     }
     public ProjectClient Project(string projectId)
     {
@@ -70,7 +72,7 @@ public sealed class ProjectClient : IDisposable
     }
     public void Dispose() { if (ownsTransport) http.Dispose(); }
 }
-public sealed class Projects
+public sealed partial class Projects
 {
     private readonly HttpTransport http;
     internal Projects(HttpTransport http) => this.http = http;

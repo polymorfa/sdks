@@ -85,7 +85,7 @@ public sealed class Presence : Resource
 {
     internal Presence(HttpTransport http) : base(http) { }
     private static string Path(string session) => $"/messaging/{E(session)}/presence";
-    public Task<ApiResponse<AsyncCommandResponse>> SetAsync(string session, SetPresenceRequest body, RequestOptions? options = null) => Post<AsyncCommandResponse>(Path(session), body, options);
+    public Task<ApiResponse<CommandResponse<StatusResult>>> SetAsync(string session, SetPresenceRequest body, RequestOptions? options = null) => Post<CommandResponse<StatusResult>>(Path(session), body, options);
     public Task<ApiResponse<SuccessEnvelope<PresenceData>>> GetAsync(string session, RequestOptions? options = null) => Get<SuccessEnvelope<PresenceData>>(Path(session), options);
     public Task<ApiResponse<SuccessEnvelope<ChatPresenceData>>> GetForChatAsync(string session, string chat, RequestOptions? options = null) => Get<SuccessEnvelope<ChatPresenceData>>(Path(session) + "/" + E(chat), options);
     public Task<ApiResponse<SuccessEnvelope<CommandResult<PresenceSubscription>>>> SubscribeAsync(string session, string chat, RequestOptions? options = null) => Post<SuccessEnvelope<CommandResult<PresenceSubscription>>>(Path(session) + "/" + E(chat) + "/subscribe", null, options);
@@ -106,6 +106,7 @@ public sealed class Chats : Resource
     internal Chats(HttpTransport http) : base(http) { }
     private static string Path(string session) => $"/messaging/{E(session)}/chats";
     private static string Path(string session, string chat) => Path(session) + "/" + E(chat);
+    public Task<ApiResponse<SuccessEnvelope<CustomerServiceWindow>>> GetServiceWindowAsync(string session, string conversation, RequestOptions? options = null) { Http.Credential.RequireServer(); return Get<SuccessEnvelope<CustomerServiceWindow>>(Path(session, conversation) + "/service-window", options); }
     public Task<ApiResponse<HistoryPage<HistoryChat>>> ListAsync(string session, ListHistoryChatsParameters? parameters = null, RequestOptions? options = null) { Http.Credential.RequireServer(); return Get<HistoryPage<HistoryChat>>(Path(session), options, parameters); }
     public Task<ApiResponse<SuccessEnvelope<HistoryChat>>> RetrieveAsync(string session, string chat, RequestOptions? options = null) { Http.Credential.RequireServer(); return Get<SuccessEnvelope<HistoryChat>>(Path(session, chat), options); }
     public Task<ApiResponse<HistoryPage<HistoryMessage>>> ListMessagesAsync(string session, string chat, ListHistoryMessagesParameters? parameters = null, RequestOptions? options = null) { Http.Credential.RequireServer(); return Get<HistoryPage<HistoryMessage>>(Path(session, chat) + "/messages", options, parameters); }

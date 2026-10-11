@@ -101,13 +101,17 @@ try
     await SystemTests.RunAsync();
     await MediaTests.RunAsync(root);
     await ResourceTests.RunAsync();
+    await AccountTests.RunAsync();
     await BusinessTests.RunAsync();
+    await ChannelCloudTests.RunAsync();
     await CallsTests.RunAsync();
     await BillingTests.RunAsync();
     await CustomerTests.RunAsync();
     await PlatformWebhookTests.RunAsync();
     await CallConsentTests.RunAsync();
     await SessionTests.RunAsync();
+    await ProjectSettingsTests.RunAsync();
+    await FlowTests.RunAsync();
     await SipTests.RunAsync();
     await EventsTests.RunAsync();
     await OperationsTests.RunAsync();
