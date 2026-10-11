@@ -132,7 +132,7 @@ function github(path, binary = false) {
     );
   }
 }
-async function acceptedContract(expected, output) {
+export async function acceptedContract(expected, output) {
   const branch = expected.environment === "staging" ? "dev" : "main";
   for (let page = 1; page <= 10; page++) {
     const { workflow_runs: runs } = JSON.parse(

@@ -1,0 +1,84 @@
+name: Native server SDKs
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.packages.outputs.matrix }}
+      enabled: ${{ steps.packages.outputs.enabled }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - id: packages
+        run: node scripts/native-sdk-matrix.mjs >> "$GITHUB_OUTPUT"
+
+  verify:
+    needs: matrix
+    if: needs.matrix.outputs.enabled == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - uses: actions/setup-go@v6
+        if: matrix.language == 'go'
+        with:
+          go-version: ${{ matrix.runtime }}
+          cache: false
+      - uses: actions/setup-python@v6
+        if: matrix.language == 'python'
+        with:
+          python-version: ${{ matrix.runtime }}
+      - name: Install Python tooling
+        if: matrix.language == 'python'
+        run: python -m pip install uv
+      - uses: shivammathur/setup-php@v2
+        if: matrix.language == 'php'
+        with:
+          php-version: ${{ matrix.runtime }}
+          tools: composer:v2
+          extensions: curl, openssl, mbstring
+          coverage: none
+      - uses: actions/setup-dotnet@v6
+        if: matrix.language == 'dotnet'
+        with:
+          dotnet-version: ${{ matrix.runtime }}
+      - name: Install Rust toolchain
+        if: matrix.language == 'rust'
+        env:
+          RUST_TOOLCHAIN: ${{ matrix.runtime }}
+        run: |
+          rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component rustfmt,clippy
+          rustup default "$RUST_TOOLCHAIN"
+      - name: Verify handwritten SDK and build its package
+        env:
+          SDK_LANGUAGE: ${{ matrix.language }}
+          SDK_PYTHON_VERSION: ${{ matrix.runtime }}
+          DOTNET_ROLL_FORWARD: Major
+        run: node scripts/verify-native-sdk.mjs "$SDK_LANGUAGE"
+      - name: Save native package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdk-${{ matrix.language }}-${{ matrix.runtime }}
+          path: |
+            packages/python/dist/*
+            packages/dotnet/artifacts/*.nupkg
+            packages/rust/target/package/*.crate
+            packages/php/dist/*.tar
+          if-no-files-found: ignore

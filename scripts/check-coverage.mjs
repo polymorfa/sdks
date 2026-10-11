@@ -29,6 +29,14 @@ const COVERAGE_STATUSES = new Set([
   "missing",
   "excluded",
 ]);
+export const SDK_LANGUAGES = [
+  "typescript",
+  "go",
+  "python",
+  "php",
+  "dotnet",
+  "rust",
+];
 
 function main() {
   try {
@@ -148,16 +156,26 @@ export function compareCoverage(actual, ledger, strict) {
   if (
     ledger === null ||
     typeof ledger !== "object" ||
-    ledger.schemaVersion !== 1 ||
+    ![1, 2].includes(ledger.schemaVersion) ||
     !Array.isArray(ledger.operations)
   ) {
     throw new Error(
-      "Coverage ledger must use schemaVersion 1 and contain an operations array.",
+      "Coverage ledger must use schemaVersion 1 or 2 and contain an operations array.",
     );
   }
   const ledgerByKey = new Map();
+  const languages = ledger.schemaVersion === 2 ? SDK_LANGUAGES : ["typescript"];
+  if (
+    ledger.schemaVersion === 2 &&
+    JSON.stringify(ledger.languages) !== JSON.stringify(SDK_LANGUAGES)
+  ) {
+    throw new Error(
+      "Version 2 coverage must declare all six SDK languages in canonical order.",
+    );
+  }
   for (const entry of ledger.operations) {
     validateLedgerEntry(entry);
+    for (const language of languages) validateLanguageCoverage(entry, language);
     const key = operationKey(entry);
     if (ledgerByKey.has(key))
       throw new Error(
@@ -175,6 +193,12 @@ export function compareCoverage(actual, ledger, strict) {
   let excluded = 0;
   let changed = 0;
   const actualKeys = new Set();
+  const languageCounts = Object.fromEntries(
+    languages.map((language) => [
+      language,
+      { covered: 0, partial: 0, missing: 0, excluded: 0, changed: 0 },
+    ]),
+  );
 
   for (const operation of actual) {
     const key = operationKey(operation);
@@ -191,7 +215,18 @@ export function compareCoverage(actual, ledger, strict) {
           reason: "Operation is absent from the coverage ledger.",
           milestone: "coverage-triage",
         },
+        languages: Object.fromEntries(
+          languages.map((language) => [
+            language,
+            {
+              status: "missing",
+              reason: "Operation is absent from the coverage ledger.",
+              milestone: "coverage-triage",
+            },
+          ]),
+        ),
       });
+      for (const language of languages) languageCounts[language].missing += 1;
       continue;
     }
     if (
@@ -204,7 +239,11 @@ export function compareCoverage(actual, ledger, strict) {
         status: "changed",
         previousFingerprint: entry.fingerprint,
         typescript: entry.typescript,
+        languages: Object.fromEntries(
+          languages.map((language) => [language, entry[language]]),
+        ),
       });
+      for (const language of languages) languageCounts[language].changed += 1;
       continue;
     }
     switch (entry.typescript.status) {
@@ -213,24 +252,33 @@ export function compareCoverage(actual, ledger, strict) {
         break;
       case "partial":
         partial += 1;
-        gaps.push({
-          ...operation,
-          status: "partial",
-          typescript: entry.typescript,
-        });
         break;
       case "missing":
         missing += 1;
-        gaps.push({
-          ...operation,
-          status: "missing",
-          typescript: entry.typescript,
-        });
         break;
       case "excluded":
         excluded += 1;
         break;
     }
+    for (const language of languages)
+      languageCounts[language][entry[language].status] += 1;
+    const affected = languages.filter((language) =>
+      ["missing", "partial"].includes(entry[language].status),
+    );
+    if (affected.length > 0)
+      gaps.push({
+        ...operation,
+        status: affected.some(
+          (language) => entry[language].status === "missing",
+        )
+          ? "missing"
+          : "partial",
+        typescript: entry.typescript,
+        affectedLanguages: affected,
+        languages: Object.fromEntries(
+          languages.map((language) => [language, entry[language]]),
+        ),
+      });
   }
 
   for (const entry of ledger.operations) {
@@ -252,7 +300,7 @@ export function compareCoverage(actual, ledger, strict) {
   }
 
   return {
-    schemaVersion: 1,
+    schemaVersion: ledger.schemaVersion,
     sourceCommit: ledger.sourceCommit,
     total: actual.length,
     covered,
@@ -260,9 +308,43 @@ export function compareCoverage(actual, ledger, strict) {
     missing,
     excluded,
     changed,
+    languages: languageCounts,
     gaps,
     resolutions,
   };
+}
+
+function validateLanguageCoverage(entry, language) {
+  const coverage = entry[language];
+  if (!coverage || !COVERAGE_STATUSES.has(coverage.status)) {
+    throw new Error(
+      `${language} coverage status is invalid for ${displayKey(entry)}.`,
+    );
+  }
+  if (
+    coverage.status === "covered" &&
+    (typeof coverage.method !== "string" || coverage.method.length === 0)
+  ) {
+    throw new Error(
+      `Covered operation ${displayKey(entry)} requires a ${language} method.`,
+    );
+  }
+  if (
+    coverage.status !== "covered" &&
+    (typeof coverage.reason !== "string" || coverage.reason.length === 0)
+  ) {
+    throw new Error(
+      `Non-covered operation ${displayKey(entry)} requires a ${language} reason.`,
+    );
+  }
+  if (
+    ["missing", "partial"].includes(coverage.status) &&
+    (typeof coverage.milestone !== "string" || !coverage.milestone)
+  ) {
+    throw new Error(
+      `Incomplete ${language} operation ${displayKey(entry)} requires a milestone.`,
+    );
+  }
 }
 
 function validateLedgerEntry(entry) {

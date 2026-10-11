@@ -1,0 +1,20 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Polymorfa;
+
+/** Known stable API codes; exceptions also preserve any newly returned string. */
+final class ErrorCodes
+{
+    public const KNOWN = [
+        'invalid_parameter','invalid_credential','entitlement_required','cloud_template_authority_restricted','gate_limit_reached','method_not_allowed','permission_denied','missing_scope','resource_not_found','hms_not_enabled','media_fetch_failed','resource_gone','state_conflict','rate_limit_exceeded','internal_error','operation_not_supported','upstream_failure','service_unavailable','credential_verification_unavailable','session_not_ready','hybrid_routing_paused','hybrid_automation_unavailable','hybrid_transport_unavailable','hybrid_target_reference_unavailable','hybrid_choice_required','hybrid_transition_ineligible','send_outcome_unknown','command_dispatch_failed','result_unknown','recipient_not_on_whatsapp','conversation_window_closed','template_not_approved','media_too_large','whatsapp_rate_limited','new_chat_limit_reached','whatsapp_account_restricted','whatsapp_groups_ineligible','whatsapp_group_creation_paused','whatsapp_group_limit_reached','whatsapp_group_full','whatsapp_group_suspended','whatsapp_group_has_no_participants','order_status_transition_invalid','order_cancellation_failed','number_restricted','bansafe_suspended','bansafe_org_suspended','bansafe_cold_blocked','bansafe_cold_held','bansafe_throttled','bansafe_daily_allowance_reached','bansafe_accounting_unavailable','bansafe_send_outcome_unknown','campaign_throughput_capped','addon_required','campaigns_not_entitled','idempotency_completed','idempotency_conflict','idempotency_in_progress','idempotency_outcome_unknown','feature_unavailable','stream_connection_limit_reached','stream_cursor_expired','stream_cursor_invalid','payg_required','premium_required','call_claimed','call_not_ringing','call_permission_required','calls_disabled','call_recipient_opted_out','call_destination_blocked','call_permission_request_limited','call_permission_granted','call_opt_out_limit','asset_not_ready','connection_limit','invalid_sip_trunk','sip_trunk_in_use','sip_trunk_limit','sip_trunk_revision_conflict','sip_unavailable','provider_credential_invalid','provider_unavailable','voice_asset_in_use','voice_asset_revision_conflict','voice_not_enabled','voice_unavailable','unsupported_for_connection',
+    ];
+    private function __construct()
+    {
+    }
+    public static function isKnown(string $code): bool
+    {
+        return in_array($code, self::KNOWN, true);
+    }
+}

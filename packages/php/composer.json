@@ -1,0 +1,43 @@
+{
+  "name": "polymorfa/sdk",
+  "description": "Handwritten Polymorfa server SDK for PHP",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.2",
+    "ext-json": "*",
+    "ext-openssl": "*",
+    "guzzlehttp/guzzle": "^7.9",
+    "ext-curl": "*"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^2.1",
+    "friendsofphp/php-cs-fixer": "^3.75",
+    "symfony/http-foundation": "^7.0",
+    "illuminate/http": "^12.0",
+    "phrity/websocket": "^4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Polymorfa\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Polymorfa\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "lint": "php tools/lint.php",
+    "format": "php-cs-fixer fix --config=.php-cs-fixer.dist.php",
+    "format:check": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff",
+    "test": "php tests/run.php",
+    "typecheck": "phpstan analyse --configuration=phpstan.neon --no-progress",
+    "build": "php tools/build.php"
+  },
+  "suggest": {
+    "symfony/http-foundation": "Use the Symfony raw-body webhook adapter.",
+    "illuminate/http": "Use the Laravel raw-body webhook adapter.",
+    "phrity/websocket": "Use native server Calls WebSocket transport."
+  }
+}

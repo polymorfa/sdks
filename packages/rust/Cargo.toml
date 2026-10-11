@@ -1,0 +1,38 @@
+[package]
+name = "polymorfa-sdk"
+version = "0.1.0-dev.0"
+edition = "2021"
+rust-version = "1.85"
+description = "Handwritten server clients for the Polymorfa Messaging and Platform APIs"
+license = "MIT"
+repository = "https://github.com/polymorfa/sdks"
+readme = "README.md"
+
+[dependencies]
+async-stream = "0.3"
+aes = "0.8"
+cbc = { version = "0.1", features = ["alloc"] }
+chrono = { version = "0.4", default-features = false, features = ["std"] }
+base64 = "0.22"
+bytes = "1"
+futures-util = "0.3"
+hex = "0.4"
+hmac = "0.12"
+hkdf = "0.12"
+httpdate = "1"
+percent-encoding = "2"
+rand = "0.9"
+reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+subtle = "2"
+tokio = { version = "1", features = ["time", "sync", "rt", "macros", "net", "io-util"] }
+tokio-tungstenite = { version = "0.26", default-features = false, features = ["connect", "rustls-tls-webpki-roots"] }
+tokio-util = "0.7"
+url = "2"
+uuid = { version = "1", features = ["v4"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full"] }
+

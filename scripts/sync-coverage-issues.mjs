@@ -164,6 +164,24 @@ function issueBody(marker, args, gap) {
     lines.push(`- Reason: ${coverage.reason}`);
   if (typeof coverage.milestone === "string")
     lines.push(`- Milestone: \`${coverage.milestone}\``);
+  if (gap.languages) {
+    lines.push(
+      "",
+      "## Affected-language coverage",
+      "",
+      "| Language | Status | Public method | Reason |",
+      "| --- | --- | --- | --- |",
+    );
+    for (const [language, mapping] of Object.entries(gap.languages)) {
+      const cell = (value) =>
+        String(value ?? "")
+          .replaceAll("|", "\\|")
+          .replaceAll("\n", " ");
+      lines.push(
+        `| ${cell(language)} | ${cell(mapping.status)} | ${cell(mapping.method)} | ${cell(mapping.reason)} |`,
+      );
+    }
+  }
   lines.push(
     "",
     "## Acceptance criteria",

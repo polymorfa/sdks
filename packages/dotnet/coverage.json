@@ -1,0 +1,4501 @@
+{
+  "schemaVersion": 1,
+  "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9",
+  "operations": [
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.DeleteCollectionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/products/{productId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.DeleteProductAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/profile/cover-photo/{coverPhotoId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.DeleteCoverPhotoAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.QuickReplies.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/channels/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Channels.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.DeleteMessageAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/groups/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/labels/{labelId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Labels.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/official-groups/{group}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/profile/picture",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Profile.DeletePictureAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/templates/{name}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/quicklinks/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.QuickLinks.CancelAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/voip/calls/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.EndAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/webhooks/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Webhooks.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/health",
+      "status": "covered",
+      "sdkMethod": "SystemClient.HealthAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SystemTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/catalog",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetCatalogAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/collections",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.ListCollectionsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetCollectionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/compliance",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetMerchantComplianceAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/eligibility",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetEligibilityAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/linked-accounts",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetLinkedAccountsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/products/{productId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetProductAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/profile",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetProfileAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/quick-replies",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.QuickReplies.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/call-permissions/{to}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.RetrieveCallPermissionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/channels",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Channels.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/channels/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Channels.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/channels/{id}/message-updates",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Channels.ListMessageUpdatesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/channels/{id}/messages",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Channels.ListMessagesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}/messages",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.ListMessagesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.RetrieveMessageAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}/media",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.DownloadMessageMediaAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MediaApiTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}/service-window",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.GetServiceWindowAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/cloud-credentials",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Sessions.GetCloudCredentialHealthAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Contacts.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Contacts.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/business-profile",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Contacts.BusinessProfileAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/devices",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Contacts.DevicesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/info",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Contacts.InfoAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/picture",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Contacts.PictureAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/blocked",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Contacts.BlocklistAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/check",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Contacts.CheckAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/{id}/invite-code",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.GetInviteCodeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/{id}/participants",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.ListParticipantsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/join-info",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.GetJoinInfoAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/hybrid-link",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.HybridLink.StateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/identities/resolve",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Identities.ResolveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/labels",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Labels.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/labels/chats/{conversation}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Labels.ListForChatAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/meta-pricing",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Sessions.GetMetaPricingAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/observation-policy",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ObservationPolicies.RetrieveForSessionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/official-groups",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/official-groups/{group}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/official-groups/{group}/invite-link",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.GetInviteLinkAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/official-groups/{group}/join-requests",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.ListJoinRequestsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/operations/{operationId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Messages.OperationStatusAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/pair/qr",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Sessions.QrAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/presence",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Presence.GetAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/presence/{conversation}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Presence.GetForChatAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/privacy",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Privacy.GetAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/profile",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Profile.GetAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.BanSafe.GetSessionSafeModeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/templates",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/templates/{name}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/users/{id}/security-code",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Users.GetSecurityCodeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/bridge/route",
+      "status": "covered",
+      "sdkMethod": "BridgeClient.Routes.ResolveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SystemTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/info/status",
+      "status": "covered",
+      "sdkMethod": "SystemClient.StatusAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SystemTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/info/version",
+      "status": "covered",
+      "sdkMethod": "SystemClient.VersionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SystemTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/media/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Media.DownloadAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MediaApiTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/media/{id}/info",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Media.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MediaApiTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/health-policy",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.BanSafe.GetProjectHealthPolicyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/insurance-evidence",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.BanSafe.GetProjectInsuranceEvidenceAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/observation-policy",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ObservationPolicies.RetrieveForProjectAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.BanSafe.GetProjectSafeModeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/warmup-plan",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.BanSafe.GetProjectWarmupPlanAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/analytics",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.AnalyticsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.ListRecipientsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/templates",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/quicklinks/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.QuickLinks.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/quicklinks/availability",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.QuickLinks.AvailabilityAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/routing/hybrid",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.HybridLink.GetPolicyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/testing/{projectId}/events/fixtures",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.ListEventFixturesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/voip/calls/{id}/candidates",
+      "status": "excluded",
+      "reason": "used internally by the Calls SDK; not part of the public API"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/webhooks",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Webhooks.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/webhooks/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Webhooks.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/ping",
+      "status": "covered",
+      "sdkMethod": "SystemClient.PingAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SystemTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/quicklink/{token}",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs."
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/quicklink/{token}/logo",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs."
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/catalog/cart",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.SetCartEnabledAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.UpdateCollectionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/products/{productId}/visibility",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.SetProductVisibilityAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/profile",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.UpdateProfileAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/official-groups/{group}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/templates/{name}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/quicklink/{token}/testing",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/catalog",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.CreateCatalogAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/collections",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.CreateCollectionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/collections/{collectionId}/appeal",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.AppealCollectionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/collections/reorder",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.ReorderCollectionsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/orders/{orderId}/lookup",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetOrderAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/products",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.CreateProductAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/products/{productId}/appeal",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.AppealProductAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/quick-replies",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.QuickReplies.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/calls/{callId}/reject",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.RejectIncomingAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Channels.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/follow",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Channels.FollowAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/live-updates",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Channels.SubscribeToLiveUpdatesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/messages/{messageId}/reaction",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Channels.ReactToMessageAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/messages/{messageId}/viewed",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Channels.MarkMessageViewedAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/mute",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Channels.MuteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/unfollow",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Channels.UnfollowAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/unmute",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Channels.UnmuteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/chats/{conversation}/archive",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.ArchiveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/chats/{conversation}/unarchive",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.UnarchiveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/cloud-credentials/reauthorize",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Sessions.ReauthorizeCloudCredentialsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/contacts/{contactId}/block",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Contacts.BlockAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/contacts/{contactId}/unblock",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Contacts.UnblockAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/admin/demote",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.DemoteParticipantsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/admin/promote",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.PromoteParticipantsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/invite-code/revoke",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.RevokeInviteCodeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/leave",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.LeaveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/participants/add",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.AddParticipantsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/participants/remove",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.RemoveParticipantsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/join",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.JoinAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/labels",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Labels.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/react",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Messages.ReactAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/seen",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Messages.MarkSeenAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/send",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Messages.SendAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessageContentTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/star",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Messages.StarAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/typing",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Messages.SetTypingAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/invite-link/reset",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.ResetInviteLinkAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/join-requests/approve",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.ApproveJoinRequestsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/join-requests/reject",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.RejectJoinRequestsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/participants/remove",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.RemoveParticipantsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/pins",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.PinAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/pair/code",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Sessions.RequestPairingCodeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/presence",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Presence.SetAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/presence/{conversation}/subscribe",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Presence.SubscribeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/templates",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudTemplates.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/cloud-api/embedded-signup",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudOnboarding.AdvanceAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/features/evaluate",
+      "status": "excluded",
+      "reason": "Host-runtime feature evaluation is not a customer messaging operation in this SDK."
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/media/{id}/download-and-save",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Media.PersistAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MediaApiTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/launch",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.LaunchAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/pause",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.PauseAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.AddRecipientsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/requeue",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.RequeueAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reschedule",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.RescheduleAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/resume",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.ResumeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/stop",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.StopAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/templates",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}/preview",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.PreviewAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}/submit",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.SubmitAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/quicklinks",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.QuickLinks.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/testing/{projectId}/events",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.TriggerEventAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/testing/{projectId}/history-fixtures",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.CreateHistoryFixtureAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/call-links",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.CreateCallLinkAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/call-links/preview",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.PreviewCallLinkAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.PlaceAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/accept",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.AcceptAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/candidate",
+      "status": "excluded",
+      "reason": "used internally by the Calls SDK; not part of the public API"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/hand",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.SetHandRaisedAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/leave",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.LeaveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/offer",
+      "status": "excluded",
+      "reason": "used internally by the Calls SDK; not part of the public API"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/participants",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.AddParticipantAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/participants/ring",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.RingParticipantAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/reaction",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.SendReactionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/reject",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.RejectAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/renegotiate",
+      "status": "excluded",
+      "reason": "used internally by the Calls SDK; not part of the public API"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/reports",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.ReportAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/check",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.CheckAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/webhooks",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Webhooks.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/cancel",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs."
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/cloud",
+      "status": "excluded",
+      "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource."
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/code",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs."
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/confirm",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs."
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/connection",
+      "status": "excluded",
+      "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource."
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/history",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/phone",
+      "status": "excluded",
+      "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource."
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/phone/reset",
+      "status": "excluded",
+      "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource."
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/testing/start",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/compliance",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.SetMerchantComplianceAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/products/{productId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.UpdateProductAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/profile/cover-photo",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.SetCoverPhotoAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.QuickReplies.ReplaceAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/chats/{conversation}/disappearing",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.SetDisappearingTimerAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.EditMessageAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/description",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.SetDescriptionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/picture",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.SetPictureAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/info-edit",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.SetInfoEditingAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/join-approval",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.SetJoinApprovalAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/member-add",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.SetMemberAddModeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/messages",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.SetMessagingAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/subject",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Groups.SetSubjectAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/hybrid-link",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.HybridLink.SetPausedAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/labels/{labelId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Labels.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/labels/chats/{conversation}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Labels.ReplaceForChatAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/privacy/{setting}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Privacy.SetAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/privacy/disappearing/default",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Privacy.SetDefaultDisappearingTimerAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/profile/name",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Profile.SetNameAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/profile/picture",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Profile.SetPictureAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/profile/status",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Profile.SetStatusAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.BanSafe.UpdateSessionSafeModeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/health-policy",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.BanSafe.UpdateProjectHealthPolicyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/insurance-evidence",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.BanSafe.UpdateProjectInsuranceEvidenceAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.BanSafe.UpdateProjectSafeModeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/warmup-plan",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.BanSafe.UpdateProjectWarmupPlanAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/routing/hybrid",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.HybridLink.SetPolicyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/webhooks/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Webhooks.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/api/account/meta-app",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/auth/factors/{factorId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/auth/providers/{provider}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/call-opt-outs/{optOutId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/calls/{callId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/members/{memberId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/organization/avatar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/profile/avatar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/quicklink/logo",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/sip-trunks/{trunkId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/voice/audio/{assetId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/voice/provider-credentials/{credentialId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/webhooks/{webhookId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/audiences/{listId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/audiences/{listId}/members/{phone}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.DeleteMemberAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/call-opt-outs/{optOutId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.CallOptOuts.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/campaigns/{campaignId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/customers/{customerId}/pairing-links/{pairingLinkId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.RevokePairingLinkAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/flows/{flowId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.DeleteEndpointAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/functions/{functionId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/functions/{functionId}/secrets/{versionId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Secrets.RevokeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/keys/{keyId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ApiKeys.DeactivateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/media/{mediaId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Media.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MediaApiTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/optouts/{phone}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.OptOuts.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/sessions/{session}/client-rules",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ClientTokens.DeleteRulesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/sessions/{sessionId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/sip-trunks/{trunkId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SipTrunks.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/templates/{templateId}",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/voice/audio/{assetId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/voice/provider-credentials/{credentialId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/webhooks/{webhookId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/api/account/cloud-health",
+      "status": "excluded",
+      "reason": "Console-only redacted account health requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/api/account/cloud-health/export",
+      "status": "excluded",
+      "reason": "Console-only redacted account health export requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/api/account/meta-app",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/audit",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/auth/methods",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/auth/providers",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/call-opt-outs",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/call-policy",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/call-retention",
+      "status": "excluded",
+      "reason": "Console-only dashboard operation; not a public SDK method."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/call-settings/{sessionId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/calls",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/calls/{callId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/deployments",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/analytics",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/log-calendar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/logs",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/number-options",
+      "status": "excluded",
+      "reason": "Private Console selector requires dashboard identity; organization API keys and project tokens are not accepted."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/preferences",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/usage",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications/archived",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications/count",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications/preferences",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/organizations/{slug}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/profile",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/logging",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/setup",
+      "status": "excluded",
+      "reason": "Console-only project setup uses dashboard identity and is unavailable to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/sandbox/pool",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/session-configuration/{sessionId}",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/sip-trunks",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/sip-trunks/{trunkId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/sip/endpoint",
+      "status": "excluded",
+      "reason": "Console-only dashboard operation; not a public SDK method."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/teams",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/audio",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/audio/{assetId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/audio/{assetId}/preview",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/provider-credentials",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/provider-credentials/{credentialId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/webhooks",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audiences",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audiences/{listId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audiences/{listId}/members",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.ListMembersAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audit",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.AuditLogs.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bans",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SessionBans.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bans/active",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SessionBans.ListActiveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/claims",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListClaimsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/claims/{claimId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.GetClaimAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/collection",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListCollectionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/enforcement",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListEnforcementAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/findings",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListFindingsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/health",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListHealthAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/health-actions",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListHealthActionsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/health/{session}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.GetHealthAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/health/{session}/history",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListHealthHistoryAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/incidents",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListIncidentsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/signals",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListSignalsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/telemetry/{session}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.GetTelemetryAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/telemetry/{session}/history",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListTelemetryHistoryAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/controls/{scope}/{resourceId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.GetResourceControlsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/limits",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.GetLimitsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/pricing",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.ListPricingAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/priorities",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.GetPrioritiesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/transactions",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.ListTransactionsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/usage",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.UsageAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/call-opt-outs",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.CallOptOuts.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/call-policy",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.CallPolicy.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/call-retention",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.CallRetention.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Calls.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallAnalyticsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls/{callId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Calls.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallAnalyticsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls/export",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Calls.ExportAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallAnalyticsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls/stats",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Calls.StatsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallAnalyticsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/analytics",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.AnalyticsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/conversions",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.ConversionsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/events",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.EventsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/recipients",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.RecipientsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}/events",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.ListEventsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}/numbers",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.ListNumbersAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}/pairing-links",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.ListPairingLinksAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/events",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Events.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/events/{eventId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Events.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flow-encryption-keys",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.EncryptionKeyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.EndpointAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}/endpoint/receipts",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.EndpointReceiptsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}/receipts",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.ReceiptsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/deployments",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Deployments.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/deployments/{deploymentId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Deployments.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/invocations",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Invocations.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/invocations/{invocationId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Invocations.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/secrets",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Secrets.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/gates",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Usage.ListGatesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/incidents",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SecurityIncidents.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/keys",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ApiKeys.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/media/{mediaId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Media.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MediaApiTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/members",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Members.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/operations",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Operations.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/operations/{operationId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Operations.GetAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/operations/{operationId}/transitions",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Operations.ListTransitionsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/optouts",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.OptOuts.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/optouts/settings",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.OptOuts.GetSettingsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Projects.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/customers/status",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.StatusAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/events",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Events.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/events/{eventId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Events.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/events/stream",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Events.Stream",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/health-policy",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Projects.GetHealthPolicyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/hybrid-merge-candidates",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Projects.ListHybridMergeCandidatesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/insurance-evidence",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Projects.GetInsuranceEvidenceAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/operations",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Operations.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/operations/{operationId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Operations.GetAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/operations/{operationId}/transitions",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Operations.ListTransitionsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Projects.GetSafeModeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/warmup-plan",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Projects.GetWarmupPlanAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.WebhookDeliveries.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.WebhookDeliveries.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.WebhookDeliveries.ListAttemptsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.WebhookDeliveries.RetrieveAttemptAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhooks",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/quicklink",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.QuickLinkSettings.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/session-configuration",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Configuration.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{session}/call-settings",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Calls.RetrieveCallSettingsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{session}/client-rules",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ClientTokens.RetrieveRulesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/capabilities",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.GetCapabilitiesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/me",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.AccountAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.GetSafeModeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/tier-quotes/{quoteId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.RetrieveTierChangeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sip-trunks",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SipTrunks.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sip-trunks/{trunkId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SipTrunks.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sip/endpoint",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SipTrunks.EndpointAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/team",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Organizations.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/templates",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/templates/{templateId}",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/tokens",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ProjectTokens.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/usage",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Usage.SummaryAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/usage/records",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Usage.ListRecordsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/audio",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/audio/{assetId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/audio/{assetId}/preview",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.PreviewUrlAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/provider-credentials",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/provider-credentials/{credentialId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.WebhookDeliveries.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries/{deliveryId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.WebhookDeliveries.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries/{deliveryId}/attempts",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.WebhookDeliveries.ListAttemptsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.WebhookDeliveries.RetrieveAttemptAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhooks",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhooks/{webhookId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/members/{memberId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/organization",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/profile",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/projects/{projectId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/sip-trunks/{trunkId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/voice/audio/{assetId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/webhooks/{webhookId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/campaigns/{campaignId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/customers/{customerId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/flows/{flowId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/functions/{functionId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/sessions/{sessionId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.SetTierOverrideAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/sip-trunks/{trunkId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SipTrunks.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/templates/{templateId}",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client."
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/voice/audio/{assetId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/webhooks/{webhookId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/api/account/features/enrollment",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/api/account/features/evaluate",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/api/account/features/exposure",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/auth/totp",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/auth/totp/verify",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/bansafe/enforcement/{session}/appeal",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/bansafe/findings/{findingId}/acknowledge",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/billing/topup",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/call-opt-outs",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/call-opt-outs/import",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/calls/{callId}/connections/{connectionId}/remove",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/keys",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/members/invites",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/{notificationId}/archive",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/{notificationId}/read",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/archive",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/read",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/test",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/organization-invitations/{invitationId}/accept",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/organization/avatar/uploads",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/organizations/ensure",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/profile/avatar/uploads",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/profile/ensure",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/projects/{projectId}/icon",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/projects/{projectId}/setup/usage",
+      "status": "excluded",
+      "reason": "Console-only project setup uses dashboard identity and is unavailable to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/quicklink/logo/org",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/quicklink/logo/project",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/quicklink/logo/uploads",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/sip-trunks",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/sip-trunks/{trunkId}/credentials",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/teams/{teamId}/delete",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/teams/leave",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/audio",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/audio/{assetId}/complete",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/audio/tts",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/provider-credentials",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/provider-credentials/{credentialId}/verify",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/webhooks",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audiences",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audiences/{listId}/members",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.AddMembersAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audiences/uploads",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.CreateUploadAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/bansafe/incidents",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.CreateIncidentAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/bansafe/incidents/{incidentId}/retract",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.RetractIncidentAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/call-opt-outs",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.CallOptOuts.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/call-opt-outs/import",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.CallOptOuts.ImportAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/archive",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.ArchiveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/conversions",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.RecordConversionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/duplicate",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.DuplicateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/launch",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.LaunchAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/pause",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.PauseAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/recipients",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.AddRecipientsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/requeue",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.RequeueAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/reschedule",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.RescheduleAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/resume",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.ResumeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/stop",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.StopAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/client-tokens",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ClientTokens.MintAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/archive",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.ArchiveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/numbers/{sessionId}/transfer",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.TransferNumberAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/pairing-links",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.CreatePairingLinkAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/restore",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.RestoreAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/events/{eventId}/replays",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Events.ReplayAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flow-encryption-keys/rotate",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.RotateEncryptionKeyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/deprecate",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.DeprecateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/discard",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.DiscardAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/publish",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.PublishAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/sync",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.SyncAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/upload",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.UploadAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/deployments",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Deployments.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/invocations",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Invocations.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/secrets",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Secrets.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/incidents/{incidentId}/acknowledge",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SecurityIncidents.AcknowledgeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/media/uploads",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Media.CreateUploadAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MediaApiTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/operations/{operationId}/cancel",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Operations.CancelAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/optouts",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.OptOuts.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/optouts/batch",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.OptOuts.CreateBatchAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Projects.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/customers/enable",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.EnableAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/events/{eventId}/replays",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Events.ReplayAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/events/stream/{streamId}/ack",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Events.AcknowledgeStreamAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/operations/{operationId}/cancel",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Operations.CancelAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/approve",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Projects.ApproveProductionEnrollmentAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/cancel",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Projects.CancelProductionEnrollmentAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/promote",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Projects.RequestProductionEnrollmentAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/retry",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.WebhookDeliveries.RetryAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhooks",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}/secret-rotations",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.RotateSecretAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}/tests",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.TestAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/handoff-ack",
+      "status": "excluded",
+      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/handoff-import",
+      "status": "excluded",
+      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/handoff-keys",
+      "status": "excluded",
+      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/logout",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.LogoutAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/restart",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.RestartAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/start",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.StartAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/stop",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.StopAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/tier-quotes",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.QuoteTierChangeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/upload-appstate-keys",
+      "status": "excluded",
+      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/delete",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.DeleteManyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/stop",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.StopManyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sip-trunks",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SipTrunks.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sip-trunks/{trunkId}/credentials",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SipTrunks.RotateCredentialsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/templates",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/audio",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.CreateUploadAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/audio/{assetId}/complete",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.CompleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/audio/tts",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.SynthesizeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/provider-credentials",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/provider-credentials/{credentialId}/verify",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.VerifyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/webhook-deliveries/{deliveryId}/retry",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.WebhookDeliveries.RetryAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/webhooks",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/webhooks/{webhookId}/secret-rotations",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.RotateSecretAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/webhooks/{webhookId}/tests",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.TestAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/api/account/meta-app",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/call-policy",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/call-retention",
+      "status": "excluded",
+      "reason": "Console-only dashboard operation; not a public SDK method."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/call-settings/{sessionId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/insights/preferences",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/notifications/preferences",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/organization/avatar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/profile/avatar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/projects/{projectId}/logging/drains",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/projects/{projectId}/logging/sampling",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/projects/{projectId}/setup",
+      "status": "excluded",
+      "reason": "Console-only project setup uses dashboard identity and is unavailable to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/quicklink/logo",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/session-configuration/{sessionId}",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/controls/{scope}/{resourceId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.SetResourceControlsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/limits/{scope}/{resourceId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.SetLimitAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/priorities",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.ReorderPrioritiesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/priorities/{scope}/{resourceId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Billing.SetPriorityAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/call-policy",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.CallPolicy.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/call-retention",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.CallRetention.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Flows.SetEndpointAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FlowTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/functions/{functionId}/promotion",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Deployments.PromoteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/FunctionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/optouts/settings",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.OptOuts.UpdateSettingsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/health-policy",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Projects.UpdateHealthPolicyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/insurance-evidence",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Projects.UpdateInsuranceEvidenceAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Projects.UpdateSafeModeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/warmup-plan",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Projects.UpdateWarmupPlanAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/quicklink",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.QuickLinkSettings.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/session-configuration",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Configuration.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/sessions/{session}/call-settings",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Calls.UpdateCallSettingsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/sessions/{session}/client-rules",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ClientTokens.UpdateRulesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/sessions/{sessionId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/sessions/{sessionId}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.UpdateSafeModeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/analytics",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Analytics.GetAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallAnalyticsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/analytics",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Analytics.GetAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallAnalyticsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/analytics/metrics",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Analytics.MetricsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallAnalyticsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/analytics/metrics",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Analytics.MetricsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallAnalyticsTests.cs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/vitals",
+      "status": "excluded",
+      "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority."
+    }
+  ]
+}

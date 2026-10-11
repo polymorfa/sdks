@@ -1,0 +1,4638 @@
+{
+  "schemaVersion": 1,
+  "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9",
+  "operations": [
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.delete_collection",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/products/{productId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.delete_product",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/profile/cover-photo/{coverPhotoId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.delete_cover_photo",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.quick_replies.delete",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/channels/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.delete",
+      "testFile": "tests/channels.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.delete_message",
+      "testFile": "tests/history.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/groups/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.delete",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/labels/{labelId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.labels.delete",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/official-groups/{group}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.official_groups.delete",
+      "testFile": "tests/official_groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/profile/picture",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.profile.delete_picture",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/templates/{name}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.cloud_templates.delete",
+      "testFile": "tests/templates.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.templates.delete",
+      "testFile": "tests/templates.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/quicklinks/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.quick_links.cancel",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/voip/calls/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.end",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/webhooks/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.webhooks.delete",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/health",
+      "status": "covered",
+      "sdkMethod": "SystemClient.health",
+      "testFile": "tests/system_bridge.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/catalog",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.get_catalog",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/collections",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.list_collections",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.get_collection",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/compliance",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.get_merchant_compliance",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/eligibility",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.get_eligibility",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/linked-accounts",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.get_linked_accounts",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/products/{productId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.get_product",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/profile",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.get_profile",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/quick-replies",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.quick_replies.list",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/call-permissions/{to}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.retrieve_call_permission",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/channels",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.list",
+      "testFile": "tests/channels.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/channels/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.retrieve",
+      "testFile": "tests/channels.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/channels/{id}/message-updates",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.list_message_updates",
+      "testFile": "tests/channels.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/channels/{id}/messages",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.list_messages",
+      "testFile": "tests/channels.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.list",
+      "testFile": "tests/history.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.retrieve",
+      "testFile": "tests/history.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}/messages",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.list_messages",
+      "testFile": "tests/history.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.retrieve_message",
+      "testFile": "tests/history.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}/media",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.download_message_media_stream",
+      "testFile": "tests/history.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}/service-window",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.get_service_window",
+      "testFile": "tests/history.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/cloud-credentials",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.get_cloud_credential_health",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.list",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.retrieve",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/business-profile",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.business_profile",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/devices",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.devices",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/info",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.info",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/picture",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.picture",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/blocked",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.blocklist",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/check",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.check",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.list",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.retrieve",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/{id}/invite-code",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.get_invite_code",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/{id}/participants",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.list_participants",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/join-info",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.get_join_info",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/hybrid-link",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.hybrid_link.state",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/identities/resolve",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.identities.resolve",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/labels",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.labels.list",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/labels/chats/{conversation}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.labels.list_for_chat",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/meta-pricing",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.get_meta_pricing",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/observation-policy",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.observation_policies.retrieve_for_session",
+      "testFile": "tests/onboarding.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/official-groups",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.official_groups.list",
+      "testFile": "tests/official_groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/official-groups/{group}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.official_groups.retrieve",
+      "testFile": "tests/official_groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/official-groups/{group}/invite-link",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.official_groups.get_invite_link",
+      "testFile": "tests/official_groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/official-groups/{group}/join-requests",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.official_groups.list_join_requests",
+      "testFile": "tests/official_groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/operations/{operationId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.messages.operation_status",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/pair/qr",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.qr",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/presence",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.presence.get",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/presence/{conversation}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.presence.get_for_chat",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/privacy",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.privacy.get",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/profile",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.profile.get",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.get_session_safe_mode",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/templates",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.cloud_templates.list",
+      "testFile": "tests/templates.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/templates/{name}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.cloud_templates.retrieve",
+      "testFile": "tests/templates.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/users/{id}/security-code",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.users.get_security_code",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/bridge/route",
+      "status": "covered",
+      "sdkMethod": "BridgeClient.routes.resolve",
+      "testFile": "tests/system_bridge.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/info/status",
+      "status": "covered",
+      "sdkMethod": "SystemClient.status",
+      "testFile": "tests/system_bridge.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/info/version",
+      "status": "covered",
+      "sdkMethod": "SystemClient.version",
+      "testFile": "tests/system_bridge.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/media/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.media.download_stream",
+      "testFile": "tests/media.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/media/{id}/info",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.media.retrieve",
+      "testFile": "tests/media.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/health-policy",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.get_project_health_policy",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/insurance-evidence",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.get_project_insurance_evidence",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/observation-policy",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.observation_policies.retrieve_for_project",
+      "testFile": "tests/onboarding.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.get_project_safe_mode",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/warmup-plan",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.get_project_warmup_plan",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.campaigns.list",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.campaigns.retrieve",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/analytics",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.campaigns.analytics",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.campaigns.list_recipients",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/templates",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.templates.list",
+      "testFile": "tests/templates.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.templates.retrieve",
+      "testFile": "tests/templates.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/quicklinks/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.quick_links.retrieve",
+      "testFile": "tests/configuration.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/quicklinks/availability",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.quick_links.availability",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/routing/hybrid",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.hybrid_link.get_policy",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/testing/{projectId}/events/fixtures",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.testing.list_event_fixtures",
+      "testFile": "tests/onboarding.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/voip/calls/{id}/candidates",
+      "status": "excluded",
+      "reason": "used internally by the Calls SDK; not part of the public API",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/webhooks",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.webhooks.list",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/webhooks/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.webhooks.retrieve",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/ping",
+      "status": "covered",
+      "sdkMethod": "SystemClient.ping",
+      "testFile": "tests/system_bridge.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/quicklink/{token}",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/quicklink/{token}/logo",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/catalog/cart",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.set_cart_enabled",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.update_collection",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/products/{productId}/visibility",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.set_product_visibility",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/profile",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.update_profile",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/official-groups/{group}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.official_groups.update",
+      "testFile": "tests/official_groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/templates/{name}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.cloud_templates.update",
+      "testFile": "tests/templates.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
+      "status": "excluded",
+      "reason": "Messaging campaign update is owned by SDK PR #307.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.templates.update",
+      "testFile": "tests/templates.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/quicklink/{token}/testing",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/catalog",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.create_catalog",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/collections",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.create_collection",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/collections/{collectionId}/appeal",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.appeal_collection",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/collections/reorder",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.reorder_collections",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/orders/{orderId}/lookup",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.get_order",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/products",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.create_product",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/products/{productId}/appeal",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.appeal_product",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/quick-replies",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.quick_replies.create",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/calls/{callId}/reject",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.calls.reject_incoming",
+      "testFile": "tests/calls.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.create",
+      "testFile": "tests/channels.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/follow",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.follow",
+      "testFile": "tests/channels.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/live-updates",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.subscribe_to_live_updates",
+      "testFile": "tests/channels.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/messages/{messageId}/reaction",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.react_to_message",
+      "testFile": "tests/channels.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/messages/{messageId}/viewed",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.mark_message_viewed",
+      "testFile": "tests/channels.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/mute",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.mute",
+      "testFile": "tests/channels.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/unfollow",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.unfollow",
+      "testFile": "tests/channels.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/unmute",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.unmute",
+      "testFile": "tests/channels.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/chats/{conversation}/archive",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.archive",
+      "testFile": "tests/history.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/chats/{conversation}/unarchive",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.unarchive",
+      "testFile": "tests/history.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/cloud-credentials/reauthorize",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.reauthorize_cloud_credentials",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/contacts/{contactId}/block",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.block",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/contacts/{contactId}/unblock",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.unblock",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.create",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/admin/demote",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.demote_participants",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/admin/promote",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.promote_participants",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/invite-code/revoke",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.revoke_invite_code",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/leave",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.leave",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/participants/add",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.add_participants",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/participants/remove",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.remove_participants",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/join",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.join",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/labels",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.labels.create",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/react",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.messages.react",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/seen",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.messages.mark_seen",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/send",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.messages.send",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/star",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.messages.star",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/typing",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.messages.set_typing",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.official_groups.create",
+      "testFile": "tests/official_groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/invite-link/reset",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.official_groups.reset_invite_link",
+      "testFile": "tests/official_groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/join-requests/approve",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.official_groups.approve_join_requests",
+      "testFile": "tests/official_groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/join-requests/reject",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.official_groups.reject_join_requests",
+      "testFile": "tests/official_groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/participants/remove",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.official_groups.remove_participants",
+      "testFile": "tests/official_groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/pins",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.official_groups.pin",
+      "testFile": "tests/official_groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/pair/code",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.request_pairing_code",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/presence",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.presence.set",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/presence/{conversation}/subscribe",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.presence.subscribe",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/templates",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.cloud_templates.create",
+      "testFile": "tests/templates.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/cloud-api/embedded-signup",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.cloud_onboarding.advance",
+      "testFile": "tests/onboarding.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/features/evaluate",
+      "status": "excluded",
+      "reason": "Host-runtime feature evaluation is not a customer messaging operation in this SDK.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/media/{id}/download-and-save",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.media.persist",
+      "testFile": "tests/media.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.campaigns.create",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/launch",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.campaigns.launch",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/pause",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.campaigns.pause",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.campaigns.add_recipients",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/requeue",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.campaigns.requeue",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reschedule",
+      "status": "excluded",
+      "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/resume",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.campaigns.resume",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/stop",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.campaigns.stop",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/templates",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.templates.create",
+      "testFile": "tests/templates.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}/preview",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.templates.preview",
+      "testFile": "tests/templates.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}/submit",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.templates.submit",
+      "testFile": "tests/templates.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/quicklinks",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.quick_links.create",
+      "testFile": "tests/configuration.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/testing/{projectId}/events",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.testing.trigger_event",
+      "testFile": "tests/onboarding.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/testing/{projectId}/history-fixtures",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.testing.create_history_fixture",
+      "testFile": "tests/onboarding.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/call-links",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.create_call_link",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/call-links/preview",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.preview_call_link",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.place",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/accept",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.accept",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/candidate",
+      "status": "excluded",
+      "reason": "used internally by the Calls SDK; not part of the public API",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/hand",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.set_hand_raised",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/leave",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.leave",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/offer",
+      "status": "excluded",
+      "reason": "used internally by the Calls SDK; not part of the public API",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/participants",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.add_participant",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/participants/ring",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.ring_participant",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/reaction",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.send_reaction",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/reject",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.reject",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/renegotiate",
+      "status": "excluded",
+      "reason": "used internally by the Calls SDK; not part of the public API",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/reports",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.report",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/check",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.check",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/webhooks",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.webhooks.create",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/cancel",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/cloud",
+      "status": "excluded",
+      "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/code",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/confirm",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/connection",
+      "status": "excluded",
+      "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/history",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/phone",
+      "status": "excluded",
+      "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/phone/reset",
+      "status": "excluded",
+      "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/testing/start",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/compliance",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.set_merchant_compliance",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/products/{productId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.update_product",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/profile/cover-photo",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.business.set_cover_photo",
+      "testFile": "tests/business.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.quick_replies.replace",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/chats/{conversation}/disappearing",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.set_disappearing_timer",
+      "testFile": "tests/history.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.edit_message",
+      "testFile": "tests/history.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/description",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.set_description",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/picture",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.set_picture",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/info-edit",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.set_info_editing",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/join-approval",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.set_join_approval",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/member-add",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.set_member_add_mode",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/messages",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.set_messaging",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/subject",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.set_subject",
+      "testFile": "tests/groups.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/hybrid-link",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.hybrid_link.set_paused",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/labels/{labelId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.labels.update",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/labels/chats/{conversation}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.labels.replace_for_chat",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/privacy/{setting}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.privacy.set",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/privacy/disappearing/default",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.privacy.set_default_disappearing_timer",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/profile/name",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.profile.set_name",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/profile/picture",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.profile.set_picture",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/profile/status",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.profile.set_status",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.update_session_safe_mode",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/health-policy",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.update_project_health_policy",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/insurance-evidence",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.update_project_insurance_evidence",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.update_project_safe_mode",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/warmup-plan",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.update_project_warmup_plan",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/routing/hybrid",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.hybrid_link.set_policy",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/webhooks/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.webhooks.update",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/api/account/meta-app",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/auth/factors/{factorId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/auth/providers/{provider}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/call-opt-outs/{optOutId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/calls/{callId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/members/{memberId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/organization/avatar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/profile/avatar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/quicklink/logo",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/sip-trunks/{trunkId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/voice/audio/{assetId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/voice/provider-credentials/{credentialId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/webhooks/{webhookId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/audiences/{listId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.audiences.delete",
+      "testFile": "tests/audiences.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/audiences/{listId}/members/{phone}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.audiences.delete_member",
+      "testFile": "tests/audiences.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/call-opt-outs/{optOutId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.call_opt_outs.delete",
+      "testFile": "tests/call_consent.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/campaigns/{campaignId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.delete",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/customers/{customerId}/pairing-links/{pairingLinkId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.customers.revoke_pairing_link",
+      "testFile": "tests/customers.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/flows/{flowId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.delete",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.delete_endpoint",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/functions/{functionId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.delete",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/functions/{functionId}/secrets/{versionId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.secrets.revoke",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/keys/{keyId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.api_keys.deactivate",
+      "testFile": "tests/organization.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/media/{mediaId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.media.delete",
+      "testFile": "tests/organization_controls.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/optouts/{phone}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.opt_outs.delete",
+      "testFile": "tests/organization_controls.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhooks.delete",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/sessions/{session}/client-rules",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.client_tokens.delete_rules",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/sessions/{sessionId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.delete",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/sip-trunks/{trunkId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sip_trunks.delete",
+      "testFile": "tests/sip.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/templates/{templateId}",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
+      "milestone": "credential-boundary"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/voice/audio/{assetId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.delete",
+      "testFile": "tests/voice.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/voice/provider-credentials/{credentialId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.provider_credentials.delete",
+      "testFile": "tests/voice.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/webhooks/{webhookId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhooks.delete",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/api/account/cloud-health",
+      "status": "excluded",
+      "reason": "Console-only redacted account health requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/api/account/cloud-health/export",
+      "status": "excluded",
+      "reason": "Console-only redacted account health export requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/api/account/meta-app",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/audit",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/auth/methods",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/auth/providers",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/call-opt-outs",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/call-policy",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/call-retention",
+      "status": "excluded",
+      "reason": "Console-only dashboard operation; not a public SDK method.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/call-settings/{sessionId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/calls",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/calls/{callId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/deployments",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/analytics",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/log-calendar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/logs",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/number-options",
+      "status": "excluded",
+      "reason": "Private Console selector requires dashboard identity; organization API keys and project tokens are not accepted.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/preferences",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/usage",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications/archived",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications/count",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications/preferences",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/organizations/{slug}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/profile",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/logging",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/setup",
+      "status": "excluded",
+      "reason": "Console-only project setup uses dashboard identity and is unavailable to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/sandbox/pool",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/session-configuration/{sessionId}",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/sip-trunks",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/sip-trunks/{trunkId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/sip/endpoint",
+      "status": "excluded",
+      "reason": "Console-only dashboard operation; not a public SDK method.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/teams",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/audio",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/audio/{assetId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/audio/{assetId}/preview",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/provider-credentials",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/provider-credentials/{credentialId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/webhooks",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audiences",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.audiences.list",
+      "testFile": "tests/audiences.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audiences/{listId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.audiences.retrieve",
+      "testFile": "tests/audiences.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audiences/{listId}/members",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.audiences.list_members",
+      "testFile": "tests/audiences.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audit",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.audit_logs.list",
+      "testFile": "tests/organization.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bans",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.session_bans.list",
+      "testFile": "tests/organization_controls.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bans/active",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.session_bans.list_active",
+      "testFile": "tests/organization_controls.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/claims",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_claims",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/claims/{claimId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.get_claim",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/collection",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_collection",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/enforcement",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_enforcement",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/findings",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_findings",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/health",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_health",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/health-actions",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_health_actions",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/health/{session}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.get_health",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/health/{session}/history",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_health_history",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/incidents",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_incidents",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/signals",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_signals",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/telemetry/{session}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.get_telemetry",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/telemetry/{session}/history",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_telemetry_history",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.billing.retrieve",
+      "testFile": "tests/billing.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/controls/{scope}/{resourceId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.billing.get_resource_controls",
+      "testFile": "tests/billing.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/limits",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.billing.get_limits",
+      "testFile": "tests/billing.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/pricing",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.billing.list_pricing",
+      "testFile": "tests/billing.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/priorities",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.billing.get_priorities",
+      "testFile": "tests/billing.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/transactions",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.billing.list_transactions",
+      "testFile": "tests/billing.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/usage",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.billing.usage",
+      "testFile": "tests/billing.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/call-opt-outs",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.call_opt_outs.list",
+      "testFile": "tests/call_consent.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/call-policy",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.call_policy.retrieve",
+      "testFile": "tests/call_consent.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/call-retention",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.call_retention.retrieve",
+      "testFile": "tests/settings.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.calls.list",
+      "testFile": "tests/call_records.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls/{callId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.calls.retrieve",
+      "testFile": "tests/call_records.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls/export",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.calls.export",
+      "testFile": "tests/call_records.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls/stats",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.calls.stats",
+      "testFile": "tests/call_records.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.list",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.retrieve",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/analytics",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.analytics",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/conversions",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.conversions",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/events",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.events",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/recipients",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.recipients",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.customers.list",
+      "testFile": "tests/customers.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.customers.retrieve",
+      "testFile": "tests/customers.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}/events",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.customers.list_events",
+      "testFile": "tests/customers.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}/numbers",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.customers.list_numbers",
+      "testFile": "tests/customers.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}/pairing-links",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.customers.list_pairing_links",
+      "testFile": "tests/customers.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/events",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.events.list",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/events/{eventId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.events.retrieve_with_payload",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flow-encryption-keys",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.encryption_key",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.list",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.retrieve",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.endpoint",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}/endpoint/receipts",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.endpoint_receipts",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}/receipts",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.receipts",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.list",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.retrieve",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/deployments",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.deployments.list",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/deployments/{deploymentId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.deployments.retrieve",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/invocations",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.invocations.list",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/invocations/{invocationId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.invocations.retrieve",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/secrets",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.secrets.list",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/gates",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.usage.list_gates",
+      "testFile": "tests/usage.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/incidents",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.security_incidents.list",
+      "testFile": "tests/organization.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/keys",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.api_keys.list",
+      "testFile": "tests/organization.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/media/{mediaId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.media.retrieve",
+      "testFile": "tests/organization_controls.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/members",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.members.list",
+      "testFile": "tests/organization.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/operations",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.operations.list",
+      "testFile": "tests/operations.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/operations/{operationId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.operations.get",
+      "testFile": "tests/operations.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/operations/{operationId}/transitions",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.operations.list_transitions",
+      "testFile": "tests/operations.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/optouts",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.opt_outs.list",
+      "testFile": "tests/organization_controls.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/optouts/settings",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.opt_outs.get_settings",
+      "testFile": "tests/organization_controls.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.list",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/customers/status",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.customers.status",
+      "testFile": "tests/customers.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/events",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.events.list",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/events/{eventId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.events.retrieve_with_payload",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/events/stream",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.events.stream",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/health-policy",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.get_health_policy",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/hybrid-merge-candidates",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.list_hybrid_merge_candidates",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/insurance-evidence",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.get_insurance_evidence",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/operations",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.operations.list",
+      "testFile": "tests/operations.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/operations/{operationId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.operations.get",
+      "testFile": "tests/operations.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/operations/{operationId}/transitions",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.operations.list_transitions",
+      "testFile": "tests/operations.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.get_safe_mode",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/warmup-plan",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.get_warmup_plan",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhook_deliveries.list",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhook_deliveries.retrieve",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhook_deliveries.list_attempts",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhook_deliveries.retrieve_attempt",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhooks",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhooks.list",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhooks.retrieve",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/quicklink",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.quick_link_settings.retrieve",
+      "testFile": "tests/settings.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/session-configuration",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.session_configuration.retrieve",
+      "testFile": "tests/settings.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.list",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{session}/call-settings",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.retrieve_call_settings",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{session}/client-rules",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.client_tokens.retrieve_rules",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.retrieve",
+      "testFile": "tests/configuration.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/capabilities",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.get_capabilities",
+      "testFile": "tests/platform_sessions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/me",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.account",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.get_safe_mode",
+      "testFile": "tests/platform_sessions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/tier-quotes/{quoteId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.retrieve_tier_change",
+      "testFile": "tests/platform_sessions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sip-trunks",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sip_trunks.list",
+      "testFile": "tests/sip.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sip-trunks/{trunkId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sip_trunks.retrieve",
+      "testFile": "tests/sip.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sip/endpoint",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sip_trunks.endpoint",
+      "testFile": "tests/sip.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/team",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.organizations.retrieve",
+      "testFile": "tests/organization.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/templates",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
+      "milestone": "credential-boundary"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/templates/{templateId}",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
+      "milestone": "credential-boundary"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/tokens",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.project_tokens.list",
+      "testFile": "tests/organization.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/usage",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.usage.summary",
+      "testFile": "tests/usage.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/usage/records",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.usage.list_records",
+      "testFile": "tests/usage.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/audio",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.list",
+      "testFile": "tests/voice.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/audio/{assetId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.retrieve",
+      "testFile": "tests/voice.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/audio/{assetId}/preview",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.preview_url",
+      "testFile": "tests/voice.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/provider-credentials",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.provider_credentials",
+      "testFile": "tests/voice.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/provider-credentials/{credentialId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.provider_credentials.retrieve",
+      "testFile": "tests/voice.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhook_deliveries.list",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries/{deliveryId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhook_deliveries.retrieve",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries/{deliveryId}/attempts",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhook_deliveries.list_attempts",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhook_deliveries.retrieve_attempt",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhooks",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhooks.list",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhooks/{webhookId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhooks.retrieve",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/members/{memberId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/organization",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/profile",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/projects/{projectId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/sip-trunks/{trunkId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/voice/audio/{assetId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/webhooks/{webhookId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/campaigns/{campaignId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.update",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/customers/{customerId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.customers.update",
+      "testFile": "tests/customers.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/flows/{flowId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.update",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/functions/{functionId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.update",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhooks.update",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/sessions/{sessionId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.set_tier_override",
+      "testFile": "tests/platform_sessions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/sip-trunks/{trunkId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sip_trunks.update",
+      "testFile": "tests/sip.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/templates/{templateId}",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
+      "milestone": "credential-boundary"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/voice/audio/{assetId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.update",
+      "testFile": "tests/voice.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/webhooks/{webhookId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhooks.update",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/api/account/features/enrollment",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/api/account/features/evaluate",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/api/account/features/exposure",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/auth/totp",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/auth/totp/verify",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/bansafe/enforcement/{session}/appeal",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/bansafe/findings/{findingId}/acknowledge",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/billing/topup",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/call-opt-outs",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/call-opt-outs/import",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/calls/{callId}/connections/{connectionId}/remove",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/keys",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/members/invites",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/{notificationId}/archive",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/{notificationId}/read",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/archive",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/read",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/test",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/organization-invitations/{invitationId}/accept",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/organization/avatar/uploads",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/organizations/ensure",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/profile/avatar/uploads",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/profile/ensure",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/projects/{projectId}/icon",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/projects/{projectId}/setup/usage",
+      "status": "excluded",
+      "reason": "Console-only project setup uses dashboard identity and is unavailable to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/quicklink/logo/org",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/quicklink/logo/project",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/quicklink/logo/uploads",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/sip-trunks",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/sip-trunks/{trunkId}/credentials",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/teams/{teamId}/delete",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/teams/leave",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/audio",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/audio/{assetId}/complete",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/audio/tts",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/provider-credentials",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/provider-credentials/{credentialId}/verify",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/webhooks",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audiences",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.audiences.create",
+      "testFile": "tests/audiences.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audiences/{listId}/members",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.audiences.add_members",
+      "testFile": "tests/audiences.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audiences/uploads",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.audiences.create_upload",
+      "testFile": "tests/audiences.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/bansafe/incidents",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.create_incident",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/bansafe/incidents/{incidentId}/retract",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.retract_incident",
+      "testFile": "tests/bansafe.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/call-opt-outs",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.call_opt_outs.create",
+      "testFile": "tests/call_consent.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/call-opt-outs/import",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.call_opt_outs.import",
+      "testFile": "tests/call_consent.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.create",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/archive",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.archive",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/conversions",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.record_conversion",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/duplicate",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.duplicate",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/launch",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.launch",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/pause",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.pause",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/recipients",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.add_recipients",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/requeue",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.requeue",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/reschedule",
+      "status": "excluded",
+      "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/resume",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.resume",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/stop",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.stop",
+      "testFile": "tests/campaigns.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/client-tokens",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.client_tokens.mint",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.customers.create",
+      "testFile": "tests/customers.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/archive",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.customers.archive",
+      "testFile": "tests/customers.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/numbers/{sessionId}/transfer",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.customers.transfer_number",
+      "testFile": "tests/customers.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/pairing-links",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.customers.create_pairing_link",
+      "testFile": "tests/customers.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/restore",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.customers.restore",
+      "testFile": "tests/customers.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/events/{eventId}/replays",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.events.replay",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flow-encryption-keys/rotate",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.rotate_encryption_key",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.create",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/deprecate",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.deprecate",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/discard",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.discard",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/publish",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.publish",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/sync",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.sync",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/upload",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.upload",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.create",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/deployments",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.deployments.create",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/invocations",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.invocations.create",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/secrets",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.secrets.create",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/incidents/{incidentId}/acknowledge",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.security_incidents.acknowledge",
+      "testFile": "tests/organization.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/media/uploads",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.media.create_upload",
+      "testFile": "tests/organization_controls.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/operations/{operationId}/cancel",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.operations.cancel",
+      "testFile": "tests/operations.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/optouts",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.opt_outs.create",
+      "testFile": "tests/organization_controls.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/optouts/batch",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.opt_outs.create_batch",
+      "testFile": "tests/organization_controls.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.create",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/customers/enable",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.customers.enable",
+      "testFile": "tests/customers.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/events/{eventId}/replays",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.events.replay",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/events/stream/{streamId}/ack",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.events.acknowledge_stream",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/operations/{operationId}/cancel",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.operations.cancel",
+      "testFile": "tests/operations.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/approve",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.approve_production_enrollment",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/cancel",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.cancel_production_enrollment",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/promote",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.request_production_enrollment",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/retry",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhook_deliveries.retry",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhooks",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhooks.create",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}/secret-rotations",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhooks.rotate_secret",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}/tests",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhooks.test",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/handoff-ack",
+      "status": "excluded",
+      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+      "milestone": "security-design"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/handoff-import",
+      "status": "excluded",
+      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+      "milestone": "security-design"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/handoff-keys",
+      "status": "excluded",
+      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+      "milestone": "security-design"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/logout",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.logout",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/restart",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.restart",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/start",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.start",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/stop",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.stop",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/tier-quotes",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.quote_tier_change",
+      "testFile": "tests/platform_sessions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/upload-appstate-keys",
+      "status": "excluded",
+      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+      "milestone": "security-design"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/delete",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.delete_many",
+      "testFile": "tests/platform_sessions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/stop",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.stop_many",
+      "testFile": "tests/platform_sessions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sip-trunks",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sip_trunks.create",
+      "testFile": "tests/sip.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sip-trunks/{trunkId}/credentials",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sip_trunks.rotate_credentials",
+      "testFile": "tests/sip.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/templates",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
+      "milestone": "credential-boundary"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/audio",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.create_upload",
+      "testFile": "tests/voice.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/audio/{assetId}/complete",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.complete",
+      "testFile": "tests/voice.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/audio/tts",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.synthesize",
+      "testFile": "tests/voice.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/provider-credentials",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.provider_credentials.create",
+      "testFile": "tests/voice.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/provider-credentials/{credentialId}/verify",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.provider_credentials.verify",
+      "testFile": "tests/voice.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/webhook-deliveries/{deliveryId}/retry",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhook_deliveries.retry",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/webhooks",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhooks.create",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/webhooks/{webhookId}/secret-rotations",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhooks.rotate_secret",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/webhooks/{webhookId}/tests",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhooks.test",
+      "testFile": "tests/developer.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/api/account/meta-app",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/call-policy",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/call-retention",
+      "status": "excluded",
+      "reason": "Console-only dashboard operation; not a public SDK method.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/call-settings/{sessionId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/insights/preferences",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/notifications/preferences",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/organization/avatar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/profile/avatar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/projects/{projectId}/logging/drains",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/projects/{projectId}/logging/sampling",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/projects/{projectId}/setup",
+      "status": "excluded",
+      "reason": "Console-only project setup uses dashboard identity and is unavailable to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/quicklink/logo",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/session-configuration/{sessionId}",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/controls/{scope}/{resourceId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.billing.set_resource_controls",
+      "testFile": "tests/billing.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/limits/{scope}/{resourceId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.billing.set_limit",
+      "testFile": "tests/billing.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/priorities",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.billing.reorder_priorities",
+      "testFile": "tests/billing.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/priorities/{scope}/{resourceId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.billing.set_priority",
+      "testFile": "tests/billing.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/call-policy",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.call_policy.update",
+      "testFile": "tests/call_consent.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/call-retention",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.call_retention.update",
+      "testFile": "tests/settings.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.set_endpoint",
+      "testFile": "tests/flows.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/functions/{functionId}/promotion",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.deployments.promote",
+      "testFile": "tests/functions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/optouts/settings",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.opt_outs.update_settings",
+      "testFile": "tests/organization_controls.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/health-policy",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.update_health_policy",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/insurance-evidence",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.update_insurance_evidence",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.update_safe_mode",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/warmup-plan",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.update_warmup_plan",
+      "testFile": "tests/policies.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/quicklink",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.quick_link_settings.update",
+      "testFile": "tests/settings.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/session-configuration",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.session_configuration.update",
+      "testFile": "tests/settings.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/sessions/{session}/call-settings",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.update_call_settings",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/sessions/{session}/client-rules",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.client_tokens.update_rules",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/sessions/{sessionId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.update",
+      "testFile": "tests/configuration.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/sessions/{sessionId}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.update_safe_mode",
+      "testFile": "tests/platform_sessions.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/analytics",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.analytics.get",
+      "testFile": "tests/analytics.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/analytics",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.analytics.get",
+      "testFile": "tests/analytics.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/analytics/metrics",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.analytics.metrics",
+      "testFile": "tests/analytics.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/analytics/metrics",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.analytics.metrics",
+      "testFile": "tests/analytics.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/vitals",
+      "status": "excluded",
+      "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority.",
+      "milestone": "not-server-sdk"
+    }
+  ]
+}

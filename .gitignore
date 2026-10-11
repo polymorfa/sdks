@@ -6,3 +6,20 @@ coverage/
 .DS_Store
 
 .release/
+packages/go/.artifacts/
+packages/python/.venv/
+packages/python/.mypy_cache/
+packages/python/.pytest_cache/
+packages/python/.ruff_cache/
+packages/python/**/__pycache__/
+packages/php/vendor/
+packages/php/artifacts/
+packages/php/.phpunit.cache/
+packages/rust/target/
+packages/dotnet/**/bin/
+packages/dotnet/**/obj/
+packages/dotnet/artifacts/
+
+packages/*/release-contract.json
+packages/python/src/polymorfa/release-contract.json
+examples/**/__pycache__/
