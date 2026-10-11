@@ -9,6 +9,12 @@ from dataclasses import replace
 from typing import Literal, TypeVar, cast
 from urllib.parse import quote
 
+from .cloud import (
+    CloudCredentialHealth,
+    CloudReauthorization,
+    MetaPricingParams,
+    MetaPricingSummary,
+)
 from .errors import ConfigurationError, ValidationError
 from .models import (
     AsyncAccepted,
@@ -245,17 +251,20 @@ class Sessions(Resource):
         self,
         session: str,
         *,
-        query: Mapping[str, QueryValue] | None = None,
+        query: MetaPricingParams | None = None,
         options: RequestOptions = O,
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[MetaPricingSummary]]:
         self._server()
         return await self._request(
-            "GET", f"/messaging/{segment(session)}/meta-pricing", query=query, options=options
+            "GET",
+            f"/messaging/{segment(session)}/meta-pricing",
+            query=cast(Mapping[str, QueryValue], query or {}),
+            options=options,
         )
 
     async def get_cloud_credential_health(
         self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[CloudCredentialHealth]]:
         self._server()
         return await self._request(
             "GET", f"/messaging/{segment(session)}/cloud-credentials", options=options
@@ -263,7 +272,7 @@ class Sessions(Resource):
 
     async def reauthorize_cloud_credentials(
         self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[CloudReauthorization]]:
         self._server()
         return await self._request(
             "POST",

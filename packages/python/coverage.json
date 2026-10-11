@@ -30,17 +30,17 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.quick_replies.delete",
+      "testFile": "tests/test_quick_replies_users.py"
     },
     {
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/channels/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.channels.delete",
+      "testFile": "tests/test_channels.py"
     },
     {
       "family": "messaging",
@@ -198,9 +198,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/quick-replies",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.quick_replies.list",
+      "testFile": "tests/test_quick_replies_users.py"
     },
     {
       "family": "messaging",
@@ -214,33 +214,33 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/channels",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.channels.list",
+      "testFile": "tests/test_channels.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/channels/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.channels.retrieve",
+      "testFile": "tests/test_channels.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/channels/{id}/message-updates",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.channels.list_message_updates",
+      "testFile": "tests/test_channels.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/channels/{id}/messages",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.channels.list_messages",
+      "testFile": "tests/test_channels.py"
     },
     {
       "family": "messaging",
@@ -294,9 +294,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/cloud-credentials",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.sessions.get_cloud_credential_health",
+      "testFile": "tests/test_cloud_sessions.py"
     },
     {
       "family": "messaging",
@@ -438,9 +438,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/meta-pricing",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.sessions.get_meta_pricing",
+      "testFile": "tests/test_cloud_sessions.py"
     },
     {
       "family": "messaging",
@@ -558,9 +558,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/users/{id}/security-code",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.users.get_security_code",
+      "testFile": "tests/test_quick_replies_users.py"
     },
     {
       "family": "messaging",
@@ -902,9 +902,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/quick-replies",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.quick_replies.create",
+      "testFile": "tests/test_quick_replies_users.py"
     },
     {
       "family": "messaging",
@@ -918,65 +918,65 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.channels.create",
+      "testFile": "tests/test_channels.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/follow",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.channels.follow",
+      "testFile": "tests/test_channels.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/live-updates",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.channels.subscribe_to_live_updates",
+      "testFile": "tests/test_channels.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/messages/{messageId}/reaction",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.channels.react_to_message",
+      "testFile": "tests/test_channels.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/messages/{messageId}/viewed",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.channels.mark_message_viewed",
+      "testFile": "tests/test_channels.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/mute",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.channels.mute",
+      "testFile": "tests/test_channels.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/unfollow",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.channels.unfollow",
+      "testFile": "tests/test_channels.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/unmute",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.channels.unmute",
+      "testFile": "tests/test_channels.py"
     },
     {
       "family": "messaging",
@@ -998,9 +998,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/cloud-credentials/reauthorize",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.sessions.reauthorize_cloud_credentials",
+      "testFile": "tests/test_cloud_sessions.py"
     },
     {
       "family": "messaging",
@@ -1574,9 +1574,9 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.quick_replies.replace",
+      "testFile": "tests/test_quick_replies_users.py"
     },
     {
       "family": "messaging",

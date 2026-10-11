@@ -7,6 +7,7 @@ namespace Polymorfa\Resources;
 use Polymorfa\ApiResponse;
 use Polymorfa\RequestOptions;
 use Polymorfa\SessionModels;
+use Polymorfa\CloudModels;
 
 /**
  * @phpstan-import-type Session from SessionModels
@@ -14,6 +15,10 @@ use Polymorfa\SessionModels;
  * @phpstan-import-type ConfigurationPatch from SessionModels
  * @phpstan-import-type Account from SessionModels
  * @phpstan-import-type OperationAccepted from SessionModels
+ * @phpstan-import-type PricingParams from CloudModels
+ * @phpstan-import-type PricingSummary from CloudModels
+ * @phpstan-import-type CredentialHealth from CloudModels
+ * @phpstan-import-type Reauthorization from CloudModels
  */
 final class Sessions extends Resource
 {
@@ -117,28 +122,31 @@ final class Sessions extends Resource
         return $this->request('POST', '/messaging/' . self::segment($session) . '/pair/code', $body, options: $options);
     }
     /**
- * @param array<string,mixed> $params
+ * @param PricingParams $params
  *
- * @return ApiResponse<array<string,mixed>> */
+ * @return ApiResponse<array{success:bool,data:PricingSummary}> */
     public function getMetaPricing(string $session, array $params = [], ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
+        /** @var ApiResponse<array{success:bool,data:PricingSummary}> */
         return $this->request('GET', '/messaging/' . self::segment($session) . '/meta-pricing', query: $params, options: $options);
     }
     /**
  *
- * @return ApiResponse<array<string,mixed>> */
+ * @return ApiResponse<array{success:bool,data:CredentialHealth}> */
     public function getCloudCredentialHealth(string $session, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
+        /** @var ApiResponse<array{success:bool,data:CredentialHealth}> */
         return $this->request('GET', '/messaging/' . self::segment($session) . '/cloud-credentials', options: $options);
     }
     /**
  *
- * @return ApiResponse<array<string,mixed>> */
+ * @return ApiResponse<array{success:bool,data:Reauthorization}> */
     public function reauthorizeCloudCredentials(string $session, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
+        /** @var ApiResponse<array{success:bool,data:Reauthorization}> */
         return $this->request('POST', '/messaging/' . self::segment($session) . '/cloud-credentials/reauthorize', options: ($options ?? new RequestOptions())->withoutRetries());
     }
 }

@@ -9,16 +9,21 @@ from typing_extensions import Self
 
 from . import messaging, platform
 from .business import Business
+from .channels import Channels
 from .client_tokens import ClientTokens
 from .errors import ConfigurationError
 from .groups import Groups
 from .observations import Identities, Labels, Privacy
+from .quick_replies import QuickReplies, Users
 from .transport import Credential, Transport
 
 
 @dataclass(frozen=True, init=False)
 class AsyncMessagingClient:
     _transport: Transport
+    channels: Channels
+    quick_replies: QuickReplies
+    users: Users
     business: Business
     client_tokens: ClientTokens
     identities: Identities
@@ -41,6 +46,9 @@ class AsyncMessagingClient:
         transport = Transport(credential, **options)
         object.__setattr__(self, "_transport", transport)
         for name, resource in (
+            ("channels", Channels),
+            ("quick_replies", QuickReplies),
+            ("users", Users),
             ("business", Business),
             ("client_tokens", ClientTokens),
             ("identities", Identities),

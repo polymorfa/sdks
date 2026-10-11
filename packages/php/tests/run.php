@@ -133,3 +133,9 @@ require __DIR__."/chats.php";
 require __DIR__."/business.php";
 
 require __DIR__."/business_catalog.php";
+
+require __DIR__."/quick_replies_users.php";
+
+require __DIR__."/cloud_sessions.php";
+
+require __DIR__."/channels.php";
