@@ -8,6 +8,7 @@ use Polymorfa\ApiResponse;
 use Polymorfa\RequestOptions;
 use Polymorfa\HistoryModels;
 use Polymorfa\Models;
+use Polymorfa\MediaDownloadStream;
 
 /**
  * @phpstan-import-type HistoryChat from HistoryModels
@@ -69,6 +70,12 @@ final class Chats extends Resource
     {
         $this->server();
         return $this->transport->binary($this->path($session, $conversation) . '/messages/' . self::segment($id) . '/media', $options);
+    }
+    /** Streams a stored message copy with filename and API response metadata. */
+    public function downloadMessageMediaStream(string $session, string $conversation, string $id, ?RequestOptions $options = null): MediaDownloadStream
+    {
+        $this->server();
+        return $this->transport->mediaStream($this->path($session, $conversation) . '/messages/' . self::segment($id) . '/media', $options);
     }
     /**
  * @param EditMessage $body

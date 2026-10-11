@@ -131,6 +131,7 @@ require __DIR__ . '/integrations_calls.php';
 require __DIR__."/client_tokens.php";
 
 require __DIR__."/chats.php";
+require __DIR__.'/history_media_stream.php';
 
 require __DIR__."/business.php";
 

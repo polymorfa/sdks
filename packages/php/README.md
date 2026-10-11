@@ -167,6 +167,10 @@ without resending. QuickLink models preserve connection goals, configuration
 choices and separate Cloud sync request receipts from delivery progress.
 
 `media.downloadStream` returns a PSR body to consume once or close.
+`chats->downloadMessageMediaStream($session, $conversation, $messageId)` streams
+a stored message copy with the same body, filename and response metadata.
+It requires a server credential and the API's enrolled history access. Cancellation
+interrupts body reads; a body failure preserves the original request metadata.
 `downloadUrl` returns a signed storage URL without following it, or reports that
 the API streams the body. Storage requests omit API credentials and caller
 headers. `downloadToFile` writes a private sibling and replaces the destination
