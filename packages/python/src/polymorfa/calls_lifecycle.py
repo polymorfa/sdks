@@ -14,6 +14,7 @@ from urllib.parse import urlencode, urlsplit
 
 from typing_extensions import NotRequired, TypedDict
 
+from ._json import loads
 from .calls import Socket
 from .calls_tokens import CallsError, CallsToken, CallsTokenSource
 from .errors import ConfigurationError
@@ -320,7 +321,7 @@ class LifecycleSocket:
             data = await self._socket.recv()
             if isinstance(data, str):
                 try:
-                    frame = json.loads(data)
+                    frame = loads(data)
                 except ValueError:
                     continue
                 if isinstance(frame, dict):

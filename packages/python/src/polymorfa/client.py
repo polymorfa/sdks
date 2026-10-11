@@ -38,6 +38,7 @@ from .organization import (
 from .platform_media import Media as PlatformMedia
 from .policies import HybridLink, ObservationPolicies, SessionConfigurations
 from .quick_replies import QuickReplies, Users
+from .request_logs import RequestLogs
 from .settings import OptOuts, QuickLinkConfiguration
 from .sip import SipTrunks
 from .templates import CloudTemplates, Templates
@@ -138,6 +139,7 @@ class AsyncProjectClient:
     _transport: Transport
     _credential: Credential
     project_id: str
+    request_logs: RequestLogs
     analytics: Analytics
     calls: CallRecords
     usage: Usage
@@ -168,6 +170,7 @@ class AsyncProjectClient:
         object.__setattr__(self, "_transport", transport)
         object.__setattr__(self, "_credential", credential)
         object.__setattr__(self, "project_id", project_id)
+        object.__setattr__(self, "request_logs", RequestLogs(transport, project_id))
         object.__setattr__(self, "analytics", Analytics(transport, project_id))
         object.__setattr__(self, "calls", CallRecords(transport, project_id))
         object.__setattr__(self, "usage", Usage(transport, project_id))
@@ -207,6 +210,7 @@ class AsyncProjectClient:
 class AsyncClient:
     _transport: Transport
     _credential: Credential
+    request_logs: RequestLogs
     sip_trunks: SipTrunks
     quick_link_settings: QuickLinkConfiguration
     session_configuration: SessionConfigurations
@@ -245,6 +249,7 @@ class AsyncClient:
         transport = Transport(credential, **options)
         object.__setattr__(self, "_transport", transport)
         object.__setattr__(self, "_credential", credential)
+        object.__setattr__(self, "request_logs", RequestLogs(transport))
         object.__setattr__(self, "analytics", Analytics(transport))
         object.__setattr__(self, "calls", CallRecords(transport))
         object.__setattr__(self, "usage", Usage(transport))

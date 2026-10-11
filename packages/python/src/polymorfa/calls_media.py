@@ -35,10 +35,12 @@ class ManagedMedia:
         on_control: Callable[[JsonObject], Awaitable[None]],
         *,
         command_timeout: float = 5,
+        on_frame: Callable[[AudioFrame | VideoFrame], bool] | None = None,
     ) -> None:
         self.socket = socket
         self._on_control = on_control
         self._timeout = command_timeout
+        self._on_frame = on_frame
         self._runner: asyncio.Task[None] | None = None
         self._refresh_task: asyncio.Task[None] | None = None
         self._pending: tuple[str, asyncio.Future[JsonObject]] | None = None
@@ -64,8 +66,14 @@ class ManagedMedia:
                 ):
                     self.claimed = True
                 if isinstance(frame, (AudioFrame, VideoFrame)):
+                    consumed = self._on_frame(frame) if self._on_frame is not None else False
                     if self.frames.full():
-                        raise CallsError("Media consumer did not keep up.", code="media_queue_full")
+                        if consumed:
+                            self.frames.get_nowait()
+                        else:
+                            raise CallsError(
+                                "Media consumer did not keep up.", code="media_queue_full"
+                            )
                     self.frames.put_nowait(frame)
                 elif frame.get("type") in ("media_state", "media_error"):
                     if (
@@ -147,12 +155,16 @@ class ManagedMedia:
         self._closed = True
         if leave and self.socket.connected:
             await self.socket.send_control({"type": "leave"})
-        if self._runner is not None:
+        if self._runner is not None and self._runner is not asyncio.current_task():
             self._runner.cancel()
             await asyncio.gather(self._runner, return_exceptions=True)
-            self._runner = None
+        self._runner = None
         if self._refresh_task is not None:
             self._refresh_task.cancel()
             await asyncio.gather(self._refresh_task, return_exceptions=True)
             self._refresh_task = None
+        if self._pending is not None and not self._pending[1].done():
+            self._pending[1].set_exception(
+                CallsError("Media connection closed.", code="media_control_unavailable")
+            )
         await self.socket.close()

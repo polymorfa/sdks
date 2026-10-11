@@ -7,8 +7,10 @@ from test_calls_runtime import SERVER, wire
 
 from polymorfa import (
     FLOW_FORWARD_SIGNATURE_HEADER,
+    AsyncClient,
     AsyncMessagingClient,
     Credential,
+    ServerError,
     parse_content_disposition_filename,
     verify_flow_forward_signature,
 )
@@ -66,6 +68,9 @@ def test_flow_forward_original_timestamp_body_and_tolerance(offset, tolerance, v
     assert not verify_flow_forward_signature(body, header, "", now_unix_seconds=1000)
     assert not verify_flow_forward_signature(
         body, "t=1234567890123,v1=" + signature, secret, now_unix_seconds=1000
+    )
+    assert not verify_flow_forward_signature(
+        body, "t=١٠٠٠,v1=" + signature, secret, now_unix_seconds=1000
     )
 
 
@@ -149,3 +154,22 @@ async def test_native_voice_upload_never_sends_api_cookie_or_credential_to_stora
         )
         assert result.data["id"] == "asset_1"
         assert seen == [AP, "/storage-upload", AP + "/asset_1/complete"]
+
+
+@pytest.mark.parametrize("constant", ["NaN", "Infinity", "-Infinity"])
+async def test_native_api_response_rejects_non_json_numeric_constant_with_metadata(constant):
+    async def handler(request):
+        assert request.path == "/platform/projects"
+        return web.Response(
+            body=('{"data": [], "future": ' + constant + "}").encode(),
+            headers={"content-type": "application/json", "x-request-id": "req_json"},
+        )
+
+    async with (
+        wire(handler) as base,
+        AsyncClient(Credential("organization_api_key", SERVER), base_url=base) as client,
+    ):
+        with pytest.raises(ServerError) as failure:
+            await client.projects.list()
+        assert failure.value.code == "invalid_response"
+        assert failure.value.metadata.request_id == "req_json"

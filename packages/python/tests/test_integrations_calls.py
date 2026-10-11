@@ -9,7 +9,15 @@ from django.test import RequestFactory
 from fastapi import FastAPI, Request
 from websockets.asyncio.server import serve
 
-from polymorfa import ConfigurationError, Credential, WebhookSignatureError
+from polymorfa import (
+    AuthenticationError,
+    AuthorizationError,
+    ConfigurationError,
+    ConflictError,
+    Credential,
+    ServerError,
+    WebhookSignatureError,
+)
 from polymorfa.calls import (
     AudioFrame,
     MediaSocket,
@@ -106,3 +114,32 @@ async def test_real_calls_websocket_native_handshake_auth_and_binary_media():
             assert await socket.receive() == AudioFrame((2, -2))
             await socket.leave()
     assert seen == ["/voip/calls/call_1/media"]
+
+
+@pytest.mark.parametrize(
+    "code,error_type",
+    [
+        ("unauthorized", AuthenticationError),
+        ("calls_disabled", AuthorizationError),
+        ("call_claimed", ConflictError),
+        ("future_error", ServerError),
+    ],
+)
+async def test_native_media_handshake_semantic_refusal_errors(code, error_type):
+    async def handler(websocket):
+        assert json.loads(await websocket.recv())["token"] == "pmfa_ct_local"
+        await websocket.send(json.dumps({"type": "error", "code": code}))
+        await websocket.wait_closed()
+
+    async with serve(handler, "127.0.0.1", 0, subprotocols=["pmfa.calls.v2"]) as server:
+        port = server.sockets[0].getsockname()[1]
+        socket = MediaSocket(
+            Credential("client_token", "pmfa_ct_local"),
+            "call_1",
+            "connection_1",
+            base_url=f"http://127.0.0.1:{port}",
+            heartbeat_interval=0,
+        )
+        with pytest.raises(error_type) as failure:
+            await socket.connect()
+        assert failure.value.code == code and not socket.connected

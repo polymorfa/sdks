@@ -18,8 +18,29 @@ from .calls_lifecycle import (
     TrickleCandidate,
 )
 from .calls_media import MediaState, MediaStateUpdate
-from .calls_runtime import Call, CallCapabilities, CallClaim, CallsClient
+from .calls_runtime import Call, CallCapabilities, CallClaim, CallEndReason, CallsClient
 from .calls_tokens import CallsError, CallsToken, CallsTokenRequest, CallsTokenSource
+from .calls_tracks import AudioTrack, CallVideoSource, OutgoingVideoFrame, VideoTrack
+from .catalogs import (
+    CALL_REACTION_EMOJI,
+    DEFAULT_SAMPLE_RATE,
+    DEFAULT_WHATSAPP_MEDIA_MAX_BYTES,
+    ELEVENLABS_TTS_MODELS,
+    OPENAI_TTS_MODELS,
+    OPENAI_TTS_VOICES,
+    PRIVACY_SETTING_VALUES,
+    TEST_EVENT_FIXTURES,
+    VOICE_AUDIO_FAILURE_REASONS,
+    VOICE_AUDIO_FORMATS,
+    VOICE_AUDIO_MAX_UPLOAD_BYTES,
+    VOICE_AUDIO_SOURCES,
+    VOICE_AUDIO_STATUSES,
+    VOICE_AUDIO_UPLOAD_CONTENT_TYPES,
+    VOICE_KEY_SOURCES,
+    VOICE_PROVIDER_CREDENTIAL_ERRORS,
+    VOICE_PROVIDER_CREDENTIAL_STATUSES,
+    VOICE_PROVIDERS,
+)
 from .client import AsyncClient, AsyncMessagingClient, AsyncProjectClient
 from .content_disposition import parse_content_disposition_filename
 from .downloads import signed_url_expiry
@@ -40,6 +61,12 @@ from .errors import (
     TimeoutError,
     ValidationError,
     WebhookSignatureError,
+)
+from .event_source import (
+    LiveEventMetadata,
+    LiveEventSource,
+    LiveEventSubscription,
+    event_stream_source,
 )
 from .events import EventStream, StreamedEvent
 from .files import (
@@ -67,6 +94,14 @@ from .media_streams import (
     download_whatsapp_media_stream,
 )
 from .policies import graph_transport_headers
+from .request_logs import (
+    RequestLog,
+    RequestLogCredential,
+    RequestLogFilters,
+    RequestLogPage,
+    RequestLogs,
+    request_log_retry_after,
+)
 from .system import AsyncBridgeClient, AsyncSystemClient
 from .transport import (
     API_VERSION,
@@ -91,9 +126,27 @@ from .webhooks import (
 
 __all__ = [
     "API_VERSION",
+    "CALL_REACTION_EMOJI",
+    "DEFAULT_SAMPLE_RATE",
+    "DEFAULT_WHATSAPP_MEDIA_MAX_BYTES",
+    "ELEVENLABS_TTS_MODELS",
     "FLOW_FORWARD_SIGNATURE_HEADER",
+    "OPENAI_TTS_MODELS",
+    "OPENAI_TTS_VOICES",
     "POLYMORFA_ERROR_CODES",
+    "PRIVACY_SETTING_VALUES",
     "SDK_VERSION",
+    "TEST_EVENT_FIXTURES",
+    "VOICE_AUDIO_FAILURE_REASONS",
+    "VOICE_AUDIO_FORMATS",
+    "VOICE_AUDIO_MAX_UPLOAD_BYTES",
+    "VOICE_AUDIO_SOURCES",
+    "VOICE_AUDIO_STATUSES",
+    "VOICE_AUDIO_UPLOAD_CONTENT_TYPES",
+    "VOICE_KEY_SOURCES",
+    "VOICE_PROVIDERS",
+    "VOICE_PROVIDER_CREDENTIAL_ERRORS",
+    "VOICE_PROVIDER_CREDENTIAL_STATUSES",
     "ApiResponse",
     "AsyncBridgeClient",
     "AsyncCallRetentionClient",
@@ -102,12 +155,15 @@ __all__ = [
     "AsyncProjectClient",
     "AsyncSystemClient",
     "AudioFrame",
+    "AudioTrack",
     "AuthenticationError",
     "AuthorizationError",
     "Call",
     "CallCapabilities",
     "CallClaim",
+    "CallEndReason",
     "CallReporter",
+    "CallVideoSource",
     "CallsClient",
     "CallsError",
     "CallsToken",
@@ -124,6 +180,9 @@ __all__ = [
     "LifecycleEvent",
     "LifecycleReady",
     "LifecycleSocket",
+    "LiveEventMetadata",
+    "LiveEventSource",
+    "LiveEventSubscription",
     "MediaDescriptor",
     "MediaIntegrityError",
     "MediaSocket",
@@ -131,9 +190,15 @@ __all__ = [
     "MediaStateUpdate",
     "MessageReceivedEvent",
     "NotFoundError",
+    "OutgoingVideoFrame",
     "PaymentRequiredError",
     "PolymorfaError",
     "RateLimitError",
+    "RequestLog",
+    "RequestLogCredential",
+    "RequestLogFilters",
+    "RequestLogPage",
+    "RequestLogs",
     "RequestOptions",
     "ResponseMetadata",
     "ServerError",
@@ -144,6 +209,7 @@ __all__ = [
     "UnknownWebhookEvent",
     "ValidationError",
     "VideoFrame",
+    "VideoTrack",
     "WebhookEvent",
     "WebhookFixture",
     "WebhookSignatureError",
@@ -166,12 +232,14 @@ __all__ = [
     "download_whatsapp_media_to_file",
     "encode_audio_frame",
     "encode_video_frame",
+    "event_stream_source",
     "fastapi_webhook_event",
     "graph_transport_headers",
     "is_event",
     "is_known_error_code",
     "is_whatsapp_media_url",
     "parse_content_disposition_filename",
+    "request_log_retry_after",
     "signed_url_expiry",
     "verify_flow_forward_signature",
     "verify_local_webhook_signature",

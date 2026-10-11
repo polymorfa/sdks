@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import base64
 import binascii
-import json
 import math
 import random
 from collections.abc import AsyncIterator, Callable
@@ -15,6 +14,7 @@ from typing import Literal, cast
 import httpx
 from typing_extensions import TypedDict
 
+from ._json import loads
 from .developer_models import EncodedPayload
 from .errors import (
     AuthenticationError,
@@ -181,7 +181,7 @@ class EventStream:
                             data.append(line[5:].removeprefix(" "))
                         elif line == "" and data:
                             try:
-                                frame = json.loads("\n".join(data))
+                                frame = loads("\n".join(data))
                             except ValueError:
                                 raise ServerError(
                                     "Invalid event stream frame.", code="invalid_response"

@@ -13,7 +13,9 @@ from urllib.parse import quote, urlsplit
 
 from typing_extensions import Self
 
+from ._json import loads
 from .errors import (
+    AuthenticationError,
     AuthorizationError,
     ConfigurationError,
     ConflictError,
@@ -170,7 +172,7 @@ class MediaSocket:
                 if not isinstance(message, str):
                     continue
                 try:
-                    control = json.loads(message)
+                    control = loads(message)
                 except ValueError:
                     continue
                 if not isinstance(control, dict):
@@ -179,7 +181,9 @@ class MediaSocket:
                     code = control.get("code")
                     if code == "call_claimed":
                         raise ConflictError("Call claimed by another participant.", code=code)
-                    if code in ("unauthorized", "calls_disabled"):
+                    if code == "unauthorized":
+                        raise AuthenticationError("Call media credential refused.", code=code)
+                    if code == "calls_disabled":
                         raise AuthorizationError("Call media connection refused.", code=code)
                     raise ServerError("Call media connection refused.", code=str(code))
                 if control.get("type") == "ready":
@@ -256,7 +260,7 @@ class MediaSocket:
                     return frame
             else:
                 try:
-                    value = json.loads(message)
+                    value = loads(message)
                 except ValueError:
                     continue
                 if isinstance(value, dict):

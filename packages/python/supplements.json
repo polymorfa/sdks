@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9",
+  "operations": [
+    {
+      "sdkMethod": "AsyncMessagingClient.cloud_catalogs.list",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/123/product_catalogs",
+      "status": "covered",
+      "testFile": "tests/test_templates_graph.py"
+    },
+    {
+      "sdkMethod": "AsyncMessagingClient.cloud_catalogs.list_products",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/123/product_catalogs/456/products",
+      "status": "covered",
+      "testFile": "tests/test_templates_graph.py"
+    },
+    {
+      "sdkMethod": "AsyncMessagingClient.cloud_marketing.status",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/123/marketing_messages/status",
+      "status": "covered",
+      "testFile": "tests/test_templates_graph.py"
+    },
+    {
+      "sdkMethod": "AsyncMessagingClient.flow_encryption.retrieve",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/123/whatsapp_business_encryption",
+      "status": "covered",
+      "testFile": "tests/test_templates_graph.py"
+    },
+    {
+      "sdkMethod": "AsyncMessagingClient.flow_encryption.register",
+      "method": "POST",
+      "fixturePath": "/graph/whatsapp/v26.0/123/whatsapp_business_encryption",
+      "status": "covered",
+      "testFile": "tests/test_templates_graph.py"
+    },
+    {
+      "sdkMethod": "AsyncMessagingClient.testing.get_phone",
+      "method": "GET",
+      "fixturePath": "/messaging/testing/project_1/numbers/support/phone",
+      "status": "covered",
+      "testFile": "tests/test_onboarding.py"
+    },
+    {
+      "sdkMethod": "AsyncMessagingClient.testing.send_phone_message",
+      "method": "POST",
+      "fixturePath": "/messaging/testing/project_1/numbers/support/phone/messages",
+      "status": "covered",
+      "testFile": "tests/test_onboarding.py"
+    },
+    {
+      "sdkMethod": "AsyncMessagingClient.testing.unlink_phone_device",
+      "method": "POST",
+      "fixturePath": "/messaging/testing/project_1/numbers/support/phone/devices/2/unlink",
+      "status": "covered",
+      "testFile": "tests/test_onboarding.py"
+    },
+    {
+      "sdkMethod": "AsyncMessagingClient.campaigns.update",
+      "method": "PATCH",
+      "fixturePath": "/messaging/projects/support/campaigns/campaign_1",
+      "status": "covered",
+      "testFile": "tests/test_campaigns.py"
+    },
+    {
+      "sdkMethod": "AsyncMessagingClient.campaigns.reschedule",
+      "method": "POST",
+      "fixturePath": "/messaging/projects/support/campaigns/campaign_1/reschedule",
+      "status": "covered",
+      "testFile": "tests/test_campaigns.py"
+    },
+    {
+      "sdkMethod": "AsyncClient.campaigns.reschedule",
+      "method": "POST",
+      "fixturePath": "/platform/campaigns/campaign_1/reschedule",
+      "status": "covered",
+      "testFile": "tests/test_campaigns.py"
+    },
+    {
+      "sdkMethod": "AsyncClient.request_logs.list / AsyncProjectClient.request_logs.list / RequestLogs.follow",
+      "method": "GET",
+      "fixturePath": "/platform/projects/11111111-1111-4111-8111-111111111111/request-logs",
+      "status": "covered",
+      "testFile": "tests/test_request_logs.py"
+    }
+  ],
+  "helpers": [
+    {
+      "sdkMethod": "RequestLogs.tail / request_log_retry_after",
+      "status": "covered",
+      "testFile": "tests/test_request_logs.py"
+    },
+    {
+      "sdkMethod": "CallsClient / Call / lifecycle and media native sockets",
+      "status": "covered",
+      "testFile": "tests/test_calls_runtime.py"
+    },
+    {
+      "sdkMethod": "CallsTokenSource single flight / cache / refresh / cancellation",
+      "status": "covered",
+      "testFile": "tests/test_calls_tokens.py"
+    },
+    {
+      "sdkMethod": "CallReporter",
+      "status": "covered",
+      "testFile": "tests/test_calls_diagnostics.py"
+    },
+    {
+      "sdkMethod": "Calls placement / pending ICE / claims / early terminal ordering",
+      "status": "covered",
+      "testFile": "tests/test_calls_ordering.py"
+    },
+    {
+      "sdkMethod": "Call.audio / Call.video / sources / keyframes / negotiated sample rate",
+      "status": "covered",
+      "testFile": "tests/test_tracks_event_source.py"
+    },
+    {
+      "sdkMethod": "event_stream_source / LiveEventSubscription.close",
+      "status": "covered",
+      "testFile": "tests/test_tracks_event_source.py"
+    },
+    {
+      "sdkMethod": "EventStream reconnect / acknowledgement / gap / heartbeat / revocation",
+      "status": "covered",
+      "testFile": "tests/test_event_stream_native.py"
+    },
+    {
+      "sdkMethod": "Indexed events pagination and follow",
+      "status": "covered",
+      "testFile": "tests/test_developer_resources.py"
+    },
+    {
+      "sdkMethod": "WhatsApp five-kind crypto / incremental streams / atomic TLS CDN file download",
+      "status": "covered",
+      "testFile": "tests/test_media_streams.py"
+    },
+    {
+      "sdkMethod": "API media / retained message stream / signed URL expiry / content disposition",
+      "status": "covered",
+      "testFile": "tests/test_additional_helpers.py"
+    },
+    {
+      "sdkMethod": "voice.audio.upload / wait_until_ready",
+      "status": "covered",
+      "testFile": "tests/test_voice.py"
+    },
+    {
+      "sdkMethod": "Native / local-forward / Flow-forward webhook signatures",
+      "status": "covered",
+      "testFile": "tests/test_additional_helpers.py"
+    },
+    {
+      "sdkMethod": "Known webhook DTOs / is_event all84 / unknown preservation",
+      "status": "covered",
+      "testFile": "tests/test_webhook_models.py"
+    },
+    {
+      "sdkMethod": "AsyncCallRetentionClient",
+      "status": "covered",
+      "testFile": "tests/test_team_retention.py"
+    },
+    {
+      "sdkMethod": "Known error codes / signature fixtures",
+      "status": "covered",
+      "testFile": "tests/test_webhook_utilities.py"
+    },
+    {
+      "sdkMethod": "Known privacy / testing / voice / Calls catalog values",
+      "status": "covered",
+      "testFile": "tests/test_catalogs.py"
+    },
+    {
+      "sdkMethod": "FastAPI / Django raw-body webhook adapters and shipped views",
+      "status": "covered",
+      "testFile": "tests/test_webhook_examples.py"
+    },
+    {
+      "sdkMethod": "FastAPI / Django authenticated template-HTMX Web Component token hosts",
+      "status": "covered",
+      "testFile": "tests/test_browser_hosts.py"
+    }
+  ]
+}

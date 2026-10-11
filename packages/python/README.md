@@ -1,8 +1,8 @@
 # Polymorfa Python SDK
 
 Handwritten asynchronous server client for Python 3.10 or newer. The local
-package is not published. `coverage.json` records implemented and missing
-operations against the pinned TypeScript reference.
+package is not published. `coverage.json` records implemented and excluded
+operations against TypeScript source `ff51567105b64bf6997e7330ba8eb502d875e7b9`.
 
 ```python
 import asyncio
@@ -62,9 +62,22 @@ payload. Guards cover every known native event; payload types are available in
 variants. Parsing preserves additional fields and unknown event payloads.
 
 Run package checks with `uv sync --extra test`, `uv run ruff check`,
-`uv run ruff format --check`, `uv run mypy src/polymorfa`, `uv run pytest`, and
-`uv run python -m build`. These checks exercise local mock contracts. They
+`uv run ruff format --check`, `uv run mypy --no-incremental src/polymorfa`,
+`uv run pytest`, and `uv run python -m build`. These checks exercise local
+request/response fixtures and native HTTP, TLS, WebSocket and framework hosts. They
 do not establish production availability or registry publication.
+
+`client.request_logs.list(project_id=...)` reads newest requests first;
+`follow(after, project_id=...)` reads new requests oldest first. A project client
+uses its bound project. `tail(backfill=20, interval_seconds=2, stop=event)` yields
+backfill and new requests oldest first, follows queued pages immediately and waits
+for `Retry-After` after a rate limit. Cancel the consuming task or set the asyncio
+event to stop. A page keeps items, both cursors, `has_more` and response metadata.
+Cursor pagination excludes filters; empty method/status lists send no filter.
+
+`PARITY.md` and `supplements.json` record the public helper and supplemental
+route evidence beyond the primary coverage manifest. Known privacy, testing,
+voice and Calls values are exported as immutable tuples and mappings.
 
 `client.client_tokens.mint` accepts either a session target or a Customer
 ID, and `retrieve_rules`, `update_rules`, and `delete_rules` manage session
@@ -117,6 +130,12 @@ Lifecycle `ready` and `candidates` queues preserve authenticated connection and
 ICE metadata. `CallsClient.send_candidate` writes candidates on that connection.
 An early accepted event survives queued participant changes; duplicate departures
 keep their initial reason. Disconnecting ends pending `incoming_calls` iterators.
+`call.audio.frames()` and `call.video.frames()` expose typed track subscriptions;
+their `write` methods return false while no media is attached. Video tracks expose
+source ownership, source changes and keyframe requests. Audio keeps its negotiated
+sample rate after the call ends. Tracks share one native reader and bound each
+subscriber to 256 frames. The optional mixed `receive_media` buffer keeps its last
+256 frames while track subscriptions consume media.
 Install the `fastapi` or `django` extras for framework examples;
 `fastapi_webhook_event` and `django_webhook_event` verify the raw request body.
 See `examples/python` in the source tree for executable application examples.
@@ -182,6 +201,11 @@ and filters across pages. The event stream decodes retained payloads, resumes
 from checkpoints, reports gaps and reconnects, and supports explicit
 acknowledgements. Closing a stream interrupts a pending connection or body read.
 Operations support typed transitions, long polling and bounded waits.
+`event_stream_source(lambda cursor: project.events.stream(since=cursor))` adapts
+the stream for application stores. `subscribe` delivers webhook envelopes with
+cursor metadata and accepts synchronous or asynchronous listeners. Events with
+no retained payload are skipped. Call the subscription to unsubscribe, or await
+its `close()` method to wait for cleanup.
 
 Messaging campaigns retain delivery timestamps, A/B outcomes and send windows.
 Platform campaigns require the owning project on reads, report conversions in

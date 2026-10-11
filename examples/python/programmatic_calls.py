@@ -3,7 +3,7 @@
 import asyncio
 import os
 
-from polymorfa import AudioFrame, CallsClient
+from polymorfa import CallsClient
 
 
 async def main() -> None:
@@ -16,11 +16,9 @@ async def main() -> None:
             await call.answer(exclusive=True)
             print("Connected", call.id, "PCM rate", call.sample_rate)
             try:
-                while not call.ended:
-                    frame = await call.receive_media()
-                    if isinstance(frame, AudioFrame):
-                        # Feed frame.samples to your transcriber. No audio is retained here.
-                        print("Received samples", len(frame.samples))
+                async for frame in call.audio.frames():
+                    # Feed frame.samples to your transcriber. No audio is retained here.
+                    print("Received samples", len(frame.samples))
             finally:
                 await call.leave()
 

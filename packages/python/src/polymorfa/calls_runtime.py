@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 import secrets
 import time
 import uuid
@@ -18,6 +19,7 @@ from .calls_diagnostics import CallReporter
 from .calls_lifecycle import LifecycleCandidate, LifecycleEvent, LifecycleSocket, close_code
 from .calls_media import ManagedMedia, MediaStateUpdate
 from .calls_tokens import CallsError, CallsTokenSource, TokenProvider
+from .calls_tracks import AudioTrack, VideoTrack
 from .client import AsyncMessagingClient
 from .errors import AuthenticationError, ConfigurationError, ConflictError
 from .models import CallAcceptance, CallPlacement
@@ -26,6 +28,21 @@ from .voip_models import CallParticipant, CallReaction, CallReport, HandRaised
 
 CallState = Literal["incoming", "ringing", "connecting", "connected", "reconnecting", "ended"]
 CallDirection = Literal["inbound", "outbound"]
+CallEndReason = Literal[
+    "hangup",
+    "left",
+    "claimed",
+    "remote_hangup",
+    "rejected",
+    "missed",
+    "busy",
+    "timeout",
+    "connection_failed",
+    "pod_lost",
+    "capacity",
+    "call_restricted",
+    "unknown",
+]
 ReactionEmoji = Literal["", "👍", "❤️", "😂", "😮", "😢", "🙏"]
 
 
@@ -85,9 +102,11 @@ class Call:
         self.id, self.direction, self.peer = call_id, direction, peer
         self.session, self.connection_id = client.session, secrets.token_urlsafe(18)
         self.state: CallState = "incoming" if direction == "inbound" else "ringing"
-        self.end_reason: str | None = None
+        self.end_reason: CallEndReason | None = None
         self.capabilities = CallCapabilities()
         self._offered_video = video
+        self._sample_rate = 16000
+        self.audio, self.video = AudioTrack(self), VideoTrack(self)
         self._accepted = direction == "outbound"
         self._answered = False
         self._answered_by: str | None = None
@@ -147,7 +166,7 @@ class Call:
 
     @property
     def sample_rate(self) -> int:
-        return self._media.socket.sample_rate if self._media is not None else 16000
+        return self._sample_rate
 
     @property
     def claim(self) -> CallClaim:
@@ -155,12 +174,20 @@ class Call:
             self._answered,
             self._answered_by,
             self._exclusive,
-            self._claimed_by_other,
+            self.claimed_by_other,
             self._answered
             and not self._exclusive
             and self.state == "incoming"
             and not self._claimed_by_other,
         )
+
+    @property
+    def claimed_by_other(self) -> bool:
+        return self._claimed_by_other and not self._accepted and not self.ended
+
+    @property
+    def can_join(self) -> bool:
+        return self.claim.can_join
 
     @property
     def participants(self) -> tuple[CallParticipant, ...]:
@@ -279,10 +306,11 @@ class Call:
             heartbeat_interval=self._client.media_heartbeat_interval,
             ready_timeout=self._client.connect_timeout,
         )
-        media = ManagedMedia(socket, self._control)
+        media = ManagedMedia(socket, self._control, on_frame=self._frame)
         self._media = media
         try:
             await media.connect()
+            self._sample_rate = socket.sample_rate
             if token.expires_at is not None:
 
                 async def refresh_token() -> None:
@@ -327,7 +355,7 @@ class Call:
                 return
             await media.close()
             self._media = None
-            self.video_sources.clear()
+            self._clear_video_sources()
             code = close_code(cause)
             if (media.claimed and code != 4401) or code in (1000, 4409, 4400, 4403, 1008, 1009):
                 reason = getattr(getattr(cause, "rcvd", None), "reason", "")
@@ -388,15 +416,38 @@ class Call:
                 self._update_participant(
                     cast(CallParticipant, participant)["id"], cast(CallParticipant, participant)
                 )
-        elif kind == "video_source" and isinstance(frame.get("source"), int):
+        elif kind == "video_source" and _valid_video_source(frame):
             self.video_sources[cast(int, frame["source"])] = frame
-        elif kind == "video_source_removed" and isinstance(frame.get("source"), int):
-            self.video_sources.pop(cast(int, frame["source"]), None)
+            source = self.video.sources.get(cast(int, frame["source"]))
+            if source is not None:
+                if self.video.source_changes.full():
+                    self.video.source_changes.get_nowait()
+                self.video.source_changes.put_nowait(source)
+        elif kind == "video_source_removed" and _source_handle(frame.get("source")):
+            source_id = cast(int, frame["source"])
+            if self.video_sources.pop(source_id, None) is not None:
+                if self.video.source_changes.full():
+                    self.video.source_changes.get_nowait()
+                self.video.source_changes.put_nowait(source_id)
+        elif kind == "keyframe_request":
+            if self.video.keyframe_requests.full():
+                self.video.keyframe_requests.get_nowait()
+            self.video.keyframe_requests.put_nowait(None)
         elif kind in ("ended", "left"):
             await self._finish("remote_hangup" if kind == "ended" else "left")
         if self.controls.full():
             self.controls.get_nowait()
         self.controls.put_nowait(frame)
+
+    def _frame(self, frame: AudioFrame | VideoFrame) -> bool:
+        return self.audio._push(frame) if isinstance(frame, AudioFrame) else self.video._push(frame)
+
+    def _clear_video_sources(self) -> None:
+        for source in self.video_sources:
+            if self.video.source_changes.full():
+                self.video.source_changes.get_nowait()
+            self.video.source_changes.put_nowait(source)
+        self.video_sources.clear()
 
     def _update_participant(self, participant_id: str, participant: CallParticipant | None) -> None:
         self._roster_revision += 1
@@ -552,22 +603,22 @@ class Call:
         except Exception:  # noqa: BLE001 - bounded best-effort release preserves the media failure.
             return
 
-    async def _finish(self, reason: str) -> None:
+    async def _finish(self, reason: CallEndReason) -> None:
         if self.ended:
             return
         self.end_reason = reason
         self.ended_at = time.time()
         self._state("ended")
         self._ended_event.set()
+        self.audio._close()
+        self.video._close()
+        self._clear_video_sources()
         if self._media_runner is not None and self._media_runner is not asyncio.current_task():
             self._media_runner.cancel()
             await asyncio.gather(self._media_runner, return_exceptions=True)
         if self._media is not None:
             media, self._media = self._media, None
-            if media._runner is asyncio.current_task():
-                await media.socket.close()
-            else:
-                await media.close()
+            await media.close()
         if self._reporter is not None:
             if self._media_attached:
                 self._reporter.quality({"reconnects": self._reconnects})
@@ -583,6 +634,46 @@ def _is_participant(value: object) -> bool:
         and isinstance(value.get("video"), bool)
         and value.get("state") in ("invited", "ringing", "connected", "left")
     )
+
+
+def _source_handle(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and 0 < value <= 2**32 - 1
+
+
+def _valid_video_source(frame: JsonObject) -> bool:
+    if not _source_handle(frame.get("source")):
+        return False
+    connection, owner, participant = (
+        frame.get("connectionId"),
+        frame.get("connectionParticipant"),
+        frame.get("participant"),
+    )
+    return (
+        isinstance(connection, str)
+        and re.fullmatch(r"[A-Za-z0-9_-]{8,64}", connection) is not None
+        and (owner is None or isinstance(owner, str))
+        and participant is None
+    ) or (_is_participant(participant) and connection is None and owner is None)
+
+
+def _end_reason(value: object) -> CallEndReason:
+    if value in ("user_hangup", "remote_hangup"):
+        return "remote_hangup"
+    if value in ("media_timeout", "setup_timeout"):
+        return "timeout"
+    if value in (
+        "hangup",
+        "rejected",
+        "busy",
+        "missed",
+        "timeout",
+        "connection_failed",
+        "pod_lost",
+        "capacity",
+        "call_restricted",
+    ):
+        return cast(CallEndReason, value)
+    return "unknown"
 
 
 def _participant_control(event: LifecycleEvent) -> JsonObject | None:
@@ -939,7 +1030,7 @@ class CallsClient:
                 if event.event == "call.ended"
                 else event.event.removeprefix("call.")
             )
-            await call._finish(reason if isinstance(reason, str) else "remote_hangup")
+            await call._finish(_end_reason(reason))
         else:
             frame = _participant_control(event)
             if frame is not None and not (

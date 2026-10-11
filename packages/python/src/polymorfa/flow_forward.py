@@ -19,10 +19,14 @@ def verify_flow_forward_signature(
 ) -> bool:
     if not isinstance(signature_header, str) or not isinstance(secret, str) or not secret:
         return False
-    match = re.fullmatch(r"t=(\d{1,12}),v1=([a-fA-F0-9]{64})", signature_header.strip())
+    match = re.fullmatch(r"t=([0-9]{1,12}),v1=([a-fA-F0-9]{64})", signature_header.strip())
     now = time.time() if now_unix_seconds is None else now_unix_seconds
     if (
         not match
+        or isinstance(tolerance_seconds, bool)
+        or not isinstance(tolerance_seconds, (int, float))
+        or isinstance(now, bool)
+        or not isinstance(now, (int, float))
         or not math.isfinite(tolerance_seconds)
         or not math.isfinite(now)
         or tolerance_seconds < 0

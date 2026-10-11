@@ -107,6 +107,12 @@ class CallsTokenSource:
                 return token
 
             entry = _Fetch(asyncio.create_task(fetch()), refresh)
+
+            def settled(task: asyncio.Task[CallsToken]) -> None:
+                if not task.cancelled():
+                    task.exception()
+
+            entry.task.add_done_callback(settled)
             self._pending = entry
         entry.waiters += 1
         try:

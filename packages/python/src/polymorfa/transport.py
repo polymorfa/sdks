@@ -19,6 +19,7 @@ from urllib.parse import unquote, urlencode, urljoin, urlsplit
 import httpx
 from typing_extensions import TypedDict
 
+from ._json import loads
 from .errors import (
     AuthenticationError,
     AuthorizationError,
@@ -390,7 +391,7 @@ class Transport:
         data: dict[str, object] = {}
         if "json" in response.headers.get("content-type", ""):
             try:
-                parsed = response.json()
+                parsed = loads(response.content)
                 if isinstance(parsed, dict) and isinstance(parsed.get("error"), dict):
                     data = parsed["error"]
             except ValueError:
@@ -446,7 +447,7 @@ class Transport:
                     "Unexpected response content type.", code="invalid_response", metadata=meta
                 )
             try:
-                value = response.json()
+                value = loads(response.content)
             except ValueError:
                 raise ServerError(
                     "Invalid JSON response.", code="invalid_response", metadata=meta
