@@ -646,33 +646,33 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.campaigns.list",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.campaigns.retrieve",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/analytics",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.campaigns.analytics",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.campaigns.recipients",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "messaging",
@@ -1238,41 +1238,41 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.campaigns.create",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/launch",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.campaigns.launch",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/pause",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.campaigns.pause",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.campaigns.add_recipients",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/requeue",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.campaigns.requeue",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "messaging",
@@ -1286,17 +1286,17 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/resume",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.campaigns.resume",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/stop",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.campaigns.stop",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "messaging",
@@ -1878,17 +1878,17 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/audiences/{listId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.audiences.delete",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/audiences/{listId}/members/{phone}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.audiences.delete_member",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
@@ -1902,9 +1902,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/campaigns/{campaignId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.delete",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
@@ -1918,33 +1918,33 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/flows/{flowId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.delete",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/flows/{flowId}/endpoint",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.delete_endpoint",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/functions/{functionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.delete",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/functions/{functionId}/secrets/{versionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.secrets.revoke",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
@@ -2350,25 +2350,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/audiences",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.audiences.list",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/audiences/{listId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.audiences.retrieve",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/audiences/{listId}/members",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.audiences.list_members",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
@@ -2614,49 +2614,49 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.list",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.retrieve",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/analytics",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.analytics",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/conversions",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.conversions",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/events",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.events",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/recipients",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.recipients",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
@@ -2718,105 +2718,105 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/flow-encryption-keys",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.encryption_key",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.list",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.retrieve",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}/endpoint",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.endpoint",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}/endpoint/receipts",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.endpoint_receipts",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}/receipts",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.receipts",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.list",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.retrieve",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/deployments",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.deployments.list",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/deployments/{deploymentId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.deployments.retrieve",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/invocations",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.invocations.list",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/invocations/{invocationId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.invocations.retrieve",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/secrets",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.secrets.list",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
@@ -3350,9 +3350,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/campaigns/{campaignId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.update",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
@@ -3366,17 +3366,17 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/flows/{flowId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.update",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/functions/{functionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.update",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
@@ -3734,25 +3734,25 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/audiences",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.audiences.create",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/audiences/{listId}/members",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.audiences.add_members",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/audiences/uploads",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.audiences.create_upload",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
@@ -3790,65 +3790,65 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.create",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/archive",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.archive",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/conversions",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.record_conversion",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/duplicate",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.duplicate",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/launch",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.launch",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/pause",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.pause",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/recipients",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.add_recipients",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/requeue",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.requeue",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
@@ -3862,17 +3862,17 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/resume",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.resume",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/stop",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.campaigns.stop",
+      "testFile": "tests/test_campaigns.py"
     },
     {
       "family": "platform",
@@ -3934,89 +3934,89 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/flow-encryption-keys/rotate",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.rotate_encryption_key",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.create",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/deprecate",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.deprecate",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/discard",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.discard",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/publish",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.publish",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/sync",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.sync",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/upload",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.upload",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.create",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions/{functionId}/deployments",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.deployments.create",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions/{functionId}/invocations",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.invocations.create",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions/{functionId}/secrets",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.secrets.create",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
@@ -4494,17 +4494,17 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/flows/{flowId}/endpoint",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.flows.set_endpoint",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/functions/{functionId}/promotion",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.functions.deployments.promote",
+      "testFile": "tests/test_functions_flows.py"
     },
     {
       "family": "platform",

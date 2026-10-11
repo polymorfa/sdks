@@ -12,11 +12,14 @@ from .bansafe import BanSafe
 from .billing import Billing
 from .business import Business
 from .call_policy import CallOptOuts, CallPolicies, CallRetentions
+from .campaigns import Audiences, Campaigns, MessagingCampaigns
 from .channels import Channels
 from .client_tokens import ClientTokens
 from .cloud_graph import CloudCatalogs, CloudMarketing, FlowEncryption
 from .customers import Customers
 from .errors import ConfigurationError
+from .flows import Flows
+from .functions import Functions
 from .groups import Groups
 from .observations import Identities, Labels, Privacy
 from .official_groups import OfficialGroups
@@ -41,6 +44,7 @@ from .transport import Credential, Transport
 @dataclass(frozen=True, init=False)
 class AsyncMessagingClient:
     _transport: Transport
+    campaigns: MessagingCampaigns
     official_groups: OfficialGroups
     cloud_onboarding: CloudOnboarding
     testing: Testing
@@ -77,6 +81,7 @@ class AsyncMessagingClient:
         transport = Transport(credential, **options)
         object.__setattr__(self, "_transport", transport)
         for name, resource in (
+            ("campaigns", MessagingCampaigns),
             ("official_groups", OfficialGroups),
             ("cloud_onboarding", CloudOnboarding),
             ("testing", Testing),
@@ -126,6 +131,8 @@ class AsyncProjectClient:
     _transport: Transport
     _credential: Credential
     project_id: str
+    functions: Functions
+    flows: Flows
     sip_trunks: SipTrunks
     quick_link_settings: QuickLinkConfiguration
     session_configuration: SessionConfigurations
@@ -150,6 +157,8 @@ class AsyncProjectClient:
         object.__setattr__(self, "_transport", transport)
         object.__setattr__(self, "_credential", credential)
         object.__setattr__(self, "project_id", project_id)
+        object.__setattr__(self, "functions", Functions(transport, project_id))
+        object.__setattr__(self, "flows", Flows(transport, project_id))
         prefix = f"/platform/projects/{messaging.segment(project_id)}"
         for name, resource in (
             ("events", platform.Events),
@@ -198,6 +207,8 @@ class AsyncClient:
     audit_logs: AuditLogs
     session_bans: SessionBans
     security_incidents: SecurityIncidents
+    campaigns: Campaigns
+    audiences: Audiences
     billing: Billing
     projects: platform.Projects
     sessions: platform.PlatformSessions
@@ -222,6 +233,7 @@ class AsyncClient:
             ("audit_logs", AuditLogs),
             ("session_bans", SessionBans),
             ("security_incidents", SecurityIncidents),
+            ("campaigns", Campaigns),
             ("billing", Billing),
             ("projects", platform.Projects),
             ("sessions", platform.PlatformSessions),
@@ -231,6 +243,7 @@ class AsyncClient:
             ("sip_trunks", SipTrunks),
             ("quick_link_settings", QuickLinkConfiguration),
             ("session_configuration", SessionConfigurations),
+            ("audiences", Audiences),
             ("customers", Customers),
             ("call_retention", CallRetentions),
             ("call_policy", CallPolicies),

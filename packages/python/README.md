@@ -138,3 +138,16 @@ and filters across pages. The event stream decodes retained payloads, resumes
 from checkpoints, reports gaps and reconnects, and supports explicit
 acknowledgements. Closing a stream interrupts a pending connection or body read.
 Operations support typed transitions, long polling and bounded waits.
+
+Messaging campaigns retain delivery timestamps, A/B outcomes and send windows.
+Platform campaigns require the owning project on reads, report conversions in
+separate currencies, and return nullable drafts. Recipient and audience appends
+send once unless both a request key and a retry override are supplied. Platform
+draft creation does not accept request keys or automatic retries.
+
+Project clients expose `functions` with deployments, secrets and invocations,
+and `flows` with provider receipts, Number endpoints and encryption custody.
+These resources bind every request to their project; inputs cannot replace it.
+Writes and deletes send once. Function invocations require an explicit request
+key, and a replay never returns the initial executor response. Forward Flow
+endpoints return their signing secret once.
