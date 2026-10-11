@@ -108,7 +108,8 @@ export function createFixtureServer(fixtures, options = {}) {
     if (result.delayMs)
       await new Promise((done) => setTimeout(done, result.delayMs));
     if (response.destroyed) return;
-    const body = result.rawBody ??
+    const body =
+      result.rawBody ??
       (Object.hasOwn(result, "body") ? JSON.stringify(result.body) : undefined);
     const headers = { ...result.headers };
     if (result.disconnectAfterBytes !== undefined)
@@ -120,7 +121,9 @@ export function createFixtureServer(fixtures, options = {}) {
       await new Promise((done) => setTimeout(done, result.bodyDelayMs));
     if (response.destroyed) return;
     if (result.disconnectAfterBytes !== undefined) {
-      response.write(Buffer.from(body ?? "").subarray(0, result.disconnectAfterBytes));
+      response.write(
+        Buffer.from(body ?? "").subarray(0, result.disconnectAfterBytes),
+      );
       await new Promise((done) => setTimeout(done, 10));
       response.destroy();
       return;

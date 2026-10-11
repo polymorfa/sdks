@@ -3,12 +3,12 @@ using System.Text.Json.Serialization;
 
 namespace Polymorfa.Sdk;
 
-public sealed record DataEnvelope<T>(T Data);
+public sealed record DataEnvelope<T>([property: JsonRequired] T Data);
 public sealed record SuccessEnvelope<T>(bool Success, T Data);
 public sealed record SuccessResponse(bool Success, string? Message);
 public sealed record OperationAccepted(bool Success, string Message, string OperationId);
 public sealed record StatusResult(string Status);
-public sealed record Session(string SessionId, string Name, string? ExternalId, string TenantId, string Type, bool TestMode, string Status, string? StatusReason, JsonElement? Configuration, NewChatCapping? NewChatCapping, string CreatedAt, string UpdatedAt);
+public sealed record Session(string SessionId, string Name, string? ExternalId, string TenantId, string Type, bool TestMode, string Status, string? StatusReason, SessionConfigurationView? Configuration, NewChatCapping? NewChatCapping, string CreatedAt, string UpdatedAt);
 public sealed record NewChatCapping(bool? Enabled, bool Pacing, string? Status, bool Capped, long? Limit, long? Used, long? Remaining, string? CycleStartsAt, string? ResetsAt, string ObservedAt);
 public sealed record PlatformSession([property: JsonPropertyName("_id")] string Id, [property: JsonPropertyName("_creationTime")] long CreationTime, string ProjectId, string SessionId, string Name, string? Phone, string? Platform, bool IsBusiness, bool TestMode, string? TierOverride, string Status, long MessageCount, long? LastActiveAt, long? PaidUntil);
 public sealed record SessionStartResult(bool Starting, string SessionId);

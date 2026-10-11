@@ -30,7 +30,7 @@ internal sealed class HttpTransport : IDisposable
         ValidateLimits(options.Timeout, options.MaxNetworkRetries);
         if (string.IsNullOrWhiteSpace(options.ApiVersion) || options.ApiVersion.Contains('\r') || options.ApiVersion.Contains('\n')) throw new PolymorfaConfigurationException("Invalid apiVersion.");
         ownsHttp = true;
-        var handler = options.TransportHandler ?? new SocketsHttpHandler { AllowAutoRedirect = false, Proxy = options.Proxy, UseProxy = options.Proxy is not null };
+        var handler = options.TransportHandler ?? new SocketsHttpHandler { AllowAutoRedirect = false, UseCookies = false, Proxy = options.Proxy, UseProxy = options.Proxy is not null };
         ValidateHandler(handler);
         http = new HttpClient(handler, disposeHandler: options.TransportHandler is null) { Timeout = Timeout.InfiniteTimeSpan };
     }
@@ -158,7 +158,7 @@ internal sealed class HttpTransport : IDisposable
     }
     private static void ValidateLimits(TimeSpan timeout, int retries)
     {
-        if (timeout <= TimeSpan.Zero || timeout.TotalMilliseconds > uint.MaxValue - 1 || retries < 0 || retries > 10) throw new PolymorfaConfigurationException("Invalid timeout or maxNetworkRetries.");
+        if (timeout <= TimeSpan.Zero || timeout.TotalMilliseconds > uint.MaxValue - 1 || retries < 0) throw new PolymorfaConfigurationException("Invalid timeout or maxNetworkRetries.");
     }
     private static bool IsRetryable(int status) => status is 408 or 409 or 429 or >= 500;
     private static TimeSpan Delay(HttpResponseMessage? response, int attempt)

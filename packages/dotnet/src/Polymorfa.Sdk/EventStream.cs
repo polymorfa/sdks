@@ -51,7 +51,7 @@ public sealed class EventStream : IAsyncEnumerable<EventStreamItem>
                         item = source.Current; attempt = 0;
                     }
                     catch (Exception error) when (stop.IsCancellationRequested && error is OperationCanceledException or PolymorfaCancelledException) { break; }
-                    catch (Exception error) when (!Terminal(error)) { failure = error; break; }
+                    catch (Exception error) when (!Terminal(error)) { failure = error; if (error is StreamReconnect { ResetBackoff: true }) attempt = 0; break; }
                     yield return item;
                 }
             }
@@ -60,6 +60,8 @@ public sealed class EventStream : IAsyncEnumerable<EventStreamItem>
             var delay = TimeSpan.FromMilliseconds(ceiling * (0.5 + Random.Shared.NextDouble() * 0.5));
             if (failure is PolymorfaException { Metadata: { } metadata } && metadata.Headers.TryGetValue("retry-after", out var retry) && double.TryParse(retry, System.Globalization.CultureInfo.InvariantCulture, out var seconds) && seconds >= 0 && double.IsFinite(seconds))
                 delay = TimeSpan.FromSeconds(Math.Min(seconds, options.MaximumReconnectDelay.TotalSeconds));
+            else if (failure is PolymorfaException { Metadata: { } dated } && dated.Headers.TryGetValue("retry-after", out var date) && DateTimeOffset.TryParse(date, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal, out var retryAt))
+                delay = TimeSpan.FromMilliseconds(Math.Clamp((retryAt - DateTimeOffset.UtcNow).TotalMilliseconds, 0, options.MaximumReconnectDelay.TotalMilliseconds));
             options.OnReconnect?.Invoke(failure, delay);
             try { await Task.Delay(delay, stop.Token).ConfigureAwait(false); }
             catch (OperationCanceledException) { yield break; }
@@ -77,13 +79,14 @@ public sealed class EventStream : IAsyncEnumerable<EventStreamItem>
         if (opened.Response.Content.Headers.ContentType?.MediaType != "text/event-stream") throw new PolymorfaServerException("Expected an event stream.", "invalid_stream", opened.Metadata);
         await using var stream = await opened.Response.Content.ReadAsStreamAsync(cancellation).ConfigureAwait(false);
         using var reader = new StreamReader(stream, new UTF8Encoding(false, true));
+        var lines = new BoundedSseLines(reader);
         var data = new StringBuilder();
         var heartbeat = TimeSpan.FromSeconds(30);
         using var watchdog = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
         while (true)
         {
             watchdog.CancelAfter(heartbeat);
-            var line = await reader.ReadLineAsync(watchdog.Token).ConfigureAwait(false);
+            var line = await lines.ReadAsync(watchdog.Token).ConfigureAwait(false);
             if (line is null) yield break;
             if (line.Length != 0)
             {
@@ -117,8 +120,36 @@ public sealed class EventStream : IAsyncEnumerable<EventStreamItem>
                     options.OnGap?.Invoke(new("retention_exceeded", frame.TryGetProperty("missedEvents", out var missed) ? missed.GetInt64() : 0, frame.TryGetProperty("requestedCursor", out var requested) ? requested.GetString() : null));
                     break;
                 case "revoked": throw new PolymorfaAuthorizationException("Event stream access was revoked.", "stream_revoked");
-                case "expiry": case "dropped": throw new PolymorfaConnectionException("Event stream connection ended; resume at the saved cursor.");
+                case "expiry": throw new StreamReconnect(true);
+                case "dropped": throw new StreamReconnect(false);
             }
+        }
+    }
+}
+
+internal sealed class StreamReconnect(bool resetBackoff) : PolymorfaException("Event stream connection ended; resume at the saved cursor.", "stream_reconnect")
+{
+    internal bool ResetBackoff { get; } = resetBackoff;
+}
+internal sealed class BoundedSseLines(StreamReader reader)
+{
+    private readonly char[] buffer = new char[4096];
+    private int position;
+    private int length;
+    private readonly StringBuilder line = new();
+    internal async ValueTask<string?> ReadAsync(CancellationToken cancellation)
+    {
+        while (true)
+        {
+            if (position == length)
+            {
+                length = await reader.ReadAsync(buffer.AsMemory(), cancellation).ConfigureAwait(false); position = 0;
+                if (length == 0) { if (line.Length == 0) return null; var tail = line.ToString(); line.Clear(); return tail; }
+            }
+            var character = buffer[position++];
+            if (character == '\n') { if (line.Length > 0 && line[^1] == '\r') line.Length--; var value = line.ToString(); line.Clear(); return value; }
+            if (line.Length == 4 * 1024 * 1024) throw new PolymorfaServerException("Event stream line exceeds its size limit.", "invalid_stream");
+            line.Append(character);
         }
     }
 }

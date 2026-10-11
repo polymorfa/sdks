@@ -102,6 +102,10 @@ try
     await CallsTests.RunAsync();
     await BillingTests.RunAsync();
     await CallConsentTests.RunAsync();
+    await SessionTests.RunAsync();
+    await SipTests.RunAsync();
+    await EventsTests.RunAsync();
+    await OperationsTests.RunAsync();
     Console.WriteLine($"Passed {count} shared behavior cases and media integrity tests.");
 }
 finally { if (!server.HasExited) server.Kill(entireProcessTree: true); await server.WaitForExitAsync(); }

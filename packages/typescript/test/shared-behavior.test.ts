@@ -108,10 +108,16 @@ describe("shared native wire behavior", () => {
           };
           await expect(transport.request(request)).rejects.toMatchObject({
             name: names[error],
-            ...(scenario.outcome.operationId ? { metadata: {
-              operationId: scenario.outcome.operationId,
-              ...(scenario.outcome.metadataRequestId ? { requestId: scenario.outcome.metadataRequestId } : {}),
-            } } : {}),
+            ...(scenario.outcome.operationId
+              ? {
+                  metadata: {
+                    operationId: scenario.outcome.operationId,
+                    ...(scenario.outcome.metadataRequestId
+                      ? { requestId: scenario.outcome.metadataRequestId }
+                      : {}),
+                  },
+                }
+              : {}),
             ...(scenario.outcome.code
               ? {
                   code: scenario.outcome.code,

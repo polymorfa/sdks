@@ -8,8 +8,10 @@ internal sealed class WireFixture : IDisposable
     private readonly TcpListener listener = new(IPAddress.Loopback, 0);
     public Uri Url { get; }
     public string? Authorization { get; init; }
+    public IReadOnlyDictionary<string, string>? ExpectedHeaders { get; init; }
+    public int FragmentBytes { get; init; }
     public WireFixture() { listener.Start(); Url = new($"http://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}"); }
-    public async Task ServeAsync(string method, string path, string? body, string response, int status = 200, IReadOnlyDictionary<string, string>? responseHeaders = null, string? absentHeader = null)
+    public async Task ServeAsync(string method, string path, string? body, string response, int status = 200, IReadOnlyDictionary<string, string>? responseHeaders = null, string? absentHeader = null, IReadOnlyDictionary<string, string>? expectedHeaders = null)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var connection = await listener.AcceptTcpClientAsync(timeout.Token);
@@ -26,6 +28,8 @@ internal sealed class WireFixture : IDisposable
         var headers = lines.Skip(1).Where(line => line.Contains(':')).Select(line => line.Split(':', 2)).ToDictionary(row => row[0], row => row[1].Trim(), StringComparer.OrdinalIgnoreCase);
         if (Authorization is not null && (!headers.TryGetValue("authorization", out var credential) || credential != Authorization)) throw new Exception("Native authorization header differs.");
         if (absentHeader is not null && headers.ContainsKey(absentHeader)) throw new Exception("Sensitive header reached storage.");
+        foreach (var expectedHeader in expectedHeaders ?? ExpectedHeaders ?? new Dictionary<string, string>())
+            if (!headers.TryGetValue(expectedHeader.Key, out var value) || value != expectedHeader.Value) throw new Exception("Native header differs: " + expectedHeader.Key);
         var length = headers.TryGetValue("content-length", out var rawLength) ? int.Parse(rawLength) : 0;
         var input = new byte[length]; await stream.ReadExactlyAsync(input, timeout.Token);
         if (body is null) { if (length != 0) throw new Exception("Unexpected native body."); }
@@ -39,7 +43,13 @@ internal sealed class WireFixture : IDisposable
         var responseText = $"HTTP/1.1 {status} Fixture\r\ncontent-type: {contentType}\r\ncontent-length: {output.Length}\r\nconnection: close\r\nx-request-id: req_native\r\n";
         foreach (var header in responseHeaders ?? new Dictionary<string, string>()) if (header.Key != "content-type") responseText += $"{header.Key}: {header.Value}\r\n";
         await stream.WriteAsync(Encoding.ASCII.GetBytes(responseText + "\r\n"), timeout.Token);
-        await stream.WriteAsync(output, timeout.Token);
+        if (FragmentBytes > 0)
+            for (var offset = 0; offset < output.Length; offset += FragmentBytes)
+            {
+                await stream.WriteAsync(output.AsMemory(offset, Math.Min(FragmentBytes, output.Length - offset)), timeout.Token);
+                await Task.Delay(1, timeout.Token);
+            }
+        else await stream.WriteAsync(output, timeout.Token);
     }
     internal static bool EqualJson(JsonElement left, JsonElement right)
     {

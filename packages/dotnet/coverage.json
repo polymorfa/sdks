@@ -1958,17 +1958,17 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/sessions/{sessionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/sip-trunks/{trunkId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SipTrunks.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
     },
     {
       "family": "platform",
@@ -2630,17 +2630,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/events",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Events.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/events/{eventId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Events.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
     },
     {
       "family": "platform",
@@ -2790,25 +2790,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/operations",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Operations.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/operations/{operationId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Operations.GetAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/operations/{operationId}/transitions",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Operations.ListTransitionsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
     },
     {
       "family": "platform",
@@ -2846,25 +2846,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/events",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Events.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/events/{eventId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Events.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/events/stream",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Events.Stream",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
     },
     {
       "family": "platform",
@@ -2894,25 +2894,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/operations",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Operations.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/operations/{operationId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Operations.GetAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/operations/{operationId}/transitions",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Operations.ListTransitionsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
     },
     {
       "family": "platform",
@@ -2990,17 +2990,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/session-configuration",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Configuration.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions",
       "status": "covered",
-      "sdkMethod": "MessagingClient.Sessions.ListAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/Program.cs"
+      "sdkMethod": "OrganizationClient.Sessions.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
@@ -3022,17 +3022,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{sessionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/capabilities",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.GetCapabilitiesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
@@ -3046,41 +3046,41 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.GetSafeModeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/tier-quotes/{quoteId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.RetrieveTierChangeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sip-trunks",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SipTrunks.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sip-trunks/{trunkId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SipTrunks.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sip/endpoint",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SipTrunks.EndpointAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
     },
     {
       "family": "platform",
@@ -3309,17 +3309,17 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/sessions/{sessionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.SetTierOverrideAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/sip-trunks/{trunkId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SipTrunks.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
     },
     {
       "family": "platform",
@@ -3805,9 +3805,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/events/{eventId}/replays",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Events.ReplayAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
     },
     {
       "family": "platform",
@@ -3917,9 +3917,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/operations/{operationId}/cancel",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Operations.CancelAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
     },
     {
       "family": "platform",
@@ -3957,25 +3957,25 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/events/{eventId}/replays",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Events.ReplayAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/events/stream/{streamId}/ack",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Events.AcknowledgeStreamAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/operations/{operationId}/cancel",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Operations.CancelAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
     },
     {
       "family": "platform",
@@ -4074,25 +4074,25 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/start",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.StartAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/stop",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.StopAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/tier-quotes",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.QuoteTierChangeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
@@ -4105,33 +4105,33 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/delete",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.DeleteManyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/stop",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.StopManyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sip-trunks",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SipTrunks.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sip-trunks/{trunkId}/credentials",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SipTrunks.RotateCredentialsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
     },
     {
       "family": "platform",
@@ -4419,9 +4419,9 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/session-configuration",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Configuration.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
@@ -4443,17 +4443,17 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Sessions.UpdateSafeModeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
       "family": "platform",
