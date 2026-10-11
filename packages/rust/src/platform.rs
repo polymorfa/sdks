@@ -149,7 +149,7 @@ impl ProjectClient {
     }
     pub fn project(&self, project_id: impl Into<String>) -> Result<Self> {
         let project_id = project_id.into();
-        if matches!(self.http.credential, Credential::ProjectToken(_))
+        if matches!(self.http.credential, Some(Credential::ProjectToken(_)))
             && self.project_id != project_id
         {
             return Err(configuration("project_id: project token cannot be rebound"));
@@ -190,7 +190,7 @@ impl ProjectClient {
             .await
     }
 }
-pub struct Projects<'a>(&'a HttpTransport);
+pub struct Projects<'a>(pub(crate) &'a HttpTransport);
 impl Projects<'_> {
     pub async fn list(
         &self,

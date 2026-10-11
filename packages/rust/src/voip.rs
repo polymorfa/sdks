@@ -246,7 +246,7 @@ pub struct Voip<'a>(pub(crate) &'a HttpTransport);
 impl Voip<'_> {
     fn participant(&self, participant: Option<&str>) -> Result<()> {
         if let Some(value) = participant {
-            if matches!(self.0.credential, crate::Credential::ClientToken(_))
+            if matches!(self.0.credential, Some(crate::Credential::ClientToken(_)))
                 || value.is_empty()
                 || value.len() > 128
                 || !value
@@ -263,7 +263,7 @@ impl Voip<'_> {
         body: &PlaceCallRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<PlaceCallResult>>> {
-        if !matches!(self.0.credential, crate::Credential::ClientToken(_))
+        if !matches!(self.0.credential, Some(crate::Credential::ClientToken(_)))
             && body.session.as_ref().is_none_or(|s| s.trim().is_empty())
         {
             return Err(configuration("session"));
@@ -479,7 +479,7 @@ impl Voip<'_> {
             .await
     }
     fn link(&self, session: &str, options: &RequestOptions) -> Result<()> {
-        self.0.credential.server()?;
+        self.0.server()?;
         if session.trim().is_empty()
             || session.len() > 128
             || options.idempotency_key.is_some()
@@ -497,7 +497,7 @@ impl Voip<'_> {
         session: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<SessionCallSettings>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .get(
                 &format!("/platform/sessions/{}/call-settings", encode(session)),
@@ -511,7 +511,7 @@ impl Voip<'_> {
         body: &UpdateSessionCallSettingsRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<SessionCallSettings>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         if body.calls_enabled.is_none()
             && body.conference_mode.is_none()
             && body.inbound_route.is_none()
@@ -544,7 +544,7 @@ impl Voip<'_> {
         to: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CallPermission>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         if session.trim().is_empty() || to.trim().is_empty() {
             return Err(configuration("session or to"));
         }
@@ -564,7 +564,7 @@ impl Voip<'_> {
         body: &CheckCallRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CallCheck>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         if body.session.trim().is_empty() || body.to.trim().is_empty() {
             return Err(configuration("session or to"));
         }

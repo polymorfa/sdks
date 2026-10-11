@@ -62,7 +62,7 @@ impl Sessions<'_> {
         parameters: &MetaPricingParameters,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<MetaPricingSummary>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         let mut query = Vec::new();
         if let Some(since) = &parameters.since {
             query.push(("since", since.clone()));
@@ -85,7 +85,7 @@ impl Sessions<'_> {
         session: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CloudCredentialHealth>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .get(
                 &format!("/messaging/{}/cloud-credentials", encode(session)),
@@ -98,7 +98,7 @@ impl Sessions<'_> {
         session: &str,
         mut options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CloudReauthorization>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         options.max_network_retries = Some(0);
         self.0
             .request::<_, ()>(
@@ -198,7 +198,7 @@ impl HybridLink<'_> {
         scope: &HybridPolicyScope,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<HybridRoutingPolicy>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .request::<_, ()>(
                 Method::GET,
@@ -215,7 +215,7 @@ impl HybridLink<'_> {
         body: &SetHybridRoutingPolicyRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<HybridRoutingPolicy>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .request(
                 Method::PUT,
@@ -231,7 +231,7 @@ impl HybridLink<'_> {
         session: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<HybridLinkState>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .get(
                 &format!("/messaging/{}/hybrid-link", encode(session)),
@@ -245,7 +245,7 @@ impl HybridLink<'_> {
         body: &SetHybridLinkPausedRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<HybridLinkPaused>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .request(
                 Method::PUT,
@@ -345,7 +345,7 @@ impl ClientTokens<'_> {
         body: &MintClientTokenRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<ClientTokenValue>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         let target = match &body.target {
             ClientTokenTarget::Session { session } => session,
             ClientTokenTarget::Customer { customer, .. } => customer,
@@ -368,7 +368,7 @@ impl ClientTokens<'_> {
         session: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<ClientRules>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0.get(&rules_path(session), options).await
     }
     pub async fn update_rules(
@@ -377,7 +377,7 @@ impl ClientTokens<'_> {
         body: &SetClientRulesRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .request(Method::PUT, &rules_path(session), &[], Some(body), options)
             .await
@@ -387,7 +387,7 @@ impl ClientTokens<'_> {
         session: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .request::<_, ()>(Method::DELETE, &rules_path(session), &[], None, options)
             .await

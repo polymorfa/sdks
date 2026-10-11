@@ -354,6 +354,21 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
             .collect::<BTreeSet<_>>(),
         KNOWN_EVENT_TYPES.iter().copied().collect()
     );
+    let pinned: Value =
+        serde_json::from_str(include_str!("fixtures/known-webhook-events.json")).unwrap();
+    assert_eq!(
+        pinned["sourceSdkCommit"],
+        "ff51567105b64bf6997e7330ba8eb502d875e7b9"
+    );
+    assert_eq!(
+        KNOWN_EVENT_TYPES.iter().copied().collect::<BTreeSet<_>>(),
+        pinned["events"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|event| event.as_str().unwrap())
+            .collect()
+    );
     for (event, expected) in cases {
         let result = signed(event, expected.clone());
         let typed = match &result {

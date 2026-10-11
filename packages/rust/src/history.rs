@@ -215,7 +215,7 @@ impl Chats<'_> {
         chat: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CustomerServiceWindow>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .get(
                 &format!("{}/service-window", chat_path(session, chat)),
@@ -229,7 +229,7 @@ impl Chats<'_> {
         params: &ListHistoryChatsParams,
         options: RequestOptions,
     ) -> Result<ApiResponse<HistoryPage<HistoryChat>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         let query_model = crate::developer::query(params)?;
         let query = crate::models::query_pairs(&query_model)?;
         self.0
@@ -248,7 +248,7 @@ impl Chats<'_> {
         chat: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<HistoryChat>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0.get(&chat_path(session, chat), options).await
     }
     pub async fn list_messages(
@@ -258,7 +258,7 @@ impl Chats<'_> {
         params: &ListHistoryMessagesParams,
         options: RequestOptions,
     ) -> Result<ApiResponse<HistoryPage<HistoryMessage>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         let query_model = crate::developer::query(params)?;
         let query = crate::models::query_pairs(&query_model)?;
         self.0
@@ -278,7 +278,7 @@ impl Chats<'_> {
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<HistoryMessage>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0.get(&message_path(session, chat, id), options).await
     }
     pub async fn download_message_media_stream(
@@ -288,7 +288,7 @@ impl Chats<'_> {
         id: &str,
         options: RequestOptions,
     ) -> Result<DownloadStream> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .download(
                 &format!("{}/media", message_path(session, chat, id)),

@@ -92,7 +92,7 @@ impl<'a> Calls<'a> {
         body: &PlaceCallRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<PlaceCallResult>> {
-        self.http.credential.server()?;
+        self.http.server()?;
         if options
             .idempotency_key
             .as_ref()
@@ -126,7 +126,7 @@ impl<'a> Calls<'a> {
         body: &AcceptCallRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<AcceptCallResult>> {
-        self.http.credential.server()?;
+        self.http.server()?;
         unwrap(
             self.http
                 .request(
@@ -145,7 +145,7 @@ impl<'a> Calls<'a> {
         participant: Option<&str>,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.http.credential.server()?;
+        self.http.server()?;
         self.http
             .request(
                 Method::POST,
@@ -167,7 +167,7 @@ impl<'a> Calls<'a> {
         participant: Option<&str>,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.http.credential.server()?;
+        self.http.server()?;
         self.http
             .request(
                 Method::POST,
@@ -186,7 +186,7 @@ impl<'a> Calls<'a> {
         call_id: &str,
         mut options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.http.credential.server()?;
+        self.http.server()?;
         if options.idempotency_key.is_none() {
             options.idempotency_key = Some(format!("voip-end:{call_id}"));
         }
@@ -200,7 +200,7 @@ impl<'a> Calls<'a> {
         to: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<Participant>> {
-        self.http.credential.server()?;
+        self.http.server()?;
         unwrap(
             self.http
                 .request(
@@ -219,7 +219,7 @@ impl<'a> Calls<'a> {
         to: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.http.credential.server()?;
+        self.http.server()?;
         self.http
             .request(
                 Method::POST,
@@ -262,7 +262,7 @@ impl<'a> Calls<'a> {
         participant: Option<&str>,
         cancellation: CancellationToken,
     ) -> Result<MediaSocket> {
-        self.http.credential.server()?;
+        self.http.server()?;
         if !(8..=64).contains(&connection_id.len())
             || !connection_id
                 .bytes()
@@ -309,7 +309,7 @@ impl<'a> Calls<'a> {
                 "invalid_response",
             ));
         }
-        let mut frame = serde_json::json!({"type":"auth","token":self.http.credential.value(),"connectionId":connection_id});
+        let mut frame = serde_json::json!({"type":"auth","token":self.http.credential_value()?,"connectionId":connection_id});
         if let Some(participant) = participant {
             frame["participant"] = participant.into();
         }
@@ -361,7 +361,7 @@ impl<'a> Calls<'a> {
         participant: Option<&str>,
         cancellation: CancellationToken,
     ) -> Result<LifecycleSocket> {
-        self.http.credential.server()?;
+        self.http.server()?;
         if session.trim().is_empty() || participant.is_some_and(|p| !is_participant_name(p)) {
             return Err(configuration("session or participant"));
         }
@@ -385,7 +385,7 @@ impl<'a> Calls<'a> {
             cancellation,
         };
         lifecycle
-            .send(serde_json::json!({"type":"auth","token":self.http.credential.value()}))
+            .send(serde_json::json!({"type":"auth","token":self.http.credential_value()?}))
             .await?;
         tokio::time::timeout(self.http.options.timeout, async {
             loop {

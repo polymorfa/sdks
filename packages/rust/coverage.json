@@ -126,9 +126,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/health",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient.health",
+      "testFile": "tests/system_bridge.rs"
     },
     {
       "family": "messaging",
@@ -534,9 +534,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/safe-mode",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.get_session_safe_mode",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "messaging",
@@ -566,25 +566,25 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/bridge/route",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "BridgeClient.routes.resolve",
+      "testFile": "tests/system_bridge.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/info/status",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient.status",
+      "testFile": "tests/system_bridge.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/info/version",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient.version",
+      "testFile": "tests/system_bridge.rs"
     },
     {
       "family": "messaging",
@@ -606,17 +606,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/health-policy",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.get_project_health_policy",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/insurance-evidence",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.get_project_insurance_evidence",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "messaging",
@@ -630,17 +630,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/safe-mode",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.get_project_safe_mode",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/warmup-plan",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.get_project_warmup_plan",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "messaging",
@@ -750,9 +750,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/ping",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient.ping",
+      "testFile": "tests/system_bridge.rs"
     },
     {
       "family": "messaging",
@@ -1718,41 +1718,41 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/safe-mode",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.update_session_safe_mode",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/health-policy",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.update_project_health_policy",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/insurance-evidence",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.update_project_insurance_evidence",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/safe-mode",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.update_project_safe_mode",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/warmup-plan",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ban_safe.update_project_warmup_plan",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "messaging",
@@ -2942,25 +2942,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/health-policy",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.get_health_policy",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/hybrid-merge-candidates",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.list_hybrid_merge_candidates",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/insurance-evidence",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.get_insurance_evidence",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "platform",
@@ -2990,17 +2990,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/safe-mode",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.get_safe_mode",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/warmup-plan",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.get_warmup_plan",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "platform",
@@ -4518,33 +4518,33 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/projects/{projectId}/health-policy",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.update_health_policy",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/projects/{projectId}/insurance-evidence",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.update_insurance_evidence",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/projects/{projectId}/safe-mode",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.update_safe_mode",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/projects/{projectId}/warmup-plan",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.update_warmup_plan",
+      "testFile": "tests/policies.rs"
     },
     {
       "family": "platform",

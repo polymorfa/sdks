@@ -38,6 +38,23 @@ pub async fn wire(
     body: Option<Value>,
     response: Value,
 ) -> (String, JoinHandle<()>) {
+    wire_authorization(
+        method,
+        path,
+        body,
+        response,
+        Some(format!("pmfa_{}", "a".repeat(72))),
+    )
+    .await
+}
+
+pub async fn wire_authorization(
+    method: &str,
+    path: &str,
+    body: Option<Value>,
+    response: Value,
+    authorization: Option<String>,
+) -> (String, JoinHandle<()>) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let url = format!("http://{}", listener.local_addr().unwrap());
     let method = method.to_owned();
@@ -75,9 +92,13 @@ pub async fn wire(
             head.lines().next().unwrap(),
             format!("{method} {path} HTTP/1.1")
         );
-        assert!(head
-            .to_ascii_lowercase()
-            .contains(&format!("authorization: bearer pmfa_{}", "a".repeat(72))));
+        match authorization {
+            Some(token) => assert!(head.to_ascii_lowercase().contains(&format!(
+                "authorization: bearer {}",
+                token.to_ascii_lowercase()
+            ))),
+            None => assert!(!head.to_ascii_lowercase().contains("authorization:")),
+        }
         assert!(head
             .to_ascii_lowercase()
             .contains("polymorfa-version: 2026-09-22"));

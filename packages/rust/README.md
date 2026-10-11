@@ -56,14 +56,16 @@ expose server control methods and programmatic PCM/H.264 media sockets.
 Typed coverage is still being expanded. The current implementation includes
 sessions, all merged message content variants, hosted chat/message history with stored
 media streaming and service windows, Linked Devices groups and Channels, QuickLinks, webhooks, contacts, profile, privacy,
-presence, identities, labels, quick replies, core projects, events, media and
+presence, identities, labels, quick replies, core projects and project safety/warmup/insurance/health policies, events, media and
 VoIP controls, Official API credential health/pricing, Hybrid Link controls and
 client-token grants/rules, resolved session configuration and sparse revision
 patches, organization Number batches/tier quotes/safety/capabilities, owner-bound
 QuickLink/default configuration and team call retention, and Platform webhook/delivery/operation resources in both owner scopes.
 All pinned known webhook event types expose typed payloads, with provider
 extensions and future event envelopes preserved. Metered usage includes cursor
-iteration and duplicate-cursor detection. The raw escape hatch is not typed coverage. No feature access or
+iteration and duplicate-cursor detection. `SystemClient` exposes credential-free
+health/version probes; `BridgeClient` restricts native route discovery to project
+tokens. The raw escape hatch is not typed coverage. No feature access or
 release availability changes: the API continues enforcing permission, funding,
 enrollment and feature eligibility.
 

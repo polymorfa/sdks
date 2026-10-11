@@ -153,13 +153,19 @@ pub enum DownloadLocation {
 
 #[derive(Clone)]
 pub(crate) struct HttpTransport {
-    pub(crate) credential: Credential,
+    pub(crate) credential: Option<Credential>,
     pub(crate) options: ClientOptions,
     client: reqwest::Client,
 }
 impl HttpTransport {
     pub(crate) fn new(credential: Credential, options: ClientOptions) -> Result<Self> {
         credential.validate()?;
+        Self::build(Some(credential), options)
+    }
+    pub(crate) fn without_credentials(options: ClientOptions) -> Result<Self> {
+        Self::build(None, options)
+    }
+    fn build(credential: Option<Credential>, options: ClientOptions) -> Result<Self> {
         validate_base(&options.base_url)?;
         if options.timeout.is_zero()
             || options.api_version.is_empty()
@@ -185,6 +191,19 @@ impl HttpTransport {
             options,
             client,
         })
+    }
+    pub(crate) fn server(&self) -> Result<()> {
+        self.credential
+            .as_ref()
+            .ok_or_else(|| configuration("credential"))?
+            .server()
+    }
+    pub(crate) fn credential_value(&self) -> Result<&str> {
+        Ok(self
+            .credential
+            .as_ref()
+            .ok_or_else(|| configuration("credential"))?
+            .value())
     }
     pub(crate) async fn request<T: DeserializeOwned, B: Serialize + ?Sized>(
         &self,
@@ -299,7 +318,10 @@ impl HttpTransport {
                 }
                 request = request.header(key, value);
             }
-            request = request.bearer_auth(self.credential.value()).header(
+            if let Some(credential) = &self.credential {
+                request = request.bearer_auth(credential.value());
+            }
+            request = request.header(
                 "polymorfa-version",
                 options
                     .api_version

@@ -15,6 +15,9 @@ impl MessagingClient {
             http: HttpTransport::new(credential, options)?,
         })
     }
+    pub fn ban_safe(&self) -> crate::policies::MessagingBanSafe<'_> {
+        crate::policies::MessagingBanSafe(&self.http)
+    }
     pub fn sessions(&self) -> Sessions<'_> {
         Sessions(&self.http)
     }
@@ -96,7 +99,7 @@ impl Sessions<'_> {
         body: &crate::configuration::UpdateSessionRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Session>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .request(
                 Method::PUT,
@@ -111,7 +114,7 @@ impl Sessions<'_> {
         &self,
         options: RequestOptions,
     ) -> Result<ApiResponse<DataEnvelope<Vec<PlatformSession>>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0.get("/platform/sessions", options).await
     }
     pub async fn retrieve(
@@ -119,7 +122,7 @@ impl Sessions<'_> {
         session: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Session>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0.get(&session_path(session), options).await
     }
     pub async fn delete(
@@ -127,7 +130,7 @@ impl Sessions<'_> {
         session: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<DataEnvelope<SessionRemoveResult>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .request::<_, ()>(Method::DELETE, &session_path(session), &[], None, options)
             .await
@@ -137,7 +140,7 @@ impl Sessions<'_> {
         session: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<DataEnvelope<SessionStartResult>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .request::<_, ()>(
                 Method::POST,
@@ -153,7 +156,7 @@ impl Sessions<'_> {
         session: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<DataEnvelope<SessionStopResult>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .request::<_, ()>(
                 Method::POST,
@@ -169,7 +172,7 @@ impl Sessions<'_> {
         session: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<OperationAccepted>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .request::<_, ()>(
                 Method::POST,
@@ -185,7 +188,7 @@ impl Sessions<'_> {
         session: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<OperationAccepted>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .request::<_, ()>(
                 Method::POST,
@@ -201,7 +204,7 @@ impl Sessions<'_> {
         session: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<WhatsAppAccount>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .get(&format!("{}/me", session_path(session)), options)
             .await
@@ -360,7 +363,7 @@ impl Messages<'_> {
         operation_id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<MessageOperation>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .get(
                 &format!(
@@ -384,7 +387,7 @@ impl QuickLinks<'_> {
         body: &CreateQuickLinkRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<QuickLink>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         if matches!(body.purpose, Some(CreateQuickLinkPurpose::AddConnection))
             && body.session.as_ref().is_none_or(|s| s.is_empty())
         {
@@ -421,7 +424,7 @@ impl QuickLinks<'_> {
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<QuickLinkStatus>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .get(&format!("/messaging/quicklinks/{}", encode(id)), options)
             .await
@@ -431,7 +434,7 @@ impl QuickLinks<'_> {
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .request::<_, ()>(
                 Method::DELETE,
@@ -448,7 +451,7 @@ impl QuickLinks<'_> {
         session: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<HybridQuickLinkAvailability>>> {
-        self.0.credential.server()?;
+        self.0.server()?;
         self.0
             .request::<_, ()>(
                 Method::GET,
