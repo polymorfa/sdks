@@ -29,6 +29,85 @@ class MessageVariation(TypedDict):
     blueprint: Blueprint
 
 
+class TextFollowUpMessage(TypedDict):
+    """Text accepts campaign placeholders; tracked links are refused by the API."""
+
+    type: Literal["text"]
+    text: str
+
+
+class TemplateFollowUpMessage(TypedDict):
+    type: Literal["template"]
+    templateId: str
+
+
+FollowUpMessage = TextFollowUpMessage | TemplateFollowUpMessage
+
+
+class FollowUp(TypedDict):
+    """Receipt-timed beta follow-up; only the message is required on the wire.
+
+    Delay accepts 60–604,800 seconds (default 86,400). Expiry accepts
+    86,400–2,592,000 seconds (default 604,800) and must exceed the delay.
+    The API requires enrollment and a single first message. A first delivery
+    starts the wait; the first read before sending restarts it. Replies and
+    opt-outs cancel it, and an expired wait never sends.
+    """
+
+    message: FollowUpMessage
+    delaySeconds: NotRequired[int]
+    expirySeconds: NotRequired[int]
+
+
+FollowUpStatus = Literal[
+    "waiting_receipt",
+    "scheduled",
+    "sending",
+    "sent",
+    "cancelled",
+    "expired",
+    "failed",
+    "outcome_unknown",
+]
+
+
+class FollowUpSummary(TypedDict):
+    """One recipient's follow-up, with Unix millisecond timestamps."""
+
+    id: str
+    numberId: str
+    status: FollowUpStatus
+    anchorKind: Literal["delivered", "read"] | None
+    firstDeliveredAt: int | None
+    firstReadAt: int | None
+    dueAt: int | None
+    expiresAt: int
+    sentAt: int | None
+    deliveredAt: int | None
+    readAt: int | None
+    repliedAt: int | None
+    reason: str | None
+    commandId: str | None
+
+
+class FollowUpReport(TypedDict):
+    """Outcomes counted apart from the first message; nextDueAt is Unix milliseconds."""
+
+    total: int
+    waiting: int
+    scheduled: int
+    sending: int
+    sent: int
+    delivered: int
+    read: int
+    replied: int
+    cancelled: int
+    expired: int
+    failed: int
+    unknown: int
+    nextDueAt: int | None
+
+
 class VariantStrategy(TypedDict):
     winnerCriterion: Criterion
     holdoutPercent: int
@@ -118,6 +197,7 @@ class Campaign(TypedDict):
     variantStrategy: NotRequired[VariantStrategy | None]
     experimentOutcome: NotRequired[ExperimentOutcome | None]
     messageVariations: NotRequired[list[MessageVariation] | None]
+    followUp: NotRequired[FollowUp | None]
 
 
 class CampaignOperation(Campaign):
@@ -142,10 +222,12 @@ class AnalyticsCounts(TypedDict):
 
 class Analytics(AnalyticsCounts):
     experiment: NotRequired[ExperimentResults | None]
+    followUps: NotRequired[FollowUpReport]
 
 
 class PlatformAnalytics(AnalyticsCounts):
     experiment: ExperimentResults | None
+    followUps: FollowUpReport
     averageResponseTimeMs: float | None
     minResponseTimeMs: float | None
     maxResponseTimeMs: float | None
@@ -167,6 +249,7 @@ class CreateCampaign(TypedDict):
     messageVariations: NotRequired[list[MessageVariation] | None]
     variants: NotRequired[list[Variant] | None]
     variantStrategy: NotRequired[VariantStrategy | None]
+    followUp: NotRequired[FollowUp | None]
 
 
 class CreatePlatformCampaign(TypedDict):
@@ -186,6 +269,7 @@ class CreatePlatformCampaign(TypedDict):
     variants: NotRequired[list[Variant]]
     variantStrategy: NotRequired[VariantStrategy]
     messageVariations: NotRequired[list[MessageVariation]]
+    followUp: NotRequired[FollowUp | None]
 
 
 class UpdateCampaign(TypedDict, total=False):
@@ -197,6 +281,7 @@ class UpdateCampaign(TypedDict, total=False):
     messageVariations: list[MessageVariation] | None
     variants: list[Variant] | None
     variantStrategy: VariantStrategy | None
+    followUp: FollowUp | None
 
 
 class LaunchCampaign(TypedDict, total=False):
@@ -234,6 +319,7 @@ class Recipient(TypedDict):
     readAt: int | None
     failedAt: int | None
     respondedAt: int | None
+    followUp: NotRequired[FollowUpSummary | None]
 
 
 class InvalidRow(TypedDict):

@@ -213,6 +213,15 @@ separate currencies, and return nullable drafts. Recipient and audience appends
 send once unless both a request key and a retry override are supplied. Platform
 draft creation does not accept request keys or automatic retries.
 
+Campaign create and update bodies accept a receipt-timed `followUp`, with text
+or a template ID. The API enforces beta enrollment and requires a single first
+message. Use `{"message": {"type": "text", "text": "Still interested?"}}` to
+leave timing to the API defaults, or provide `delaySeconds` and `expirySeconds`.
+Send `{"followUp": None}` to remove the follow-up from an unlaunched draft.
+`campaign_models.FollowUp` keeps timing optional in both requests and returned
+campaigns. Recipient `followUp` summaries retain nullable receipt times;
+analytics `followUps` counts outcomes separately from the first message.
+
 Project clients expose `functions` with deployments, secrets and invocations,
 and `flows` with provider receipts, Number endpoints and encryption custody.
 These resources bind every request to their project; inputs cannot replace it.
