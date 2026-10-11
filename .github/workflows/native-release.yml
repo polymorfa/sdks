@@ -1,0 +1,134 @@
+name: Prepare accepted native SDK releases
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Acceptance channel
+        type: choice
+        options: [nightly, stable]
+        default: nightly
+      version:
+        description: Exact x.y.z for stable; leave empty for nightly
+        type: string
+
+permissions: {}
+concurrency:
+  group: native-sdk-release
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.channel == 'stable' && 'native-sdk-stable' || 'native-sdk-nightly' }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 24
+      - id: acceptance-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          client-id: ${{ secrets.SDK_COVERAGE_CLIENT_ID }}
+          private-key: ${{ secrets.SDK_COVERAGE_APP_PRIVATE_KEY }}
+          owner: polymorfa
+          repositories: polymorfa
+          permission-contents: read
+          permission-actions: read
+      - name: Require exact deployed API acceptance and complete native coverage
+        env:
+          GH_TOKEN: ${{ steps.acceptance-token.outputs.token }}
+          RELEASE_CHANNEL: ${{ inputs.channel }}
+          STABLE_VERSION: ${{ inputs.version }}
+          RELEASE_OUTPUT: .release/native
+        run: node scripts/native-release.mjs
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: accepted-native-contract
+          include-hidden-files: true
+          path: .release/native/release-contract.json
+          if-no-files-found: error
+  pack:
+    needs: gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [go, python, php, rust, dotnet]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 24
+      - uses: actions/setup-go@v6
+        if: matrix.language == 'go'
+        with:
+          go-version: "1.24.x"
+          cache: false
+      - uses: actions/setup-python@v6
+        if: matrix.language == 'python'
+        with:
+          python-version: "3.10"
+      - if: matrix.language == 'python'
+        run: python -m pip install uv twine
+      - uses: shivammathur/setup-php@v2
+        if: matrix.language == 'php'
+        with:
+          php-version: "8.2"
+          tools: composer:v2
+          extensions: curl, openssl, mbstring
+          coverage: none
+      - uses: actions/setup-dotnet@v6
+        if: matrix.language == 'dotnet'
+        with:
+          dotnet-version: "8.0.x"
+      - if: matrix.language == 'rust'
+        run: |
+          rustup toolchain install 1.85.0 --profile minimal --component rustfmt,clippy
+          rustup default 1.85.0
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: accepted-native-contract
+          include-hidden-files: true
+          path: .release/native
+      - name: Verify native package and examples
+        env:
+          SDK_LANGUAGE: ${{ matrix.language }}
+          SDK_PYTHON_VERSION: "3.10"
+        run: node scripts/verify-native-sdk.mjs "$SDK_LANGUAGE"
+      - name: Stamp registry versions and embedded provenance
+        env:
+          SDK_LANGUAGE: ${{ matrix.language }}
+        run: |
+          node scripts/stamp-native-release.mjs "$SDK_LANGUAGE"
+          node scripts/pack-native-release.mjs "$SDK_LANGUAGE"
+      - if: matrix.language == 'python'
+        run: python -m twine check packages/python/dist/*
+      - name: Prepare module and Composer source for reviewed tags
+        if: matrix.language == 'go' || matrix.language == 'php'
+        env:
+          SDK_LANGUAGE: ${{ matrix.language }}
+        run: |
+          mkdir -p .release/native/source
+          tar --exclude=vendor --exclude=dist --exclude=.artifacts -cf ".release/native/source/$SDK_LANGUAGE.tar" -C "packages/$SDK_LANGUAGE" .
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: native-${{ matrix.language }}-accepted-packs
+          include-hidden-files: true
+          path: |
+            .release/native/release-contract.json
+            .release/native/source/*.tar
+            packages/python/dist/*
+            packages/dotnet/artifacts/*.nupkg
+            packages/rust/target/package/*.crate
+            packages/php/dist/*.tar
+          if-no-files-found: error

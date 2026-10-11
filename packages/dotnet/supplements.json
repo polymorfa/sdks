@@ -61,23 +61,30 @@
     {
       "sdkMethod": "MessagingClient.Campaigns.UpdateAsync",
       "method": "PATCH",
-      "fixturePath": "/messaging/projects/project/campaigns/campaign",
+      "fixturePath": "/messaging/projects/support/campaigns/c1",
       "status": "covered",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
       "sdkMethod": "MessagingClient.Campaigns.RescheduleAsync",
       "method": "POST",
-      "fixturePath": "/messaging/projects/project/campaigns/campaign/reschedule",
+      "fixturePath": "/messaging/projects/support/campaigns/c1/reschedule",
       "status": "covered",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
       "sdkMethod": "OrganizationClient.Campaigns.RescheduleAsync",
       "method": "POST",
-      "fixturePath": "/platform/campaigns/campaign/reschedule",
+      "fixturePath": "/platform/campaigns/c1/reschedule",
       "status": "covered",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "sdkMethod": "OrganizationClient.RequestLogs.ListAsync and ProjectClient.RequestLogs.ListAsync",
+      "method": "GET",
+      "fixturePath": "/platform/projects/p1/request-logs?status=404%2C5xx&method=GET%2CPOST&route=%2Fmessaging%2F%3Asession%2Fmessages&source=api&limit=2",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/RequestLogTests.cs"
     }
   ],
   "helpers": [
@@ -125,6 +132,16 @@
       "sdkMethod": "Voice upload, scope confinement and bounded ready wait",
       "status": "covered",
       "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    },
+    {
+      "sdkMethod": "RequestLogs follow/tail, Retry-After and cooperative cancellation",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/RequestLogTests.cs"
+    },
+    {
+      "sdkMethod": "CallsSocket HTTP proxy routing and first-frame authentication",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsProxyTests.cs"
     }
   ]
 }

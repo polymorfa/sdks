@@ -80,5 +80,5 @@ jobs:
             packages/python/dist/*
             packages/dotnet/artifacts/*.nupkg
             packages/rust/target/package/*.crate
-            packages/php/artifacts/*.zip
+            packages/php/dist/*.tar
           if-no-files-found: ignore

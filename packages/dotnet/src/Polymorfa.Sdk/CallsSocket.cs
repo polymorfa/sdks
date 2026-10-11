@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -9,6 +10,7 @@ public sealed class CallsSocketException(string message, string code, int? close
 public sealed record CallsSocketOptions
 {
     public Uri BaseUrl { get; init; } = new("https://api.polymorfa.com");
+    public IWebProxy? Proxy { get; init; }
     public string? Session { get; init; }
     public string? Participant { get; init; }
     public TimeSpan ReadyTimeout { get; init; } = TimeSpan.FromSeconds(10);
@@ -63,6 +65,7 @@ public sealed class CallsSocket : IAsyncDisposable
             if (callId is null && !clientToken) uri.Query = "session=" + Uri.EscapeDataString(options.Session!) + (options.Participant is null ? "" : "&participant=" + Uri.EscapeDataString(options.Participant));
             if (callId is not null) result.socket.Options.AddSubProtocol(CallsProtocol.MediaSubprotocol);
             result.socket.Options.KeepAliveInterval = TimeSpan.Zero;
+            if (options.Proxy is not null) result.socket.Options.Proxy = options.Proxy;
             await result.socket.ConnectAsync(uri.Uri, bound.Token).ConfigureAwait(false);
             await result.AuthenticateAsync(bound.Token).ConfigureAwait(false);
             while (true)

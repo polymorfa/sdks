@@ -19,3 +19,7 @@ packages/rust/target/
 packages/dotnet/**/bin/
 packages/dotnet/**/obj/
 packages/dotnet/artifacts/
+
+packages/*/release-contract.json
+packages/python/src/polymorfa/release-contract.json
+examples/**/__pycache__/

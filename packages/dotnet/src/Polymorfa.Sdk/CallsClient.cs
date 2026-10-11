@@ -28,7 +28,7 @@ public sealed class CallsClient : IAsyncDisposable
 {
     internal CallsTokenSource Tokens { get; }
     internal CallsClientOptions Options { get; }
-    internal CallsSocketOptions SocketOptions => (Options.Socket ?? new() { BaseUrl = Options.Http.BaseUrl }) with { Session = Options.Session, Participant = Options.Participant };
+    internal CallsSocketOptions SocketOptions => (Options.Socket ?? new() { BaseUrl = Options.Http.BaseUrl }) with { Session = Options.Session, Participant = Options.Participant, Proxy = Options.Socket?.Proxy ?? Options.Http.Proxy };
     private readonly object gate = new();
     private readonly Dictionary<string, Call> calls = [];
     private readonly Dictionary<string, List<CallLifecycleEvent>> early = [];

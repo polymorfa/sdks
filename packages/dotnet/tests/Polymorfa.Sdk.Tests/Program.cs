@@ -97,6 +97,8 @@ try
         catch (PolymorfaConfigurationException) { valid = false; }
         Equal(valid, fixture.GetProperty("valid").GetBoolean(), id); Console.WriteLine($"PASS configuration {id}"); count++;
     }
+    ResourceTests.True(PolymorfaErrorCodes.IsKnown("voice_unavailable"));
+    ResourceTests.True(!PolymorfaErrorCodes.IsKnown("future_error"));
     WebhookTests.Run();
     await SystemTests.RunAsync();
     await MediaTests.RunAsync(root);
@@ -117,6 +119,8 @@ try
     await CallAnalyticsTests.RunAsync();
     await GraphTests.RunAsync();
     await CallsSocketTests.RunAsync();
+    await CallsProxyTests.RunAsync();
+    await RequestLogTests.RunAsync();
     await CallsClientTests.RunAsync();
     await MessagingUtilityTests.RunAsync();
     await MediaApiTests.RunAsync();
