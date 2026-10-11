@@ -196,7 +196,10 @@ API for organization API keys and project tokens; its responses carry
 `success: true` beside `data`. Browser client tokens fail before any request.
 
 Claim `measuredCents`, `capCents`, and `amountCents` are credit quantities with
-up to six decimal places, not integer cents. Finding acknowledgement and
+up to six decimal places, not integer cents. A claim with verdict
+`simultaneous_calls` opens `denied` with amount 0 because simultaneous calls
+were on for the number during the 30 days before the ban;
+`evidence.simultaneousCalls` reports that state for every claim. Finding acknowledgement and
 enforcement appeals require a signed-in dashboard session and are not SDK
 methods.
 
@@ -567,7 +570,8 @@ own participant, so the SDK rejects `participant` for client tokens. The SDK
 checks `participant` and `connectionId` (`[A-Za-z0-9_-]{8,64}`) before sending.
 
 `voip.retrieveCallSettings(session)` and `voip.updateCallSettings(session,
-{ conferenceMode, inboundRoute, sipTrunkId, sipClaim, hostCloudApiCalls })` read and change the
+{ conferenceMode, inboundRoute, sipTrunkId, sipClaim, hostCloudApiCalls,
+simultaneousCalls, acknowledgeRisk })` read and change the
 session's call settings through `/platform/sessions/{session}/call-settings`.
 `callsEnabled: false` turns calling off for the session: placing, answering,
 joining, inviting and media fail with `PolymorfaAuthorizationError`
@@ -580,7 +584,16 @@ hears their own audio in either mode. `inboundRoute` is `clients` (the default) 
 `sip_trunk`, which also sends incoming calls to `sipTrunkId`; `sipClaim`
 (default `true`) makes the trunk's answer claim the call. On a Cloud API
 session, `hostCloudApiCalls: true` has Polymorfa Calls answer incoming calls;
-with the default `false`, your Graph API integration answers them. An update changes
+with the default `false`, your Graph API integration answers them.
+`simultaneousCalls` (default `false`) lets a linked-device Number hold
+unlimited concurrent calls, incoming, placed and campaign; Cloud API Numbers
+ignore it. WhatsApp's own apps never hold two calls at once, so this is unusual
+behavior for a WhatsApp account, and it voids Ban Insurance: a ban whose 30-day
+window overlaps any period the setting was on is not refunded. Turning it on
+requires `acknowledgeRisk: true` and a team API key. The SDK rejects the update
+before sending when `acknowledgeRisk` is missing; a project token can turn the
+setting off but receives `PolymorfaAuthorizationError` (`permission_denied`)
+when it tries to turn it on. An update changes
 only the settings you send. Pass the `revision` you read as
 `expectedRevision` to fail with `PolymorfaConflictError` (`state_conflict`) if
 the settings changed meanwhile.

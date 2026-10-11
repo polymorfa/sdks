@@ -857,7 +857,9 @@ export interface BanSafeClaimPayload {
     | "customer_conduct"
     | "shared_network"
     | "ours"
-    | "inconclusive";
+    | "inconclusive"
+    /** Simultaneous calls voided Ban Insurance; the claim is denied when filed. */
+    | "simultaneous_calls";
   readonly windowStart: string;
   readonly windowEnd: string;
   /** Decimal cent amounts with up to six fractional digits. */

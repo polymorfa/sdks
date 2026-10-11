@@ -1,0 +1,425 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "2bd4467454d019c67e2f74f0f813744b4c48e5a5",
+  "branch": "claude/calls-simultaneous-calls-20261010",
+  "pullRequest": "polymorfa/polymorfa#559",
+  "published": false,
+  "note": "Simultaneous calls (PR #559, not merged). Adds simultaneousCalls and acknowledgeRisk to session call settings, the simultaneous_calls claim verdict and evidence.simultaneousCalls. Pinned to the unmerged PR head and held from publication until #559 merges and the full snapshots are repinned to a merged API dev commit.",
+  "sources": {
+    "messaging": {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sourceSha256": "112850a555b191f8730d7bcb15cc9df7e3e3facda1a8f33e859d4232c2a1b709",
+      "schemas": {
+        "BanSafeClaimPayload": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Claim id. Stable and quotable.",
+              "example": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f22"
+            },
+            "incidentId": {
+              "type": "string",
+              "description": "The incident this claim was filed against.",
+              "example": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11"
+            },
+            "phoneNumber": {
+              "type": "string",
+              "pattern": "^\\+[1-9]\\d{1,14}$",
+              "description": "The customer's own number in E.164 format.",
+              "example": "+15551234567"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "filed",
+                "under_review",
+                "approved",
+                "denied",
+                "paid",
+                "reversed"
+              ],
+              "description": "Where the claim sits. filed and under_review are open. approved means it was accepted, and with a zero amount that there was nothing to return. paid means the credits are on your balance. reversed means what Polymorfa knew about the ban changed afterwards and the credits were taken back."
+            },
+            "verdict": {
+              "type": "string",
+              "enum": [
+                "other_device",
+                "customer_conduct",
+                "shared_network",
+                "ours",
+                "inconclusive",
+                "simultaneous_calls"
+              ],
+              "description": "What the ban was attributed to. other_device: another device on the account was sending. customer_conduct: Polymorfa was already restricting this number, or named the same serious problem for a week. shared_network: the number shared its connection with numbers that were being restricted. ours: nothing points at how the number was used. inconclusive: Polymorfa could not see enough of the window to say. simultaneous_calls: simultaneous calls were on for the number inside the window, which voids Ban Insurance; the claim is denied when filed."
+            },
+            "windowStart": {
+              "type": "string",
+              "format": "date-time",
+              "description": "ISO 8601 start of the 30 days the refund covers.",
+              "example": "2026-08-07T14:03:12.000Z"
+            },
+            "windowEnd": {
+              "type": "string",
+              "format": "date-time",
+              "description": "ISO 8601 end of the window: the moment the ban started.",
+              "example": "2026-09-06T14:03:12.000Z"
+            },
+            "measuredCents": {
+              "type": "number",
+              "description": "Credit quantity this number consumed inside the window, with up to six decimal places.",
+              "minimum": 0,
+              "multipleOf": 0.000001,
+              "example": 1080
+            },
+            "capCents": {
+              "type": "number",
+              "description": "Maximum credit quantity this claim can return, with up to six decimal places.",
+              "minimum": 0,
+              "multipleOf": 0.000001,
+              "example": 1080
+            },
+            "amountCents": {
+              "type": "number",
+              "description": "Credit quantity this claim returns, with up to six decimal places.",
+              "minimum": 0,
+              "multipleOf": 0.000001,
+              "example": 1080
+            },
+            "summary": {
+              "type": "string",
+              "description": "One sentence describing the claim's state."
+            },
+            "reason": {
+              "type": "string",
+              "description": "One sentence describing what the ban was attributed to."
+            },
+            "decidedAt": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time",
+              "description": "ISO 8601 timestamp of the decision, or null while none was taken.",
+              "example": null
+            },
+            "paidAt": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time",
+              "description": "ISO 8601 timestamp the credits landed, or null.",
+              "example": null
+            }
+          },
+          "required": [
+            "id",
+            "incidentId",
+            "phoneNumber",
+            "status",
+            "verdict",
+            "windowStart",
+            "windowEnd",
+            "measuredCents",
+            "capCents",
+            "amountCents",
+            "summary",
+            "reason",
+            "decidedAt",
+            "paidAt"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "platform": {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "sourceSha256": "c075c1255073920a00b12706bfa8eeea1815576f66af33ac21f9dd1c4ae642ee",
+      "schemas": {
+        "PlatformAccessCallSettings": {
+          "type": "object",
+          "properties": {
+            "callsEnabled": {
+              "type": "boolean",
+              "description": "Whether the session can place, answer and receive calls. When false, placing, answering, joining and attaching media fail with `403 calls_disabled`, incoming calls are declined, and SIP trunks cannot place calls through the session. Calls in progress continue, and the participant that answered or placed one can reconnect to it. Defaults to true."
+            },
+            "conferenceMode": {
+              "type": "boolean",
+              "description": "Conference mode. When true, every participant you connect to a call (including SIP trunk callers) hears the WhatsApp party and every other participant you connected. When false, each of them hears only the WhatsApp party. The WhatsApp party always hears all of your participants, and no participant hears their own audio. Defaults to true."
+            },
+            "inboundRoute": {
+              "$ref": "#/components/schemas/PlatformAccessCallInboundRoute"
+            },
+            "sipTrunkId": {
+              "type": "string",
+              "nullable": true,
+              "format": "uuid",
+              "description": "The SIP trunk that receives incoming calls when `inboundRoute` is `sip_trunk`; otherwise null."
+            },
+            "sipClaim": {
+              "type": "boolean",
+              "description": "Whether an answer from the SIP trunk claims the call, which ends ringing on your other clients. Defaults to true."
+            },
+            "hostCloudApiCalls": {
+              "type": "boolean",
+              "description": "Whether Polymorfa Calls answers the session's incoming calls when the session uses the Cloud API. When false (the default), your app answers them through the Graph API `/calls` endpoint and Polymorfa Calls does not host them. Sessions on a linked device ignore it."
+            },
+            "simultaneousCalls": {
+              "type": "boolean",
+              "description": "Whether this Number may hold more than one call at a time, with no limit. Linked-device sessions only; Cloud API sessions ignore it. WhatsApp's own apps never hold two calls at once, so this behavior is unusual for WhatsApp, and it voids Ban Insurance: a ban whose 30-day window overlaps any period this setting was on is not refunded. Defaults to false."
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Increases on every change; 0 while the session uses the defaults. Send it as `expectedRevision` to refuse an update that would overwrite someone else's change."
+            },
+            "updatedAt": {
+              "type": "string",
+              "nullable": true,
+              "format": "date-time",
+              "description": "When the settings were last changed, or null when the session uses the defaults."
+            }
+          },
+          "required": [
+            "callsEnabled",
+            "conferenceMode",
+            "inboundRoute",
+            "sipTrunkId",
+            "sipClaim",
+            "hostCloudApiCalls",
+            "simultaneousCalls",
+            "revision",
+            "updatedAt"
+          ],
+          "additionalProperties": false
+        },
+        "PlatformAccessUpdateCallSettingsRequest": {
+          "type": "object",
+          "properties": {
+            "callsEnabled": {
+              "type": "boolean",
+              "description": "Set to false to refuse new and incoming calls on the session; true allows them again."
+            },
+            "conferenceMode": {
+              "type": "boolean",
+              "description": "Set to true so that the participants you connect to a call hear each other as well as the WhatsApp party, or false so that each hears only the WhatsApp party."
+            },
+            "inboundRoute": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/PlatformAccessCallInboundRoute"
+                },
+                {
+                  "description": "Where incoming WhatsApp calls ring."
+                }
+              ]
+            },
+            "sipTrunkId": {
+              "type": "string",
+              "nullable": true,
+              "format": "uuid",
+              "description": "The SIP trunk for `sip_trunk`: a trunk in the session's project whose direction is `outbound` or `both`. Required when switching the route to `sip_trunk`; omit it to keep the stored trunk. With `clients` send `null` or omit it: a trunk ID is refused, and `clients` clears the stored trunk."
+            },
+            "sipClaim": {
+              "type": "boolean",
+              "description": "Whether an answer from the SIP trunk claims the call."
+            },
+            "hostCloudApiCalls": {
+              "type": "boolean",
+              "description": "Set to true to have Polymorfa Calls answer the session's Cloud API calls instead of your Graph API integration. Applies to calls that arrive after the change."
+            },
+            "simultaneousCalls": {
+              "type": "boolean",
+              "description": "Set to true to let this Number hold more than one call at a time, with no limit. Turning it on requires `acknowledgeRisk: true` and a team API key; it voids Ban Insurance for any ban whose 30-day window overlaps a period it was on. Set to false to return to one call at a time. Applies to calls that start after the change."
+            },
+            "acknowledgeRisk": {
+              "type": "boolean",
+              "description": "Required as true when the update turns `simultaneousCalls` on. Confirms that you accept the unusual-behavior risk and the loss of Ban Insurance for this Number."
+            },
+            "expectedRevision": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Apply the update only if the settings still have this `revision` (0 for a session using the defaults). Otherwise the update fails with `409 state_conflict`."
+            }
+          },
+          "additionalProperties": false
+        },
+        "BanSafeClaim": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "incidentId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sessionId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "session": {
+              "type": "string"
+            },
+            "phoneNumber": {
+              "type": "string"
+            },
+            "projectId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "filed",
+                "under_review",
+                "approved",
+                "denied",
+                "paid",
+                "reversed"
+              ]
+            },
+            "verdict": {
+              "type": "string",
+              "enum": [
+                "other_device",
+                "customer_conduct",
+                "shared_network",
+                "ours",
+                "inconclusive",
+                "simultaneous_calls"
+              ]
+            },
+            "windowStart": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "windowEnd": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "measuredCents": {
+              "type": "number",
+              "minimum": 0,
+              "multipleOf": 0.000001,
+              "description": "Credit quantity this number consumed inside the window, with up to six decimal places."
+            },
+            "capCents": {
+              "type": "number",
+              "minimum": 0,
+              "multipleOf": 0.000001,
+              "description": "Maximum credit quantity this claim can return, with up to six decimal places."
+            },
+            "amountCents": {
+              "type": "number",
+              "minimum": 0,
+              "multipleOf": 0.000001,
+              "description": "Credit quantity this claim returns, with up to six decimal places."
+            },
+            "evidence": {
+              "$ref": "#/components/schemas/BanSafeClaimEvidence"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "decidedAt": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "paidAt": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "id",
+            "incidentId",
+            "sessionId",
+            "session",
+            "phoneNumber",
+            "projectId",
+            "status",
+            "verdict",
+            "windowStart",
+            "windowEnd",
+            "measuredCents",
+            "capCents",
+            "amountCents",
+            "evidence",
+            "summary",
+            "reason",
+            "decidedAt",
+            "paidAt",
+            "createdAt"
+          ]
+        },
+        "BanSafeClaimEvidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Counts behind the attribution. Never a recipient, a message, or a device model.",
+          "properties": {
+            "attributionRuleVersion": {
+              "type": "integer",
+              "minimum": 1,
+              "nullable": true,
+              "description": "Attribution rules used when the claim was filed. Null for claims filed before rule versioning."
+            },
+            "windowDays": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "deviceEvidence": {
+              "type": "boolean",
+              "description": "Whether ban insurance evidence collection is on for the project."
+            },
+            "otherDevices": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "restrictedInWindow": {
+              "type": "boolean",
+              "description": "Whether Polymorfa was restricting this number's sending inside the window."
+            },
+            "criticalFindingDays": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Days one safety check stayed at its most serious level inside the window."
+            },
+            "sharedConnection": {
+              "type": "boolean",
+              "description": "Whether this number shared its connection with numbers that were being restricted."
+            },
+            "measuredHours": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Hours of measured activity Polymorfa holds for the window."
+            },
+            "simultaneousCalls": {
+              "type": "boolean",
+              "description": "Whether simultaneous calls were on for this number inside the window. When true, Ban Insurance does not cover the ban and the claim is denied when filed."
+            }
+          },
+          "required": [
+            "attributionRuleVersion",
+            "windowDays",
+            "deviceEvidence",
+            "otherDevices",
+            "restrictedInWindow",
+            "criticalFindingDays",
+            "sharedConnection",
+            "measuredHours",
+            "simultaneousCalls"
+          ]
+        }
+      }
+    }
+  }
+}

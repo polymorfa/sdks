@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Simultaneous calls. `SessionCallSettings` adds `simultaneousCalls`, and
+  `voip.updateCallSettings` accepts `simultaneousCalls` and `acknowledgeRisk`.
+  When on, a linked-device Number holds unlimited concurrent calls. Turning it
+  on requires `acknowledgeRisk: true` and a team API key, and voids Ban
+  Insurance for the Number. The SDK rejects `simultaneousCalls: true` without
+  the acknowledgment, and `acknowledgeRisk` sent alone, before sending.
+  `BanSafeClaimVerdict` and the `bansafe.claim` webhook verdict add
+  `simultaneous_calls`; `BanSafeClaimEvidence` adds `simultaneousCalls`. Not
+  usable until the API release that adds the setting is deployed. API
+  contract: polymorfa/polymorfa#559.
 - Campaign A/B tests (beta). Messaging and Platform campaign create and
   update accept `variants` (`CampaignVariant`, two to four) and
   `variantStrategy` (`CampaignVariantStrategy`); campaigns return them with

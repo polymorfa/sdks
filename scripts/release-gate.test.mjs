@@ -4,6 +4,7 @@ import {
   validateAcceptance,
   releaseVersion,
   validateFeatureContractPins,
+  multiSourcePins,
 } from "./release-gate.mjs";
 const expected = {
   sourceSha: "a".repeat(40),
@@ -139,4 +140,58 @@ test("Messaging feature pins cannot borrow Platform acceptance or bypass a publi
     assert.throws(() =>
       validateFeatureContractPins(source, [{ ...pin, ...delta }]),
     );
+});
+
+test("A two-audience supplement is checked per family and honours its hold", () => {
+  const source = {
+    repository: "polymorfa/polymorfa",
+    commit: "a".repeat(40),
+    contracts: {
+      messaging: {
+        sha256: "b".repeat(64),
+        sourcePath: "apps/api/docs/openapi.json",
+      },
+      platform: {
+        sha256: "c".repeat(64),
+        sourcePath: "apps/api/docs/openapi.management.json",
+      },
+    },
+  };
+  const supplement = {
+    repository: source.repository,
+    commit: source.commit,
+    published: true,
+    sources: {
+      messaging: {
+        sourcePath: source.contracts.messaging.sourcePath,
+        sourceSha256: source.contracts.messaging.sha256,
+      },
+      platform: {
+        sourcePath: source.contracts.platform.sourcePath,
+        sourceSha256: source.contracts.platform.sha256,
+      },
+    },
+  };
+  const pins = multiSourcePins(supplement);
+  assert.deepEqual(
+    pins.map(({ family }) => family),
+    ["messaging", "platform"],
+  );
+  validateFeatureContractPins(source, pins);
+  assert.throws(
+    () =>
+      validateFeatureContractPins(
+        source,
+        multiSourcePins({ ...supplement, published: false }),
+      ),
+    /held from publication/,
+  );
+  assert.throws(
+    () =>
+      validateFeatureContractPins(
+        source,
+        multiSourcePins({ ...supplement, commit: "e".repeat(40) }),
+      ),
+    /not been reconciled/,
+  );
 });

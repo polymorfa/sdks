@@ -1225,7 +1225,12 @@ export type BanSafeClaimVerdict =
   | "customer_conduct"
   | "shared_network"
   | "ours"
-  | "inconclusive";
+  | "inconclusive"
+  /**
+   * Simultaneous calls were on for the number during the 30 days before the
+   * ban. The claim opens `denied` with amount 0 and cannot be approved.
+   */
+  | "simultaneous_calls";
 
 export interface BanSafeClaimEvidence {
   readonly attributionRuleVersion: number | null;
@@ -1236,6 +1241,12 @@ export interface BanSafeClaimEvidence {
   readonly criticalFindingDays: number;
   readonly sharedConnection: boolean;
   readonly measuredHours: number;
+  /**
+   * Whether simultaneous calls were on for this number inside the window.
+   * When `true`, Ban Insurance does not cover the ban and the claim is denied
+   * when filed.
+   */
+  readonly simultaneousCalls: boolean;
 }
 
 export interface BanSafeClaim {
