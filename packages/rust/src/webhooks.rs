@@ -1,9 +1,7 @@
 //! Verify the exact received bytes before JSON parsing. Native signatures do not
 //! contain timestamps; applications deduplicate verified event IDs themselves.
-use crate::{
-    models::{ConversationReference, WhatsAppMessageIds},
-    Error, ErrorKind, Result,
-};
+pub use crate::webhook_payloads::*;
+use crate::{Error, ErrorKind, Result};
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use hmac::{Hmac, Mac};
 use serde::{Deserialize, Serialize};
@@ -23,18 +21,20 @@ pub struct WebhookEnvelope {
 pub enum WebhookEvent {
     MessageReceived {
         envelope: WebhookEnvelope,
-        payload: MessageEventPayload,
+        payload: MessageReceivedPayload,
     },
     MessageSent {
         envelope: WebhookEnvelope,
-        payload: MessageEventPayload,
+        payload: MessageSentPayload,
     },
     SessionStatus {
         envelope: WebhookEnvelope,
         payload: SessionStatusPayload,
     },
-    /// Other recognized event types preserve their payload until a typed model exists.
-    Known(WebhookEnvelope),
+    Known {
+        envelope: WebhookEnvelope,
+        payload: KnownWebhookPayload,
+    },
     Unknown(WebhookEnvelope),
 }
 impl WebhookEvent {
@@ -43,36 +43,10 @@ impl WebhookEvent {
             Self::MessageReceived { envelope, .. }
             | Self::MessageSent { envelope, .. }
             | Self::SessionStatus { envelope, .. }
-            | Self::Known(envelope)
+            | Self::Known { envelope, .. }
             | Self::Unknown(envelope) => envelope,
         }
     }
-}
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MessageEventPayload {
-    pub id: String,
-    pub whatsapp_ids: WhatsAppMessageIds,
-    pub conversation: ConversationReference,
-    pub from_me: bool,
-    pub timestamp: u64,
-    pub push_name: String,
-    pub is_group: bool,
-    #[serde(rename = "type")]
-    pub message_type: String,
-    pub text: Option<String>,
-    pub caption: Option<String>,
-    pub mime_type: Option<String>,
-    pub filename: Option<String>,
-    #[serde(flatten)]
-    pub extra: std::collections::BTreeMap<String, serde_json::Value>,
-}
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SessionStatusPayload {
-    pub status: String,
-    #[serde(flatten)]
-    pub extra: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 pub fn verify_signature(raw_body: &[u8], signature: &str, secret: &str) -> bool {
@@ -112,7 +86,14 @@ pub fn parse_verified_event(raw_body: &[u8]) -> Result<WebhookEvent> {
             "invalid_webhook_body",
         )
     })?;
-    let envelope: WebhookEnvelope = serde_json::from_slice(raw_body).map_err(|_| {
+    let value: serde_json::Value = serde_json::from_slice(raw_body).map_err(|_| {
+        Error::local(
+            ErrorKind::Validation,
+            "Webhook body must contain valid JSON.",
+            "invalid_webhook_json",
+        )
+    })?;
+    let envelope: WebhookEnvelope = serde_json::from_value(value).map_err(|_| {
         Error::local(
             ErrorKind::Validation,
             "Webhook body is not a valid event envelope.",
@@ -127,22 +108,13 @@ pub fn parse_verified_event(raw_body: &[u8]) -> Result<WebhookEvent> {
         ));
     }
     let payload = envelope.payload.clone();
-    let decode = |payload| {
-        serde_json::from_value(payload).map_err(|_| {
-            Error::local(
-                ErrorKind::Validation,
-                "Webhook payload is invalid.",
-                "invalid_webhook_event",
-            )
-        })
-    };
     match envelope.event.as_str() {
         "message.received" => Ok(WebhookEvent::MessageReceived {
-            payload: decode(payload)?,
+            payload: decode_payload(payload)?,
             envelope,
         }),
         "message.sent" => Ok(WebhookEvent::MessageSent {
-            payload: decode(payload)?,
+            payload: decode_payload(payload)?,
             envelope,
         }),
         "session.status" => Ok(WebhookEvent::SessionStatus {
@@ -155,9 +127,32 @@ pub fn parse_verified_event(raw_body: &[u8]) -> Result<WebhookEvent> {
             })?,
             envelope,
         }),
-        event if KNOWN_EVENT_TYPES.contains(&event) => Ok(WebhookEvent::Known(envelope)),
+        event if KNOWN_EVENT_TYPES.contains(&event) => {
+            let typed =
+                serde_json::from_value(serde_json::json!({"event":event,"payload":payload}))
+                    .map_err(|_| {
+                        Error::local(
+                            ErrorKind::Validation,
+                            "Webhook payload is invalid.",
+                            "invalid_webhook_event",
+                        )
+                    })?;
+            Ok(WebhookEvent::Known {
+                envelope,
+                payload: typed,
+            })
+        }
         _ => Ok(WebhookEvent::Unknown(envelope)),
     }
+}
+fn decode_payload<T: serde::de::DeserializeOwned>(value: serde_json::Value) -> Result<T> {
+    serde_json::from_value(value).map_err(|_| {
+        Error::local(
+            ErrorKind::Validation,
+            "Webhook payload is invalid.",
+            "invalid_webhook_event",
+        )
+    })
 }
 /// CLI local-forward signatures use a 32-byte base64url secret and bind timestamp.
 /// The tolerance limits age; deduplicate the verified event ID to prevent replay.

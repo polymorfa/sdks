@@ -2822,9 +2822,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/gates",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.usage.list_gates",
+      "testFile": "tests/usage.rs"
     },
     {
       "family": "platform",
@@ -3190,17 +3190,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/usage",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.usage.summary",
+      "testFile": "tests/usage.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/usage/records",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.usage.list_records",
+      "testFile": "tests/usage.rs"
     },
     {
       "family": "platform",

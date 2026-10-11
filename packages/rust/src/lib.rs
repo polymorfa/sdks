@@ -25,7 +25,9 @@ pub mod platform_sessions;
 pub mod settings;
 pub mod stream;
 pub mod transport;
+pub mod usage;
 pub mod voip;
+pub mod webhook_payloads;
 pub mod webhooks;
 
 pub use errors::{Error, ErrorKind, Result};

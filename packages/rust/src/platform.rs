@@ -39,6 +39,12 @@ impl OrganizationClient {
             project_id: None,
         }
     }
+    pub fn usage(&self) -> crate::usage::Usage<'_> {
+        crate::usage::Usage {
+            http: &self.http,
+            project_id: None,
+        }
+    }
     pub fn call_retention(&self) -> crate::settings::CallRetentionResource<'_> {
         crate::settings::CallRetentionResource(&self.http)
     }
@@ -110,6 +116,12 @@ impl ProjectClient {
     }
     pub fn quick_link_settings(&self) -> crate::settings::QuickLinkDefaults<'_> {
         crate::settings::QuickLinkDefaults {
+            http: &self.http,
+            project_id: Some(&self.project_id),
+        }
+    }
+    pub fn usage(&self) -> crate::usage::Usage<'_> {
+        crate::usage::Usage {
             http: &self.http,
             project_id: Some(&self.project_id),
         }
