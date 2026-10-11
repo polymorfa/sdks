@@ -37,6 +37,7 @@ from .media import (
     is_whatsapp_media_url,
     whatsapp_media_urls,
 )
+from .system import AsyncBridgeClient, AsyncSystemClient
 from .transport import (
     API_VERSION,
     SDK_VERSION,
@@ -52,9 +53,11 @@ __all__ = [
     "API_VERSION",
     "SDK_VERSION",
     "ApiResponse",
+    "AsyncBridgeClient",
     "AsyncClient",
     "AsyncMessagingClient",
     "AsyncProjectClient",
+    "AsyncSystemClient",
     "AudioFrame",
     "AuthenticationError",
     "AuthorizationError",

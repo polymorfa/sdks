@@ -9,14 +9,15 @@ import random
 import re
 import sys
 import time
-from collections.abc import AsyncIterator, Mapping
+from collections.abc import AsyncIterable, AsyncIterator, Mapping
 from dataclasses import dataclass, field, replace
 from email.utils import parsedate_to_datetime
 from types import MappingProxyType
-from typing import Generic, Literal, TypeVar, cast
-from urllib.parse import unquote, urlencode, urlsplit
+from typing import TYPE_CHECKING, Generic, Literal, TypeVar, cast
+from urllib.parse import unquote, urlencode, urljoin, urlsplit
 
 import httpx
+from typing_extensions import TypedDict
 
 from .errors import (
     AuthenticationError,
@@ -32,6 +33,9 @@ from .errors import (
     TimeoutError,
     ValidationError,
 )
+
+if TYPE_CHECKING:
+    from .downloads import DownloadStream, DownloadUrl
 
 SDK_VERSION = "0.1.0.dev0"
 API_VERSION = "2026-09-22"
@@ -167,10 +171,19 @@ def retry_delay(headers: Mapping[str, str], attempt: int) -> float:
     return float(min(0.5 * 2 ** min(attempt - 1, 20), 5.0)) * (0.5 + random.random() * 0.5)
 
 
+class ClientOptions(TypedDict, total=False):
+    base_url: str
+    api_version: str
+    timeout: float
+    max_network_retries: int
+    proxy: str | None
+    http_transport: httpx.AsyncBaseTransport | None
+
+
 class Transport:
     def __init__(
         self,
-        credential: Credential,
+        credential: Credential | None,
         *,
         base_url: str = "https://api.polymorfa.com",
         api_version: str = API_VERSION,
@@ -197,8 +210,37 @@ class Transport:
             timeout=timeout, api_version=api_version, max_network_retries=max_network_retries
         )
         self._http = httpx.AsyncClient(
-            transport=http_transport, proxy=proxy, trust_env=False, follow_redirects=False
+            transport=http_transport,
+            proxy=proxy,
+            trust_env=False,
+            follow_redirects=False,
+            event_hooks={"response": [self._validate_media_redirect]},
         )
+
+    async def _validate_media_redirect(self, response: httpx.Response) -> None:
+        if (
+            not response.is_redirect
+            or response.request.headers.get("accept") != "application/octet-stream"
+        ):
+            return
+        try:
+            location = response.headers.get("location", "")
+            target = urlsplit(urljoin(str(response.request.url), location))
+            valid = (
+                bool(location)
+                and target.scheme == "https"
+                and bool(target.hostname)
+                and target.username is None
+                and target.password is None
+            )
+        except ValueError:
+            valid = False
+        if not valid:
+            meta = ResponseMetadata.from_response(
+                response, int(response.request.extensions.get("polymorfa_attempt", 1))
+            )
+            await response.aclose()
+            raise ServerError("Invalid media redirect.", code="invalid_redirect", metadata=meta)
 
     async def close(self) -> None:
         await self._http.aclose()
@@ -236,7 +278,6 @@ class Transport:
             raise ConfigurationError("headers")
         headers.update(
             {
-                "Authorization": f"Bearer {self._credential.value}",
                 "Accept": accept,
                 "Polymorfa-Version": options.api_version
                 or self._defaults.api_version
@@ -244,6 +285,8 @@ class Transport:
                 "User-Agent": f"polymorfa-python/{SDK_VERSION} Python/{platform.python_version()}",
             }
         )
+        if self._credential is not None:
+            headers["Authorization"] = f"Bearer {self._credential.value}"
         if options.idempotency_key:
             headers["Idempotency-Key"] = options.idempotency_key
         if body is not None:
@@ -274,6 +317,7 @@ class Transport:
             retries = self._defaults.max_network_retries or 0
         for attempt in range(1, retries + 2):
             request = self._request(method, path, query or {}, body, options, accept)
+            request.extensions["polymorfa_attempt"] = attempt
             try:
                 response = await self._http.send(request, stream=True, follow_redirects=False)
             except httpx.TimeoutException:
@@ -414,40 +458,118 @@ class Transport:
         finally:
             await response.aclose()
 
-    async def binary(
-        self, path: str, *, options: RequestOptions = DEFAULT_OPTIONS
-    ) -> ApiResponse[bytes]:
+    async def send_to_upload_url(
+        self,
+        url: str,
+        method: str,
+        headers: Mapping[str, str],
+        body: bytes | AsyncIterable[bytes],
+        *,
+        options: RequestOptions = DEFAULT_OPTIONS,
+    ) -> None:
+        try:
+            destination = urljoin(self._base_url + "/", url)
+            parsed = urlsplit(destination)
+            if (
+                not parsed.hostname
+                or parsed.username is not None
+                or parsed.password is not None
+                or not (
+                    parsed.scheme == "https"
+                    or parsed.scheme == "http"
+                    and parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+                )
+            ):
+                raise ValueError
+        except ValueError:
+            raise ValidationError("Invalid upload URL.", code="invalid_upload_url") from None
+        safe_headers = {
+            name: value for name, value in headers.items() if name.lower() != "authorization"
+        }
+        safe_headers["user-agent"] = f"polymorfa-python/{SDK_VERSION}"
+        try:
+            async with self._http.stream(
+                method,
+                destination,
+                headers=safe_headers,
+                content=body,
+                follow_redirects=False,
+                timeout=options.timeout or self._defaults.timeout,
+            ) as response:
+                await response.aread()
+                if not 200 <= response.status_code < 300:
+                    raise ServerError("Upload failed.", status=response.status_code)
+        except httpx.TimeoutException:
+            raise TimeoutError("Upload timed out.", code="request_timeout") from None
+        except httpx.TransportError:
+            raise ConnectionError(
+                "Upload could not reach storage.", code="connection_error"
+            ) from None
+
+    async def download_stream(
+        self, path: str, *, options: RequestOptions = DEFAULT_OPTIONS, return_redirect: bool = False
+    ) -> DownloadStream | DownloadUrl:
+        # Lazy import keeps the stream's public metadata type free of an import cycle.
+        from .downloads import DownloadStream, DownloadUrl, signed_url_expiry
+
         response, meta = await self.open_stream(
             "GET", path, options=options, accept="application/octet-stream"
         )
-        try:
-            if response.is_redirect:
-                location = response.headers.get("location", "")
-                await response.aclose()
-                if not location.startswith("https://") or urlsplit(location).username:
-                    raise ServerError(
-                        "Invalid media redirect.", code="invalid_response", metadata=meta
-                    )
-                # Signed storage URLs are bearer capabilities: no API headers, no retries or redirects.
-                try:
-                    async with self._http.stream(
-                        "GET",
-                        location,
-                        follow_redirects=False,
-                        timeout=options.timeout or self._defaults.timeout,
-                    ) as storage:
-                        if storage.status_code >= 300:
-                            raise ServerError(
-                                "Storage download failed.", status=storage.status_code
-                            )
-                        return ApiResponse(await storage.aread(), meta)
-                except httpx.TransportError:
-                    raise ConnectionError(
-                        "Storage download failed.", code="connection_error"
-                    ) from None
-            return ApiResponse(await response.aread(), meta)
-        finally:
+        if response.is_redirect:
+            location = urljoin(self._base_url + path, response.headers.get("location", ""))
             await response.aclose()
+            target = urlsplit(location)
+            if (
+                not response.headers.get("location")
+                or target.scheme != "https"
+                or not target.hostname
+                or target.username is not None
+                or target.password is not None
+            ):
+                raise ServerError("Invalid media redirect.", code="invalid_redirect", metadata=meta)
+            if return_redirect:
+                return DownloadUrl(False, location, signed_url_expiry(location), meta.request_id)
+            try:
+                storage_request = self._http.build_request(
+                    "GET",
+                    location,
+                    headers={
+                        "accept": "application/octet-stream",
+                        "user-agent": f"polymorfa-python/{SDK_VERSION}",
+                    },
+                    timeout=options.timeout or self._defaults.timeout,
+                )
+                storage_request.headers.pop("cookie", None)
+                response = await self._http.send(
+                    storage_request, stream=True, follow_redirects=True
+                )
+                if not 200 <= response.status_code < 300:
+                    await response.aclose()
+                    raise ServerError(
+                        "Storage download failed.", status=response.status_code, metadata=meta
+                    )
+            except httpx.TimeoutException:
+                raise TimeoutError(
+                    "Storage download timed out.", code="request_timeout", metadata=meta
+                ) from None
+            except httpx.TransportError:
+                raise ConnectionError(
+                    "Storage download failed.", code="connection_error", metadata=meta
+                ) from None
+            return DownloadStream(response, meta, True)
+        if return_redirect:
+            await response.aclose()
+            return DownloadUrl(True, request_id=meta.request_id)
+        return DownloadStream(response, meta, False)
+
+    async def binary(
+        self, path: str, *, options: RequestOptions = DEFAULT_OPTIONS
+    ) -> ApiResponse[bytes]:
+        from .downloads import DownloadStream
+
+        result = await self.download_stream(path, options=options)
+        assert isinstance(result, DownloadStream)
+        return ApiResponse(await result.read(), result.metadata)
 
 
 class CursorPage(Generic[T]):

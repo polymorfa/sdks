@@ -10,6 +10,7 @@ from .configuration import ConfigurationPatch, ConfigurationView
 from .developer_models import Event as Event  # noqa: PLC0414
 from .developer_models import Operation as Operation  # noqa: PLC0414
 from .platform_core import CreateProject
+from .quicklink_models import Create, Link, Status
 from .transport import JsonObject
 
 ProjectCreate = CreateProject
@@ -148,40 +149,9 @@ class SessionUpdate(TypedDict):
     revision: int
 
 
-class QuickLinkInput(TypedDict, total=False):
-    purpose: Literal["initial", "add_connection"]
-    session: str
-    projectId: str
-    customerId: str
-    externalId: str
-    connectionGoal: Literal["single", "hybrid"]
-    addConnection: Literal["linked_devices", "official_api"]
-    billingControls: JsonObject
-    configuration: JsonObject
-
-
-class QuickLink(TypedDict):
-    id: str
-    url: str
-    session: str
-    purpose: str
-    connectionGoal: str
-    expiresAt: str | None
-
-
-class QuickLinkStatus(TypedDict, total=False):
-    id: str
-    status: Literal["pending", "opened", "linked", "connected", "failed", "cancelled"]
-    session: str
-    purpose: str
-    connectionGoal: str
-    hybridPhase: str | None
-    expiresAt: str | None
-    openedAt: str | None
-    connectedAt: str | None
-    phone: str | None
-    errorCode: str | None
-    onboarding: JsonObject | None
+QuickLinkInput = Create
+QuickLink = Link
+QuickLinkStatus = Status
 
 
 class PairCode(TypedDict):
@@ -197,6 +167,17 @@ class QrCode(TypedDict, total=False):
     event: str
 
 
+class WebhookRetries(TypedDict):
+    attempts: int
+    delaySeconds: float
+    policy: str
+
+
+class WebhookHeader(TypedDict):
+    name: str
+    value: str
+
+
 class WebhookInput(TypedDict):
     url: str
 
@@ -205,8 +186,8 @@ class WebhookCreate(WebhookInput, total=False):
     session: str
     events: list[str]
     hmacKey: str
-    retries: JsonObject
-    headers: list[dict[str, str]]
+    retries: WebhookRetries
+    headers: list[WebhookHeader]
     format: Literal["native", "meta"]
 
 
@@ -215,18 +196,20 @@ class WebhookUpdate(TypedDict, total=False):
     events: list[str]
     hmacKey: str
     enabled: bool
-    retries: JsonObject
-    headers: list[dict[str, str]]
+    retries: WebhookRetries
+    headers: list[WebhookHeader]
     format: Literal["native", "meta"]
 
 
 class Webhook(TypedDict):
     id: str
     tenantId: str
+    session: NotRequired[str]
+    format: NotRequired[Literal["native", "meta"]]
     url: str
     events: list[str]
-    retries: JsonObject
-    headers: list[dict[str, str]]
+    retries: WebhookRetries
+    headers: list[WebhookHeader]
     enabled: bool
     createdAt: str
 
@@ -719,3 +702,21 @@ class OperationAccepted(TypedDict):
 
 class DataEnvelope(TypedDict, Generic[T]):
     data: T
+
+
+class MessagingMediaInfo(TypedDict):
+    id: str
+    session: str
+    messageId: str
+    mimeType: str
+    fileLength: int
+    persisted: bool
+    s3Url: NotRequired[str | None]
+
+
+class RejectSessionCall(TypedDict):
+    from_: str
+
+
+class RejectedSessionCall(TypedDict):
+    status: Literal["REJECTED"]

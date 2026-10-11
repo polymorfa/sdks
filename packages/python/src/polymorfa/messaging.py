@@ -16,6 +16,7 @@ from .cloud import (
     MetaPricingParams,
     MetaPricingSummary,
 )
+from .downloads import DownloadFile, DownloadStream, DownloadUrl
 from .errors import ConfigurationError, ValidationError
 from .models import (
     AsyncAccepted,
@@ -42,6 +43,7 @@ from .models import (
     MessageOperation,
     MessageReceipt,
     MessageResponse,
+    MessagingMediaInfo,
     OperationAccepted,
     PairCode,
     PairCodeResult,
@@ -56,6 +58,8 @@ from .models import (
     QuickLinkInput,
     QuickLinkStatus,
     Reaction,
+    RejectedSessionCall,
+    RejectSessionCall,
     Seen,
     SendMessage,
     Session,
@@ -74,6 +78,7 @@ from .models import (
     WebhookCreate,
     WebhookUpdate,
 )
+from .quicklink_models import Availability
 from .transport import ApiResponse, JsonObject, QueryValue, RequestOptions, Transport
 from .voip_models import (
     CallCheck,
@@ -330,7 +335,7 @@ class QuickLinks(Resource):
 
     async def availability(
         self, project_id: str, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[Availability]]:
         self._server()
         return await self._request(
             "GET",
@@ -517,9 +522,34 @@ class Media(Resource):
             f"/messaging/media/{segment(media_id)}", options=options
         )
 
+    async def download_stream(
+        self, media_id: str, *, options: RequestOptions = O
+    ) -> DownloadStream:
+        result = await self._transport.download_stream(
+            f"/messaging/media/{segment(media_id)}", options=options
+        )
+        assert isinstance(result, DownloadStream)
+        return result
+
+    async def download_file(self, media_id: str, *, options: RequestOptions = O) -> DownloadFile:
+        result = await self.download_stream(media_id, options=options)
+        return DownloadFile(
+            await result.read(),
+            result.content_type or "application/octet-stream",
+            result.filename,
+            result.request_id,
+        )
+
+    async def download_url(self, media_id: str, *, options: RequestOptions = O) -> DownloadUrl:
+        result = await self._transport.download_stream(
+            f"/messaging/media/{segment(media_id)}", options=options, return_redirect=True
+        )
+        assert isinstance(result, DownloadUrl)
+        return result
+
     async def retrieve(
         self, media_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[MessagingMediaInfo]]:
         return await self._request(
             "GET", f"/messaging/media/{segment(media_id)}/info", options=options
         )
@@ -680,6 +710,18 @@ class Presence(Resource):
         return await self._request(
             "POST",
             f"/messaging/{segment(session)}/presence/{segment(chat_id)}/subscribe",
+            options=options,
+        )
+
+
+class SessionCalls(Resource):
+    async def reject(
+        self, session: str, call_id: str, body: RejectSessionCall, *, options: RequestOptions = O
+    ) -> ApiResponse[Success | Envelope[RejectedSessionCall] | Envelope[AsyncAccepted]]:
+        return await self._request(
+            "POST",
+            f"/messaging/{segment(session)}/calls/{segment(call_id)}/reject",
+            body={"from": body["from_"]},
             options=options,
         )
 

@@ -151,3 +151,21 @@ These resources bind every request to their project; inputs cannot replace it.
 Writes and deletes send once. Function invocations require an explicit request
 key, and a replay never returns the initial executor response. Forward Flow
 endpoints return their signing secret once.
+
+`AsyncSystemClient` probes status, version, health and ping without credentials.
+`AsyncBridgeClient` requires a project token for regional route discovery.
+QuickLink configuration includes simulated account fields, billing controls,
+connection goals and history consent; status keeps request receipts separate
+from delivery progress. Messaging webhooks retain typed retry and header fields.
+
+Voice libraries support uploads, synthesis, previews and provider credentials.
+A project client reads its own assets and may read team-wide provider credentials;
+manage team-wide credentials through the organization client. Upload helpers send
+file bytes without the API credential and omit the create request key on completion.
+`wait_until_ready` cancels an active read at its deadline and returns ready or failed
+assets. The API decides feature access.
+
+Media supports `download_stream`, `download_file` and `download_url` alongside
+buffered downloads. Streams are single-use asynchronous iterators and context
+managers. Signed URLs stay out of object representations; storage requests omit
+API headers. Cancelling the consuming task closes the active response body.

@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
-from typing_extensions import Self
+from typing_extensions import Self, Unpack
 
 from . import messaging, platform
 from .bansafe import BanSafe
+from .bansafe_observations import BanSafeObservations
 from .billing import Billing
 from .business import Business
 from .call_policy import CallOptOuts, CallPolicies, CallRetentions
@@ -33,12 +33,15 @@ from .organization import (
     SecurityIncidents,
     SessionBans,
 )
+from .platform_media import Media as PlatformMedia
 from .policies import HybridLink, ObservationPolicies, SessionConfigurations
 from .quick_replies import QuickReplies, Users
 from .settings import OptOuts, QuickLinkConfiguration
 from .sip import SipTrunks
 from .templates import CloudTemplates, Templates
-from .transport import Credential, Transport
+from .transport import ClientOptions, Credential, Transport
+from .usage import Usage
+from .voice import Voice
 
 
 @dataclass(frozen=True, init=False)
@@ -74,10 +77,11 @@ class AsyncMessagingClient:
     contacts: messaging.Contacts
     profile: messaging.Profiles
     presence: messaging.Presence
+    calls: messaging.SessionCalls
     voip: messaging.Voip
     raw: platform.Raw
 
-    def __init__(self, credential: Credential, **options: Any) -> None:
+    def __init__(self, credential: Credential, **options: Unpack[ClientOptions]) -> None:
         transport = Transport(credential, **options)
         object.__setattr__(self, "_transport", transport)
         for name, resource in (
@@ -111,6 +115,7 @@ class AsyncMessagingClient:
             ("contacts", messaging.Contacts),
             ("profile", messaging.Profiles),
             ("presence", messaging.Presence),
+            ("calls", messaging.SessionCalls),
             ("voip", messaging.Voip),
         ):
             object.__setattr__(self, name, resource(transport, credential.kind))
@@ -131,6 +136,8 @@ class AsyncProjectClient:
     _transport: Transport
     _credential: Credential
     project_id: str
+    usage: Usage
+    voice: Voice
     functions: Functions
     flows: Flows
     sip_trunks: SipTrunks
@@ -149,7 +156,7 @@ class AsyncProjectClient:
         project_id: str,
         *,
         _transport: Transport | None = None,
-        **options: Any,
+        **options: Unpack[ClientOptions],
     ) -> None:
         if credential.kind == "client_token" or not project_id.strip():
             raise ConfigurationError("project_id")
@@ -157,6 +164,8 @@ class AsyncProjectClient:
         object.__setattr__(self, "_transport", transport)
         object.__setattr__(self, "_credential", credential)
         object.__setattr__(self, "project_id", project_id)
+        object.__setattr__(self, "usage", Usage(transport, project_id))
+        object.__setattr__(self, "voice", Voice(transport, project_id))
         object.__setattr__(self, "functions", Functions(transport, project_id))
         object.__setattr__(self, "flows", Flows(transport, project_id))
         prefix = f"/platform/projects/{messaging.segment(project_id)}"
@@ -207,6 +216,10 @@ class AsyncClient:
     audit_logs: AuditLogs
     session_bans: SessionBans
     security_incidents: SecurityIncidents
+    ban_safe: BanSafeObservations
+    media: PlatformMedia
+    usage: Usage
+    voice: Voice
     campaigns: Campaigns
     audiences: Audiences
     billing: Billing
@@ -218,12 +231,15 @@ class AsyncClient:
     operations: platform.Operations
     raw: platform.Raw
 
-    def __init__(self, credential: Credential, **options: Any) -> None:
+    def __init__(self, credential: Credential, **options: Unpack[ClientOptions]) -> None:
         if credential.kind != "organization_api_key":
             raise ConfigurationError("credential")
         transport = Transport(credential, **options)
         object.__setattr__(self, "_transport", transport)
         object.__setattr__(self, "_credential", credential)
+        object.__setattr__(self, "usage", Usage(transport))
+        object.__setattr__(self, "voice", Voice(transport))
+        object.__setattr__(self, "ban_safe", BanSafeObservations(transport))
         for name, resource in (
             ("opt_outs", OptOuts),
             ("organizations", Organizations),
@@ -233,6 +249,7 @@ class AsyncClient:
             ("audit_logs", AuditLogs),
             ("session_bans", SessionBans),
             ("security_incidents", SecurityIncidents),
+            ("media", PlatformMedia),
             ("campaigns", Campaigns),
             ("billing", Billing),
             ("projects", platform.Projects),

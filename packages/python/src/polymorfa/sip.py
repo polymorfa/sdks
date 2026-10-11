@@ -189,7 +189,10 @@ class SipTrunks(PlatformResource):
             )
 
     async def _confine(self, trunk_id: str, options: RequestOptions) -> None:
-        if self._project_id is not None and self._transport._credential.kind != "project_token":
+        if self._project_id is not None and (
+            self._transport._credential is None
+            or self._transport._credential.kind != "project_token"
+        ):
             response: ApiResponse[Trunk] = await self._unwrapped(
                 "GET", self._path(trunk_id), options=replace(options, idempotency_key=None)
             )
