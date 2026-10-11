@@ -1878,9 +1878,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/customers/{customerId}/pairing-links/{pairingLinkId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.RevokePairingLink",
+      "testFile": "customers_test.go"
     },
     {
       "family": "platform",
@@ -2590,41 +2590,41 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.List",
+      "testFile": "customers_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.Retrieve",
+      "testFile": "customers_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}/events",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.ListEvents",
+      "testFile": "customers_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}/numbers",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.ListNumbers",
+      "testFile": "customers_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}/pairing-links",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.ListPairingLinks",
+      "testFile": "customers_test.go"
     },
     {
       "family": "platform",
@@ -2838,9 +2838,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/customers/status",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.Status",
+      "testFile": "customers_test.go"
     },
     {
       "family": "platform",
@@ -3277,9 +3277,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/customers/{customerId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.Update",
+      "testFile": "customers_test.go"
     },
     {
       "family": "platform",
@@ -3765,41 +3765,41 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.Create",
+      "testFile": "customers_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/archive",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.Archive",
+      "testFile": "customers_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/numbers/{sessionId}/transfer",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.TransferNumber",
+      "testFile": "customers_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/pairing-links",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.CreatePairingLink",
+      "testFile": "customers_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/restore",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.Restore",
+      "testFile": "customers_test.go"
     },
     {
       "family": "platform",
@@ -3949,9 +3949,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/customers/enable",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.Enable",
+      "testFile": "customers_test.go"
     },
     {
       "family": "platform",

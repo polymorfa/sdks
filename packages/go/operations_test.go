@@ -200,7 +200,7 @@ func TestOperationWireFixtures(t *testing.T) {
 }
 func allOperationFixtures() []operationFixture {
 	all := append([]operationFixture{}, operationFixtures...)
-	for _, group := range [][]operationFixture{voipFixtures, developerFixtures, observationFixtures, accountFixtures, groupFixtures, contactFixtures, channelFixtures, platformSessionFixtures, streamAckFixtures, settingsFixtures, officialGroupFixtures, cloudTemplateFixtures, sipFixtures, functionFixtures, businessFixtures, messagingWebhookFixtures, chatPresencePrivacyFixtures, collectionFixtures, cloudAudienceFixtures, securityOptOutFixtures, billingFixtures} {
+	for _, group := range [][]operationFixture{voipFixtures, developerFixtures, observationFixtures, accountFixtures, groupFixtures, contactFixtures, channelFixtures, platformSessionFixtures, streamAckFixtures, settingsFixtures, officialGroupFixtures, cloudTemplateFixtures, sipFixtures, functionFixtures, businessFixtures, messagingWebhookFixtures, chatPresencePrivacyFixtures, collectionFixtures, cloudAudienceFixtures, securityOptOutFixtures, billingFixtures, customerFixtures} {
 		all = append(all, group...)
 	}
 	return all
