@@ -1981,17 +1981,17 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/voice/audio/{assetId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.Delete",
+      "testFile": "voice_test.go"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/voice/provider-credentials/{credentialId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.Delete",
+      "testFile": "voice_test.go"
     },
     {
       "family": "platform",
@@ -3132,41 +3132,41 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/audio",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.List",
+      "testFile": "voice_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/audio/{assetId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.Retrieve",
+      "testFile": "voice_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/audio/{assetId}/preview",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.PreviewURL",
+      "testFile": "voice_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/provider-credentials",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.List",
+      "testFile": "voice_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/provider-credentials/{credentialId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.Retrieve",
+      "testFile": "voice_test.go"
     },
     {
       "family": "platform",
@@ -3332,9 +3332,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/voice/audio/{assetId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.Update",
+      "testFile": "voice_test.go"
     },
     {
       "family": "platform",
@@ -4144,41 +4144,41 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/audio",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.CreateUpload",
+      "testFile": "voice_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/audio/{assetId}/complete",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.Complete",
+      "testFile": "voice_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/audio/tts",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.Audio.Synthesize",
+      "testFile": "voice_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/provider-credentials",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.Create",
+      "testFile": "voice_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/provider-credentials/{credentialId}/verify",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.Verify",
+      "testFile": "voice_test.go"
     },
     {
       "family": "platform",
