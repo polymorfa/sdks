@@ -4,68 +4,71 @@ declare(strict_types=1);
 
 namespace Polymorfa\Resources;
 
-use Polymorfa\ApiResponse;
-use Polymorfa\CursorPage;
-use Polymorfa\RequestOptions;
-use Polymorfa\ValidationException;
+use Polymorfa\{ApiResponse,CursorPage,RequestOptions,ValidationException,DeveloperModels};
 
+/**
+ * @phpstan-import-type Webhook from DeveloperModels
+ * @phpstan-import-type WebhookCreate from DeveloperModels
+ * @phpstan-import-type WebhookUpdate from DeveloperModels
+ * @phpstan-import-type WebhookTest from DeveloperModels
+ * @phpstan-import-type WebhookCreation from DeveloperModels
+ * @phpstan-import-type WebhookMutation from DeveloperModels
+ * @phpstan-import-type WebhookDeletion from DeveloperModels
+ * @phpstan-import-type WebhookRotation from DeveloperModels
+ * @phpstan-import-type ReplayReceipt from DeveloperModels
+ */
 final class PlatformWebhooks extends PlatformResource
 {
-    /**
- * @param array<string,mixed> $params
- *
- * @return CursorPage<array<string,mixed>> */
+    /** @param array{eventType?:string,enabled?:bool,limit?:int,cursor?:string} $params
+ * @return CursorPage<Webhook> */
     public function list(array $params = [], ?RequestOptions $options = null): CursorPage
     {
-        return $this->page($this->prefix . '/webhooks', $params, $options);
+        /** @var CursorPage<Webhook> $page */ $page = $this->page($this->prefix.'/webhooks', $params, $options);
+        return $page;
     }
-    /**
- * @param array<string,mixed> $body
- *
- * @return ApiResponse<array<string,mixed>> */
+    /** @param WebhookCreate $body
+ * @return ApiResponse<WebhookCreation> */
     public function create(array $body, ?RequestOptions $options = null): ApiResponse
     {
-        return $this->unwrapped('POST', $this->prefix . '/webhooks', $body, options: $options);
+        /** @var ApiResponse<WebhookCreation> $response */ $response = $this->unwrapped('POST', $this->prefix.'/webhooks', $body, options:$options);
+        return $response;
     }
     /**
- *
- * @return ApiResponse<array<string,mixed>> */
+ * @return ApiResponse<Webhook> */
     public function retrieve(string $id, ?RequestOptions $options = null): ApiResponse
     {
-        return $this->unwrapped('GET', $this->prefix . '/webhooks/' . self::segment($id), options: $options);
+        /** @var ApiResponse<Webhook> $response */ $response = $this->unwrapped('GET', $this->prefix.'/webhooks/'.self::segment($id), options:$options);
+        return $response;
     }
-    /**
- * @param array<string,mixed> $body
- *
- * @return ApiResponse<array<string,mixed>> */
+    /** @param WebhookUpdate $body
+ * @return ApiResponse<WebhookMutation> */
     public function update(string $id, array $body, ?RequestOptions $options = null): ApiResponse
     {
-        return $this->unwrapped('PATCH', $this->prefix . '/webhooks/' . self::segment($id), $body, options: $options);
+        /** @var ApiResponse<WebhookMutation> $response */ $response = $this->unwrapped('PATCH', $this->prefix.'/webhooks/'.self::segment($id), $body, options:$options);
+        return $response;
     }
     /**
- *
- * @return ApiResponse<array<string,mixed>> */
+ * @return ApiResponse<WebhookDeletion> */
     public function delete(string $id, ?RequestOptions $options = null): ApiResponse
     {
-        return $this->unwrapped('DELETE', $this->prefix . '/webhooks/' . self::segment($id), options: $options);
+        /** @var ApiResponse<WebhookDeletion> $response */ $response = $this->unwrapped('DELETE', $this->prefix.'/webhooks/'.self::segment($id), options:$options);
+        return $response;
     }
-    /**
- * @param array<string,mixed> $body
- *
- * @return ApiResponse<array<string,mixed>> */
+    /** @param WebhookTest $body
+ * @return ApiResponse<ReplayReceipt> */
     public function test(string $id, array $body = [], ?RequestOptions $options = null): ApiResponse
     {
         if ($this->prefix === '/platform' && (array_key_exists('body', $body) || array_key_exists('sessionId', $body))) {
             throw new ValidationException('Organization tests do not accept body or sessionId.');
         }
-        return $this->unwrapped('POST', $this->prefix . '/webhooks/' . self::segment($id) . '/tests', $body === [] ? new \stdClass() : $body, options: $options);
+        /** @var ApiResponse<ReplayReceipt> $response */ $response = $this->unwrapped('POST', $this->prefix.'/webhooks/'.self::segment($id).'/tests', $body === [] ? new \stdClass() : $body, options:$options);
+        return $response;
     }
-    /**
- * @param array<string,mixed> $body
- *
- * @return ApiResponse<array<string,mixed>> */
+    /** @param array{overlapSeconds?:int} $body
+ * @return ApiResponse<WebhookRotation> */
     public function rotateSecret(string $id, array $body = [], ?RequestOptions $options = null): ApiResponse
     {
-        return $this->unwrapped('POST', $this->prefix . '/webhooks/' . self::segment($id) . '/secret-rotations', $body === [] ? new \stdClass() : $body, options: $options);
+        /** @var ApiResponse<WebhookRotation> $response */ $response = $this->unwrapped('POST', $this->prefix.'/webhooks/'.self::segment($id).'/secret-rotations', $body === [] ? new \stdClass() : $body, options:$options);
+        return $response;
     }
 }

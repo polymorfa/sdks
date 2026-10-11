@@ -1974,9 +1974,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhooks.delete",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
@@ -2030,9 +2030,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhooks.delete",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
@@ -2702,17 +2702,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/events",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::events.list",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/events/{eventId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::events.retrieve",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
@@ -2862,25 +2862,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/operations",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::operations.list",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/operations/{operationId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::operations.retrieve",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/operations/{operationId}/transitions",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::operations.listTransitions",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
@@ -2918,17 +2918,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/events",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::events.list",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/events/{eventId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::events.retrieve",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
@@ -2966,25 +2966,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/operations",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::operations.list",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/operations/{operationId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::operations.retrieve",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/operations/{operationId}/transitions",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::operations.listTransitions",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
@@ -3006,49 +3006,49 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhook-deliveries",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhookDeliveries.list",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhookDeliveries.retrieve",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhookDeliveries.listAttempts",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhookDeliveries.retrieveAttempt",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhooks",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhooks.list",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhooks.retrieve",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
@@ -3246,49 +3246,49 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhook-deliveries",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhookDeliveries.list",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhookDeliveries.retrieve",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}/attempts",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhookDeliveries.listAttempts",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhookDeliveries.retrieveAttempt",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhooks",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhooks.list",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhooks.retrieve",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
@@ -3382,9 +3382,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhooks.update",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
@@ -3422,9 +3422,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhooks.update",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
@@ -3926,9 +3926,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/events/{eventId}/replays",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::events.replay",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
@@ -4038,9 +4038,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/operations/{operationId}/cancel",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::operations.cancel",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
@@ -4078,25 +4078,25 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/events/{eventId}/replays",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::events.replay",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/events/stream/{streamId}/ack",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::events.acknowledgeStream",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/operations/{operationId}/cancel",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::operations.cancel",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
@@ -4126,33 +4126,33 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/retry",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhookDeliveries.retry",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhooks.create",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}/secret-rotations",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhooks.rotateSecret",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}/tests",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhooks.test",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
@@ -4310,33 +4310,33 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/webhook-deliveries/{deliveryId}/retry",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhookDeliveries.retry",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/webhooks",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhooks.create",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/webhooks/{webhookId}/secret-rotations",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhooks.rotateSecret",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/webhooks/{webhookId}/tests",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::webhooks.test",
+      "testFile": "tests/developer.php"
     },
     {
       "family": "platform",

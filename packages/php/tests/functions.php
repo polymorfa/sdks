@@ -46,4 +46,4 @@ foreach ([
 $history = [];
 $guard = (new Polymorfa\Client($credential, http:mocked([jsonResponse(['error' => ['code' => 'unknown_outcome']], 503)], $history)))->project($p);
 raises(fn () => $guard->functions->create(['name' => 'Handler'], new Polymorfa\RequestOptions(idempotencyKey:'write_key', maxNetworkRetries:3)), Polymorfa\ServerException::class);
-check(count($history) === 1,'Functions write is never retried');
+check(count($history) === 1, 'Functions write is never retried');

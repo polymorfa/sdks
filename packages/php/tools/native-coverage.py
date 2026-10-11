@@ -96,6 +96,32 @@ evidence = [
  ('PUT','/platform/billing/priorities/{scope}/{resourceId}','billing.setPriority','billing'),
  ('PUT','/platform/billing/priorities','billing.reorderPriorities','billing'),
 ]
+
+for prefix in ['/platform','/platform/projects/{projectId}']:
+ evidence.extend([
+  ('GET',prefix+'/events','events.list','developer'),
+  ('GET',prefix+'/events/{eventId}','events.retrieve','developer'),
+  ('POST',prefix+'/events/{eventId}/replays','events.replay','developer'),
+  ('GET',prefix+'/webhooks','webhooks.list','developer'),
+  ('POST',prefix+'/webhooks','webhooks.create','developer'),
+  ('GET',prefix+'/webhooks/{webhookId}','webhooks.retrieve','developer'),
+  ('PATCH',prefix+'/webhooks/{webhookId}','webhooks.update','developer'),
+  ('DELETE',prefix+'/webhooks/{webhookId}','webhooks.delete','developer'),
+  ('POST',prefix+'/webhooks/{webhookId}/tests','webhooks.test','developer'),
+  ('POST',prefix+'/webhooks/{webhookId}/secret-rotations','webhooks.rotateSecret','developer'),
+  ('GET',prefix+'/webhook-deliveries','webhookDeliveries.list','developer'),
+  ('GET',prefix+'/webhook-deliveries/{deliveryId}','webhookDeliveries.retrieve','developer'),
+  ('GET',prefix+'/webhook-deliveries/{deliveryId}/attempts','webhookDeliveries.listAttempts','developer'),
+  ('GET',prefix+'/webhook-deliveries/{deliveryId}/attempts/{attemptId}','webhookDeliveries.retrieveAttempt','developer'),
+  ('POST',prefix+'/webhook-deliveries/{deliveryId}/retry','webhookDeliveries.retry','developer'),
+  ('GET',prefix+'/operations','operations.list','developer'),
+  ('GET',prefix+'/operations/{operationId}','operations.retrieve','developer'),
+  ('GET',prefix+'/operations/{operationId}/transitions','operations.listTransitions','developer'),
+  ('POST',prefix+'/operations/{operationId}/cancel','operations.cancel','developer'),
+ ])
+evidence.extend([
+ ('POST','/platform/projects/{projectId}/events/stream/{streamId}/ack','events.acknowledgeStream','developer'),
+])
 for method,path,name,test in evidence:
  matches=[op for op in manifest['operations'] if op['family']=='platform' and op['method']==method and op['path']==path]
  assert len(matches)==1, (method,path)

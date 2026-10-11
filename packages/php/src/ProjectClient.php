@@ -11,6 +11,9 @@ use Polymorfa\Resources\PlatformWebhooks;
 final readonly class ProjectClient
 {
     public Events $events;
+    public Resources\RequestLogs $requestLogs;
+    public Resources\Operations $operations;
+    public Resources\WebhookDeliveries $webhookDeliveries;
     public PlatformWebhooks $webhooks;
     public RawClient $raw;
     public Resources\Functions $functions;
@@ -35,6 +38,7 @@ final readonly class ProjectClient
         }
         $transport ??= new HttpTransport($credential, $baseUrl, $apiVersion, $timeout, $maxNetworkRetries, $proxy, $http);
         $this->projectId = $projectId;
+        $this->requestLogs = new Resources\RequestLogs($transport, $projectId);
         $prefix = '/platform/projects/' . rawurlencode($projectId);
         $this->functions = new Resources\Functions($transport, $projectId);
         $this->quickLinkSettings = new Resources\QuickLinkSettings($transport, $projectId);
@@ -42,6 +46,8 @@ final readonly class ProjectClient
         $this->sipTrunks = new Resources\SipTrunks($transport, $projectId, $credential->kind === 'organization_api_key');
         $this->usage = new Resources\Usage($transport, $projectId);
         $this->events = new Events($transport, $prefix);
+        $this->operations = new Resources\Operations($transport, $prefix);
+        $this->webhookDeliveries = new Resources\WebhookDeliveries($transport, $prefix);
         $this->webhooks = new PlatformWebhooks($transport, $prefix);
         $this->raw = new RawClient($transport, $projectId);
     }

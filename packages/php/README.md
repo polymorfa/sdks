@@ -125,3 +125,12 @@ write runs once, including keyed invocations: after an uncertain result, inspect
 the receipt before deciding on another invocation. Invocation creation requires
 a printable idempotency key of 1 through 128 characters. Replayed results may
 omit the original response, and `responseRetained` remains false.
+
+Platform developer resources expose typed event, operation, webhook and delivery
+records with payload availability and idempotency receipts. `events.listIndexed`
+keeps 64-bit ingestion offsets as decimal strings and rejects non-advancing pages.
+`operations.wait` uses bounded server long polls; cancellation creates one
+idempotency key per invocation. Organization and immutable project views use
+their respective native routes. `requestLogs.list`, `follow` and `tail` read the
+project log; tail reverses backfill into chronological order, follows new records,
+honors cancellation and bounds `Retry-After` delays.

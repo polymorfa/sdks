@@ -16,6 +16,9 @@ final readonly class Client
     public PlatformSessions $sessions;
     public Projects $projects;
     public Events $events;
+    public Resources\RequestLogs $requestLogs;
+    public Resources\Operations $operations;
+    public Resources\WebhookDeliveries $webhookDeliveries;
     public PlatformWebhooks $webhooks;
     public RawClient $raw;
     public Resources\PlatformMedia $media;
@@ -47,6 +50,7 @@ final readonly class Client
         }
         $this->transport = new HttpTransport($credential, $baseUrl, $apiVersion, $timeout, $maxNetworkRetries, $proxy, $http);
         $this->media = new Resources\PlatformMedia($this->transport);
+        $this->requestLogs = new Resources\RequestLogs($this->transport);
         $this->quickLinkSettings = new Resources\QuickLinkSettings($this->transport);
         $this->sessionConfiguration = new Resources\SessionConfiguration($this->transport);
         $this->sipTrunks = new Resources\SipTrunks($this->transport);
@@ -64,6 +68,8 @@ final readonly class Client
         $this->sessions = new PlatformSessions($this->transport);
         $this->projects = new Projects($this->transport);
         $this->events = new Events($this->transport, '/platform');
+        $this->operations = new Resources\Operations($this->transport, '/platform');
+        $this->webhookDeliveries = new Resources\WebhookDeliveries($this->transport, '/platform');
         $this->webhooks = new PlatformWebhooks($this->transport, '/platform');
         $this->raw = new RawClient($this->transport);
     }

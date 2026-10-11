@@ -161,3 +161,7 @@ require __DIR__.'/sip.php';
 require __DIR__.'/settings.php';
 
 require __DIR__.'/functions.php';
+
+require __DIR__.'/developer.php';
+
+require __DIR__.'/request_logs.php';
