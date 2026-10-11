@@ -89,6 +89,11 @@
   ],
   "helpers": [
     {
+      "sdkMethod": "Events.LiveSource and EventStreamSource application-store subscriptions",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
+    },
+    {
       "sdkMethod": "CallsClient and Call lifecycle, claims and media reconnect",
       "status": "covered",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallsClientTests.cs"

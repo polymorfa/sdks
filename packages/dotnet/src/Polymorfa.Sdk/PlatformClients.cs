@@ -124,6 +124,7 @@ public sealed class Events
         if (string.IsNullOrWhiteSpace(project)) throw new PolymorfaConfigurationException("Organization event streams require projectId.");
         return new(http, $"/platform/projects/{Uri.EscapeDataString(project)}/events/stream", options);
     }
+    public EventStreamSource LiveSource(EventStreamOptions? options = null) => new(parameters => Stream(parameters), options);
     public async Task<ApiResponse<EventStreamAcknowledgementReceipt>> AcknowledgeStreamAsync(string streamId, EventStreamAcknowledgement body, RequestOptions? options = null, string? projectId = null)
     {
         var project = this.projectId ?? projectId;

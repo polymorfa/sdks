@@ -17,6 +17,7 @@ internal static class EventsTests
         await Organization("POST", "/platform/projects/p/events/stream/stream/ack", "{\"cursor\":\"cursor\",\"sequence\":2}", "{\"data\":{\"streamId\":\"stream\",\"acknowledgedCursor\":\"cursor\",\"sequence\":2,\"replayed\":true}}", async c => ResourceTests.True((await c.Events.AcknowledgeStreamAsync("stream", new("cursor", 2), projectId: "p")).Data.Replayed));
         await PaginationAsync();
         await StreamAsync();
+        await SourceAsync();
         await Organization("GET", "/platform/events?afterOffset=0", null, "{\"data\":[],\"page\":{\"hasMore\":true,\"highWatermark\":\"10\",\"nextOffset\":\"0\"}}", async c => { try { await c.Events.ListIndexedAsync(new("0")); } catch (PolymorfaServerException e) when (e.Code == "invalid_response") { return; } throw new Exception("Non-advancing offset accepted."); });
         await Organization("GET", "/platform/events?afterOffset=0", null, "{\"data\":[],\"page\":{\"hasMore\":false,\"highWatermark\":\"10\",\"nextOffset\":\"3\"}}", async c => { try { await c.Events.ListIndexedAsync(new("0")); } catch (PolymorfaServerException e) when (e.Code == "invalid_response") { return; } throw new Exception("Terminal indexed metadata accepted offset."); });
         Console.WriteLine("PASS typed event reads/replays/acknowledgement, pagination and native fragmented SSE resume");
@@ -56,5 +57,34 @@ internal static class EventsTests
         try { await foreach (var item in stream) { count++; ResourceTests.Equal(item.StreamId, "stream"); } }
         catch (PolymorfaAuthorizationException error) when (error.Code == "stream_revoked") { }
         ResourceTests.Equal(count, 2); ResourceTests.Equal(missed, 2L); ResourceTests.Equal(reconnects, 1); ResourceTests.Equal(stream.Cursor, "cursor2"); await serving;
+    }
+    private static async Task SourceAsync()
+    {
+        var webhook = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("{\"id\":\"w1\",\"session\":\"support\",\"timestamp\":\"2026-10-11\",\"event\":\"future.event\",\"payload\":{\"value\":42}}"));
+        var retained = Event.Replace("\"not_retained\"", "\"available\"").Replace("\"payload\":null", "\"payload\":{\"encoding\":\"base64\",\"data\":\"" + webhook + "\"}");
+        static string Frame(string record, string cursor, long sequence) => "data: {\"type\":\"event\",\"event\":" + record + ",\"cursor\":\"" + cursor + "\",\"streamId\":\"stream\",\"sequence\":" + sequence + "}";
+        using (var fixture = new WireFixture { Authorization = "Bearer " + Key, FragmentBytes = 1 })
+        {
+            var serving = fixture.ServeAsync("GET", "/platform/projects/p/events/stream", null, Frame(Event, "skip", 1) + "\r\r" + Frame(retained, "delivered", 2) + "\r\n\r\ndata: {\"type\":\"revoked\"}\n\n", responseHeaders: new Dictionary<string, string> { ["content-type"] = "text/event-stream" }, expectedHeaders: new Dictionary<string, string> { ["last-event-id"] = "saved" });
+            using var client = new OrganizationClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
+            var deliveries = 0; Exception? failure = null;
+            await using var subscription = client.Project("p").Events.LiveSource().Subscribe((events, metadata) =>
+            {
+                deliveries++; ResourceTests.Equal(events.Count, 1); ResourceTests.Equal(events[0].Envelope.Id, "w1"); ResourceTests.Equal(events[0].Envelope.Payload.GetProperty("value").GetInt32(), 42); ResourceTests.Equal(metadata.Cursor, "delivered");
+            }, new() { Cursor = "saved", OnError = error => failure = error });
+            await subscription.Completion.WaitAsync(TimeSpan.FromSeconds(5)); await serving;
+            ResourceTests.Equal(deliveries, 1); ResourceTests.True(failure is PolymorfaAuthorizationException { Code: "stream_revoked" });
+            subscription.Dispose();
+        }
+        using (var fixture = new WireFixture { Authorization = "Bearer " + Key, FragmentBytes = 2 })
+        {
+            var serving = fixture.ServeAsync("GET", "/platform/projects/p/events/stream", null, Frame(retained, "last", 1) + "\n\n", responseHeaders: new Dictionary<string, string> { ["content-type"] = "text/event-stream" });
+            using var client = new OrganizationClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
+            var delivered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously); var errors = 0;
+            await using var subscription = client.Project("p").Events.LiveSource(new() { InitialReconnectDelay = TimeSpan.FromSeconds(10), MaximumReconnectDelay = TimeSpan.FromSeconds(10) }).Subscribe((_, _) => delivered.TrySetResult(), new() { OnError = _ => errors++ });
+            await delivered.Task.WaitAsync(TimeSpan.FromSeconds(5)); subscription.Dispose();
+            await subscription.Completion.WaitAsync(TimeSpan.FromSeconds(2)); await serving; ResourceTests.Equal(errors, 0);
+        }
+        Console.WriteLine("PASS application-store source skips unavailable bodies, resumes cursor, reports revoked once and unsubscribes cleanly across fragmented CR/CRLF SSE");
     }
 }

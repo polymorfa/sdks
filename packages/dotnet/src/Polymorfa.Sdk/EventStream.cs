@@ -136,6 +136,7 @@ internal sealed class BoundedSseLines(StreamReader reader)
     private readonly char[] buffer = new char[4096];
     private int position;
     private int length;
+    private bool skipLineFeed;
     private readonly StringBuilder line = new();
     internal async ValueTask<string?> ReadAsync(CancellationToken cancellation)
     {
@@ -147,7 +148,8 @@ internal sealed class BoundedSseLines(StreamReader reader)
                 if (length == 0) { if (line.Length == 0) return null; var tail = line.ToString(); line.Clear(); return tail; }
             }
             var character = buffer[position++];
-            if (character == '\n') { if (line.Length > 0 && line[^1] == '\r') line.Length--; var value = line.ToString(); line.Clear(); return value; }
+            if (skipLineFeed) { skipLineFeed = false; if (character == '\n') continue; }
+            if (character is '\r' or '\n') { skipLineFeed = character == '\r'; var value = line.ToString(); line.Clear(); return value; }
             if (line.Length == 4 * 1024 * 1024) throw new PolymorfaServerException("Event stream line exceeds its size limit.", "invalid_stream");
             line.Append(character);
         }
