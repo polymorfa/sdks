@@ -4,6 +4,7 @@ import {
   validateAcceptance,
   releaseVersion,
   validateFeatureContractPins,
+  campaignSupplementPins,
 } from "./release-gate.mjs";
 const expected = {
   sourceSha: "a".repeat(40),
@@ -30,6 +31,44 @@ const receipt = {
   acceptedAt: "2026-10-04T02:00:00Z",
   runUrl: "https://github.com/polymorfa/polymorfa/actions/runs/123",
 };
+test("campaign supplements bind both audiences to the accepted full contract", () => {
+  const source = {
+    repository: "polymorfa/polymorfa",
+    commit: expected.sourceSha,
+    contracts: expected.contracts,
+  };
+  const supplement = {
+    repository: source.repository,
+    commit: source.commit,
+    sources: Object.fromEntries(
+      Object.entries(source.contracts).map(([family, snapshot]) => [
+        family,
+        { sourcePath: snapshot.sourcePath, sourceSha256: snapshot.sha256 },
+      ]),
+    ),
+  };
+  validateFeatureContractPins(source, campaignSupplementPins(supplement));
+  for (const changed of [
+    { ...supplement, commit: "f".repeat(40) },
+    { ...supplement, published: false },
+    {
+      ...supplement,
+      sources: {
+        ...supplement.sources,
+        messaging: supplement.sources.platform,
+      },
+    },
+  ])
+    assert.throws(() =>
+      validateFeatureContractPins(source, campaignSupplementPins(changed)),
+    );
+  assert.throws(() =>
+    campaignSupplementPins({
+      ...supplement,
+      sources: { messaging: supplement.sources.messaging },
+    }),
+  );
+});
 test("nightly requires exact staging acceptance; stable requires production", () => {
   assert.equal(validateAcceptance(receipt, expected), receipt);
   for (const delta of [

@@ -17,7 +17,8 @@ health checks and local fixture tests cannot replace it.
 
 The gate verifies every primary TypeScript covered operation in every native
 language, checks the full snapshot hashes and reconciles feature supplement
-pins. An older full contract with a newer supplement fails closed. This branch
+pins, including both audience hashes for Campaign A/B tests, message variations
+and receipt-timed follow-ups. An older full contract with a newer supplement fails closed. This branch
 retains its existing contract pins; a publication hold requires a separately
 reviewed reconciliation and matching deployed acceptance. Do not edit pins just
 to make the gate pass.
@@ -46,6 +47,29 @@ an artifact. Packagist requires `composer.json` at the source repository root;
 `packages/php` needs an approved mirror. A tag on the monorepo alone cannot
 publish that Composer package. See the [Packagist guide](https://packagist.org/about)
 and [Go module source guide](https://go.dev/doc/modules/managing-source).
+
+The workflow also uploads `native-php-accepted-mirror`. Its `source/` directory
+puts the accepted archive bytes, `composer.json` and embedded receipt at the
+mirror root. `mirror-plan.json` records the archive and per-file hashes plus
+the SDK source commit. It contains a proposed stable tag or the nightly
+`dev-main` branch version. This is a local source preparation, not a repository
+creation, tag or push.
+
+To reproduce the preparation from downloaded accepted PHP artifacts:
+
+```sh
+python3 scripts/prepare-php-mirror.py /path/to/native-php-accepted-packs /path/to/release-contract.json ~/.polymorfa-agent-work/php-release/mirror
+```
+
+Use a new output directory. The command refuses existing output, receipt/version
+mismatches, duplicate paths, unexpected files and archive links. Review the
+plan and commit the exact `source/` tree to the approved mirror only after
+release authorization. Register that repository with Packagist and configure
+its update hook under the mirror owner. Keep `composer.json` without a version
+field; Composer derives stable versions from approved tags. Nightlies use the
+approved mirror branch and retain their exact timestamp in the embedded receipt.
+A local Composer path install proves packaging only; it does not prove registry
+publication or matching deployed API acceptance.
 
 After explicit release authorization, download and inspect the accepted
 artifacts. Verify package metadata and the embedded receipt against the exact
