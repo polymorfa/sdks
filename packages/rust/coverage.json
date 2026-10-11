@@ -1110,11 +1110,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/messages/send",
-      "status": "partial",
+      "status": "covered",
       "sdkMethod": "MessagingClient.messages.send",
-      "testFile": "tests/resources.rs",
-      "reason": "Public method and native wire test exist; complete merged message/session/configuration shapes are still being expanded.",
-      "milestone": "server-sdk-parity"
+      "testFile": "tests/resources.rs"
     },
     {
       "family": "messaging",

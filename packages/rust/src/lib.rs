@@ -12,6 +12,7 @@ pub mod connections;
 pub mod developer;
 pub mod errors;
 pub mod media;
+pub mod message_content;
 pub mod messaging;
 pub mod models;
 pub mod operations;

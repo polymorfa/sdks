@@ -1,4 +1,5 @@
 //! Handwritten request and response models. Unknown fields are ignored by serde.
+pub use crate::message_content::*;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 
@@ -167,7 +168,10 @@ pub enum MessageTransport {
 pub struct QuotedMessage {
     pub id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub participant: Option<String>,
+    #[serde(rename = "type")]
+    pub message_type: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -198,14 +202,72 @@ impl SendMessageRequest {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum MessageContent {
-    Text { text: String },
-    Image { image: MediaContent },
-    Video { video: MediaContent },
-    File { file: FileMediaContent },
-    Voice { voice: VoiceMediaContent },
-    Poll { poll: PollContent },
-    Location { location: LocationContent },
-    Contact { contact: ContactContent },
+    Text {
+        text: String,
+    },
+    Image {
+        image: MediaContent,
+    },
+    Video {
+        video: MediaContent,
+    },
+    File {
+        file: FileMediaContent,
+    },
+    Voice {
+        voice: VoiceMediaContent,
+    },
+    Poll {
+        poll: PollContent,
+    },
+    Location {
+        location: LocationContent,
+    },
+    Contact {
+        contact: ContactContent,
+    },
+    RequestPhoneNumber {
+        #[serde(rename = "requestPhoneNumber")]
+        request_phone_number: PhoneNumberRequest,
+    },
+    Product {
+        product: ProductMessageContent,
+    },
+    ProductList {
+        #[serde(rename = "productList")]
+        product_list: ProductListMessageContent,
+    },
+    Order {
+        order: OrderMessageContent,
+    },
+    List {
+        list: ListMessageContent,
+    },
+    Buttons {
+        buttons: ButtonsMessageContent,
+    },
+    AddressMessage {
+        #[serde(rename = "addressMessage")]
+        address_message: AddressMessageContent,
+    },
+    Flow {
+        flow: FlowMessageContent,
+    },
+    CallPermissionRequest {
+        #[serde(rename = "callPermissionRequest")]
+        call_permission_request: CallPermissionRequestMessageContent,
+    },
+    OrderDetails {
+        #[serde(rename = "orderDetails")]
+        order_details: OrderDetailsMessageContent,
+    },
+    OrderStatus {
+        #[serde(rename = "orderStatus")]
+        order_status: OrderStatusMessageContent,
+    },
+    Template {
+        template: MessageTemplateSend,
+    },
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -264,6 +326,9 @@ pub struct WhatsAppMessageIds {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct MessageReceipt {
     pub id: String,
+    pub whatsapp_id: Option<String>,
+    #[serde(rename = "operationId")]
+    pub operation_id: Option<String>,
     pub whatsapp_ids: WhatsAppMessageIds,
     pub conversation: ConversationReference,
     pub timestamp: String,

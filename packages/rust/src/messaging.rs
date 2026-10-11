@@ -247,6 +247,30 @@ impl Messages<'_> {
         {
             return Err(crate::transport::configuration("conversation"));
         }
+        match &body.content {
+            MessageContent::OrderDetails { order_details } => {
+                let payment = &order_details.payment_settings;
+                if payment.pix_dynamic_code.is_none()
+                    && payment.payment_link.is_none()
+                    && payment.boleto.is_none()
+                {
+                    return Err(crate::transport::configuration(
+                        "content.orderDetails.paymentSettings",
+                    ));
+                }
+                if order_details.order.is_none() && order_details.header_image_url.is_some() {
+                    return Err(crate::transport::configuration(
+                        "content.orderDetails.headerImageUrl",
+                    ));
+                }
+            }
+            MessageContent::OrderStatus { order_status }
+                if order_status.order.is_none() && order_status.payment.is_none() =>
+            {
+                return Err(crate::transport::configuration("content.orderStatus"));
+            }
+            _ => {}
+        }
         self.0
             .request(
                 Method::POST,
