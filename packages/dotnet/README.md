@@ -33,6 +33,8 @@ All 439 REST operations covered by the pinned TypeScript server SDK have handwri
 
 `CallsClient` tracks incoming and outgoing calls. `Call` provides answer, join, reject, leave, end, participant controls and typed media frames. Connections authenticate in the first WebSocket frame, refresh expiring credentials, detect missed heartbeats and reconnect within a bounded attempt budget. Media reconnect preserves connection identity and acknowledged preferences. `CallsTokenSource` shares concurrent provider requests while preserving each caller's cancellation. PCM uses the rate announced in `Call.SampleRate`; H.264 frames preserve source and timestamp fields.
 
+Use `Call.MediaFramesAsync` for PCM, H.264, source ownership and keyframe requests, and `SendAudioAsync`/`SendVideoAsync` to send encoded media. `VideoSources` is a snapshot of the current connection's owners and clears when media disconnects or the call ends. This native media interface does not require browser tracks.
+
 `WhatsAppMedia.DecryptToFileAsync` and `DownloadToFileAsync` authenticate encrypted media before decrypting it into a private scratch file and atomically committing the verified result. They bound input size, clean up failures and preserve existing files unless overwrite is requested. `MessagingMedia.DownloadToFileAsync` performs bounded API media downloads over the separate credential-free storage transport.
 
 The [examples](examples/README.md) include an ASP.NET Core authenticated token/webhook server, a reusable Razor component for Blazor and MAUI Blazor Hybrid hosts, and a programmatic Calls agent. Native builds verify the examples; the ASP.NET and Blazor WebAssembly hosts also run in a browser against local API fixtures. MAUI device hosting remains unexercised.

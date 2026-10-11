@@ -122,6 +122,7 @@ public sealed class Call
         catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { }
         catch (Exception error) { failure ??= error; }
         finally { await connection.DisposeAsync().ConfigureAwait(false); }
+        lock (gate) sources.Clear();
         if (Ended || lifetime.IsCancellationRequested) return;
         failure ??= new CallsSocketException("Media connection ended.", "socket_closed", connection.CloseCode);
         if (failure is CallsSocketException { CloseCode: 1000 or 4409 }) { Finish(failure is CallsSocketException { Code: "call_claimed" } ? "claimed" : "remote_hangup"); return; }
@@ -162,7 +163,7 @@ public sealed class Call
     private void ParticipantLeft(string id) { lock (gate) { rosterRevisions[id] = ++rosterRevision; if (roster.TryGetValue(id, out var old)) roster[id] = old with { State = "left" }; } owner.Publish(new CallChanged(this)); }
     private static int Rank(string value) => value switch { "left" => 3, "connected" => 2, "ringing" => 1, _ => 0 };
     private void Transition(string next) { lock (gate) { if (Ended) return; state = next; } owner.Publish(new CallChanged(this)); }
-    private void Finish(string reason) { lock (gate) { if (Ended) return; state = "ended"; EndReason = reason; lifetime.Cancel(); } ReportQuality(new(Reconnects: reconnects)); mediaFrames.Writer.TryComplete(); if (media is { } connection) Observe(connection.DisposeAsync().AsTask()); owner.Completed(this, reason); }
+    private void Finish(string reason) { lock (gate) { if (Ended) return; state = "ended"; EndReason = reason; sources.Clear(); lifetime.Cancel(); } ReportQuality(new(Reconnects: reconnects)); mediaFrames.Writer.TryComplete(); if (media is { } connection) Observe(connection.DisposeAsync().AsTask()); owner.Completed(this, reason); }
     internal async Task DisconnectAsync() { if (!Ended && accepted) { using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5)); try { await LeaveAsync(deadline.Token).ConfigureAwait(false); } catch (Exception e) when (e is PolymorfaException or OperationCanceledException) { } } Finish("left"); if (media is { } connection) await connection.DisposeAsync().ConfigureAwait(false); if (mediaRunner is not null) await mediaRunner.ConfigureAwait(false); }
     private async Task ReleaseAsync()
     {

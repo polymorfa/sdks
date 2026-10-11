@@ -32,8 +32,21 @@ internal static class CallsClientTests
         await WebSocketFixture.TextAsync(lifecycle, Event("call.received", "in1", "{\"direction\":\"incoming\",\"from\":{\"phoneNumber\":\"+15550001111\"},\"hasVideo\":false}")); var call = ((CallIncoming)await Next(events, e => e is CallIncoming)).Call; ResourceTests.Equal(call.Peer, "+15550001111");
         var serving = http.ServeAsync("POST", "/messaging/voip/calls/in1/accept", "{\"exclusive\":false,\"video\":false}", "{\"success\":true,\"data\":{\"answered\":true,\"answeredBy\":\"client:one\",\"exclusive\":false}}"); var answer = call.AnswerAsync(); using var media = await ws.AcceptAsync("/voip/calls/in1/media", CallsProtocol.MediaSubprotocol); var auth = await WebSocketFixture.ReceiveJsonAsync(media); ResourceTests.Equal(auth.GetProperty("connectionId").GetString(), call.ConnectionId); await WebSocketFixture.TextAsync(media, "{\"type\":\"ready\",\"sampleRate\":16000,\"video\":false}"); await answer; await serving; ResourceTests.Equal(call.State, "connected");
         var change = call.SetMediaStateAsync(audioMuted: true); var command = await WebSocketFixture.ReceiveJsonAsync(media); await WebSocketFixture.TextAsync(media, "{\"type\":\"media_state\",\"requestId\":\"" + command.GetProperty("requestId").GetString() + "\",\"audioMuted\":true,\"videoEnabled\":false}"); ResourceTests.True((await change).AudioMuted);
+        using var mediaDeadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        await using var frames = call.MediaFramesAsync(mediaDeadline.Token).GetAsyncEnumerator();
+        await WebSocketFixture.TextAsync(media, "{\"type\":\"video_source\",\"source\":7,\"connectionId\":\"connection_1\",\"connectionParticipant\":\"agent\"}");
+        while (await frames.MoveNextAsync() && frames.Current is not CallVideoSource) { }
+        ResourceTests.Equal(call.VideoSources.Single().Source, 7u); ResourceTests.Equal(call.VideoSources[0].ConnectionParticipant, "agent");
+        await WebSocketFixture.TextAsync(media, "{\"type\":\"keyframe_request\"}");
+        ResourceTests.True(await frames.MoveNextAsync() && frames.Current is CallKeyframeRequest);
+        var encoded = CallsProtocol.EncodeVideo(new(1, true, 7, ulong.MaxValue, [1, 2, 3]));
+        await media.SendAsync(encoded.AsMemory(), WebSocketMessageType.Binary, true, CancellationToken.None);
+        ResourceTests.True(await frames.MoveNextAsync() && frames.Current is CallVideoFrame { Source: 7, TimestampUs: ulong.MaxValue, Keyframe: true });
+        await call.SendAudioAsync([-1, 2]); var pcm = await WebSocketFixture.ReceiveAsync(media); ResourceTests.True(pcm.Bytes.SequenceEqual(CallsProtocol.EncodeAudio([-1, 2]))); ResourceTests.Equal(call.SampleRate, 16000);
         await media.CloseOutputAsync((WebSocketCloseStatus)1012, "restart", CancellationToken.None); using var reattached = await ws.AcceptAsync("/voip/calls/in1/media", CallsProtocol.MediaSubprotocol); var newAuth = await WebSocketFixture.ReceiveJsonAsync(reattached); ResourceTests.Equal(newAuth.GetProperty("connectionId").GetString(), call.ConnectionId); await WebSocketFixture.TextAsync(reattached, "{\"type\":\"ready\",\"sampleRate\":16000,\"video\":false}"); var restore = await WebSocketFixture.ReceiveJsonAsync(reattached); ResourceTests.Equal(restore.GetProperty("type").GetString(), "media_state"); ResourceTests.True(restore.GetProperty("audioMuted").GetBoolean()); await WebSocketFixture.TextAsync(reattached, "{\"type\":\"media_state\",\"requestId\":\"" + restore.GetProperty("requestId").GetString() + "\",\"audioMuted\":true,\"videoEnabled\":false}"); await Next(events, e => e is CallChanged && call.State == "connected");
+        ResourceTests.Equal(call.VideoSources.Count, 0);
         await WebSocketFixture.TextAsync(lifecycle, Event("call.ended", "in1", "{\"reason\":\"remote_hangup\"}")); ResourceTests.Equal(((CallEnded)await Next(events, e => e is CallEnded)).Reason, "remote_hangup"); ResourceTests.True(call.Ended); ResourceTests.Equal(client.ActiveCalls.Count, 0);
+        ResourceTests.Equal(call.SampleRate, 16000); ResourceTests.Equal(call.VideoSources.Count, 0);
     }
     private static async Task EarlyTerminalAndClaims()
     {
