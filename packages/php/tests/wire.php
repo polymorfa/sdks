@@ -48,8 +48,12 @@ try {
             if (isset($outcome['code'])) {
                 check($error->errorCode === $outcome['code'], 'Wire error code');
             }
+            if (isset($outcome['operationId'])) {
+                check($error->metadata->operationId === $outcome['operationId'], 'Wire admitted operation metadata');
+            }
             if (isset($outcome['requestId'])) {
                 check($error->requestId === $outcome['requestId'], 'Wire error request ID');
+                check($error->metadata->requestId === $outcome['metadataRequestId'], 'Wire error metadata request ID');
             }
         } else {
             $result = $run();

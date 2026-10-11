@@ -7,6 +7,7 @@ namespace Polymorfa;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\ConnectException;
+use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Exception\TransferException;
 use Psr\Http\Message\ResponseInterface;
 
@@ -82,7 +83,10 @@ final class HttpTransport
         $retries = $options->maxNetworkRetries ?? $this->maxNetworkRetries;
         for ($attempt = 1; $attempt <= $retries + 1; ++$attempt) {
             $options->cancellation?->throwIfCancelled();
-            $request = ['headers' => $headers, 'http_errors' => false, 'allow_redirects' => false,
+            $receivedMetadata = null;
+            $request = ['on_headers' => static function (ResponseInterface $received) use (&$receivedMetadata, $attempt): void {
+                $receivedMetadata = ResponseMetadata::fromResponse($received, $attempt);
+            }, 'headers' => $headers, 'http_errors' => false, 'allow_redirects' => false,
                 'timeout' => $options->timeout ?? $this->timeout, 'read_timeout' => $options->timeout ?? $this->timeout,
                 'stream' => $accept === 'text/event-stream'];
             if ($body !== null) {
@@ -97,6 +101,11 @@ final class HttpTransport
                 $response = $this->http->request($method, $url, $request);
             } catch (ConnectException $error) {
                 $options->cancellation?->throwIfCancelled();
+                if ($receivedMetadata !== null && isset($receivedMetadata->headers['x-polymorfa-operation-id'])) {
+                    $context = $error->getHandlerContext();
+                    $type = ($context['errno'] ?? null) === 28 ? TimeoutException::class : ConnectionException::class;
+                    throw new $type('The response body could not be read. Query operation status before retrying.', $type === TimeoutException::class ? 'request_timeout' : 'connection_error', status: $receivedMetadata->status, requestId: $receivedMetadata->requestId, metadata: $receivedMetadata);
+                }
                 if ($safe && $attempt <= $retries) {
                     self::sleep(self::retryDelay(null, $attempt), $options);
                     continue;
@@ -106,8 +115,13 @@ final class HttpTransport
                     throw new TimeoutException('Request timed out.', 'request_timeout');
                 }
                 throw new ConnectionException('Could not reach Polymorfa.', 'connection_error');
-            } catch (TransferException) {
+            } catch (TransferException $error) {
                 $options->cancellation?->throwIfCancelled();
+                if ($receivedMetadata !== null && isset($receivedMetadata->headers['x-polymorfa-operation-id'])) {
+                    $context = $error instanceof RequestException ? $error->getHandlerContext() : [];
+                    $type = ($context['errno'] ?? null) === 28 ? TimeoutException::class : ConnectionException::class;
+                    throw new $type('The response body could not be read. Query operation status before retrying.', $type === TimeoutException::class ? 'request_timeout' : 'connection_error', status: $receivedMetadata->status, requestId: $receivedMetadata->requestId, metadata: $receivedMetadata);
+                }
                 if ($safe && $attempt <= $retries) {
                     self::sleep(self::retryDelay(null, $attempt), $options);
                     continue;
@@ -116,7 +130,7 @@ final class HttpTransport
             }
             $status = $response->getStatusCode();
             $metadata = ResponseMetadata::fromResponse($response, $attempt);
-            if ($safe && $attempt <= $retries && $response->getHeaderLine('Idempotent-Replayed') !== 'true'
+            if ($safe && $attempt <= $retries && !$response->hasHeader('x-polymorfa-operation-id') && $response->getHeaderLine('Idempotent-Replayed') !== 'true'
                 && (in_array($status, [408, 409, 429], true) || $status >= 500)) {
                 $response->getBody()->close();
                 self::sleep(self::retryDelay($response, $attempt), $options);
@@ -215,7 +229,7 @@ final class HttpTransport
             $response->getBody()->close();
         }
         $type = match ($metadata->status) {
-            400, 422 => ValidationException::class, 401 => AuthenticationException::class,
+            400, 413, 422 => ValidationException::class, 401 => AuthenticationException::class,
             402 => PaymentRequiredException::class, 403 => AuthorizationException::class,
             404 => NotFoundException::class, 409 => ConflictException::class,
             429 => RateLimitException::class, default => $metadata->status >= 500 ? ServerException::class : PolymorfaException::class,

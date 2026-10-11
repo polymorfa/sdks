@@ -16,6 +16,9 @@ final readonly class ResponseMetadata
         public array $headers,
         public ?string $requestId,
         public ?string $apiVersion,
+        public ?string $operationId = null,
+        public ?string $transport = null,
+        public ?string $routingReason = null,
     ) {
     }
 
@@ -36,7 +39,10 @@ final readonly class ResponseMetadata
             $attempts,
             $headers,
             $headers['x-request-id'] ?? null,
-            $headers['polymorfa-version'] ?? null
+            $headers['polymorfa-version'] ?? null,
+            $headers['x-polymorfa-operation-id'] ?? null,
+            in_array($headers['x-polymorfa-transport'] ?? '', ['linked_devices','official_api'], true) ? $headers['x-polymorfa-transport'] : null,
+            $headers['x-polymorfa-routing-reason'] ?? null
         );
     }
 }

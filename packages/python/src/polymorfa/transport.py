@@ -289,21 +289,57 @@ class Transport:
                     "Could not reach Polymorfa.", code="connection_error"
                 ) from None
             meta = ResponseMetadata.from_response(response, attempt)
+            if accept == "application/json":
+                try:
+                    await self._read_body(response, meta)
+                except (TimeoutError, ConnectionError):
+                    await response.aclose()
+                    if safe and attempt <= retries and meta.operation_id is None:
+                        await asyncio.sleep(retry_delay({}, attempt))
+                        continue
+                    raise
             if (
                 safe
                 and attempt <= retries
                 and response.headers.get("idempotent-replayed") != "true"
+                and "x-polymorfa-operation-id" not in response.headers
                 and (response.status_code in (408, 409, 429) or response.status_code >= 500)
             ):
                 await response.aclose()
                 await asyncio.sleep(retry_delay(response.headers, attempt))
                 continue
             if response.status_code >= 400:
-                await response.aread()
-                await response.aclose()
-                self._raise_error(response, meta)
+                try:
+                    await self._read_body(response, meta)
+                    self._raise_error(response, meta)
+                finally:
+                    await response.aclose()
             return response, meta
         raise AssertionError("unreachable")
+
+    async def _read_body(self, response: httpx.Response, meta: ResponseMetadata) -> None:
+        try:
+            await response.aread()
+        except httpx.TimeoutException:
+            raise TimeoutError(
+                "The response body timed out. Query operation status before retrying."
+                if meta.operation_id
+                else "The response body timed out.",
+                code="request_timeout",
+                status=meta.status,
+                request_id=meta.request_id,
+                metadata=meta,
+            ) from None
+        except httpx.TransportError:
+            raise ConnectionError(
+                "The response body could not be read. Query operation status before retrying."
+                if meta.operation_id
+                else "The response body could not be read.",
+                code="connection_error",
+                status=meta.status,
+                request_id=meta.request_id,
+                metadata=meta,
+            ) from None
 
     def _raise_error(self, response: httpx.Response, meta: ResponseMetadata) -> None:
         data: dict[str, object] = {}
@@ -316,6 +352,7 @@ class Transport:
                 pass
         error_type = {
             400: ValidationError,
+            413: ValidationError,
             401: AuthenticationError,
             402: PaymentRequiredError,
             403: AuthorizationError,
@@ -356,7 +393,7 @@ class Transport:
             method, path, query=query, body=body, options=options
         )
         try:
-            await response.aread()
+            await self._read_body(response, meta)
             if response.status_code == 204 or not response.content:
                 return ApiResponse(None, meta)
             if "json" not in response.headers.get("content-type", ""):

@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Polymorfa;
 
 use GuzzleHttp\ClientInterface;
-use Polymorfa\Resources\{Chats, Contacts, Identities, Labels, Profile, Privacy, Presence, Media, Messages, QuickLinks, Sessions, Voip, Webhooks};
+use Polymorfa\Resources\{Groups, Chats, Contacts, Identities, Labels, Profile, Privacy, Presence, Media, Messages, QuickLinks, Sessions, Voip, Webhooks};
 
 final readonly class MessagingClient
 {
+    public Groups $groups;
     public Contacts $contacts;
     public Identities $identities;
     public Labels $labels;
@@ -34,6 +35,7 @@ final readonly class MessagingClient
         ?ClientInterface $http = null
     ) {
         $transport = new HttpTransport($credential, $baseUrl, $apiVersion, $timeout, $maxNetworkRetries, $proxy, $http);
+        $this->groups = new Groups($transport);
         $this->contacts = new Contacts($transport);
         $this->identities = new Identities($transport);
         $this->labels = new Labels($transport);

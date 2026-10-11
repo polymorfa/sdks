@@ -9,12 +9,18 @@ from typing_extensions import Self
 
 from . import messaging, platform
 from .errors import ConfigurationError
+from .groups import Groups
+from .observations import Identities, Labels, Privacy
 from .transport import Credential, Transport
 
 
 @dataclass(frozen=True, init=False)
 class AsyncMessagingClient:
     _transport: Transport
+    identities: Identities
+    labels: Labels
+    privacy: Privacy
+    groups: Groups
     messages: messaging.Messages
     sessions: messaging.Sessions
     quick_links: messaging.QuickLinks
@@ -31,6 +37,10 @@ class AsyncMessagingClient:
         transport = Transport(credential, **options)
         object.__setattr__(self, "_transport", transport)
         for name, resource in (
+            ("identities", Identities),
+            ("labels", Labels),
+            ("privacy", Privacy),
+            ("groups", Groups),
             ("messages", messaging.Messages),
             ("sessions", messaging.Sessions),
             ("quick_links", messaging.QuickLinks),

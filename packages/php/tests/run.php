@@ -121,3 +121,5 @@ raises(fn () => Webhooks::constructEvent('invalid JSON', $signature, 'secret'), 
 echo count($cases) . " typed operation fixtures and client behavior checks passed.\n";
 require __DIR__ . '/wire.php';
 require __DIR__ . '/contacts.php';
+require __DIR__ . '/media.php';
+require __DIR__ . '/groups.php';

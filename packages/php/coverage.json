@@ -54,9 +54,9 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/groups/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.delete",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
@@ -366,41 +366,41 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/groups",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.list",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/groups/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.retrieve",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/groups/{id}/invite-code",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.getInviteCode",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/groups/{id}/participants",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.listParticipants",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/groups/join-info",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.getJoinInfo",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
@@ -1022,65 +1022,65 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.create",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/admin/demote",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.demoteParticipants",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/admin/promote",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.promoteParticipants",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/invite-code/revoke",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.revokeInviteCode",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/leave",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.leave",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/participants/add",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.addParticipants",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/participants/remove",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.removeParticipants",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups/join",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.join",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
@@ -1598,57 +1598,57 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/description",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.setDescription",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/picture",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.setPicture",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/settings/info-edit",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.setInfoEditing",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/settings/join-approval",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.setJoinApproval",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/settings/member-add",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.setMemberAddMode",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/settings/messages",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.setMessaging",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/subject",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.setSubject",
+      "testFile": "tests/groups.php"
     },
     {
       "family": "messaging",

@@ -55,5 +55,5 @@ foreach ($cases as [$method,$path,$body,$fixture,$invoke]) {
     check($result->data === $fixture && $result->metadata->requestId === 'req_test', 'Resource typed response and metadata: '.$path);
 }
 raises(fn () => $client->privacy->set('support', 'online', 'contacts'), Polymorfa\ValidationException::class);
-raises(fn () => $client->identities->resolve('support',['id' => 'x','phoneNumber' => '+1']), Polymorfa\ValidationException::class);
+raises(fn () => $client->identities->resolve('support', ['id' => 'x','phoneNumber' => '+1']), Polymorfa\ValidationException::class);
 echo count($cases)." contact/profile/identity/privacy/label/presence operation fixtures passed.\n";

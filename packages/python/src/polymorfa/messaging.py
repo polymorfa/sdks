@@ -6,17 +6,24 @@ import builtins
 import math
 from collections.abc import Mapping
 from dataclasses import replace
-from typing import TypeVar, cast
+from typing import Literal, TypeVar, cast
 from urllib.parse import quote
 
 from .errors import ConfigurationError, ValidationError
 from .models import (
+    AsyncAccepted,
+    BusinessProfile,
     CallAcceptance,
     CallAcceptanceResult,
     CallPlacement,
     CallPlacementResult,
     CallSettings,
+    ChatPresenceData,
     Contact,
+    ContactBlocklist,
+    ContactCheck,
+    ContactInfo,
+    ContactPicture,
     Envelope,
     HistoryChat,
     HistoryChatsParams,
@@ -28,6 +35,10 @@ from .models import (
     MessageResponse,
     PairCode,
     PairCodeResult,
+    PictureSource,
+    PresenceData,
+    PresenceSetResult,
+    PresenceSubscription,
     Profile,
     QrCode,
     QuickLink,
@@ -487,7 +498,7 @@ class Contacts(Resource):
 
     async def check(
         self, session: str, phone: str | builtins.list[str], *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[builtins.list[JsonObject]]]:
+    ) -> ApiResponse[Envelope[builtins.list[ContactCheck]]]:
         return await self._request(
             "GET",
             self._path(session) + "/check",
@@ -497,33 +508,33 @@ class Contacts(Resource):
 
     async def blocklist(
         self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[ContactBlocklist]]:
         return await self._request("GET", self._path(session) + "/blocked", options=options)
 
     async def picture(
         self, session: str, contact_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[ContactPicture]]:
         return await self._request(
             "GET", self._path(session, contact_id) + "/picture", options=options
         )
 
     async def info(
         self, session: str, contact_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[ContactInfo]]:
         return await self._request(
             "GET", self._path(session, contact_id) + "/info", options=options
         )
 
     async def devices(
         self, session: str, contact_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[builtins.list[JsonObject]]]:
+    ) -> ApiResponse[Envelope[builtins.list[str]]]:
         return await self._request(
             "GET", self._path(session, contact_id) + "/devices", options=options
         )
 
     async def business_profile(
         self, session: str, contact_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[BusinessProfile]]:
         return await self._request(
             "GET", self._path(session, contact_id) + "/business-profile", options=options
         )
@@ -570,7 +581,7 @@ class Profiles(Resource):
         )
 
     async def set_picture(
-        self, session: str, body: JsonObject, *, options: RequestOptions = O
+        self, session: str, body: PictureSource, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         return await self._request(
             "PUT", f"/messaging/{segment(session)}/profile/picture", body=body, options=options
@@ -586,8 +597,12 @@ class Profiles(Resource):
 
 class Presence(Resource):
     async def set(
-        self, session: str, presence: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Success]:
+        self,
+        session: str,
+        presence: Literal["available", "unavailable"],
+        *,
+        options: RequestOptions = O,
+    ) -> ApiResponse[Success | Envelope[PresenceSetResult] | Envelope[AsyncAccepted]]:
         return await self._request(
             "POST",
             f"/messaging/{segment(session)}/presence",
@@ -597,21 +612,21 @@ class Presence(Resource):
 
     async def get(
         self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[PresenceData]]:
         return await self._request(
             "GET", f"/messaging/{segment(session)}/presence", options=options
         )
 
     async def get_for_chat(
         self, session: str, chat_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[ChatPresenceData]]:
         return await self._request(
             "GET", f"/messaging/{segment(session)}/presence/{segment(chat_id)}", options=options
         )
 
     async def subscribe(
         self, session: str, chat_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Success]:
+    ) -> ApiResponse[Envelope[PresenceSubscription] | Envelope[AsyncAccepted]]:
         return await self._request(
             "POST",
             f"/messaging/{segment(session)}/presence/{segment(chat_id)}/subscribe",
