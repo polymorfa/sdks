@@ -28,5 +28,7 @@ derive their authorized session or customer from server state, and use
 accept the session/customer target or ephemeral identity as trusted browser
 input, and never send a project token or organization API key to WASM.
 
-The Web Component integration is documented wiring, not a tested Yew/Leptos
-browser application in this checkpoint.
+The runnable [Yew + Axum example](yew/README.md) builds a browser WASM application
+with the existing Web Components and a server-owned authenticated token route.
+Its native HTTP test proves login, origin checks, opaque cookies, server-derived
+grants and logout. The frontend crate does not depend on the server SDK.

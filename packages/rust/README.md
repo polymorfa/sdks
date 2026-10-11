@@ -116,3 +116,5 @@ not complete the asset and errors never retain the signed upload URL or storage 
 `request_logs().list` reads typed project request records and `follow` reads newer records from a follow cursor. `tail` yields optional backfill oldest first, follows without delay while pages remain, honors rate-limit retry headers, and stops when its cancellation token is canceled. A project view refuses another project selection; a cursor cannot be combined with new filters.
 
 Calls diagnostics send technical error codes and final reconnect counts without blocking media. `calls_diagnostics::CallReporter` also accepts measured quality figures, removes invalid codecs and candidate types, clamps numeric limits, enforces one quality report per five seconds and twenty errors per minute, and stops after permanent HTTP refusals. Reports never retry and expire after five seconds.
+
+`POLYMORFA_ERROR_CODES` exports all known documented API codes. `is_known_error_code` recognizes this catalog while every error retains its original open `code`, including future API or SDK codes.

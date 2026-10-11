@@ -48,7 +48,7 @@ pub mod webhook_payloads;
 pub mod webhooks;
 
 pub use bridge::BridgeClient;
-pub use errors::{Error, ErrorKind, Result};
+pub use errors::{is_known_error_code, Error, ErrorKind, Result, POLYMORFA_ERROR_CODES};
 pub use messaging::MessagingClient;
 pub use platform::{OrganizationClient, ProjectClient};
 pub use system::SystemClient;

@@ -7,6 +7,7 @@ description = "Handwritten server clients for the Polymorfa Messaging and Platfo
 license = "MIT"
 repository = "https://github.com/polymorfa/sdks"
 readme = "README.md"
+include = ["Cargo.toml", "Cargo.lock", "README.md", "src/**", "tests/**", "fixtures/**", "coverage.json", "protocol-notes.md", "release-contract.json", ".cargo/config.toml"]
 
 [dependencies]
 async-stream = "0.3"
