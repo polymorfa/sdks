@@ -21,6 +21,10 @@ if ($failure) {
     echo json_encode(['error' => ['code' => 'wire_mismatch','message' => 'Native request differs from the handwritten fixture.']]);
     return;
 }
-header('Content-Type: application/json');
+http_response_code($fixture['status'] ?? 200);
+header('Content-Type: '.(is_string($fixture['response']) ? 'application/octet-stream' : 'application/json'));
+foreach ($fixture['responseHeaders'] ?? [] as $name => $value) {
+    header($name.': '.$value);
+}
 header('X-Request-Id: native_request');
-echo json_encode($fixture['response'], JSON_THROW_ON_ERROR);
+echo is_string($fixture['response']) ? $fixture['response'] : json_encode($fixture['response'], JSON_THROW_ON_ERROR);

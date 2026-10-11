@@ -153,3 +153,15 @@ units and currencies remain separate.
 
 `ApiResponse` suppresses payload contents in `var_dump` to protect one-time
 secrets and signed URLs. Access `data` explicitly when consuming a response.
+
+`messages.send` accepts the complete typed content union, including interactive
+and payment-order messages. `messages.operationStatus` reads the durable receipt
+without resending. QuickLink models preserve connection goals, configuration
+choices and separate Cloud sync request receipts from delivery progress.
+
+`media.downloadStream` returns a PSR body to consume once or close.
+`downloadUrl` returns a signed storage URL without following it, or reports that
+the API streams the body. Storage requests omit API credentials and caller
+headers. `downloadToFile` writes a private sibling and replaces the destination
+only after completion; bounded, cancelled or failed reads preserve the previous
+file. Media filenames are display names stripped of path segments and controls.

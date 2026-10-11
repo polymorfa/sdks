@@ -10,6 +10,7 @@ use Polymorfa\Resources\{BanSafe, Channels, QuickReplies, Users, Business, Clien
 final readonly class MessagingClient
 {
     public BanSafe $banSafe;
+    public Resources\Calls $calls;
     public Resources\MessagingCampaigns $campaigns;
     public Resources\Templates $templates;
     public Resources\CloudTemplates $cloudTemplates;
@@ -50,6 +51,7 @@ final readonly class MessagingClient
     ) {
         $transport = new HttpTransport($credential, $baseUrl, $apiVersion, $timeout, $maxNetworkRetries, $proxy, $http);
         $this->banSafe = new BanSafe($transport);
+        $this->calls = new Resources\Calls($transport);
         $this->campaigns = new Resources\MessagingCampaigns($transport);
         $this->templates = new Resources\Templates($transport);
         $this->cloudTemplates = new Resources\CloudTemplates($transport);

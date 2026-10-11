@@ -486,9 +486,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/operations/{operationId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::messages.operationStatus",
+      "testFile": "tests/messaging_complete.php"
     },
     {
       "family": "messaging",
@@ -590,17 +590,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/media/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::media.download",
+      "testFile": "tests/media_stream.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/media/{id}/info",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::media.retrieve",
+      "testFile": "tests/messaging_complete.php"
     },
     {
       "family": "messaging",
@@ -702,9 +702,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/quicklinks/availability",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::quickLinks.availability",
+      "testFile": "tests/messaging_complete.php"
     },
     {
       "family": "messaging",
@@ -734,9 +734,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/webhooks",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::webhooks.list",
+      "testFile": "tests/messaging_complete.php"
     },
     {
       "family": "messaging",
@@ -910,9 +910,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/calls/{callId}/reject",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::calls.reject",
+      "testFile": "tests/messaging_complete.php"
     },
     {
       "family": "messaging",
@@ -1110,9 +1110,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/messages/send",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::messages.send",
+      "testFile": "tests/messaging_complete.php"
     },
     {
       "family": "messaging",
@@ -1230,9 +1230,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/media/{id}/download-and-save",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::media.persist",
+      "testFile": "tests/messaging_complete.php"
     },
     {
       "family": "messaging",
@@ -1326,9 +1326,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/quicklinks",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::quickLinks.create",
+      "testFile": "tests/messaging_complete.php"
     },
     {
       "family": "messaging",
@@ -1470,9 +1470,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/webhooks",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::webhooks.create",
+      "testFile": "tests/messaging_complete.php"
     },
     {
       "family": "messaging",
@@ -1766,9 +1766,9 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/webhooks/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::webhooks.update",
+      "testFile": "tests/messaging_complete.php"
     },
     {
       "family": "platform",

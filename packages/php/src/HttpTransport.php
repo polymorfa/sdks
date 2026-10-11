@@ -90,7 +90,7 @@ final class HttpTransport
                 $receivedMetadata = ResponseMetadata::fromResponse($received, $attempt);
             }, 'headers' => $headers, 'http_errors' => false, 'allow_redirects' => false,
                 'timeout' => $options->timeout ?? $this->timeout, 'read_timeout' => $options->timeout ?? $this->timeout,
-                'stream' => $accept === 'text/event-stream'];
+                'stream' => $accept !== 'application/json'];
             if ($body !== null) {
                 $request['json'] = $body;
             }
@@ -181,40 +181,90 @@ final class HttpTransport
         }
     }
 
-    /**
- *
- * @return ApiResponse<string> */
+    /** @return ApiResponse<string> */
     public function binary(string $path, ?RequestOptions $options = null): ApiResponse
     {
-        [$response, $metadata] = $this->openStream('GET', $path, options: $options, accept: 'application/octet-stream');
+        $download = $this->mediaStream($path, $options);
         try {
-            if ($response->getStatusCode() >= 300 && $response->getStatusCode() < 400) {
-                $location = $response->getHeaderLine('Location');
-                $response->getBody()->close();
-                $url = parse_url($location);
-                if ($url === false || ($url['scheme'] ?? '') !== 'https' || !isset($url['host']) || isset($url['user'])) {
-                    throw new ServerException('Invalid media redirect.', 'invalid_response', metadata: $metadata);
-                }
-                try {
-                    // Storage receives the signed capability URL alone, never API headers.
-                    $storage = $this->http->send(new \GuzzleHttp\Psr7\Request('GET', $location), ['http_errors' => false, 'allow_redirects' => false,
-                        'headers' => null, 'auth' => null, 'timeout' => $options->timeout ?? $this->timeout]);
-                    try {
-                        if ($storage->getStatusCode() >= 300) {
-                            throw new ServerException('Storage download failed.', status: $storage->getStatusCode());
-                        }
-                        return new ApiResponse($storage->getBody()->getContents(), $metadata);
-                    } finally {
-                        $storage->getBody()->close();
-                    }
-                } catch (TransferException) {
-                    throw new ConnectionException('Storage download failed.', 'connection_error');
-                }
+            return new ApiResponse($download->body->getContents(), $download->metadata);
+        } finally {
+            $download->close();
+        }
+    }
+
+    public function mediaUrl(string $path, ?RequestOptions $options = null): MediaDownloadUrl
+    {
+        [$response, $metadata] = $this->openStream('GET', $path, options:$options, accept:'application/octet-stream');
+        try {
+            if (in_array($response->getStatusCode(), [301,302,303,307,308], true)) {
+                $location = $this->mediaLocation($response->getHeaderLine('Location'), $metadata);
+                return new MediaDownloadUrl(false, $location, MediaFiles::signedUrlExpiry($location), $metadata);
             }
-            return new ApiResponse($response->getBody()->getContents(), $metadata);
+            return new MediaDownloadUrl(true, null, null, $metadata);
         } finally {
             $response->getBody()->close();
         }
+    }
+
+    public function mediaStream(string $path, ?RequestOptions $options = null): MediaDownloadStream
+    {
+        $options ??= new RequestOptions();
+        $retries = $options->maxNetworkRetries ?? $this->maxNetworkRetries;
+        $once = new RequestOptions($options->timeout, 0, $options->apiVersion, $options->idempotencyKey, $options->headers, $options->cancellation);
+        for ($attempt = 1; $attempt <= $retries + 1; ++$attempt) {
+            try {
+                [$response, $metadata] = $this->openStream('GET', $path, options:$once, accept:'application/octet-stream');
+            } catch (PolymorfaException $error) {
+                if ($attempt <= $retries && !isset($error->metadata?->headers['x-polymorfa-operation-id']) && ($error instanceof ConnectionException || $error instanceof TimeoutException || in_array($error->status, [408,409,429], true) || ($error->status ?? 0) >= 500)) {
+                    self::sleep(self::retryDelay(null, $attempt), $options);
+                    continue;
+                }
+                throw $error;
+            }
+            $metadata = new ResponseMetadata($metadata->status, $attempt, $metadata->headers, $metadata->requestId, $metadata->apiVersion, $metadata->operationId, $metadata->transport, $metadata->routingReason);
+            $redirected = in_array($response->getStatusCode(), [301,302,303,307,308], true);
+            if ($redirected) {
+                try {
+                    $location = $this->mediaLocation($response->getHeaderLine('Location'), $metadata);
+                } finally {
+                    $response->getBody()->close();
+                }
+                try {
+                    $response = $this->http->send(new \GuzzleHttp\Psr7\Request('GET', $location, ['Accept' => 'application/octet-stream','User-Agent' => 'polymorfa-php/'.self::SDK_VERSION]), ['http_errors' => false,'allow_redirects' => ['max' => 5,'protocols' => ['https','http'],'referer' => false],'headers' => null,'auth' => null,'cookies' => false,'stream' => true,'timeout' => $options->timeout ?? $this->timeout,'read_timeout' => $options->timeout ?? $this->timeout]);
+                } catch (TransferException) {
+                    $options->cancellation?->throwIfCancelled();
+                    if ($attempt <= $retries) {
+                        self::sleep(self::retryDelay(null, $attempt), $options);
+                        continue;
+                    }
+                    throw new ConnectionException('Storage download failed.', 'connection_error', metadata:$metadata, requestId:$metadata->requestId);
+                }
+                if ($response->getStatusCode() >= 300) {
+                    $response->getBody()->close();
+                    if ($attempt <= $retries && (in_array($response->getStatusCode(), [408,409,429], true) || $response->getStatusCode() >= 500)) {
+                        self::sleep(self::retryDelay($response, $attempt), $options);
+                        continue;
+                    }
+                    throw new ServerException('Media storage download failed.', 'media_storage_error', status:$response->getStatusCode(), metadata:$metadata, requestId:$metadata->requestId);
+                }
+            }
+            $options->cancellation?->throwIfCancelled();
+            $length = $response->getHeaderLine('Content-Length');
+            return new MediaDownloadStream(new MediaBodyStream($response->getBody(), $metadata, $options->cancellation), $metadata, $redirected, $response->getHeaderLine('Content-Type') ?: null, ctype_digit($length) ? (int)$length : null, MediaFiles::filename($response->getHeaderLine('Content-Disposition')));
+        }
+        throw new \LogicException('Unreachable media retry state.');
+    }
+
+    private function mediaLocation(string $location, ResponseMetadata $metadata): string
+    {
+        if (str_starts_with($location, '/')) {
+            $location = $this->baseUrl.$location;
+        }
+        $url = parse_url($location);
+        if ($url === false || !isset($url['scheme'],$url['host']) || isset($url['user']) || isset($url['pass']) || !($url['scheme'] === 'https' || ($url['scheme'] === 'http' && in_array($url['host'], ['localhost','127.0.0.1','[::1]'], true)))) {
+            throw new ServerException('The API returned an invalid media redirect.', 'invalid_redirect', status:$metadata->status, metadata:$metadata, requestId:$metadata->requestId);
+        }
+        return $location;
     }
 
     private function raiseError(ResponseInterface $response, ResponseMetadata $metadata): never

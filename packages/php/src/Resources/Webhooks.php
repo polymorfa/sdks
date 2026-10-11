@@ -7,7 +7,7 @@ namespace Polymorfa\Resources;
 use Polymorfa\ApiResponse;
 use Polymorfa\RequestOptions;
 
-/** @phpstan-type Webhook array{id:string,tenantId:string,url:string,events:list<string>,retries:array<string,mixed>,headers:list<array{name:string,value:string}>,enabled:bool,createdAt:string,session?:string,format?:string} */
+/** @phpstan-type Webhook array{id:string,tenantId:string,url:string,events:list<string>,retries:array{attempts:int,delaySeconds:int|float,policy:string},headers:list<array{name:string,value:string}>,enabled:bool,createdAt:string,session?:string,format?:'native'|'meta'} */
 final class Webhooks extends Resource
 {
     /**
@@ -17,7 +17,7 @@ final class Webhooks extends Resource
     { /** @var ApiResponse<array{success:bool,data:list<Webhook>}> */ return $this->request('GET', '/messaging/webhooks', options: $options);
     }
     /**
- * @param array{url:string,session?:string,events?:list<string>,hmacKey?:string,retries?:array<string,mixed>,headers?:list<array{name:string,value:string}>,format?:string} $body
+ * @param array{url:string,session?:string,events?:list<string>,hmacKey?:string,retries?:array{attempts:int,delaySeconds:int|float,policy:string},headers?:list<array{name:string,value:string}>,format?:'native'|'meta'} $body
  *
  * @return ApiResponse<array{success:bool,data:Webhook}> */
     public function create(array $body, ?RequestOptions $options = null): ApiResponse
@@ -30,7 +30,7 @@ final class Webhooks extends Resource
     { /** @var ApiResponse<array{success:bool,data:Webhook}> */ return $this->request('GET', '/messaging/webhooks/' . self::segment($id), options: $options);
     }
     /**
- * @param array{url?:string,events?:list<string>,hmacKey?:string,enabled?:bool,retries?:array<string,mixed>,headers?:list<array{name:string,value:string}>,format?:string} $body
+ * @param array{url?:string,events?:list<string>,hmacKey?:string,enabled?:bool,retries?:array{attempts:int,delaySeconds:int|float,policy:string},headers?:list<array{name:string,value:string}>,format?:'native'|'meta'} $body
  *
  * @return ApiResponse<array{success:bool,data:Webhook}> */
     public function update(string $id, array $body, ?RequestOptions $options = null): ApiResponse

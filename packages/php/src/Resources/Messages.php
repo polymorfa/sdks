@@ -7,22 +7,28 @@ namespace Polymorfa\Resources;
 use Polymorfa\ApiResponse;
 use Polymorfa\RequestOptions;
 use Polymorfa\Models;
+use Polymorfa\MessageModels;
 
 /**
  * @phpstan-import-type Success from Models
- * @phpstan-type Conversation array{id?:string,phoneNumber?:string,bsuid?:string,username?:string}
- * @phpstan-type MessageRequest array{conversation:Conversation,content:array<string,mixed>,transport?:string,replyTo?:string}
- * @phpstan-type Receipt array{success:bool,data:array{id:string,whatsapp_ids:array<string,string>,conversation:Conversation,timestamp:string,status:string,type?:string}}
+ * @phpstan-import-type Conversation from MessageModels
+ * @phpstan-import-type SendRequest from MessageModels as MessageRequest
+ * @phpstan-import-type Receipt from MessageModels as MessageReceipt
+ * @phpstan-import-type MessageResponse from MessageModels
+ * @phpstan-import-type Operation from MessageModels
  */
 final class Messages extends Resource
 {
     /**
  * @param MessageRequest $body
  *
- * @return ApiResponse<Receipt> */
+ * @return ApiResponse<array{success:true,data:MessageResponse}> */
     public function send(string $session, array $body, ?RequestOptions $options = null): ApiResponse
     {
-        /** @var ApiResponse<Receipt> */
+        if (array_key_exists('requestPhoneNumber', $body['content'])) {
+            $body['content']['requestPhoneNumber'] = new \stdClass();
+        }
+        /** @var ApiResponse<array{success:true,data:MessageResponse}> */
         return $this->request(
             'POST',
             '/messaging/' . self::segment($session) . '/messages/send',
@@ -32,12 +38,12 @@ final class Messages extends Resource
     }
 
     /**
- * @param array{conversation:Conversation,id:string,reaction:string,transport?:string} $body
+ * @param array{conversation:Conversation,id:string,reaction:string,transport?:'auto'|'linked_devices'|'official_api'} $body
  *
- * @return ApiResponse<Receipt> */
+ * @return ApiResponse<array{success:true,data:MessageReceipt}> */
     public function react(string $session, array $body, ?RequestOptions $options = null): ApiResponse
     {
-        /** @var ApiResponse<Receipt> */
+        /** @var ApiResponse<array{success:true,data:MessageReceipt}> */
         return $this->request(
             'POST',
             '/messaging/' . self::segment($session) . '/messages/react',
@@ -76,13 +82,11 @@ final class Messages extends Resource
         return $this->request('POST', '/messaging/' . self::segment($session) . '/messages/star', $body, options: $options);
     }
 
-    /**
- *
- * @return ApiResponse<array{success:bool,data:array{operationId:string,status:string,transport?:string,rejectionCode?:string,receipt?:array<string,mixed>}}> */
+    /** @return ApiResponse<array{success:true,data:Operation}> */
     public function operationStatus(string $session, string $operationId, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        /** @var ApiResponse<array{success:bool,data:array{operationId:string,status:string,transport?:string,rejectionCode?:string,receipt?:array<string,mixed>}}> */
+        /** @var ApiResponse<array{success:true,data:Operation}> */
         return $this->request('GET', '/messaging/' . self::segment($session) . '/operations/' . self::segment($operationId), options: $options);
     }
 }

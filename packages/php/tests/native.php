@@ -31,7 +31,7 @@ function nativeCases(array $cases, callable $makeClient, ?Polymorfa\Credential $
         $credential = $providedCredential ?? Polymorfa\Credential::organizationApiKey('pmfa_'.str_repeat('a', 72));
         foreach ($cases as $case) {
             [$method,$path,$body,$response,$invoke] = $case;
-            $http->post($url.'/__case', ['json' => ['method' => $method,'path' => $path,'body' => $body,'response' => $response,'authorization' => $authenticated ? $credential->authorization() : '']]);
+            $http->post($url.'/__case', ['json' => ['method' => $method,'path' => $path,'body' => $body,'response' => $response,'authorization' => $authenticated ? $credential->authorization() : '', ...($case[6] ?? [])]]);
             $client = $makeClient($credential, $url);
             $result = $invoke($client);
             check($result->data === ($case[5] ?? $response), 'Native typed response '.$method.' '.$path);

@@ -174,3 +174,7 @@ require __DIR__.'/templates.php';
 
 require __DIR__.'/campaigns.php';
 require __DIR__.'/audiences.php';
+
+require __DIR__.'/messaging_complete.php';
+
+require __DIR__.'/media_stream.php';

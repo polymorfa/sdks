@@ -70,6 +70,12 @@
       "status": "covered",
       "testFile": "tests/request_logs.php",
       "behavior": "Cursor/filter isolation; chronological backfill; follows new requests; cooperative cancellation and Retry-After bounds."
+    },
+    {
+      "sdkMethod": "media.downloadStream / downloadUrl / downloadToFile / MediaFiles.filename / signedUrlExpiry",
+      "status": "covered",
+      "testFile": "tests/media_stream.php",
+      "behavior": "Native PSR body; API metadata; isolated redirect storage requests; sanitized filenames; secret-redacted signed URL; bounded/cancelled atomic output; admitted body failure metadata."
     }
   ]
 }

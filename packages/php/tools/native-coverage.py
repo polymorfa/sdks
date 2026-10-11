@@ -210,6 +210,20 @@ evidence.extend([
  ('DELETE','/platform/audiences/{listId}/members/{phone}','audiences.deleteMember','audiences'),
  ('POST','/platform/audiences/uploads','audiences.createUpload','audiences'),
 ])
+
+evidence.extend([
+ ('POST','/messaging/{session}/messages/send','messages.send','messaging_complete'),
+ ('GET','/messaging/{session}/operations/{operationId}','messages.operationStatus','messaging_complete'),
+ ('POST','/messaging/{session}/calls/{callId}/reject','calls.reject','messaging_complete'),
+ ('POST','/messaging/quicklinks','quickLinks.create','messaging_complete'),
+ ('GET','/messaging/quicklinks/availability','quickLinks.availability','messaging_complete'),
+ ('GET','/messaging/webhooks','webhooks.list','messaging_complete'),
+ ('POST','/messaging/webhooks','webhooks.create','messaging_complete'),
+ ('PUT','/messaging/webhooks/{id}','webhooks.update','messaging_complete'),
+ ('GET','/messaging/media/{id}/info','media.retrieve','messaging_complete'),
+ ('POST','/messaging/media/{id}/download-and-save','media.persist','messaging_complete'),
+ ('GET','/messaging/media/{id}','media.download','media_stream'),
+])
 for method,path,name,test in evidence:
  matches=[op for op in manifest['operations'] if op['method']==method and op['path']==path]
  assert len(matches)==1, (method,path)
