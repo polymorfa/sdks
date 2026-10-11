@@ -80,3 +80,31 @@ $client = new Polymorfa\Client($credential, http:mocked([jsonResponse(['data' =>
 $client->operations->cancel('op');
 check($history[0]['request']->getHeaderLine('Idempotency-Key') !== '', 'Operation cancellation mints invocation key');
 raises(fn () => $client->operations->retrieve('op', ['wait' => 31]), Polymorfa\ConfigurationException::class);
+$history = [];
+$http = new GuzzleHttp\Client(['handler' => function ($request, $requestOptions) use ($operation, &$history) {
+    $history[] = $request;
+    if (count($history) > 1) {
+        usleep(1200000);
+    }return GuzzleHttp\Promise\Create::promiseFor(jsonResponse(['data' => $operation]));
+}]);
+$client = new Polymorfa\Client($credential, http:$http);
+$started = microtime(true);
+check($client->operations->wait('op', 1.1)->data === $operation && microtime(true) - $started < 1.6, 'Operation retry/read budget returns latest state');
+$cancel = new Polymorfa\CancellationToken();
+$history = [];
+$http = new GuzzleHttp\Client(['handler' => function () use ($cancel, $operation, &$history) {
+    $history[] = true;
+    $cancel->cancel();
+    return GuzzleHttp\Promise\Create::promiseFor(jsonResponse(['data' => $operation]));
+}]);
+$client = new Polymorfa\Client($credential, http:$http);
+raises(fn () => $client->operations->wait('op', 31, options:new Polymorfa\RequestOptions(cancellation:$cancel)), Polymorfa\CancelledException::class);
+check(count($history) === 1, 'Caller operation cancellation always propagates');
+nativeCases([
+ ['GET','/platform/operations/op?wait=1',null,['data' => $operation],function ($client) use ($operation) {
+     $started = microtime(true);
+     $result = $client->operations->wait('op', 1.1, options:new Polymorfa\RequestOptions(maxNetworkRetries:3));
+     check($result->data === $operation && microtime(true) - $started < 1.5, 'Actual HTTP operation budget bounds delayed body and retries and returns latest receipt');
+     return $result;
+ },$operation,['bodyDelaySeconds' => 1.4,'delayOnAttempt' => 2]],
+], fn ($credential, $url) => new Polymorfa\Client($credential, baseUrl:$url));

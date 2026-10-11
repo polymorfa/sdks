@@ -30,4 +30,17 @@ foreach ($fixture['responseHeaders'] ?? [] as $name => $value) {
     header($name.': '.$value);
 }
 header('X-Request-Id: native_request');
-echo is_string($fixture['response']) ? $fixture['response'] : json_encode($fixture['response'], JSON_THROW_ON_ERROR);
+$wire = is_string($fixture['response']) ? $fixture['response'] : json_encode($fixture['response'], JSON_THROW_ON_ERROR);
+if (isset($fixture['bodyDelaySeconds'])) {
+    $fixture['wireAttempt'] = ($fixture['wireAttempt'] ?? 0) + 1;
+    file_put_contents($state, json_encode($fixture, JSON_THROW_ON_ERROR));
+    if ($fixture['wireAttempt'] >= ($fixture['delayOnAttempt'] ?? 1)) {
+        echo substr($wire, 0, 1);
+        ob_flush();
+        flush();
+        usleep((int)($fixture['bodyDelaySeconds'] * 1000000));
+        echo substr($wire, 1);
+        return;
+    }
+}
+echo $wire;

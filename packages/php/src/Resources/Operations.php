@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Polymorfa\Resources;
 
-use Polymorfa\{ApiResponse, CursorPage, DeveloperModels, RequestOptions, ConfigurationException, TimeoutException};
+use Polymorfa\{ApiResponse, CursorPage, DeveloperModels, RequestOptions, ConfigurationException, TimeoutException, CancelledException, CancellationToken};
 
 /**
  * @phpstan-import-type Operation from DeveloperModels
@@ -72,11 +72,14 @@ final class Operations extends PlatformResource
             if ($afterSequence !== null) {
                 $params['afterSequence'] = $afterSequence;
             }
-            $bounded = new RequestOptions(min($options->timeout ?? max(1, $remaining), max(1, $remaining)), $options->maxNetworkRetries, $options->apiVersion, $options->idempotencyKey, $options->headers, $options->cancellation);
+            $budget = CancellationToken::after(max(1, $remaining));
+            $cancellation = $options->cancellation === null ? $budget : CancellationToken::linked($budget, $options->cancellation);
+            $bounded = new RequestOptions(min($options->timeout ?? max(1, $remaining), max(1, $remaining)), $options->maxNetworkRetries, $options->apiVersion, $options->idempotencyKey, $options->headers, $cancellation);
             try {
                 $latest = $this->retrieve($id, $params, $bounded);
-            } catch (TimeoutException $error) {
-                if ($latest !== null && microtime(true) >= $deadline) {
+            } catch (TimeoutException|CancelledException $error) {
+                $options->cancellation?->throwIfCancelled();
+                if ($latest !== null && $budget->isCancelled()) {
                     return $latest;
                 } throw $error;
             }

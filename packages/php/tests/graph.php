@@ -20,6 +20,6 @@ raises(fn () => $client->cloudCatalogs->listProducts('waba', 'nonnumeric', ['ver
 $history = [];
 $client = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_'.str_repeat('a', 115).'A'), http:mocked([], $history));
 foreach ([fn () => $client->cloudCatalogs->list('waba', ['version' => 'v26.0']),fn () => $client->cloudMarketing->status('waba', ['version' => 'v26.0']),fn () => $client->flowEncryption->retrieve('phone', ['version' => 'v26.0'])] as $invoke) {
-    raises($invoke,Polymorfa\ConfigurationException::class);
+    raises($invoke, Polymorfa\ConfigurationException::class);
 }
-check($history === [],'Graph methods reject client tokens before transport');
+check($history === [], 'Graph methods reject client tokens before transport');

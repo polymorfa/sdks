@@ -82,7 +82,7 @@ final class MessagingCampaigns extends Resource
     public function requeue(string $projectSlug, string $id, array $body = [], ?RequestOptions $options = null): ApiResponse
     { /** @var ApiResponse<array{success:true,data:array{requeued:int}}> */ return $this->request('POST', $this->path($projectSlug, $id).'/requeue', $body === [] ? new \stdClass() : $body, options:$options);
     }
-    private function path(string $projectSlug,?string $id = null): string
+    private function path(string $projectSlug, ?string $id = null): string
     {
         return '/messaging/projects/'.self::segment($projectSlug).'/campaigns'.($id === null ? '' : '/'.self::segment($id));
     }

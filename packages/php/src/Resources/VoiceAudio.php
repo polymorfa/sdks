@@ -229,6 +229,6 @@ final class VoiceAudio extends PlatformResource
     }
     private static function withoutKey(RequestOptions $o): RequestOptions
     {
-        return new RequestOptions($o->timeout,$o->maxNetworkRetries,$o->apiVersion,null,$o->headers,$o->cancellation);
+        return new RequestOptions($o->timeout, $o->maxNetworkRetries, $o->apiVersion, null, $o->headers, $o->cancellation);
     }
 }

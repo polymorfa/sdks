@@ -63,5 +63,5 @@ check(Polymorfa\Webhooks::verifyLocal($raw, $signature, $local, nowUnixSeconds:1
 raises(fn () => Polymorfa\Webhooks::verifyLocal($raw, $signature, $local, nowUnixSeconds:1301), Polymorfa\WebhookSignatureException::class);
 raises(fn () => Polymorfa\Webhooks::verifyLocal($raw, strtoupper($signature), $local, nowUnixSeconds:1000), Polymorfa\WebhookSignatureException::class);
 check(count(Polymorfa\ErrorCodes::KNOWN) === 89 && Polymorfa\ErrorCodes::isKnown('voice_unavailable') && !Polymorfa\ErrorCodes::isKnown('future_api_code'), 'Known API code catalog');
-check((new Polymorfa\PolymorfaException('Fixture','future_api_code'))->errorCode === 'future_api_code','Unknown API codes preserved');
+check((new Polymorfa\PolymorfaException('Fixture', 'future_api_code'))->errorCode === 'future_api_code', 'Unknown API codes preserved');
 echo count($cases)." signed typed webhook fixtures, 84 union variants and signature utility checks passed.\n";

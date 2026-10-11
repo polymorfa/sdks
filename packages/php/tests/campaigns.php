@@ -70,4 +70,4 @@ $debug = new Polymorfa\ApiResponse(['signingSecret' => 'synthetic_sensitive_fixt
 ob_start();
 var_dump($debug);
 $dump = ob_get_clean();
-check(!str_contains($dump,'synthetic_sensitive_fixture') && $debug->data['signingSecret'] === 'synthetic_sensitive_fixture','Response debugging redacts payload without changing explicit data');
+check(!str_contains($dump, 'synthetic_sensitive_fixture') && $debug->data['signingSecret'] === 'synthetic_sensitive_fixture', 'Response debugging redacts payload without changing explicit data');

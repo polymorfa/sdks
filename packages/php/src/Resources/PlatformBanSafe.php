@@ -93,7 +93,7 @@ final class PlatformBanSafe extends Resource
     { /** @var ApiResponse<array{data:list<Claim>,page:array{nextCursor:?string,hasMore:bool}}> */ return $this->request('GET', '/platform/bansafe/claims', query:$params, options:$options);
     }
     /** @return ApiResponse<array{data:Claim}> */
-    public function getClaim(string $id,?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{data:Claim}> */ return $this->request('GET','/platform/bansafe/claims/'.self::segment($id),options:$options);
+    public function getClaim(string $id, ?RequestOptions $options = null): ApiResponse
+    { /** @var ApiResponse<array{data:Claim}> */ return $this->request('GET', '/platform/bansafe/claims/'.self::segment($id), options:$options);
     }
 }

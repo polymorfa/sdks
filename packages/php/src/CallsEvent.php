@@ -10,7 +10,7 @@ final readonly class CallsEvent
     public function __construct(
         public string $type,
         public ?Call $call = null,
-        public AudioFrame|VideoFrame|CallReaction|CallParticipant|PolymorfaException|null $value = null
+        public AudioFrame|VideoFrame|CallReaction|CallParticipant|CallVideoSource|PolymorfaException|int|null $value = null
     ) {
     }
 }

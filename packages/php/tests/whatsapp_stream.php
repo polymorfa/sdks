@@ -71,10 +71,20 @@ try {
     check(file_get_contents($destination) === 'previous' && glob($directory.'/.polymorfa-*') === [], 'Failed streaming verification preserves previous destination and removes private file');
     $download = new Polymorfa\WhatsAppDownload(new Polymorfa\WhatsAppDecryptBody(chunkedWhatsAppSource($encrypted), $descriptor, verify:'streaming'), $descriptor);
     check($download->writeToFile($destination) === strlen(hex2bin($vector['plaintext'])) && file_get_contents($destination) === hex2bin($vector['plaintext']), 'Verified atomic incremental output');
-    check((fileperms($destination) & 0777) === 0600,'Private media file permissions');
+    check((fileperms($destination) & 0777) === 0600, 'Private media file permissions');
 } finally {
     if (is_file($destination)) {
         unlink($destination);
     }
 }
 echo "Incremental WhatsApp CBC/MAC/hash modes, CDN isolation and atomic integrity checks passed.\n";
+$cancel = new Polymorfa\CancellationToken();
+$closed = false;
+$http = new GuzzleHttp\Client(['handler' => function () use ($cancel, &$closed) {
+    $cancel->cancel();
+    return GuzzleHttp\Promise\Create::promiseFor(new GuzzleHttp\Psr7\Response(200, [], GuzzleHttp\Psr7\FnStream::decorate(GuzzleHttp\Psr7\Utils::streamFor(''), ['close' => function () use (&$closed): void {
+        $closed = true;
+    }])));
+}]);
+raises(fn () => Polymorfa\WhatsAppMedia::downloadStream($descriptor, cancellation:$cancel, http:$http), Polymorfa\CancelledException::class);
+check($closed, 'Cancelled CDN admission closes body before handing it to consumer');

@@ -184,6 +184,7 @@ require __DIR__.'/flows.php';
 require __DIR__.'/voice.php';
 
 require __DIR__.'/event_stream.php';
+require __DIR__.'/calls_runtime.php';
 
 require __DIR__.'/analytics.php';
 require __DIR__.'/call-records.php';

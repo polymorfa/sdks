@@ -98,7 +98,7 @@
       "sdkMethod": "operations.wait",
       "status": "covered",
       "testFile": "tests/developer.php",
-      "behavior": "Bounded server long-poll terminal and sequence reads; invocation cancellation idempotency."
+      "behavior": "Bounded server long-poll terminal and sequence reads; invocation cancellation idempotency. Actual HTTP delayed body/retry admission remains within per-read overall budget; linked caller cancellation always propagates."
     },
     {
       "sdkMethod": "requestLogs.follow / requestLogs.tail / RequestLogs.retryAfterMilliseconds",
@@ -129,6 +129,24 @@
       "status": "covered",
       "testFile": "tests/whatsapp_stream.php",
       "behavior": "Five independent crypto vectors with split cipher/MAC boundaries; before-release and streaming verification; descriptor message input; isolated CDN fallback; byte limits, cancellation and atomic verified file replacement."
+    },
+    {
+      "sdkMethod": "EventStream / EventStreamOptions / SseParser",
+      "status": "covered",
+      "testFile": "tests/event_stream.php",
+      "behavior": "Actual native HTTP watchdog reconnect with checkpoint resume; retention/reconnect callbacks; bounded Retry-After/backoff; manual acknowledgement and exact decoded webhook bodies; graceful cancellation; CRLF/CR split across chunks."
+    },
+    {
+      "sdkMethod": "CallsClient / CallsTokenSource / Call / CallReporter",
+      "status": "covered",
+      "testFile": "tests/calls_runtime.php",
+      "behavior": "Actual native HTTP and lifecycle/media WebSocket orchestration; credential cache/refresh; lifecycle claims and late acceptance cleanup; audio/video/media acknowledgements; stable reconnect identities; bounded diagnostics; cooperative polling and Fiber waiter cancellation."
+    },
+    {
+      "sdkMethod": "Events.liveSource / EventStreamSource.subscribe / EventStreamSubscription.pump / close",
+      "status": "covered",
+      "testFile": "tests/event_stream.php",
+      "behavior": "Native wire resumed cursor and exact typed webhook delivery; skips absent payloads; cooperative pump, graceful close and terminal error callback."
     }
   ]
 }

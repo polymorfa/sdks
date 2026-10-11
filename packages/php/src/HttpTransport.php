@@ -57,9 +57,13 @@ final class HttpTransport
         array $query = [],
         mixed $body = null,
         ?RequestOptions $options = null,
-        string $accept = 'application/json'
+        string $accept = 'application/json',
+        ?float $readTimeout = null
     ): array {
         $options ??= new RequestOptions();
+        if ($readTimeout !== null && ($readTimeout <= 0 || !is_finite($readTimeout))) {
+            throw new ConfigurationException('readTimeout');
+        }
         if (!str_starts_with($path, '/') || str_starts_with($path, '//') || strpbrk($path, "\\#?") !== false
             || in_array('..', explode('/', rawurldecode($path)), true) || str_contains(rawurldecode($path), '\\')) {
             throw new ConfigurationException('path');
@@ -89,7 +93,7 @@ final class HttpTransport
             $request = ['on_headers' => static function (ResponseInterface $received) use (&$receivedMetadata, $attempt): void {
                 $receivedMetadata = ResponseMetadata::fromResponse($received, $attempt);
             }, 'headers' => $headers, 'http_errors' => false, 'allow_redirects' => false,
-                'timeout' => $options->timeout ?? $this->timeout, 'read_timeout' => $options->timeout ?? $this->timeout,
+                'timeout' => $options->timeout ?? $this->timeout, 'read_timeout' => $readTimeout ?? $options->timeout ?? $this->timeout,
                 'stream' => $accept !== 'application/json'];
             if ($body !== null) {
                 $request['json'] = $body;

@@ -48,7 +48,7 @@ final class Events extends PlatformResource
         return $response;
     }
     /** @param list<string> $types */
-    public function stream(?string $projectId = null, ?string $since = null, array $types = [], bool $manualAck = false, ?RequestOptions $options = null): EventStream
+    public function stream(?string $projectId = null, ?string $since = null, array $types = [], bool $manualAck = false, ?RequestOptions $options = null, ?\Polymorfa\EventStreamOptions $streamOptions = null): EventStream
     {
         $prefix = $this->prefix;
         if ($prefix === '/platform') {
@@ -58,7 +58,18 @@ final class Events extends PlatformResource
         } elseif ($projectId !== null && $prefix !== '/platform/projects/'.self::segment($projectId)) {
             throw new ConfigurationException('projectId');
         }
-        return new EventStream($this->transport, $prefix.'/events/stream', $since, $types, $manualAck, $options);
+        return new EventStream($this->transport, $prefix.'/events/stream', $since, $types, $manualAck, $options, $streamOptions);
+    }
+    /** @param list<string> $types */
+    public function liveSource(?string $projectId = null, array $types = [], bool $manualAck = false, ?RequestOptions $options = null, ?\Polymorfa\EventStreamOptions $streamOptions = null): \Polymorfa\EventStreamSource
+    {
+        $this->stream($projectId, types:$types, manualAck:$manualAck, options:$options, streamOptions:$streamOptions);
+        $options ??= new RequestOptions();
+        return new \Polymorfa\EventStreamSource(function (?string $cursor, \Polymorfa\CancellationToken $cancel) use ($projectId, $types, $manualAck, $options, $streamOptions): EventStream {
+            $cancellation = $options->cancellation === null ? $cancel : \Polymorfa\CancellationToken::linked($cancel, $options->cancellation);
+            $request = new RequestOptions($options->timeout, $options->maxNetworkRetries, $options->apiVersion, $options->idempotencyKey, $options->headers, $cancellation);
+            return $this->stream($projectId, $cursor, $types, $manualAck, $request, $streamOptions);
+        });
     }
     /**
  * @return ApiResponse<array{streamId:string,acknowledgedCursor:string,sequence:int,replayed:bool}> */

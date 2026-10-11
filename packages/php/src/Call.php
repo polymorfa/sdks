@@ -181,7 +181,7 @@ final class Call
     }
     public function writeVideo(VideoFrame $frame): void
     {
-        $this->attached()->sendVideo($frame);
+        $this->attached()->sendVideo(new VideoFrame($frame->data, $frame->timestampUs, $frame->keyframe, 0));
     }
     public function setMediaState(?bool $audioMuted = null, ?bool $videoEnabled = null, ?bool $screenSharing = null, ?CancellationToken $cancellation = null): void
     {
@@ -332,6 +332,7 @@ final class Call
                 $this->reattachAttempts = 0;
             }
             $this->media?->close();
+            $this->clearVideoSources();
             if ($error instanceof ConflictException) {
                 $this->finish($error->errorCode === 'call_ended' ? 'remote_hangup' : 'claimed');
                 return;
@@ -350,6 +351,7 @@ final class Call
                 $this->reattachAttempts = 0;
             }
             $this->media?->close();
+            $this->clearVideoSources();
             $this->state = 'reconnecting';
             $this->retryAt = microtime(true) + $this->client->options->minBackoff;
         }
@@ -419,10 +421,22 @@ final class Call
                 }
             }
         }
-        if ($type === 'video_source_removed' && is_int($frame['source'] ?? null)) {
+        if ($type === 'video_source' && is_int($frame['source'] ?? null) && isset($this->videoSources[$frame['source']])) {
+            $this->client->emit(new CallsEvent('video_source', $this, $this->videoSources[$frame['source']]));
+        }
+        if ($type === 'video_source_removed' && is_int($frame['source'] ?? null) && isset($this->videoSources[$frame['source']])) {
             unset($this->videoSources[$frame['source']]);
+            $this->client->emit(new CallsEvent('video_source_removed', $this, $frame['source']));
         }
         $this->client->emit(new CallsEvent('state', $this));
+    }
+    private function clearVideoSources(): void
+    {
+        $sources = $this->videoSources;
+        $this->videoSources = [];
+        foreach ($sources as $id => $source) {
+            $this->client->emit(new CallsEvent('video_source_removed', $this, $id));
+        }
     }
     private function removeParticipant(string $id): void
     {
@@ -452,6 +466,8 @@ final class Call
             return;
         }
         $this->media?->close();
+        $this->media = null;
+        $this->clearVideoSources();
         $this->state = 'ended';
         $this->endReason = $reason;
         $this->endedAt = microtime(true);

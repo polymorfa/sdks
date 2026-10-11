@@ -73,7 +73,7 @@ try {
     $history = [];
     $voice = new Polymorfa\Resources\Voice(new Polymorfa\HttpTransport($credential, http:mocked([jsonResponse(['data' => $target]),jsonResponse(['data' => $asset])], $history)), 'p1', false, new GuzzleHttp\Client(['verify' => false]));
     check($voice->audio->upload(['name' => 'Greeting','contentType' => 'audio/wav','sizeBytes' => 3], 'abc')->data === $asset, 'Native HTTPS audio upload completes');
-    check(json_decode(fgets($pipes[1]),true,flags:JSON_THROW_ON_ERROR)['valid'] === true,'Native HTTPS audio request has only storage headers');
+    check(json_decode(fgets($pipes[1]), true, flags:JSON_THROW_ON_ERROR)['valid'] === true, 'Native HTTPS audio request has only storage headers');
 } finally {
     foreach ($pipes as $pipe) {
         fclose($pipe);

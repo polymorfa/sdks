@@ -48,7 +48,14 @@ A call supports `answer()`, `reject()`, `join()`, `leave()`, `end()`, `invite()`
 `ring()`, `sendReaction()` and `setHandRaised()`. `writeAudio()` sends signed
 16-bit PCM; `writeVideo()` sends an encoded H.264 `VideoFrame`. Incoming audio
 and video are emitted as `CallsEvent` values. `participants`, `videoSources`,
-`remoteAudioMuted` and hand state follow the server's control frames.
+`remoteAudioMuted` and hand state follow the server's control frames. Incoming
+`VideoFrame` values retain the source handle, microsecond timestamp and keyframe
+flag. `video_source` events carry a `CallVideoSource`; `video_source_removed`
+events carry its integer handle. `keyframe_request` asks the encoder for decoder
+configuration and a keyframe on its next write. Outgoing video uses source zero.
+Media disconnection and terminal calls clear the source map. This frame/event
+interface is the SDK's neutral audio/video seam; applications supply their own
+capture, encoder, decoder and playback.
 
 `setMediaState(audioMuted: true)` waits for the matching acknowledgement.
 `audioMuted`, `videoEnabled` and `screenSharing` change after that acknowledgement.
@@ -88,7 +95,8 @@ reports do not change call state.
 
 Verification uses actual HTTP and phrity WebSocket peers for authentication,
 answer/join, early events, lifecycle and media 4401 refresh, the stable connection
-ID, preference acknowledgements/restoration, PCM, participant controls and
+ID, preference acknowledgements/restoration, PCM and H.264, source removal and
+keyframe requests, participant controls and
 release. Separate tests cover expiry replacement, independent Fiber waiters,
 claim/refusal handling, cancellation, diagnostics and unknown-effect timeouts.
 Run `php tests/calls_runtime.php` or the package test suite. This proves the SDK

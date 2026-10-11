@@ -411,7 +411,10 @@ final class WhatsAppMedia
                     $response->getBody()->close();
                     self::fail('media_too_large');
                 }
-                $cancellation?->throwIfCancelled();
+                if ($cancellation?->isCancelled()) {
+                    $response->getBody()->close();
+                    $cancellation->throwIfCancelled();
+                }
                 return new WhatsAppDownload(new WhatsAppDecryptBody($response->getBody(), $descriptor, $maxBytes, $verify, $cancellation), $descriptor);
             }
         }

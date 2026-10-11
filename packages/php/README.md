@@ -58,8 +58,9 @@ receive API credentials. Media key values are hidden in debug output.
 
 Install `phrity/websocket:^4.0` to use `MediaSocket` with native sockets.
 It authenticates in the first frame and uses `pmfa.calls.v2` for PCM and
-H.264 media. Applications drive this synchronous socket's receive loop;
-additional lifecycle orchestration remains unfinished.
+H.264 media. [`CallsClient`](calls.md) adds lifecycle polling, credential
+refresh, call admission/claim state, media reconnect and bounded diagnostics.
+Applications drive its synchronous `poll()` loop while calls are active.
 `WebhookRequest::fromSymfony()`, `fromLaravel()` and `fromPsr()` authenticate
 raw framework bodies; install the relevant framework package. Application
 examples are in `examples/php` in the source tree.
@@ -202,3 +203,22 @@ read through EOF to detect final integrity failures. `writeToFile()` writes a
 private sibling and replaces the destination only after EOF succeeds. The
 incremental path uses the same five independent crypto vectors as the buffered
 path, with block/MAC split boundaries, cancellation and failed-file checks.
+
+`events->stream()` returns a synchronous iterator with cursor resume and optional
+manual acknowledgement. Pass `EventStreamOptions` as `streamOptions` to set
+reconnect delay bounds in seconds and observe retention gaps or reconnects.
+The stream reconnects after expiry, dropped connections and missed heartbeats;
+revoked credentials and invalid cursors fail. Closing it or cancelling its
+request token ends iteration gracefully. Payload bodies decode to typed webhook
+events when retained. A missing payload remains `null`.
+
+`events->liveSource()` adapts retained webhook bodies to application listeners.
+`subscribe()` creates a subscription; the application drives `pump()` until it
+closes or its cancellation token ends. The adapter skips missing bodies, passes
+the cursor beside each delivery, and reports terminal errors through `onError`.
+`close()` releases the active response body. It installs no background scheduler.
+
+`operations->wait()` bounds each long-poll request and its retries by the
+remaining wait budget, with a one-second allowance for the final state read.
+An exhausted budget returns the latest observed state when available; caller
+cancellation always propagates.

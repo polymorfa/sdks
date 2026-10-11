@@ -43,4 +43,4 @@ raises(fn () => $flows->publish($flowId, ['sessionId' => 's1'], new Polymorfa\Re
 check(count($history) === 1, 'Flow provider writes never retry');
 $history = [];
 $flows = new Polymorfa\Resources\Flows(new Polymorfa\HttpTransport($credential, http:mocked([jsonResponse(['data' => null])], $history)), 'p1');
-check($flows->retrieve($flowId)->data === null,'Missing Flow preserves null');
+check($flows->retrieve($flowId)->data === null, 'Missing Flow preserves null');

@@ -82,7 +82,7 @@ final class AnalyticsResource extends PlatformResource
             throw new ValidationException('Analytics cannot read outside this project.', 'invalid_analytics_filter');
         }
         if (isset($params['format']) && !in_array($params['format'], ['prometheus','openmetrics'], true)) {
-            throw new ValidationException('Invalid metrics format.','invalid_analytics_filter');
+            throw new ValidationException('Invalid metrics format.', 'invalid_analytics_filter');
         }
     }
 }

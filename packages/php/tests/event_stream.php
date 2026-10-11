@@ -29,4 +29,132 @@ check(iterator_to_array($stream) === [] && $history === [], 'Unstarted SSE close
 $history = [];
 $client = new Polymorfa\Client($credential, http:mocked([new GuzzleHttp\Psr7\Response(200, ['content-type' => 'text/event-stream'], "data: {\"type\":\"revoked\"}\n\n")], $history));
 raises(fn () => iterator_to_array($client->project('project')->events->stream()), Polymorfa\AuthorizationException::class);
-check(count($history) === 1,'Revoked SSE never reconnects');
+check(count($history) === 1, 'Revoked SSE never reconnects');
+$parser = new Polymorfa\SseParser();
+$parsed = [];
+foreach (str_split("data: first\r\ndata: second\r\n\r\n: heartbeat\r\rdata: third\n\n") as $byte) {
+    $parsed = [...$parsed,...$parser->feed($byte)];
+}
+check($parsed === ["first\nsecond",'third'], 'SSE line parser handles CRLF split at every byte and CR-only lines');
+foreach ([[-1,1],[1,0],[INF,1],[0,NAN]] as [$initial,$maximum]) {
+    raises(fn () => new Polymorfa\EventStreamOptions($initial, $maximum), Polymorfa\ConfigurationException::class);
+}
+$history = [];
+$gaps = [];
+$reconnects = [];
+$client = new Polymorfa\Client($credential, http:mocked([
+ new GuzzleHttp\Psr7\Response(200, ['content-type' => 'text/event-stream'], "data: {\"type\":\"checkpoint\",\"cursor\":\"quiet\"}\n\ndata: {\"type\":\"gap\",\"reason\":\"retention_exceeded\",\"missedEvents\":2}\n\ndata: {\"type\":\"expiry\"}\n\n"),
+ new GuzzleHttp\Psr7\Response(429, ['retry-after' => '0'], json_encode(['error' => ['message' => 'wait']])),
+ new GuzzleHttp\Psr7\Response(200, ['content-type' => 'text/event-stream'], "data: ".json_encode($frame)."\n\n"),
+], $history));
+$settings = new Polymorfa\EventStreamOptions(0, 0, onGap:function ($gap) use (&$gaps): void {
+    $gaps[] = $gap;
+}, onReconnect:function ($error, $delay) use (&$reconnects): void {
+    $reconnects[] = [$error->errorCode,$delay];
+});
+$stream = $client->project('project')->events->stream(streamOptions:$settings);
+foreach ($stream as $item) {
+    $stream->close();
+}
+check($gaps === [['reason' => 'retention_exceeded','missedEvents' => 2,'requestedCursor' => null]] && count($history) === 3 && $history[1]['request']->getHeaderLine('Last-Event-ID') === 'quiet', 'SSE retention callback and quiet checkpoint resume');
+check(count($reconnects) === 2 && $reconnects[0] === ['stream_expiry',0.0] && $reconnects[1][1] === 0.0, 'SSE expiry resets backoff and Retry-After is bounded');
+$cancel = new Polymorfa\CancellationToken();
+$cancel->cancel();
+$history = [];
+$client = new Polymorfa\Client($credential, http:mocked([], $history));
+check(iterator_to_array($client->project('project')->events->stream(options:new Polymorfa\RequestOptions(cancellation:$cancel))) === [] && $history === [], 'Cancelled unstarted SSE ends gracefully');
+$process = proc_open([PHP_BINARY,__DIR__.'/event-stream-server.php'], [0 => ['pipe','r'],1 => ['pipe','w'],2 => ['pipe','w']], $pipes, null, ['SSE_TEST_EVENT' => json_encode($event, JSON_THROW_ON_ERROR)] + getenv());
+try {
+    $ready = json_decode(fgets($pipes[1]), true, flags:JSON_THROW_ON_ERROR);
+    $client = new Polymorfa\Client($credential, baseUrl:$ready['url']);
+    $gaps = [];
+    $failures = [];
+    $settings = new Polymorfa\EventStreamOptions(0, 0, onGap:function ($gap) use (&$gaps): void {
+        $gaps[] = $gap;
+    }, onReconnect:function ($error, $delay) use (&$failures): void {
+        $failures[] = $error->errorCode;
+    });
+    $stream = $client->project('project')->events->stream(streamOptions:$settings);
+    $items = [];
+    foreach ($stream as $item) {
+        $items[] = $item;
+        $stream->close();
+    }
+    check(count($items) === 1 && $items[0]['cursor'] === 'delivered' && $gaps[0]['missedEvents'] === 3 && $failures === ['heartbeat_missed'], 'Native SSE watchdog reconnect and retention callback');
+    check(json_decode(fgets($pipes[1]), true, flags:JSON_THROW_ON_ERROR)['valid'] && json_decode(fgets($pipes[1]), true, flags:JSON_THROW_ON_ERROR)['valid'], 'Native SSE exact credentials/path/resume cursor');
+} finally {
+    foreach ($pipes as $pipe) {
+        fclose($pipe);
+    }proc_terminate($process);
+    proc_close($process);
+}
+echo "SSE native heartbeat watchdog, retention/reconnect callbacks and incremental CR line parsing passed.\n";
+$history = [];
+$malformed = $frame;
+$malformed['event']['payload']['data'] = '%%%';
+$client = new Polymorfa\Client($credential, http:mocked([
+ new GuzzleHttp\Psr7\Response(200, ['content-type' => 'text/event-stream'], 'data: '.json_encode($malformed)."\n\n"),
+ new GuzzleHttp\Psr7\Response(200, ['content-type' => 'text/event-stream'], 'data: '.json_encode($frame)."\n\n"),
+], $history));
+$failures = [];
+$settings = new Polymorfa\EventStreamOptions(0, 0, onReconnect:function ($error, $delay) use (&$failures): void {
+    $failures[] = $error->errorCode;
+});
+$stream = $client->project('project')->events->stream(streamOptions:$settings);
+foreach ($stream as $item) {
+    check($item['webhook'] !== null, 'Recovered stream retains valid payload');
+    $stream->close();
+}
+check($failures === ['invalid_response'] && count($history) === 2, 'Malformed retained stream payload reconnects instead of silently dropping content');
+$history = [];
+$client = new Polymorfa\Client($credential, http:mocked([new GuzzleHttp\Psr7\Response(200, ['content-type' => 'text/event-stream'], 'data: '.json_encode($frame)."\n\ndata: ".json_encode($frame)."\n\n")], $history));
+$stream = $client->project('project')->events->stream();
+$count = 0;
+foreach ($stream as $item) {
+    $count++;
+    $stream->close();
+}
+check($count === 1, 'Closing SSE discards additional frames already buffered in the same network read');
+$history = [];
+$transport = new Polymorfa\HttpTransport($credential, http:mocked([], $history));
+foreach ([0,-1,INF,NAN] as $readTimeout) {
+    raises(fn () => $transport->openStream('GET', '/platform/projects/project/events/stream', readTimeout:$readTimeout), Polymorfa\ConfigurationException::class);
+}
+check($history === [], 'Invalid stream read bounds fail before network access');
+$withoutPayload = $frame;
+$withoutPayload['event']['payload'] = null;
+$withoutPayload['cursor'] = 'skipped';
+$sourceWire = 'data: '.json_encode($withoutPayload)."\n\ndata: ".json_encode($frame)."\n\n";
+nativeCases([
+ ['GET','/platform/projects/project/events/stream?types=future.%2A',null,$sourceWire,function ($client) use ($webhookBody) {
+     $source = $client->project('project')->events->liveSource(types:['future.*']);
+     $delivered = [];
+     $subscription = null;
+     $subscription = $source->subscribe(function ($events, $metadata) use (&$subscription, &$delivered, $webhookBody): void {
+         check(count($events) === 1 && $events[0]->raw === $webhookBody && $metadata['cursor'] === 'cursor2', 'Native live source retained body/cursor');
+         $delivered[] = $metadata['cursor'];
+         $subscription->close();
+     }, cursor:'saved');
+     $subscription->pump();
+     $subscription->pump();
+     check($delivered === ['cursor2'], 'Live source skips missing payload and close prevents additional deliveries');
+     return new Polymorfa\ApiResponse($delivered, $subscription->metadata());
+ },['cursor2'],['responseHeaders' => ['Content-Type' => 'text/event-stream'],'requestHeaders' => ['last-event-id' => 'saved']]],
+], fn ($credential, $url) => new Polymorfa\Client($credential, baseUrl:$url));
+$history = [];
+$client = new Polymorfa\Client($credential, http:mocked([new GuzzleHttp\Psr7\Response(200, ['content-type' => 'text/event-stream'], "data: {\"type\":\"revoked\"}\n\n")], $history));
+$error = null;
+$subscription = $client->project('project')->events->liveSource()->subscribe(function (): void {
+    throw new RuntimeException('Unexpected payload');
+}, onError:function ($failure) use (&$error): void {
+    $error = $failure;
+});
+$subscription->pump();
+check($error instanceof Polymorfa\AuthorizationException && $error->errorCode === 'stream_revoked', 'Live source terminal error callback');
+$history = [];
+$client = new Polymorfa\Client($credential, http:mocked([], $history));
+$subscription = $client->project('project')->events->liveSource()->subscribe(function (): void {
+});
+$subscription->close();
+$subscription->pump();
+check($history === [], 'Closed unstarted live source opens no connection');

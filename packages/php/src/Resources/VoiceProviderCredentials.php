@@ -73,7 +73,7 @@ final class VoiceProviderCredentials extends PlatformResource
         } $o = $options ?? new RequestOptions();
         $r = $this->retrieve($id, new RequestOptions($o->timeout, $o->maxNetworkRetries, $o->apiVersion, null, $o->headers, $o->cancellation));
         if ($r->data['projectId'] === null) {
-            throw new AuthorizationException('Manage team-wide credentials from the organization client.','permission_denied',status:403);
+            throw new AuthorizationException('Manage team-wide credentials from the organization client.', 'permission_denied', status:403);
         }
     }
 }

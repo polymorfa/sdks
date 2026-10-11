@@ -161,7 +161,7 @@ final class CallRecords extends PlatformResource
                 throw new ConfigurationException('Invalid call page limit.');
             } $query['limit'] = $params['limit'];
         } if (isset($params['cursor'])) {
-            $query['cursor'] = $this->text($params['cursor'],256);
+            $query['cursor'] = $this->text($params['cursor'], 256);
         } return $query;
     }
 }

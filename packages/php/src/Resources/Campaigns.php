@@ -130,8 +130,8 @@ final class Campaigns extends Resource
     }
     /** @param array<string,mixed>|null $body
      * @return ApiResponse<array{data:array<string,mixed>}> */
-    private function action(string $id,string $action,?array $body,?RequestOptions $options): ApiResponse
-    { /** @var ApiResponse<array{data:array<string,mixed>}> */ return $this->request('POST',$this->path($id).'/'.$action,$body === [] ? new \stdClass() : $body,options:$options);
+    private function action(string $id, string $action, ?array $body, ?RequestOptions $options): ApiResponse
+    { /** @var ApiResponse<array{data:array<string,mixed>}> */ return $this->request('POST', $this->path($id).'/'.$action, $body === [] ? new \stdClass() : $body, options:$options);
     }
     private function path(string $id): string
     {

@@ -148,11 +148,20 @@ try {
     $incoming->join(false);
     callsCheck($incoming->state === 'connected' && $incoming->sampleRate === 16000, 'Native REST answer + media attachment');
     $incoming->setMediaState(audioMuted:true, videoEnabled:false);
-    for ($i = 0;$i < 5;$i++) {
+    for ($i = 0;$i < 8;$i++) {
         $events = array_merge($events, $client->poll());
     }
     callsCheck(isset($incoming->participants['15550000001']) && $incoming->remoteAudioMuted === true && $incoming->videoSources[42]->connectionParticipant === 'server:other', 'Typed roster, remote audio, and video owner');
     callsCheck(count(array_filter($events, static fn ($event): bool => $event->value instanceof AudioFrame && $event->value->samples === [2,-2])) >= 1, 'Native PCM decoded');
+    callsCheck(!isset($incoming->videoSources[43]) && count(array_filter($events, static fn ($event): bool => $event->type === 'keyframe_request')) >= 1, 'Native source removal and keyframe request');
+    $incoming->writeVideo(new \Polymorfa\VideoFrame("\x00\x00\x00\x01\x09", 42, true, 99));
+    for ($i = 0;$i < 8;$i++) {
+        $events = array_merge($events, $client->poll());
+        if (count(array_filter($events, static fn ($event): bool => $event->value instanceof \Polymorfa\VideoFrame)) > 0) {
+            break;
+        }
+    }
+    callsCheck(count(array_filter($events, static fn ($event): bool => $event->value instanceof \Polymorfa\VideoFrame && $event->value->source === 42 && $event->value->timestampUs === 42 && $event->value->keyframe)) >= 1, 'Native H264 source/timestamp/keyframe seam');
     $incoming->writeAudio([1,-1]);
     for ($i = 0;$i < 100;$i++) {
         $client->poll();
@@ -175,6 +184,7 @@ try {
     }
     callsCheck($outbound->state === 'connected', 'Native outgoing lifecycle accepted attaches media');
     $incoming->leave();
+    callsCheck($incoming->videoSources === [], 'Terminal call clears video sources');
     $outbound->end();
     foreach ([['ended_1',1000,'','remote_hangup'],['claimed_1',4409,'call claimed','claimed']] as [$id,$status,$reason,$expected]) {
         file_put_contents($state.'.events', json_encode(['event' => 'call.received','callId' => $id,'payload' => ['from' => '15550000005']], JSON_THROW_ON_ERROR)."\n", FILE_APPEND | LOCK_EX);

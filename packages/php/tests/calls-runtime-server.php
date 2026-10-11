@@ -71,6 +71,9 @@ $server->onText(function (Server $server, Connection $connection, Text $message)
             $connection->text('{"type":"participant_joined","participant":{"id":"15550000001","audioMuted":false,"video":true,"state":"connected"}}');
             $connection->text('{"type":"remote_media","audioMuted":true}');
             $connection->text('{"type":"video_source","source":42,"connectionId":"connection_other","connectionParticipant":"server:other"}');
+            $connection->text('{"type":"video_source","source":43,"connectionId":"connection_extra"}');
+            $connection->text('{"type":"video_source_removed","source":43}');
+            $connection->text('{"type":"keyframe_request"}');
             $connection->binary("\x01\x02\x00\xfe\xff");
             $record(['type' => 'media_auth','callId' => $id,'attempt' => $attempt,'connectionId' => $frame['connectionId'],'refreshed' => $attempt > 1]);
         }
@@ -88,6 +91,14 @@ $server->onText(function (Server $server, Connection $connection, Text $message)
     }
 });
 $server->onBinary(function (Server $server, Connection $connection, Binary $message) use (&$connections, $record): void {
+    if (str_starts_with($message->getContent(), "\x02")) {
+        if ($message->getContent() !== "\x02\x01\x01".pack('NJ', 0, 42)."\x00\x00\x00\x01\x09") {
+            throw new RuntimeException('Wrong H264 frame or outgoing source.');
+        }
+        $record(['type' => 'h264']);
+        $connection->binary("\x02\x01\x01".pack('NJ', 42, 42)."\x00\x00\x00\x01\x09");
+        return;
+    }
     if ($message->getContent() !== "\x01\x01\x00\xff\xff") {
         throw new RuntimeException('Wrong PCM.');
     }
