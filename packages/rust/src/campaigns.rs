@@ -58,6 +58,27 @@ wire_enum!(CampaignInconclusiveReason{InsufficientEvidence="insufficient_evidenc
 model!(CampaignExperimentVariantResult{key:String,label:String,weight:u8,assigned:u64,sent:u64,delivered:u64,read:u64,replied:u64,outcome_rate:f64;});
 model!(CampaignExperimentResults{criterion:CampaignWinnerCriterion,outcome:Option<CampaignExperimentOutcome>,holdout_count:u64,reserve_count:u64,variants:Vec<CampaignExperimentVariantResult>;});
 model!(CampaignMessageVariation{key:String,weight:u8,blueprint:CampaignVariantMessage;});
+/// A follow-up sends either text or a project-scoped template.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum CampaignFollowUpMessage {
+    Text {
+        text: String,
+    },
+    Template {
+        #[serde(rename = "templateId")]
+        template_id: String,
+    },
+}
+// Receipt-timed beta follow-up. Timing stays optional even in returned configuration.
+// Enrollment, defaults, bounds, and send eligibility remain API-owned.
+model!(CampaignFollowUp{message:CampaignFollowUpMessage;delay_seconds:u32,expiry_seconds:u32});
+wire_enum!(CampaignFollowUpStatus{WaitingReceipt="waiting_receipt",Scheduled="scheduled",Sending="sending",Sent="sent",Cancelled="cancelled",Expired="expired",Failed="failed",OutcomeUnknown="outcome_unknown"});
+wire_enum!(CampaignFollowUpAnchorKind{Delivered="delivered",Read="read"});
+// Receipt and outcome times are Unix milliseconds, with null for absent receipts.
+model!(CampaignFollowUpSummary{id:String,number_id:String,status:CampaignFollowUpStatus,anchor_kind:Option<CampaignFollowUpAnchorKind>,first_delivered_at:Option<u64>,first_read_at:Option<u64>,due_at:Option<u64>,expires_at:u64,sent_at:Option<u64>,delivered_at:Option<u64>,read_at:Option<u64>,replied_at:Option<u64>,reason:Option<String>,command_id:Option<String>;});
+model!(CampaignFollowUpReport{total:u64,waiting:u64,scheduled:u64,sending:u64,sent:u64,delivered:u64,read:u64,replied:u64,cancelled:u64,expired:u64,failed:u64,unknown:u64,next_due_at:Option<u64>;});
+
 model!(CampaignSendWindowRange{start:String,end:String;});
 model!(CampaignSendWindowRequest{days:Vec<CampaignWeekday>,hours:Vec<CampaignSendWindowRange>;time_zone:String,recipient_time_zone:bool,time_zone_variable:String});
 model!(CampaignSendWindow{time_zone:String,days:Vec<CampaignWeekday>,hours:Vec<CampaignSendWindowRange>,recipient_time_zone:bool,time_zone_variable:String;});
@@ -115,6 +136,12 @@ pub struct Campaign {
         deserialize_with = "crate::configuration::deserialize_present_option"
     )]
     pub message_variations: Option<Option<Vec<CampaignMessageVariation>>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub follow_up: Option<Option<CampaignFollowUp>>,
     #[serde(flatten)]
     pub extensions: BTreeMap<String, serde_json::Value>,
 }
@@ -136,6 +163,8 @@ pub struct CampaignAnalytics {
         deserialize_with = "crate::configuration::deserialize_present_option"
     )]
     pub experiment: Option<Option<CampaignExperimentResults>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub follow_ups: Option<CampaignFollowUpReport>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -145,7 +174,7 @@ pub enum CampaignVariableValue {
     Boolean(bool),
 }
 model!(CampaignRecipientInput{phone:String;variables:BTreeMap<String,CampaignVariableValue>});
-model!(CampaignRecipient{id:String,phone:String,variables:BTreeMap<String,serde_json::Value>,variant_key:Option<String>,status:CampaignRecipientStatus,attempts:u32,last_error:Option<String>,external_message_id:Option<String>,queued_at:u64,sent_at:Option<u64>,delivered_at:Option<u64>,read_at:Option<u64>,failed_at:Option<u64>,responded_at:Option<u64>;});
+model!(CampaignRecipient{id:String,phone:String,variables:BTreeMap<String,serde_json::Value>,variant_key:Option<String>,status:CampaignRecipientStatus,attempts:u32,last_error:Option<String>,external_message_id:Option<String>,queued_at:u64,sent_at:Option<u64>,delivered_at:Option<u64>,read_at:Option<u64>,failed_at:Option<u64>,responded_at:Option<u64>;follow_up:CampaignFollowUpSummary});
 model!(CampaignRecipientPage{next_cursor:Option<String>,has_more:bool;});
 model!(ListCampaignRecipientsResponse{success:bool,data:Vec<CampaignRecipient>,page:CampaignRecipientPage;});
 model!(PlatformCampaignRecipientsEnvelope{data:Vec<CampaignRecipient>,page:CampaignRecipientPage;});
@@ -187,7 +216,7 @@ pub struct RequeueCampaignRequest {
 }
 model!(CampaignRequeueResult{requeued:u64;});
 macro_rules! nullable{($($field:ident:$ty:ty),*$(,)?)=>{#[derive(Clone,Debug,Default,Serialize,Deserialize)]#[serde(rename_all="camelCase")]pub struct UpdateCampaignRequest{#[serde(skip_serializing_if="Option::is_none")]pub name:Option<String>,#[serde(skip_serializing_if="Option::is_none")]pub sender_config:Option<BTreeMap<String,serde_json::Value>>,$(#[serde(default,skip_serializing_if="Option::is_none",deserialize_with="crate::configuration::deserialize_present_option")]pub $field:Option<Option<$ty>>,)*}}}
-nullable!(recipient_list_id:String,scheduled_at:u64,send_window:CampaignSendWindowRequest,message_variations:Vec<CampaignMessageVariation>,variants:Vec<CampaignVariant>,variant_strategy:CampaignVariantStrategy);
+nullable!(recipient_list_id:String,scheduled_at:u64,send_window:CampaignSendWindowRequest,message_variations:Vec<CampaignMessageVariation>,variants:Vec<CampaignVariant>,variant_strategy:CampaignVariantStrategy,follow_up:CampaignFollowUp);
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateCampaignRequest {
@@ -226,6 +255,12 @@ pub struct CreateCampaignRequest {
         deserialize_with = "crate::configuration::deserialize_present_option"
     )]
     pub variant_strategy: Option<Option<CampaignVariantStrategy>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub follow_up: Option<Option<CampaignFollowUp>>,
 }
 impl ListCampaignRecipientsParameters {
     fn query(&self) -> Vec<(&'static str, String)> {
@@ -305,6 +340,7 @@ impl MessagingCampaigns<'_> {
             && body.message_variations.is_none()
             && body.variants.is_none()
             && body.variant_strategy.is_none()
+            && body.follow_up.is_none()
         {
             return Err(Error::local(
                 ErrorKind::Validation,
@@ -509,6 +545,12 @@ pub struct CreatePlatformCampaignRequest {
     pub variant_strategy: Option<CampaignVariantStrategy>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub message_variations: Option<Vec<CampaignMessageVariation>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub follow_up: Option<Option<CampaignFollowUp>>,
 }
 // The open update body names the documented fields, preserving any later API field.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -530,7 +572,7 @@ pub struct ListPlatformCampaignRecipientsParameters {
 }
 model!(AddPlatformCampaignRecipientsRequest{project_id:String,recipients:Vec<CampaignRecipientInput>;});
 pub type AddPlatformCampaignRecipientsResult = AddCampaignRecipientsResult;
-model!(PlatformCampaignAnalytics{campaign_id:String,recipient_count:u64,sent_count:u64,delivered_count:u64,read_count:u64,failed_count:u64,skipped_count:u64,responded_count:u64,response_rate:f64,average_response_time_ms:Option<f64>,min_response_time_ms:Option<f64>,max_response_time_ms:Option<f64>,experiment:Option<CampaignExperimentResults>;});
+model!(PlatformCampaignAnalytics{campaign_id:String,recipient_count:u64,sent_count:u64,delivered_count:u64,read_count:u64,failed_count:u64,skipped_count:u64,responded_count:u64,response_rate:f64,average_response_time_ms:Option<f64>,min_response_time_ms:Option<f64>,max_response_time_ms:Option<f64>,experiment:Option<CampaignExperimentResults>,follow_ups:CampaignFollowUpReport;});
 model!(CampaignConversionValue{amount_minor:u64,currency:String;});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

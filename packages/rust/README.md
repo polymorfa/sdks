@@ -124,3 +124,11 @@ Calls diagnostics send technical error codes and final reconnect counts without 
 WhatsApp media also supports `media_stream::decrypt_stream` and `MediaDecryptor` as native incremental CBC/MAC/hash backends. `MediaVerifyMode::BeforeRelease` buffers plaintext until verification succeeds. `Streaming` emits unverified plaintext and reports integrity failures at the end; discard all emitted bytes on an error. Both modes enforce encrypted and plaintext limits and cancellation. `media().download_from_whatsapp_stream` accepts `WhatsAppMediaInput::Message` or a decoded descriptor and returns a body stream. `MediaDownloadStream::into_bytes` buffers verified output; `write_to_file` promotes a private sibling file only after complete verification. On Unix, failures, cancellation, and a dropped write future remove partial files while preserving an existing destination. File replacement uses the host filesystem's rename semantics. CDN requests enforce HTTPS WhatsApp hosts and confined redirects, carry no Polymorfa credential, and preserve signed URL queries.
 
 `webhooks::verify_flow_forward_signature` verifies the exact decrypted Flow request body and its timestamp with the endpoint signing secret. Its default clock-skew tolerance is 300 seconds. `webhooks::create_fixture` produces JSON bytes, a bare hexadecimal native HMAC signature and the two webhook headers for local handler tests. Native webhook signatures have no timestamp; Flow forwarding and CLI local-forward signatures use their distinct timestamp formats.
+
+Receipt-timed campaign follow-ups are available in the typed Messaging and Platform
+campaign requests, campaign responses, recipient summaries, and analytics reports.
+A follow-up sends text or a template. Omit its timing fields to use API defaults;
+returned timing fields also remain optional. Clear a draft follow-up with an explicit
+null (`Some(None)`).
+The API requires beta enrollment and a single first message, and owns receipt timing,
+reply and opt-out cancellation, expiry, and send eligibility. The SDK never grants access.

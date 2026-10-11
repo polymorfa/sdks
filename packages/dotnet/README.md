@@ -48,3 +48,11 @@ node scripts/verify-native-sdk.mjs dotnet
 ```
 
 `WhatsAppMediaDecryptor` provides native incremental CBC, MAC and hash verification. `WhatsAppMedia.DecryptStreamAsync` and `DownloadStreamAsync` return asynchronous read-only plaintext streams. The default `MediaVerifyMode.BeforeRelease` emits nothing until complete verification; `Streaming` releases unverified bytes, which must all be discarded if a later read fails. Downloads accept decoded descriptors or existing `LinkedDeviceMessagePayload` values; `MessagingMedia.DownloadFromWhatsAppStreamAsync` exposes the same helper. Dispose the stream/download even when abandoning a body. Reads enforce encrypted/plaintext limits and cancellation. `WhatsAppMediaStreamDownload.WriteToFileAsync` promotes a private partial file only after complete stream verification, preserving the destination on failure. `ConfigureHttpHandler` supports native DNS, proxy and trust-root configuration; the SDK owns cookie, credential and redirect policies, enforces HTTPS WhatsApp hosts and preserves signed URL queries.
+
+Receipt-timed campaign follow-ups are available in the typed Messaging and Platform
+campaign requests, campaign responses, recipient summaries, and analytics reports.
+A follow-up sends text or a template. Omit its timing fields to use API defaults;
+returned timing fields also remain optional. Clear a draft follow-up with an explicit
+null (`PatchValue<CampaignFollowUp>.Set(null)`).
+The API requires beta enrollment and a single first message, and owns receipt timing,
+reply and opt-out cancellation, expiry, and send eligibility. The SDK never grants access.

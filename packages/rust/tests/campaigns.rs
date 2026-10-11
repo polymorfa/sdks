@@ -348,7 +348,7 @@ async fn platform_campaign_drafts_open_fields_and_recipient_contracts_native_wir
         "GET",
         "/platform/campaigns/campaign/analytics?projectId=project",
         None,
-        json!({"data":{"campaignId":"campaign","recipientCount":2,"sentCount":1,"deliveredCount":1,"readCount":1,"failedCount":0,"skippedCount":0,"respondedCount":1,"responseRate":1.0,"averageResponseTimeMs":100.0,"minResponseTimeMs":50.0,"maxResponseTimeMs":150.0,"experiment":null}}),
+        json!({"data":{"campaignId":"campaign","recipientCount":2,"sentCount":1,"deliveredCount":1,"readCount":1,"failedCount":0,"skippedCount":0,"respondedCount":1,"responseRate":1.0,"averageResponseTimeMs":100.0,"minResponseTimeMs":50.0,"maxResponseTimeMs":150.0,"experiment":null,"followUps":{"total":0,"waiting":0,"scheduled":0,"sending":0,"sent":0,"delivered":0,"read":0,"replied":0,"cancelled":0,"expired":0,"failed":0,"unknown":0,"nextDueAt":null}}}),
         client
             .campaigns()
             .analytics("campaign", &params, RequestOptions::default())
@@ -509,4 +509,266 @@ async fn platform_campaign_lifecycle_payloads_and_reported_conversions_native_wi
             RequestOptions::default()
         )
     );
+}
+
+fn follow_up_report() -> serde_json::Value {
+    json!({"total":12,"waiting":1,"scheduled":2,"sending":3,"sent":4,"delivered":5,"read":6,"replied":7,"cancelled":8,"expired":9,"failed":10,"unknown":11,"nextDueAt":9007199254740993u64})
+}
+#[test]
+fn follow_up_contract_models_and_sparse_timing() {
+    let contract: serde_json::Value =
+        serde_json::from_str(include_str!("../../../contracts/campaign-follow-ups.json")).unwrap();
+    let platform = &contract["sources"]["platform"];
+    assert_eq!(
+        platform["schemas"]["CampaignFollowUp"]["required"],
+        json!(["message"])
+    );
+    let config: CampaignFollowUp = serde_json::from_value(
+        json!({"message":{"type":"text","text":"Still interested, {{name}}?"}}),
+    )
+    .unwrap();
+    assert!(config.delay_seconds.is_none());
+    assert!(config.expiry_seconds.is_none());
+    assert_eq!(
+        serde_json::to_value(config).unwrap(),
+        json!({"message":{"type":"text","text":"Still interested, {{name}}?"}})
+    );
+    for status in platform["schemas"]["CampaignFollowUpSummary"]["properties"]["status"]["enum"]
+        .as_array()
+        .unwrap()
+    {
+        let parsed: CampaignFollowUpStatus = serde_json::from_value(status.clone()).unwrap();
+        assert_eq!(serde_json::to_value(parsed).unwrap(), *status);
+    }
+    let report: CampaignFollowUpReport = serde_json::from_value(follow_up_report()).unwrap();
+    assert_eq!(serde_json::to_value(report).unwrap(), follow_up_report());
+    let schema_keys = platform["schemas"]["CampaignFollowUpReport"]["properties"]
+        .as_object()
+        .unwrap()
+        .keys()
+        .collect::<Vec<_>>();
+    let report_json = follow_up_report();
+    assert_eq!(
+        schema_keys,
+        report_json.as_object().unwrap().keys().collect::<Vec<_>>()
+    );
+    assert!(serde_json::from_value::<CampaignFollowUp>(
+        json!({"message":{"type":"image","text":"invalid"}})
+    )
+    .is_err());
+    assert!(
+        serde_json::from_value::<CampaignFollowUp>(json!({"message":{"type":"template"}})).is_err()
+    );
+}
+#[tokio::test]
+async fn receipt_timed_follow_up_native_campaign_requests_and_optional_responses() {
+    for follow_up in [
+        json!({"message":{"type":"text","text":"Hello {{name}}"}}),
+        json!({"delaySeconds":60,"expirySeconds":86400,"message":{"type":"template","templateId":"template"}}),
+    ] {
+        let body = json!({"name":"Campaign","followUp":follow_up});
+        let mut returned = campaign();
+        returned["followUp"] = follow_up.clone();
+        wire_messaging!(
+            client,
+            "POST",
+            "/messaging/projects/project/campaigns",
+            Some(body.clone()),
+            json!({"success":true,"data":returned}),
+            client.campaigns().create(
+                "project",
+                &serde_json::from_value::<CreateCampaignRequest>(body).unwrap(),
+                RequestOptions::default()
+            )
+        );
+        let body = json!({"projectId":"project","name":"Campaign","followUp":follow_up});
+        wire_organization!(
+            client,
+            "POST",
+            "/platform/campaigns",
+            Some(body.clone()),
+            json!({"data":returned}),
+            client.campaigns().create(
+                &serde_json::from_value::<CreatePlatformCampaignRequest>(body).unwrap(),
+                RequestOptions::default()
+            )
+        );
+    }
+    for follow_up in [
+        json!(null),
+        json!({"message":{"type":"text","text":"A follow-up-only edit"}}),
+    ] {
+        let body = json!({"followUp":follow_up});
+        let mut returned = campaign();
+        returned["followUp"] = follow_up.clone();
+        wire_messaging!(
+            client,
+            "PATCH",
+            "/messaging/projects/project/campaigns/campaign",
+            Some(body.clone()),
+            json!({"success":true,"data":returned}),
+            client.campaigns().update(
+                "project",
+                "campaign",
+                &serde_json::from_value::<UpdateCampaignRequest>(body.clone()).unwrap(),
+                RequestOptions::default()
+            )
+        );
+        wire_organization!(
+            client,
+            "PATCH",
+            "/platform/campaigns/campaign?projectId=project",
+            Some(body.clone()),
+            json!({"data":returned}),
+            client.campaigns().update(
+                "campaign",
+                Some(&serde_json::from_value::<UpdatePlatformCampaignRequest>(body).unwrap()),
+                &PlatformCampaignParameters {
+                    project_id: "project".into()
+                },
+                RequestOptions::default()
+            )
+        );
+    }
+    let absent: Campaign = serde_json::from_value(campaign()).unwrap();
+    assert!(absent.follow_up.is_none());
+    let mut null = campaign();
+    null["followUp"] = json!(null);
+    let null: Campaign = serde_json::from_value(null).unwrap();
+    assert!(matches!(null.follow_up, Some(None)));
+}
+#[tokio::test]
+async fn follow_up_reports_and_recipient_receipts_native_wire() {
+    let summary = json!({"id":"follow-up","numberId":"number","status":"outcome_unknown","anchorKind":"read","firstDeliveredAt":9007199254740993u64,"firstReadAt":9007199254740994u64,"dueAt":null,"expiresAt":9007199254740995u64,"sentAt":null,"deliveredAt":null,"readAt":null,"repliedAt":null,"reason":"wait_expired","commandId":null});
+    let mut rows = recipients();
+    rows[0]["followUp"] = summary.clone();
+    wire_messaging!(
+        client,
+        "GET",
+        "/messaging/projects/project/campaigns/campaign/recipients",
+        None,
+        json!({"success":true,"data":rows,"page":{"nextCursor":null,"hasMore":false}}),
+        client.campaigns().list_recipients(
+            "project",
+            "campaign",
+            &ListCampaignRecipientsParameters::default(),
+            RequestOptions::default()
+        )
+    );
+    wire_organization!(
+        client,
+        "GET",
+        "/platform/campaigns/campaign/recipients?projectId=project",
+        None,
+        json!({"data":rows,"page":{"nextCursor":null,"hasMore":false}}),
+        client.campaigns().recipients(
+            "campaign",
+            &ListPlatformCampaignRecipientsParameters {
+                project_id: "project".into(),
+                status: None,
+                cursor: None,
+                limit: None
+            },
+            RequestOptions::default()
+        )
+    );
+    let mut analytics = json!({"campaignId":"campaign","recipientCount":2,"sentCount":1,"deliveredCount":1,"readCount":1,"failedCount":0,"skippedCount":0,"respondedCount":1,"responseRate":1.0,"followUps":follow_up_report()});
+    wire_messaging!(
+        client,
+        "GET",
+        "/messaging/projects/project/campaigns/campaign/analytics",
+        None,
+        json!({"success":true,"data":analytics}),
+        client
+            .campaigns()
+            .analytics("project", "campaign", RequestOptions::default())
+    );
+    analytics["averageResponseTimeMs"] = json!(null);
+    analytics["minResponseTimeMs"] = json!(null);
+    analytics["maxResponseTimeMs"] = json!(null);
+    analytics["experiment"] = json!(null);
+    wire_organization!(
+        client,
+        "GET",
+        "/platform/campaigns/campaign/analytics?projectId=project",
+        None,
+        json!({"data":analytics}),
+        client.campaigns().analytics(
+            "campaign",
+            &PlatformCampaignParameters {
+                project_id: "project".into()
+            },
+            RequestOptions::default()
+        )
+    );
+    let contract: serde_json::Value =
+        serde_json::from_str(include_str!("../../../contracts/campaign-follow-ups.json")).unwrap();
+    assert_eq!(
+        summary.as_object().unwrap().keys().collect::<Vec<_>>(),
+        contract["sources"]["platform"]["schemas"]["CampaignFollowUpSummary"]["properties"]
+            .as_object()
+            .unwrap()
+            .keys()
+            .collect::<Vec<_>>()
+    );
+    let mut null_summary = summary;
+    null_summary["anchorKind"] = json!(null);
+    let decoded: CampaignFollowUpSummary = serde_json::from_value(null_summary.clone()).unwrap();
+    assert!(decoded.anchor_kind.is_none());
+    assert_eq!(serde_json::to_value(decoded).unwrap(), null_summary);
+}
+
+#[tokio::test]
+async fn follow_up_enrollment_denial_remains_api_owned() {
+    use tokio::{
+        io::{AsyncReadExt, AsyncWriteExt},
+        net::TcpListener,
+    };
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let client = support::messaging(format!("http://{}", listener.local_addr().unwrap()));
+    let server = tokio::spawn(async move {
+        let (mut socket, _) = listener.accept().await.unwrap();
+        let mut request = Vec::new();
+        let mut one = [0u8; 1];
+        while !request.ends_with(b"\r\n\r\n") {
+            socket.read_exact(&mut one).await.unwrap();
+            request.push(one[0]);
+            assert!(request.len() < 65536);
+        }
+        let headers = String::from_utf8(request).unwrap();
+        assert!(headers.starts_with("POST /messaging/projects/project/campaigns HTTP/1.1\r\n"));
+        let length = headers
+            .lines()
+            .find_map(|line| {
+                line.to_ascii_lowercase()
+                    .strip_prefix("content-length: ")
+                    .map(|v| v.parse::<usize>().unwrap())
+            })
+            .unwrap();
+        let mut body = vec![0; length];
+        socket.read_exact(&mut body).await.unwrap();
+        assert_eq!(
+            serde_json::from_slice::<serde_json::Value>(&body).unwrap(),
+            json!({"name":"Campaign","followUp":{"message":{"type":"text","text":"Hello"}}})
+        );
+        let response =
+            r#"{"error":{"code":"feature_unavailable","message":"Follow-ups require enrollment"}}"#;
+        socket.write_all(format!("HTTP/1.1 403 Forbidden\r\ncontent-type: application/json\r\ncontent-length: {}\r\nx-request-id: enrollment_denied\r\nconnection: close\r\n\r\n{}",response.len(),response).as_bytes()).await.unwrap();
+    });
+    let request = serde_json::from_value::<CreateCampaignRequest>(
+        json!({"name":"Campaign","followUp":{"message":{"type":"text","text":"Hello"}}}),
+    )
+    .unwrap();
+    let error = client
+        .campaigns()
+        .create("project", &request, RequestOptions::default())
+        .await
+        .unwrap_err();
+    assert_eq!(error.status, Some(403));
+    assert_eq!(error.code.as_deref(), Some("feature_unavailable"));
+    assert_eq!(
+        error.metadata.as_ref().unwrap().request_id.as_deref(),
+        Some("enrollment_denied")
+    );
+    server.await.unwrap();
 }

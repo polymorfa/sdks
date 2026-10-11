@@ -6,6 +6,19 @@ namespace Polymorfa.Sdk;
 public sealed record CampaignBlueprint(int Version, string Source) { [JsonExtensionData] public IDictionary<string, JsonElement>? AdditionalFields { get; init; } }
 public sealed record CampaignVariant(string Key, string Label, int Weight, CampaignBlueprint Blueprint);
 public sealed record CampaignMessageVariation(string Key, int Weight, CampaignBlueprint Blueprint);
+/// <summary>A receipt-timed beta follow-up. The API owns enrollment, defaults, bounds and send eligibility.</summary>
+public sealed record CampaignFollowUp(CampaignFollowUpMessage Message, int? DelaySeconds = null, int? ExpirySeconds = null);
+[JsonConverter(typeof(CampaignFollowUpMessageConverter))] public abstract record CampaignFollowUpMessage;
+public sealed record CampaignFollowUpText(string Text) : CampaignFollowUpMessage;
+public sealed record CampaignFollowUpTemplate(string TemplateId) : CampaignFollowUpMessage;
+[JsonConverter(typeof(CampaignFollowUpStatusConverter))]
+public enum CampaignFollowUpStatus { WaitingReceipt, Scheduled, Sending, Sent, Cancelled, Expired, Failed, OutcomeUnknown }
+[JsonConverter(typeof(CampaignFollowUpAnchorKindConverter))]
+public enum CampaignFollowUpAnchorKind { Delivered, Read }
+/// <summary>Receipt and outcome times are Unix milliseconds; absent receipts are null.</summary>
+public sealed record CampaignFollowUpSummary(string Id, string NumberId, CampaignFollowUpStatus Status, CampaignFollowUpAnchorKind? AnchorKind, long? FirstDeliveredAt, long? FirstReadAt, long? DueAt, long ExpiresAt, long? SentAt, long? DeliveredAt, long? ReadAt, long? RepliedAt, string? Reason, string? CommandId);
+public sealed record CampaignFollowUpReport(long Total, long Waiting, long Scheduled, long Sending, long Sent, long Delivered, long Read, long Replied, long Cancelled, long Expired, long Failed, long Unknown, long? NextDueAt);
+
 public sealed record CampaignVariantStrategy(string WinnerCriterion, int HoldoutPercent, bool AutoPromote, int TestWindowMinutes, int? TestSlicePercent = null);
 [JsonConverter(typeof(CampaignOutcomeConverter))] public abstract record CampaignExperimentOutcome;
 public sealed record CampaignPromoted(string WinnerKey) : CampaignExperimentOutcome;
@@ -43,14 +56,15 @@ public record Campaign
     public CampaignVariantStrategy? VariantStrategy { get; init; }
     public CampaignExperimentOutcome? ExperimentOutcome { get; init; }
     public IReadOnlyList<CampaignMessageVariation>? MessageVariations { get; init; }
+    public CampaignFollowUp? FollowUp { get; init; }
 }
 public sealed record CampaignOperation : Campaign { public string OperationId { get; init; } = ""; }
 public sealed record CampaignStopOperation : Campaign { public string? OperationId { get; init; } }
 public sealed record PlatformCampaign : Campaign { [JsonExtensionData] public IDictionary<string, JsonElement>? AdditionalFields { get; init; } }
-public record CampaignAnalytics(string CampaignId, long RecipientCount, long SentCount, long DeliveredCount, long ReadCount, long FailedCount, long SkippedCount, long RespondedCount, decimal ResponseRate, CampaignExperimentResults? Experiment = null);
-public sealed record PlatformCampaignAnalytics(string CampaignId, long RecipientCount, long SentCount, long DeliveredCount, long ReadCount, long FailedCount, long SkippedCount, long RespondedCount, decimal ResponseRate, decimal? AverageResponseTimeMs, decimal? MinResponseTimeMs, decimal? MaxResponseTimeMs, CampaignExperimentResults? Experiment) : CampaignAnalytics(CampaignId, RecipientCount, SentCount, DeliveredCount, ReadCount, FailedCount, SkippedCount, RespondedCount, ResponseRate, Experiment);
-public record CreateCampaignRequest(string Name, string? TemplateId = null, string? RecipientListId = null, IReadOnlyDictionary<string, JsonElement>? SenderConfig = null, long? ScheduledAt = null, CampaignSendWindowRequest? SendWindow = null, IReadOnlyList<CampaignRecipientInput>? Recipients = null, IReadOnlyList<CampaignMessageVariation>? MessageVariations = null, IReadOnlyList<CampaignVariant>? Variants = null, CampaignVariantStrategy? VariantStrategy = null);
-public sealed record CreatePlatformCampaignRequest(string ProjectId, string Name, string? TemplateId = null, string? RecipientListId = null, IReadOnlyDictionary<string, JsonElement>? SenderConfig = null, long? ScheduledAt = null, CampaignSendWindowRequest? SendWindow = null, IReadOnlyList<CampaignRecipientInput>? Recipients = null, IReadOnlyList<CampaignMessageVariation>? MessageVariations = null, IReadOnlyList<CampaignVariant>? Variants = null, CampaignVariantStrategy? VariantStrategy = null, long? RecipientCount = null, JsonElement? ComposerBlueprint = null, JsonElement? MessagesArray = null, JsonElement? AudienceRef = null, JsonElement? ComplianceConfig = null) : CreateCampaignRequest(Name, TemplateId, RecipientListId, SenderConfig, ScheduledAt, SendWindow, Recipients, MessageVariations, Variants, VariantStrategy);
+public record CampaignAnalytics(string CampaignId, long RecipientCount, long SentCount, long DeliveredCount, long ReadCount, long FailedCount, long SkippedCount, long RespondedCount, decimal ResponseRate, CampaignExperimentResults? Experiment = null, CampaignFollowUpReport? FollowUps = null);
+public sealed record PlatformCampaignAnalytics(string CampaignId, long RecipientCount, long SentCount, long DeliveredCount, long ReadCount, long FailedCount, long SkippedCount, long RespondedCount, decimal ResponseRate, decimal? AverageResponseTimeMs, decimal? MinResponseTimeMs, decimal? MaxResponseTimeMs, CampaignExperimentResults? Experiment, CampaignFollowUpReport FollowUps) : CampaignAnalytics(CampaignId, RecipientCount, SentCount, DeliveredCount, ReadCount, FailedCount, SkippedCount, RespondedCount, ResponseRate, Experiment, FollowUps) { [JsonRequired] public new CampaignFollowUpReport FollowUps { get; init; } = FollowUps; }
+public record CreateCampaignRequest(string Name, string? TemplateId = null, string? RecipientListId = null, IReadOnlyDictionary<string, JsonElement>? SenderConfig = null, long? ScheduledAt = null, CampaignSendWindowRequest? SendWindow = null, IReadOnlyList<CampaignRecipientInput>? Recipients = null, IReadOnlyList<CampaignMessageVariation>? MessageVariations = null, IReadOnlyList<CampaignVariant>? Variants = null, CampaignVariantStrategy? VariantStrategy = null, CampaignFollowUp? FollowUp = null);
+public sealed record CreatePlatformCampaignRequest(string ProjectId, string Name, string? TemplateId = null, string? RecipientListId = null, IReadOnlyDictionary<string, JsonElement>? SenderConfig = null, long? ScheduledAt = null, CampaignSendWindowRequest? SendWindow = null, IReadOnlyList<CampaignRecipientInput>? Recipients = null, IReadOnlyList<CampaignMessageVariation>? MessageVariations = null, IReadOnlyList<CampaignVariant>? Variants = null, CampaignVariantStrategy? VariantStrategy = null, long? RecipientCount = null, JsonElement? ComposerBlueprint = null, JsonElement? MessagesArray = null, JsonElement? AudienceRef = null, JsonElement? ComplianceConfig = null, CampaignFollowUp? FollowUp = null) : CreateCampaignRequest(Name, TemplateId, RecipientListId, SenderConfig, ScheduledAt, SendWindow, Recipients, MessageVariations, Variants, VariantStrategy, FollowUp);
 public record UpdateCampaignRequest
 {
     public string? Name { get; init; }
@@ -61,6 +75,7 @@ public record UpdateCampaignRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<IReadOnlyList<CampaignMessageVariation>> MessageVariations { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<IReadOnlyList<CampaignVariant>> Variants { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<CampaignVariantStrategy> VariantStrategy { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<CampaignFollowUp> FollowUp { get; init; }
 }
 public sealed record UpdatePlatformCampaignRequest : UpdateCampaignRequest { [JsonExtensionData] public IDictionary<string, JsonElement>? AdditionalFields { get; init; } }
 public sealed record LaunchCampaignRequest(long? ScheduledAt = null);
@@ -69,7 +84,7 @@ public sealed record ReschedulePlatformCampaignRequest(string ProjectId, [proper
 public sealed record RequeueCampaignRequest(bool? IncludeSkippedError = null);
 public sealed record CampaignRequeueResult(long Requeued);
 public sealed record ListCampaignRecipientsParameters(string? Status = null, string? Cursor = null, int? Limit = null);
-public sealed record CampaignRecipient(string Id, string Phone, IReadOnlyDictionary<string, JsonElement> Variables, string? VariantKey, string Status, long Attempts, string? LastError, string? ExternalMessageId, long QueuedAt, long? SentAt, long? DeliveredAt, long? ReadAt, long? FailedAt, long? RespondedAt);
+public sealed record CampaignRecipient(string Id, string Phone, IReadOnlyDictionary<string, JsonElement> Variables, string? VariantKey, string Status, long Attempts, string? LastError, string? ExternalMessageId, long QueuedAt, long? SentAt, long? DeliveredAt, long? ReadAt, long? FailedAt, long? RespondedAt, CampaignFollowUpSummary? FollowUp = null);
 public sealed record CampaignRecipientPage(string? NextCursor, bool HasMore);
 public sealed record CampaignRecipientsResponse(bool Success, IReadOnlyList<CampaignRecipient> Data, CampaignRecipientPage Page);
 public sealed record AddCampaignRecipientsRequest(IReadOnlyList<CampaignRecipientInput> Recipients);
@@ -139,4 +154,34 @@ internal sealed class CampaignOutcomeConverter : JsonConverter<CampaignExperimen
 {
     public override CampaignExperimentOutcome Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options) { using var doc = JsonDocument.ParseValue(ref reader); var json = doc.RootElement; return json.GetProperty("state").GetString() switch { "promoted" => new CampaignPromoted(json.GetProperty("winnerKey").GetString()!), "inconclusive" => new CampaignInconclusive(json.GetProperty("reason").GetString()!), _ => throw new JsonException("Invalid experiment outcome.") }; }
     public override void Write(Utf8JsonWriter writer, CampaignExperimentOutcome value, JsonSerializerOptions options) { writer.WriteStartObject(); if (value is CampaignPromoted p) { writer.WriteString("state", "promoted"); writer.WriteString("winnerKey", p.WinnerKey); } else if (value is CampaignInconclusive i) { writer.WriteString("state", "inconclusive"); writer.WriteString("reason", i.Reason); } else throw new JsonException("Invalid experiment outcome."); writer.WriteEndObject(); }
+}
+
+internal sealed class CampaignFollowUpStatusConverter() : JsonStringEnumConverter<CampaignFollowUpStatus>(JsonNamingPolicy.SnakeCaseLower, allowIntegerValues: false);
+internal sealed class CampaignFollowUpAnchorKindConverter() : JsonStringEnumConverter<CampaignFollowUpAnchorKind>(JsonNamingPolicy.SnakeCaseLower, allowIntegerValues: false);
+internal sealed class CampaignFollowUpMessageConverter : JsonConverter<CampaignFollowUpMessage>
+{
+    public override CampaignFollowUpMessage Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        using var document = JsonDocument.ParseValue(ref reader);
+        var value = document.RootElement;
+        if (value.ValueKind != JsonValueKind.Object || !value.TryGetProperty("type", out var type) || type.ValueKind != JsonValueKind.String) throw new JsonException("Follow-up message type is required.");
+        return type.GetString() switch
+        {
+            "text" => new CampaignFollowUpText(RequiredString(value, "text")),
+            "template" => new CampaignFollowUpTemplate(RequiredString(value, "templateId")),
+            _ => throw new JsonException("Invalid follow-up message type.")
+        };
+    }
+    private static string RequiredString(JsonElement value, string field) => value.TryGetProperty(field, out var result) && result.ValueKind == JsonValueKind.String ? result.GetString()! : throw new JsonException($"Follow-up {field} is required.");
+    public override void Write(Utf8JsonWriter writer, CampaignFollowUpMessage value, JsonSerializerOptions options)
+    {
+        writer.WriteStartObject();
+        switch (value)
+        {
+            case CampaignFollowUpText text: writer.WriteString("type", "text"); writer.WriteString("text", text.Text); break;
+            case CampaignFollowUpTemplate template: writer.WriteString("type", "template"); writer.WriteString("templateId", template.TemplateId); break;
+            default: throw new JsonException("Invalid follow-up message type.");
+        }
+        writer.WriteEndObject();
+    }
 }
