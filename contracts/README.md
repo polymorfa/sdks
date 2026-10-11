@@ -609,3 +609,33 @@ schemas, and the related Messaging and Platform campaign and analytics fields,
 from API `dev` merge commit `8d248b578a7c76034b30a5a97349adcd15ce5c55`
 (polymorfa/polymorfa#406), with both source paths and file hashes.
 `campaign-ab-tests-contract.test.ts` checks the SDK types against it.
+
+## Feature evaluation supplement
+
+`feature-evaluation.json` records the four feature availability operations and
+their referenced components from API `dev` merge commit
+`d36e12ff05f9f3537f3f87d8ad27258abc9b02df` (polymorfa/polymorfa#561), with both
+source paths and file hashes. `scripts/sync-feature-evaluation-contract.mjs`
+extracts it without changing the operation objects. Run it with a monorepo
+checkout and an exact commit to refresh the supplement.
+
+PR #561 changes two fingerprints. `evaluateFeatures` and
+`evaluateAccountFeatures` accept an optional `locale` (`en` or `pt-BR`), and
+each returned feature adds `state` (`off`, `opt_in` or `on`), `terms` and
+`enrollmentSource` (`customer`, `staff` or null). `exposureToken` is always
+null. `measurementAllowed` is still accepted and has no effect. The enrollment
+and exposure routes change only in their descriptions; the exposure route now
+always returns 403.
+
+All four operations stay excluded, with the reasons in `coverage.json`, and no
+SDK package calls them. `evaluateFeatures` accepts team and project
+credentials; callers use an authenticated request. The three account routes
+require dashboard identity. `feature-evaluation-contract.test.ts` checks that
+the stored operations reproduce the recorded fingerprints with
+`check-coverage.mjs`, and that the ledger and SDK sources keep the exclusions.
+
+The full snapshots and `coverage.json` stay pinned to `contracts/source.json`.
+At the next repin, these four rows change as recorded here, together with
+unrelated shared changes such as the public error enum. No SDK method or type
+depends on this supplement, so `scripts/release-gate.mjs` does not hold
+publication for it.
