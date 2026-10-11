@@ -1902,17 +1902,17 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/functions/{functionId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Delete",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/functions/{functionId}/secrets/{versionId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Secrets.Revoke",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
@@ -1966,9 +1966,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/sip-trunks/{trunkId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SIPTrunks.Delete",
+      "testFile": "sip_trunks_test.go"
     },
     {
       "family": "platform",
@@ -2694,57 +2694,57 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.List",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Retrieve",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/deployments",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Deployments.List",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/deployments/{deploymentId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Deployments.Retrieve",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/invocations",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Invocations.List",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/invocations/{invocationId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Invocations.Retrieve",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/secrets",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Secrets.List",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
@@ -3062,25 +3062,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sip-trunks",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SIPTrunks.List",
+      "testFile": "sip_trunks_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sip-trunks/{trunkId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SIPTrunks.Retrieve",
+      "testFile": "sip_trunks_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sip/endpoint",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SIPTrunks.Endpoint",
+      "testFile": "sip_trunks_test.go"
     },
     {
       "family": "platform",
@@ -3293,9 +3293,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/functions/{functionId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Update",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
@@ -3317,9 +3317,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/sip-trunks/{trunkId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SIPTrunks.Update",
+      "testFile": "sip_trunks_test.go"
     },
     {
       "family": "platform",
@@ -3869,33 +3869,33 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Create",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions/{functionId}/deployments",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Deployments.Create",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions/{functionId}/invocations",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Invocations.Create",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions/{functionId}/secrets",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Secrets.Create",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
@@ -4121,17 +4121,17 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/sip-trunks",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SIPTrunks.Create",
+      "testFile": "sip_trunks_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sip-trunks/{trunkId}/credentials",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.SIPTrunks.RotateCredentials",
+      "testFile": "sip_trunks_test.go"
     },
     {
       "family": "platform",
@@ -4363,9 +4363,9 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/functions/{functionId}/promotion",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Functions.Deployments.Promote",
+      "testFile": "functions_test.go"
     },
     {
       "family": "platform",
