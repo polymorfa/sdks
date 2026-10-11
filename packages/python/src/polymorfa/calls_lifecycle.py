@@ -12,6 +12,8 @@ from dataclasses import dataclass
 from typing import cast
 from urllib.parse import urlencode, urlsplit
 
+from typing_extensions import NotRequired, TypedDict
+
 from .calls import Socket
 from .calls_tokens import CallsError, CallsToken, CallsTokenSource
 from .errors import ConfigurationError
@@ -63,6 +65,49 @@ class LifecycleReady:
     participant: str | None = None
 
 
+class TrickleCandidate(TypedDict):
+    candidate: str
+    sdpMid: NotRequired[str | None]
+    sdpMLineIndex: NotRequired[float | None]
+
+
+@dataclass(frozen=True)
+class LifecycleCandidate:
+    call_id: str
+    candidate: TrickleCandidate
+    connection_id: str | None = None
+
+
+def _candidate(frame: JsonObject) -> LifecycleCandidate | None:
+    call_id, connection_id, value = (
+        frame.get("callId"),
+        frame.get("connectionId"),
+        frame.get("candidate"),
+    )
+    if (
+        not isinstance(call_id, str)
+        or (
+            connection_id is not None
+            and (
+                not isinstance(connection_id, str)
+                or not re.fullmatch(r"[A-Za-z0-9_-]{8,64}", connection_id)
+            )
+        )
+        or not isinstance(value, dict)
+        or not isinstance(value.get("candidate"), str)
+        or (value.get("sdpMid") is not None and not isinstance(value["sdpMid"], str))
+        or (
+            value.get("sdpMLineIndex") is not None
+            and (
+                isinstance(value["sdpMLineIndex"], bool)
+                or not isinstance(value["sdpMLineIndex"], (int, float))
+            )
+        )
+    ):
+        return None
+    return LifecycleCandidate(call_id, cast(TrickleCandidate, value), connection_id)
+
+
 class LifecycleSocket:
     def __init__(
         self,
@@ -109,6 +154,8 @@ class LifecycleSocket:
         self.connected = False
         self.participant: str | None = None
         self.events: asyncio.Queue[LifecycleEvent] = asyncio.Queue(maxsize=256)
+        self.candidates: asyncio.Queue[LifecycleCandidate] = asyncio.Queue(maxsize=256)
+        self.ready: asyncio.Queue[LifecycleReady] = asyncio.Queue(maxsize=32)
         self.errors: asyncio.Queue[CallsError] = asyncio.Queue(maxsize=32)
         self.states: asyncio.Queue[bool] = asyncio.Queue(maxsize=32)
         self._awaiting_pong = False
@@ -165,6 +212,15 @@ class LifecycleSocket:
                             p = frame.get("participant")
                             if isinstance(p, str):
                                 self.participant = p
+                            if self.ready.full():
+                                self.ready.get_nowait()
+                            session = frame.get("session")
+                            self.ready.put_nowait(
+                                LifecycleReady(
+                                    session if isinstance(session, str) else None,
+                                    p if isinstance(p, str) else None,
+                                )
+                            )
                             return
                         if frame.get("type") == "error" and isinstance(frame.get("code"), str):
                             self._error(cast(str, frame["code"]))
@@ -187,6 +243,14 @@ class LifecycleSocket:
                         self._awaiting_pong = False
                     elif frame.get("type") == "error" and isinstance(frame.get("code"), str):
                         self._error(cast(str, frame["code"]))
+                    elif frame.get("type") == "candidate":
+                        candidate = _candidate(frame)
+                        if candidate is not None:
+                            if self.candidates.full():
+                                raise CallsError(
+                                    "Candidate consumer did not keep up.", code="event_queue_full"
+                                )
+                            self.candidates.put_nowait(candidate)
                     elif (
                         frame.get("type") == "event"
                         and all(
@@ -270,7 +334,11 @@ class LifecycleSocket:
                 await self._socket.close()
                 return
             self._awaiting_pong = True
-            await self._socket.send('{"type":"ping"}')
+            try:
+                await self._socket.send('{"type":"ping"}')
+            except Exception:  # noqa: BLE001 - close the half-open native connection.
+                await self._socket.close()
+                return
 
     async def _replace_token(self, token: CallsToken) -> None:
         while self.connected and self._socket is not None and token.expires_at is not None:

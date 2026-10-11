@@ -1,0 +1,39 @@
+<main id="app">
+  <h1>Messaging workspace</h1>
+  {% if authenticated %}
+  <p>Your application assigns this workspace's number and browser grant.</p>
+  <form
+    method="post"
+    action="/api/logout"
+    hx-post="/api/logout"
+    hx-target="#app"
+    hx-swap="outerHTML"
+  >
+    <button type="submit">Sign out</button>
+  </form>
+  <pmfa-session-status></pmfa-session-status
+  ><pmfa-connect-whatsapp></pmfa-connect-whatsapp><pmfa-inbox></pmfa-inbox>
+  {% else %}
+  <p>Sign in with the local example application's configured account.</p>
+  <form
+    method="post"
+    action="/api/login"
+    hx-post="/api/login"
+    hx-target="#app"
+    hx-swap="outerHTML"
+  >
+    <label
+      >Username<input name="username" autocomplete="username" required
+    /></label>
+    <label
+      >Password<input
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        required
+    /></label>
+    <button type="submit">Sign in</button>
+  </form>
+  {% endif %}
+  <p role="alert" id="error"></p>
+</main>

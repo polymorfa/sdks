@@ -45,6 +45,7 @@ class ManagedMedia:
         self._lock = asyncio.Lock()
         self._queued = 0
         self._closed = False
+        self.claimed = False
         self.frames: asyncio.Queue[AudioFrame | VideoFrame] = asyncio.Queue(maxsize=256)
         self.failure: asyncio.Future[BaseException] = asyncio.get_running_loop().create_future()
 
@@ -56,6 +57,12 @@ class ManagedMedia:
         try:
             while self.socket.connected:
                 frame = await self.socket.receive()
+                if (
+                    isinstance(frame, dict)
+                    and frame.get("type") == "error"
+                    and frame.get("code") == "call_claimed"
+                ):
+                    self.claimed = True
                 if isinstance(frame, (AudioFrame, VideoFrame)):
                     if self.frames.full():
                         raise CallsError("Media consumer did not keep up.", code="media_queue_full")

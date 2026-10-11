@@ -455,6 +455,17 @@ class Chats(Resource):
             options=options,
         )
 
+    async def download_message_media_stream(
+        self, session: str, conversation: str, message_id: str, *, options: RequestOptions = O
+    ) -> DownloadStream:
+        self._server()
+        result = await self._transport.download_stream(
+            self._path(session, conversation) + "/messages/" + segment(message_id) + "/media",
+            options=options,
+        )
+        assert isinstance(result, DownloadStream)
+        return result
+
     async def edit_message(
         self,
         session: str,

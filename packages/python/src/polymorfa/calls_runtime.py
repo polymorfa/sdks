@@ -15,7 +15,7 @@ from typing_extensions import Self
 
 from .calls import AudioFrame, MediaSocket, VideoFrame
 from .calls_diagnostics import CallReporter
-from .calls_lifecycle import LifecycleEvent, LifecycleSocket, close_code
+from .calls_lifecycle import LifecycleCandidate, LifecycleEvent, LifecycleSocket, close_code
 from .calls_media import ManagedMedia, MediaStateUpdate
 from .calls_tokens import CallsError, CallsTokenSource, TokenProvider
 from .client import AsyncMessagingClient
@@ -53,6 +53,21 @@ class CallClaim:
 class CallCapabilities:
     video: bool = True
     invite: bool = True
+
+
+DEFAULT_CALL_CAPABILITIES = CallCapabilities()
+
+
+def capabilities_from(
+    value: object, fallback: CallCapabilities = DEFAULT_CALL_CAPABILITIES
+) -> CallCapabilities:
+    if not isinstance(value, dict):
+        return fallback
+    video, invite = value.get("video"), value.get("invite")
+    return CallCapabilities(
+        video if isinstance(video, bool) else fallback.video,
+        invite if isinstance(invite, bool) else fallback.invite,
+    )
 
 
 class Call:
@@ -314,11 +329,11 @@ class Call:
             self._media = None
             self.video_sources.clear()
             code = close_code(cause)
-            if code in (1000, 4409, 4400, 4403, 1008, 1009):
+            if (media.claimed and code != 4401) or code in (1000, 4409, 4400, 4403, 1008, 1009):
                 reason = getattr(getattr(cause, "rcvd", None), "reason", "")
                 await self._finish(
                     "claimed"
-                    if str(reason).lower() == "call claimed"
+                    if media.claimed or str(reason).lower() == "call claimed"
                     else "remote_hangup"
                     if code in (1000, 4409)
                     else "connection_failed"
@@ -570,6 +585,37 @@ def _is_participant(value: object) -> bool:
     )
 
 
+def _participant_control(event: LifecycleEvent) -> JsonObject | None:
+    if event.payload.get("callId") != event.call_id:
+        return None
+    if event.event == "call.participant_left":
+        participant_id = event.payload.get("participantId")
+        if not isinstance(participant_id, str):
+            return None
+        frame: JsonObject = {"type": "participant_left", "participantId": participant_id}
+        reason = event.payload.get("reason")
+        if isinstance(reason, str):
+            frame["reason"] = reason
+        return frame
+    if event.event in ("call.participant_joined", "call.participant_state"):
+        participant = event.payload.get("participant")
+        if _is_participant(participant):
+            return {"type": event.event.removeprefix("call."), "participant": participant}
+    return None
+
+
+def _participant_id(frame: JsonObject) -> str:
+    participant = frame.get("participant")
+    return cast(str, participant["id"] if isinstance(participant, dict) else frame["participantId"])
+
+
+def _departure(frame: JsonObject) -> bool:
+    participant = frame.get("participant")
+    return frame.get("type") == "participant_left" or (
+        isinstance(participant, dict) and participant.get("state") == "left"
+    )
+
+
 class _RestContext:
     def __init__(self, owner: CallsClient) -> None:
         self.owner = owner
@@ -630,6 +676,7 @@ class CallsClient:
         self._pending: OrderedDict[str, list[LifecycleEvent]] = OrderedDict()
         self._ended_ids: list[str] = []
         self._generation = 0
+        self._closed = asyncio.Event()
         self.incoming: asyncio.Queue[Call] = asyncio.Queue(maxsize=200)
         self._tasks: set[asyncio.Task[None]] = set()
 
@@ -665,9 +712,11 @@ class CallsClient:
             cast(dict[str, object], body)["participant"] = participant
 
     async def connect(self) -> None:
+        self._closed.clear()
         await self.lifecycle.connect()
 
     async def disconnect(self) -> None:
+        self._closed.set()
         self._generation += 1
         await self.lifecycle.close()
         await asyncio.gather(
@@ -789,6 +838,7 @@ class CallsClient:
                 peer if isinstance(peer, str) else "",
                 event.payload.get("hasVideo") is True or event.payload.get("has_video") is True,
             )
+            call.capabilities = capabilities_from(event.payload.get("capabilities"))
             await self._track(call)
             if not call.ended:
                 if self.incoming.full():
@@ -817,11 +867,37 @@ class CallsClient:
                     return
                 if terminal(event):
                     queue[:] = [event]
-                elif event.event != "call.accepted" or not any(
-                    item.event == event.event for item in queue
-                ):
+                elif event.event == "call.accepted":
+                    if any(item.event == event.event for item in queue):
+                        return
                     if len(queue) >= 8:
                         queue.pop(0)
+                    queue.append(event)
+                else:
+                    frame = _participant_control(event)
+                    if frame is None:
+                        return
+                    for index, item in enumerate(queue):
+                        previous = _participant_control(item)
+                        if previous is not None and _participant_id(previous) == _participant_id(
+                            frame
+                        ):
+                            if _departure(previous) and _departure(frame):
+                                return
+                            queue.pop(index)
+                            break
+                    if len(queue) >= 8:
+                        oldest = next(
+                            (
+                                index
+                                for index, item in enumerate(queue)
+                                if _participant_control(item) is not None
+                            ),
+                            None,
+                        )
+                        if oldest is None:
+                            return
+                        queue.pop(oldest)
                     queue.append(event)
 
     async def _apply(self, call: Call, event: LifecycleEvent) -> None:
@@ -832,16 +908,9 @@ class CallsClient:
             answered_by = event.payload.get("answeredBy")
             if isinstance(answered_by, str):
                 call._answered_by = answered_by
-            reported = event.payload.get("capabilities")
-            if isinstance(reported, dict):
-                call.capabilities = CallCapabilities(
-                    cast(bool, reported.get("video"))
-                    if isinstance(reported.get("video"), bool)
-                    else call.capabilities.video,
-                    cast(bool, reported.get("invite"))
-                    if isinstance(reported.get("invite"), bool)
-                    else call.capabilities.invite,
-                )
+            call.capabilities = capabilities_from(
+                event.payload.get("capabilities"), call.capabilities
+            )
             call._exclusive = event.payload.get("exclusive") is True or call._claimed_by_us
             call._claimed_by_other = (
                 call._exclusive
@@ -871,17 +940,43 @@ class CallsClient:
                 else event.event.removeprefix("call.")
             )
             await call._finish(reason if isinstance(reason, str) else "remote_hangup")
-        elif event.event == "call.participant_left" and isinstance(
-            event.payload.get("participantId"), str
-        ):
-            call._update_participant(cast(str, event.payload["participantId"]), None)
-        elif _is_participant(event.payload.get("participant")):
-            participant = cast(CallParticipant, event.payload["participant"])
-            call._update_participant(participant["id"], participant)
+        else:
+            frame = _participant_control(event)
+            if frame is not None and not (
+                _departure(frame) and _participant_id(frame) in call._departed
+            ):
+                await call._control(frame)
 
     async def incoming_calls(self) -> AsyncIterator[Call]:
-        while self.connected:
-            yield await self.incoming.get()
+        while not self._closed.is_set():
+            received = asyncio.create_task(self.incoming.get())
+            closed = asyncio.create_task(self._closed.wait())
+            try:
+                await asyncio.wait((received, closed), return_when=asyncio.FIRST_COMPLETED)
+                if closed.done():
+                    return
+                yield received.result()
+            finally:
+                received.cancel()
+                closed.cancel()
+                await asyncio.gather(received, closed, return_exceptions=True)
+
+    @property
+    def candidates(self) -> asyncio.Queue[LifecycleCandidate]:
+        return self.lifecycle.candidates
+
+    async def send_candidate(
+        self,
+        call_id: str,
+        connection_id: str,
+        candidate: str,
+        *,
+        sdp_mid: str | None = None,
+        sdp_mline_index: int | None = None,
+    ) -> bool:
+        return await self.lifecycle.send_candidate(
+            call_id, connection_id, candidate, sdp_mid=sdp_mid, sdp_mline_index=sdp_mline_index
+        )
 
     async def __aenter__(self) -> Self:
         await self.connect()

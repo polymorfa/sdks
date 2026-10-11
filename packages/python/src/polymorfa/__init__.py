@@ -10,11 +10,19 @@ from .calls import (
     encode_video_frame,
 )
 from .calls_diagnostics import CallReporter
-from .calls_lifecycle import LifecycleEvent, LifecycleReady, LifecycleSocket
+from .calls_lifecycle import (
+    LifecycleCandidate,
+    LifecycleEvent,
+    LifecycleReady,
+    LifecycleSocket,
+    TrickleCandidate,
+)
 from .calls_media import MediaState, MediaStateUpdate
 from .calls_runtime import Call, CallCapabilities, CallClaim, CallsClient
 from .calls_tokens import CallsError, CallsToken, CallsTokenRequest, CallsTokenSource
 from .client import AsyncClient, AsyncMessagingClient, AsyncProjectClient
+from .content_disposition import parse_content_disposition_filename
+from .downloads import signed_url_expiry
 from .error_codes import POLYMORFA_ERROR_CODES, is_known_error_code
 from .errors import (
     AuthenticationError,
@@ -40,6 +48,7 @@ from .files import (
     download_whatsapp_media_to_file,
     write_stream_to_file,
 )
+from .flow_forward import FLOW_FORWARD_SIGNATURE_HEADER, verify_flow_forward_signature
 from .integrations import django_webhook_event, fastapi_webhook_event
 from .media import (
     MediaDescriptor,
@@ -57,6 +66,7 @@ from .media_streams import (
     descriptor_from_media,
     download_whatsapp_media_stream,
 )
+from .policies import graph_transport_headers
 from .system import AsyncBridgeClient, AsyncSystemClient
 from .transport import (
     API_VERSION,
@@ -81,6 +91,7 @@ from .webhooks import (
 
 __all__ = [
     "API_VERSION",
+    "FLOW_FORWARD_SIGNATURE_HEADER",
     "POLYMORFA_ERROR_CODES",
     "SDK_VERSION",
     "ApiResponse",
@@ -109,6 +120,7 @@ __all__ = [
     "Credential",
     "CursorPage",
     "EventStream",
+    "LifecycleCandidate",
     "LifecycleEvent",
     "LifecycleReady",
     "LifecycleSocket",
@@ -127,6 +139,7 @@ __all__ = [
     "ServerError",
     "StreamedEvent",
     "TimeoutError",
+    "TrickleCandidate",
     "TypedWebhookEvent",
     "UnknownWebhookEvent",
     "ValidationError",
@@ -154,9 +167,13 @@ __all__ = [
     "encode_audio_frame",
     "encode_video_frame",
     "fastapi_webhook_event",
+    "graph_transport_headers",
     "is_event",
     "is_known_error_code",
     "is_whatsapp_media_url",
+    "parse_content_disposition_filename",
+    "signed_url_expiry",
+    "verify_flow_forward_signature",
     "verify_local_webhook_signature",
     "verify_webhook_signature",
     "whatsapp_media_urls",

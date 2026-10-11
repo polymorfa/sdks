@@ -11,7 +11,7 @@ import base64
 import hashlib
 import hmac
 from dataclasses import dataclass, field
-from typing import Literal, cast
+from typing import TYPE_CHECKING, Literal, cast
 from urllib.parse import urlencode, urlsplit
 
 import httpx
@@ -20,6 +20,9 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
 from .errors import ConfigurationError, MediaIntegrityError
+
+if TYPE_CHECKING:
+    from .media_streams import MediaInput
 
 MediaKind = Literal["image", "video", "audio", "document", "sticker"]
 MAX_BYTES = 256 * 1024 * 1024
@@ -285,7 +288,7 @@ def whatsapp_media_urls(descriptor: MediaDescriptor) -> tuple[str, ...]:
 
 
 async def download_whatsapp_media(
-    descriptor: MediaDescriptor,
+    descriptor: MediaInput,
     *,
     max_bytes: int = MAX_BYTES,
     http_transport: httpx.AsyncBaseTransport | None = None,

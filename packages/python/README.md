@@ -91,6 +91,11 @@ a base64url forwarding secret and a default 300-second tolerance. Native
 `construct_webhook_event` continues to verify the original bytes without a
 timestamp. `create_webhook_fixture` produces a body, signature and headers for
 testing either application adapter.
+`verify_flow_forward_signature` checks decrypted Flow forwarding bytes using
+the endpoint's signing secret and timestamp tolerance. It preserves the timestamp
+text when constructing the signed input. `FLOW_FORWARD_SIGNATURE_HEADER` names
+its header. `parse_content_disposition_filename` decodes RFC 8187 filenames,
+removes directory segments and control characters, and returns a display name.
 `AsyncCallRetentionClient` reads the team-wide setting using an organization key
 or a project token without requiring a project ID. Updates retain server-side
 team-key authorization. `POLYMORFA_ERROR_CODES` and `is_known_error_code` expose
@@ -108,13 +113,21 @@ an unacknowledged command fails after five seconds and is never replayed.
 one caller's cancellation from cancelling other waiters. `CallsToken.expires_at`
 uses Unix epoch seconds. Socket credentials travel in authentication frames.
 Technical diagnostics can be disabled with `diagnostics=False`.
+Lifecycle `ready` and `candidates` queues preserve authenticated connection and
+ICE metadata. `CallsClient.send_candidate` writes candidates on that connection.
+An early accepted event survives queued participant changes; duplicate departures
+keep their initial reason. Disconnecting ends pending `incoming_calls` iterators.
 Install the `fastapi` or `django` extras for framework examples;
 `fastapi_webhook_event` and `django_webhook_event` verify the raw request body.
 See `examples/python` in the source tree for executable application examples.
+The `web_host` example runs FastAPI or Django with templates, HTMX and the existing
+Web Components, including application sign-in, server-selected browser grants
+and sign-out revocation.
 
 `chats` exposes typed stored history pages, message media downloads, message
-edits, archive controls and service-window observations. Hosted history
-requires the API's HMS enrollment and history permission; service windows
+edits, archive controls and service-window observations.
+`download_message_media_stream` returns a single-use stream with request metadata.
+Hosted history requires the API's HMS enrollment and history permission; service windows
 have separate Official API eligibility. `business` exposes profile,
 catalog, product, collection, order, compliance and linked-account methods,
 including asynchronous accepted response variants.

@@ -11,6 +11,7 @@ from urllib.parse import parse_qs, urlsplit
 import httpx
 from typing_extensions import Self
 
+from .content_disposition import parse_content_disposition_filename
 from .errors import ConnectionError, TimeoutError
 from .transport import ResponseMetadata
 
@@ -41,11 +42,9 @@ class DownloadStream:
         self.content_type = response.headers.get("content-type")
         length = response.headers.get("content-length")
         self.content_length = int(length) if length and re.fullmatch(r"\d+", length) else None
-        disposition = response.headers.get("content-disposition", "")
-        match = re.search(
-            r'filename="([^"\r\n]+)"|filename=([^;\r\n]+)', disposition, re.IGNORECASE
+        self.filename = parse_content_disposition_filename(
+            response.headers.get("content-disposition")
         )
-        self.filename = (match.group(1) or match.group(2)).strip() if match else None
         self.request_id = metadata.request_id
         self._used = False
 
