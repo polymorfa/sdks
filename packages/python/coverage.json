@@ -1110,9 +1110,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/messages/send",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.messages.send",
+      "testFile": "tests/test_message_content.py"
     },
     {
       "family": "messaging",
@@ -2582,33 +2582,33 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.calls.list",
+      "testFile": "tests/test_call_records.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls/{callId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.calls.retrieve",
+      "testFile": "tests/test_call_records.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls/export",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.calls.export",
+      "testFile": "tests/test_call_records.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls/stats",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.calls.stats",
+      "testFile": "tests/test_call_records.py"
     },
     {
       "family": "platform",
@@ -4598,33 +4598,33 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/analytics",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.analytics.get",
+      "testFile": "tests/test_analytics.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/analytics",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.analytics.get",
+      "testFile": "tests/test_analytics.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/analytics/metrics",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.analytics.metrics",
+      "testFile": "tests/test_analytics.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/analytics/metrics",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncProjectClient.analytics.metrics",
+      "testFile": "tests/test_analytics.py"
     },
     {
       "family": "platform",

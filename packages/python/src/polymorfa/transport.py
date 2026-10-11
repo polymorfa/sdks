@@ -310,6 +310,7 @@ class Transport:
         body: object = None,
         options: RequestOptions = DEFAULT_OPTIONS,
         accept: str = "application/json",
+        buffer_body: bool = False,
     ) -> tuple[httpx.Response, ResponseMetadata]:
         safe = method in ("GET", "HEAD", "OPTIONS") or bool(options.idempotency_key)
         retries = options.max_network_retries
@@ -333,7 +334,7 @@ class Transport:
                     "Could not reach Polymorfa.", code="connection_error"
                 ) from None
             meta = ResponseMetadata.from_response(response, attempt)
-            if accept == "application/json":
+            if accept == "application/json" or buffer_body:
                 try:
                     await self._read_body(response, meta)
                 except (TimeoutError, ConnectionError):
@@ -455,6 +456,23 @@ class Transport:
                     "Expected an object response.", code="invalid_response", metadata=meta
                 )
             return ApiResponse(cast(JsonObject, value), meta)
+        finally:
+            await response.aclose()
+
+    async def text(
+        self,
+        method: str,
+        path: str,
+        *,
+        query: Mapping[str, QueryValue] | None = None,
+        accept: str = "text/plain",
+        options: RequestOptions = DEFAULT_OPTIONS,
+    ) -> ApiResponse[str]:
+        response, meta = await self.open_stream(
+            method, path, query=query, accept=accept, options=options, buffer_body=True
+        )
+        try:
+            return ApiResponse(response.text, meta)
         finally:
             await response.aclose()
 

@@ -9,6 +9,8 @@ from typing_extensions import NotRequired, TypedDict
 from .configuration import ConfigurationPatch, ConfigurationView
 from .developer_models import Event as Event  # noqa: PLC0414
 from .developer_models import Operation as Operation  # noqa: PLC0414
+from .message_content import Content
+from .message_content import SendMessage as TypedSendMessage
 from .platform_core import CreateProject
 from .quicklink_models import Create, Link, Status
 from .transport import JsonObject
@@ -37,14 +39,8 @@ class Conversation(TypedDict, total=False):
     bsuid: str
 
 
-class SendMessage(TypedDict):
-    conversation: Conversation
-    content: JsonObject
-
-
-class SendMessageOptions(SendMessage, total=False):
-    transport: Literal["auto", "linked_devices", "official_api"]
-    replyTo: str
+SendMessage = TypedSendMessage
+SendMessageOptions = TypedSendMessage
 
 
 class LinkedDeviceIds(TypedDict):
@@ -85,15 +81,15 @@ class MessageReceipt(TypedDict):
     transport: NotRequired[Literal["linked_devices", "official_api"]]
     routingReason: NotRequired[RoutingReason]
     operationId: NotRequired[str]
-    conversation: Conversation
+    conversation: ConversationIdentity
     timestamp: str
     status: str
 
 
-class MessageResponse(MessageReceipt, total=False):
+class MessageResponse(MessageReceipt):
     type: str
-    content: JsonObject
-    mediaId: str
+    content: NotRequired[Content]
+    mediaId: NotRequired[str]
 
 
 class Seen(TypedDict):

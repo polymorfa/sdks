@@ -169,3 +169,16 @@ Media supports `download_stream`, `download_file` and `download_url` alongside
 buffered downloads. Streams are single-use asynchronous iterators and context
 managers. Signed URLs stay out of object representations; storage requests omit
 API headers. Cancelling the consuming task closes the active response body.
+
+Composed message types cover text, attachments, polls, contacts, products,
+interactive lists/buttons, dynamic Flows, templates and payment orders. Optional
+context uses `quotedMessage`, `mentions` and `isForwarded`.
+
+Platform `calls` exposes typed stored records and diagnostics, grouped statistics,
+cursor pagination and CSV/NDJSON exports. `export_all` removes subsequent CSV
+headers and refuses a repeated cursor before yielding its body. `analytics`
+returns typed message, device, conversation and call aggregates and validates
+Prometheus/OpenMetrics gauge exports. Project analytics keeps its bound route.
+`usage` provides metered records and totals; metering does not establish charging.
+Organization `ban_safe` exposes health, telemetry, collection, findings,
+enforcement, incidents and claim evidence. The API owns access and applied state.

@@ -7,11 +7,13 @@ from dataclasses import dataclass
 from typing_extensions import Self, Unpack
 
 from . import messaging, platform
+from .analytics import Analytics
 from .bansafe import BanSafe
 from .bansafe_observations import BanSafeObservations
 from .billing import Billing
 from .business import Business
 from .call_policy import CallOptOuts, CallPolicies, CallRetentions
+from .call_records import CallRecords
 from .campaigns import Audiences, Campaigns, MessagingCampaigns
 from .channels import Channels
 from .client_tokens import ClientTokens
@@ -136,6 +138,8 @@ class AsyncProjectClient:
     _transport: Transport
     _credential: Credential
     project_id: str
+    analytics: Analytics
+    calls: CallRecords
     usage: Usage
     voice: Voice
     functions: Functions
@@ -164,6 +168,8 @@ class AsyncProjectClient:
         object.__setattr__(self, "_transport", transport)
         object.__setattr__(self, "_credential", credential)
         object.__setattr__(self, "project_id", project_id)
+        object.__setattr__(self, "analytics", Analytics(transport, project_id))
+        object.__setattr__(self, "calls", CallRecords(transport, project_id))
         object.__setattr__(self, "usage", Usage(transport, project_id))
         object.__setattr__(self, "voice", Voice(transport, project_id))
         object.__setattr__(self, "functions", Functions(transport, project_id))
@@ -218,6 +224,8 @@ class AsyncClient:
     security_incidents: SecurityIncidents
     ban_safe: BanSafeObservations
     media: PlatformMedia
+    analytics: Analytics
+    calls: CallRecords
     usage: Usage
     voice: Voice
     campaigns: Campaigns
@@ -237,6 +245,8 @@ class AsyncClient:
         transport = Transport(credential, **options)
         object.__setattr__(self, "_transport", transport)
         object.__setattr__(self, "_credential", credential)
+        object.__setattr__(self, "analytics", Analytics(transport))
+        object.__setattr__(self, "calls", CallRecords(transport))
         object.__setattr__(self, "usage", Usage(transport))
         object.__setattr__(self, "voice", Voice(transport))
         object.__setattr__(self, "ban_safe", BanSafeObservations(transport))
