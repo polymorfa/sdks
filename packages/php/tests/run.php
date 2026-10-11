@@ -151,3 +151,9 @@ require __DIR__.'/platform_sessions.php';
 require __DIR__.'/security.php';
 
 require __DIR__.'/billing.php';
+
+require __DIR__.'/usage.php';
+
+require __DIR__.'/customers.php';
+
+require __DIR__.'/sip.php';

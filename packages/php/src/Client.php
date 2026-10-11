@@ -18,6 +18,9 @@ final readonly class Client
     public Events $events;
     public PlatformWebhooks $webhooks;
     public RawClient $raw;
+    public Resources\SipTrunks $sipTrunks;
+    public Resources\Customers $customers;
+    public Resources\Usage $usage;
     public Resources\Billing $billing;
     public Resources\AuditLogs $auditLogs;
     public Resources\SessionBans $sessionBans;
@@ -40,6 +43,9 @@ final readonly class Client
             throw new ConfigurationException('credential');
         }
         $this->transport = new HttpTransport($credential, $baseUrl, $apiVersion, $timeout, $maxNetworkRetries, $proxy, $http);
+        $this->sipTrunks = new Resources\SipTrunks($this->transport);
+        $this->customers = new Resources\Customers($this->transport);
+        $this->usage = new Resources\Usage($this->transport);
         $this->billing = new Resources\Billing($this->transport);
         $this->auditLogs = new Resources\AuditLogs($this->transport);
         $this->sessionBans = new Resources\SessionBans($this->transport);

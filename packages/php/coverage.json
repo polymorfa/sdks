@@ -1910,9 +1910,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/customers/{customerId}/pairing-links/{pairingLinkId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::customers.revokePairingLink",
+      "testFile": "tests/customers.php"
     },
     {
       "family": "platform",
@@ -1998,9 +1998,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/sip-trunks/{trunkId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::sipTrunks.delete",
+      "testFile": "tests/sip.php"
     },
     {
       "family": "platform",
@@ -2662,41 +2662,41 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::customers.list",
+      "testFile": "tests/customers.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::customers.retrieve",
+      "testFile": "tests/customers.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}/events",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::customers.listEvents",
+      "testFile": "tests/customers.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}/numbers",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::customers.listNumbers",
+      "testFile": "tests/customers.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}/pairing-links",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::customers.listPairingLinks",
+      "testFile": "tests/customers.php"
     },
     {
       "family": "platform",
@@ -2822,9 +2822,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/gates",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::usage.listGates",
+      "testFile": "tests/usage.php"
     },
     {
       "family": "platform",
@@ -2910,9 +2910,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/customers/status",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::customers.status",
+      "testFile": "tests/customers.php"
     },
     {
       "family": "platform",
@@ -3134,25 +3134,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sip-trunks",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::sipTrunks.list",
+      "testFile": "tests/sip.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sip-trunks/{trunkId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::sipTrunks.retrieve",
+      "testFile": "tests/sip.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sip/endpoint",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::sipTrunks.endpoint",
+      "testFile": "tests/sip.php"
     },
     {
       "family": "platform",
@@ -3190,17 +3190,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/usage",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::usage.summary",
+      "testFile": "tests/usage.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/usage/records",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::usage.listRecords",
+      "testFile": "tests/usage.php"
     },
     {
       "family": "platform",
@@ -3358,9 +3358,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/customers/{customerId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::customers.update",
+      "testFile": "tests/customers.php"
     },
     {
       "family": "platform",
@@ -3398,9 +3398,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/sip-trunks/{trunkId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::sipTrunks.update",
+      "testFile": "tests/sip.php"
     },
     {
       "family": "platform",
@@ -3886,41 +3886,41 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::customers.create",
+      "testFile": "tests/customers.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/archive",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::customers.archive",
+      "testFile": "tests/customers.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/numbers/{sessionId}/transfer",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::customers.transferNumber",
+      "testFile": "tests/customers.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/pairing-links",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::customers.createPairingLink",
+      "testFile": "tests/customers.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/restore",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::customers.restore",
+      "testFile": "tests/customers.php"
     },
     {
       "family": "platform",
@@ -4070,9 +4070,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/customers/enable",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::customers.enable",
+      "testFile": "tests/customers.php"
     },
     {
       "family": "platform",
@@ -4246,17 +4246,17 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/sip-trunks",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::sipTrunks.create",
+      "testFile": "tests/sip.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sip-trunks/{trunkId}/credentials",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::sipTrunks.rotateCredentials",
+      "testFile": "tests/sip.php"
     },
     {
       "family": "platform",

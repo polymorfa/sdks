@@ -13,6 +13,8 @@ final readonly class ProjectClient
     public Events $events;
     public PlatformWebhooks $webhooks;
     public RawClient $raw;
+    public Resources\SipTrunks $sipTrunks;
+    public Resources\Usage $usage;
     public string $projectId;
     public function __construct(
         Credential $credential,
@@ -31,6 +33,8 @@ final readonly class ProjectClient
         $transport ??= new HttpTransport($credential, $baseUrl, $apiVersion, $timeout, $maxNetworkRetries, $proxy, $http);
         $this->projectId = $projectId;
         $prefix = '/platform/projects/' . rawurlencode($projectId);
+        $this->sipTrunks = new Resources\SipTrunks($transport, $projectId, $credential->kind === 'organization_api_key');
+        $this->usage = new Resources\Usage($transport, $projectId);
         $this->events = new Events($transport, $prefix);
         $this->webhooks = new PlatformWebhooks($transport, $prefix);
         $this->raw = new RawClient($transport, $projectId);

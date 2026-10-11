@@ -99,3 +99,17 @@ validate UUIDs, revisions, priorities and six-decimal credit quantities before
 sending a request. Passing validation grants no billing authority or feature
 access. These families have native HTTP socket tests in addition to PHPStan
 shape checks.
+
+`customers` covers Customer lifecycle, masked Number inventory, event records,
+pairing links and confirmed transfers. Nullable update fields remain distinct
+from omitted fields, and a replayed pairing-link creation can return a null URL.
+`usage` unwraps measured records and gate observations and follows cursors lazily
+through `iterateRecords()`. Project views always select their own usage project.
+A usage record or configured gate does not establish a customer charge.
+
+`sipTrunks` provides typed trunk configuration, endpoint discovery and credential
+rotation. For organization clients, `list($projectId)` and
+`create($input, $projectId)` select a project. Project views use their own project.
+When a project view uses an organization key, writes first verify the trunk's
+project using a read without the write's idempotency key. An environment without
+SIP hosting returns the `sip_not_hosted` endpoint variant.
