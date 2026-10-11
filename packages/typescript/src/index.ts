@@ -329,7 +329,6 @@ export type {
   CampaignMessageVariation,
   CampaignMessageVariationBlueprint,
   CampaignFollowUp,
-  CampaignFollowUpConfiguration,
   CampaignFollowUpMessage,
   CampaignFollowUpReport,
   CampaignFollowUpStatus,

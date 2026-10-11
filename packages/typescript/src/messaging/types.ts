@@ -229,12 +229,6 @@ export interface CampaignFollowUp {
   readonly message: CampaignFollowUpMessage;
 }
 
-/** A stored follow-up, with its defaults applied. */
-export interface CampaignFollowUpConfiguration extends CampaignFollowUp {
-  readonly delaySeconds: number;
-  readonly expirySeconds: number;
-}
-
 export type CampaignFollowUpStatus =
   | "waiting_receipt"
   | "scheduled"
@@ -319,8 +313,11 @@ export interface Campaign {
   readonly experimentOutcome?: CampaignExperimentOutcome | null;
   /** Weighted message alternatives, or null when the campaign sends one message. */
   readonly messageVariations?: readonly CampaignMessageVariation[] | null;
-  /** Receipt-timed follow-up (beta), or null when the campaign has none. */
-  readonly followUp?: CampaignFollowUpConfiguration | null;
+  /**
+   * Receipt-timed follow-up (beta), or null when the campaign has none. The
+   * API stores defaults, but the contract requires only `message`.
+   */
+  readonly followUp?: CampaignFollowUp | null;
 }
 
 export type CampaignSendWindowDay =

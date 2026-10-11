@@ -5,7 +5,6 @@ import type {
   Campaign,
   CampaignAnalytics,
   CampaignFollowUp,
-  CampaignFollowUpConfiguration,
   CampaignFollowUpReport,
   CampaignFollowUpStatus,
   CampaignFollowUpSummary,
@@ -135,9 +134,13 @@ describe("campaign follow-up contract supplement", () => {
     expectTypeOf<CampaignFollowUp["message"]["type"]>().toEqualTypeOf<
       "text" | "template"
     >();
+    // Responses require only the message, so the timing fields stay optional.
+    expect(messaging.fields["Campaign.followUp"]!.required).toEqual([
+      "message",
+    ]);
     expectTypeOf<
-      CampaignFollowUpConfiguration["delaySeconds"]
-    >().toEqualTypeOf<number>();
+      NonNullable<Campaign["followUp"]>["delaySeconds"]
+    >().toEqualTypeOf<number | undefined>();
   });
 
   it("matches the recipient summary and its statuses", () => {
@@ -199,6 +202,6 @@ describe("campaign follow-up contract supplement", () => {
     ]).toHaveLength(4);
     expectTypeOf<
       NonNullable<Campaign["followUp"]>
-    >().toEqualTypeOf<CampaignFollowUpConfiguration>();
+    >().toEqualTypeOf<CampaignFollowUp>();
   });
 });
