@@ -1934,17 +1934,17 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/functions/{functionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.delete",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/functions/{functionId}/secrets/{versionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.secrets.revoke",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
@@ -1958,9 +1958,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/media/{mediaId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::media.delete",
+      "testFile": "tests/settings.php"
     },
     {
       "family": "platform",
@@ -2766,57 +2766,57 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.list",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.retrieve",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/deployments",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.deployments.list",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/deployments/{deploymentId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.deployments.retrieve",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/invocations",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.invocations.list",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/invocations/{invocationId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.invocations.retrieve",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/secrets",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.secrets.list",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
@@ -2846,9 +2846,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/media/{mediaId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::media.retrieve",
+      "testFile": "tests/settings.php"
     },
     {
       "family": "platform",
@@ -3054,17 +3054,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/quicklink",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::quickLinkSettings.retrieve",
+      "testFile": "tests/settings.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/session-configuration",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::sessionConfiguration.retrieve",
+      "testFile": "tests/settings.php"
     },
     {
       "family": "platform",
@@ -3374,9 +3374,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/functions/{functionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.update",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
@@ -3990,33 +3990,33 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.create",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions/{functionId}/deployments",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.deployments.create",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions/{functionId}/invocations",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.invocations.create",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions/{functionId}/secrets",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.secrets.create",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
@@ -4030,9 +4030,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/media/uploads",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::media.createUpload",
+      "testFile": "tests/settings.php"
     },
     {
       "family": "platform",
@@ -4502,9 +4502,9 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/functions/{functionId}/promotion",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::functions.deployments.promote",
+      "testFile": "tests/functions.php"
     },
     {
       "family": "platform",
@@ -4550,17 +4550,17 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/quicklink",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::quickLinkSettings.update",
+      "testFile": "tests/settings.php"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/session-configuration",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::sessionConfiguration.update",
+      "testFile": "tests/settings.php"
     },
     {
       "family": "platform",

@@ -113,3 +113,15 @@ rotation. For organization clients, `list($projectId)` and
 When a project view uses an organization key, writes first verify the trunk's
 project using a read without the write's idempotency key. An environment without
 SIP hosting returns the `sip_not_hosted` endpoint variant.
+
+`quickLinkSettings` reads nullable saved branding settings and preserves explicit
+null and false updates. `sessionConfiguration` reads and updates saved defaults
+with their revisions. Both bind project views to the project's identity.
+
+`ProjectClient::$functions` manages Functions, deployments, secret versions and
+invocation receipts. Its requests always carry the owning project. Canonical
+lowercase UUIDs and positive revisions are validated locally. Every Function
+write runs once, including keyed invocations: after an uncertain result, inspect
+the receipt before deciding on another invocation. Invocation creation requires
+a printable idempotency key of 1 through 128 characters. Replayed results may
+omit the original response, and `responseRetained` remains false.

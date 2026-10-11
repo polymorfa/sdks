@@ -157,3 +157,7 @@ require __DIR__.'/usage.php';
 require __DIR__.'/customers.php';
 
 require __DIR__.'/sip.php';
+
+require __DIR__.'/settings.php';
+
+require __DIR__.'/functions.php';

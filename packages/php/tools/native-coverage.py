@@ -4,6 +4,28 @@ from pathlib import Path
 package = Path(__file__).resolve().parents[1]
 manifest = json.loads((package / 'coverage.json').read_text())
 evidence = [
+ ('GET','/platform/quicklink','quickLinkSettings.retrieve','settings'),
+ ('PUT','/platform/quicklink','quickLinkSettings.update','settings'),
+ ('GET','/platform/session-configuration','sessionConfiguration.retrieve','settings'),
+ ('PUT','/platform/session-configuration','sessionConfiguration.update','settings'),
+ ('GET','/platform/media/{mediaId}','media.retrieve','settings'),
+ ('DELETE','/platform/media/{mediaId}','media.delete','settings'),
+ ('POST','/platform/media/uploads','media.createUpload','settings'),
+ ('GET','/platform/functions','functions.list','functions'),
+ ('POST','/platform/functions','functions.create','functions'),
+ ('GET','/platform/functions/{functionId}','functions.retrieve','functions'),
+ ('PATCH','/platform/functions/{functionId}','functions.update','functions'),
+ ('DELETE','/platform/functions/{functionId}','functions.delete','functions'),
+ ('GET','/platform/functions/{functionId}/deployments','functions.deployments.list','functions'),
+ ('POST','/platform/functions/{functionId}/deployments','functions.deployments.create','functions'),
+ ('GET','/platform/functions/{functionId}/deployments/{deploymentId}','functions.deployments.retrieve','functions'),
+ ('PUT','/platform/functions/{functionId}/promotion','functions.deployments.promote','functions'),
+ ('GET','/platform/functions/{functionId}/secrets','functions.secrets.list','functions'),
+ ('POST','/platform/functions/{functionId}/secrets','functions.secrets.create','functions'),
+ ('DELETE','/platform/functions/{functionId}/secrets/{versionId}','functions.secrets.revoke','functions'),
+ ('GET','/platform/functions/{functionId}/invocations','functions.invocations.list','functions'),
+ ('GET','/platform/functions/{functionId}/invocations/{invocationId}','functions.invocations.retrieve','functions'),
+ ('POST','/platform/functions/{functionId}/invocations','functions.invocations.create','functions'),
  ('GET','/platform/sip-trunks','sipTrunks.list','sip'),
  ('GET','/platform/sip/endpoint','sipTrunks.endpoint','sip'),
  ('POST','/platform/sip-trunks','sipTrunks.create','sip'),
@@ -80,6 +102,6 @@ for method,path,name,test in evidence:
  assert (package/'tests'/f'{test}.php').exists()
  op=matches[0]
  for field in ['reason','milestone']:op.pop(field,None)
- op.update(status='covered',sdkMethod=f'Client::{name}',testFile=f'tests/{test}.php')
+ op.update(status='covered',sdkMethod=f"{'ProjectClient' if name.startswith('functions.') else 'Client'}::{name}",testFile=f'tests/{test}.php')
 (package/'coverage.json').write_text(json.dumps(manifest,indent=2)+'\n')
 print({status:sum(op['status']==status for op in manifest['operations']) for status in ['covered','excluded','missing']})

@@ -13,6 +13,9 @@ final readonly class ProjectClient
     public Events $events;
     public PlatformWebhooks $webhooks;
     public RawClient $raw;
+    public Resources\Functions $functions;
+    public Resources\QuickLinkSettings $quickLinkSettings;
+    public Resources\SessionConfiguration $sessionConfiguration;
     public Resources\SipTrunks $sipTrunks;
     public Resources\Usage $usage;
     public string $projectId;
@@ -33,6 +36,9 @@ final readonly class ProjectClient
         $transport ??= new HttpTransport($credential, $baseUrl, $apiVersion, $timeout, $maxNetworkRetries, $proxy, $http);
         $this->projectId = $projectId;
         $prefix = '/platform/projects/' . rawurlencode($projectId);
+        $this->functions = new Resources\Functions($transport, $projectId);
+        $this->quickLinkSettings = new Resources\QuickLinkSettings($transport, $projectId);
+        $this->sessionConfiguration = new Resources\SessionConfiguration($transport, $projectId);
         $this->sipTrunks = new Resources\SipTrunks($transport, $projectId, $credential->kind === 'organization_api_key');
         $this->usage = new Resources\Usage($transport, $projectId);
         $this->events = new Events($transport, $prefix);
