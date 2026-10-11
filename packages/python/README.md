@@ -118,3 +118,8 @@ Team call controls provide typed retention, blocked destination prefixes and a
 cursor-paginated do-not-call list. Billing methods retain fractional credit
 amounts, enforce UUID and revision bounds, and normalize ordered resource IDs.
 Saving these settings uses the API's existing authorization and availability.
+
+Organization metadata reads cover members, server key and project token metadata,
+audit logs, bans and security incidents. Customer methods keep the project ID on
+reads, provide cursor pagination, and distinguish the initial pairing-link URL
+from the null URL returned after a replay.

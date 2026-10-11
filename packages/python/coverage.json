@@ -1910,9 +1910,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/customers/{customerId}/pairing-links/{pairingLinkId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.customers.revoke_pairing_link",
+      "testFile": "tests/test_customers.py"
     },
     {
       "family": "platform",
@@ -1950,9 +1950,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/keys/{keyId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.api_keys.deactivate",
+      "testFile": "tests/test_organization.py"
     },
     {
       "family": "platform",
@@ -2374,25 +2374,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/audit",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.audit_logs.list",
+      "testFile": "tests/test_organization.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bans",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.session_bans.list",
+      "testFile": "tests/test_organization.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bans/active",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.session_bans.list_active",
+      "testFile": "tests/test_organization.py"
     },
     {
       "family": "platform",
@@ -2662,41 +2662,41 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.customers.list",
+      "testFile": "tests/test_customers.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.customers.retrieve",
+      "testFile": "tests/test_customers.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}/events",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.customers.list_events",
+      "testFile": "tests/test_customers.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}/numbers",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.customers.list_numbers",
+      "testFile": "tests/test_customers.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}/pairing-links",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.customers.list_pairing_links",
+      "testFile": "tests/test_customers.py"
     },
     {
       "family": "platform",
@@ -2830,17 +2830,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/incidents",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.security_incidents.list",
+      "testFile": "tests/test_organization.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/keys",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.api_keys.list",
+      "testFile": "tests/test_organization.py"
     },
     {
       "family": "platform",
@@ -2854,9 +2854,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/members",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.members.list",
+      "testFile": "tests/test_organization.py"
     },
     {
       "family": "platform",
@@ -2910,9 +2910,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/customers/status",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.customers.status",
+      "testFile": "tests/test_customers.py"
     },
     {
       "family": "platform",
@@ -3158,9 +3158,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/team",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.organizations.retrieve",
+      "testFile": "tests/test_organization.py"
     },
     {
       "family": "platform",
@@ -3182,9 +3182,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/tokens",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.project_tokens.list",
+      "testFile": "tests/test_organization.py"
     },
     {
       "family": "platform",
@@ -3358,9 +3358,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/customers/{customerId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.customers.update",
+      "testFile": "tests/test_customers.py"
     },
     {
       "family": "platform",
@@ -3886,41 +3886,41 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.customers.create",
+      "testFile": "tests/test_customers.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/archive",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.customers.archive",
+      "testFile": "tests/test_customers.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/numbers/{sessionId}/transfer",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.customers.transfer_number",
+      "testFile": "tests/test_customers.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/pairing-links",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.customers.create_pairing_link",
+      "testFile": "tests/test_customers.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/restore",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.customers.restore",
+      "testFile": "tests/test_customers.py"
     },
     {
       "family": "platform",
@@ -4022,9 +4022,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/incidents/{incidentId}/acknowledge",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.security_incidents.acknowledge",
+      "testFile": "tests/test_organization.py"
     },
     {
       "family": "platform",
@@ -4070,9 +4070,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/customers/enable",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.customers.enable",
+      "testFile": "tests/test_customers.py"
     },
     {
       "family": "platform",

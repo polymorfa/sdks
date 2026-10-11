@@ -15,9 +15,19 @@ from .call_policy import CallOptOuts, CallPolicies, CallRetentions
 from .channels import Channels
 from .client_tokens import ClientTokens
 from .cloud_graph import CloudCatalogs, CloudMarketing, FlowEncryption
+from .customers import Customers
 from .errors import ConfigurationError
 from .groups import Groups
 from .observations import Identities, Labels, Privacy
+from .organization import (
+    ApiKeys,
+    AuditLogs,
+    Members,
+    Organizations,
+    ProjectTokens,
+    SecurityIncidents,
+    SessionBans,
+)
 from .quick_replies import QuickReplies, Users
 from .templates import CloudTemplates, Templates
 from .transport import Credential, Transport
@@ -155,6 +165,14 @@ class AsyncClient:
     call_retention: CallRetentions
     call_policy: CallPolicies
     call_opt_outs: CallOptOuts
+    customers: Customers
+    organizations: Organizations
+    members: Members
+    api_keys: ApiKeys
+    project_tokens: ProjectTokens
+    audit_logs: AuditLogs
+    session_bans: SessionBans
+    security_incidents: SecurityIncidents
     billing: Billing
     projects: platform.Projects
     sessions: platform.PlatformSessions
@@ -171,12 +189,20 @@ class AsyncClient:
         object.__setattr__(self, "_transport", transport)
         object.__setattr__(self, "_credential", credential)
         for name, resource in (
+            ("organizations", Organizations),
+            ("members", Members),
+            ("api_keys", ApiKeys),
+            ("project_tokens", ProjectTokens),
+            ("audit_logs", AuditLogs),
+            ("session_bans", SessionBans),
+            ("security_incidents", SecurityIncidents),
             ("billing", Billing),
             ("projects", platform.Projects),
             ("sessions", platform.PlatformSessions),
         ):
             object.__setattr__(self, name, resource(transport, credential.kind))
         for name, scoped in (
+            ("customers", Customers),
             ("call_retention", CallRetentions),
             ("call_policy", CallPolicies),
             ("call_opt_outs", CallOptOuts),
