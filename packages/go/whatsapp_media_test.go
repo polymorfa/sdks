@@ -7,6 +7,8 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
+	"os"
 	"strings"
 	"testing"
 )
@@ -78,5 +80,61 @@ func TestWhatsAppMediaIntegrity(t *testing.T) {
 	}
 	if !IsWhatsAppMediaURL("https://mmg.whatsapp.net/a") {
 		t.Fatal("allowlisted HTTPS URL")
+	}
+}
+
+func TestSharedWhatsAppMediaVectors(t *testing.T) {
+	data, err := os.ReadFile("../../contracts/fixtures/whatsapp-media.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixtures struct {
+		Fixtures []struct {
+			Kind          string `json:"kind"`
+			Plaintext     string `json:"plaintext"`
+			Encrypted     string `json:"encrypted"`
+			MediaKey      string `json:"mediaKey"`
+			FileSHA256    string `json:"fileSha256"`
+			FileEncSHA256 string `json:"fileEncSha256"`
+			IV            string `json:"iv"`
+			CipherKey     string `json:"cipherKey"`
+			MACKey        string `json:"macKey"`
+			Descriptor    string `json:"descriptor"`
+		} `json:"fixtures"`
+	}
+	if err = json.Unmarshal(data, &fixtures); err != nil {
+		t.Fatal(err)
+	}
+	if len(fixtures.Fixtures) != 5 {
+		t.Fatal("all five media kinds required")
+	}
+	decode := func(s string) []byte {
+		v, e := hex.DecodeString(s)
+		if e != nil {
+			t.Fatal(e)
+		}
+		return v
+	}
+	for _, f := range fixtures.Fixtures {
+		t.Run(f.Kind, func(t *testing.T) {
+			d, err := DecodeWhatsAppMedia(f.Descriptor, f.Kind)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(d.MediaKey, decode(f.MediaKey)) || !bytes.Equal(d.FileSHA256, decode(f.FileSHA256)) || !bytes.Equal(d.FileEncSHA256, decode(f.FileEncSHA256)) {
+				t.Fatal("typed protobuf descriptor")
+			}
+			keys, err := DeriveWhatsAppMediaKeys(d.MediaKey, f.Kind)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(keys.IV, decode(f.IV)) || !bytes.Equal(keys.CipherKey, decode(f.CipherKey)) || !bytes.Equal(keys.MACKey, decode(f.MACKey)) {
+				t.Fatal("independent HKDF bytes")
+			}
+			actual, err := DecryptWhatsAppMedia(decode(f.Encrypted), keys, d, 1024)
+			if err != nil || !bytes.Equal(actual, decode(f.Plaintext)) {
+				t.Fatal("independent verified plaintext", err)
+			}
+		})
 	}
 }

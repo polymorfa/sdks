@@ -152,7 +152,7 @@ func TestOperationWireFixtures(t *testing.T) {
 						t.Errorf("body got %s want %s", body, f.Body)
 					}
 				}
-				if strings.Contains(f.SDKMethod, "Messages.Send") || strings.Contains(f.SDKMethod, "Messages.React") {
+				if strings.Contains(f.SDKMethod, "Messages.Send") || strings.Contains(f.SDKMethod, "Messages.React") || strings.Contains(f.SDKMethod, "Channels.ReactToMessage") {
 					if r.Header.Get("Idempotency-Key") == "" {
 						t.Error("missing automatic idempotency")
 					}
@@ -200,7 +200,7 @@ func TestOperationWireFixtures(t *testing.T) {
 }
 func allOperationFixtures() []operationFixture {
 	all := append([]operationFixture{}, operationFixtures...)
-	for _, group := range [][]operationFixture{voipFixtures, developerFixtures, observationFixtures, accountFixtures} {
+	for _, group := range [][]operationFixture{voipFixtures, developerFixtures, observationFixtures, accountFixtures, groupFixtures, contactFixtures, channelFixtures, platformSessionFixtures} {
 		all = append(all, group...)
 	}
 	return all

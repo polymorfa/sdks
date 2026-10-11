@@ -275,74 +275,229 @@ func TestSharedWireFixtures(t *testing.T) {
 	if ready.URL == "" {
 		ready.URL = strings.TrimSpace(base.String())
 	}
-	for _, id := range []string{"sessions-list", "query-encoding", "safe-retry", "unsafe-no-retry", "idempotent-retry", "idempotent-replayed", "error-authentication", "error-authorization", "error-payment-required", "error-validation", "error-not-found", "error-conflict", "error-rate-limit", "error-server"} {
-		t.Run(id, func(t *testing.T) {
-			var fixture struct {
-				Scenarios []struct {
-					ID      string `json:"id"`
-					Request struct {
-						Method  string                     `json:"method"`
-						Path    string                     `json:"path"`
-						Query   map[string]json.RawMessage `json:"query"`
-						Body    any                        `json:"body"`
-						Headers map[string]string          `json:"headers"`
-					} `json:"request"`
-					Outcome struct {
-						Attempts int `json:"attempts"`
-					} `json:"outcome"`
-				} `json:"scenarios"`
+	data, err := os.ReadFile(filepath.Join(root, "contracts", "fixtures", "behavior.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var fixtures struct {
+		Scenarios []struct {
+			ID      string
+			Request struct {
+				Method  string
+				Path    string
+				Query   map[string]json.RawMessage
+				Body    any
+				Headers map[string]string
 			}
-			bytes, err := os.ReadFile(filepath.Join(root, "contracts", "fixtures", "behavior.json"))
+			Outcome struct {
+				Attempts          int
+				Error             string
+				Code              string
+				RequestID         string
+				MetadataRequestID string
+				MaxNetworkRetries *int
+				TimeoutMS         int
+				CancelAfterMS     int
+			}
+		}
+		Webhooks []struct {
+			ID        string
+			Protocol  string
+			Body      string
+			Secret    string
+			Signature string
+			Valid     bool
+			Event     string
+		}
+		Configuration []struct {
+			ID                string
+			Client            string
+			CredentialType    string
+			Credential        string
+			ProjectID         string
+			BaseURL           string
+			MaxNetworkRetries *int
+			TimeoutMS         *int
+			Valid             bool
+			Field             string
+		}
+	}
+	// JSON snake/camel names that differ from Go acronym spelling have explicit
+	// aliases below, preserving the exact shared fixture contract.
+	var raw struct {
+		Scenarios     []json.RawMessage `json:"scenarios"`
+		Webhooks      json.RawMessage   `json:"webhooks"`
+		Configuration json.RawMessage   `json:"configuration"`
+	}
+	if err = json.Unmarshal(data, &raw); err != nil {
+		t.Fatal(err)
+	}
+	for _, b := range raw.Scenarios {
+		var f struct {
+			ID      string `json:"id"`
+			Request struct {
+				Method  string                     `json:"method"`
+				Path    string                     `json:"path"`
+				Query   map[string]json.RawMessage `json:"query"`
+				Body    any                        `json:"body"`
+				Headers map[string]string          `json:"headers"`
+			} `json:"request"`
+			Outcome struct {
+				Attempts          int    `json:"attempts"`
+				Error             string `json:"error"`
+				Code              string `json:"code"`
+				RequestID         string `json:"requestId"`
+				MetadataRequestID string `json:"metadataRequestId"`
+				MaxNetworkRetries *int   `json:"maxNetworkRetries"`
+				TimeoutMS         int    `json:"timeoutMs"`
+				CancelAfterMS     int    `json:"cancelAfterMs"`
+			} `json:"outcome"`
+		}
+		if json.Unmarshal(b, &f) != nil {
+			t.Fatal("invalid shared fixture")
+		}
+		t.Run(f.ID, func(t *testing.T) {
+			q := url.Values{}
+			for k, v := range f.Request.Query {
+				var values []string
+				if json.Unmarshal(v, &values) == nil {
+					q[k] = values
+				} else {
+					var text string
+					if json.Unmarshal(v, &text) == nil {
+						q.Set(k, text)
+					} else {
+						q.Set(k, string(v))
+					}
+				}
+			}
+			opts := RequestOptions{Headers: http.Header{"X-Polymorfa-Fixture": {f.ID}}, MaxNetworkRetries: f.Outcome.MaxNetworkRetries}
+			for k, v := range f.Request.Headers {
+				if strings.EqualFold(k, "Idempotency-Key") {
+					opts.IdempotencyKey = v
+				}
+				if strings.EqualFold(k, "Polymorfa-Version") {
+					opts.APIVersion = v
+				}
+			}
+			if f.Outcome.TimeoutMS > 0 {
+				opts.Timeout = time.Duration(f.Outcome.TimeoutMS) * time.Millisecond
+			}
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			if f.Outcome.CancelAfterMS > 0 {
+				timer := time.AfterFunc(time.Duration(f.Outcome.CancelAfterMS)*time.Millisecond, cancel)
+				defer timer.Stop()
+			}
+			c := mustMessaging(t, ready.URL)
+			var response RawResponse
+			var gotErr error
+			switch f.ID {
+			case "sessions-list":
+				r, e := c.Sessions().List(ctx, opts)
+				gotErr = e
+				response.Metadata = r.Metadata
+				if e == nil && (len(r.Data.Data) != 1 || r.Data.Data[0].SessionID != "session_fixture") {
+					t.Fatal("typed sessions response", r)
+				}
+			case "message-send":
+				text := "Hello"
+				r, e := c.Messages().Send(ctx, "support", SendMessageRequest{Conversation: ConversationReference{PhoneNumber: "+15551234567"}, Content: MessageContent{Text: &text}}, opts)
+				gotErr = e
+				response.Metadata = r.Metadata
+				if e == nil && (r.Data.Data.ID != "msg_fixture" || r.Data.Data.WhatsAppIDs.LinkedDevices != "provider_fixture") {
+					t.Fatal("typed message response", r)
+				}
+			default:
+				response, gotErr = c.Raw(ctx, RawRequest{Method: f.Request.Method, Path: f.Request.Path, Query: q, Body: f.Request.Body, Options: opts})
+			}
+			if f.Outcome.Error == "" {
+				if gotErr != nil {
+					t.Fatal(gotErr)
+				}
+			} else {
+				var e *Error
+				if !errors.As(gotErr, &e) || string(e.Kind) != f.Outcome.Error {
+					t.Fatalf("error got %#v want %s", gotErr, f.Outcome.Error)
+				}
+				if f.Outcome.Code != "" && e.Code != f.Outcome.Code {
+					t.Fatal("API code", e.Code)
+				}
+				if f.Outcome.RequestID != "" && e.RequestID != f.Outcome.RequestID {
+					t.Fatal("API request id", e.RequestID)
+				}
+				if strings.Contains(e.Message, "<html>") {
+					t.Fatal("HTML leaked")
+				}
+			}
+			if f.Outcome.MetadataRequestID != "" && response.Metadata.RequestID != f.Outcome.MetadataRequestID {
+				t.Fatal("metadata request id", response.Metadata)
+			}
+			res, err := http.Get(ready.URL + "/__fixtures/" + f.ID + "/state")
 			if err != nil {
 				t.Fatal(err)
 			}
-			json.Unmarshal(bytes, &fixture)
-			for _, f := range fixture.Scenarios {
-				if f.ID != id {
-					continue
-				}
-				q := url.Values{}
-				for k, v := range f.Request.Query {
-					var values []string
-					if json.Unmarshal(v, &values) == nil {
-						q[k] = values
-					} else {
-						var s string
-						json.Unmarshal(v, &s)
-						q.Set(k, s)
-					}
-				}
-				o := RequestOptions{Headers: http.Header{"X-Polymorfa-Fixture": {id}}}
-				for k, v := range f.Request.Headers {
-					if strings.EqualFold(k, "Idempotency-Key") {
-						o.IdempotencyKey = v
-					}
-				}
-				c := mustMessaging(t, ready.URL)
-				if id == "sessions-list" {
-					r, e := c.Sessions().List(context.Background(), o)
-					if e != nil || len(r.Data.Data) != 1 || r.Data.Data[0].SessionID != "session_fixture" {
-						t.Fatal(r, e)
-					}
-				} else {
-					c.Raw(context.Background(), RawRequest{Method: f.Request.Method, Path: f.Request.Path, Query: q, Body: f.Request.Body, Options: o})
-				}
-				res, err := http.Get(ready.URL + "/__fixtures/" + id + "/state")
-				if err != nil {
-					t.Fatal(err)
-				}
-				defer res.Body.Close()
-				var state struct {
-					Attempts   int   `json:"attempts"`
-					Mismatches []any `json:"mismatches"`
-				}
-				json.NewDecoder(res.Body).Decode(&state)
-				if state.Attempts != f.Outcome.Attempts || len(state.Mismatches) > 0 {
-					t.Fatalf("wire state %#v", state)
-				}
-				return
+			defer res.Body.Close()
+			var state struct {
+				Attempts   int   `json:"attempts"`
+				Mismatches []any `json:"mismatches"`
 			}
-			t.Skip("Fixture scenario not present")
+			if json.NewDecoder(res.Body).Decode(&state) != nil {
+				t.Fatal("state decode")
+			}
+			if state.Attempts != f.Outcome.Attempts || len(state.Mismatches) > 0 {
+				t.Fatalf("wire state %#v", state)
+			}
+		})
+	}
+	if json.Unmarshal(raw.Webhooks, &fixtures.Webhooks) != nil || json.Unmarshal(raw.Configuration, &fixtures.Configuration) != nil {
+		t.Fatal("shared vectors decode")
+	}
+	for _, f := range fixtures.Webhooks {
+		if f.Protocol != "native" {
+			continue
+		}
+		t.Run(f.ID, func(t *testing.T) {
+			event, err := ConstructWebhookEvent([]byte(f.Body), f.Signature, f.Secret)
+			if (err == nil) != f.Valid {
+				t.Fatal("signature vector", err)
+			}
+			if err == nil && f.Event != "" && event.Event != f.Event {
+				t.Fatal(event.Event)
+			}
+		})
+	}
+	for _, f := range fixtures.Configuration {
+		t.Run(f.ID, func(t *testing.T) {
+			kind := OrganizationAPIKey
+			switch f.CredentialType {
+			case "projectToken":
+				kind = ProjectToken
+			case "clientToken":
+				kind = ClientToken
+			}
+			c := Config{Credential: Credential{kind, f.Credential}, BaseURL: f.BaseURL, MaxNetworkRetries: f.MaxNetworkRetries}
+			if f.TimeoutMS != nil {
+				duration := time.Duration(*f.TimeoutMS) * time.Millisecond
+				c.Timeout = &duration
+			}
+			var err error
+			if f.Client == "messaging" {
+				_, err = NewMessagingClient(c)
+			} else if kind == ProjectToken {
+				_, err = NewProjectClient(c, f.ProjectID)
+			} else {
+				_, err = NewOrganizationClient(c)
+			}
+			if (err == nil) != f.Valid {
+				t.Fatal("configuration vector", err)
+			}
+			if err != nil && f.Field != "" {
+				var e *Error
+				if !errors.As(err, &e) || !strings.EqualFold(e.Field, f.Field) {
+					t.Fatal("configuration field", err)
+				}
+			}
 		})
 	}
 }

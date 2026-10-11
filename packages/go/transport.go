@@ -44,7 +44,7 @@ type Config struct {
 	Credential        Credential
 	BaseURL           string
 	APIVersion        string
-	Timeout           time.Duration
+	Timeout           *time.Duration
 	MaxNetworkRetries *int
 	HTTPClient        *http.Client
 }
@@ -161,6 +161,7 @@ type transport struct {
 	base    *url.URL
 	client  *http.Client
 	retries int
+	timeout time.Duration
 }
 
 func newTransport(c Config, authenticated bool) (*transport, error) {
@@ -174,10 +175,11 @@ func newTransport(c Config, authenticated bool) (*transport, error) {
 	if authenticated && u.Scheme != "https" && u.Hostname() != "localhost" && u.Hostname() != "127.0.0.1" && u.Hostname() != "::1" {
 		return nil, configuration("baseURL", "Credentialed clients require HTTPS except for loopback servers.")
 	}
-	if c.Timeout == 0 {
-		c.Timeout = 30 * time.Second
+	timeout := 30 * time.Second
+	if c.Timeout != nil {
+		timeout = *c.Timeout
 	}
-	if c.Timeout < 0 {
+	if timeout <= 0 {
 		return nil, configuration("timeout", "timeout must be positive.")
 	}
 	if c.APIVersion == "" {
@@ -201,7 +203,7 @@ func newTransport(c Config, authenticated bool) (*transport, error) {
 	if !authenticated {
 		c.Credential = Credential{}
 	}
-	return &transport{c, u, &copyClient, retries}, nil
+	return &transport{config: c, base: u, client: &copyClient, retries: retries, timeout: timeout}, nil
 }
 func escaped(v string) string { return url.PathEscape(v) }
 func options(opts []RequestOptions) RequestOptions {
@@ -260,7 +262,7 @@ func (t *transport) open(ctx context.Context, method, path string, q url.Values,
 		return nil, Metadata{}, validation("Invalid request path.")
 	}
 	u.RawQuery = q.Encode()
-	timeout := t.config.Timeout
+	timeout := t.timeout
 	if o.Timeout != 0 {
 		timeout = o.Timeout
 	}
