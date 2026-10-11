@@ -1,14 +1,15 @@
 """Team call retention, destination policy and do-not-call list."""
 
 import re
+from dataclasses import dataclass
 from typing import Literal
 
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import NotRequired, Self, TypedDict, Unpack
 
 from .errors import ConfigurationError, ValidationError
 from .messaging import O, segment
 from .platform import PlatformResource
-from .transport import ApiResponse, CursorPage, RequestOptions
+from .transport import ApiResponse, ClientOptions, Credential, CursorPage, RequestOptions, Transport
 
 
 class CallRetention(TypedDict):
@@ -39,6 +40,30 @@ class CallRetentions(PlatformResource):
         self, body: CustomRetention | NamedRetention, *, options: RequestOptions = O
     ) -> ApiResponse[CallRetention]:
         return await self._unwrapped("PUT", "/platform/call-retention", body=body, options=options)
+
+
+@dataclass(frozen=True, init=False)
+class AsyncCallRetentionClient:
+    """Team-wide setting access when a project token has no explicit project ID."""
+
+    _transport: Transport
+    call_retention: CallRetentions
+
+    def __init__(self, credential: Credential, **options: Unpack[ClientOptions]) -> None:
+        if credential.kind == "client_token":
+            raise ConfigurationError("credential")
+        transport = Transport(credential, **options)
+        object.__setattr__(self, "_transport", transport)
+        object.__setattr__(self, "call_retention", CallRetentions(transport, "/platform"))
+
+    async def close(self) -> None:
+        await self._transport.close()
+
+    async def __aenter__(self) -> Self:
+        return self
+
+    async def __aexit__(self, *args: object) -> None:
+        await self.close()
 
 
 class CallPolicy(TypedDict):

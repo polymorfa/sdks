@@ -12,14 +12,14 @@ import hashlib
 import hmac
 from dataclasses import dataclass, field
 from typing import Literal, cast
-from urllib.parse import urlencode, urljoin, urlsplit
+from urllib.parse import urlencode, urlsplit
 
 import httpx
 from cryptography.hazmat.primitives import hashes, padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 
-from .errors import ConfigurationError, ConnectionError, MediaIntegrityError
+from .errors import ConfigurationError, MediaIntegrityError
 
 MediaKind = Literal["image", "video", "audio", "document", "sticker"]
 MAX_BYTES = 256 * 1024 * 1024
@@ -94,7 +94,9 @@ class MediaDescriptor:
                     "Invalid descriptor hash.", code="media_invalid_descriptor"
                 )
         if self.file_length is not None and (
-            isinstance(self.file_length, bool) or self.file_length < 0
+            isinstance(self.file_length, bool)
+            or not isinstance(self.file_length, int)
+            or not 0 <= self.file_length <= 2**53 - 1
         ):
             raise MediaIntegrityError("Invalid descriptor length.", code="media_invalid_descriptor")
 
@@ -288,61 +290,9 @@ async def download_whatsapp_media(
     max_bytes: int = MAX_BYTES,
     http_transport: httpx.AsyncBaseTransport | None = None,
 ) -> bytes:
-    if isinstance(max_bytes, bool) or max_bytes <= 0:
-        raise ConfigurationError("max_bytes")
-    if descriptor.file_length is not None and descriptor.file_length > max_bytes:
-        raise MediaIntegrityError("Media exceeds size limit.", code="media_too_large")
-    if descriptor.file_sha256 is None:
-        raise MediaIntegrityError("Missing media plaintext hash.", code="media_invalid_descriptor")
-    urls = whatsapp_media_urls(descriptor)
-    limit = min(
-        max_bytes, descriptor.file_length if descriptor.file_length is not None else max_bytes
-    )
-    encrypted_limit = (limit // 16 + 1) * 16 + 10
-    try:
-        async with httpx.AsyncClient(
-            transport=http_transport, trust_env=False, follow_redirects=False
-        ) as client:
-            for index, url in enumerate(urls):
-                current = url
-                for hop in range(4):
-                    async with client.stream(
-                        "GET",
-                        current,
-                        headers={
-                            "Origin": "https://web.whatsapp.com",
-                            "Referer": "https://web.whatsapp.com/",
-                        },
-                    ) as response:
-                        if response.status_code in (301, 302, 303, 307, 308):
-                            location = response.headers.get("location")
-                            next_url = urljoin(current, location) if location else ""
-                            if not is_whatsapp_media_url(next_url):
-                                raise MediaIntegrityError(
-                                    "Invalid media redirect.", code="media_invalid_descriptor"
-                                )
-                            current = next_url
-                            if hop == 3:
-                                raise ConnectionError(
-                                    "Too many media redirects.", code="connection_error"
-                                )
-                            continue
-                        if response.status_code != 200:
-                            if index + 1 < len(urls):
-                                break
-                            raise ConnectionError(
-                                "WhatsApp media download failed.",
-                                code="connection_error",
-                                status=response.status_code,
-                            )
-                        data = bytearray()
-                        async for chunk in response.aiter_bytes():
-                            if len(data) + len(chunk) > encrypted_limit:
-                                raise MediaIntegrityError(
-                                    "Media exceeds size limit.", code="media_too_large"
-                                )
-                            data.extend(chunk)
-                        return decrypt_whatsapp_media(bytes(data), descriptor, max_bytes=max_bytes)
-    except httpx.TransportError:
-        raise ConnectionError("WhatsApp media download failed.", code="connection_error") from None
-    raise ConnectionError("WhatsApp media download failed.", code="connection_error")
+    from .media_streams import download_whatsapp_media_stream
+
+    async with await download_whatsapp_media_stream(
+        descriptor, max_bytes=max_bytes, http_transport=http_transport
+    ) as download:
+        return await download.read()

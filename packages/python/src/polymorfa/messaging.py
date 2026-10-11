@@ -10,6 +10,8 @@ from dataclasses import replace
 from typing import Literal, TypeVar, cast
 from urllib.parse import quote
 
+import httpx
+
 from .cloud import (
     CloudCredentialHealth,
     CloudReauthorization,
@@ -18,6 +20,13 @@ from .cloud import (
 )
 from .downloads import DownloadFile, DownloadStream, DownloadUrl
 from .errors import ConfigurationError, ValidationError
+from .media import MAX_BYTES
+from .media_streams import (
+    MediaInput,
+    VerifyMode,
+    WhatsAppMediaDownload,
+    download_whatsapp_media_stream,
+)
 from .models import (
     AsyncAccepted,
     BusinessProfile,
@@ -517,6 +526,23 @@ class Chats(Resource):
 
 
 class Media(Resource):
+    async def download_from_whatsapp(
+        self,
+        value: MediaInput,
+        *,
+        max_bytes: int = MAX_BYTES,
+        verify: VerifyMode = "before-release",
+        timeout: float = 30,
+        http_transport: httpx.AsyncBaseTransport | None = None,
+    ) -> WhatsAppMediaDownload:
+        return await download_whatsapp_media_stream(
+            value,
+            max_bytes=max_bytes,
+            verify=verify,
+            timeout=timeout,
+            http_transport=http_transport,
+        )
+
     async def download(self, media_id: str, *, options: RequestOptions = O) -> ApiResponse[bytes]:
         return await self._transport.binary(
             f"/messaging/media/{segment(media_id)}", options=options

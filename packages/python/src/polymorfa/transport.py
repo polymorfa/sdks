@@ -506,17 +506,22 @@ class Transport:
         }
         safe_headers["user-agent"] = f"polymorfa-python/{SDK_VERSION}"
         try:
-            async with self._http.stream(
+            request = self._http.build_request(
                 method,
                 destination,
                 headers=safe_headers,
                 content=body,
-                follow_redirects=False,
                 timeout=options.timeout or self._defaults.timeout,
-            ) as response:
+            )
+            if not any(name.lower() == "cookie" for name in safe_headers):
+                request.headers.pop("cookie", None)
+            response = await self._http.send(request, stream=True, follow_redirects=False)
+            try:
                 await response.aread()
                 if not 200 <= response.status_code < 300:
                     raise ServerError("Upload failed.", status=response.status_code)
+            finally:
+                await response.aclose()
         except httpx.TimeoutException:
             raise TimeoutError("Upload timed out.", code="request_timeout") from None
         except httpx.TransportError:

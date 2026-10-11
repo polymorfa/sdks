@@ -6,11 +6,16 @@ event IDs after verification; the CLI forwarding protocol is a separate contract
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import hmac
 import json
+import math
 import re
+import time
+from collections.abc import Mapping
 from dataclasses import dataclass, field
+from types import MappingProxyType
 from typing import cast
 
 from .errors import ValidationError, WebhookSignatureError
@@ -126,9 +131,18 @@ def verify_webhook_signature(raw_body: bytes, signature: str, secret: str) -> bo
 
 
 def parse_verified_webhook_event(raw_body: bytes) -> WebhookEvent:
+    def reject_constant(value: str) -> None:
+        raise ValueError("Invalid JSON number.")
+
     try:
-        value = json.loads(raw_body.decode("utf-8", errors="strict"))
-    except (UnicodeDecodeError, ValueError):
+        text = raw_body.decode("utf-8", errors="strict")
+    except UnicodeDecodeError:
+        raise ValidationError(
+            "Webhook body must contain valid UTF-8.", code="invalid_webhook_body"
+        ) from None
+    try:
+        value = json.loads(text, parse_constant=reject_constant)
+    except ValueError:
         raise ValidationError(
             "Webhook body must be valid UTF-8 JSON.", code="invalid_webhook_json"
         ) from None
@@ -158,3 +172,73 @@ def construct_webhook_event(raw_body: bytes, signature: str, secret: str) -> Web
             "Webhook signature verification failed.", code="invalid_webhook_signature"
         )
     return parse_verified_webhook_event(raw_body)
+
+
+def verify_local_webhook_signature(
+    raw_body: bytes,
+    signature: str,
+    secret: str,
+    *,
+    tolerance_seconds: int = 300,
+    now_unix_seconds: float | None = None,
+) -> bool:
+    """CLI forwarding HMAC protocol. This is separate from native signatures."""
+    if re.fullmatch(r"[A-Za-z0-9_-]{43}", secret) is None:
+        return False
+    match = re.fullmatch(r"t=([0-9]+),v1=([a-f0-9]{64})", signature)
+    if (
+        match is None
+        or isinstance(tolerance_seconds, bool)
+        or not isinstance(tolerance_seconds, int)
+        or not 0 <= tolerance_seconds <= 2**53 - 1
+    ):
+        return False
+    timestamp = int(match.group(1))
+    now = time.time() // 1 if now_unix_seconds is None else now_unix_seconds
+    if timestamp > 2**53 - 1 or not math.isfinite(now) or abs(now - timestamp) > tolerance_seconds:
+        return False
+    key = base64.urlsafe_b64decode(secret + "=")
+    expected = hmac.new(key, str(timestamp).encode() + b"." + raw_body, hashlib.sha256).digest()
+    return hmac.compare_digest(expected, bytes.fromhex(match.group(2)))
+
+
+def construct_local_webhook_event(
+    raw_body: bytes,
+    signature: str,
+    secret: str,
+    *,
+    tolerance_seconds: int = 300,
+    now_unix_seconds: float | None = None,
+) -> WebhookEvent:
+    if not verify_local_webhook_signature(
+        raw_body,
+        signature,
+        secret,
+        tolerance_seconds=tolerance_seconds,
+        now_unix_seconds=now_unix_seconds,
+    ):
+        raise WebhookSignatureError(
+            "Local-forward webhook signature verification failed.", code="invalid_webhook_signature"
+        )
+    return parse_verified_webhook_event(raw_body)
+
+
+@dataclass(frozen=True)
+class WebhookFixture:
+    body: bytes = field(repr=False)
+    signature: str = field(repr=False)
+    headers: Mapping[str, str] = field(repr=False)
+    content_type: str = "application/json"
+
+
+def create_webhook_fixture(event: WebhookEvent | JsonObject, secret: str) -> WebhookFixture:
+    value = event.raw if isinstance(event, WebhookEvent) else event
+    body = json.dumps(value, separators=(",", ":"), ensure_ascii=False, allow_nan=False).encode(
+        "utf-8"
+    )
+    signature = hmac.new(secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
+    return WebhookFixture(
+        body,
+        signature,
+        MappingProxyType({"content-type": "application/json", "x-webhook-signature": signature}),
+    )

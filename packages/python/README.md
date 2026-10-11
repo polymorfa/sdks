@@ -73,6 +73,24 @@ and the media MAC, limits bytes, confines redirects to WhatsApp CDN hosts,
 and uses a connection without API credentials. The media key is hidden in
 object representations.
 
+`download_whatsapp_media_stream` accepts a decoded descriptor or a message payload
+with `type` and `media`. Its default `before-release` mode verifies the MAC and
+hashes before yielding bytes. Explicit `streaming` mode yields bytes during
+decryption; discard them if consumption fails. `download_whatsapp_media_to_file`
+streams into a private sibling file and publishes it after verification.
+`download_media_to_file` writes API media with request metadata. File helpers
+support `overwrite=False`, byte limits, and cancellation cleanup.
+
+`construct_local_webhook_event` verifies CLI-forwarded timestamp signatures with
+a base64url forwarding secret and a default 300-second tolerance. Native
+`construct_webhook_event` continues to verify the original bytes without a
+timestamp. `create_webhook_fixture` produces a body, signature and headers for
+testing either application adapter.
+`AsyncCallRetentionClient` reads the team-wide setting using an organization key
+or a project token without requiring a project ID. Updates retain server-side
+team-key authorization. `POLYMORFA_ERROR_CODES` and `is_known_error_code` expose
+documented codes while errors preserve unknown future codes.
+
 Install the `calls` extra to use `CallsClient`, `LifecycleSocket` or `MediaSocket`
 with native WebSockets. `CallsClient` follows one session, exposes incoming calls,
 and places direct, participant and group calls. A `Call` supports answer, join,
