@@ -609,3 +609,16 @@ schemas, and the related Messaging and Platform campaign and analytics fields,
 from API `dev` merge commit `8d248b578a7c76034b30a5a97349adcd15ce5c55`
 (polymorfa/polymorfa#406), with both source paths and file hashes.
 `campaign-ab-tests-contract.test.ts` checks the SDK types against it.
+
+## Campaign pause reason supplement
+
+`campaign-paused-reasons.json` records the `CampaignPausedPayload` (optional
+`reason` and `code`) and `CampaignRecipientSkippedPayload` (`skippedAt` in Unix
+milliseconds, `whatsapp_marketing_limit` reason) webhook schemas from API `dev`
+merge commit `a6812f1570814346d5e2a973ed1b855026981793`
+(polymorfa/polymorfa#326), with the source path and file hash. The schemas are
+unchanged at API `dev` `8d248b578a7c76034b30a5a97349adcd15ce5c55`.
+`webhook-contract.test.ts` overlays these schemas on the pinned Messaging
+snapshot, and `campaign-paused-reasons-contract.test.ts` checks the SDK types
+against them. The full snapshots stay pinned to `contracts/source.json` until
+the next repin.

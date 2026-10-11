@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- `CampaignPausedPayload` adds optional `reason` and `code`, present when
+  Polymorfa pauses a campaign automatically (for example
+  `number_quality_dropped` or `messaging_limit_dropped`). A customer pause
+  carries neither. `CampaignRecipientSkippedPayload.skippedAt` is documented as
+  Unix milliseconds, and `reason` can be `whatsapp_marketing_limit`. Types
+  only; no runtime change. API contract: polymorfa/polymorfa#326.
 - Campaign A/B tests (beta). Messaging and Platform campaign create and
   update accept `variants` (`CampaignVariant`, two to four) and
   `variantStrategy` (`CampaignVariantStrategy`); campaigns return them with
