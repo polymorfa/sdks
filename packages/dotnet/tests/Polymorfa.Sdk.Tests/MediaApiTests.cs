@@ -5,6 +5,11 @@ internal static class MediaApiTests
 {
     public static async Task RunAsync()
     {
+        var sigV4Start = new DateTimeOffset(2026, 10, 11, 12, 30, 0, TimeSpan.Zero);
+        ResourceTests.Equal(MessagingMedia.SignedUrlExpiry("https://storage.example/object?X-Amz-Date=20261011T123000Z&X-Amz-Expires=900"), sigV4Start.AddSeconds(900));
+        ResourceTests.Equal(MessagingMedia.SignedUrlExpiry("https://storage.example/object?X-Amz-Date=20261011T123000Z&X-Amz-Expires=604801"), sigV4Start.AddSeconds(604801));
+        ResourceTests.Equal(MessagingMedia.SignedUrlExpiry("https://storage.example/object?Expires=1800000000&Expires=1900000000"), DateTimeOffset.FromUnixTimeSeconds(1800000000));
+        foreach (var invalidUrl in new[] { "/relative?Expires=1800000000", "invalid", "https://storage.example/object", "https://storage.example/object?Expires=-1800000000", "https://storage.example/object?Expires=123", "https://storage.example/object?expires=1800000000", "https://storage.example/object?X-Amz-Date=bad&X-Amz-Expires=900", "https://storage.example/object?X-Amz-Date=20261011T123000Z&X-Amz-Expires=999999999999999999999" }) ResourceTests.True(MessagingMedia.SignedUrlExpiry(invalidUrl) is null);
         await Messaging("GET", "/messaging/media/media1/info", null, """{"success":true,"data":{"id":"media1","session":"support","messageId":"m1","mimeType":"audio/ogg","fileLength":9007199254740993,"persisted":true,"s3Url":"https://storage.example/once"}}""", async c => ResourceTests.Equal((await c.Media.RetrieveAsync("media1")).Data.Data.FileLength, 9007199254740993L));
         await Messaging("POST", "/messaging/media/media1/download-and-save", null, """{"success":true}""", async c => ResourceTests.True((await c.Media.PersistAsync("media1")).Data.Success));
         await Organization("GET", "/platform/media/media1", null, """{"data":{"id":"media1","state":"ready"}}""", async c => ResourceTests.Equal((await c.Media.RetrieveAsync("media1")).Data.Data.GetProperty("state").GetString(), "ready"));

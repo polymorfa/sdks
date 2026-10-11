@@ -56,6 +56,17 @@ internal static class WebhookTests
         Check(!Webhooks.VerifyFlowForwardSignature(flow, flowSignature, "endpoint-secret", now: time.AddSeconds(301)), "expired Flow endpoint signature");
         Check(!Webhooks.VerifyFlowForwardSignature(flow.Concat(new byte[] { 32 }).ToArray(), flowSignature, "endpoint-secret", now: time), "modified Flow body");
         Check(!Webhooks.VerifyFlowForwardSignature(flow, flowSignature + ",v1=" + new string('0', 64), "endpoint-secret", now: time), "duplicate Flow signature");
+        var fixture = Webhooks.CreateFixture(unknown, "fixture-secret");
+        Check(fixture.ContentType == "application/json" && fixture.Headers["Content-Type"] == fixture.ContentType && fixture.Headers["X-Webhook-Signature"] == fixture.Signature, "fixture request headers");
+        Check(fixture.Signature == Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes("fixture-secret"), fixture.Body)).ToLowerInvariant(), "fixture independent signature");
+        var roundTrip = Webhooks.ConstructEvent(fixture.Body, fixture.Signature, "fixture-secret");
+        Check(roundTrip is UnknownWebhookEvent && roundTrip.Envelope.Id == unknown.Envelope.Id && roundTrip.Envelope.Payload.GetProperty("nested")[0].GetBoolean() == false, "fixture unknown roundtrip");
+        using (var wire = JsonDocument.Parse(fixture.Body)) Check(wire.RootElement.TryGetProperty("event", out _) && !wire.RootElement.TryGetProperty("envelope", out _), "fixture wire envelope");
+        Check(!Webhooks.VerifySignature(fixture.Body.Concat(new byte[] { 32 }).ToArray(), fixture.Signature, "fixture-secret"), "fixture tamper refusal");
+        var knownFixture = Webhooks.CreateFixture(Signed("message.ack", """{"messages":[],"conversation":{"id":"peer"},"type":"read","timestamp":1726170122}"""), "fixture-secret");
+        Check(Webhooks.ConstructEvent(knownFixture.Body, knownFixture.Signature, "fixture-secret") is TypedWebhookEvent<MessageAckPayload>, "fixture typed roundtrip");
+        var emptySecretFixture = Webhooks.CreateFixture(unknown, "");
+        Check(emptySecretFixture.Signature == Convert.ToHexString(HMACSHA256.HashData(Array.Empty<byte>(), emptySecretFixture.Body)).ToLowerInvariant() && !Webhooks.VerifySignature(emptySecretFixture.Body, emptySecretFixture.Signature, ""), "fixture empty key contract and verification guard");
         Console.WriteLine("PASS typed webhook families, variants, precision, forward compatibility and signature-first validation");
     }
     private static T Parse<T>(string type, string payload) => Signed(type, payload) is TypedWebhookEvent<T> typed ? typed.Payload : throw new Exception($"Wrong webhook payload for {type}");

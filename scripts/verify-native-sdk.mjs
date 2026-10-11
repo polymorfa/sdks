@@ -145,6 +145,14 @@ if (language === "go") {
     "--warnaserror",
   ]);
   run("node", ["examples/prepare-blazor.mjs"]);
+  run("node", ["--test", "examples/maui/bridge-tests/native-bridge.test.mjs"]);
+  run("dotnet", [
+    "run",
+    "--project",
+    "examples/maui/bridge-tests/Polymorfa.Example.Maui.Bridge.Tests.csproj",
+    "--configuration",
+    "Release",
+  ]);
   run("dotnet", [
     "run",
     "--project",

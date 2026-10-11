@@ -8,8 +8,21 @@ namespace Polymorfa.Sdk;
 public sealed record WebhookEnvelope(string Id, string Session, string Timestamp, string Event, JsonElement Payload, string? ExternalId = null);
 public abstract record WebhookEvent(WebhookEnvelope Envelope);
 public sealed record UnknownWebhookEvent(WebhookEnvelope Envelope) : WebhookEvent(Envelope);
+public sealed record WebhookFixture(byte[] Body, string ContentType, string Signature, IReadOnlyDictionary<string, string> Headers);
 public static partial class Webhooks
 {
+    /// <summary>Creates exact JSON bytes and their native webhook signature for application tests.</summary>
+    public static WebhookFixture CreateFixture(WebhookEvent webhookEvent, string secret)
+    {
+        var body = JsonSerializer.SerializeToUtf8Bytes(webhookEvent.Envelope, HttpTransport.Json);
+        var signature = Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes(secret), body)).ToLowerInvariant();
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["content-type"] = "application/json",
+            ["x-webhook-signature"] = signature
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        return new(body, "application/json", signature, headers);
+    }
     public const string FlowForwardSignatureHeader = "x-polymorfa-flow-signature";
     /// <summary>Verifies the exact raw decrypted Flow request using the endpoint signing secret.</summary>
     public static bool VerifyFlowForwardSignature(ReadOnlySpan<byte> rawBody, string? signature, string secret, double toleranceSeconds = 300, DateTimeOffset? now = null)

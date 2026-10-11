@@ -65,7 +65,7 @@ public sealed class MessagingMedia : Resource
         using var opened = await Http.OpenAsync(HttpMethod.Get, Path(id), null, options, "*/*", allowMediaRedirect: true).ConfigureAwait(false);
         if (opened.Response.IsSuccessStatusCode) return new(true, null, null, opened.Metadata.RequestId);
         var url = Location(opened.Response, new Uri(Http.Options.BaseUrl, Path(id)), opened.Metadata);
-        return new(false, url, Expiry(url), opened.Metadata.RequestId);
+        return new(false, url, SignedUrlExpiry(url.AbsoluteUri), opened.Metadata.RequestId);
     }
     internal static async Task<MediaDownload> OpenDownloadAsync(HttpTransport http, string path, RequestOptions options)
     {
@@ -104,11 +104,16 @@ public sealed class MessagingMedia : Resource
         if (target.UserInfo.Length != 0 || target.Scheme != "https" && !(target.Scheme == "http" && target.IsLoopback)) throw new PolymorfaException("Invalid media redirect location.", "invalid_redirect", metadata);
         return target;
     }
-    private static DateTimeOffset? Expiry(Uri url)
+    /// <summary>Reads a signed URL's SigV4 or epoch expiry without making a request.</summary>
+    public static DateTimeOffset? SignedUrlExpiry(string value)
     {
-        var query = url.Query.TrimStart('?').Split('&').Select(value => value.Split('=', 2)).Where(parts => parts.Length == 2).GroupBy(parts => Uri.UnescapeDataString(parts[0]), StringComparer.OrdinalIgnoreCase).ToDictionary(group => group.Key, group => Uri.UnescapeDataString(group.First()[1]), StringComparer.OrdinalIgnoreCase);
-        if (query.TryGetValue("X-Amz-Date", out var date) && query.TryGetValue("X-Amz-Expires", out var period) && DateTimeOffset.TryParseExact(date, "yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var start) && long.TryParse(period, out var seconds) && seconds >= 0 && seconds <= 604800) return start.AddSeconds(seconds);
-        if (query.TryGetValue("Expires", out var epoch) && long.TryParse(epoch, out var unix) && unix >= 0 && unix <= 253402300799) return DateTimeOffset.FromUnixTimeSeconds(unix);
+        if (!Uri.TryCreate(value, UriKind.Absolute, out var url)) return null;
+        var query = url.Query.TrimStart('?').Split('&').Select(part => part.Split('=', 2)).Where(parts => parts.Length == 2).GroupBy(parts => Uri.UnescapeDataString(parts[0]), StringComparer.Ordinal).ToDictionary(group => group.Key, group => Uri.UnescapeDataString(group.First()[1]), StringComparer.Ordinal);
+        if (query.TryGetValue("X-Amz-Date", out var date) && query.TryGetValue("X-Amz-Expires", out var period) && System.Text.RegularExpressions.Regex.IsMatch(period, @"\A[0-9]+\z") && DateTimeOffset.TryParseExact(date, "yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var start) && long.TryParse(period, NumberStyles.None, CultureInfo.InvariantCulture, out var seconds))
+        {
+            try { return start.AddSeconds(seconds); } catch (ArgumentOutOfRangeException) { return null; }
+        }
+        if (query.TryGetValue("Expires", out var epoch) && System.Text.RegularExpressions.Regex.IsMatch(epoch, @"\A[0-9]{9,11}\z") && long.TryParse(epoch, NumberStyles.None, CultureInfo.InvariantCulture, out var unix)) return DateTimeOffset.FromUnixTimeSeconds(unix);
         return null;
     }
 }

@@ -12,13 +12,19 @@ The webhook endpoint verifies the exact bounded raw body using `x-webhook-signat
 
 From the repository root run `npm ci`, `npm run build:workspaces`, and `node packages/dotnet/examples/build-elements.mjs` before starting the example. It mounts the existing TypeScript Web Components; server credentials stay in ASP.NET Core.
 
-## Blazor WebAssembly and MAUI Blazor Hybrid
+## Blazor WebAssembly
 
 `blazor-components` provides the same reusable Razor component for either host. It compiles independently; it does not reference the server SDK or contain server credentials. Reference its project from the host, bundle `wwwroot/messaging.ts` to `messaging.js`, and render `<Messaging TokenEndpoint="/api/polymorfa/token" />`. The component imports the module after rendering and disposes the browser client when removed.
 
-`blazor-wasm` is a runnable same-origin WebAssembly host. Run `dotnet publish packages/dotnet/examples/blazor-wasm/Polymorfa.Example.Blazor.csproj --configuration Release --output packages/dotnet/examples/blazor-wasm/bin/served` and `node packages/dotnet/examples/prepare-blazor.mjs` from the repository root. Start ASP.NET Core, sign in at `/`, then open `/blazor/`. It uses the authenticated ASP.NET Core token endpoint and server-owned API configuration above. A MAUI host must supply its own authenticated HTTPS token route and application session transport. Do not embed an organization key or project token in the app, and do not point a signed app at a browser-selected API host. Configure CORS and authentication in the owning application. The WebAssembly host is checked in a browser against local API fixtures. The reusable Razor component does not establish MAUI device support; no MAUI app or device runtime was exercised.
+`blazor-wasm` is a runnable same-origin WebAssembly host. Run `dotnet publish packages/dotnet/examples/blazor-wasm/Polymorfa.Example.Blazor.csproj --configuration Release --output packages/dotnet/examples/blazor-wasm/bin/served` and `node packages/dotnet/examples/prepare-blazor.mjs` from the repository root. Start ASP.NET Core, sign in at `/`, then open `/blazor/`. It uses the authenticated ASP.NET Core token endpoint and server-owned API configuration above. The WebAssembly host is checked in a browser against local API fixtures.
 
 Use one mounted component per browser client. Install and bundle the same accepted TypeScript package version as the owning release. These integrations reuse `@polymorfa/elements`; they do not implement another messaging or calling UI.
+
+## MAUI Blazor Hybrid
+
+`maui` is a runnable Mac Catalyst host for the same Razor component. Its native application bridge owns the authenticated application cookie and allowlists fixed config, token, history and connection routes. JavaScript receives short-lived client tokens; it never receives the application cookie or a server API key. The application origin is a build-owned setting. Production configuration requires HTTPS; loopback HTTP is limited to the debug example.
+
+See [the MAUI instructions](maui/README.md) for the supported workload, build and native bridge tests. Local Mac Catalyst runtime proof covers sign-in, component mounting, token minting, inbox loading and logout against synthetic API fixtures. Windows, Android and iOS hosts are not supplied or exercised.
 
 ## Programmatic Calls
 

@@ -11,6 +11,31 @@ permissions:
   contents: read
 
 jobs:
+  maui-host:
+    runs-on: macos-26
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.401
+      - name: Install the supported Xcode 26.6 workload set
+        run: dotnet workload install maui-maccatalyst --version 10.0.401
+      - name: Build existing browser components
+        run: |
+          npm ci
+          npm run build:workspaces
+          node packages/dotnet/examples/build-elements.mjs
+      - name: Build the native Blazor Hybrid application
+        run: dotnet build packages/dotnet/examples/maui/app/Polymorfa.Example.Maui.csproj -f net10.0-maccatalyst26.5 -c Debug -p:TreatWarningsAsErrors=true
+      - name: Verify the application authentication bridge
+        run: |
+          node --test packages/dotnet/examples/maui/bridge-tests/native-bridge.test.mjs
+          dotnet run --project packages/dotnet/examples/maui/bridge-tests/Polymorfa.Example.Maui.Bridge.Tests.csproj --configuration Release
   matrix:
     runs-on: ubuntu-latest
     outputs:
