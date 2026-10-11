@@ -349,6 +349,23 @@ func (t *transport) open(ctx context.Context, method, path string, q url.Values,
 			continue
 		}
 		resp.Body = &cancelBody{ReadCloser: resp.Body, cancel: func() { timer.Stop(); cancel() }}
+		if !streaming {
+			bufferedBody, readErr := io.ReadAll(resp.Body)
+			if readErr != nil {
+				bodyErr := responseBodyError(ctx, resp, md, readErr)
+				resp.Body.Close()
+				if ctx.Err() != nil || !safe || attempt > retries || len(resp.Header.Values("X-Polymorfa-Operation-Id")) > 0 || resp.Header.Get("Idempotent-Replayed") == "true" {
+					return nil, md, bodyErr
+				}
+				if err := sleep(ctx, retryDelay(nil, attempt)); err != nil {
+					return nil, md, contextError(ctx, err)
+				}
+				continue
+			}
+			resp.Body.Close()
+			resp.Body = io.NopCloser(bytes.NewReader(bufferedBody))
+			resp.Request = resp.Request.WithContext(ctx)
+		}
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 			if resp.StatusCode >= 300 && resp.StatusCode < 400 {
 				return resp, md, nil
@@ -496,9 +513,6 @@ func request[T any](ctx context.Context, t *transport, method, path string, q ur
 			return result, responseBodyError(ctx, resp, md, err)
 		}
 		if resp.Request != nil && resp.Request.Context().Err() != nil {
-			return result, responseBodyError(ctx, resp, md, err)
-		}
-		if md.OperationID != "" || err == io.ErrUnexpectedEOF {
 			return result, responseBodyError(ctx, resp, md, err)
 		}
 		return result, &Error{Kind: ServerError, Code: "invalid_response", Message: "The Polymorfa API returned invalid JSON.", Metadata: md, Cause: err}

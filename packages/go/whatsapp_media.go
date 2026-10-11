@@ -247,29 +247,28 @@ func IsWhatsAppMediaURL(value string) bool {
 	return u.Scheme == "https" && u.User == nil && u.Port() == "" && (host == "whatsapp.net" || strings.HasSuffix(host, ".whatsapp.net"))
 }
 func DownloadWhatsAppMedia(ctx context.Context, d WhatsAppMediaDescriptor, o WhatsAppMediaDownloadOptions) (WhatsAppMediaDownload, error) {
-	if o.MaxBytes == 0 {
-		o.MaxBytes = DefaultWhatsAppMediaMaxBytes
-	}
-	if o.MaxBytes < 1 || o.MaxBytes > 9007199254740991 {
-		return WhatsAppMediaDownload{}, configuration("maxBytes", "maxBytes must be a positive safe integer.")
-	}
-	if len(d.FileSHA256) != 32 {
-		return WhatsAppMediaDownload{}, mediaError("media_invalid_descriptor", "The media descriptor needs fileSha256.")
-	}
-	keys, err := DeriveWhatsAppMediaKeys(d.MediaKey, d.MediaKind)
+	stream, err := DownloadWhatsAppMediaStream(ctx, d, o, VerifyBeforeRelease)
 	if err != nil {
 		return WhatsAppMediaDownload{}, err
 	}
+	defer stream.Body.Close()
+	b, err := io.ReadAll(stream.Body)
+	if err != nil {
+		return WhatsAppMediaDownload{}, err
+	}
+	return WhatsAppMediaDownload{b, stream.MediaKind, stream.MimeType, stream.Filename, stream.FileLength}, nil
+}
+func openWhatsAppMedia(ctx context.Context, d WhatsAppMediaDescriptor, o WhatsAppMediaDownloadOptions) (io.ReadCloser, error) {
 	urls := []string{}
 	if d.URL != "" {
 		if !IsWhatsAppMediaURL(d.URL) {
-			return WhatsAppMediaDownload{}, mediaError("media_invalid_descriptor", "Media URL must be an HTTPS WhatsApp media host.")
+			return nil, mediaError("media_invalid_descriptor", "Media URL must be an HTTPS WhatsApp media host.")
 		}
 		urls = append(urls, d.URL)
 	}
 	if d.DirectPath != "" {
 		if !strings.HasPrefix(d.DirectPath, "/") || strings.HasPrefix(d.DirectPath, "//") {
-			return WhatsAppMediaDownload{}, mediaError("media_invalid_descriptor", "directPath must start with a single slash.")
+			return nil, mediaError("media_invalid_descriptor", "directPath must start with a single slash.")
 		}
 		kind := d.MediaKind
 		if kind == "sticker" {
@@ -282,14 +281,14 @@ func DownloadWhatsAppMedia(ctx context.Context, d WhatsAppMediaDescriptor, o Wha
 		}
 		fallback += separator + "hash=" + url.QueryEscape(base64.URLEncoding.EncodeToString(d.FileEncSHA256)) + "&mms-type=" + kind + "&__wa-mms="
 		if !IsWhatsAppMediaURL(fallback) {
-			return WhatsAppMediaDownload{}, mediaError("media_invalid_descriptor", "Invalid media fallback URL.")
+			return nil, mediaError("media_invalid_descriptor", "Invalid media fallback URL.")
 		}
 		if fallback != d.URL {
 			urls = append(urls, fallback)
 		}
 	}
 	if len(urls) == 0 {
-		return WhatsAppMediaDownload{}, mediaError("media_invalid_descriptor", "Descriptor needs URL or directPath.")
+		return nil, mediaError("media_invalid_descriptor", "Descriptor needs URL or directPath.")
 	}
 	hc := http.DefaultClient
 	if o.HTTPClient != nil {
@@ -310,7 +309,7 @@ func DownloadWhatsAppMedia(ctx context.Context, d WhatsAppMediaDescriptor, o Wha
 			resp, err := client.Do(req)
 			if err != nil {
 				if ctx.Err() != nil {
-					return WhatsAppMediaDownload{}, contextError(ctx, ctx.Err())
+					return nil, contextError(ctx, ctx.Err())
 				}
 				break
 			}
@@ -318,7 +317,7 @@ func DownloadWhatsAppMedia(ctx context.Context, d WhatsAppMediaDescriptor, o Wha
 				location, err := resp.Location()
 				resp.Body.Close()
 				if err != nil || !IsWhatsAppMediaURL(location.String()) {
-					return WhatsAppMediaDownload{}, mediaError("media_invalid_descriptor", "Media redirected outside WhatsApp media hosts.")
+					return nil, mediaError("media_invalid_descriptor", "Media redirected outside WhatsApp media hosts.")
 				}
 				current = location.String()
 				continue
@@ -327,23 +326,11 @@ func DownloadWhatsAppMedia(ctx context.Context, d WhatsAppMediaDescriptor, o Wha
 				resp.Body.Close()
 				break
 			}
-			encrypted, err := io.ReadAll(io.LimitReader(resp.Body, o.MaxBytes+27))
-			resp.Body.Close()
-			if err != nil {
-				return WhatsAppMediaDownload{}, &Error{Kind: ConnectionError, Message: "Media body could not be read."}
-			}
-			plaintext, err := DecryptWhatsAppMedia(encrypted, keys, d, o.MaxBytes)
-			if err != nil {
-				return WhatsAppMediaDownload{}, err
-			}
-			mime := d.MimeType
-			if mime == "" {
-				mime = mediaMIME[d.MediaKind]
-			}
-			return WhatsAppMediaDownload{plaintext, d.MediaKind, mime, d.Filename, d.FileLength}, nil
+
+			return resp.Body, nil
 		}
 	}
-	return WhatsAppMediaDownload{}, &Error{Kind: ConnectionError, Code: "connection_error", Message: "WhatsApp media could not be downloaded."}
+	return nil, &Error{Kind: ConnectionError, Code: "connection_error", Message: "WhatsApp media could not be downloaded."}
 }
 func (r *MessagingMedia) DownloadFromWhatsApp(ctx context.Context, d WhatsAppMediaDescriptor, o WhatsAppMediaDownloadOptions) (WhatsAppMediaDownload, error) {
 	return DownloadWhatsAppMedia(ctx, d, o)

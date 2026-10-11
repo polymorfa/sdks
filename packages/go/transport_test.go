@@ -553,3 +553,51 @@ func TestOperationAdmissionIsFinal(t *testing.T) {
 		})
 	}
 }
+func TestRetryResponseBodyReadPreservesSafeWriteIdentity(t *testing.T) {
+	for _, keyed := range []bool{false, true} {
+		t.Run(map[bool]string{true: "keyed_write", false: "safe_get"}[keyed], func(t *testing.T) {
+			attempts := 0
+			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				attempts++
+				if keyed && r.Header.Get("Idempotency-Key") != "stable" {
+					t.Error("write key changed")
+				}
+				w.Header().Set("Content-Type", "application/json")
+				if attempts == 1 {
+					w.Header().Set("Content-Length", "100")
+					w.Write([]byte(`{"data":`))
+					return
+				}
+				w.Write([]byte(`{"data":{"value":"complete"}}`))
+			}))
+			defer s.Close()
+			cfg := orgConfig(s.URL)
+			retries := 1
+			cfg.MaxNetworkRetries = &retries
+			m, _ := NewMessagingClient(cfg)
+			method := "GET"
+			opts := RequestOptions{}
+			if keyed {
+				method = "POST"
+				opts.IdempotencyKey = "stable"
+			}
+			r, err := m.Raw(context.Background(), RawRequest{Method: method, Path: "/platform/body", Options: opts})
+			if err != nil || attempts != 2 || r.Metadata.Attempts != 2 {
+				t.Fatal(r, err, attempts)
+			}
+		})
+	}
+}
+func TestMalformedJSONKeepsProtocolClassification(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"invalid":`))
+	}))
+	defer s.Close()
+	m, _ := NewMessagingClient(orgConfig(s.URL))
+	_, err := m.Raw(context.Background(), RawRequest{Method: "GET", Path: "/platform/invalid"})
+	var e *Error
+	if !errors.As(err, &e) || e.Kind != ServerError || e.Code != "invalid_response" {
+		t.Fatal("malformed JSON classified as timeout", err)
+	}
+}

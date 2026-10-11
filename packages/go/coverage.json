@@ -819,8 +819,9 @@
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
-      "status": "excluded",
-      "reason": "Messaging campaign update is owned by SDK PR #307."
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.Update",
+      "testFile": "supplements_test.go"
     },
     {
       "family": "messaging",
@@ -1272,8 +1273,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reschedule",
-      "status": "excluded",
-      "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges."
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.Reschedule",
+      "testFile": "supplements_test.go"
     },
     {
       "family": "messaging",
@@ -3734,8 +3736,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/reschedule",
-      "status": "excluded",
-      "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges."
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Reschedule",
+      "testFile": "supplements_test.go"
     },
     {
       "family": "platform",

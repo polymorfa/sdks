@@ -19,19 +19,24 @@ const CallsMediaSubprotocol = "pmfa.calls.v2"
 const CallsDefaultSampleRate = 16000
 
 type CallsClientConfig struct {
-	Config       Config
-	Session      string
-	Participant  string
-	ReadyTimeout time.Duration
+	Config        Config
+	Session       string
+	Participant   string
+	ReadyTimeout  time.Duration
+	TokenProvider CallsTokenProvider
 }
 type CallsClient struct {
 	messaging    *MessagingClient
 	session      string
 	participant  string
 	readyTimeout time.Duration
+	tokens       *CallsTokenSource
 }
 
 func NewCallsClient(c CallsClientConfig) (*CallsClient, error) {
+	if c.TokenProvider != nil && c.Config.Credential.Value == "" {
+		c.Config.Credential = Credential{Kind: ClientToken, Value: "pmfa_ct_provider"}
+	}
 	m, err := NewMessagingClient(c.Config)
 	if err != nil {
 		return nil, err
@@ -50,7 +55,11 @@ func NewCallsClient(c CallsClientConfig) (*CallsClient, error) {
 	if c.ReadyTimeout < 0 {
 		return nil, configuration("readyTimeout", "Ready timeout must be positive.")
 	}
-	return &CallsClient{m, c.Session, c.Participant, c.ReadyTimeout}, nil
+	client := &CallsClient{messaging: m, session: c.Session, participant: c.Participant, readyTimeout: c.ReadyTimeout}
+	if c.TokenProvider != nil {
+		client.tokens, _ = NewCallsTokenSource(c.TokenProvider)
+	}
+	return client, nil
 }
 func (c *CallsClient) Place(ctx context.Context, b PlaceCallRequest, o ...RequestOptions) (Response[Envelope[PlacedCall]], error) {
 	b.Session = c.session
@@ -59,17 +68,33 @@ func (c *CallsClient) Place(ctx context.Context, b PlaceCallRequest, o ...Reques
 	if err != nil {
 		return Response[Envelope[PlacedCall]]{}, err
 	}
-	return c.messaging.VoIP().Place(ctx, b, opts)
+	m, _, err := c.api(ctx, false)
+	if err != nil {
+		return Response[Envelope[PlacedCall]]{}, err
+	}
+	return m.VoIP().Place(ctx, b, opts)
 }
 func (c *CallsClient) Answer(ctx context.Context, id string, b AcceptCallRequest, o ...RequestOptions) (Response[Envelope[AcceptedCall]], error) {
 	b.Participant = c.participant
-	return c.messaging.VoIP().Accept(ctx, id, b, o...)
+	m, _, err := c.api(ctx, false)
+	if err != nil {
+		return Response[Envelope[AcceptedCall]]{}, err
+	}
+	return m.VoIP().Accept(ctx, id, b, o...)
 }
 func (c *CallsClient) Reject(ctx context.Context, id string, o ...RequestOptions) (Response[Success], error) {
-	return c.messaging.VoIP().Reject(ctx, id, RejectCallRequest{c.participant}, o...)
+	m, _, err := c.api(ctx, false)
+	if err != nil {
+		return Response[Success]{}, err
+	}
+	return m.VoIP().Reject(ctx, id, RejectCallRequest{c.participant}, o...)
 }
 func (c *CallsClient) End(ctx context.Context, id string, o ...RequestOptions) (Response[Success], error) {
-	return c.messaging.VoIP().End(ctx, id, o...)
+	m, _, err := c.api(ctx, false)
+	if err != nil {
+		return Response[Success]{}, err
+	}
+	return m.VoIP().End(ctx, id, o...)
 }
 func (c *CallsClient) socketURL(path string) string {
 	u := *c.messaging.t.base
@@ -103,11 +128,19 @@ type TrickleCandidate struct {
 	SDPMid        string `json:"sdpMid,omitempty"`
 	SDPMLineIndex *int   `json:"sdpMLineIndex,omitempty"`
 }
-type CallsLifecycle struct{ conn *websocket.Conn }
+type CallsLifecycle struct {
+	conn  *websocket.Conn
+	Ready LifecycleFrame
+	Token CallsToken
+}
 
 func (c *CallsClient) Connect(ctx context.Context) (*CallsLifecycle, error) {
+	m, token, err := c.api(ctx, false)
+	if err != nil {
+		return nil, err
+	}
 	u := c.socketURL("/voip/ws")
-	if c.messaging.t.config.Credential.Kind != ClientToken {
+	if m.t.config.Credential.Kind != ClientToken {
 		u += "?session=" + url.QueryEscape(c.session)
 		if c.participant != "" {
 			u += "&participant=" + url.QueryEscape(c.participant)
@@ -122,16 +155,20 @@ func (c *CallsClient) Connect(ctx context.Context) (*CallsLifecycle, error) {
 	if err = wsjson.Write(ready, conn, struct {
 		Type  string `json:"type"`
 		Token string `json:"token"`
-	}{"auth", c.messaging.t.config.Credential.Value}); err != nil {
+	}{"auth", token.Value}); err != nil {
 		conn.CloseNow()
 		return nil, &Error{Kind: ConnectionError, Message: "Calls lifecycle authentication could not be sent."}
 	}
 	var frame LifecycleFrame
-	if err = wsjson.Read(ready, conn, &frame); err != nil || frame.Type != "ready" {
+	if err = wsjson.Read(ready, conn, &frame); err != nil {
+		conn.CloseNow()
+		return nil, callSocketError(err)
+	}
+	if frame.Type != "ready" {
 		conn.CloseNow()
 		return nil, &Error{Kind: AuthenticationError, Code: "calls_authentication_failed", Message: "Calls lifecycle authentication was not confirmed."}
 	}
-	return &CallsLifecycle{conn}, nil
+	return &CallsLifecycle{conn: conn, Ready: frame, Token: token}, nil
 }
 func (l *CallsLifecycle) Next(ctx context.Context) (LifecycleFrame, error) {
 	for {
@@ -139,8 +176,7 @@ func (l *CallsLifecycle) Next(ctx context.Context) (LifecycleFrame, error) {
 		if err := wsjson.Read(ctx, l.conn, &frame); err != nil {
 			return frame, callSocketError(err)
 		}
-		switch frame.Type {
-		case "ready", "event", "candidate", "error", "pong":
+		if validLifecycleFrame(frame) {
 			return frame, nil
 		}
 	}
@@ -172,11 +208,14 @@ func callSocketError(err error) error {
 	case 4403:
 		kind = AuthorizationError
 		code = "calls_refused"
+	case 4429:
+		kind = RateLimitError
+		code = "calls_rate_limited"
 	case 4400, 4404, 4409:
 		kind = ConflictError
 		code = "calls_unavailable"
 	}
-	return &Error{Kind: kind, Code: code, Message: "Calls socket closed."}
+	return &Error{Kind: kind, Code: code, Status: int(websocket.CloseStatus(err)), Message: "Calls socket closed."}
 }
 func CreateConnectionID() (string, error) {
 	var b [18]byte
@@ -225,10 +264,22 @@ type CallsMediaSocket struct {
 	ConnectionID string
 	SampleRate   int
 	Video        bool
+	Token        CallsToken
 	mu           sync.Mutex
+	readerOnce   sync.Once
+	frames       chan callsMediaResult
+	readerDone   chan struct{}
+	readerCancel context.CancelFunc
+	ackMu        sync.Mutex
+	ack          map[string]chan MediaControlFrame
+	queueCount   int
 }
 
 func (c *CallsClient) AttachMedia(ctx context.Context, callID, connectionID string) (*CallsMediaSocket, error) {
+	_, token, err := c.api(ctx, false)
+	if err != nil {
+		return nil, err
+	}
 	if connectionID == "" {
 		var err error
 		connectionID, err = CreateConnectionID()
@@ -255,17 +306,21 @@ func (c *CallsClient) AttachMedia(ctx context.Context, callID, connectionID stri
 		Token        string `json:"token"`
 		ConnectionID string `json:"connectionId"`
 		Participant  string `json:"participant,omitempty"`
-	}{"auth", c.messaging.t.config.Credential.Value, connectionID, c.participant}
+	}{"auth", token.Value, connectionID, c.participant}
 	if err = wsjson.Write(ready, conn, auth); err != nil {
 		conn.CloseNow()
 		return nil, &Error{Kind: ConnectionError, Message: "Call media authentication could not be sent."}
 	}
 	var frame MediaControlFrame
-	if err = wsjson.Read(ready, conn, &frame); err != nil || frame.Type != "ready" || frame.SampleRate <= 0 || frame.Video == nil {
+	if err = wsjson.Read(ready, conn, &frame); err != nil {
+		conn.CloseNow()
+		return nil, callSocketError(err)
+	}
+	if frame.Type != "ready" || frame.SampleRate <= 0 || frame.Video == nil {
 		conn.CloseNow()
 		return nil, &Error{Kind: AuthenticationError, Code: "calls_media_not_ready", Message: "Call media was not confirmed ready."}
 	}
-	return &CallsMediaSocket{conn: conn, ConnectionID: connectionID, SampleRate: frame.SampleRate, Video: *frame.Video}, nil
+	return &CallsMediaSocket{conn: conn, ConnectionID: connectionID, SampleRate: frame.SampleRate, Video: *frame.Video, Token: token}, nil
 }
 func EncodeAudioFrame(pcm []int16) []byte {
 	out := make([]byte, 1+2*len(pcm))
@@ -313,19 +368,78 @@ func DecodeMediaFrame(bytes []byte) (CallsMediaFrame, error) {
 	}
 	return CallsMediaFrame{}, validation("Unknown media frame kind.")
 }
+
+type callsMediaResult struct {
+	frame CallsMediaFrame
+	err   error
+}
+
+func (m *CallsMediaSocket) startReader() {
+	m.readerOnce.Do(func() {
+		m.frames = make(chan callsMediaResult, 64)
+		m.readerDone = make(chan struct{})
+		m.ack = map[string]chan MediaControlFrame{}
+		ctx, cancel := context.WithCancel(context.Background())
+		m.readerCancel = cancel
+		go func() {
+			defer close(m.readerDone)
+			defer close(m.frames)
+			for {
+				kind, b, err := m.conn.Read(ctx)
+				if err != nil {
+					select {
+					case m.frames <- callsMediaResult{err: callSocketError(err)}:
+					case <-ctx.Done():
+					}
+					return
+				}
+				var frame CallsMediaFrame
+				if kind == websocket.MessageBinary {
+					frame, err = DecodeMediaFrame(b)
+					if err != nil {
+						continue
+					}
+				} else {
+					v, valid := parseMediaControlFrame(b)
+					if !valid {
+						continue
+					}
+					frame.Control = &v
+					if v.Type == "media_state" || v.Type == "media_error" {
+						m.ackMu.Lock()
+						pending := m.ack[v.RequestID]
+						if pending != nil {
+							select {
+							case pending <- v:
+							default:
+							}
+						}
+						m.ackMu.Unlock()
+						if pending != nil {
+							continue
+						}
+					}
+				}
+				select {
+				case m.frames <- callsMediaResult{frame: frame}:
+				case <-ctx.Done():
+					return
+				}
+			}
+		}()
+	})
+}
 func (m *CallsMediaSocket) Read(ctx context.Context) (CallsMediaFrame, error) {
-	kind, bytes, err := m.conn.Read(ctx)
-	if err != nil {
-		return CallsMediaFrame{}, callSocketError(err)
+	m.startReader()
+	select {
+	case <-ctx.Done():
+		return CallsMediaFrame{}, contextError(ctx, ctx.Err())
+	case result, ok := <-m.frames:
+		if !ok {
+			return CallsMediaFrame{}, &Error{Kind: ConnectionError, Code: "calls_disconnected", Message: "Call media connection closed."}
+		}
+		return result.frame, result.err
 	}
-	if kind == websocket.MessageBinary {
-		return DecodeMediaFrame(bytes)
-	}
-	var frame MediaControlFrame
-	if err = json.Unmarshal(bytes, &frame); err != nil {
-		return CallsMediaFrame{}, validation("Invalid call control frame.")
-	}
-	return CallsMediaFrame{Control: &frame}, nil
 }
 func (m *CallsMediaSocket) WriteAudio(ctx context.Context, pcm []int16) error {
 	return m.conn.Write(ctx, websocket.MessageBinary, EncodeAudioFrame(pcm))
@@ -345,41 +459,78 @@ func (m *CallsMediaSocket) Leave(ctx context.Context) error {
 	err := wsjson.Write(ctx, m.conn, struct {
 		Type string `json:"type"`
 	}{"leave"})
-	m.conn.Close(websocket.StatusNormalClosure, "")
+	m.Close()
 	return err
 }
-func (m *CallsMediaSocket) Close() error { return m.conn.Close(websocket.StatusNormalClosure, "") }
+func (m *CallsMediaSocket) Close() error {
+	err := m.conn.Close(websocket.StatusNormalClosure, "")
+	m.startReader()
+	m.readerCancel()
+	return err
+}
 
-// UpdateMediaState is ordered. The caller must not also Read while it waits.
-// A timeout is an unknown outcome; the command is never automatically replayed.
-func (m *CallsMediaSocket) UpdateMediaState(ctx context.Context, audioMuted, videoEnabled, screenSharing *bool) (MediaControlFrame, error) {
-	if audioMuted == nil && videoEnabled == nil && screenSharing == nil {
+// UpdateMediaState serializes at most 16 queued commands while the sole socket
+// reader continues delivering audio, video and roster events. An unconfirmed
+// command is never replayed automatically.
+func (m *CallsMediaSocket) UpdateMediaState(ctx context.Context, a, v, screen *bool) (MediaControlFrame, error) {
+	if a == nil && v == nil && screen == nil {
 		return MediaControlFrame{}, validation("Specify at least one media preference.")
 	}
+	m.startReader()
+	m.ackMu.Lock()
+	if m.queueCount >= 16 {
+		m.ackMu.Unlock()
+		return MediaControlFrame{}, &Error{Kind: ConflictError, Code: "media_control_unavailable", Message: "Media control queue is full."}
+	}
+	m.queueCount++
+	m.ackMu.Unlock()
+	defer func() { m.ackMu.Lock(); m.queueCount--; m.ackMu.Unlock() }()
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	if ctx.Err() != nil {
+		return MediaControlFrame{}, contextError(ctx, ctx.Err())
+	}
 	id, err := CreateConnectionID()
 	if err != nil {
 		return MediaControlFrame{}, err
 	}
+	reply := make(chan MediaControlFrame, 1)
+	m.ackMu.Lock()
+	m.ack[id] = reply
+	m.ackMu.Unlock()
+	defer func() { m.ackMu.Lock(); delete(m.ack, id); m.ackMu.Unlock() }()
 	budget, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	frame := MediaControlFrame{Type: "media_state", RequestID: id, AudioMuted: audioMuted, VideoEnabled: videoEnabled, ScreenSharing: screenSharing}
+	frame := MediaControlFrame{Type: "media_state", RequestID: id, AudioMuted: a, VideoEnabled: v, ScreenSharing: screen}
 	if err = wsjson.Write(budget, m.conn, frame); err != nil {
 		return MediaControlFrame{}, callSocketError(err)
 	}
-	for {
-		next, err := m.Read(budget)
-		if err != nil {
-			return MediaControlFrame{}, &Error{Kind: TimeoutError, Code: "media_control_unknown", Message: "Media control was not confirmed."}
+	select {
+	case <-budget.Done():
+		return MediaControlFrame{}, &Error{Kind: TimeoutError, Code: "media_control_unknown", Message: "Media control was not confirmed."}
+	case <-m.readerDone:
+		return MediaControlFrame{}, &Error{Kind: ConnectionError, Code: "media_control_unknown", Message: "Media connection closed before acknowledgement."}
+	case f := <-reply:
+		if f.Type != "media_state" {
+			return f, &Error{Kind: ConflictError, Code: f.Code, Message: "Media control was refused."}
 		}
-		if next.Control == nil || next.Control.RequestID != id {
-			continue
+		if a != nil && *f.AudioMuted != *a || v != nil && *f.VideoEnabled != *v || screen != nil && ((f.ScreenSharing != nil && *f.ScreenSharing) != *screen) {
+			return f, &Error{Kind: ConflictError, Code: "media_control_failed", Message: "Media control was not confirmed."}
 		}
-		reply := next.Control
-		if reply.Type != "media_state" || reply.AudioMuted == nil || reply.VideoEnabled == nil || audioMuted != nil && *reply.AudioMuted != *audioMuted || videoEnabled != nil && *reply.VideoEnabled != *videoEnabled || screenSharing != nil && (reply.ScreenSharing == nil && *screenSharing || reply.ScreenSharing != nil && *reply.ScreenSharing != *screenSharing) {
-			return *reply, &Error{Kind: ConflictError, Code: "media_control_failed", Message: "Media control was not confirmed."}
-		}
-		return *reply, nil
+		return f, nil
 	}
+}
+func (l *CallsLifecycle) sendAuth(ctx context.Context, token string) error {
+	return wsjson.Write(ctx, l.conn, struct {
+		Type  string `json:"type"`
+		Token string `json:"token"`
+	}{"auth", token})
+}
+func (m *CallsMediaSocket) sendAuth(ctx context.Context, token, participant string) error {
+	return wsjson.Write(ctx, m.conn, struct {
+		Type         string `json:"type"`
+		Token        string `json:"token"`
+		ConnectionID string `json:"connectionId"`
+		Participant  string `json:"participant,omitempty"`
+	}{"auth", token, m.ConnectionID, participant})
 }

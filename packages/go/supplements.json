@@ -1,0 +1,140 @@
+{
+  "schemaVersion": 1,
+  "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9",
+  "operations": [
+    {
+      "sdkMethod": "MessagingClient.CloudCatalogs.List",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/product_catalogs",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.CloudCatalogs.ListProducts",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/product_catalogs/42/products",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.CloudMarketing.Status",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/marketing_messages/status",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.FlowEncryption.Retrieve",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/phone/whatsapp_business_encryption",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.FlowEncryption.Register",
+      "method": "POST",
+      "fixturePath": "/graph/whatsapp/v26.0/phone/whatsapp_business_encryption",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.Testing.GetPhone",
+      "method": "GET",
+      "fixturePath": "/messaging/testing/project/numbers/support/phone",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.Testing.SendPhoneMessage",
+      "method": "POST",
+      "fixturePath": "/messaging/testing/project/numbers/support/phone/messages",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.Testing.UnlinkPhoneDevice",
+      "method": "POST",
+      "fixturePath": "/messaging/testing/project/numbers/support/phone/devices/1/unlink",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.Campaigns.Update",
+      "method": "PATCH",
+      "fixturePath": "/messaging/projects/project/campaigns/campaign",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.Campaigns.Reschedule",
+      "method": "POST",
+      "fixturePath": "/messaging/projects/project/campaigns/campaign/reschedule",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "OrganizationClient.Campaigns.Reschedule",
+      "method": "POST",
+      "fixturePath": "/platform/campaigns/campaign/reschedule",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    }
+  ],
+  "helpers": [
+    {
+      "sdkMethod": "CallsClient.Follow / Call lifecycle and media model",
+      "status": "covered",
+      "testFile": "calls_model_test.go"
+    },
+    {
+      "sdkMethod": "CallsTokenSource single flight / cache / refresh / cancellation",
+      "status": "covered",
+      "testFile": "calls_model_test.go"
+    },
+    {
+      "sdkMethod": "CallReporter quality and error bounds",
+      "status": "covered",
+      "testFile": "calls_model_test.go"
+    },
+    {
+      "sdkMethod": "Calls lifecycle/media native WebSocket and PCM/H264 framing",
+      "status": "covered",
+      "testFile": "calls_socket_test.go"
+    },
+    {
+      "sdkMethod": "WhatsApp incremental decryption and atomic CDN file downloads",
+      "status": "covered",
+      "testFile": "whatsapp_stream_test.go"
+    },
+    {
+      "sdkMethod": "MessagingMedia.DownloadToFile / Chats.DownloadMessageMediaToFile / DownloadURL",
+      "status": "covered",
+      "testFile": "media_file_test.go"
+    },
+    {
+      "sdkMethod": "WebhookEvent.TypedPayload all 84 known event names and unknown preservation",
+      "status": "covered",
+      "testFile": "webhook_payloads_test.go"
+    },
+    {
+      "sdkMethod": "Native / local-forward / Flow-forward webhook signatures",
+      "status": "covered",
+      "testFile": "webhook_payloads_test.go"
+    },
+    {
+      "sdkMethod": "Developer event stream reconnect / acknowledgement / heartbeat / revocation",
+      "status": "covered",
+      "testFile": "event_stream_test.go"
+    },
+    {
+      "sdkMethod": "Retained indexed-event offset pagination",
+      "status": "covered",
+      "testFile": "indexed_events_test.go"
+    },
+    {
+      "sdkMethod": "ParseContentDispositionFilename / GraphTransportHeaders",
+      "status": "covered",
+      "testFile": "content_disposition_test.go"
+    }
+  ]
+}

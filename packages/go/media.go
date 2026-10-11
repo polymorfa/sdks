@@ -3,7 +3,6 @@ package polymorfa
 import (
 	"context"
 	"io"
-	"mime"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -112,8 +111,7 @@ func downloadStream(ctx context.Context, t *transport, path string, o RequestOpt
 		}
 		redirected = true
 	}
-	_, params, _ := mime.ParseMediaType(resp.Header.Get("Content-Disposition"))
-	return &MediaDownload{Body: resp.Body, ContentType: resp.Header.Get("Content-Type"), ContentLength: resp.ContentLength, Filename: params["filename"], Redirected: redirected, Metadata: md}, nil
+	return &MediaDownload{Body: resp.Body, ContentType: resp.Header.Get("Content-Type"), ContentLength: resp.ContentLength, Filename: ParseContentDispositionFilename(resp.Header.Get("Content-Disposition")), Redirected: redirected, Metadata: md}, nil
 }
 func downloadBytes(ctx context.Context, t *transport, path string, o RequestOptions) (Response[[]byte], error) {
 	d, err := downloadStream(ctx, t, path, o)
