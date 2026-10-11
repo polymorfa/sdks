@@ -1918,33 +1918,33 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/flows/{flowId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.delete",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/flows/{flowId}/endpoint",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.delete_endpoint",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/functions/{functionId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.delete",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/functions/{functionId}/secrets/{versionId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.secrets.revoke",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
@@ -2014,17 +2014,17 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/voice/audio/{assetId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.delete",
+      "testFile": "tests/voice.rs"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/voice/provider-credentials/{credentialId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.provider_credentials.delete",
+      "testFile": "tests/voice.rs"
     },
     {
       "family": "platform",
@@ -2398,105 +2398,105 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/claims",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_claims",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/claims/{claimId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.get_claim",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/collection",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_collection",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/enforcement",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_enforcement",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/findings",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_findings",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/health",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_health",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/health-actions",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_health_actions",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/health/{session}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.get_health",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/health/{session}/history",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_health_history",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/incidents",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_incidents",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/signals",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_signals",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/telemetry/{session}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.get_telemetry",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/telemetry/{session}/history",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.list_telemetry_history",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
@@ -2582,33 +2582,33 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.calls.list",
+      "testFile": "tests/call_records.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls/{callId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.calls.retrieve",
+      "testFile": "tests/call_records.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls/export",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.calls.export",
+      "testFile": "tests/call_records.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls/stats",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.calls.stats",
+      "testFile": "tests/call_records.rs"
     },
     {
       "family": "platform",
@@ -2718,105 +2718,105 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/flow-encryption-keys",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.encryption_key",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.list",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.retrieve",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}/endpoint",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.endpoint",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}/endpoint/receipts",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.endpoint_receipts",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}/receipts",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.receipts",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.list",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.retrieve",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/deployments",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.deployments.list",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/deployments/{deploymentId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.deployments.retrieve",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/invocations",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.invocations.list",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/invocations/{invocationId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.invocations.retrieve",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/functions/{functionId}/secrets",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.secrets.list",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
@@ -3206,41 +3206,41 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/audio",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.list",
+      "testFile": "tests/voice.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/audio/{assetId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.retrieve",
+      "testFile": "tests/voice.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/audio/{assetId}/preview",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.preview_url",
+      "testFile": "tests/voice.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/provider-credentials",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.provider_credentials",
+      "testFile": "tests/voice.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/provider-credentials/{credentialId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.provider_credentials.retrieve",
+      "testFile": "tests/voice.rs"
     },
     {
       "family": "platform",
@@ -3366,17 +3366,17 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/flows/{flowId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.update",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/functions/{functionId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.update",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
@@ -3414,9 +3414,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/voice/audio/{assetId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.update",
+      "testFile": "tests/voice.rs"
     },
     {
       "family": "platform",
@@ -3758,17 +3758,17 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/bansafe/incidents",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.create_incident",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/bansafe/incidents/{incidentId}/retract",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.ban_safe.retract_incident",
+      "testFile": "tests/bansafe.rs"
     },
     {
       "family": "platform",
@@ -3934,89 +3934,89 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/flow-encryption-keys/rotate",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.rotate_encryption_key",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.create",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/deprecate",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.deprecate",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/discard",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.discard",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/publish",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.publish",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/sync",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.sync",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/upload",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.upload",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.create",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions/{functionId}/deployments",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.deployments.create",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions/{functionId}/invocations",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.invocations.create",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/functions/{functionId}/secrets",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.secrets.create",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
@@ -4270,41 +4270,41 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/audio",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.create_upload",
+      "testFile": "tests/voice.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/audio/{assetId}/complete",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.complete",
+      "testFile": "tests/voice.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/audio/tts",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.audio.synthesize",
+      "testFile": "tests/voice.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/provider-credentials",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.provider_credentials.create",
+      "testFile": "tests/voice.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/provider-credentials/{credentialId}/verify",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.voice.provider_credentials.verify",
+      "testFile": "tests/voice.rs"
     },
     {
       "family": "platform",
@@ -4494,17 +4494,17 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/flows/{flowId}/endpoint",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.flows.set_endpoint",
+      "testFile": "tests/flows.rs"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/functions/{functionId}/promotion",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.functions.deployments.promote",
+      "testFile": "tests/functions.rs"
     },
     {
       "family": "platform",
@@ -4598,33 +4598,33 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/analytics",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.analytics.get",
+      "testFile": "tests/analytics.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/analytics",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.analytics.get",
+      "testFile": "tests/analytics.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/analytics/metrics",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.analytics.metrics",
+      "testFile": "tests/analytics.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/analytics/metrics",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.analytics.metrics",
+      "testFile": "tests/analytics.rs"
     },
     {
       "family": "platform",

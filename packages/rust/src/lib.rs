@@ -56,3 +56,15 @@ pub use transport::{ApiResponse, ClientOptions, Credential, RequestOptions, Resp
 
 pub const SDK_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const NATIVE_API_VERSION: &str = "2026-09-22";
+
+pub mod bansafe;
+
+pub mod functions;
+
+pub mod flows;
+
+pub mod voice;
+
+pub mod call_records;
+
+pub mod analytics;

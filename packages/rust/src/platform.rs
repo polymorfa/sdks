@@ -42,6 +42,24 @@ impl OrganizationClient {
     pub fn media(&self) -> crate::organization_controls::PlatformMedia<'_> {
         crate::organization_controls::PlatformMedia(&self.http)
     }
+    pub fn analytics(&self) -> crate::analytics::Analytics<'_> {
+        crate::analytics::Analytics {
+            http: &self.http,
+            project_id: None,
+        }
+    }
+    pub fn calls(&self) -> crate::call_records::CallRecords<'_> {
+        crate::call_records::CallRecords {
+            http: &self.http,
+            project_id: None,
+        }
+    }
+    pub fn voice(&self) -> crate::voice::OrganizationVoice<'_> {
+        crate::voice::OrganizationVoice(&self.http)
+    }
+    pub fn ban_safe(&self) -> crate::bansafe::BanSafe<'_> {
+        crate::bansafe::BanSafe(&self.http)
+    }
     pub fn session_bans(&self) -> crate::organization_controls::SessionBans<'_> {
         crate::organization_controls::SessionBans(&self.http)
     }
@@ -185,6 +203,36 @@ impl ProjectClient {
     }
     pub fn call_retention(&self) -> crate::settings::CallRetentionResource<'_> {
         crate::settings::CallRetentionResource(&self.http)
+    }
+    pub fn analytics(&self) -> crate::analytics::Analytics<'_> {
+        crate::analytics::Analytics {
+            http: &self.http,
+            project_id: Some(&self.project_id),
+        }
+    }
+    pub fn calls(&self) -> crate::call_records::CallRecords<'_> {
+        crate::call_records::CallRecords {
+            http: &self.http,
+            project_id: Some(&self.project_id),
+        }
+    }
+    pub fn voice(&self) -> crate::voice::ProjectVoice<'_> {
+        crate::voice::ProjectVoice {
+            http: &self.http,
+            project_id: &self.project_id,
+        }
+    }
+    pub fn flows(&self) -> crate::flows::Flows<'_> {
+        crate::flows::Flows {
+            http: &self.http,
+            project_id: &self.project_id,
+        }
+    }
+    pub fn functions(&self) -> crate::functions::Functions<'_> {
+        crate::functions::Functions {
+            http: &self.http,
+            project_id: &self.project_id,
+        }
     }
     pub fn operations(&self) -> crate::operations::Operations<'_> {
         crate::operations::Operations {

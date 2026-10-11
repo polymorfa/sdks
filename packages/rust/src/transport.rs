@@ -248,6 +248,33 @@ impl HttpTransport {
             })?;
         Ok(ApiResponse { data, metadata })
     }
+    pub(crate) async fn request_text(
+        &self,
+        path: &str,
+        query: &[(&str, String)],
+        options: RequestOptions,
+        accept: &str,
+    ) -> Result<ApiResponse<String>> {
+        let (response, metadata) = self
+            .open(Method::GET, path, query, None, &options, accept)
+            .await?;
+        let bytes = read_body(
+            response,
+            &options,
+            options.timeout.unwrap_or(self.options.timeout),
+        )
+        .await
+        .map_err(|e| e.with_metadata(metadata.clone()))?;
+        let data = String::from_utf8(bytes.to_vec()).map_err(|_| {
+            Error::local(
+                ErrorKind::Server,
+                "Polymorfa returned invalid UTF-8 text",
+                "invalid_response",
+            )
+            .with_metadata(metadata.clone())
+        })?;
+        Ok(ApiResponse { data, metadata })
+    }
     pub(crate) async fn get<T: DeserializeOwned>(
         &self,
         path: &str,

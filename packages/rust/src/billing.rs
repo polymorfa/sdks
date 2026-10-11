@@ -36,14 +36,14 @@ pub enum BillingCurrency {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BillingBalance {
-    pub balance_cents: i64,
+    pub balance_cents: f64,
     pub preferred_currency: BillingCurrency,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BillingUsage {
     pub active_numbers: u64,
-    pub total_charged_cents: i64,
+    pub total_charged_cents: f64,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -55,8 +55,8 @@ pub enum PaymentStatus {
 #[serde(rename_all = "camelCase")]
 pub struct BillingTransaction {
     pub id: String,
-    pub amount_cents: i64,
-    pub balance_after_cents: i64,
+    pub amount_cents: f64,
+    pub balance_after_cents: f64,
     pub r#type: String,
     pub description: String,
     pub session_id: Option<String>,
@@ -71,7 +71,7 @@ pub struct BillingTransaction {
 pub struct TierPricing {
     pub id: String,
     pub tier: String,
-    pub daily_rate_cents: u64,
+    pub daily_rate_cents: f64,
     pub label: String,
     pub description: String,
     pub features: Vec<String>,

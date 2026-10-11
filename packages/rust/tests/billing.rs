@@ -16,7 +16,7 @@ async fn balances_transactions_and_tier_pricing_native_wire() {
         "GET",
         "/platform/billing",
         None,
-        json!({"data":{"balanceCents":250,"preferredCurrency":"USD"}}),
+        json!({"data":{"balanceCents":250.123456,"preferredCurrency":"USD"}}),
         client.billing().retrieve(RequestOptions::default())
     );
     wire_organization!(
@@ -24,7 +24,7 @@ async fn balances_transactions_and_tier_pricing_native_wire() {
         "GET",
         "/platform/billing/usage",
         None,
-        json!({"data":{"activeNumbers":2,"totalChargedCents":50}}),
+        json!({"data":{"activeNumbers":2,"totalChargedCents":50.123456}}),
         client.billing().usage(RequestOptions::default())
     );
     wire_organization!(
@@ -32,7 +32,7 @@ async fn balances_transactions_and_tier_pricing_native_wire() {
         "GET",
         "/platform/billing/transactions",
         None,
-        json!({"data":[{"id":"transaction","amountCents":-50,"balanceAfterCents":250,"type":"charge","description":"Number","sessionId":"number","projectId":ID,"tier":"standard","currency":"USD","paymentStatus":"paid","createdAt":1000}]}),
+        json!({"data":[{"id":"transaction","amountCents":-50.123456,"balanceAfterCents":250.123456,"type":"charge","description":"Number","sessionId":"number","projectId":ID,"tier":"standard","currency":"USD","paymentStatus":"paid","createdAt":1000}]}),
         client
             .billing()
             .list_transactions(RequestOptions::default())
@@ -42,7 +42,7 @@ async fn balances_transactions_and_tier_pricing_native_wire() {
         "GET",
         "/platform/billing/pricing",
         None,
-        json!({"data":[{"id":"price","tier":"standard","dailyRateCents":50,"label":"Standard","description":"Number","features":["calls"]}]}),
+        json!({"data":[{"id":"price","tier":"standard","dailyRateCents":50.123456,"label":"Standard","description":"Number","features":["calls"]}]}),
         client.billing().list_pricing(RequestOptions::default())
     );
 }

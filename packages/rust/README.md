@@ -91,3 +91,5 @@ The shared behavior tests spawn Node.js using the repository fixture server.
 Other tests exercise actual native HTTP sockets, independent media vectors,
 request serialization and decoded responses. No live provider requests are
 needed or performed by the test suite.
+
+Platform resources include typed BanSafe observations, project Functions and Flow drafts, Voice assets and provider credentials, call diagnostics/statistics/exports, and WhatsApp Analytics. Function and Flow writes are sent once; uncertain provider receipts are reconciled by reads. Project views preserve their identity and check organization-key resource mutations before acting. Voice upload URLs and one-time signing secrets omit `Debug`. Credit quantities named `Cents` retain fractional values.

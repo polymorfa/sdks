@@ -9,7 +9,7 @@ async fn organization_identity_and_credential_metadata_native_wire() {
         "GET",
         "/platform/team",
         None,
-        json!({"data":{"id":"team","externalId":"external","name":"Team","slug":null,"email":"team@example.com","timezone":"UTC","creditBalanceCents":100,"lowBalanceThresholdCents":20,"billingEmail":null,"status":"active","plan":"payg","planStatus":null,"isActive":true,"createdAt":1000,"updatedAt":2000}}),
+        json!({"data":{"id":"team","externalId":"external","name":"Team","slug":null,"email":"team@example.com","timezone":"UTC","creditBalanceCents":100.123456,"lowBalanceThresholdCents":20.123456,"billingEmail":null,"status":"active","plan":"payg","planStatus":null,"isActive":true,"createdAt":1000,"updatedAt":2000}}),
         client.organizations().retrieve(RequestOptions::default())
     );
     wire_organization!(
