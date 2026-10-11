@@ -8,6 +8,15 @@ final class CancellationToken
 {
     private bool $cancelled = false;
     private ?float $deadline = null;
+    /** @var list<self> */
+    private array $parents = [];
+
+    public static function linked(self ...$parents): self
+    {
+        $token = new self();
+        $token->parents = array_values($parents);
+        return $token;
+    }
 
     public static function after(float $seconds): self
     {
@@ -24,7 +33,15 @@ final class CancellationToken
     }
     public function isCancelled(): bool
     {
-        return $this->cancelled || ($this->deadline !== null && microtime(true) >= $this->deadline);
+        if ($this->cancelled || ($this->deadline !== null && microtime(true) >= $this->deadline)) {
+            return true;
+        }
+        foreach ($this->parents as $parent) {
+            if ($parent->isCancelled()) {
+                return true;
+            }
+        }
+        return false;
     }
     public function throwIfCancelled(): void
     {
