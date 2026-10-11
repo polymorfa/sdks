@@ -135,6 +135,10 @@ pub struct UpdateSessionCallSettingsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub inbound_route: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
     pub sip_trunk_id: Option<Option<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sip_claim: Option<bool>,

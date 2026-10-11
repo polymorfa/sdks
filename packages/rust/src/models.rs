@@ -40,7 +40,7 @@ pub struct Session {
     pub test_mode: bool,
     pub status: String,
     pub status_reason: Option<String>,
-    pub configuration: Option<serde_json::Value>,
+    pub configuration: Option<crate::configuration::SessionConfigurationView>,
     pub new_chat_capping: Option<NewChatCapping>,
     pub created_at: String,
     pub updated_at: String,
@@ -334,7 +334,7 @@ pub struct MessageOperationReceipt {
 #[serde(rename_all = "camelCase")]
 pub struct CreateQuickLinkRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub purpose: Option<QuickLinkPurpose>,
+    pub purpose: Option<CreateQuickLinkPurpose>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub session: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -351,6 +351,12 @@ pub struct CreateQuickLinkRequest {
     pub configuration: Option<QuickLinkConfiguration>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub billing_controls: Option<BillingControls>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CreateQuickLinkPurpose {
+    Initial,
+    AddConnection,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -381,13 +387,23 @@ pub struct BillingControls {
 #[serde(rename_all = "camelCase")]
 pub struct QuickLinkConfiguration {
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub observation: Option<crate::configuration::ObservationConfigurationPatch>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hms: Option<crate::configuration::HmsConfiguration>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub testing: Option<crate::configuration::QuickLinkTestingConfiguration>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub connection_preference: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub connection_enforcement: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub methods: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub default_method: Option<String>,
+    #[serde(
+        default,
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub default_method: Option<Option<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prefill_phone: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -431,7 +447,7 @@ pub struct QuickLinkStatus {
     pub connected_at: Option<String>,
     pub phone: Option<String>,
     pub error_code: Option<String>,
-    pub onboarding: Option<serde_json::Value>,
+    pub onboarding: Option<crate::configuration::QuickLinkOnboarding>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

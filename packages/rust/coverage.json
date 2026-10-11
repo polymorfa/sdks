@@ -694,11 +694,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/quicklinks/{id}",
-      "status": "partial",
+      "status": "covered",
       "sdkMethod": "MessagingClient.quick_links.retrieve",
-      "testFile": "tests/resources.rs",
-      "reason": "Public method and native wire test exist; complete merged message/session/configuration shapes are still being expanded.",
-      "milestone": "server-sdk-parity"
+      "testFile": "tests/configuration.rs"
     },
     {
       "family": "messaging",
@@ -1330,11 +1328,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/quicklinks",
-      "status": "partial",
+      "status": "covered",
       "sdkMethod": "MessagingClient.quick_links.create",
-      "testFile": "tests/resources.rs",
-      "reason": "Public method and native wire test exist; complete merged message/session/configuration shapes are still being expanded.",
-      "milestone": "server-sdk-parity"
+      "testFile": "tests/configuration.rs"
     },
     {
       "family": "messaging",
@@ -1980,9 +1976,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhooks.delete",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
@@ -2036,9 +2032,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhooks.delete",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
@@ -2868,25 +2864,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/operations",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.operations.list",
+      "testFile": "tests/operations.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/operations/{operationId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.operations.get",
+      "testFile": "tests/operations.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/operations/{operationId}/transitions",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.operations.list_transitions",
+      "testFile": "tests/operations.rs"
     },
     {
       "family": "platform",
@@ -2972,25 +2968,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/operations",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.operations.list",
+      "testFile": "tests/operations.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/operations/{operationId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.operations.get",
+      "testFile": "tests/operations.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/operations/{operationId}/transitions",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.operations.list_transitions",
+      "testFile": "tests/operations.rs"
     },
     {
       "family": "platform",
@@ -3012,49 +3008,49 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhook-deliveries",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhook_deliveries.list",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhook_deliveries.retrieve",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhook_deliveries.list_attempts",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhook_deliveries.retrieve_attempt",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhooks",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhooks.list",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhooks.retrieve",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
@@ -3100,11 +3096,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{sessionId}",
-      "status": "partial",
+      "status": "covered",
       "sdkMethod": "MessagingClient.sessions.retrieve",
-      "testFile": "tests/resources.rs",
-      "reason": "Public method and native wire test exist; complete merged message/session/configuration shapes are still being expanded.",
-      "milestone": "server-sdk-parity"
+      "testFile": "tests/configuration.rs"
     },
     {
       "family": "platform",
@@ -3254,49 +3248,49 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhook-deliveries",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhook_deliveries.list",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhook_deliveries.retrieve",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}/attempts",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhook_deliveries.list_attempts",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhook_deliveries.retrieve_attempt",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhooks",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhooks.list",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhooks.retrieve",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
@@ -3390,9 +3384,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhooks.update",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
@@ -3430,9 +3424,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhooks.update",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
@@ -4046,9 +4040,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/operations/{operationId}/cancel",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.operations.cancel",
+      "testFile": "tests/operations.rs"
     },
     {
       "family": "platform",
@@ -4102,9 +4096,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/operations/{operationId}/cancel",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.operations.cancel",
+      "testFile": "tests/operations.rs"
     },
     {
       "family": "platform",
@@ -4134,33 +4128,33 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/retry",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhook_deliveries.retry",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhooks.create",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}/secret-rotations",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhooks.rotate_secret",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}/tests",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.webhooks.test",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
@@ -4318,33 +4312,33 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/webhook-deliveries/{deliveryId}/retry",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhook_deliveries.retry",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/webhooks",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhooks.create",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/webhooks/{webhookId}/secret-rotations",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhooks.rotate_secret",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/webhooks/{webhookId}/tests",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.webhooks.test",
+      "testFile": "tests/developer.rs"
     },
     {
       "family": "platform",
@@ -4590,9 +4584,9 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.update",
+      "testFile": "tests/configuration.rs"
     },
     {
       "family": "platform",

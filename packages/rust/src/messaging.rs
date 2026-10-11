@@ -81,6 +81,23 @@ impl MessagingClient {
 }
 pub struct Sessions<'a>(pub(crate) &'a HttpTransport);
 impl Sessions<'_> {
+    pub async fn update(
+        &self,
+        session: &str,
+        body: &crate::configuration::UpdateSessionRequest,
+        options: RequestOptions,
+    ) -> Result<ApiResponse<SuccessEnvelope<Session>>> {
+        self.0.credential.server()?;
+        self.0
+            .request(
+                Method::PUT,
+                &session_path(session),
+                &[],
+                Some(body),
+                options,
+            )
+            .await
+    }
     pub async fn list(
         &self,
         options: RequestOptions,
@@ -335,7 +352,7 @@ impl QuickLinks<'_> {
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<QuickLink>>> {
         self.0.credential.server()?;
-        if matches!(body.purpose, Some(QuickLinkPurpose::AddConnection))
+        if matches!(body.purpose, Some(CreateQuickLinkPurpose::AddConnection))
             && body.session.as_ref().is_none_or(|s| s.is_empty())
         {
             return Err(crate::transport::configuration("session"));
@@ -347,7 +364,11 @@ impl QuickLinks<'_> {
                         || !(0.0..=1_000_000.0).contains(&v)
                         || (v * 1_000_000.0).fract() != 0.0
                 })
-                || matches!(body.purpose, Some(QuickLinkPurpose::AddConnection))
+                || matches!(body.purpose, Some(CreateQuickLinkPurpose::AddConnection))
+                || body
+                    .configuration
+                    .as_ref()
+                    .is_some_and(|configuration| configuration.testing.is_some())
             {
                 return Err(crate::transport::configuration("billingControls"));
             }

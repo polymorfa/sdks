@@ -24,6 +24,24 @@ impl OrganizationClient {
     pub fn projects(&self) -> Projects<'_> {
         Projects(&self.http)
     }
+    pub fn operations(&self) -> crate::operations::Operations<'_> {
+        crate::operations::Operations {
+            http: &self.http,
+            prefix: "/platform".into(),
+        }
+    }
+    pub fn webhooks(&self) -> crate::developer::PlatformWebhooks<'_> {
+        crate::developer::PlatformWebhooks {
+            http: &self.http,
+            prefix: "/platform".into(),
+        }
+    }
+    pub fn webhook_deliveries(&self) -> crate::developer::WebhookDeliveries<'_> {
+        crate::developer::WebhookDeliveries {
+            http: &self.http,
+            prefix: "/platform".into(),
+        }
+    }
     pub fn events(&self) -> Events<'_> {
         Events {
             http: &self.http,
@@ -65,6 +83,24 @@ impl ProjectClient {
     }
     pub fn project_id(&self) -> &str {
         &self.project_id
+    }
+    pub fn operations(&self) -> crate::operations::Operations<'_> {
+        crate::operations::Operations {
+            http: &self.http,
+            prefix: self.prefix(),
+        }
+    }
+    pub fn webhooks(&self) -> crate::developer::PlatformWebhooks<'_> {
+        crate::developer::PlatformWebhooks {
+            http: &self.http,
+            prefix: self.prefix(),
+        }
+    }
+    pub fn webhook_deliveries(&self) -> crate::developer::WebhookDeliveries<'_> {
+        crate::developer::WebhookDeliveries {
+            http: &self.http,
+            prefix: self.prefix(),
+        }
     }
     pub fn project(&self, project_id: impl Into<String>) -> Result<Self> {
         let project_id = project_id.into();
@@ -250,7 +286,7 @@ impl Events<'_> {
                 &format!("{}/events/{}/replays", self.prefix, encode(id)),
                 &[],
                 Some(body),
-                options.idempotent(),
+                options,
             )
             .await?;
         Ok(ApiResponse {

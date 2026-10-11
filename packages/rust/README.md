@@ -57,7 +57,9 @@ Typed coverage is still being expanded. The current implementation includes
 sessions, message basics, QuickLinks, webhooks, contacts, profile, privacy,
 presence, identities, labels, quick replies, core projects, events, media and
 VoIP controls, Official API credential health/pricing, Hybrid Link controls and
-client-token grants/rules. Some message/configuration and event payload models remain
+client-token grants/rules, resolved session configuration and sparse revision
+patches, and Platform webhook/delivery/operation resources in both owner scopes.
+Some message and event payload models remain
 partial; the raw escape hatch is not typed coverage. No feature access or
 release availability changes: the API continues enforcing permission, funding,
 enrollment and feature eligibility.
