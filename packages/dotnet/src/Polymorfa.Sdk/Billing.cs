@@ -3,10 +3,10 @@ using System.Text.RegularExpressions;
 
 namespace Polymorfa.Sdk;
 
-public sealed record BillingBalance(long BalanceCents, string PreferredCurrency);
-public sealed record BillingUsage(long ActiveNumbers, long TotalChargedCents);
-public sealed record BillingTransaction(string Id, long AmountCents, long BalanceAfterCents, string Type, string Description, string? SessionId, string? ProjectId, string? Tier, string? Currency, string PaymentStatus, long CreatedAt);
-public sealed record TierPricing(string Id, string Tier, long DailyRateCents, string Label, string Description, IReadOnlyList<string> Features);
+public sealed record BillingBalance(decimal BalanceCents, string PreferredCurrency);
+public sealed record BillingUsage(long ActiveNumbers, decimal TotalChargedCents);
+public sealed record BillingTransaction(string Id, decimal AmountCents, decimal BalanceAfterCents, string Type, string Description, string? SessionId, string? ProjectId, string? Tier, string? Currency, string PaymentStatus, long CreatedAt);
+public sealed record TierPricing(string Id, string Tier, decimal DailyRateCents, string Label, string Description, IReadOnlyList<string> Features);
 public sealed record BillingPriority(string Id, string Name, int Priority);
 public sealed record ProjectResourcePriority(string Id, string Name, int Priority, string ProjectId);
 public sealed record BillingPriorities(long Revision, IReadOnlyList<BillingPriority> Projects, IReadOnlyList<ProjectResourcePriority> Customers, IReadOnlyList<ProjectResourcePriority> Numbers);

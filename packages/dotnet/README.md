@@ -27,7 +27,13 @@ Typed resources include sessions, all 20 message content kinds, QuickLinks, webh
 
 Known webhooks have typed payloads for all 84 names in the pinned TypeScript contract. Unknown events retain their envelope and payload. Event streams provide asynchronous enumeration and resume from a saved cursor. Media helpers verify SHA-256 and HMAC before releasing decrypted content; API downloads use a separate credential-free storage client. Voice upload sends bytes over that independent storage transport, then completes the asset through the API.
 
-Remaining resource families, server Calls sockets, and framework examples are in progress. The coverage ledger records those gaps. This package does not claim TypeScript parity or customer availability.
+All 439 REST operations covered by the pinned TypeScript server SDK have handwritten C# methods and native HTTP fixtures. Campaign supplements add three more operations; Graph and testing-phone supplements have separate fixtures. This is source-level contract coverage, not a registry release or hosted acceptance result.
+
+`CallsClient` tracks incoming and outgoing calls. `Call` provides answer, join, reject, leave, end, participant controls and typed media frames. Connections authenticate in the first WebSocket frame, refresh expiring credentials, detect missed heartbeats and reconnect within a bounded attempt budget. Media reconnect preserves connection identity and acknowledged preferences. `CallsTokenSource` shares concurrent provider requests while preserving each caller's cancellation. PCM uses the rate announced in `Call.SampleRate`; H.264 frames preserve source and timestamp fields.
+
+`WhatsAppMedia.DecryptToFileAsync` and `DownloadToFileAsync` authenticate encrypted media before decrypting it into a private scratch file and atomically committing the verified result. They bound input size, clean up failures and preserve existing files unless overwrite is requested. `MessagingMedia.DownloadToFileAsync` performs bounded API media downloads over the separate credential-free storage transport.
+
+The [examples](examples/README.md) include an ASP.NET Core authenticated token/webhook server, a reusable Razor component for Blazor and MAUI Blazor Hybrid hosts, and a programmatic Calls agent. Native builds verify the examples; device and browser hosting require application-specific authentication and frontend bundling.
 
 Signal integration is owned by the Signal workstream and is outside this package change.
 

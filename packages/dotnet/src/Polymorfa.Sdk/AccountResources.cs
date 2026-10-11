@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Polymorfa.Sdk;
 
-public sealed record Organization(string Id, string ExternalId, string Name, string? Slug, string Email, string? Timezone, long CreditBalanceCents, long LowBalanceThresholdCents, string? BillingEmail, string? Status, string? Plan, string? PlanStatus, bool IsActive, long CreatedAt, long UpdatedAt);
+public sealed record Organization(string Id, string ExternalId, string Name, string? Slug, string Email, string? Timezone, decimal CreditBalanceCents, decimal LowBalanceThresholdCents, string? BillingEmail, string? Status, string? Plan, string? PlanStatus, bool IsActive, long CreatedAt, long UpdatedAt);
 public sealed record OrganizationMember([property: JsonPropertyName("_id")] string Id, [property: JsonPropertyName("_creationTime")] long CreationTime, string OrgId, string UserId, string Email, string? Name, string Role, string Status, long? InvitedAt, long? JoinedAt);
 public sealed record ApiKey([property: JsonPropertyName("_id")] string RecordId, [property: JsonPropertyName("_creationTime")] long CreationTime, string Id, string KeyId, string Start, string Last4, string OrgId, string Label, long Scopes, string Source, long ExpiresAt, bool IsActive, long? LastUsed = null);
 public sealed record ApiKeyDeactivation(bool Ok, string KeyId);

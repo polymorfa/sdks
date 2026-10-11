@@ -13,6 +13,7 @@ internal sealed class WireFixture : IDisposable
     public string? Authorization { get; init; }
     public IReadOnlyDictionary<string, string>? ExpectedHeaders { get; init; }
     public int FragmentBytes { get; init; }
+    public Func<Task>? BeforeResponse { get; init; }
     public IReadOnlyList<string> AbsentHeaders { get; init; } = [];
     public IReadOnlyList<string> RequiredHeaders { get; init; } = [];
     public WireFixture(X509Certificate2? certificate = null) { this.certificate = certificate; listener.Start(); Url = new($"{(certificate is null ? "http" : "https")}://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}"); }
@@ -50,6 +51,7 @@ internal sealed class WireFixture : IDisposable
                 if (!EqualJson(actual.RootElement, expected.RootElement)) throw new Exception("Native JSON request shape differs.");
             }
         }
+        if (BeforeResponse is not null) await BeforeResponse().WaitAsync(timeout.Token);
         var output = Encoding.UTF8.GetBytes(response);
         var contentType = responseHeaders?.GetValueOrDefault("content-type") ?? "application/json";
         var responseText = $"HTTP/1.1 {status} Fixture\r\ncontent-type: {contentType}\r\ncontent-length: {output.Length}\r\nconnection: close\r\nx-request-id: req_native\r\n";

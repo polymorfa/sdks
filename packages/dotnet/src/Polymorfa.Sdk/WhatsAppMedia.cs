@@ -22,7 +22,7 @@ public sealed record WhatsAppMediaDownload(byte[] Bytes, string MediaKind, strin
 }
 
 /// <summary>Existing Linked Devices media format. Verifies all available integrity checks before releasing plaintext.</summary>
-public static class WhatsAppMedia
+public static partial class WhatsAppMedia
 {
     private sealed record Fields(int Url, int Mime, int Hash, int Length, int Key, int EncryptedHash, int Path, int Name = -1);
     private static Fields FieldMap(string kind) => kind switch
@@ -93,14 +93,22 @@ public static class WhatsAppMedia
     }
     public static async Task<byte[]> DecryptAsync(Stream encrypted, WhatsAppMediaKeys keys, byte[]? fileSha256 = null, byte[]? fileEncSha256 = null, WhatsAppMediaOptions? options = null, long? fileLength = null)
     {
-        options ??= new(); var bytes = await ReadBoundedAsync(encrypted, EncryptedLimit(options.MaxBytes, fileLength), options.CancellationToken).ConfigureAwait(false);
-        return Decrypt(bytes, keys, fileSha256, fileEncSha256, options.MaxBytes, fileLength);
+        options ??= new(); using var deadline = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken); deadline.CancelAfter(options.Timeout);
+        try { var bytes = await ReadBoundedAsync(encrypted, EncryptedLimit(options.MaxBytes, fileLength), deadline.Token).ConfigureAwait(false); return Decrypt(bytes, keys, fileSha256, fileEncSha256, options.MaxBytes, fileLength); }
+        catch (PolymorfaCancelledException) when (!options.CancellationToken.IsCancellationRequested) { throw new PolymorfaTimeoutException("Media response body timed out."); }
     }
     public static bool IsMediaUrl(string value) => Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme == "https" && uri.IsDefaultPort && uri.UserInfo.Length == 0 && (uri.Host.Equals("whatsapp.net", StringComparison.OrdinalIgnoreCase) || uri.Host.EndsWith(".whatsapp.net", StringComparison.OrdinalIgnoreCase));
     public static async Task<WhatsAppMediaDownload> DownloadAsync(string descriptor, string messageType, WhatsAppMediaOptions? options = null) => await DownloadAsync(Decode(descriptor, messageType), options).ConfigureAwait(false);
     public static async Task<WhatsAppMediaDownload> DownloadAsync(WhatsAppMediaDescriptor descriptor, WhatsAppMediaOptions? options = null)
     {
-        options ??= new(); var limit = EncryptedLimit(options.MaxBytes, descriptor.FileLength);
+        options ??= new();
+        var plaintext = await ReadDownloadAsync(descriptor, options, body => DecryptAsync(body, DeriveKeys(descriptor.MediaKey, descriptor.MediaKind), descriptor.FileSha256, descriptor.FileEncSha256, options, descriptor.FileLength)).ConfigureAwait(false);
+        var mime = descriptor.Mimetype ?? descriptor.MediaKind switch { "image" => "image/jpeg", "video" => "video/mp4", "audio" => "audio/ogg", "sticker" => "image/webp", _ => "application/octet-stream" };
+        return new(plaintext, descriptor.MediaKind, mime, descriptor.FileName, descriptor.FileLength);
+    }
+    private static async Task<T> ReadDownloadAsync<T>(WhatsAppMediaDescriptor descriptor, WhatsAppMediaOptions options, Func<Stream, Task<T>> consume)
+    {
+        var limit = EncryptedLimit(options.MaxBytes, descriptor.FileLength);
         if (descriptor.FileSha256 is null) throw Invalid("Descriptor requires a plaintext SHA-256 hash.");
         var urls = CandidateUrls(descriptor);
         using var client = new HttpClient(new SocketsHttpHandler { AllowAutoRedirect = false, UseCookies = false }) { Timeout = Timeout.InfiniteTimeSpan };
@@ -128,9 +136,7 @@ public static class WhatsAppMedia
                     if (!response.IsSuccessStatusCode) { lastFailure = new PolymorfaException($"WhatsApp media returned HTTP {(int)response.StatusCode}.", "media_download_failed"); break; }
                     if (response.Content.Headers.ContentLength > limit) throw TooLarge();
                     await using var body = await response.Content.ReadAsStreamAsync(options.CancellationToken).ConfigureAwait(false);
-                    var plaintext = await DecryptAsync(body, DeriveKeys(descriptor.MediaKey, descriptor.MediaKind), descriptor.FileSha256, descriptor.FileEncSha256, options, descriptor.FileLength).ConfigureAwait(false);
-                    var mime = descriptor.Mimetype ?? descriptor.MediaKind switch { "image" => "image/jpeg", "video" => "video/mp4", "audio" => "audio/ogg", "sticker" => "image/webp", _ => "application/octet-stream" };
-                    return new(plaintext, descriptor.MediaKind, mime, descriptor.FileName, descriptor.FileLength);
+                    return await consume(body).ConfigureAwait(false);
                 }
             }
         }

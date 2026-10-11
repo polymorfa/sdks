@@ -1,0 +1,130 @@
+{
+  "schemaVersion": 1,
+  "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9",
+  "operations": [
+    {
+      "sdkMethod": "MessagingClient.CloudGraph.ListCatalogsAsync",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v23.0/waba1/product_catalogs?limit=10&after=cursor1",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/GraphTests.cs"
+    },
+    {
+      "sdkMethod": "MessagingClient.CloudGraph.ListProductsAsync",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v23.0/waba1/product_catalogs/1/products",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/GraphTests.cs"
+    },
+    {
+      "sdkMethod": "MessagingClient.CloudGraph.MarketingStatusAsync",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v23.0/waba1/marketing_messages/status",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/GraphTests.cs"
+    },
+    {
+      "sdkMethod": "MessagingClient.CloudGraph.RetrieveEncryptionKeyAsync",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v23.0/phone1/whatsapp_business_encryption",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/GraphTests.cs"
+    },
+    {
+      "sdkMethod": "MessagingClient.CloudGraph.RegisterEncryptionKeyAsync",
+      "method": "POST",
+      "fixturePath": "/graph/whatsapp/v23.0/phone1/whatsapp_business_encryption",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/GraphTests.cs"
+    },
+    {
+      "sdkMethod": "MessagingClient.Testing.GetPhoneAsync",
+      "method": "GET",
+      "fixturePath": "/messaging/testing/p1/numbers/support/phone",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "sdkMethod": "MessagingClient.Testing.SendPhoneMessageAsync",
+      "method": "POST",
+      "fixturePath": "/messaging/testing/p1/numbers/support/phone/messages",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "sdkMethod": "MessagingClient.Testing.UnlinkPhoneDeviceAsync",
+      "method": "POST",
+      "fixturePath": "/messaging/testing/p1/numbers/support/phone/devices/1/unlink",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "sdkMethod": "MessagingClient.Campaigns.UpdateAsync",
+      "method": "PATCH",
+      "fixturePath": "/messaging/projects/project/campaigns/campaign",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "sdkMethod": "MessagingClient.Campaigns.RescheduleAsync",
+      "method": "POST",
+      "fixturePath": "/messaging/projects/project/campaigns/campaign/reschedule",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    },
+    {
+      "sdkMethod": "OrganizationClient.Campaigns.RescheduleAsync",
+      "method": "POST",
+      "fixturePath": "/platform/campaigns/campaign/reschedule",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
+    }
+  ],
+  "helpers": [
+    {
+      "sdkMethod": "CallsClient and Call lifecycle, claims and media reconnect",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsClientTests.cs"
+    },
+    {
+      "sdkMethod": "CallsTokenSource cache, single flight, refresh and independent cancellation",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsSocketTests.cs"
+    },
+    {
+      "sdkMethod": "CallsSocket native WebSocket, PCM, H264 and acknowledged controls",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsSocketTests.cs"
+    },
+    {
+      "sdkMethod": "WhatsApp descriptor and five independent crypto vectors",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MediaTests.cs"
+    },
+    {
+      "sdkMethod": "WhatsApp authenticated streaming file verification and atomic commit",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MediaFileTests.cs"
+    },
+    {
+      "sdkMethod": "MessagingMedia download streaming and credential-free storage redirects",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MediaApiTests.cs"
+    },
+    {
+      "sdkMethod": "Webhooks all84 typed names, unknown preservation and Flow endpoint signatures",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/WebhookTests.cs"
+    },
+    {
+      "sdkMethod": "Developer event stream reconnect, acknowledgement and indexed event pagination",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
+    },
+    {
+      "sdkMethod": "Voice upload, scope confinement and bounded ready wait",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
+    }
+  ]
+}

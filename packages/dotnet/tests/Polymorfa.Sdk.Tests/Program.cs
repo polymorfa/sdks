@@ -100,6 +100,7 @@ try
     WebhookTests.Run();
     await SystemTests.RunAsync();
     await MediaTests.RunAsync(root);
+    await MediaFileTests.RunAsync(root);
     await ResourceTests.RunAsync();
     await AccountTests.RunAsync();
     await UsageTests.RunAsync();
@@ -114,6 +115,9 @@ try
     await CampaignTests.RunAsync();
     await ProjectPairingTests.RunAsync();
     await CallAnalyticsTests.RunAsync();
+    await GraphTests.RunAsync();
+    await CallsSocketTests.RunAsync();
+    await CallsClientTests.RunAsync();
     await MessagingUtilityTests.RunAsync();
     await MediaApiTests.RunAsync();
     await BusinessTests.RunAsync();

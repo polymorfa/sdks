@@ -10,6 +10,19 @@ public abstract record WebhookEvent(WebhookEnvelope Envelope);
 public sealed record UnknownWebhookEvent(WebhookEnvelope Envelope) : WebhookEvent(Envelope);
 public static partial class Webhooks
 {
+    public const string FlowForwardSignatureHeader = "x-polymorfa-flow-signature";
+    /// <summary>Verifies the exact raw decrypted Flow request using the endpoint signing secret.</summary>
+    public static bool VerifyFlowForwardSignature(ReadOnlySpan<byte> rawBody, string? signature, string secret, double toleranceSeconds = 300, DateTimeOffset? now = null)
+    {
+        if (signature is null || secret.Length == 0 || !double.IsFinite(toleranceSeconds) || toleranceSeconds < 0) return false;
+        var match = System.Text.RegularExpressions.Regex.Match(signature.Trim(), @"\At=([0-9]{1,12}),v1=([a-fA-F0-9]{64})\z");
+        if (!match.Success) return false;
+        var timestamp = long.Parse(match.Groups[1].Value, System.Globalization.CultureInfo.InvariantCulture);
+        if (Math.Abs((now ?? DateTimeOffset.UtcNow).ToUnixTimeMilliseconds() / 1000.0 - timestamp) > toleranceSeconds) return false;
+        var prefix = Encoding.UTF8.GetBytes(match.Groups[1].Value + ".");
+        var signed = new byte[prefix.Length + rawBody.Length]; prefix.CopyTo(signed, 0); rawBody.CopyTo(signed.AsSpan(prefix.Length));
+        return Verify(signed, match.Groups[2].Value, Encoding.UTF8.GetBytes(secret));
+    }
     public static bool VerifySignature(ReadOnlySpan<byte> rawBody, string signature, string secret)
     {
         if (secret.Length == 0) return false;

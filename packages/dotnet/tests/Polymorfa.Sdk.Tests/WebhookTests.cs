@@ -48,6 +48,14 @@ internal static class WebhookTests
         var signature = Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes("secret"), invalid));
         try { Webhooks.ConstructEvent(invalid, signature, "secret"); throw new Exception("invalid JSON accepted"); } catch (PolymorfaValidationException e) { Check(e.Code == "invalid_webhook_json", "JSON failure"); }
         Check(Webhooks.KnownEventTypes.Count == 84, "known registry count");
+        var flow = Encoding.UTF8.GetBytes("{\"action\":\"INIT\",\"data\":{\"selected\":false}}");
+        var time = DateTimeOffset.FromUnixTimeSeconds(1726170122);
+        var signedFlow = Encoding.UTF8.GetBytes("1726170122.").Concat(flow).ToArray();
+        var flowSignature = "t=1726170122,v1=" + Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes("endpoint-secret"), signedFlow));
+        Check(Webhooks.VerifyFlowForwardSignature(flow, flowSignature, "endpoint-secret", now: time), "Flow endpoint signature");
+        Check(!Webhooks.VerifyFlowForwardSignature(flow, flowSignature, "endpoint-secret", now: time.AddSeconds(301)), "expired Flow endpoint signature");
+        Check(!Webhooks.VerifyFlowForwardSignature(flow.Concat(new byte[] { 32 }).ToArray(), flowSignature, "endpoint-secret", now: time), "modified Flow body");
+        Check(!Webhooks.VerifyFlowForwardSignature(flow, flowSignature + ",v1=" + new string('0', 64), "endpoint-secret", now: time), "duplicate Flow signature");
         Console.WriteLine("PASS typed webhook families, variants, precision, forward compatibility and signature-first validation");
     }
     private static T Parse<T>(string type, string payload) => Signed(type, payload) is TypedWebhookEvent<T> typed ? typed.Payload : throw new Exception($"Wrong webhook payload for {type}");

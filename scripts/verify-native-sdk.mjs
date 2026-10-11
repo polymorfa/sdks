@@ -73,6 +73,18 @@ if (language === "go") {
     "--configuration",
     "Release",
   ]);
+  for (const example of [
+    "aspnet-core/Polymorfa.Example.AspNet.csproj",
+    "calls-agent/Polymorfa.Example.Calls.csproj",
+    "blazor-components/Polymorfa.Example.Components.csproj",
+  ])
+    run("dotnet", [
+      "build",
+      `examples/${example}`,
+      "--configuration",
+      "Release",
+      "--warnaserror",
+    ]);
   run("dotnet", [
     "pack",
     project,

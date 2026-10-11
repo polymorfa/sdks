@@ -49,6 +49,19 @@ public sealed class VoiceAudio : Resource
         try { while (true) { if (Stopwatch.GetElapsedTime(started) >= timeout) throw new PolymorfaTimeoutException("The audio asset was not processed before the deadline."); var response = await RetrieveAsync(id, options with { CancellationToken = budget.Token }).ConfigureAwait(false); if (Stopwatch.GetElapsedTime(started) >= timeout) throw new PolymorfaTimeoutException("The audio asset was not processed before the deadline."); if (response.Data.Status is "ready" or "failed") return response; await Task.Delay(interval, budget.Token).ConfigureAwait(false); } }
         catch (Exception e) when (e is OperationCanceledException or PolymorfaCancelledException) { if (caller.IsCancellationRequested) throw new PolymorfaCancelledException(); throw new PolymorfaTimeoutException("The audio asset was not processed before the deadline."); }
     }
+    public async Task<ApiResponse<VoiceAudioAsset>> UploadAsync(CreateVoiceAudioUploadInput input, Stream body, string? projectId = null, RequestOptions? options = null)
+    {
+        options ??= new();
+        if (input.SizeBytes is < 1 or > 16777216) throw new PolymorfaValidationException("The upload size is out of range.", "invalid_parameter");
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken); deadline.CancelAfter(options.Timeout ?? Http.Options.Timeout);
+        using var bytes = new MemoryStream(); var buffer = new byte[65536];
+        try
+        {
+            while (true) { var count = await body.ReadAsync(buffer, deadline.Token).ConfigureAwait(false); if (count == 0) break; if (bytes.Length + count > input.SizeBytes) throw new PolymorfaValidationException("The upload size does not match the audio bytes.", "invalid_parameter"); await bytes.WriteAsync(buffer.AsMemory(0, count), deadline.Token).ConfigureAwait(false); }
+        }
+        catch (OperationCanceledException) { if (options.CancellationToken.IsCancellationRequested) throw new PolymorfaCancelledException(); throw new PolymorfaTimeoutException("Audio input timed out."); }
+        return await UploadAsync(input, bytes.ToArray(), projectId, options).ConfigureAwait(false);
+    }
     public async Task<ApiResponse<VoiceAudioAsset>> UploadAsync(CreateVoiceAudioUploadInput input, ReadOnlyMemory<byte> body, string? projectId = null, RequestOptions? options = null)
     {
         options ??= new(); if (input.SizeBytes != body.Length || body.Length is < 1 or > 16777216) throw new PolymorfaValidationException("The upload size does not match the audio bytes.", "invalid_parameter");
