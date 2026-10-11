@@ -29,15 +29,15 @@ internal static class MessageContentTests
             (new TemplateContent(new("welcome","en_US",[JsonSerializer.SerializeToElement(new { type="body", parameters=new[]{new{type="text",text="Zoë"}} })])), """{"template":{"name":"welcome","language":"en_US","components":[{"type":"body","parameters":[{"type":"text","text":"Zoë"}]}]}}"""),
             (new UnknownMessageContent(JsonSerializer.SerializeToElement(new{ future = new{enabled=false} })), """{"future":{"enabled":false}}""")
         };
-        foreach (var (content,json) in cases)
+        foreach (var (content, json) in cases)
         {
-            using var fixture = new WireFixture { RequiredHeaders=["idempotency-key"] };
-            var request = "{\"conversation\":{\"bsuid\":\"US.123\"},\"content\":"+json+",\"transport\":\"official_api\",\"isForwarded\":false,\"mentions\":[],\"quotedMessage\":{\"id\":\"quoted1\"}}";
-            var response = "{\"success\":true,\"data\":{\"id\":\"m1\",\"whatsapp_ids\":{\"official_api\":\"wa1\"},\"conversation\":{\"bsuid\":\"US.123\"},\"timestamp\":\"2026-09-22\",\"status\":\"pending\",\"type\":\"interactive\",\"content\":"+json+",\"operationId\":\"op1\"}}";
-            var serving = fixture.ServeAsync("POST","/messaging/support/messages/send",request,response);
-            using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_"+new string('a',72)),new(){BaseUrl=fixture.Url});
-            var actual=(await client.Messages.SendAsync("support",new(new(Bsuid:"US.123"),content,"official_api",false,[],new("quoted1")))).Data.Data;
-            ResourceTests.Equal(actual.Content!.GetType(), content.GetType()); ResourceTests.Equal(actual.OperationId,"op1"); await serving;
+            using var fixture = new WireFixture { RequiredHeaders = ["idempotency-key"] };
+            var request = "{\"conversation\":{\"bsuid\":\"US.123\"},\"content\":" + json + ",\"transport\":\"official_api\",\"isForwarded\":false,\"mentions\":[],\"quotedMessage\":{\"id\":\"quoted1\"}}";
+            var response = "{\"success\":true,\"data\":{\"id\":\"m1\",\"whatsapp_ids\":{\"official_api\":\"wa1\"},\"conversation\":{\"bsuid\":\"US.123\"},\"timestamp\":\"2026-09-22\",\"status\":\"pending\",\"type\":\"interactive\",\"content\":" + json + ",\"operationId\":\"op1\"}}";
+            var serving = fixture.ServeAsync("POST", "/messaging/support/messages/send", request, response);
+            using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = fixture.Url });
+            var actual = (await client.Messages.SendAsync("support", new(new(Bsuid: "US.123"), content, "official_api", false, [], new("quoted1")))).Data.Data;
+            ResourceTests.Equal(actual.Content!.GetType(), content.GetType()); ResourceTests.Equal(actual.OperationId, "op1"); await serving;
         }
         Console.WriteLine("PASS all 20 message content kinds, both Flow actions, typed response dispatch and unknown future content over native HTTP");
     }

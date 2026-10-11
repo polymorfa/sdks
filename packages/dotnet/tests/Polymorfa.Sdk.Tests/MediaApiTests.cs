@@ -45,11 +45,13 @@ internal static class MediaApiTests
     private static async Task InvalidRedirect()
     {
         using var fixture = new WireFixture(); var serving = fixture.ServeAsync("GET", "/messaging/media/media1", null, "", 302, new Dictionary<string, string> { ["location"] = "https://user:password@storage.example/file" }); using var client = Client(fixture);
-        try { await client.Media.DownloadAsync("media1"); throw new Exception("Unsafe storage redirect accepted"); } catch (PolymorfaException e) { ResourceTests.Equal(e.Code, "invalid_redirect"); } await serving;
+        try { await client.Media.DownloadAsync("media1"); throw new Exception("Unsafe storage redirect accepted"); } catch (PolymorfaException e) { ResourceTests.Equal(e.Code, "invalid_redirect"); }
+        await serving;
     }
     private static async Task CancelledRead()
     {
         using var fixture = new WireFixture(); using var cancelled = new CancellationTokenSource(); var serving = fixture.ServeAsync("GET", "/messaging/media/media1", null, "binary"); using var client = Client(fixture); await using var download = await client.Media.DownloadStreamAsync("media1", new() { CancellationToken = cancelled.Token }); cancelled.Cancel();
-        try { await download.ReadAllAsync(); throw new Exception("Cancelled media read succeeded"); } catch (PolymorfaCancelledException) { } await serving;
+        try { await download.ReadAllAsync(); throw new Exception("Cancelled media read succeeded"); } catch (PolymorfaCancelledException) { }
+        await serving;
     }
 }

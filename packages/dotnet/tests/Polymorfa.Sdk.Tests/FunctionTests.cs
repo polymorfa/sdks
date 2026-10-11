@@ -43,6 +43,7 @@ internal static class FunctionTests
     private static async Task OneAttempt()
     {
         using var fixture = new WireFixture(); var serving = fixture.ServeAsync("POST", "/platform/functions", "{\"name\":\"Handler\",\"projectId\":\"" + Id + "\"}", "{\"error\":{\"code\":\"provider_unavailable\",\"message\":\"Unavailable\"}}", 503); using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = fixture.Url });
-        try { await client.Project(Id).Functions.CreateAsync(new("Handler"), new() { IdempotencyKey = "create", MaxNetworkRetries = 3 }); throw new Exception("Expected provider rejection"); } catch (PolymorfaServerException e) { ResourceTests.Equal(e.Metadata!.Attempts, 1); } await serving;
+        try { await client.Project(Id).Functions.CreateAsync(new("Handler"), new() { IdempotencyKey = "create", MaxNetworkRetries = 3 }); throw new Exception("Expected provider rejection"); } catch (PolymorfaServerException e) { ResourceTests.Equal(e.Metadata!.Attempts, 1); }
+        await serving;
     }
 }

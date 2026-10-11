@@ -6,6 +6,11 @@ namespace Polymorfa.Sdk;
 public sealed class OrganizationClient : IDisposable
 {
     private readonly HttpTransport http;
+    public PlatformCampaigns Campaigns { get; }
+    public Audiences Audiences { get; }
+    public CallRecords Calls { get; }
+    public Analytics Analytics { get; }
+    public QuickLinkSettingsResource QuickLinkSettings { get; }
     public Projects Projects { get; }
     public PlatformSessions Sessions { get; }
     public ConfigurationResource Configuration { get; }
@@ -35,7 +40,7 @@ public sealed class OrganizationClient : IDisposable
     {
         credential.RequireServer();
         if (credential.Kind != CredentialKind.OrganizationApiKey) throw new PolymorfaConfigurationException("OrganizationClient requires an organization API key.");
-        http = new(credential, options ?? new()); Projects = new(http); Sessions = new(http); Configuration = new(http, null); SipTrunks = new(http, null); Operations = new(http, null); CallPolicy = new(http); CallOptOuts = new(http); CallRetention = new(http); Media = new(http); Billing = new(http); Customers = new(http); Organizations = new(http); Members = new(http); ApiKeys = new(http); ProjectTokens = new(http); BanSafe = new(http); OptOuts = new(http); Voice = new(http, null); Usage = new(http, null); AuditLogs = new(http); SecurityIncidents = new(http); SessionBans = new(http); Events = new(http, "/platform", null); Webhooks = new(http, null); WebhookDeliveries = new(http, null);
+        http = new(credential, options ?? new()); Audiences = new(http); Campaigns = new(http); QuickLinkSettings = new(http, null); Calls = new(http, null); Analytics = new(http, null); Projects = new(http); Sessions = new(http); Configuration = new(http, null); SipTrunks = new(http, null); Operations = new(http, null); CallPolicy = new(http); CallOptOuts = new(http); CallRetention = new(http); Media = new(http); Billing = new(http); Customers = new(http); Organizations = new(http); Members = new(http); ApiKeys = new(http); ProjectTokens = new(http); BanSafe = new(http); OptOuts = new(http); Voice = new(http, null); Usage = new(http, null); AuditLogs = new(http); SecurityIncidents = new(http); SessionBans = new(http); Events = new(http, "/platform", null); Webhooks = new(http, null); WebhookDeliveries = new(http, null);
     }
     public ProjectClient Project(string projectId) => new(http, projectId);
     public Task<ApiResponse<T>> RawAsync<T>(HttpMethod method, string path, JsonElement? body = null, RequestOptions? options = null, IReadOnlyList<KeyValuePair<string, string>>? query = null) => http.RequestAsync<T>(method, path, body, options, query);
@@ -46,6 +51,9 @@ public sealed class ProjectClient : IDisposable
     private readonly HttpTransport http;
     private readonly bool ownsTransport;
     public string ProjectId { get; }
+    public CallRecords Calls { get; }
+    public Analytics Analytics { get; }
+    public QuickLinkSettingsResource QuickLinkSettings { get; }
     public ProjectSettings Settings { get; }
     public Functions Functions { get; }
     public Flows Flows { get; }
@@ -64,7 +72,7 @@ public sealed class ProjectClient : IDisposable
     internal ProjectClient(HttpTransport http, string projectId)
     {
         if (string.IsNullOrWhiteSpace(projectId)) throw new PolymorfaConfigurationException("A non-empty projectId is required.");
-        this.http = http; ProjectId = projectId; Settings = new(http, projectId); Functions = new(http, projectId); Flows = new(http, projectId); Voice = new(http, projectId); Usage = new(http, projectId); Configuration = new(http, projectId); SipTrunks = new(http, projectId); Operations = new(http, projectId); CallRetention = new(http); Events = new(http, Prefix, ProjectId); Webhooks = new(http, ProjectId); WebhookDeliveries = new(http, ProjectId);
+        this.http = http; ProjectId = projectId; QuickLinkSettings = new(http, projectId); Calls = new(http, projectId); Analytics = new(http, projectId); Settings = new(http, projectId); Functions = new(http, projectId); Flows = new(http, projectId); Voice = new(http, projectId); Usage = new(http, projectId); Configuration = new(http, projectId); SipTrunks = new(http, projectId); Operations = new(http, projectId); CallRetention = new(http); Events = new(http, Prefix, ProjectId); Webhooks = new(http, ProjectId); WebhookDeliveries = new(http, ProjectId);
     }
     public ProjectClient Project(string projectId)
     {

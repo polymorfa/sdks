@@ -34,7 +34,8 @@ internal static class FlowTests
         await Invalid(() => client.Project("p1").Flows.RetrieveAsync("bad")); await Invalid(() => client.Project("p1").Flows.EndpointReceiptsAsync(Id, new(Limit: 0))); await Invalid(() => client.Project("p1").Flows.SetEndpointAsync(Id, new DirectFlowEndpointRequest("s1", "https://user:pass@example.com"))); await Invalid(() => client.Project("p1").Flows.SetEndpointAsync(Id, new FunctionFlowEndpointRequest("s1", "")));
         using var fixture = new WireFixture(); var serve = fixture.ServeAsync("POST", "/platform/flows/" + Id + "/publish", """{"sessionId":"s1","projectId":"p1"}""", """{"error":{"code":"unavailable","message":"Try later"}}""", 503);
         using var retries = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = fixture.Url, Timeout = TimeSpan.FromMilliseconds(300) });
-        try { await retries.Project("p1").Flows.PublishAsync(Id, new("s1"), new() { IdempotencyKey = "key", MaxNetworkRetries = 3 }); throw new Exception("Retry accepted"); } catch (PolymorfaServerException e) { ResourceTests.Equal(e.Metadata!.Attempts, 1); } await serve;
+        try { await retries.Project("p1").Flows.PublishAsync(Id, new("s1"), new() { IdempotencyKey = "key", MaxNetworkRetries = 3 }); throw new Exception("Retry accepted"); } catch (PolymorfaServerException e) { ResourceTests.Equal(e.Metadata!.Attempts, 1); }
+        await serve;
         Console.WriteLine("PASS all 17 typed Flows operations, endpoint modes, immutable identity and one-attempt mutations");
     }
     private static string Envelope(string data) => "{\"data\":" + data + "}";

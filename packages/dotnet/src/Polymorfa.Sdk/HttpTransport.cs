@@ -59,6 +59,20 @@ internal sealed class HttpTransport : IDisposable
             }
         }
     }
+    internal async Task<ApiResponse<string>> RequestTextAsync(string path, string accept, RequestOptions? requestOptions, IReadOnlyList<KeyValuePair<string, string>>? query = null)
+    {
+        var options = requestOptions ?? new(); var previousAttempts = 0; var maximum = options.MaxNetworkRetries ?? Options.MaxNetworkRetries;
+        for (; ; )
+        {
+            using var opened = await OpenAsync(HttpMethod.Get, path, null, options with { MaxNetworkRetries = maximum - previousAttempts }, accept, query).ConfigureAwait(false);
+            var metadata = opened.Metadata with { Attempts = opened.Metadata.Attempts + previousAttempts };
+            using var linked = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken); linked.CancelAfter(options.Timeout ?? Options.Timeout);
+            try { return new(await opened.Response.Content.ReadAsStringAsync(linked.Token).ConfigureAwait(false), metadata); }
+            catch (OperationCanceledException) { if (options.CancellationToken.IsCancellationRequested) throw new PolymorfaCancelledException(metadata); if (metadata.OperationId is not null || metadata.Attempts > maximum) throw new PolymorfaTimeoutException("Response body timed out.", metadata); }
+            catch (Exception error) when (error is IOException or HttpRequestException) { if (metadata.OperationId is not null || metadata.Attempts > maximum) throw new PolymorfaConnectionException("Response body interrupted.", metadata); }
+            previousAttempts = metadata.Attempts; await WaitAsync(Delay(null, previousAttempts), options.CancellationToken).ConfigureAwait(false);
+        }
+    }
     internal async Task<OpenedResponse> OpenAsync(HttpMethod method, string path, byte[]? body, RequestOptions options, string accept, IReadOnlyList<KeyValuePair<string, string>>? query = null, bool allowMediaRedirect = false)
     {
         ValidatePath(path);

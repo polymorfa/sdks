@@ -44,8 +44,11 @@ internal sealed class WireFixture : IDisposable
         else
         {
             if (body.StartsWith("bytes:", StringComparison.Ordinal)) { if (!input.SequenceEqual(Convert.FromBase64String(body[6..]))) throw new Exception("Native binary request differs."); }
-            else { using var actual = JsonDocument.Parse(input); using var expected = JsonDocument.Parse(body);
-            if (!EqualJson(actual.RootElement, expected.RootElement)) throw new Exception("Native JSON request shape differs."); }
+            else
+            {
+                using var actual = JsonDocument.Parse(input); using var expected = JsonDocument.Parse(body);
+                if (!EqualJson(actual.RootElement, expected.RootElement)) throw new Exception("Native JSON request shape differs.");
+            }
         }
         var output = Encoding.UTF8.GetBytes(response);
         var contentType = responseHeaders?.GetValueOrDefault("content-type") ?? "application/json";

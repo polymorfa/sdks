@@ -36,7 +36,9 @@ internal static class VoiceTests
             var serving = fixture.ServeAsync("GET", team ? "/platform/voice/provider-credentials/c1" : "/platform/voice/audio/a1", null, Envelope(team ? CredentialJson : Asset.Replace("\"p1\"", "\"other\"")));
             using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = fixture.Url }); var bound = client.Project("p1");
             try { if (team) await bound.Voice.ProviderCredentials.DeleteAsync("c1", new() { IdempotencyKey = "mutation-key" }); else await bound.Voice.Audio.DeleteAsync("a1", new() { IdempotencyKey = "mutation-key" }); throw new Exception("Project escaped confinement"); }
-            catch (PolymorfaAuthorizationException) when (team) { } catch (PolymorfaNotFoundException) when (!team) { } await serving;
+            catch (PolymorfaAuthorizationException) when (team) { }
+            catch (PolymorfaNotFoundException) when (!team) { }
+            await serving;
         }
     }
     private static async Task WaitTerminal()

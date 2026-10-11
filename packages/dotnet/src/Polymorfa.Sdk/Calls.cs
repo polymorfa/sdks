@@ -6,6 +6,8 @@ public sealed record PlaceCallRequest(string? Session = null, string? To = null,
 public sealed record PlacedCall(string CallId, string Session, bool Video);
 public sealed record AcceptCallRequest(bool? Exclusive = null, bool? Video = null, string? Participant = null);
 public sealed record AcceptedCall(bool Answered, string AnsweredBy, bool Exclusive);
+public sealed record RejectIncomingCallRequest(string From);
+public sealed record RejectIncomingCallResponse(bool Success, string? Message, System.Text.Json.JsonElement? Data);
 public sealed record RejectCallRequest(string? Participant = null);
 public sealed record LeaveCallRequest(string ConnectionId, string? Participant = null);
 public sealed record AddCallParticipantRequest(string To);
@@ -64,6 +66,7 @@ public sealed class Calls
         Participant(body.Participant); return http.RequestAsync<SuccessEnvelope<PlacedCall>>(HttpMethod.Post, "/messaging/voip/calls", body, options);
     }
     public Task<ApiResponse<SuccessEnvelope<AcceptedCall>>> AcceptAsync(string callId, AcceptCallRequest? body = null, RequestOptions? options = null) { body ??= new(); Participant(body.Participant); return http.RequestAsync<SuccessEnvelope<AcceptedCall>>(HttpMethod.Post, Path(callId) + "/accept", body, options); }
+    public Task<ApiResponse<RejectIncomingCallResponse>> RejectIncomingAsync(string session, string callId, RejectIncomingCallRequest body, RequestOptions? options = null) => http.RequestAsync<RejectIncomingCallResponse>(HttpMethod.Post, $"/messaging/{Uri.EscapeDataString(session)}/calls/{Uri.EscapeDataString(callId)}/reject", body, options);
     public Task<ApiResponse<SuccessResponse>> RejectAsync(string callId, RejectCallRequest? body = null, RequestOptions? options = null) { Participant(body?.Participant); return http.RequestAsync<SuccessResponse>(HttpMethod.Post, Path(callId) + "/reject", body?.Participant is null ? null : body, options); }
     public Task<ApiResponse<SuccessResponse>> LeaveAsync(string callId, LeaveCallRequest body, RequestOptions? options = null) { Connection(body.ConnectionId); Participant(body.Participant); return http.RequestAsync<SuccessResponse>(HttpMethod.Post, Path(callId) + "/leave", body, options); }
     public Task<ApiResponse<SuccessResponse>> EndAsync(string callId, RequestOptions? options = null) => http.RequestAsync<SuccessResponse>(HttpMethod.Delete, Path(callId), null, options);
