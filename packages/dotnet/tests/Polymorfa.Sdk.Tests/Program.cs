@@ -103,6 +103,7 @@ try
     await SystemTests.RunAsync();
     await MediaTests.RunAsync(root);
     await MediaFileTests.RunAsync(root);
+    await MediaStreamTests.RunAsync(root);
     await ResourceTests.RunAsync();
     await AccountTests.RunAsync();
     await UsageTests.RunAsync();

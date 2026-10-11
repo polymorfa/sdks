@@ -14,6 +14,9 @@ public sealed record WhatsAppMediaOptions
     public long MaxBytes { get; init; } = 256 * 1024 * 1024;
     public TimeSpan Timeout { get; init; } = TimeSpan.FromSeconds(30);
     public CancellationToken CancellationToken { get; init; }
+    public MediaVerifyMode Verify { get; init; } = MediaVerifyMode.BeforeRelease;
+    /// <summary>Configure DNS, proxy or custom trust roots. Credential and redirect policies remain SDK-owned.</summary>
+    public Action<SocketsHttpHandler>? ConfigureHttpHandler { get; init; }
 }
 public sealed record WhatsAppMediaDownload(byte[] Bytes, string MediaKind, string Mimetype, string? FileName, long? FileLength)
 {
@@ -111,7 +114,7 @@ public static partial class WhatsAppMedia
         var limit = EncryptedLimit(options.MaxBytes, descriptor.FileLength);
         if (descriptor.FileSha256 is null) throw Invalid("Descriptor requires a plaintext SHA-256 hash.");
         var urls = CandidateUrls(descriptor);
-        using var client = new HttpClient(new SocketsHttpHandler { AllowAutoRedirect = false, UseCookies = false }) { Timeout = Timeout.InfiniteTimeSpan };
+        using var client = CreateCdnClient(options);
         PolymorfaException? lastFailure = null;
         foreach (var candidate in urls)
         {
@@ -156,7 +159,7 @@ public static partial class WhatsAppMedia
         }
         if (urls.Count == 0) throw Invalid("Descriptor requires url or directPath."); return urls;
     }
-    private static long EncryptedLimit(long maxBytes, long? length)
+    internal static long EncryptedLimit(long maxBytes, long? length)
     {
         if (maxBytes <= 0 || maxBytes > 9_007_199_254_740_991) throw new PolymorfaConfigurationException("maxBytes must be a positive safe integer.");
         if (length < 0) throw Invalid("Invalid media length."); if (length > maxBytes) throw TooLarge();
@@ -172,11 +175,11 @@ public static partial class WhatsAppMedia
         catch (OperationCanceledException) { throw new PolymorfaCancelledException(); }
         catch (IOException) { throw new PolymorfaConnectionException("Cannot read the media body."); }
     }
-    private static byte[] Hash(byte[] value, string field) { if (value.Length != 32) throw Invalid($"{field} must contain 32 bytes."); return value.ToArray(); }
+    internal static byte[] Hash(byte[] value, string field) { if (value.Length != 32) throw Invalid($"{field} must contain 32 bytes."); return value.ToArray(); }
     private static string Text(byte[] value, int max) { if (value.Length > max) throw Invalid("Media descriptor text exceeds its limit."); try { return new UTF8Encoding(false, true).GetString(value); } catch (DecoderFallbackException) { throw Invalid("Invalid descriptor UTF-8."); } }
-    private static PolymorfaMediaIntegrityException Invalid(string message) => Integrity(message, "media_invalid_descriptor");
-    private static PolymorfaMediaIntegrityException TooLarge() => Integrity("Media exceeds its permitted size.", "media_too_large");
-    private static PolymorfaMediaIntegrityException Integrity(string message, string code) => new(message, code);
+    internal static PolymorfaMediaIntegrityException Invalid(string message) => Integrity(message, "media_invalid_descriptor");
+    internal static PolymorfaMediaIntegrityException TooLarge() => Integrity("Media exceeds its permitted size.", "media_too_large");
+    internal static PolymorfaMediaIntegrityException Integrity(string message, string code) => new(message, code);
     private sealed class ProtoReader(byte[] bytes)
     {
         private int offset;

@@ -157,6 +157,12 @@
       "sdkMethod": "MessagingMedia.SignedUrlExpiry pure signed URL expiry parsing",
       "status": "covered",
       "testFile": "tests/Polymorfa.Sdk.Tests/MediaApiTests.cs"
+    },
+    {
+      "sdkMethod": "WhatsAppMediaDecryptor / WhatsAppMedia.DecryptStreamAsync / DownloadStreamAsync / MessagingMedia.DownloadFromWhatsAppStreamAsync / WhatsAppMediaStreamDownload.WriteToFileAsync",
+      "status": "covered",
+      "testFile": "tests/Polymorfa.Sdk.Tests/MediaStreamTests.cs",
+      "behavior": "Five independent vectors, nine fragment sizes and both verification modes; corrupt MAC/hashes/padding, limits, pending cancellation/timeout/disposal; native custom-root TLS, owned CDN body cleanup, signed redirect confinement and verified file promotion."
     }
   ]
 }
