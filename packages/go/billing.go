@@ -18,17 +18,17 @@ const (
 )
 
 type BillingBalance struct {
-	BalanceCents      int64           `json:"balanceCents"`
+	BalanceCents      float64         `json:"balanceCents"`
 	PreferredCurrency BillingCurrency `json:"preferredCurrency"`
 }
 type BillingUsage struct {
-	ActiveNumbers     int64 `json:"activeNumbers"`
-	TotalChargedCents int64 `json:"totalChargedCents"`
+	ActiveNumbers     int64   `json:"activeNumbers"`
+	TotalChargedCents float64 `json:"totalChargedCents"`
 }
 type BillingTransaction struct {
 	ID                string  `json:"id"`
-	AmountCents       int64   `json:"amountCents"`
-	BalanceAfterCents int64   `json:"balanceAfterCents"`
+	AmountCents       float64 `json:"amountCents"`
+	BalanceAfterCents float64 `json:"balanceAfterCents"`
 	Type              string  `json:"type"`
 	Description       string  `json:"description"`
 	SessionID         *string `json:"sessionId"`
@@ -41,7 +41,7 @@ type BillingTransaction struct {
 type TierPricing struct {
 	ID             string   `json:"id"`
 	Tier           string   `json:"tier"`
-	DailyRateCents int64    `json:"dailyRateCents"`
+	DailyRateCents float64  `json:"dailyRateCents"`
 	Label          string   `json:"label"`
 	Description    string   `json:"description"`
 	Features       []string `json:"features"`

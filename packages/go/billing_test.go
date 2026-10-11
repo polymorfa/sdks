@@ -10,16 +10,16 @@ import (
 const billingFixtureID = "12345678-1234-1234-1234-123456789abc"
 
 var billingFixtures = []operationFixture{
-	{"OrganizationClient.Billing.Retrieve", "GET", "/platform/billing", "", "", `{"data":{"balanceCents":123,"preferredCurrency":"USD"}}`, "data.preferredCurrency", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+	{"OrganizationClient.Billing.Retrieve", "GET", "/platform/billing", "", "", `{"data":{"balanceCents":1.234567,"preferredCurrency":"USD"}}`, "data.preferredCurrency", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(o.Billing().Retrieve(ctx))
 	}},
-	{"OrganizationClient.Billing.Usage", "GET", "/platform/billing/usage", "", "", `{"data":{"activeNumbers":2,"totalChargedCents":123}}`, "data.totalChargedCents", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+	{"OrganizationClient.Billing.Usage", "GET", "/platform/billing/usage", "", "", `{"data":{"activeNumbers":2,"totalChargedCents":1.234567}}`, "data.totalChargedCents", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(o.Billing().Usage(ctx))
 	}},
-	{"OrganizationClient.Billing.ListTransactions", "GET", "/platform/billing/transactions", "", "", `{"data":[{"id":"transaction","amountCents":123,"balanceAfterCents":456,"type":"charge","description":"Number","sessionId":null,"projectId":null,"tier":null,"currency":"USD","paymentStatus":"paid","createdAt":123}]}`, "data.0.paymentStatus", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+	{"OrganizationClient.Billing.ListTransactions", "GET", "/platform/billing/transactions", "", "", `{"data":[{"id":"transaction","amountCents":1.234567,"balanceAfterCents":4.567891,"type":"charge","description":"Number","sessionId":null,"projectId":null,"tier":null,"currency":"USD","paymentStatus":"paid","createdAt":123}]}`, "data.0.paymentStatus", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(o.Billing().ListTransactions(ctx))
 	}},
-	{"OrganizationClient.Billing.ListPricing", "GET", "/platform/billing/pricing", "", "", `{"data":[{"id":"price","tier":"sandbox","dailyRateCents":0,"label":"Test","description":"Test number","features":["messaging"]}]}`, "data.0.features.0", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+	{"OrganizationClient.Billing.ListPricing", "GET", "/platform/billing/pricing", "", "", `{"data":[{"id":"price","tier":"sandbox","dailyRateCents":0.000001,"label":"Test","description":"Test number","features":["messaging"]}]}`, "data.0.features.0", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(o.Billing().ListPricing(ctx))
 	}},
 	{"OrganizationClient.Billing.GetResourceControls", "GET", "/platform/billing/controls/project/12345678-1234-1234-1234-123456789abc", "", "", `{"data":{"budget":{"scope":"project","resourceId":"project","projectId":"project","name":"Project","limitCredits":null,"spentCredits":1.25,"reservedCredits":0.25,"revision":2},"priority":0,"priorityRevision":3}}`, "data.budget.spentCredits", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {

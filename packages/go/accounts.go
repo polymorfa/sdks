@@ -12,8 +12,8 @@ type Organization struct {
 	Slug                     *string `json:"slug"`
 	Email                    string  `json:"email"`
 	Timezone                 *string `json:"timezone"`
-	CreditBalanceCents       int64   `json:"creditBalanceCents"`
-	LowBalanceThresholdCents int64   `json:"lowBalanceThresholdCents"`
+	CreditBalanceCents       float64 `json:"creditBalanceCents"`
+	LowBalanceThresholdCents float64 `json:"lowBalanceThresholdCents"`
 	BillingEmail             string  `json:"billingEmail"`
 	Status                   string  `json:"status"`
 	Plan                     string  `json:"plan"`
