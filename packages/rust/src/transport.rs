@@ -158,6 +158,81 @@ pub(crate) struct HttpTransport {
     client: reqwest::Client,
 }
 impl HttpTransport {
+    /// Credential-free upload transport: capabilities and storage bodies never
+    /// enter errors, default API headers, redirect policies, or retry logic.
+    pub(crate) async fn send_upload(
+        &self,
+        upload: &crate::voice::VoiceUpload,
+        body: reqwest::Body,
+        size: u64,
+        options: &RequestOptions,
+    ) -> Result<()> {
+        let url = Url::parse(&self.options.base_url)
+            .and_then(|base| base.join(&upload.url))
+            .map_err(|_| configuration("upload URL"))?;
+        validate_download_target(&url).map_err(|_| configuration("upload URL"))?;
+        let mut builder = reqwest::Client::builder().redirect(reqwest::redirect::Policy::none());
+        if let Some(proxy) = &self.options.proxy {
+            builder =
+                builder.proxy(reqwest::Proxy::all(proxy).map_err(|_| configuration("proxy"))?);
+        }
+        let client = builder
+            .build()
+            .map_err(|_| configuration("upload HTTP client"))?;
+        let mut request = client.post(url).body(body);
+        for (name, value) in &upload.headers {
+            if !name.eq_ignore_ascii_case("authorization") {
+                request = request.header(name, value);
+            }
+        }
+        request = request
+            .header("user-agent", format!("polymorfa-rust/{SDK_VERSION}"))
+            .header("content-length", size);
+        let token = options.cancellation.clone().unwrap_or_default();
+        let send = async {
+            let response = request.send().await.map_err(|_| {
+                Error::local(
+                    ErrorKind::Connection,
+                    "Cannot reach audio upload storage.",
+                    "connection_error",
+                )
+            })?;
+            let status = response.status().as_u16();
+            if !response.status().is_success() {
+                let kind = match status {
+                    401 => ErrorKind::Authentication,
+                    403 => ErrorKind::Authorization,
+                    404 => ErrorKind::NotFound,
+                    408 => ErrorKind::Timeout,
+                    409 => ErrorKind::Conflict,
+                    413 | 422 => ErrorKind::Validation,
+                    429 => ErrorKind::RateLimit,
+                    500..=599 => ErrorKind::Server,
+                    _ => ErrorKind::Api,
+                };
+                return Err(Error::local(
+                    kind,
+                    "Audio upload storage refused the request.",
+                    "upload_failed",
+                )
+                .with_local_status(status));
+            }
+            // Consume success bodies under the same deadline without decoding or retaining them.
+            let mut stream = response.bytes_stream();
+            while let Some(chunk) = stream.next().await {
+                chunk.map_err(|_| {
+                    Error::local(
+                        ErrorKind::Connection,
+                        "Cannot read audio upload response.",
+                        "connection_error",
+                    )
+                })?;
+            }
+            Ok(())
+        };
+        tokio::select! { _=token.cancelled()=>Err(cancelled()), result=tokio::time::timeout(options.timeout.unwrap_or(self.options.timeout),send)=>result.map_err(|_|Error::local(ErrorKind::Timeout,"Audio upload timed out.","request_timeout"))? }
+    }
+
     pub(crate) fn new(credential: Credential, options: ClientOptions) -> Result<Self> {
         credential.validate()?;
         Self::build(Some(credential), options)

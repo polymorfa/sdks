@@ -10,6 +10,13 @@ pub struct OrganizationClient {
     pub(crate) http: HttpTransport,
 }
 impl OrganizationClient {
+    pub fn request_logs(&self) -> crate::request_logs::RequestLogs {
+        crate::request_logs::RequestLogs {
+            http: self.http.clone(),
+            project_id: None,
+        }
+    }
+
     pub fn new(credential: Credential, options: ClientOptions) -> Result<Self> {
         if !matches!(credential, Credential::OrganizationApiKey(_)) {
             return Err(configuration("credential: organization API key required"));
@@ -160,6 +167,13 @@ pub struct ProjectClient {
     project_id: String,
 }
 impl ProjectClient {
+    pub fn request_logs(&self) -> crate::request_logs::RequestLogs {
+        crate::request_logs::RequestLogs {
+            http: self.http.clone(),
+            project_id: Some(self.project_id.clone()),
+        }
+    }
+
     pub fn new(
         credential: Credential,
         project_id: impl Into<String>,

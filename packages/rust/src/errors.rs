@@ -22,11 +22,11 @@ pub enum ErrorKind {
     MediaIntegrity,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Error {
     inner: Box<ErrorInfo>,
 }
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ErrorInfo {
     pub kind: ErrorKind,
     pub message: String,

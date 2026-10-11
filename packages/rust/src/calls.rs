@@ -295,7 +295,7 @@ impl<'a> Calls<'a> {
             .insert("sec-websocket-protocol", "pmfa.calls.v2".parse().unwrap());
         let (mut socket, response) = tokio::select! {
             _ = cancellation.cancelled() => return Err(crate::transport::cancelled()),
-            result = tokio::time::timeout(self.http.options.timeout,tokio_tungstenite::connect_async(request)) => result.map_err(|_|Error::local(ErrorKind::Timeout,"Media socket connection timed out.","request_timeout"))?.map_err(|_|Error::local(ErrorKind::Connection,"Cannot open media socket.","connection_error"))?,
+            result = tokio::time::timeout(self.http.options.timeout,connect_socket(request, self.http.options.proxy.as_deref())) => result.map_err(|_|Error::local(ErrorKind::Timeout,"Media socket connection timed out.","request_timeout"))?.map_err(|_|Error::local(ErrorKind::Connection,"Cannot open media socket.","connection_error"))?,
         };
         if response
             .headers()
@@ -378,11 +378,12 @@ impl<'a> Calls<'a> {
         }
         let (socket, _) = tokio::select! {
             _=cancellation.cancelled()=>return Err(crate::transport::cancelled()),
-            result=tokio::time::timeout(self.http.options.timeout,tokio_tungstenite::connect_async(url.as_str()))=>result.map_err(|_|Error::local(ErrorKind::Timeout,"Lifecycle socket connection timed out.","request_timeout"))?.map_err(|_|Error::local(ErrorKind::Connection,"Cannot open lifecycle socket.","connection_error"))?,
+            result=tokio::time::timeout(self.http.options.timeout,connect_socket(url.as_str().into_client_request().map_err(|_| configuration("socket"))?, self.http.options.proxy.as_deref()))=>result.map_err(|_|Error::local(ErrorKind::Timeout,"Lifecycle socket connection timed out.","request_timeout"))?.map_err(|_|Error::local(ErrorKind::Connection,"Cannot open lifecycle socket.","connection_error"))?,
         };
         let mut lifecycle = LifecycleSocket {
             socket,
             cancellation,
+            participant: None,
         };
         lifecycle
             .send(serde_json::json!({"type":"auth","token":self.http.credential_value()?}))
@@ -390,7 +391,10 @@ impl<'a> Calls<'a> {
         tokio::time::timeout(self.http.options.timeout, async {
             loop {
                 match lifecycle.read().await? {
-                    Some(LifecycleFrame::Ready { .. }) => return Ok(()),
+                    Some(LifecycleFrame::Ready { participant, .. }) => {
+                        lifecycle.participant = participant;
+                        return Ok(());
+                    }
                     None => {
                         return Err(Error::local(
                             ErrorKind::Connection,
@@ -467,11 +471,7 @@ impl MediaSocket {
                         self.video = *video;
                     }
                     if let MediaControlFrame::Error { code, .. } = &value {
-                        return Err(Error::local(
-                            ErrorKind::Api,
-                            "Media server refused the connection.",
-                            code,
-                        ));
+                        return Err(socket_error(code, "Media server refused the connection."));
                     }
                     return Ok(Some(MediaFrame::Control(value)));
                 }
@@ -494,6 +494,31 @@ impl MediaSocket {
                             "Media authorization was revoked.",
                             "authentication_error",
                         ));
+                    }
+                    if let Some(frame) = &close {
+                        let code = u16::from(frame.code);
+                        if code == 4400 || code == 4403 || code == 1008 || code == 1009 {
+                            return Err(socket_error(
+                                "media_refused",
+                                "The platform refused the socket.",
+                            ));
+                        }
+                        if code == 4409 {
+                            return Err(socket_error(
+                                if frame.reason == "call claimed" {
+                                    "call_claimed"
+                                } else {
+                                    "call_ended"
+                                },
+                                "The call is no longer available.",
+                            ));
+                        }
+                        if code != 1000 {
+                            return Err(socket_error(
+                                "media_lost",
+                                "The socket closed unexpectedly.",
+                            ));
+                        }
                     }
                     return Ok(None);
                 }
@@ -562,6 +587,7 @@ impl MediaSocket {
 pub struct LifecycleSocket {
     socket: WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>,
     cancellation: CancellationToken,
+    pub participant: Option<String>,
 }
 impl LifecycleSocket {
     pub async fn read(&mut self) -> Result<Option<LifecycleFrame>> {
@@ -574,7 +600,7 @@ impl LifecycleSocket {
                 Some(Ok(Message::Text(text))) => {
                     if let Some(frame) = parse_lifecycle_frame(&text) {
                         if let LifecycleFrame::Error { code, message } = &frame {
-                            return Err(Error::local(ErrorKind::Api, message, code));
+                            return Err(socket_error(code, message));
                         }
                         return Ok(Some(frame));
                     }
@@ -596,6 +622,15 @@ impl LifecycleSocket {
                             "authentication_error",
                         ));
                     }
+                    if close
+                        .as_ref()
+                        .is_some_and(|frame| u16::from(frame.code) == 4400)
+                    {
+                        return Err(socket_error(
+                            "invalid_request",
+                            "The platform refused the lifecycle request.",
+                        ));
+                    }
                     return Ok(None);
                 }
                 None => return Ok(None),
@@ -609,6 +644,10 @@ impl LifecycleSocket {
                 _ => {}
             }
         }
+    }
+    pub(crate) async fn replace_token(&mut self, credential: &crate::Credential) -> Result<()> {
+        self.send(serde_json::json!({"type":"auth","token":credential.value()}))
+            .await
     }
     pub async fn ping(&mut self) -> Result<()> {
         self.send(serde_json::json!({"type":"ping"})).await
@@ -669,4 +708,107 @@ pub fn decode_media(bytes: &[u8]) -> Option<MediaFrame> {
         })),
         _ => None,
     }
+}
+
+fn socket_error(code: &str, message: &str) -> Error {
+    let kind = match code {
+        "unauthorized" | "authentication_error" => ErrorKind::Authentication,
+        "call_claimed" | "call_ended" => ErrorKind::Conflict,
+        "calls_disabled" | "media_refused" => ErrorKind::Authorization,
+        "invalid_request" => ErrorKind::Configuration,
+        "media_lost" => ErrorKind::Connection,
+        _ => ErrorKind::Api,
+    };
+    Error::local(kind, message, code)
+}
+
+// The WebSocket handshake carries no API credential. HTTP CONNECT establishes a
+// tunnel first; bearer authentication remains the first WebSocket frame.
+async fn connect_socket(
+    request: tokio_tungstenite::tungstenite::handshake::client::Request,
+    proxy: Option<&str>,
+) -> std::result::Result<
+    (
+        WebSocketStream<MaybeTlsStream<tokio::net::TcpStream>>,
+        tokio_tungstenite::tungstenite::handshake::client::Response,
+    ),
+    Box<dyn std::error::Error + Send + Sync>,
+> {
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    let Some(proxy) = proxy else {
+        return tokio_tungstenite::connect_async(request)
+            .await
+            .map_err(Into::into);
+    };
+    let proxy = url::Url::parse(proxy).map_err(|_| {
+        std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid Calls proxy")
+    })?;
+    if proxy.scheme() != "http" {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "Calls sockets require an HTTP CONNECT proxy",
+        )
+        .into());
+    }
+    let host = proxy.host_str().ok_or_else(|| {
+        std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid Calls proxy")
+    })?;
+    let mut stream =
+        tokio::net::TcpStream::connect((host, proxy.port_or_known_default().unwrap_or(80))).await?;
+    let target = url::Url::parse(&request.uri().to_string()).map_err(|_| {
+        std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid socket target")
+    })?;
+    let host = target.host_str().ok_or_else(|| {
+        std::io::Error::new(std::io::ErrorKind::InvalidInput, "Invalid socket target")
+    })?;
+    let authority = format!(
+        "{}:{}",
+        if host.contains(':') {
+            format!("[{host}]")
+        } else {
+            host.to_owned()
+        },
+        target.port_or_known_default().unwrap_or(443)
+    );
+    let mut connect = format!("CONNECT {authority} HTTP/1.1\r\nHost: {authority}\r\n");
+    if !proxy.username().is_empty() || proxy.password().is_some() {
+        use base64::Engine;
+        let credentials = format!(
+            "{}:{}",
+            percent_encoding::percent_decode_str(proxy.username()).decode_utf8_lossy(),
+            percent_encoding::percent_decode_str(proxy.password().unwrap_or(""))
+                .decode_utf8_lossy()
+        );
+        connect.push_str(&format!(
+            "Proxy-Authorization: Basic {}\r\n",
+            base64::engine::general_purpose::STANDARD.encode(credentials)
+        ));
+    }
+    connect.push_str("\r\n");
+    stream.write_all(connect.as_bytes()).await?;
+    let mut header = Vec::new();
+    while !header.ends_with(b"\r\n\r\n") {
+        if header.len() >= 8192 {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "Proxy response header exceeds limit",
+            )
+            .into());
+        }
+        header.push(stream.read_u8().await?);
+    }
+    if std::str::from_utf8(&header)
+        .ok()
+        .and_then(|h| h.lines().next())
+        .is_none_or(|line| line.split_whitespace().nth(1) != Some("200"))
+    {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::PermissionDenied,
+            "Calls proxy refused tunnel",
+        )
+        .into());
+    }
+    tokio_tungstenite::client_async_tls(request, stream)
+        .await
+        .map_err(Into::into)
 }

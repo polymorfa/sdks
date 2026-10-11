@@ -208,6 +208,79 @@ fn missing(id: &str) -> Error {
     .with_local_details(serde_json::json!({"id":id}))
 }
 impl VoiceAudio<'_> {
+    /// Create, upload the exact byte slice to credential-free storage, and start
+    /// transcoding. Completion does not reuse the create idempotency key.
+    pub async fn upload(
+        &self,
+        request: &CreateAudioUploadRequest,
+        bytes: &[u8],
+        options: RequestOptions,
+    ) -> Result<ApiResponse<VoiceAsset>> {
+        if request.size_bytes != bytes.len() as u64 {
+            return Err(Error::local(
+                ErrorKind::Validation,
+                "Declared audio size does not match its byte length.",
+                "invalid_parameter",
+            ));
+        }
+        self.upload_body(request, reqwest::Body::from(bytes.to_vec()), options)
+            .await
+    }
+    /// The caller declares a stream's exact size before creating the asset.
+    /// Storage validates the stream against the content length; uploads never retry.
+    pub async fn upload_stream<S, E>(
+        &self,
+        request: &CreateAudioUploadRequest,
+        stream: S,
+        options: RequestOptions,
+    ) -> Result<ApiResponse<VoiceAsset>>
+    where
+        S: futures_util::Stream<Item = std::result::Result<bytes::Bytes, E>> + Send + 'static,
+        E: Into<Box<dyn std::error::Error + Send + Sync>> + 'static,
+    {
+        self.upload_body(request, reqwest::Body::wrap_stream(stream), options)
+            .await
+    }
+    async fn upload_body(
+        &self,
+        request: &CreateAudioUploadRequest,
+        body: reqwest::Body,
+        mut options: RequestOptions,
+    ) -> Result<ApiResponse<VoiceAsset>> {
+        if request.size_bytes == 0 || request.size_bytes > 16_777_216 {
+            return Err(Error::local(
+                ErrorKind::Validation,
+                "Audio uploads require 1 to 16777216 bytes.",
+                "invalid_parameter",
+            ));
+        }
+        let created = self.create_upload(request, options.clone()).await?;
+        if request.size_bytes > created.data.upload.max_bytes {
+            return Err(Error::local(
+                ErrorKind::Validation,
+                "Audio exceeds the upload's maximum size.",
+                "invalid_parameter",
+            ));
+        }
+        self.http
+            .send_upload(&created.data.upload, body, request.size_bytes, &options)
+            .await?;
+        options.idempotency_key = None;
+        self.http
+            .request::<DataEnvelope<VoiceAsset>, ()>(
+                Method::POST,
+                &format!(
+                    "{}/complete",
+                    id_path("/platform/voice/audio", &created.data.asset.id)?
+                ),
+                &[],
+                None,
+                options,
+            )
+            .await
+            .map(unwrap)
+    }
+
     async fn check(&self, id: &str, options: RequestOptions) -> Result<()> {
         if self.confine {
             let mut read = options;

@@ -68,3 +68,11 @@ pub mod voice;
 pub mod call_records;
 
 pub mod analytics;
+
+pub mod calls_token;
+
+pub mod calls_runtime;
+
+pub mod request_logs;
+
+pub mod calls_diagnostics;

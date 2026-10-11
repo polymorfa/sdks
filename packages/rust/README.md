@@ -53,7 +53,7 @@ MAC and encrypted/plaintext hash verification, bounded downloads and an HTTPS
 WhatsApp host allowlist. No plaintext is returned before verification. Calls
 expose server control methods and programmatic PCM/H.264 media sockets.
 
-Typed coverage is still being expanded. The current implementation includes
+All 439 primary operations exposed by the pinned Messaging and Platform clients have typed public methods and native request/response tests. The implementation includes
 sessions, all merged message content variants, hosted chat/message history with stored
 media streaming and service windows, Linked Devices groups and Channels, QuickLinks, webhooks, contacts, profile, privacy,
 presence, identities, labels, quick replies, core projects and project safety/warmup/insurance/health policies, events, media and
@@ -93,3 +93,26 @@ request serialization and decoded responses. No live provider requests are
 needed or performed by the test suite.
 
 Platform resources include typed BanSafe observations, project Functions and Flow drafts, Voice assets and provider credentials, call diagnostics/statistics/exports, and WhatsApp Analytics. Function and Flow writes are sent once; uncertain provider receipts are reconciled by reads. Project views preserve their identity and check organization-key resource mutations before acting. Voice upload URLs and one-time signing secrets omit `Debug`. Credit quantities named `Cents` retain fractional values.
+
+
+Programmatic calls use `calls_runtime::CallsClient` and `calls_token::CallsTokenSource`.
+A token source shares cached credentials across HTTP, lifecycle and media requests,
+refreshes near expiry, and isolates cancellation among callers. Static server credentials
+and asynchronous providers are supported; credentials never appear in socket URLs or
+handshake headers. `connect()` observes incoming calls through `subscribe()`;
+`place()` returns a `Call` handle. `answer`, `join`, `reject`, `leave`, `end`, participant
+controls, audio/video writes, and confirmed media-state changes use that handle.
+Reconnection preserves the connection ID and restores confirmed preferences, while
+uncertain commands are refused. `disconnect()` releases accepted connections without
+rejecting unanswered incoming calls. HTTP CONNECT proxies support these sockets;
+HTTPS and SOCKS proxy URLs are supported by HTTP requests but not Calls sockets.
+
+Voice `upload` takes an exact byte slice and `upload_stream` takes an asynchronous
+byte stream plus its declared size. Both create an asset, send the bytes to credential-free
+storage with redirects and retries disabled, then complete it without reusing the creation
+idempotency key. Use `wait_until_ready` to await transcoding. Failed storage transfers do
+not complete the asset and errors never retain the signed upload URL or storage body.
+
+`request_logs().list` reads typed project request records and `follow` reads newer records from a follow cursor. `tail` yields optional backfill oldest first, follows without delay while pages remain, honors rate-limit retry headers, and stops when its cancellation token is canceled. A project view refuses another project selection; a cursor cannot be combined with new filters.
+
+Calls diagnostics send technical error codes and final reconnect counts without blocking media. `calls_diagnostics::CallReporter` also accepts measured quality figures, removes invalid codecs and candidate types, clamps numeric limits, enforces one quality report per five seconds and twenty errors per minute, and stops after permanent HTTP refusals. Reports never retry and expire after five seconds.
