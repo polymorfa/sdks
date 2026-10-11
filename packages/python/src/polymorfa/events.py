@@ -3,14 +3,23 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import binascii
 import json
+import math
+import random
 from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass
-from typing import cast
+from typing import Literal, cast
 
+import httpx
+from typing_extensions import TypedDict
+
+from .developer_models import EncodedPayload
 from .errors import (
     AuthenticationError,
     AuthorizationError,
+    ConfigurationError,
     ConnectionError,
     NotFoundError,
     PolymorfaError,
@@ -21,7 +30,6 @@ from .errors import (
 )
 from .transport import (
     DEFAULT_OPTIONS,
-    JsonObject,
     QueryValue,
     RequestOptions,
     Transport,
@@ -30,9 +38,29 @@ from .transport import (
 from .webhooks import WebhookEvent, parse_verified_webhook_event
 
 
+class StreamEvent(TypedDict):
+    id: str
+    organizationId: str
+    projectId: str
+    type: str
+    source: Literal["runtime", "platform", "test"]
+    environment: Literal["development", "production"]
+    createdAt: str
+    payloadAvailability: Literal["available", "not_retained", "unavailable"]
+    payload: EncodedPayload | None
+    replayableUntil: str | None
+    metadataExpiresAt: str
+
+
+class StreamGap(TypedDict):
+    reason: Literal["retention_exceeded"]
+    missedEvents: int
+    requestedCursor: str | None
+
+
 @dataclass(frozen=True)
 class StreamedEvent:
-    event: JsonObject
+    event: StreamEvent
     webhook: WebhookEvent | None
     cursor: str
     stream_id: str
@@ -49,15 +77,25 @@ class EventStream:
         types: list[str] | None = None,
         manual_ack: bool = False,
         options: RequestOptions = DEFAULT_OPTIONS,
-        on_gap: Callable[[JsonObject], None] | None = None,
+        on_gap: Callable[[StreamGap], None] | None = None,
+        on_reconnect: Callable[[BaseException, float], None] | None = None,
+        reconnect_initial: float = 1,
+        reconnect_max: float = 30,
     ) -> None:
         self._transport, self.path, self.cursor = transport, path, since
         self._types, self._manual_ack, self._options = types, manual_ack, options
-        self._on_gap = on_gap
+        if any(
+            not math.isfinite(value) or value < 0 for value in (reconnect_initial, reconnect_max)
+        ):
+            raise ConfigurationError("reconnect")
+        self._on_gap, self._on_reconnect = on_gap, on_reconnect
+        self._reconnect_initial, self._reconnect_max = reconnect_initial, reconnect_max
         self._closed = False
+        self._close_event = asyncio.Event()
 
     def close(self) -> None:
         self._closed = True
+        self._close_event.set()
 
     async def __aiter__(self) -> AsyncIterator[StreamedEvent]:
         attempt = 0
@@ -76,11 +114,36 @@ class EventStream:
                     **({"Last-Event-ID": self.cursor} if self.cursor else {}),
                 },
             )
-            delay = min(30, retry_delay({}, attempt + 2))
+            ceiling = min(self._reconnect_max, self._reconnect_initial * 2 ** min(attempt, 30))
+            delay = ceiling * (0.5 + random.random() * 0.5)
+            failure: BaseException = ConnectionError("Event stream closed.", code="stream_closed")
+            metadata = None
             try:
-                response, metadata = await self._transport.open_stream(
-                    "GET", self.path, query=query, options=options, accept="text/event-stream"
+                opening = asyncio.create_task(
+                    self._transport.open_stream(
+                        "GET", self.path, query=query, options=options, accept="text/event-stream"
+                    )
                 )
+                closing = asyncio.create_task(self._close_event.wait())
+                try:
+                    done, _ = await asyncio.wait(
+                        (opening, closing), return_when=asyncio.FIRST_COMPLETED
+                    )
+                    if closing in done:
+                        if (
+                            opening.done()
+                            and not opening.cancelled()
+                            and opening.exception() is None
+                        ):
+                            opened_response, _ = opening.result()
+                            await opened_response.aclose()
+                        return
+                    response, metadata = opening.result()
+                finally:
+                    for opening_pending in (opening, closing):
+                        if not opening_pending.done():
+                            opening_pending.cancel()
+                    await asyncio.gather(opening, closing, return_exceptions=True)
                 try:
                     if (
                         response.headers.get("content-type", "").split(";")[0]
@@ -94,7 +157,24 @@ class EventStream:
                     heartbeat = 15.0
                     while not self._closed:
                         try:
-                            line = await asyncio.wait_for(lines.__anext__(), heartbeat * 2)
+                            line_task = asyncio.ensure_future(lines.__anext__())
+                            close_task = asyncio.create_task(self._close_event.wait())
+                            try:
+                                done, _ = await asyncio.wait(
+                                    (line_task, close_task),
+                                    timeout=heartbeat * 2,
+                                    return_when=asyncio.FIRST_COMPLETED,
+                                )
+                                if close_task in done:
+                                    break
+                                if line_task not in done:
+                                    raise asyncio.TimeoutError()
+                                line = line_task.result()
+                            finally:
+                                for pending in (line_task, close_task):
+                                    if not pending.done():
+                                        pending.cancel()
+                                await asyncio.gather(line_task, close_task, return_exceptions=True)
                         except StopAsyncIteration:
                             break
                         if line.startswith("data:"):
@@ -133,14 +213,25 @@ class EventStream:
                                 webhook = None
                                 if payload is not None:
                                     try:
+                                        if (
+                                            not isinstance(payload, dict)
+                                            or payload.get("encoding") != "base64"
+                                            or payload.get("contentType") != "application/json"
+                                            or not isinstance(payload.get("data"), str)
+                                        ):
+                                            raise ValueError("Invalid encoded payload")
                                         webhook = parse_verified_webhook_event(
-                                            json.dumps(payload).encode()
+                                            base64.b64decode(payload["data"], validate=True)
                                         )
-                                    except ValidationError:
-                                        pass
+                                    except (ValidationError, ValueError, binascii.Error):
+                                        raise ServerError(
+                                            "Invalid encoded event payload.",
+                                            code="invalid_response",
+                                            metadata=metadata,
+                                        ) from None
                                 attempt = 0
                                 yield StreamedEvent(
-                                    cast(JsonObject, event),
+                                    cast(StreamEvent, event),
                                     webhook,
                                     cursor,
                                     str(frame.get("streamId", "")),
@@ -149,7 +240,13 @@ class EventStream:
                             elif kind == "gap":
                                 if frame.get("reason") == "retention_exceeded":
                                     if self._on_gap:
-                                        self._on_gap(cast(JsonObject, frame))
+                                        self._on_gap(
+                                            {
+                                                "reason": "retention_exceeded",
+                                                "missedEvents": int(frame.get("missedEvents", 0)),
+                                                "requestedCursor": frame.get("requestedCursor"),
+                                            }
+                                        )
                                 else:
                                     break
                             elif kind in ("expiry", "dropped"):
@@ -165,16 +262,32 @@ class EventStream:
             except (AuthenticationError, AuthorizationError, NotFoundError, ValidationError):
                 raise
             except PolymorfaError as error:
+                failure = error
                 if error.status == 410 or error.code == "stream_revoked":
                     raise
                 if not isinstance(
                     error, (ConnectionError, TimeoutError, RateLimitError, ServerError)
                 ):
                     raise
-                if error.metadata:
-                    delay = min(30, retry_delay(error.metadata.headers, attempt + 2))
-            except (asyncio.TimeoutError, ConnectionError):
-                pass
+                if error.metadata and "retry-after" in error.metadata.headers:
+                    delay = min(
+                        self._reconnect_max, retry_delay(error.metadata.headers, attempt + 2)
+                    )
+            except (asyncio.TimeoutError, httpx.TimeoutException):
+                failure = TimeoutError(
+                    "Event stream timed out.", code="request_timeout", metadata=metadata
+                )
+            except httpx.TransportError:
+                failure = ConnectionError(
+                    "Event stream connection failed.", code="connection_error", metadata=metadata
+                )
             if not self._closed:
                 attempt += 1
-                await asyncio.sleep(delay)
+                if self._on_reconnect is not None:
+                    self._on_reconnect(failure, delay)
+                if self._closed:
+                    break
+                try:
+                    await asyncio.wait_for(self._close_event.wait(), timeout=delay)
+                except asyncio.TimeoutError:
+                    pass

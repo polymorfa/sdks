@@ -5,11 +5,12 @@ from __future__ import annotations
 import asyncio
 import builtins
 import time
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import replace
 from typing import TypeVar, cast
 from urllib.parse import unquote
 
+from . import developer_models as D
 from .bansafe import (
     ProjectHealthPolicy,
     ProjectInsuranceEvidence,
@@ -22,14 +23,13 @@ from .bansafe import (
     UpdateProjectWarmupPlan,
     UpdateSessionSafeMode,
 )
-from .errors import ConfigurationError, ServerError, ValidationError
-from .events import EventStream
+from .errors import ConfigurationError, ServerError, TimeoutError, ValidationError
+from .events import EventStream, StreamGap
+from .indexed_events import IndexedEventPage, validate_after_offset
 from .messaging import O, Resource, segment
 from .models import (
     DataEnvelope,
     Envelope,
-    Event,
-    Operation,
     PlatformSession,
     Session,
     SessionRemoved,
@@ -339,24 +339,62 @@ class PlatformSessions(Resource):
 
 class Events(PlatformResource):
     async def list(
-        self, params: Mapping[str, QueryValue] | None = None, *, options: RequestOptions = O
-    ) -> CursorPage[Event]:
-        return await self._page(self._prefix + "/events", params or {}, options)
+        self, params: D.ListEvents | None = None, *, options: RequestOptions = O
+    ) -> CursorPage[D.Event] | IndexedEventPage[D.Event]:
+        if params is not None and "afterOffset" in params:
+            if any(key in params for key in ("cursor", "since", "until")):
+                raise ValidationError("afterOffset cannot be combined with cursor, since or until.")
+            return await self._offset_page(params, options)
+        return await self._page(
+            self._prefix + "/events", cast(Mapping[str, QueryValue], params or {}), options
+        )
+
+    async def _offset_page(
+        self, params: D.ListEvents, options: RequestOptions
+    ) -> IndexedEventPage[D.Event]:
+        after = params["afterOffset"]
+        validate_after_offset(after)
+        response = await self._transport.request(
+            "GET",
+            self._prefix + "/events",
+            query=cast(Mapping[str, QueryValue], params),
+            options=options,
+        )
+
+        async def next_page(offset: str) -> IndexedEventPage[D.Event]:
+            return await self._offset_page({**params, "afterOffset": offset}, options)
+
+        return IndexedEventPage(response, after, next_page)
+
+    async def list_indexed(
+        self, params: D.IndexedEvents, *, options: RequestOptions = O
+    ) -> IndexedEventPage[D.Event]:
+        return await self._offset_page(
+            {
+                "afterOffset": params["afterOffset"],
+                **({"type": params["type"]} if "type" in params else {}),
+                **({"limit": params["limit"]} if "limit" in params else {}),
+            },
+            options,
+        )
 
     async def retrieve(
         self,
         event_id: str,
         *,
-        params: Mapping[str, QueryValue] | None = None,
+        params: D.RetrieveEvent | None = None,
         options: RequestOptions = O,
-    ) -> ApiResponse[Event]:
+    ) -> ApiResponse[D.Event]:
         return await self._unwrapped(
-            "GET", self._prefix + "/events/" + segment(event_id), query=params, options=options
+            "GET",
+            self._prefix + "/events/" + segment(event_id),
+            query=cast(Mapping[str, QueryValue], params or {}),
+            options=options,
         )
 
     async def replay(
-        self, event_id: str, body: JsonObject, *, options: RequestOptions = O
-    ) -> ApiResponse[JsonObject | None]:
+        self, event_id: str, body: D.ReplayEvent, *, options: RequestOptions = O
+    ) -> ApiResponse[D.ReplayReceipt]:
         return await self._unwrapped(
             "POST",
             self._prefix + "/events/" + segment(event_id) + "/replays",
@@ -372,6 +410,10 @@ class Events(PlatformResource):
         types: builtins.list[str] | None = None,
         manual_ack: bool = False,
         options: RequestOptions = O,
+        on_gap: Callable[[StreamGap], None] | None = None,
+        on_reconnect: Callable[[BaseException, float], None] | None = None,
+        reconnect_initial: float = 1,
+        reconnect_max: float = 30,
     ) -> EventStream:
 
         if self._prefix == "/platform":
@@ -392,6 +434,10 @@ class Events(PlatformResource):
             types=types,
             manual_ack=manual_ack,
             options=options,
+            on_gap=on_gap,
+            on_reconnect=on_reconnect,
+            reconnect_initial=reconnect_initial,
+            reconnect_max=reconnect_max,
         )
 
     async def acknowledge_stream(
@@ -402,8 +448,8 @@ class Events(PlatformResource):
         *,
         project_id: str | None = None,
         options: RequestOptions = O,
-    ) -> ApiResponse[JsonObject | None]:
-        if sequence < 0:
+    ) -> ApiResponse[D.StreamAcknowledged]:
+        if isinstance(sequence, bool) or not isinstance(sequence, int) or sequence < 0:
             raise ValidationError("sequence must be non-negative.")
         stream = self.stream(project_id=project_id)
         return await self._unwrapped(
@@ -416,39 +462,45 @@ class Events(PlatformResource):
 
 class PlatformWebhooks(PlatformResource):
     async def list(
-        self, params: Mapping[str, QueryValue] | None = None, *, options: RequestOptions = O
-    ) -> CursorPage[JsonObject]:
-        return await self._page(self._prefix + "/webhooks", params or {}, options)
+        self, params: D.ListWebhooks | None = None, *, options: RequestOptions = O
+    ) -> CursorPage[D.Webhook]:
+        return await self._page(
+            self._prefix + "/webhooks", cast(Mapping[str, QueryValue], params or {}), options
+        )
 
     async def create(
-        self, body: JsonObject, *, options: RequestOptions = O
-    ) -> ApiResponse[JsonObject | None]:
+        self, body: D.CreateWebhook, *, options: RequestOptions = O
+    ) -> ApiResponse[D.WebhookCreated]:
         return await self._unwrapped("POST", self._prefix + "/webhooks", body=body, options=options)
 
     async def retrieve(
         self, webhook_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[JsonObject | None]:
+    ) -> ApiResponse[D.Webhook]:
         return await self._unwrapped(
             "GET", self._prefix + "/webhooks/" + segment(webhook_id), options=options
         )
 
     async def update(
-        self, webhook_id: str, body: JsonObject, *, options: RequestOptions = O
-    ) -> ApiResponse[JsonObject | None]:
+        self, webhook_id: str, body: D.UpdateWebhook, *, options: RequestOptions = O
+    ) -> ApiResponse[D.WebhookUpdated]:
         return await self._unwrapped(
             "PATCH", self._prefix + "/webhooks/" + segment(webhook_id), body=body, options=options
         )
 
     async def delete(
         self, webhook_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[JsonObject | None]:
+    ) -> ApiResponse[D.WebhookDeleted]:
         return await self._unwrapped(
             "DELETE", self._prefix + "/webhooks/" + segment(webhook_id), options=options
         )
 
     async def test(
-        self, webhook_id: str, body: JsonObject | None = None, *, options: RequestOptions = O
-    ) -> ApiResponse[JsonObject | None]:
+        self,
+        webhook_id: str,
+        body: D.TestWebhook | D.TestWebhookPayload | None = None,
+        *,
+        options: RequestOptions = O,
+    ) -> ApiResponse[D.ReplayReceipt]:
         if self._prefix == "/platform" and body and ("body" in body or "sessionId" in body):
             raise ValidationError("Organization tests do not accept body or sessionId.")
         return await self._unwrapped(
@@ -459,8 +511,8 @@ class PlatformWebhooks(PlatformResource):
         )
 
     async def rotate_secret(
-        self, webhook_id: str, body: JsonObject | None = None, *, options: RequestOptions = O
-    ) -> ApiResponse[JsonObject | None]:
+        self, webhook_id: str, body: D.RotateSecret | None = None, *, options: RequestOptions = O
+    ) -> ApiResponse[D.SecretRotated]:
         return await self._unwrapped(
             "POST",
             self._prefix + "/webhooks/" + segment(webhook_id) + "/secret-rotations",
@@ -471,13 +523,17 @@ class PlatformWebhooks(PlatformResource):
 
 class WebhookDeliveries(PlatformResource):
     async def list(
-        self, params: Mapping[str, QueryValue] | None = None, *, options: RequestOptions = O
-    ) -> CursorPage[JsonObject]:
-        return await self._page(self._prefix + "/webhook-deliveries", params or {}, options)
+        self, params: D.ListDeliveries | None = None, *, options: RequestOptions = O
+    ) -> CursorPage[D.Delivery]:
+        return await self._page(
+            self._prefix + "/webhook-deliveries",
+            cast(Mapping[str, QueryValue], params or {}),
+            options,
+        )
 
     async def retrieve(
         self, delivery_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[JsonObject | None]:
+    ) -> ApiResponse[D.Delivery]:
         return await self._unwrapped(
             "GET", self._prefix + "/webhook-deliveries/" + segment(delivery_id), options=options
         )
@@ -485,19 +541,19 @@ class WebhookDeliveries(PlatformResource):
     async def list_attempts(
         self,
         delivery_id: str,
-        params: Mapping[str, QueryValue] | None = None,
+        params: D.ListAttempts | None = None,
         *,
         options: RequestOptions = O,
-    ) -> CursorPage[JsonObject]:
+    ) -> CursorPage[D.Attempt]:
         return await self._page(
             self._prefix + "/webhook-deliveries/" + segment(delivery_id) + "/attempts",
-            params or {},
+            cast(Mapping[str, QueryValue], params or {}),
             options,
         )
 
     async def retrieve_attempt(
         self, delivery_id: str, attempt_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[JsonObject | None]:
+    ) -> ApiResponse[D.Attempt]:
         return await self._unwrapped(
             "GET",
             self._prefix
@@ -509,8 +565,8 @@ class WebhookDeliveries(PlatformResource):
         )
 
     async def retry(
-        self, delivery_id: str, body: JsonObject | None = None, *, options: RequestOptions = O
-    ) -> ApiResponse[JsonObject | None]:
+        self, delivery_id: str, body: D.EmptyInput | None = None, *, options: RequestOptions = O
+    ) -> ApiResponse[D.RetriedDelivery]:
         return await self._unwrapped(
             "POST",
             self._prefix + "/webhook-deliveries/" + segment(delivery_id) + "/retry",
@@ -521,45 +577,49 @@ class WebhookDeliveries(PlatformResource):
 
 class Operations(PlatformResource):
     async def list(
-        self, params: Mapping[str, QueryValue] | None = None, *, options: RequestOptions = O
-    ) -> CursorPage[Operation]:
-        return await self._page(self._prefix + "/operations", params or {}, options)
+        self, params: D.ListOperations | None = None, *, options: RequestOptions = O
+    ) -> CursorPage[D.Operation]:
+        return await self._page(
+            self._prefix + "/operations", cast(Mapping[str, QueryValue], params or {}), options
+        )
 
     async def get(
         self,
         operation_id: str,
         *,
-        wait: int = 0,
-        params: Mapping[str, QueryValue] | None = None,
+        wait: int | None = None,
+        params: D.RetrieveOperation | None = None,
         options: RequestOptions = O,
-    ) -> ApiResponse[Operation]:
-        if isinstance(wait, bool) or not 0 <= wait <= 30:
+    ) -> ApiResponse[D.Operation]:
+        if wait is not None and (
+            isinstance(wait, bool) or not isinstance(wait, int) or not 0 <= wait <= 30
+        ):
             raise ConfigurationError("wait")
         if wait and options.timeout is None:
             options = replace(options, timeout=wait + 15)
         return await self._unwrapped(
             "GET",
             self._prefix + "/operations/" + segment(operation_id),
-            query={**(params or {}), "wait": wait},
+            query={**cast(Mapping[str, QueryValue], params or {}), "wait": wait},
             options=options,
         )
 
     async def list_transitions(
         self,
         operation_id: str,
-        params: Mapping[str, QueryValue] | None = None,
+        params: D.TransitionsAfter | D.TransitionsCursor | None = None,
         *,
         options: RequestOptions = O,
-    ) -> CursorPage[JsonObject]:
+    ) -> CursorPage[D.OperationTransition]:
         return await self._page(
             self._prefix + "/operations/" + segment(operation_id) + "/transitions",
-            params or {},
+            cast(Mapping[str, QueryValue], params or {}),
             options,
         )
 
     async def cancel(
         self, operation_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[JsonObject | None]:
+    ) -> ApiResponse[D.CancelledOperation]:
         return await self._unwrapped(
             "POST",
             self._prefix + "/operations/" + segment(operation_id) + "/cancel",
@@ -567,25 +627,48 @@ class Operations(PlatformResource):
         )
 
     async def wait(
-        self, operation_id: str, *, max_wait: float = 300, options: RequestOptions = O
-    ) -> ApiResponse[Operation]:
-        if not 0 <= max_wait < float("inf"):
+        self,
+        operation_id: str,
+        *,
+        max_wait: float = 300,
+        after_sequence: int | None = None,
+        project_id: str | None = None,
+        options: RequestOptions = O,
+    ) -> ApiResponse[D.Operation]:
+        if isinstance(max_wait, bool) or not 0 <= max_wait < float("inf"):
             raise ConfigurationError("max_wait")
+        if (
+            project_id is not None
+            and self._prefix != "/platform"
+            and self._prefix != f"/platform/projects/{segment(project_id)}"
+        ):
+            raise ConfigurationError("project_id")
+        params: D.RetrieveOperation = {}
+        if after_sequence is not None:
+            params["afterSequence"] = after_sequence
+        if project_id is not None and self._prefix == "/platform":
+            params["projectId"] = project_id
         deadline = time.monotonic() + max_wait
-        latest: ApiResponse[Operation] | None = None
+        latest: ApiResponse[D.Operation] | None = None
         while True:
             remaining = max(0.0, deadline - time.monotonic())
             try:
                 latest = await asyncio.wait_for(
-                    self.get(operation_id, wait=min(30, int(remaining)), options=options),
+                    self.get(
+                        operation_id, wait=min(30, int(remaining)), params=params, options=options
+                    ),
                     max(1, remaining),
                 )
             except asyncio.TimeoutError:
                 if latest is not None:
                     return latest
-                raise
+                raise TimeoutError(
+                    "Operation wait budget elapsed.", code="request_timeout"
+                ) from None
             if (
                 latest.data.get("status") in ("succeeded", "failed", "cancelled")
+                or (after_sequence is not None and latest.data["sequence"] > after_sequence)
+                or int(remaining) == 0
                 or time.monotonic() >= deadline
             ):
                 return latest

@@ -131,3 +131,10 @@ to one attempt. Onboarding continuation and Testing methods require a server
 credential; Testing phone methods expose simulated device and message results.
 SIP trunks provide typed credentials and endpoint variants, with ownership checks
 before an organization key acts through a project client.
+
+Retained events, webhook signing generations and delivery attempts expose typed
+metadata and payload-availability states. Indexed event pages preserve offsets
+and filters across pages. The event stream decodes retained payloads, resumes
+from checkpoints, reports gaps and reconnects, and supports explicit
+acknowledgements. Closing a stream interrupts a pending connection or body read.
+Operations support typed transitions, long polling and bounded waits.

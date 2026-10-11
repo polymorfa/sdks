@@ -7,7 +7,13 @@ from typing import Generic, Literal, TypeVar
 from typing_extensions import NotRequired, TypedDict
 
 from .configuration import ConfigurationPatch, ConfigurationView
+from .developer_models import Event as Event  # noqa: PLC0414
+from .developer_models import Operation as Operation  # noqa: PLC0414
+from .platform_core import CreateProject
 from .transport import JsonObject
+
+ProjectCreate = CreateProject
+ProjectCreateOptions = CreateProject
 
 T = TypeVar("T")
 
@@ -223,15 +229,6 @@ class Webhook(TypedDict):
     headers: list[dict[str, str]]
     enabled: bool
     createdAt: str
-
-
-class ProjectCreate(TypedDict):
-    name: str
-
-
-class ProjectCreateOptions(ProjectCreate, total=False):
-    icon: JsonObject
-    defaultTier: Literal["standard", "pro", "scale"]
 
 
 class Project(TypedDict):
@@ -480,29 +477,6 @@ class UpdateCallSettings(TypedDict, total=False):
     sipClaim: bool
     hostCloudApiCalls: bool
     expectedRevision: int
-
-
-class Event(TypedDict, total=False):
-    id: str
-    type: str
-    occurredAt: str
-    projectId: str
-    sessionId: str | None
-    payload: JsonObject | None
-
-
-class Operation(TypedDict, total=False):
-    id: str
-    kind: str
-    resourceType: str
-    resourceId: str
-    projectId: str | None
-    status: str
-    progressCode: str | None
-    failureCode: str | None
-    createdAt: str
-    updatedAt: str
-    completedAt: str | None
 
 
 class GroupParticipant(TypedDict):
