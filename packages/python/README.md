@@ -101,3 +101,8 @@ Platform equivalents are under `AsyncClient.projects` and
 `AsyncClient.sessions`. Entitlement and applied-state fields remain in the
 response; configuring a setting does not grant access. Send the version
 from a recent health-policy read when updating it.
+
+Platform projects expose typed lists, creation, production enrollment and Hybrid
+Link merge candidates. Platform sessions expose typed lifecycle batches, reviewed
+tier quotes and capability variants. A quote preserves fractional credit amounts
+and separates Hybrid Link transition progress from the tier change status.

@@ -30,11 +30,28 @@ from .models import (
     Envelope,
     Event,
     Operation,
-    Project,
-    ProjectCreate,
+    PlatformSession,
     Session,
+    SessionRemoved,
+    SessionStarting,
+    SessionStopping,
     SessionUpdate,
-    Success,
+)
+from .platform_core import (
+    BatchRemoved,
+    BatchStopped,
+    CreatedProject,
+    CreateProject,
+    HybridMergeCandidate,
+    NumberTierChange,
+    ProductionEnrollment,
+    ProductionEnrollmentCommand,
+    ProductionEnrollmentResult,
+    ProjectWithStats,
+    SessionBatch,
+    SessionCapabilities,
+    TierConfirmation,
+    TierQuoteRequest,
 )
 from .transport import ApiResponse, CursorPage, JsonObject, QueryValue, RequestOptions, Transport
 
@@ -101,12 +118,12 @@ class PlatformResource(Resource):
 class Projects(Resource):
     async def list(
         self, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[builtins.list[Project]]]:
+    ) -> ApiResponse[DataEnvelope[builtins.list[ProjectWithStats]]]:
         return await self._request("GET", "/platform/projects", options=options)
 
     async def create(
-        self, body: ProjectCreate, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[Project]]:
+        self, body: CreateProject, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[CreatedProject]]:
         return await self._request("POST", "/platform/projects", body=body, options=options)
 
     async def get_safe_mode(
@@ -176,7 +193,7 @@ class Projects(Resource):
 
     async def list_hybrid_merge_candidates(
         self, project_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[builtins.list[JsonObject]]]:
+    ) -> ApiResponse[DataEnvelope[builtins.list[HybridMergeCandidate]]]:
         return await self._request(
             "GET",
             f"/platform/projects/{segment(project_id)}/hybrid-merge-candidates",
@@ -184,15 +201,15 @@ class Projects(Resource):
         )
 
     async def request_production_enrollment(
-        self, project_id: str, body: JsonObject, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+        self, project_id: str, body: ProductionEnrollment, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ProductionEnrollmentResult]]:
         return await self._request(
             "POST", f"/platform/projects/{segment(project_id)}/promote", body=body, options=options
         )
 
     async def approve_production_enrollment(
         self, project_id: str, operation_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[DataEnvelope[ProductionEnrollmentCommand]]:
         return await self._request(
             "POST",
             f"/platform/projects/{segment(project_id)}/production-enrollments/{segment(operation_id)}/approve",
@@ -201,7 +218,7 @@ class Projects(Resource):
 
     async def cancel_production_enrollment(
         self, project_id: str, operation_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[DataEnvelope[ProductionEnrollmentCommand]]:
         return await self._request(
             "POST",
             f"/platform/projects/{segment(project_id)}/production-enrollments/{segment(operation_id)}/cancel",
@@ -212,7 +229,7 @@ class Projects(Resource):
 class PlatformSessions(Resource):
     async def list(
         self, *, project_id: str | None = None, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[builtins.list[Session]]]:
+    ) -> ApiResponse[DataEnvelope[builtins.list[PlatformSession]]]:
         return await self._request(
             "GET", "/platform/sessions", query={"projectId": project_id}, options=options
         )
@@ -233,7 +250,7 @@ class PlatformSessions(Resource):
 
     async def start(
         self, session_id: str, *, project_id: str | None = None, options: RequestOptions = O
-    ) -> ApiResponse[Success]:
+    ) -> ApiResponse[DataEnvelope[SessionStarting]]:
         return await self._request(
             "POST",
             f"/platform/sessions/{segment(session_id)}/start",
@@ -243,7 +260,7 @@ class PlatformSessions(Resource):
 
     async def stop(
         self, session_id: str, *, project_id: str | None = None, options: RequestOptions = O
-    ) -> ApiResponse[Success]:
+    ) -> ApiResponse[DataEnvelope[SessionStopping]]:
         return await self._request(
             "POST",
             f"/platform/sessions/{segment(session_id)}/stop",
@@ -252,23 +269,25 @@ class PlatformSessions(Resource):
         )
 
     async def stop_many(
-        self, body: JsonObject, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+        self, body: SessionBatch, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[BatchStopped]]:
         return await self._request("POST", "/platform/sessions/stop", body=body, options=options)
 
-    async def delete(self, session_id: str, *, options: RequestOptions = O) -> ApiResponse[Success]:
+    async def delete(
+        self, session_id: str, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[SessionRemoved]]:
         return await self._request(
             "DELETE", f"/platform/sessions/{segment(session_id)}", options=options
         )
 
     async def delete_many(
-        self, body: JsonObject, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+        self, body: SessionBatch, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[BatchRemoved]]:
         return await self._request("POST", "/platform/sessions/delete", body=body, options=options)
 
     async def quote_tier_change(
-        self, session_id: str, body: JsonObject, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+        self, session_id: str, body: TierQuoteRequest, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[NumberTierChange]]:
         if "hybridResolution" in body and "hybridMerge" in body:
             raise ValidationError("Provide hybridResolution or hybridMerge, not both.")
         return await self._request(
@@ -280,7 +299,7 @@ class PlatformSessions(Resource):
 
     async def retrieve_tier_change(
         self, session_id: str, quote_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[DataEnvelope[NumberTierChange]]:
         return await self._request(
             "GET",
             f"/platform/sessions/{segment(session_id)}/tier-quotes/{segment(quote_id)}",
@@ -288,9 +307,9 @@ class PlatformSessions(Resource):
         )
 
     async def set_tier_override(
-        self, session_id: str, body: JsonObject, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
-        if not isinstance(body.get("quoteId"), str) or not cast(str, body["quoteId"]).strip():
+        self, session_id: str, body: TierConfirmation, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[NumberTierChange]]:
+        if not isinstance(body.get("quoteId"), str) or not body["quoteId"].strip():
             raise ValidationError("Review a quote before confirming its quoteId.")
         return await self._request(
             "PATCH", f"/platform/sessions/{segment(session_id)}", body=body, options=options
@@ -298,7 +317,7 @@ class PlatformSessions(Resource):
 
     async def get_capabilities(
         self, session_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[DataEnvelope[SessionCapabilities]]:
         return await self._request(
             "GET", f"/platform/sessions/{segment(session_id)}/capabilities", options=options
         )

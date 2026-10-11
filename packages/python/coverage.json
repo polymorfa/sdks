@@ -1991,8 +1991,8 @@
       "method": "DELETE",
       "path": "/platform/sessions/{sessionId}",
       "status": "covered",
-      "sdkMethod": "AsyncMessagingClient.sessions.delete",
-      "testFile": "tests/test_sessions.py"
+      "sdkMethod": "AsyncClient.sessions.delete",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
@@ -2902,9 +2902,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.projects.list",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
@@ -2950,9 +2950,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/hybrid-merge-candidates",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.projects.list_hybrid_merge_candidates",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
@@ -3071,8 +3071,8 @@
       "method": "GET",
       "path": "/platform/sessions",
       "status": "covered",
-      "sdkMethod": "AsyncMessagingClient.sessions.list",
-      "testFile": "tests/test_sessions.py"
+      "sdkMethod": "AsyncClient.sessions.list",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
@@ -3095,16 +3095,16 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}",
       "status": "covered",
-      "sdkMethod": "AsyncMessagingClient.sessions.retrieve",
-      "testFile": "tests/test_sessions.py"
+      "sdkMethod": "AsyncClient.sessions.retrieve",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/capabilities",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sessions.get_capabilities",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
@@ -3126,9 +3126,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/tier-quotes/{quoteId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sessions.retrieve_tier_change",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
@@ -3390,9 +3390,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/sessions/{sessionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sessions.set_tier_override",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
@@ -4062,9 +4062,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.projects.create",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
@@ -4102,25 +4102,25 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/approve",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.projects.approve_production_enrollment",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/cancel",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.projects.cancel_production_enrollment",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/promote",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.projects.request_production_enrollment",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
@@ -4199,24 +4199,24 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/start",
       "status": "covered",
-      "sdkMethod": "AsyncMessagingClient.sessions.start",
-      "testFile": "tests/test_sessions.py"
+      "sdkMethod": "AsyncClient.sessions.start",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/stop",
       "status": "covered",
-      "sdkMethod": "AsyncMessagingClient.sessions.stop",
-      "testFile": "tests/test_sessions.py"
+      "sdkMethod": "AsyncClient.sessions.stop",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/tier-quotes",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sessions.quote_tier_change",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
@@ -4230,17 +4230,17 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/delete",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sessions.delete_many",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/stop",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sessions.stop_many",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
@@ -4583,8 +4583,8 @@
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}",
       "status": "covered",
-      "sdkMethod": "AsyncMessagingClient.sessions.update",
-      "testFile": "tests/test_sessions.py"
+      "sdkMethod": "AsyncClient.sessions.update",
+      "testFile": "tests/test_platform_core.py"
     },
     {
       "family": "platform",
