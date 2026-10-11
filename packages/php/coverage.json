@@ -1894,9 +1894,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/call-opt-outs/{optOutId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::callOptOuts.delete",
+      "testFile": "tests/call-consent.php"
     },
     {
       "family": "platform",
@@ -1918,17 +1918,17 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/flows/{flowId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.delete",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/flows/{flowId}/endpoint",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.deleteEndpoint",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
@@ -2014,17 +2014,17 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/voice/audio/{assetId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::voice.audio.delete",
+      "testFile": "tests/voice.php"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/voice/provider-credentials/{credentialId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::voice.providerCredentials.delete",
+      "testFile": "tests/voice.php"
     },
     {
       "family": "platform",
@@ -2398,105 +2398,105 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/claims",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.listClaims",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/claims/{claimId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.getClaim",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/collection",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.listCollection",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/enforcement",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.listEnforcement",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/findings",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.listFindings",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/health",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.listHealth",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/health-actions",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.listHealthActions",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/health/{session}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.getHealth",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/health/{session}/history",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.listHealthHistory",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/incidents",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.listIncidents",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/signals",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.listSignals",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/telemetry/{session}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.getTelemetry",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/telemetry/{session}/history",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.listTelemetryHistory",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
@@ -2558,57 +2558,57 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/call-opt-outs",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::callOptOuts.list",
+      "testFile": "tests/call-consent.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/call-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::callPolicy.retrieve",
+      "testFile": "tests/call-consent.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/call-retention",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::callRetention.retrieve",
+      "testFile": "tests/call-consent.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::calls.list",
+      "testFile": "tests/call-records.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls/{callId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::calls.retrieve",
+      "testFile": "tests/call-records.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls/export",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::calls.export",
+      "testFile": "tests/call-records.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls/stats",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::calls.stats",
+      "testFile": "tests/call-records.php"
     },
     {
       "family": "platform",
@@ -2718,49 +2718,49 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/flow-encryption-keys",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.encryptionKey",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.list",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.retrieve",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}/endpoint",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.endpoint",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}/endpoint/receipts",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.endpointReceipts",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/flows/{flowId}/receipts",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.receipts",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
@@ -2934,9 +2934,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/events/stream",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::events.stream",
+      "testFile": "tests/event_stream.php"
     },
     {
       "family": "platform",
@@ -3206,41 +3206,41 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/audio",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::voice.audio.list",
+      "testFile": "tests/voice.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/audio/{assetId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::voice.audio.retrieve",
+      "testFile": "tests/voice.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/audio/{assetId}/preview",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::voice.audio.previewUrl",
+      "testFile": "tests/voice.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/provider-credentials",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::voice.providerCredentials.list",
+      "testFile": "tests/voice.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/voice/provider-credentials/{credentialId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::voice.providerCredentials.retrieve",
+      "testFile": "tests/voice.php"
     },
     {
       "family": "platform",
@@ -3366,9 +3366,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/flows/{flowId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.update",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
@@ -3414,9 +3414,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/voice/audio/{assetId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::voice.audio.update",
+      "testFile": "tests/voice.php"
     },
     {
       "family": "platform",
@@ -3758,33 +3758,33 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/bansafe/incidents",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.createIncident",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/bansafe/incidents/{incidentId}/retract",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::banSafe.retractIncident",
+      "testFile": "tests/platform_bansafe.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/call-opt-outs",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::callOptOuts.create",
+      "testFile": "tests/call-consent.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/call-opt-outs/import",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::callOptOuts.import",
+      "testFile": "tests/call-consent.php"
     },
     {
       "family": "platform",
@@ -3934,57 +3934,57 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/flow-encryption-keys/rotate",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.rotateEncryptionKey",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.create",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/deprecate",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.deprecate",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/discard",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.discard",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/publish",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.publish",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/sync",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.sync",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/flows/{flowId}/upload",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.upload",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
@@ -4270,41 +4270,41 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/audio",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::voice.audio.createUpload",
+      "testFile": "tests/voice.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/audio/{assetId}/complete",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::voice.audio.complete",
+      "testFile": "tests/voice.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/audio/tts",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::voice.audio.synthesize",
+      "testFile": "tests/voice.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/provider-credentials",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::voice.providerCredentials.create",
+      "testFile": "tests/voice.php"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/voice/provider-credentials/{credentialId}/verify",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::voice.providerCredentials.verify",
+      "testFile": "tests/voice.php"
     },
     {
       "family": "platform",
@@ -4478,25 +4478,25 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/call-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::callPolicy.update",
+      "testFile": "tests/call-consent.php"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/call-retention",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::callRetention.update",
+      "testFile": "tests/call-consent.php"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/flows/{flowId}/endpoint",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::flows.setEndpoint",
+      "testFile": "tests/flows.php"
     },
     {
       "family": "platform",
@@ -4598,33 +4598,33 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/analytics",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::analytics.get",
+      "testFile": "tests/analytics.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/analytics",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::analytics.get",
+      "testFile": "tests/analytics.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/analytics/metrics",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::analytics.metrics",
+      "testFile": "tests/analytics.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/analytics/metrics",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient::analytics.metrics",
+      "testFile": "tests/analytics.php"
     },
     {
       "family": "platform",

@@ -15,6 +15,9 @@ $actual = json_decode(file_get_contents('php://input'), true);
 $failure = $_SERVER['REQUEST_METHOD'] !== $fixture['method'] || $_SERVER['REQUEST_URI'] !== $fixture['path'] || $actual !== $fixture['body'];
 $headers = array_change_key_case(getallheaders(), CASE_LOWER);
 $failure = $failure || ($headers['authorization'] ?? '') !== $fixture['authorization'] || ($headers['polymorfa-version'] ?? '') !== '2026-09-22';
+foreach ($fixture['requestHeaders'] ?? [] as $name => $value) {
+    $failure = $failure || ($headers[strtolower($name)] ?? '') !== $value;
+}
 if ($failure) {
     http_response_code(422);
     header('Content-Type: application/json');

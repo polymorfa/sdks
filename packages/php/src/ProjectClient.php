@@ -11,6 +11,11 @@ use Polymorfa\Resources\PlatformWebhooks;
 final readonly class ProjectClient
 {
     public Events $events;
+    public Resources\Flows $flows;
+    public Resources\Voice $voice;
+    public Resources\CallRecords $calls;
+    public Resources\CallRetention $callRetention;
+    public Resources\AnalyticsResource $analytics;
     public Resources\RequestLogs $requestLogs;
     public Resources\Operations $operations;
     public Resources\WebhookDeliveries $webhookDeliveries;
@@ -38,6 +43,11 @@ final readonly class ProjectClient
         }
         $transport ??= new HttpTransport($credential, $baseUrl, $apiVersion, $timeout, $maxNetworkRetries, $proxy, $http);
         $this->projectId = $projectId;
+        $this->flows = new Resources\Flows($transport, $projectId);
+        $this->calls = new Resources\CallRecords($transport, $projectId);
+        $this->callRetention = new Resources\CallRetention($transport);
+        $this->voice = new Resources\Voice($transport, $projectId, $credential->kind === 'organization_api_key');
+        $this->analytics = new Resources\AnalyticsResource($transport, $projectId);
         $this->requestLogs = new Resources\RequestLogs($transport, $projectId);
         $prefix = '/platform/projects/' . rawurlencode($projectId);
         $this->functions = new Resources\Functions($transport, $projectId);

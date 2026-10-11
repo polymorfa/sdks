@@ -16,6 +16,13 @@ final readonly class Client
     public PlatformSessions $sessions;
     public Projects $projects;
     public Events $events;
+    public Resources\PlatformBanSafe $banSafe;
+    public Resources\Voice $voice;
+    public Resources\CallRecords $calls;
+    public Resources\CallRetention $callRetention;
+    public Resources\CallPolicy $callPolicy;
+    public Resources\CallOptOuts $callOptOuts;
+    public Resources\AnalyticsResource $analytics;
     public Resources\Audiences $audiences;
     public Resources\Campaigns $campaigns;
     public Resources\RequestLogs $requestLogs;
@@ -52,6 +59,13 @@ final readonly class Client
         }
         $this->transport = new HttpTransport($credential, $baseUrl, $apiVersion, $timeout, $maxNetworkRetries, $proxy, $http);
         $this->media = new Resources\PlatformMedia($this->transport);
+        $this->banSafe = new Resources\PlatformBanSafe($this->transport);
+        $this->voice = new Resources\Voice($this->transport);
+        $this->calls = new Resources\CallRecords($this->transport);
+        $this->callRetention = new Resources\CallRetention($this->transport);
+        $this->callPolicy = new Resources\CallPolicy($this->transport);
+        $this->callOptOuts = new Resources\CallOptOuts($this->transport);
+        $this->analytics = new Resources\AnalyticsResource($this->transport);
         $this->audiences = new Resources\Audiences($this->transport);
         $this->campaigns = new Resources\Campaigns($this->transport);
         $this->requestLogs = new Resources\RequestLogs($this->transport);

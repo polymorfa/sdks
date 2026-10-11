@@ -224,13 +224,77 @@ evidence.extend([
  ('POST','/messaging/media/{id}/download-and-save','media.persist','messaging_complete'),
  ('GET','/messaging/media/{id}','media.download','media_stream'),
 ])
+evidence.extend([
+ ('GET','/platform/bansafe/health','banSafe.listHealth','platform_bansafe'),
+ ('GET','/platform/bansafe/health/{session}','banSafe.getHealth','platform_bansafe'),
+ ('GET','/platform/bansafe/health/{session}/history','banSafe.listHealthHistory','platform_bansafe'),
+ ('GET','/platform/bansafe/signals','banSafe.listSignals','platform_bansafe'),
+ ('GET','/platform/bansafe/telemetry/{session}','banSafe.getTelemetry','platform_bansafe'),
+ ('GET','/platform/bansafe/telemetry/{session}/history','banSafe.listTelemetryHistory','platform_bansafe'),
+ ('GET','/platform/bansafe/collection','banSafe.listCollection','platform_bansafe'),
+ ('GET','/platform/bansafe/health-actions','banSafe.listHealthActions','platform_bansafe'),
+ ('GET','/platform/bansafe/findings','banSafe.listFindings','platform_bansafe'),
+ ('GET','/platform/bansafe/enforcement','banSafe.listEnforcement','platform_bansafe'),
+ ('GET','/platform/bansafe/incidents','banSafe.listIncidents','platform_bansafe'),
+ ('POST','/platform/bansafe/incidents','banSafe.createIncident','platform_bansafe'),
+ ('POST','/platform/bansafe/incidents/{incidentId}/retract','banSafe.retractIncident','platform_bansafe'),
+ ('GET','/platform/bansafe/claims','banSafe.listClaims','platform_bansafe'),
+ ('GET','/platform/bansafe/claims/{claimId}','banSafe.getClaim','platform_bansafe'),
+ ('GET','/platform/projects/{projectId}/events/stream','events.stream','event_stream'),
+ ('GET','/platform/flows','flows.list','flows'),
+ ('POST','/platform/flows','flows.create','flows'),
+ ('GET','/platform/flows/{flowId}','flows.retrieve','flows'),
+ ('PATCH','/platform/flows/{flowId}','flows.update','flows'),
+ ('DELETE','/platform/flows/{flowId}','flows.delete','flows'),
+ ('POST','/platform/flows/{flowId}/upload','flows.upload','flows'),
+ ('POST','/platform/flows/{flowId}/publish','flows.publish','flows'),
+ ('POST','/platform/flows/{flowId}/deprecate','flows.deprecate','flows'),
+ ('POST','/platform/flows/{flowId}/discard','flows.discard','flows'),
+ ('POST','/platform/flows/{flowId}/sync','flows.sync','flows'),
+ ('GET','/platform/flows/{flowId}/receipts','flows.receipts','flows'),
+ ('GET','/platform/flows/{flowId}/endpoint','flows.endpoint','flows'),
+ ('PUT','/platform/flows/{flowId}/endpoint','flows.setEndpoint','flows'),
+ ('DELETE','/platform/flows/{flowId}/endpoint','flows.deleteEndpoint','flows'),
+ ('GET','/platform/flows/{flowId}/endpoint/receipts','flows.endpointReceipts','flows'),
+ ('GET','/platform/flow-encryption-keys','flows.encryptionKey','flows'),
+ ('POST','/platform/flow-encryption-keys/rotate','flows.rotateEncryptionKey','flows'),
+ ('GET','/platform/voice/audio','voice.audio.list','voice'),
+ ('POST','/platform/voice/audio','voice.audio.createUpload','voice'),
+ ('POST','/platform/voice/audio/tts','voice.audio.synthesize','voice'),
+ ('GET','/platform/voice/audio/{assetId}','voice.audio.retrieve','voice'),
+ ('POST','/platform/voice/audio/{assetId}/complete','voice.audio.complete','voice'),
+ ('PATCH','/platform/voice/audio/{assetId}','voice.audio.update','voice'),
+ ('DELETE','/platform/voice/audio/{assetId}','voice.audio.delete','voice'),
+ ('GET','/platform/voice/audio/{assetId}/preview','voice.audio.previewUrl','voice'),
+ ('GET','/platform/voice/provider-credentials','voice.providerCredentials.list','voice'),
+ ('POST','/platform/voice/provider-credentials','voice.providerCredentials.create','voice'),
+ ('GET','/platform/voice/provider-credentials/{credentialId}','voice.providerCredentials.retrieve','voice'),
+ ('POST','/platform/voice/provider-credentials/{credentialId}/verify','voice.providerCredentials.verify','voice'),
+ ('DELETE','/platform/voice/provider-credentials/{credentialId}','voice.providerCredentials.delete','voice'),
+ ('GET','/platform/analytics','analytics.get','analytics'),
+ ('GET','/platform/projects/{projectId}/analytics','analytics.get','analytics'),
+ ('GET','/platform/analytics/metrics','analytics.metrics','analytics'),
+ ('GET','/platform/projects/{projectId}/analytics/metrics','analytics.metrics','analytics'),
+ ('GET','/platform/calls','calls.list','call-records'),
+ ('GET','/platform/calls/{callId}','calls.retrieve','call-records'),
+ ('GET','/platform/calls/stats','calls.stats','call-records'),
+ ('GET','/platform/calls/export','calls.export','call-records'),
+ ('GET','/platform/call-policy','callPolicy.retrieve','call-consent'),
+ ('PUT','/platform/call-policy','callPolicy.update','call-consent'),
+ ('GET','/platform/call-retention','callRetention.retrieve','call-consent'),
+ ('PUT','/platform/call-retention','callRetention.update','call-consent'),
+ ('GET','/platform/call-opt-outs','callOptOuts.list','call-consent'),
+ ('POST','/platform/call-opt-outs','callOptOuts.create','call-consent'),
+ ('POST','/platform/call-opt-outs/import','callOptOuts.import','call-consent'),
+ ('DELETE','/platform/call-opt-outs/{optOutId}','callOptOuts.delete','call-consent'),
+])
 for method,path,name,test in evidence:
  matches=[op for op in manifest['operations'] if op['method']==method and op['path']==path]
  assert len(matches)==1, (method,path)
  assert (package/'tests'/f'{test}.php').exists()
  op=matches[0]
  for field in ['reason','milestone']:op.pop(field,None)
- owner = 'ProjectClient' if name.startswith('functions.') else ('Client' if op['family']=='platform' else 'MessagingClient')
+ owner = 'ProjectClient' if name.startswith(('functions.','flows.')) or path.startswith('/platform/projects/{projectId}/analytics') else ('Client' if op['family']=='platform' else 'MessagingClient')
  if name.startswith('SystemClient.') or name.startswith('BridgeClient.'): owner,name=name.split('.',1)
  op.update(status='covered',sdkMethod=f'{owner}::{name}',testFile=f'tests/{test}.php')
 (package/'coverage.json').write_text(json.dumps(manifest,indent=2)+'\n')

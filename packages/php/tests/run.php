@@ -178,3 +178,13 @@ require __DIR__.'/audiences.php';
 require __DIR__.'/messaging_complete.php';
 
 require __DIR__.'/media_stream.php';
+
+require __DIR__.'/platform_bansafe.php';
+require __DIR__.'/flows.php';
+require __DIR__.'/voice.php';
+
+require __DIR__.'/event_stream.php';
+
+require __DIR__.'/analytics.php';
+require __DIR__.'/call-records.php';
+require __DIR__.'/call-consent.php';
