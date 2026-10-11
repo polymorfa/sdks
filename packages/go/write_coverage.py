@@ -33,6 +33,6 @@ for operation in ledger["operations"]:
     else:
         entry.update(status="missing", reason="Handwritten typed resource and per-operation native request/response test have not both been verified.", milestone="server-sdk-parity")
     operations.append(entry)
-manifest = {"schemaVersion": 1, "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9", "operations": operations}
+manifest = {"schemaVersion": 1, "sourceSdkCommit": "daac84b1bd24c9460a2bcad555629a5466d85e2c", "operations": operations}
 (PACKAGE / "coverage.json").write_text(json.dumps(manifest, indent=2) + "\n")
 print({status: sum(item["status"] == status for item in operations) for status in ["covered", "excluded", "missing"]})

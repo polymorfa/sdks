@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9",
+  "sourceSdkCommit": "daac84b1bd24c9460a2bcad555629a5466d85e2c",
   "operations": [
     {
       "family": "messaging",

@@ -32,7 +32,7 @@ for (const language of languages) {
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(
     manifest.sourceSdkCommit,
-    "ff51567105b64bf6997e7330ba8eb502d875e7b9",
+    "daac84b1bd24c9460a2bcad555629a5466d85e2c",
   );
   assert.ok(Array.isArray(manifest.operations));
   const key = (entry) => `${entry.family}|${entry.method}|${entry.path}`;
