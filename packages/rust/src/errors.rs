@@ -91,6 +91,14 @@ impl Error {
             }),
         }
     }
+    pub(crate) fn with_local_status(mut self, status: u16) -> Self {
+        self.inner.status = Some(status);
+        self
+    }
+    pub(crate) fn with_local_details(mut self, details: serde_json::Value) -> Self {
+        self.inner.details = Some(details);
+        self
+    }
     pub(crate) fn with_metadata(mut self, metadata: ResponseMetadata) -> Self {
         self.inner.status = Some(metadata.status);
         self.inner.request_id = metadata.request_id.clone();

@@ -18,6 +18,36 @@ impl OrganizationClient {
             http: HttpTransport::new(credential, options)?,
         })
     }
+    pub fn sip_trunks(&self) -> crate::sip::OrganizationSipTrunks<'_> {
+        crate::sip::OrganizationSipTrunks(crate::sip::SipTrunks {
+            http: &self.http,
+            project_id: None,
+        })
+    }
+    pub fn call_policy(&self) -> crate::call_consent::CallPolicyResource<'_> {
+        crate::call_consent::CallPolicyResource(&self.http)
+    }
+    pub fn call_opt_outs(&self) -> crate::call_consent::CallOptOuts<'_> {
+        crate::call_consent::CallOptOuts(&self.http)
+    }
+    pub fn customers(&self) -> crate::customers::Customers<'_> {
+        crate::customers::Customers(&self.http)
+    }
+    pub fn audiences(&self) -> crate::audiences::Audiences<'_> {
+        crate::audiences::Audiences(&self.http)
+    }
+    pub fn opt_outs(&self) -> crate::organization_controls::OptOuts<'_> {
+        crate::organization_controls::OptOuts(&self.http)
+    }
+    pub fn media(&self) -> crate::organization_controls::PlatformMedia<'_> {
+        crate::organization_controls::PlatformMedia(&self.http)
+    }
+    pub fn session_bans(&self) -> crate::organization_controls::SessionBans<'_> {
+        crate::organization_controls::SessionBans(&self.http)
+    }
+    pub fn campaigns(&self) -> crate::campaigns::PlatformCampaigns<'_> {
+        crate::campaigns::PlatformCampaigns(&self.http)
+    }
     pub fn organizations(&self) -> crate::organization::Organizations<'_> {
         crate::organization::Organizations(&self.http)
     }
@@ -125,6 +155,12 @@ impl ProjectClient {
             return Err(configuration("project_id"));
         }
         Ok(Self { http, project_id })
+    }
+    pub fn sip_trunks(&self) -> crate::sip::ProjectSipTrunks<'_> {
+        crate::sip::ProjectSipTrunks(crate::sip::SipTrunks {
+            http: &self.http,
+            project_id: Some(&self.project_id),
+        })
     }
     pub fn project_id(&self) -> &str {
         &self.project_id

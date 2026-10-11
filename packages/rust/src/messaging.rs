@@ -15,6 +15,12 @@ impl MessagingClient {
             http: HttpTransport::new(credential, options)?,
         })
     }
+    pub fn campaigns(&self) -> crate::campaigns::MessagingCampaigns<'_> {
+        crate::campaigns::MessagingCampaigns(&self.http)
+    }
+    pub fn business(&self) -> crate::business::Business<'_> {
+        crate::business::Business(&self.http)
+    }
     pub fn cloud_catalogs(&self) -> crate::cloud_graph::CloudCatalogs<'_> {
         crate::cloud_graph::CloudCatalogs(&self.http)
     }

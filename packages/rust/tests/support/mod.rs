@@ -164,3 +164,22 @@ macro_rules! wire_organization {
         server.await.unwrap();
     }};
 }
+/// Native resources that unwrap the API envelope still assert the full typed data.
+#[macro_export]
+macro_rules! wire_unwrapped_organization {
+    ($client:ident,$method:expr,$path:expr,$body:expr,$response:expr,$call:expr) => {{
+        let expected = $response;
+        let (base, server) = $crate::support::wire($method, $path, $body, expected.clone()).await;
+        let $client = $crate::support::organization(base);
+        let response = $call.await.unwrap();
+        assert_eq!(
+            response.metadata.request_id.as_deref(),
+            Some("wire_fixture")
+        );
+        $crate::support::assert_subset(
+            &expected["data"],
+            &serde_json::to_value(response.data).unwrap(),
+        );
+        server.await.unwrap();
+    }};
+}
