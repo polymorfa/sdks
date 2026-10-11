@@ -54,6 +54,9 @@ async fn language_neutral_behavior_fixtures() {
         options.max_network_retries = fixture["outcome"]["maxNetworkRetries"]
             .as_u64()
             .map(|v| v as u32);
+        options.timeout = fixture["outcome"]["timeoutMs"]
+            .as_u64()
+            .map(Duration::from_millis);
         if let Some(value) = fixture["request"]["headers"]["idempotency-key"].as_str() {
             options.idempotency_key = Some(value.into());
         }
@@ -146,6 +149,7 @@ async fn language_neutral_behavior_fixtures() {
                     "conflict" => ErrorKind::Conflict,
                     "rate_limit" => ErrorKind::RateLimit,
                     "timeout" => ErrorKind::Timeout,
+                    "connection" => ErrorKind::Connection,
                     "cancelled" => ErrorKind::Cancelled,
                     "server" => ErrorKind::Server,
                     _ => panic!("Unknown expected type {kind}"),
@@ -156,6 +160,21 @@ async fn language_neutral_behavior_fixtures() {
                 }
                 if let Some(request_id) = fixture["outcome"]["requestId"].as_str() {
                     assert_eq!(error.request_id.as_deref(), Some(request_id), "{id}");
+                }
+                if let Some(request_id) = fixture["outcome"]["metadataRequestId"].as_str() {
+                    assert_eq!(
+                        error.metadata.as_ref().unwrap().request_id.as_deref(),
+                        Some(request_id),
+                        "{id}"
+                    );
+                }
+                if let Some(operation_id) = fixture["outcome"]["operationId"].as_str() {
+                    assert_eq!(error.operation_id.as_deref(), Some(operation_id), "{id}");
+                    assert_eq!(
+                        error.metadata.as_ref().unwrap().operation_id.as_deref(),
+                        Some(operation_id),
+                        "{id}"
+                    );
                 }
             }
             None => {

@@ -33,6 +33,7 @@ pub struct ErrorInfo {
     pub code: Option<String>,
     pub status: Option<u16>,
     pub request_id: Option<String>,
+    pub operation_id: Option<String>,
     pub request_log_url: Option<String>,
     pub doc_url: Option<String>,
     pub rate_limit_reason: Option<String>,
@@ -49,6 +50,7 @@ impl Error {
                 code: Some(code.into()),
                 status: None,
                 request_id: None,
+                operation_id: None,
                 request_log_url: None,
                 doc_url: None,
                 rate_limit_reason: None,
@@ -62,7 +64,7 @@ impl Error {
         let object = data.get("error").filter(|v| v.is_object()).unwrap_or(data);
         let text = |name: &str| object.get(name).and_then(|v| v.as_str()).map(str::to_owned);
         let kind = match status {
-            400 | 422 => ErrorKind::Validation,
+            400 | 413 | 422 => ErrorKind::Validation,
             401 => ErrorKind::Authentication,
             402 => ErrorKind::PaymentRequired,
             403 => ErrorKind::Authorization,
@@ -80,6 +82,7 @@ impl Error {
                 code: text("code"),
                 status: Some(status),
                 request_id: text("request_id").or_else(|| metadata.request_id.clone()),
+                operation_id: metadata.operation_id.clone(),
                 request_log_url: text("request_log_url"),
                 doc_url: text("docs"),
                 rate_limit_reason: metadata.headers.get("polymorfa-ratelimit-reason").cloned(),
@@ -87,6 +90,13 @@ impl Error {
                 metadata: Some(metadata),
             }),
         }
+    }
+    pub(crate) fn with_metadata(mut self, metadata: ResponseMetadata) -> Self {
+        self.inner.status = Some(metadata.status);
+        self.inner.request_id = metadata.request_id.clone();
+        self.inner.operation_id = metadata.operation_id.clone();
+        self.inner.metadata = Some(metadata);
+        self
     }
 }
 impl std::ops::Deref for Error {

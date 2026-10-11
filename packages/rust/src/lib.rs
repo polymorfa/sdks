@@ -6,6 +6,8 @@ compile_error!("polymorfa-sdk is server-only. Use @polymorfa/browser and @polymo
 
 pub mod account;
 pub mod calls;
+pub mod calls_protocol;
+pub mod connections;
 pub mod errors;
 pub mod media;
 pub mod messaging;

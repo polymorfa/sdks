@@ -60,6 +60,12 @@ impl MessagingClient {
     pub fn voip(&self) -> crate::voip::Voip<'_> {
         crate::voip::Voip(&self.http)
     }
+    pub fn hybrid_link(&self) -> crate::connections::HybridLink<'_> {
+        crate::connections::HybridLink(&self.http)
+    }
+    pub fn client_tokens(&self) -> crate::connections::ClientTokens<'_> {
+        crate::connections::ClientTokens(&self.http)
+    }
     /// Explicit escape hatch for newly released endpoints; never counts as typed coverage.
     pub async fn raw<T: serde::de::DeserializeOwned>(
         &self,
@@ -73,7 +79,7 @@ impl MessagingClient {
         self.http.request(method, path, &pairs, body, options).await
     }
 }
-pub struct Sessions<'a>(&'a HttpTransport);
+pub struct Sessions<'a>(pub(crate) &'a HttpTransport);
 impl Sessions<'_> {
     pub async fn list(
         &self,

@@ -205,16 +205,58 @@ impl Events<'_> {
     }
     pub async fn list(
         &self,
-        query: &Query,
+        parameters: &EventListParameters,
         options: RequestOptions,
     ) -> Result<crate::pagination::CursorPage<EventRecord>> {
         crate::pagination::CursorPage::load(
             self.http.clone(),
             format!("{}/events", self.prefix),
-            query.clone(),
+            parameters.query()?,
             options,
         )
         .await
+    }
+    pub async fn retrieve_with_payload(
+        &self,
+        id: &str,
+        include_payload: bool,
+        options: RequestOptions,
+    ) -> Result<ApiResponse<EventRecord>> {
+        let response: ApiResponse<DataEnvelope<EventRecord>> = self
+            .http
+            .request::<_, ()>(
+                Method::GET,
+                &format!("{}/events/{}", self.prefix, encode(id)),
+                &[("includePayload", include_payload.to_string())],
+                None,
+                options,
+            )
+            .await?;
+        Ok(ApiResponse {
+            data: response.data.data,
+            metadata: response.metadata,
+        })
+    }
+    pub async fn replay(
+        &self,
+        id: &str,
+        body: &ReplayEventRequest,
+        options: RequestOptions,
+    ) -> Result<ApiResponse<EventReplayReceipt>> {
+        let response: ApiResponse<DataEnvelope<EventReplayReceipt>> = self
+            .http
+            .request(
+                Method::POST,
+                &format!("{}/events/{}/replays", self.prefix, encode(id)),
+                &[],
+                Some(body),
+                options.idempotent(),
+            )
+            .await?;
+        Ok(ApiResponse {
+            data: response.data.data,
+            metadata: response.metadata,
+        })
     }
     pub fn stream(
         &self,

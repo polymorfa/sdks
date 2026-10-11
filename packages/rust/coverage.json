@@ -1,0 +1,4646 @@
+{
+  "schemaVersion": 1,
+  "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9",
+  "operations": [
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/products/{productId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/profile/cover-photo/{coverPhotoId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.quick_replies.delete",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/channels/{id}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/groups/{id}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/labels/{labelId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.labels.delete",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/official-groups/{group}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/profile/picture",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.profile.delete_picture",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/templates/{name}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/quicklinks/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.quick_links.cancel",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/voip/calls/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.end",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/webhooks/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.webhooks.delete",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/health",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/catalog",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/collections",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/compliance",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/eligibility",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/linked-accounts",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/products/{productId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/profile",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/quick-replies",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.quick_replies.list",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/call-permissions/{to}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.retrieve_call_permission",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/channels",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/channels/{id}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/channels/{id}/message-updates",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/channels/{id}/messages",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}/messages",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}/media",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/chats/{conversation}/service-window",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/cloud-credentials",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.get_cloud_credential_health",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.list",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.retrieve",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/business-profile",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.business_profile",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/devices",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.devices",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/info",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.info",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/{contactId}/picture",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.picture",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/blocked",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.blocklist",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/contacts/check",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.check",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/{id}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/{id}/invite-code",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/{id}/participants",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/join-info",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/hybrid-link",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.hybrid_link.state",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/identities/resolve",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.identities.resolve",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/labels",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.labels.list",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/labels/chats/{conversation}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.labels.list_for_chat",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/meta-pricing",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.get_meta_pricing",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/observation-policy",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/official-groups",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/official-groups/{group}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/official-groups/{group}/invite-link",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/official-groups/{group}/join-requests",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/operations/{operationId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.messages.operation_status",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/pair/qr",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.qr",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/presence",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.presence.get",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/presence/{conversation}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.presence.get_for_chat",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/privacy",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.privacy.get",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/profile",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.profile.get",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/safe-mode",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/templates",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/templates/{name}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/users/{id}/security-code",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.users.get_security_code",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/bridge/route",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/info/status",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/info/version",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/media/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.media.download_stream",
+      "testFile": "tests/media.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/media/{id}/info",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.media.retrieve",
+      "testFile": "tests/media.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/health-policy",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/insurance-evidence",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/observation-policy",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/safe-mode",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectId}/warmup-plan",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/analytics",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/templates",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/quicklinks/{id}",
+      "status": "partial",
+      "sdkMethod": "MessagingClient.quick_links.retrieve",
+      "testFile": "tests/resources.rs",
+      "reason": "Public method and native wire test exist; complete merged message/session/configuration shapes are still being expanded.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/quicklinks/availability",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.quick_links.availability",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/routing/hybrid",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.hybrid_link.get_policy",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/testing/{projectId}/events/fixtures",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/voip/calls/{id}/candidates",
+      "status": "excluded",
+      "reason": "used internally by the Calls SDK; not part of the public API",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/webhooks",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.webhooks.list",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/webhooks/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.webhooks.retrieve",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/ping",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/quicklink/{token}",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/quicklink/{token}/logo",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/catalog/cart",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/products/{productId}/visibility",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/profile",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/official-groups/{group}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/templates/{name}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
+      "status": "excluded",
+      "reason": "Messaging campaign update is owned by SDK PR #307.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/quicklink/{token}/testing",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/catalog",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/collections",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/collections/{collectionId}/appeal",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/collections/reorder",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/orders/{orderId}/lookup",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/products",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/products/{productId}/appeal",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/quick-replies",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.quick_replies.create",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/calls/{callId}/reject",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.calls.reject_incoming",
+      "testFile": "tests/calls.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/follow",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/live-updates",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/messages/{messageId}/reaction",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/messages/{messageId}/viewed",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/mute",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/unfollow",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/channels/{id}/unmute",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/chats/{conversation}/archive",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/chats/{conversation}/unarchive",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/cloud-credentials/reauthorize",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.reauthorize_cloud_credentials",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/contacts/{contactId}/block",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.block",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/contacts/{contactId}/unblock",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.contacts.unblock",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/admin/demote",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/admin/promote",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/invite-code/revoke",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/leave",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/participants/add",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/{id}/participants/remove",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/groups/join",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/labels",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.labels.create",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/react",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.messages.react",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/seen",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.messages.mark_seen",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/send",
+      "status": "partial",
+      "sdkMethod": "MessagingClient.messages.send",
+      "testFile": "tests/resources.rs",
+      "reason": "Public method and native wire test exist; complete merged message/session/configuration shapes are still being expanded.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/star",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.messages.star",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/typing",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.messages.set_typing",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/invite-link/reset",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/join-requests/approve",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/join-requests/reject",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/participants/remove",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/official-groups/{group}/pins",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/pair/code",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.request_pairing_code",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/presence",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.presence.set",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/presence/{conversation}/subscribe",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.presence.subscribe",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/templates",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/cloud-api/embedded-signup",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/features/evaluate",
+      "status": "excluded",
+      "reason": "Host-runtime feature evaluation is not a customer messaging operation in this SDK.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/media/{id}/download-and-save",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.media.persist",
+      "testFile": "tests/media.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/launch",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/pause",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/requeue",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reschedule",
+      "status": "excluded",
+      "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/resume",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/stop",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/templates",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}/preview",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/templates/{id}/submit",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/quicklinks",
+      "status": "partial",
+      "sdkMethod": "MessagingClient.quick_links.create",
+      "testFile": "tests/resources.rs",
+      "reason": "Public method and native wire test exist; complete merged message/session/configuration shapes are still being expanded.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/testing/{projectId}/events",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/testing/{projectId}/history-fixtures",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/call-links",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.create_call_link",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/call-links/preview",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.preview_call_link",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.place",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/accept",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.accept",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/candidate",
+      "status": "excluded",
+      "reason": "used internally by the Calls SDK; not part of the public API",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/hand",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.set_hand_raised",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/leave",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.leave",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/offer",
+      "status": "excluded",
+      "reason": "used internally by the Calls SDK; not part of the public API",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/participants",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.add_participant",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/participants/ring",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.ring_participant",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/reaction",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.send_reaction",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/reject",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.reject",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/renegotiate",
+      "status": "excluded",
+      "reason": "used internally by the Calls SDK; not part of the public API",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/reports",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.report",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/check",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.check",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/webhooks",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.webhooks.create",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/cancel",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/cloud",
+      "status": "excluded",
+      "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/code",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/confirm",
+      "status": "excluded",
+      "reason": "Credential-free public QuickLink participant route used only by the hosted QuickLink page, not the SDKs.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/connection",
+      "status": "excluded",
+      "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/history",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/phone",
+      "status": "excluded",
+      "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/phone/reset",
+      "status": "excluded",
+      "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/testing/start",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/compliance",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/products/{productId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/profile/cover-photo",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.quick_replies.replace",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/chats/{conversation}/disappearing",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/description",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/picture",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/info-edit",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/join-approval",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/member-add",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/settings/messages",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/groups/{id}/subject",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/hybrid-link",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.hybrid_link.set_paused",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/labels/{labelId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.labels.update",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/labels/chats/{conversation}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.labels.replace_for_chat",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/privacy/{setting}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.privacy.set",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/privacy/disappearing/default",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.privacy.set_default_disappearing_timer",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/profile/name",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.profile.set_name",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/profile/picture",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.profile.set_picture",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/profile/status",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.profile.set_status",
+      "testFile": "tests/account.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/safe-mode",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/health-policy",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/insurance-evidence",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/safe-mode",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectId}/warmup-plan",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/routing/hybrid",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.hybrid_link.set_policy",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/webhooks/{id}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.webhooks.update",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/api/account/meta-app",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/auth/factors/{factorId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/auth/providers/{provider}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/call-opt-outs/{optOutId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/calls/{callId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/members/{memberId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/organization/avatar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/profile/avatar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/quicklink/logo",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/sip-trunks/{trunkId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/voice/audio/{assetId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/voice/provider-credentials/{credentialId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/webhooks/{webhookId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/audiences/{listId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/audiences/{listId}/members/{phone}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/call-opt-outs/{optOutId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/campaigns/{campaignId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/customers/{customerId}/pairing-links/{pairingLinkId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/flows/{flowId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/functions/{functionId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/functions/{functionId}/secrets/{versionId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/keys/{keyId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/media/{mediaId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/optouts/{phone}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/sessions/{session}/client-rules",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.client_tokens.delete_rules",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/sessions/{sessionId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.delete",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/sip-trunks/{trunkId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/templates/{templateId}",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
+      "milestone": "credential-boundary"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/voice/audio/{assetId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/voice/provider-credentials/{credentialId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/webhooks/{webhookId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/api/account/cloud-health",
+      "status": "excluded",
+      "reason": "Console-only redacted account health requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/api/account/cloud-health/export",
+      "status": "excluded",
+      "reason": "Console-only redacted account health export requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/api/account/meta-app",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/audit",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/auth/methods",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/auth/providers",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/call-opt-outs",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/call-policy",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/call-retention",
+      "status": "excluded",
+      "reason": "Console-only dashboard operation; not a public SDK method.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/call-settings/{sessionId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/calls",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/calls/{callId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/deployments",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/analytics",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/log-calendar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/logs",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/number-options",
+      "status": "excluded",
+      "reason": "Private Console selector requires dashboard identity; organization API keys and project tokens are not accepted.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/preferences",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/usage",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications/archived",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications/count",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/notifications/preferences",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/organizations/{slug}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/profile",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/logging",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/setup",
+      "status": "excluded",
+      "reason": "Console-only project setup uses dashboard identity and is unavailable to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/sandbox/pool",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/session-configuration/{sessionId}",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/sip-trunks",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/sip-trunks/{trunkId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/sip/endpoint",
+      "status": "excluded",
+      "reason": "Console-only dashboard operation; not a public SDK method.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/teams",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/audio",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/audio/{assetId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/audio/{assetId}/preview",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/provider-credentials",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/voice/provider-credentials/{credentialId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/webhooks",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audiences",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audiences/{listId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audiences/{listId}/members",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audit",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bans",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bans/active",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/claims",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/claims/{claimId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/collection",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/enforcement",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/findings",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/health",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/health-actions",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/health/{session}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/health/{session}/history",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/incidents",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/signals",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/telemetry/{session}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/bansafe/telemetry/{session}/history",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/controls/{scope}/{resourceId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/limits",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/pricing",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/priorities",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/transactions",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/billing/usage",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/call-opt-outs",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/call-policy",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/call-retention",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls/{callId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls/export",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/calls/stats",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/analytics",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/conversions",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/events",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/recipients",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}/events",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}/numbers",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/customers/{customerId}/pairing-links",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/events",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.events.list",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/events/{eventId}",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.events.retrieve_with_payload",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flow-encryption-keys",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}/endpoint/receipts",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/flows/{flowId}/receipts",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/deployments",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/deployments/{deploymentId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/invocations",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/invocations/{invocationId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/functions/{functionId}/secrets",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/gates",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/incidents",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/keys",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/media/{mediaId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/members",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/operations",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/operations/{operationId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/operations/{operationId}/transitions",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/optouts",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/optouts/settings",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.list",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/customers/status",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/events",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.events.list",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/events/{eventId}",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.events.retrieve_with_payload",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/events/stream",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.events.stream",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/health-policy",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/hybrid-merge-candidates",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/insurance-evidence",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/operations",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/operations/{operationId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/operations/{operationId}/transitions",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/safe-mode",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/warmup-plan",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhooks",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/quicklink",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/session-configuration",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.list",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{session}/call-settings",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.retrieve_call_settings",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{session}/client-rules",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.client_tokens.retrieve_rules",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}",
+      "status": "partial",
+      "sdkMethod": "MessagingClient.sessions.retrieve",
+      "testFile": "tests/resources.rs",
+      "reason": "Public method and native wire test exist; complete merged message/session/configuration shapes are still being expanded.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/capabilities",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/me",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.account",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/safe-mode",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/tier-quotes/{quoteId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sip-trunks",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sip-trunks/{trunkId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sip/endpoint",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/team",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/templates",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
+      "milestone": "credential-boundary"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/templates/{templateId}",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
+      "milestone": "credential-boundary"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/tokens",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/usage",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/usage/records",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/audio",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/audio/{assetId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/audio/{assetId}/preview",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/provider-credentials",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/voice/provider-credentials/{credentialId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries/{deliveryId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries/{deliveryId}/attempts",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhooks",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/webhooks/{webhookId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/members/{memberId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/organization",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/profile",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/projects/{projectId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/sip-trunks/{trunkId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/voice/audio/{assetId}",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/console/webhooks/{webhookId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/campaigns/{campaignId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/customers/{customerId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/flows/{flowId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/functions/{functionId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/sessions/{sessionId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/sip-trunks/{trunkId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/templates/{templateId}",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
+      "milestone": "credential-boundary"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/voice/audio/{assetId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/webhooks/{webhookId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/api/account/features/enrollment",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/api/account/features/evaluate",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/api/account/features/exposure",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/auth/totp",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/auth/totp/verify",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/bansafe/enforcement/{session}/appeal",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/bansafe/findings/{findingId}/acknowledge",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/billing/topup",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/call-opt-outs",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/call-opt-outs/import",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/calls/{callId}/connections/{connectionId}/remove",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/keys",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/members/invites",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/{notificationId}/archive",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/{notificationId}/read",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/archive",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/read",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/notifications/test",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/organization-invitations/{invitationId}/accept",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/organization/avatar/uploads",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/organizations/ensure",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/profile/avatar/uploads",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/profile/ensure",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/projects/{projectId}/icon",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/projects/{projectId}/setup/usage",
+      "status": "excluded",
+      "reason": "Console-only project setup uses dashboard identity and is unavailable to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/quicklink/logo/org",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/quicklink/logo/project",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/quicklink/logo/uploads",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/sip-trunks",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/sip-trunks/{trunkId}/credentials",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/teams/{teamId}/delete",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/teams/leave",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/audio",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/audio/{assetId}/complete",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/audio/tts",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/provider-credentials",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/voice/provider-credentials/{credentialId}/verify",
+      "status": "excluded",
+      "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/webhooks",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audiences",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audiences/{listId}/members",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audiences/uploads",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/bansafe/incidents",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/bansafe/incidents/{incidentId}/retract",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/call-opt-outs",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/call-opt-outs/import",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/archive",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/conversions",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/duplicate",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/launch",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/pause",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/recipients",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/requeue",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/reschedule",
+      "status": "excluded",
+      "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/resume",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/stop",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/client-tokens",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.client_tokens.mint",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/archive",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/numbers/{sessionId}/transfer",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/pairing-links",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/customers/{customerId}/restore",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/events/{eventId}/replays",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.events.replay",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flow-encryption-keys/rotate",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/deprecate",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/discard",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/publish",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/sync",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/flows/{flowId}/upload",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/deployments",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/invocations",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/functions/{functionId}/secrets",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/incidents/{incidentId}/acknowledge",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/media/uploads",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/operations/{operationId}/cancel",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/optouts",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/optouts/batch",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.create",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/customers/enable",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/events/{eventId}/replays",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.events.replay",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/events/stream/{streamId}/ack",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.events.acknowledge_stream",
+      "testFile": "tests/events.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/operations/{operationId}/cancel",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/approve",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.approve_production_enrollment",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/cancel",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.cancel_production_enrollment",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/promote",
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.projects.request_production_enrollment",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/retry",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhooks",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}/secret-rotations",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/projects/{projectId}/webhooks/{webhookId}/tests",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/handoff-ack",
+      "status": "excluded",
+      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+      "milestone": "security-design"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/handoff-import",
+      "status": "excluded",
+      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+      "milestone": "security-design"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/handoff-keys",
+      "status": "excluded",
+      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+      "milestone": "security-design"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/logout",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.logout",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/restart",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.restart",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/start",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.start",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/stop",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.sessions.stop",
+      "testFile": "tests/resources.rs"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/tier-quotes",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/upload-appstate-keys",
+      "status": "excluded",
+      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete.",
+      "milestone": "security-design"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/delete",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/stop",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sip-trunks",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sip-trunks/{trunkId}/credentials",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/templates",
+      "status": "excluded",
+      "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
+      "milestone": "credential-boundary"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/audio",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/audio/{assetId}/complete",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/audio/tts",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/provider-credentials",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/voice/provider-credentials/{credentialId}/verify",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/webhook-deliveries/{deliveryId}/retry",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/webhooks",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/webhooks/{webhookId}/secret-rotations",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/webhooks/{webhookId}/tests",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/api/account/meta-app",
+      "status": "excluded",
+      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/call-policy",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/call-retention",
+      "status": "excluded",
+      "reason": "Console-only dashboard operation; not a public SDK method.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/call-settings/{sessionId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/insights/preferences",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/notifications/preferences",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/organization/avatar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/profile/avatar",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/projects/{projectId}/logging/drains",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/projects/{projectId}/logging/sampling",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/projects/{projectId}/setup",
+      "status": "excluded",
+      "reason": "Console-only project setup uses dashboard identity and is unavailable to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/quicklink/logo",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/session-configuration/{sessionId}",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/controls/{scope}/{resourceId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/limits/{scope}/{resourceId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/priorities",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/billing/priorities/{scope}/{resourceId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/call-policy",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/call-retention",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/flows/{flowId}/endpoint",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/functions/{functionId}/promotion",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/optouts/settings",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/health-policy",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/insurance-evidence",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/safe-mode",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/warmup-plan",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/quicklink",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/session-configuration",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/sessions/{session}/call-settings",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.voip.update_call_settings",
+      "testFile": "tests/voip.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/sessions/{session}/client-rules",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.client_tokens.update_rules",
+      "testFile": "tests/connections.rs"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/sessions/{sessionId}",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/sessions/{sessionId}/safe-mode",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/analytics",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/analytics",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/analytics/metrics",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/analytics/metrics",
+      "status": "missing",
+      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
+      "milestone": "server-sdk-parity"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/vitals",
+      "status": "excluded",
+      "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority.",
+      "milestone": "not-server-sdk"
+    }
+  ]
+}

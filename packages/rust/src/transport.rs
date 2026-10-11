@@ -211,7 +211,13 @@ impl HttpTransport {
                 "application/json",
             )
             .await?;
-        let value = read_body(response, &options, self.options.timeout).await?;
+        let value = read_body(
+            response,
+            &options,
+            options.timeout.unwrap_or(self.options.timeout),
+        )
+        .await
+        .map_err(|error| error.with_metadata(metadata.clone()))?;
         let data = serde_json::from_slice(if value.is_empty() { b"null" } else { &value })
             .map_err(|_| {
                 Error::local(
@@ -219,6 +225,7 @@ impl HttpTransport {
                     "Polymorfa returned an invalid JSON response.",
                     "invalid_response",
                 )
+                .with_metadata(metadata.clone())
             })?;
         Ok(ApiResponse { data, metadata })
     }
@@ -345,6 +352,7 @@ impl HttpTransport {
                 if eligible
                     && attempt <= retries
                     && retryable(metadata.status)
+                    && metadata.operation_id.is_none()
                     && response
                         .headers()
                         .get("idempotent-replayed")
@@ -356,7 +364,9 @@ impl HttpTransport {
                     sleep(wait, &cancellation).await?;
                     continue;
                 }
-                let bytes = read_body(response, options, timeout).await?;
+                let bytes = read_body(response, options, timeout)
+                    .await
+                    .map_err(|error| error.with_metadata(metadata.clone()))?;
                 let value = serde_json::from_slice(&bytes).unwrap_or(serde_json::Value::Null);
                 return Err(Error::response(&value, metadata));
             }
@@ -641,6 +651,7 @@ async fn sleep(duration: Duration, cancellation: &CancellationToken) -> Result<(
 fn metadata(response: &reqwest::Response, attempts: u32) -> ResponseMetadata {
     let allowed = [
         "x-request-id",
+        "request-id",
         "polymorfa-version",
         "retry-after",
         "idempotent-replayed",
@@ -666,7 +677,10 @@ fn metadata(response: &reqwest::Response, attempts: u32) -> ResponseMetadata {
         .collect();
     ResponseMetadata {
         status: response.status().as_u16(),
-        request_id: headers.get("x-request-id").cloned(),
+        request_id: headers
+            .get("x-request-id")
+            .or_else(|| headers.get("request-id"))
+            .cloned(),
         api_version: headers.get("polymorfa-version").cloned(),
         attempts,
         transport: headers.get("x-polymorfa-transport").cloned(),

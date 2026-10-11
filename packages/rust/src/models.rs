@@ -619,6 +619,8 @@ pub struct EventRecord {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EncodedEventPayload {
     pub encoding: String,
+    #[serde(rename = "contentType")]
+    pub content_type: String,
     pub data: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -644,6 +646,82 @@ pub struct CursorEnvelope<T> {
 #[serde(rename_all = "camelCase")]
 pub struct CursorInfo {
     pub next_cursor: Option<String>,
+    pub has_more: bool,
+    pub next_offset: Option<String>,
+    pub high_watermark: Option<String>,
+}
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EventListParameters {
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
+    pub event_type: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub since: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub until: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cursor: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub after_offset: Option<String>,
+}
+impl EventListParameters {
+    pub(crate) fn query(&self) -> crate::Result<Query> {
+        if let Some(offset) = &self.after_offset {
+            if self.cursor.is_some()
+                || self.since.is_some()
+                || self.until.is_some()
+                || !valid_offset(offset)
+            {
+                return Err(crate::transport::configuration("after_offset"));
+            }
+        }
+        let mut query = Query::new();
+        for (key, value) in [
+            ("type", &self.event_type),
+            ("since", &self.since),
+            ("until", &self.until),
+            ("cursor", &self.cursor),
+            ("afterOffset", &self.after_offset),
+        ] {
+            if let Some(value) = value {
+                query.insert(key.into(), value.clone().into());
+            }
+        }
+        if let Some(limit) = self.limit {
+            query.insert("limit".into(), i64::from(limit).into());
+        }
+        Ok(query)
+    }
+}
+pub(crate) fn valid_offset(offset: &str) -> bool {
+    (offset == "0"
+        || offset.bytes().next().is_some_and(|b| b != b'0')
+            && offset.bytes().all(|b| b.is_ascii_digit()))
+        && offset.parse::<u64>().is_ok_and(|n| n <= i64::MAX as u64)
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReplayEventRequest {
+    pub webhook_id: String,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IdempotencyReceipt {
+    pub id: String,
+    pub key: String,
+    pub replayed: bool,
+    pub created_at: String,
+    pub expires_at: String,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EventReplayReceipt {
+    pub event_id: String,
+    pub delivery_id: String,
+    pub operation_id: String,
+    pub idempotency: IdempotencyReceipt,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
