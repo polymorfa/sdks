@@ -294,9 +294,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/cloud-credentials",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Sessions.GetCloudCredentialHealth",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
@@ -438,9 +438,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/meta-pricing",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Sessions.GetMetaPricing",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
@@ -718,9 +718,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/testing/{projectId}/events/fixtures",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.ListEventFixtures",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
@@ -993,9 +993,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/cloud-credentials/reauthorize",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Sessions.ReauthorizeCloudCredentials",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
@@ -1209,9 +1209,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/cloud-api/embedded-signup",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.CloudOnboarding.Advance",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
@@ -1327,17 +1327,17 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/testing/{projectId}/events",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.TriggerEvent",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/testing/{projectId}/history-fixtures",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.CreateHistoryFixture",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
@@ -1846,17 +1846,17 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/audiences/{listId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.Delete",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/audiences/{listId}/members/{phone}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.DeleteMember",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "platform",
@@ -2278,25 +2278,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/audiences",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.List",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/audiences/{listId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.Retrieve",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/audiences/{listId}/members",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.ListMembers",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "platform",
@@ -3614,25 +3614,25 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/audiences",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.Create",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/audiences/{listId}/members",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.AddMembers",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/audiences/uploads",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Audiences.CreateUpload",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "platform",

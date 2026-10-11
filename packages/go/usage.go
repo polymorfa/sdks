@@ -15,7 +15,7 @@ type UsageDimension struct {
 
 func (d *UsageDimension) UnmarshalJSON(b []byte) error {
 	var s string
-	if json.Unmarshal(b, &s) == nil {
+	if json.Unmarshal(b, &s) == nil && string(b) != "null" {
 		d.String = &s
 		return nil
 	}

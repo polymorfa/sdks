@@ -31,6 +31,9 @@ type Events struct {
 }
 
 func (r *Events) List(ctx context.Context, p ListEventsParams, o ...RequestOptions) (*CursorPage[PlatformEvent], error) {
+	if p.AfterOffset != "" {
+		return r.offsetPage(ctx, p, options(o))
+	}
 	return page[PlatformEvent](ctx, r.t, r.prefix+"/events", p.query(), options(o))
 }
 func (r *Events) Retrieve(ctx context.Context, id string, includePayload *bool, o ...RequestOptions) (Response[PlatformEvent], error) {

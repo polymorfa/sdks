@@ -21,18 +21,24 @@ func (p ListParams) query() url.Values {
 // CursorPage supports manual NextPage and lazy All iteration. It does not
 // fetch another page until the consumer asks for it.
 type CursorPage[T any] struct {
-	Items      []T
-	NextCursor string
-	Metadata   Metadata
-	load       func(context.Context, string) (*CursorPage[T], error)
+	Items         []T
+	NextCursor    string
+	NextOffset    string
+	HighWatermark string
+	Metadata      Metadata
+	load          func(context.Context, string) (*CursorPage[T], error)
 }
 
-func (p *CursorPage[T]) HasMore() bool { return p.NextCursor != "" }
+func (p *CursorPage[T]) HasMore() bool { return p.NextCursor != "" || p.NextOffset != "" }
 func (p *CursorPage[T]) NextPage(ctx context.Context) (*CursorPage[T], error) {
 	if !p.HasMore() || p.load == nil {
 		return nil, nil
 	}
-	return p.load(ctx, p.NextCursor)
+	cursor := p.NextCursor
+	if cursor == "" {
+		cursor = p.NextOffset
+	}
+	return p.load(ctx, cursor)
 }
 func (p *CursorPage[T]) All(ctx context.Context) iter.Seq2[T, error] {
 	return func(yield func(T, error) bool) {
@@ -49,12 +55,16 @@ func (p *CursorPage[T]) All(ctx context.Context) iter.Seq2[T, error] {
 					return
 				}
 			}
-			if current.NextCursor != "" && seen[current.NextCursor] {
+			cursor := current.NextCursor
+			if cursor == "" {
+				cursor = current.NextOffset
+			}
+			if cursor != "" && seen[cursor] {
 				var z T
 				yield(z, &Error{Kind: ServerError, Code: "invalid_response", Message: "Pagination cursor did not advance."})
 				return
 			}
-			seen[current.NextCursor] = true
+			seen[cursor] = true
 			next, err := current.NextPage(ctx)
 			if err != nil {
 				var z T
