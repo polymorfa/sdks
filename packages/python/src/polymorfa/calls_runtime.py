@@ -657,23 +657,22 @@ def _valid_video_source(frame: JsonObject) -> bool:
 
 
 def _end_reason(value: object) -> CallEndReason:
-    if value in ("user_hangup", "remote_hangup"):
-        return "remote_hangup"
-    if value in ("media_timeout", "setup_timeout"):
-        return "timeout"
-    if value in (
-        "hangup",
-        "rejected",
-        "busy",
-        "missed",
-        "timeout",
-        "connection_failed",
-        "pod_lost",
-        "capacity",
-        "call_restricted",
-    ):
-        return cast(CallEndReason, value)
-    return "unknown"
+    reasons: dict[str, CallEndReason] = {
+        "user_hangup": "remote_hangup",
+        "remote_hangup": "remote_hangup",
+        "media_timeout": "timeout",
+        "setup_timeout": "timeout",
+        "hangup": "hangup",
+        "rejected": "rejected",
+        "busy": "busy",
+        "missed": "missed",
+        "timeout": "timeout",
+        "connection_failed": "connection_failed",
+        "pod_lost": "pod_lost",
+        "capacity": "capacity",
+        "call_restricted": "call_restricted",
+    }
+    return reasons.get(value, "unknown") if isinstance(value, str) else "unknown"
 
 
 def _participant_control(event: LifecycleEvent) -> JsonObject | None:

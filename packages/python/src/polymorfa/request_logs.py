@@ -155,13 +155,16 @@ class RequestLogs:
         body = response.data
         page = body.get("page") if body is not None else None
         items = body.get("data") if body is not None else None
+        has_more: object = page.get("hasMore") if isinstance(page, dict) else None
+        follow_cursor: object = page.get("followCursor") if isinstance(page, dict) else None
+        next_cursor: object = page.get("nextCursor") if isinstance(page, dict) else None
         if (
             not isinstance(items, list)
             or not isinstance(page, dict)
-            or not isinstance(page.get("hasMore"), bool)
-            or not isinstance(page.get("followCursor"), str)
+            or not isinstance(has_more, bool)
+            or not isinstance(follow_cursor, str)
             or "nextCursor" not in page
-            or (page["nextCursor"] is not None and not isinstance(page["nextCursor"], str))
+            or (next_cursor is not None and not isinstance(next_cursor, str))
         ):
             raise ServerError(
                 "Invalid request log page.",
@@ -172,9 +175,9 @@ class RequestLogs:
             )
         return RequestLogPage(
             tuple(cast(list[RequestLog], items)),
-            cast(bool, page["hasMore"]),
-            cast(str | None, page["nextCursor"]),
-            cast(str, page["followCursor"]),
+            has_more,
+            next_cursor,
+            follow_cursor,
             response.metadata,
         )
 
