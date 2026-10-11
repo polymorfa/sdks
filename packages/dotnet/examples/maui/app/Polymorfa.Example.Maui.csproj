@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <TargetFramework>net10.0-maccatalyst26.5</TargetFramework><OutputType>Exe</OutputType><RootNamespace>Polymorfa.Example.Maui</RootNamespace>
+    <UseMaui>true</UseMaui><SingleProject>true</SingleProject><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><EnableDefaultCssItems>false</EnableDefaultCssItems>
+    <ApplicationTitle>Polymorfa MAUI</ApplicationTitle><ApplicationId>com.polymorfa.sdkexample.maui</ApplicationId><ApplicationDisplayVersion>1.0</ApplicationDisplayVersion><ApplicationVersion>1</ApplicationVersion>
+    <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion><RuntimeIdentifier>maccatalyst-arm64</RuntimeIdentifier>
+    <MauiVersion>10.0.20</MauiVersion><CodesignKey>-</CodesignKey><CodesignEntitlements>Platforms/MacCatalyst/Entitlements.plist</CodesignEntitlements>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />
+    <ProjectReference Include="../bridge/Polymorfa.Example.Maui.Bridge.csproj" />
+    <ProjectReference Include="../../blazor-components/Polymorfa.Example.Components.csproj" />
+  </ItemGroup>
+</Project>
