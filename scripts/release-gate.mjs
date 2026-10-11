@@ -64,6 +64,17 @@ export function validateFeatureContractPins(source, pins) {
     );
   }
 }
+// Expands a supplement that pins both audiences into one pin per family.
+export function multiSourcePins(supplement) {
+  return Object.entries(supplement.sources).map(([family, spec]) => ({
+    repository: supplement.repository,
+    sourceCommit: supplement.commit,
+    family,
+    published: supplement.published,
+    sourcePath: spec.sourcePath,
+    sourceSha256: spec.sourceSha256,
+  }));
+}
 export function expectedContract() {
   const source = JSON.parse(readFileSync(join(root, "contracts/source.json")));
   assert.equal(source.repository, "polymorfa/polymorfa");
@@ -74,6 +85,11 @@ export function expectedContract() {
     ),
     JSON.parse(readFileSync(join(root, "contracts/abprops-capabilities.json"))),
     JSON.parse(readFileSync(join(root, "contracts/request-logs.json"))),
+    ...multiSourcePins(
+      JSON.parse(
+        readFileSync(join(root, "contracts/calls-simultaneous-calls.json")),
+      ),
+    ),
   ]);
   const apiVersion = /NATIVE_API_VERSION = "([^"]+)"/.exec(
     readFileSync(join(root, "packages/typescript/src/version.ts"), "utf8"),

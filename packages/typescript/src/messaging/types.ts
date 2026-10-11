@@ -2025,6 +2025,15 @@ export interface SessionCallSettings {
    */
   readonly hostCloudApiCalls: boolean;
   /**
+   * Simultaneous calls, `false` by default. When `true`, this Number holds
+   * unlimited concurrent calls (incoming, placed and campaign calls).
+   * Linked-device Numbers only; Cloud API Numbers ignore it. WhatsApp's own
+   * apps never hold two calls at once, so this behavior is unusual for a
+   * WhatsApp account. It voids Ban Insurance: a ban whose 30-day window
+   * overlaps any period this setting was on is not refunded.
+   */
+  readonly simultaneousCalls: boolean;
+  /**
    * Increases on every change; `0` while the session uses the defaults. Send
    * it as `expectedRevision` so an update cannot overwrite another change.
    */
@@ -2057,6 +2066,22 @@ export interface UpdateSessionCallSettingsRequest {
   readonly sipClaim?: boolean;
   /** `true` has Polymorfa Calls answer a Cloud API session's incoming calls. */
   readonly hostCloudApiCalls?: boolean;
+  /**
+   * `true` lets this linked-device Number hold unlimited concurrent calls;
+   * `false` returns it to one call at a time. Applies to calls that start
+   * after the change. Turning it on requires `acknowledgeRisk: true` and a
+   * team API key (a project token is refused with `permission_denied`). It
+   * voids Ban Insurance for any ban whose 30-day window overlaps a period it
+   * was on.
+   */
+  readonly simultaneousCalls?: boolean;
+  /**
+   * Required as `true` when the update turns `simultaneousCalls` on: confirms
+   * that you accept the unusual-behavior risk and the loss of Ban Insurance
+   * for this Number. Sent alone, it is not a change. Later updates to other
+   * settings need no new acknowledgment.
+   */
+  readonly acknowledgeRisk?: boolean;
   /**
    * Apply the update only if the settings still have this `revision`;
    * otherwise it fails with `PolymorfaConflictError` (`state_conflict`).

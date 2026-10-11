@@ -609,3 +609,17 @@ schemas, and the related Messaging and Platform campaign and analytics fields,
 from API `dev` merge commit `8d248b578a7c76034b30a5a97349adcd15ce5c55`
 (polymorfa/polymorfa#406), with both source paths and file hashes.
 `campaign-ab-tests-contract.test.ts` checks the SDK types against it.
+
+## Simultaneous calls supplement
+
+`calls-simultaneous-calls.json` records the session call settings response and
+update request, `BanSafeClaim`, `BanSafeClaimEvidence` and the Messaging
+`BanSafeClaimPayload` schemas from API source commit
+`2bd4467454d019c67e2f74f0f813744b4c48e5a5`, the head of the unmerged
+polymorfa/polymorfa#559 branch `claude/calls-simultaneous-calls-20261010`, with
+both source paths and file hashes. The supplement is `published: false`, and the
+release gate checks it per audience, so no package that contains these types
+can publish until #559 merges and the full snapshots are repinned to a merged
+API `dev` commit. At that point, replace `commit` with the merge commit,
+refresh both hashes and set `published` to `true`.
+`calls-simultaneous-calls-contract.test.ts` checks the SDK types against it.

@@ -402,7 +402,10 @@ export class VoipResource {
 
   /**
    * Changes a session's call settings; omitted settings keep their values.
-   * Requires a server credential.
+   * Requires a server credential. Turning `simultaneousCalls` on (unlimited
+   * concurrent calls on a linked-device Number) requires
+   * `acknowledgeRisk: true` and a team API key, and voids Ban Insurance for
+   * the Number.
    */
   updateCallSettings(
     session: string,
@@ -426,14 +429,18 @@ export class VoipResource {
       sipTrunkId,
       sipClaim,
       hostCloudApiCalls,
+      simultaneousCalls,
+      acknowledgeRisk,
     } = body;
+    // acknowledgeRisk alone is not a change; the platform refuses it.
     if (
       callsEnabled === undefined &&
       conferenceMode === undefined &&
       inboundRoute === undefined &&
       sipTrunkId === undefined &&
       sipClaim === undefined &&
-      hostCloudApiCalls === undefined
+      hostCloudApiCalls === undefined &&
+      simultaneousCalls === undefined
     ) {
       throw new PolymorfaValidationError(
         "Send at least one call setting to change.",
@@ -444,10 +451,17 @@ export class VoipResource {
       ["conferenceMode", conferenceMode],
       ["sipClaim", sipClaim],
       ["hostCloudApiCalls", hostCloudApiCalls],
+      ["simultaneousCalls", simultaneousCalls],
+      ["acknowledgeRisk", acknowledgeRisk],
     ] as const) {
       if (value !== undefined && typeof value !== "boolean") {
         throw new PolymorfaValidationError(`${name} must be a boolean.`);
       }
+    }
+    if (simultaneousCalls === true && acknowledgeRisk !== true) {
+      throw new PolymorfaValidationError(
+        "Turning simultaneousCalls on requires acknowledgeRisk: true. It voids Ban Insurance for this Number.",
+      );
     }
     if (
       inboundRoute !== undefined &&
