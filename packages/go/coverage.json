@@ -94,9 +94,9 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.Delete",
+      "testFile": "templates_test.go"
     },
     {
       "family": "messaging",
@@ -646,49 +646,49 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.List",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.Retrieve",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/analytics",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.Analytics",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.ListRecipients",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/templates",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.List",
+      "testFile": "templates_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.Retrieve",
+      "testFile": "templates_test.go"
     },
     {
       "family": "messaging",
@@ -826,9 +826,9 @@
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.Update",
+      "testFile": "templates_test.go"
     },
     {
       "family": "messaging",
@@ -1232,41 +1232,41 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.Create",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/launch",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.Launch",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/pause",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.Pause",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.AddRecipients",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/requeue",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.Requeue",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "messaging",
@@ -1279,41 +1279,41 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/resume",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.Resume",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/stop",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns.Stop",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.Create",
+      "testFile": "templates_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates/{id}/preview",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.Preview",
+      "testFile": "templates_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates/{id}/submit",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Templates.Submit",
+      "testFile": "templates_test.go"
     },
     {
       "family": "messaging",
@@ -1870,9 +1870,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/campaigns/{campaignId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Delete",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
@@ -2542,49 +2542,49 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.List",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Retrieve",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/analytics",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Analytics",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/conversions",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Conversions",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/events",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Events",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/recipients",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Recipients",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
@@ -3269,9 +3269,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/campaigns/{campaignId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Update",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
@@ -3670,65 +3670,65 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Create",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/archive",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Archive",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/conversions",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.RecordConversion",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/duplicate",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Duplicate",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/launch",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Launch",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/pause",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Pause",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/recipients",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.AddRecipients",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/requeue",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Requeue",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
@@ -3741,17 +3741,17 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/resume",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Resume",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/stop",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Campaigns.Stop",
+      "testFile": "campaigns_test.go"
     },
     {
       "family": "platform",
