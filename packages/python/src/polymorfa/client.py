@@ -19,6 +19,8 @@ from .customers import Customers
 from .errors import ConfigurationError
 from .groups import Groups
 from .observations import Identities, Labels, Privacy
+from .official_groups import OfficialGroups
+from .onboarding import CloudOnboarding, Testing
 from .organization import (
     ApiKeys,
     AuditLogs,
@@ -28,7 +30,10 @@ from .organization import (
     SecurityIncidents,
     SessionBans,
 )
+from .policies import HybridLink, ObservationPolicies, SessionConfigurations
 from .quick_replies import QuickReplies, Users
+from .settings import OptOuts, QuickLinkConfiguration
+from .sip import SipTrunks
 from .templates import CloudTemplates, Templates
 from .transport import Credential, Transport
 
@@ -36,6 +41,11 @@ from .transport import Credential, Transport
 @dataclass(frozen=True, init=False)
 class AsyncMessagingClient:
     _transport: Transport
+    official_groups: OfficialGroups
+    cloud_onboarding: CloudOnboarding
+    testing: Testing
+    observation_policies: ObservationPolicies
+    hybrid_link: HybridLink
     templates: Templates
     cloud_templates: CloudTemplates
     cloud_catalogs: CloudCatalogs
@@ -67,6 +77,11 @@ class AsyncMessagingClient:
         transport = Transport(credential, **options)
         object.__setattr__(self, "_transport", transport)
         for name, resource in (
+            ("official_groups", OfficialGroups),
+            ("cloud_onboarding", CloudOnboarding),
+            ("testing", Testing),
+            ("observation_policies", ObservationPolicies),
+            ("hybrid_link", HybridLink),
             ("templates", Templates),
             ("cloud_templates", CloudTemplates),
             ("cloud_catalogs", CloudCatalogs),
@@ -111,6 +126,9 @@ class AsyncProjectClient:
     _transport: Transport
     _credential: Credential
     project_id: str
+    sip_trunks: SipTrunks
+    quick_link_settings: QuickLinkConfiguration
+    session_configuration: SessionConfigurations
     call_retention: CallRetentions
     events: platform.Events
     webhooks: platform.PlatformWebhooks
@@ -140,6 +158,9 @@ class AsyncProjectClient:
             ("operations", platform.Operations),
         ):
             object.__setattr__(self, name, resource(transport, prefix))
+        object.__setattr__(self, "sip_trunks", SipTrunks(transport, prefix))
+        object.__setattr__(self, "quick_link_settings", QuickLinkConfiguration(transport, prefix))
+        object.__setattr__(self, "session_configuration", SessionConfigurations(transport, prefix))
         object.__setattr__(self, "call_retention", CallRetentions(transport, prefix))
         object.__setattr__(self, "raw", platform.Raw(transport, project_id))
 
@@ -162,9 +183,13 @@ class AsyncProjectClient:
 class AsyncClient:
     _transport: Transport
     _credential: Credential
+    sip_trunks: SipTrunks
+    quick_link_settings: QuickLinkConfiguration
+    session_configuration: SessionConfigurations
     call_retention: CallRetentions
     call_policy: CallPolicies
     call_opt_outs: CallOptOuts
+    opt_outs: OptOuts
     customers: Customers
     organizations: Organizations
     members: Members
@@ -189,6 +214,7 @@ class AsyncClient:
         object.__setattr__(self, "_transport", transport)
         object.__setattr__(self, "_credential", credential)
         for name, resource in (
+            ("opt_outs", OptOuts),
             ("organizations", Organizations),
             ("members", Members),
             ("api_keys", ApiKeys),
@@ -202,6 +228,9 @@ class AsyncClient:
         ):
             object.__setattr__(self, name, resource(transport, credential.kind))
         for name, scoped in (
+            ("sip_trunks", SipTrunks),
+            ("quick_link_settings", QuickLinkConfiguration),
+            ("session_configuration", SessionConfigurations),
             ("customers", Customers),
             ("call_retention", CallRetentions),
             ("call_policy", CallPolicies),

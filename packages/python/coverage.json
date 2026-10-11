@@ -70,9 +70,9 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/official-groups/{group}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.official_groups.delete",
+      "testFile": "tests/test_official_groups.py"
     },
     {
       "family": "messaging",
@@ -406,9 +406,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/hybrid-link",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.hybrid_link.state",
+      "testFile": "tests/test_policies.py"
     },
     {
       "family": "messaging",
@@ -446,41 +446,41 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/observation-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.observation_policies.retrieve_for_session",
+      "testFile": "tests/test_policies.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.official_groups.list",
+      "testFile": "tests/test_official_groups.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups/{group}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.official_groups.retrieve",
+      "testFile": "tests/test_official_groups.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups/{group}/invite-link",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.official_groups.get_invite_link",
+      "testFile": "tests/test_official_groups.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups/{group}/join-requests",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.official_groups.list_join_requests",
+      "testFile": "tests/test_official_groups.py"
     },
     {
       "family": "messaging",
@@ -622,9 +622,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/observation-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.observation_policies.retrieve_for_project",
+      "testFile": "tests/test_policies.py"
     },
     {
       "family": "messaging",
@@ -710,17 +710,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/routing/hybrid",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.hybrid_link.get_policy",
+      "testFile": "tests/test_policies.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/testing/{projectId}/events/fixtures",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.testing.list_event_fixtures",
+      "testFile": "tests/test_onboarding.py"
     },
     {
       "family": "messaging",
@@ -806,9 +806,9 @@
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/official-groups/{group}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.official_groups.update",
+      "testFile": "tests/test_official_groups.py"
     },
     {
       "family": "messaging",
@@ -1134,49 +1134,49 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.official_groups.create",
+      "testFile": "tests/test_official_groups.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/invite-link/reset",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.official_groups.reset_invite_link",
+      "testFile": "tests/test_official_groups.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/join-requests/approve",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.official_groups.approve_join_requests",
+      "testFile": "tests/test_official_groups.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/join-requests/reject",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.official_groups.reject_join_requests",
+      "testFile": "tests/test_official_groups.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/participants/remove",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.official_groups.remove_participants",
+      "testFile": "tests/test_official_groups.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/pins",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.official_groups.pin",
+      "testFile": "tests/test_official_groups.py"
     },
     {
       "family": "messaging",
@@ -1214,9 +1214,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/cloud-api/embedded-signup",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.cloud_onboarding.advance",
+      "testFile": "tests/test_onboarding.py"
     },
     {
       "family": "messaging",
@@ -1334,17 +1334,17 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/testing/{projectId}/events",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.testing.trigger_event",
+      "testFile": "tests/test_onboarding.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/testing/{projectId}/history-fixtures",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.testing.create_history_fixture",
+      "testFile": "tests/test_onboarding.py"
     },
     {
       "family": "messaging",
@@ -1654,9 +1654,9 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/hybrid-link",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.hybrid_link.set_paused",
+      "testFile": "tests/test_policies.py"
     },
     {
       "family": "messaging",
@@ -1758,9 +1758,9 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/routing/hybrid",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.hybrid_link.set_policy",
+      "testFile": "tests/test_policies.py"
     },
     {
       "family": "messaging",
@@ -1966,9 +1966,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/optouts/{phone}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.opt_outs.delete",
+      "testFile": "tests/test_settings.py"
     },
     {
       "family": "platform",
@@ -1998,9 +1998,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/sip-trunks/{trunkId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sip_trunks.delete",
+      "testFile": "tests/test_sip.py"
     },
     {
       "family": "platform",
@@ -2886,17 +2886,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/optouts",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.opt_outs.list",
+      "testFile": "tests/test_settings.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/optouts/settings",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.opt_outs.get_settings",
+      "testFile": "tests/test_settings.py"
     },
     {
       "family": "platform",
@@ -3054,17 +3054,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/quicklink",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.quick_link_settings.retrieve",
+      "testFile": "tests/test_settings.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/session-configuration",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.session_configuration.retrieve",
+      "testFile": "tests/test_policies.py"
     },
     {
       "family": "platform",
@@ -3134,25 +3134,25 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sip-trunks",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sip_trunks.list",
+      "testFile": "tests/test_sip.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sip-trunks/{trunkId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sip_trunks.retrieve",
+      "testFile": "tests/test_sip.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sip/endpoint",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sip_trunks.endpoint",
+      "testFile": "tests/test_sip.py"
     },
     {
       "family": "platform",
@@ -3398,9 +3398,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/sip-trunks/{trunkId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sip_trunks.update",
+      "testFile": "tests/test_sip.py"
     },
     {
       "family": "platform",
@@ -4046,17 +4046,17 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/optouts",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.opt_outs.create",
+      "testFile": "tests/test_settings.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/optouts/batch",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.opt_outs.create_batch",
+      "testFile": "tests/test_settings.py"
     },
     {
       "family": "platform",
@@ -4246,17 +4246,17 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/sip-trunks",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sip_trunks.create",
+      "testFile": "tests/test_sip.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sip-trunks/{trunkId}/credentials",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sip_trunks.rotate_credentials",
+      "testFile": "tests/test_sip.py"
     },
     {
       "family": "platform",
@@ -4510,9 +4510,9 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/optouts/settings",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.opt_outs.update_settings",
+      "testFile": "tests/test_settings.py"
     },
     {
       "family": "platform",
@@ -4550,17 +4550,17 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/quicklink",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.quick_link_settings.update",
+      "testFile": "tests/test_settings.py"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/session-configuration",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.session_configuration.update",
+      "testFile": "tests/test_policies.py"
     },
     {
       "family": "platform",

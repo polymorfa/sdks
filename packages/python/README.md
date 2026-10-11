@@ -123,3 +123,11 @@ Organization metadata reads cover members, server key and project token metadata
 audit logs, bans and security incidents. Customer methods keep the project ID on
 reads, provide cursor pagination, and distinguish the initial pairing-link URL
 from the null URL returned after a replay.
+
+Observation and Hybrid Link policy reads preserve inheritance and revisions.
+Saved session and QuickLink defaults bind to the organization or project client.
+Official API groups expose typed join decisions and force every provider change
+to one attempt. Onboarding continuation and Testing methods require a server
+credential; Testing phone methods expose simulated device and message results.
+SIP trunks provide typed credentials and endpoint variants, with ownership checks
+before an organization key acts through a project client.
