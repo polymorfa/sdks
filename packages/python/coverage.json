@@ -86,17 +86,17 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/templates/{name}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.cloud_templates.delete",
+      "testFile": "tests/test_templates_graph.py"
     },
     {
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.templates.delete",
+      "testFile": "tests/test_templates_graph.py"
     },
     {
       "family": "messaging",
@@ -542,17 +542,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/templates",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.cloud_templates.list",
+      "testFile": "tests/test_templates_graph.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/templates/{name}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.cloud_templates.retrieve",
+      "testFile": "tests/test_templates_graph.py"
     },
     {
       "family": "messaging",
@@ -678,17 +678,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/templates",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.templates.list",
+      "testFile": "tests/test_templates_graph.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.templates.retrieve",
+      "testFile": "tests/test_templates_graph.py"
     },
     {
       "family": "messaging",
@@ -814,9 +814,9 @@
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/templates/{name}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.cloud_templates.update",
+      "testFile": "tests/test_templates_graph.py"
     },
     {
       "family": "messaging",
@@ -830,9 +830,9 @@
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/projects/{projectSlug}/templates/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.templates.update",
+      "testFile": "tests/test_templates_graph.py"
     },
     {
       "family": "messaging",
@@ -1206,9 +1206,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/templates",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.cloud_templates.create",
+      "testFile": "tests/test_templates_graph.py"
     },
     {
       "family": "messaging",
@@ -1302,25 +1302,25 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.templates.create",
+      "testFile": "tests/test_templates_graph.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates/{id}/preview",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.templates.preview",
+      "testFile": "tests/test_templates_graph.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates/{id}/submit",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.templates.submit",
+      "testFile": "tests/test_templates_graph.py"
     },
     {
       "family": "messaging",

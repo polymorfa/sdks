@@ -106,3 +106,10 @@ Platform projects expose typed lists, creation, production enrollment and Hybrid
 Link merge candidates. Platform sessions expose typed lifecycle batches, reviewed
 tier quotes and capability variants. A quote preserves fractional credit amounts
 and separates Hybrid Link transition progress from the tier change status.
+
+Project templates use handwritten definitions for headers, buttons, carousels,
+authentication and limited-time offers. Official API templates, linked catalogs,
+marketing status and Flow public-key registration use their distinct provider
+contracts. Provider template writes, template submission and Flow registration
+send one request even when an idempotency key is supplied; reconcile an uncertain
+result by reading provider state before sending another write.

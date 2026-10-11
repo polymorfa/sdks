@@ -12,16 +12,23 @@ from .bansafe import BanSafe
 from .business import Business
 from .channels import Channels
 from .client_tokens import ClientTokens
+from .cloud_graph import CloudCatalogs, CloudMarketing, FlowEncryption
 from .errors import ConfigurationError
 from .groups import Groups
 from .observations import Identities, Labels, Privacy
 from .quick_replies import QuickReplies, Users
+from .templates import CloudTemplates, Templates
 from .transport import Credential, Transport
 
 
 @dataclass(frozen=True, init=False)
 class AsyncMessagingClient:
     _transport: Transport
+    templates: Templates
+    cloud_templates: CloudTemplates
+    cloud_catalogs: CloudCatalogs
+    cloud_marketing: CloudMarketing
+    flow_encryption: FlowEncryption
     ban_safe: BanSafe
     channels: Channels
     quick_replies: QuickReplies
@@ -48,6 +55,11 @@ class AsyncMessagingClient:
         transport = Transport(credential, **options)
         object.__setattr__(self, "_transport", transport)
         for name, resource in (
+            ("templates", Templates),
+            ("cloud_templates", CloudTemplates),
+            ("cloud_catalogs", CloudCatalogs),
+            ("cloud_marketing", CloudMarketing),
+            ("flow_encryption", FlowEncryption),
             ("ban_safe", BanSafe),
             ("channels", Channels),
             ("quick_replies", QuickReplies),
