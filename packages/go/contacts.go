@@ -175,11 +175,30 @@ func (c *MessagingClient) Privacy() *Privacy { return &Privacy{c.t} }
 func (r *Privacy) Get(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[PrivacySettings]], error) {
 	return request[Envelope[PrivacySettings]](ctx, r.t, "GET", "/messaging/"+escaped(s)+"/privacy", nil, nil, options(o))
 }
-func (r *Privacy) Set(ctx context.Context, s, setting, value string, o ...RequestOptions) (Response[Envelope[PrivacySettings]], error) {
-	return request[Envelope[PrivacySettings]](ctx, r.t, "PUT", "/messaging/"+escaped(s)+"/privacy/"+escaped(setting), nil, struct {
+func (r *Privacy) Set(ctx context.Context, s string, setting PrivacySettingName, value PrivacySettingValue, o ...RequestOptions) (Response[Envelope[PrivacySettings]], error) {
+	if !validPrivacyMutation(setting, value) {
+		return Response[Envelope[PrivacySettings]]{}, configuration("privacy", "Invalid value for privacy setting.")
+	}
+	return request[Envelope[PrivacySettings]](ctx, r.t, "PUT", "/messaging/"+escaped(s)+"/privacy/"+escaped(string(setting)), nil, struct {
 		Value string `json:"value"`
-	}{value}, options(o))
+	}{string(value)}, options(o))
 }
 func (r *Privacy) SetDefaultDisappearingTimer(ctx context.Context, s string, b DisappearingTimerRequest, o ...RequestOptions) (Response[Success], error) {
 	return request[Success](ctx, r.t, "PUT", "/messaging/"+escaped(s)+"/privacy/disappearing/default", nil, b, options(o))
+}
+
+// PrivacySettingName and PrivacySettingValue retain the named privacy boundary.
+type PrivacySettingName string
+type PrivacySettingValue string
+
+func validPrivacyMutation(setting PrivacySettingName, value PrivacySettingValue) bool {
+	values := map[PrivacySettingName][]PrivacySettingValue{
+		"groupadd": {"all", "contacts", "contact_blacklist", "none"}, "last": {"all", "contacts", "contact_blacklist", "none"}, "status": {"all", "contacts", "contact_blacklist", "none"}, "profile": {"all", "contacts", "contact_blacklist", "none"}, "readreceipts": {"all", "none"}, "online": {"all", "match_last_seen"}, "calladd": {"all", "known"}, "messages": {"all", "contacts"}, "defense": {"on_standard", "off"}, "stickers": {"contacts", "contact_allowlist", "none"},
+	}
+	for _, v := range values[setting] {
+		if value == v {
+			return true
+		}
+	}
+	return false
 }

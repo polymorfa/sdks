@@ -6,25 +6,25 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/business/collections/{collectionId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.DeleteCollection",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/business/products/{productId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.DeleteProduct",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/business/profile/cover-photo/{coverPhotoId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.DeleteCoverPhoto",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
@@ -46,9 +46,9 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.DeleteMessage",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
@@ -118,81 +118,81 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/webhooks/{id}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Webhooks.Delete",
+      "testFile": "messaging_webhooks_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/health",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient.Health",
+      "testFile": "binary_system_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/catalog",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetCatalog",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/collections",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.ListCollections",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/collections/{collectionId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetCollection",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/compliance",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetMerchantCompliance",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/eligibility",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetEligibility",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/linked-accounts",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetLinkedAccounts",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/products/{productId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetProduct",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/profile",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetProfile",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
@@ -246,49 +246,49 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.List",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.Retrieve",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/messages",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.ListMessages",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.RetrieveMessage",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}/media",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.DownloadMessageMedia",
+      "testFile": "binary_system_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/service-window",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.GetServiceWindow",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
@@ -502,25 +502,25 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/presence",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Presence.Get",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/presence/{conversation}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Presence.GetForChat",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/privacy",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Privacy.Get",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
@@ -566,33 +566,33 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/bridge/route",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "BridgeClient.Resolve",
+      "testFile": "binary_system_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/info/status",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient.Status",
+      "testFile": "binary_system_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/info/version",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient.Version",
+      "testFile": "binary_system_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/media/{id}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Media.Download",
+      "testFile": "binary_system_test.go"
     },
     {
       "family": "messaging",
@@ -733,25 +733,25 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/webhooks",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Webhooks.List",
+      "testFile": "messaging_webhooks_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/webhooks/{id}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Webhooks.Retrieve",
+      "testFile": "messaging_webhooks_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/ping",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient.Ping",
+      "testFile": "binary_system_test.go"
     },
     {
       "family": "messaging",
@@ -771,33 +771,33 @@
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/business/catalog/cart",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.SetCartEnabled",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/business/collections/{collectionId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.UpdateCollection",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/business/products/{productId}/visibility",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.SetProductVisibility",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/business/profile",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.UpdateProfile",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
@@ -841,57 +841,57 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/catalog",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.CreateCatalog",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/collections",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.CreateCollection",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/collections/{collectionId}/appeal",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.AppealCollection",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/collections/reorder",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.ReorderCollections",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/orders/{orderId}/lookup",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetOrder",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/products",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.CreateProduct",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/products/{productId}/appeal",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.AppealProduct",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
@@ -977,17 +977,17 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/chats/{conversation}/archive",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.Archive",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/chats/{conversation}/unarchive",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.Unarchive",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
@@ -1185,17 +1185,17 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/presence",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Presence.Set",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/presence/{conversation}/subscribe",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Presence.Subscribe",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
@@ -1460,9 +1460,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/webhooks",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Webhooks.Create",
+      "testFile": "messaging_webhooks_test.go"
     },
     {
       "family": "messaging",
@@ -1531,25 +1531,25 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/business/compliance",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.SetMerchantCompliance",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/business/products/{productId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.UpdateProduct",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/business/profile/cover-photo",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.SetCoverPhoto",
+      "testFile": "business_test.go"
     },
     {
       "family": "messaging",
@@ -1563,17 +1563,17 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/chats/{conversation}/disappearing",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.SetDisappearingTimer",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Chats.EditMessage",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
@@ -1659,17 +1659,17 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/privacy/{setting}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Privacy.Set",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/privacy/disappearing/default",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Privacy.SetDefaultDisappearingTimer",
+      "testFile": "chat_presence_privacy_test.go"
     },
     {
       "family": "messaging",
@@ -1747,9 +1747,9 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/webhooks/{id}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Webhooks.Update",
+      "testFile": "messaging_webhooks_test.go"
     },
     {
       "family": "platform",
@@ -2630,9 +2630,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/events",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Events.List",
+      "testFile": "collection_wire_test.go"
     },
     {
       "family": "platform",
@@ -2790,9 +2790,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/operations",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Operations.List",
+      "testFile": "collection_wire_test.go"
     },
     {
       "family": "platform",
@@ -2806,9 +2806,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/operations/{operationId}/transitions",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Operations.ListTransitions",
+      "testFile": "collection_wire_test.go"
     },
     {
       "family": "platform",
@@ -2846,9 +2846,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/events",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Events.List",
+      "testFile": "collection_wire_test.go"
     },
     {
       "family": "platform",
@@ -2894,9 +2894,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/operations",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Operations.List",
+      "testFile": "collection_wire_test.go"
     },
     {
       "family": "platform",
@@ -2910,9 +2910,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/operations/{operationId}/transitions",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Operations.ListTransitions",
+      "testFile": "collection_wire_test.go"
     },
     {
       "family": "platform",
@@ -2934,9 +2934,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhook-deliveries",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.WebhookDeliveries.List",
+      "testFile": "collection_wire_test.go"
     },
     {
       "family": "platform",
@@ -2950,9 +2950,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.WebhookDeliveries.ListAttempts",
+      "testFile": "collection_wire_test.go"
     },
     {
       "family": "platform",
@@ -2966,9 +2966,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhooks",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.List",
+      "testFile": "collection_wire_test.go"
     },
     {
       "family": "platform",
@@ -3172,9 +3172,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhook-deliveries",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.WebhookDeliveries.List",
+      "testFile": "collection_wire_test.go"
     },
     {
       "family": "platform",
@@ -3188,9 +3188,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}/attempts",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.WebhookDeliveries.ListAttempts",
+      "testFile": "collection_wire_test.go"
     },
     {
       "family": "platform",
@@ -3204,9 +3204,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhooks",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.List",
+      "testFile": "collection_wire_test.go"
     },
     {
       "family": "platform",

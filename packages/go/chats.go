@@ -172,3 +172,19 @@ func (r *Chats) Unarchive(ctx context.Context, s, id string, o ...RequestOptions
 func (r *Chats) SetDisappearingTimer(ctx context.Context, s, id string, b DisappearingTimerRequest, o ...RequestOptions) (Response[Success], error) {
 	return request[Success](ctx, r.t, "PUT", chatPath(s, id)+"/disappearing", nil, b, options(o))
 }
+
+// CustomerServiceWindow is observed state; unknown never authorizes a send.
+type CustomerServiceWindow struct {
+	State     string  `json:"state"`
+	Reason    *string `json:"reason"`
+	OpenedAt  *string `json:"openedAt"`
+	ExpiresAt *string `json:"expiresAt"`
+	CheckedAt string  `json:"checkedAt"`
+}
+
+func (r *Chats) GetServiceWindow(ctx context.Context, s, id string, o ...RequestOptions) (Response[Envelope[CustomerServiceWindow]], error) {
+	if err := serverOnly(r.t); err != nil {
+		return Response[Envelope[CustomerServiceWindow]]{}, err
+	}
+	return request[Envelope[CustomerServiceWindow]](ctx, r.t, "GET", chatPath(s, id)+"/service-window", nil, nil, options(o))
+}

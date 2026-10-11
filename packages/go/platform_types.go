@@ -118,13 +118,15 @@ type PlatformEvent struct {
 }
 type ListEventsParams struct {
 	ListParams
-	Type  string
-	Since string
-	Until string
+	AfterOffset string
+	Type        string
+	Since       string
+	Until       string
 }
 
 func (p ListEventsParams) query() url.Values {
 	q := p.ListParams.query()
+	setString(q, "afterOffset", p.AfterOffset)
 	setString(q, "type", p.Type)
 	setString(q, "since", p.Since)
 	setString(q, "until", p.Until)
