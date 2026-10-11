@@ -84,7 +84,7 @@ final class SipTrunks extends PlatformResource
         if (!$this->confineById) {
             return;
         }$options ??= new RequestOptions();
-        $read = new RequestOptions($options->timeout,$options->maxNetworkRetries,$options->apiVersion,null,$options->headers,$options->cancellation);
-        $this->retrieve($id,$read);
+        $read = new RequestOptions($options->timeout, $options->maxNetworkRetries, $options->apiVersion, null, $options->headers, $options->cancellation);
+        $this->retrieve($id, $read);
     }
 }

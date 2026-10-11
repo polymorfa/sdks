@@ -40,6 +40,6 @@ foreach ($cases as [$method,$suffix,$body,$fixture,$invoke]) {
     check($request->getMethod() === $method, 'Group method');
     check($request->getUri()->getPath().($request->getUri()->getQuery() === '' ? '' : '?'.$request->getUri()->getQuery()) === '/messaging/support/groups'.$suffix, 'Group path');
     check(json_decode((string)$request->getBody(), true) === $body, 'Group body');
-    check($response->data === $fixture && $response->metadata->requestId === 'req_test','Group typed response and metadata');
+    check($response->data === $fixture && $response->metadata->requestId === 'req_test', 'Group typed response and metadata');
 }
 echo count($cases)." group operation fixtures passed.\n";

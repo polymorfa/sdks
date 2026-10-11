@@ -23,4 +23,4 @@ $cases = [
  ['DELETE','/platform/customers/customer/pairing-links/link?projectId=project',null,['data' => $link],fn ($c) => $c->customers->revokePairingLink('customer', 'link', 'project')],
  ['POST','/platform/customers/customer/numbers/support/transfer',['projectId' => 'project','sourceCustomerId' => 'other','confirm' => true],['data' => $number],fn ($c) => $c->customers->transferNumber('customer', 'support', ['projectId' => 'project','sourceCustomerId' => 'other','confirm' => true])],
 ];
-nativeCases($cases, fn ($credential, $url) => new Polymorfa\Client($credential,baseUrl:$url));
+nativeCases($cases, fn ($credential, $url) => new Polymorfa\Client($credential, baseUrl:$url));

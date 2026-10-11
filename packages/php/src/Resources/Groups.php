@@ -155,12 +155,12 @@ final class Groups extends Resource
     }
     /** @param array{required:bool} $body
      * @return ApiResponse<Success> */
-    public function setJoinApproval(string $session,string $groupId,array $body,?RequestOptions $options = null): ApiResponse
+    public function setJoinApproval(string $session, string $groupId, array $body, ?RequestOptions $options = null): ApiResponse
     {
         /** @var ApiResponse<Success> */
-        return $this->request('PUT',$this->path($session,$groupId).'/settings/join-approval',$body,options:$options);
+        return $this->request('PUT', $this->path($session, $groupId).'/settings/join-approval', $body, options:$options);
     }
-    private function path(string $session,?string $groupId = null): string
+    private function path(string $session, ?string $groupId = null): string
     {
         return '/messaging/'.self::segment($session).'/groups'.($groupId === null ? '' : '/'.self::segment($groupId));
     }
