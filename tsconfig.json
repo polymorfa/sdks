@@ -32,6 +32,7 @@
     "packages/*/test/**/*.ts",
     "packages/*/test/**/*.tsx",
     "examples/**/*.ts",
+    "packages/dotnet/examples/**/*.ts",
     "examples/**/*.tsx",
     "vitest.config.ts"
   ]

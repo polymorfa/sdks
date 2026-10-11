@@ -40,6 +40,7 @@
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
+    "esbuild": "^0.25.12",
     "eslint": "^9.39.5",
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.11.2",

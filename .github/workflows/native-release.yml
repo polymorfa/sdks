@@ -100,6 +100,11 @@ jobs:
           name: accepted-native-contract
           include-hidden-files: true
           path: .release/native
+      - name: Build existing browser components for framework examples
+        if: matrix.language == 'dotnet' || matrix.language == 'php'
+        run: |
+          npm ci
+          npm run build:workspaces
       - name: Verify native package and examples
         env:
           SDK_LANGUAGE: ${{ matrix.language }}
@@ -112,23 +117,10 @@ jobs:
           node scripts/stamp-native-release.mjs "$SDK_LANGUAGE"
           node scripts/pack-native-release.mjs "$SDK_LANGUAGE"
       - if: matrix.language == 'python'
-        run: python -m twine check packages/python/dist/*
-      - name: Prepare module and Composer source for reviewed tags
-        if: matrix.language == 'go' || matrix.language == 'php'
-        env:
-          SDK_LANGUAGE: ${{ matrix.language }}
-        run: |
-          mkdir -p .release/native/source
-          tar --exclude=vendor --exclude=dist --exclude=.artifacts -cf ".release/native/source/$SDK_LANGUAGE.tar" -C "packages/$SDK_LANGUAGE" .
+        run: python -m twine check .release/native/packs/python/*.whl .release/native/packs/python/*.tar.gz
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: native-${{ matrix.language }}-accepted-packs
           include-hidden-files: true
-          path: |
-            .release/native/release-contract.json
-            .release/native/source/*.tar
-            packages/python/dist/*
-            packages/dotnet/artifacts/*.nupkg
-            packages/rust/target/package/*.crate
-            packages/php/dist/*.tar
+          path: .release/native/packs/${{ matrix.language }}/*
           if-no-files-found: error

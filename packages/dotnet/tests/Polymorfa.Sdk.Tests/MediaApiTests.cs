@@ -10,8 +10,21 @@ internal static class MediaApiTests
         await Organization("GET", "/platform/media/media1", null, """{"data":{"id":"media1","state":"ready"}}""", async c => ResourceTests.Equal((await c.Media.RetrieveAsync("media1")).Data.Data.GetProperty("state").GetString(), "ready"));
         await Organization("DELETE", "/platform/media/media1", null, """{"data":{"deleted":true}}""", async c => ResourceTests.True((await c.Media.DeleteAsync("media1")).Data.Data.GetProperty("deleted").GetBoolean()));
         await Organization("POST", "/platform/media/uploads", """{"filename":"voice.ogg","contentType":"audio/ogg"}""", """{"data":{"uploadId":"up1","url":"https://storage.example/once"}}""", async c => ResourceTests.Equal((await c.Media.CreateUploadAsync(JsonSerializer.SerializeToElement(new { filename = "voice.ogg", contentType = "audio/ogg" }))).Data.Data.GetProperty("uploadId").GetString(), "up1"));
-        await DirectMedia(); await StoredHistoryMedia(); await RedirectIsolation(); await DownloadUrl(); await InvalidRedirect(); await CancelledRead();
+        Filenames(); await DirectMedia(); await StoredHistoryMedia(); await RedirectIsolation(); await DownloadUrl(); await InvalidRedirect(); await CancelledRead();
         Console.WriteLine("PASS media API paths, native binary/history downloads, credential-free redirect chain, URL expiry and cancellation");
+    }
+    private static void Filenames()
+    {
+        foreach (var (header, expected) in new (string?, string?)[] {
+            (null, null), (new string('x', 8193), null), ("attachment; filename=first; filename=second", "first"),
+            ("attachment; filename=plain.txt; filename*=UTF-8''%E2%82%AC%20rates.txt", "€ rates.txt"),
+            ("attachment; filename=plain.txt; filename*=UTF-8''%FF", "plain.txt"),
+            ("attachment; filename*=ISO-8859-1''caf%E9.txt", "café.txt"),
+            ("attachment; filename*=UTF-8''..%2F..%2Fsafe%00.txt", "safe.txt"),
+            ("attachment; filename*=UTF-8''..%5Csafe.txt", "safe.txt"),
+            ("attachment; filename=..", null), ("attachment; filename*=UTF-8''%ZZ; filename=fallback", "fallback"),
+            ("attachment; filename=\"semi;colon.txt\"", "semi;colon.txt") })
+            ResourceTests.Equal(ContentDisposition.ParseFilename(header), expected);
     }
     private static Task Messaging(string method, string path, string? body, string response, Func<MessagingClient, Task> invoke) => ResourceTests.Messaging(method, path, body, response, invoke);
     private static Task Organization(string method, string path, string? body, string response, Func<OrganizationClient, Task> invoke) => BillingTests.Organization(method, path, body, response, invoke);

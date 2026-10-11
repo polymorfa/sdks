@@ -4,19 +4,19 @@ These source examples use the development SDK. They do not establish registry or
 
 ## ASP.NET Core
 
-`aspnet-core` compiles against .NET 8. Set `POLYMORFA_API_KEY`, `POLYMORFA_SESSION`, and `POLYMORFA_WEBHOOK_SECRET` in server configuration. Run `dotnet run --project aspnet-core/Polymorfa.Example.AspNet.csproj` from this directory.
+`aspnet-core` compiles against .NET 8. Set `POLYMORFA_API_KEY` and `POLYMORFA_SESSION` in server configuration. Set `POLYMORFA_WEBHOOK_SECRET` when receiving webhooks. Run `dotnet run --project aspnet-core/Polymorfa.Example.AspNet.csproj` from this directory.
 
-Register your application's authentication scheme where the example indicates. Token requests require an authenticated subject and a `polymorfa_session` claim equal to the configured session. Resolve that claim from trusted application authorization; never copy a browser-supplied session or customer identifier into it. The token endpoint uses POST, checks the same origin, returns a five-minute client token and disables caching. It fails closed until authentication is configured.
+The Development-only sign-in route requires `POLYMORFA_EXAMPLE_PASSWORD`; it is disabled without that setting or outside Development. It signs an opaque HttpOnly cookie, validates its server-owned session on every request and revokes it at logout. Restarting this example clears its sessions and signing authority. Replace this demonstration identity with your application's authentication scheme before deployment. Token requests require an authenticated subject and a `polymorfa_session` claim equal to the configured session. Resolve that claim from trusted application authorization; never copy a browser-supplied session or customer identifier into it. The token endpoint uses POST, checks the same origin, returns a five-minute client token and disables caching. The token body includes the browser grant; untrusted request fields cannot change the subject or session.
 
 The webhook endpoint verifies the exact bounded raw body using `x-webhook-signature`. Add durable event-ID deduplication and application processing before using it for delivery receipts. Do not log the request body.
 
-Bundle `aspnet-core/wwwroot/elements.ts` to `elements.js` with your frontend tooling. It mounts the existing TypeScript Web Components; server credentials stay in ASP.NET Core.
+From the repository root run `npm ci`, `npm run build:workspaces`, and `node packages/dotnet/examples/build-elements.mjs` before starting the example. It mounts the existing TypeScript Web Components; server credentials stay in ASP.NET Core.
 
 ## Blazor WebAssembly and MAUI Blazor Hybrid
 
 `blazor-components` provides the same reusable Razor component for either host. It compiles independently; it does not reference the server SDK or contain server credentials. Reference its project from the host, bundle `wwwroot/messaging.ts` to `messaging.js`, and render `<Messaging TokenEndpoint="/api/polymorfa/token" />`. The component imports the module after rendering and disposes the browser client when removed.
 
-A same-origin Blazor WebAssembly application can use the authenticated ASP.NET Core token endpoint above. A MAUI host must supply its own authenticated HTTPS token route and application session transport. Do not embed an organization key or project token in the app, and do not point a signed app at a browser-selected API host. Configure CORS and authentication in the owning application. The Razor component build does not verify a MAUI device or WebAssembly runtime.
+`blazor-wasm` is a runnable same-origin WebAssembly host. Run `dotnet publish packages/dotnet/examples/blazor-wasm/Polymorfa.Example.Blazor.csproj --configuration Release --output packages/dotnet/examples/blazor-wasm/bin/served` and `node packages/dotnet/examples/prepare-blazor.mjs` from the repository root. Start ASP.NET Core, sign in at `/`, then open `/blazor/`. It uses the authenticated ASP.NET Core token endpoint and server-owned API configuration above. A MAUI host must supply its own authenticated HTTPS token route and application session transport. Do not embed an organization key or project token in the app, and do not point a signed app at a browser-selected API host. Configure CORS and authentication in the owning application. The WebAssembly host is checked in a browser against local API fixtures. The reusable Razor component does not establish MAUI device support; no MAUI app or device runtime was exercised.
 
 Use one mounted component per browser client. Install and bundle the same accepted TypeScript package version as the owning release. These integrations reuse `@polymorfa/elements`; they do not implement another messaging or calling UI.
 

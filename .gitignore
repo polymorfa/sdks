@@ -23,3 +23,8 @@ packages/dotnet/artifacts/
 packages/*/release-contract.json
 packages/python/src/polymorfa/release-contract.json
 examples/**/__pycache__/
+
+packages/dotnet/examples/aspnet-core/wwwroot/elements.js
+packages/dotnet/examples/blazor-components/wwwroot/messaging.js
+
+packages/dotnet/examples/aspnet-core/wwwroot/blazor/

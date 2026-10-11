@@ -10,3 +10,10 @@ packages/python/
 packages/php/
 packages/rust/
 packages/dotnet/
+examples/**/vendor/
+examples/**/target/
+examples/**/assets/
+examples/**/dist/
+examples/**/bin/
+examples/**/obj/
+examples/rust/yew/frontend/public/elements.js

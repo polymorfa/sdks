@@ -36,7 +36,19 @@ if (language === "go") {
     /SDK_VERSION = "[^"]+"/,
     `SDK_VERSION = "${pep440}"`,
   );
-  copyFileSync(receiptPath, join(pkg, "src/polymorfa/release-contract.json"));
+  // The receipt is deliberately gitignored during development. Hatch excludes
+  // ignored files unless release builds explicitly include them.
+  const pyproject = join(pkg, "pyproject.toml");
+  const config = readFileSync(pyproject, "utf8");
+  assert.ok(
+    !config.includes(".force-include]"),
+    "Unexpected existing release inclusion table",
+  );
+  writeFileSync(
+    pyproject,
+    config +
+      '\n[tool.hatch.build.targets.wheel.force-include]\n"release-contract.json" = "polymorfa/release-contract.json"\n\n[tool.hatch.build.targets.sdist.force-include]\n"release-contract.json" = "release-contract.json"\n',
+  );
 } else if (language === "php") {
   replace(
     "src/HttpTransport.php",

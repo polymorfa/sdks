@@ -18,7 +18,7 @@ public sealed class MediaDownload : IAsyncDisposable, IDisposable
     {
         Body = new CancellableStream(body, cancellation); this.response = response; this.owner = owner; Metadata = metadata; Redirected = redirected;
         ContentType = response.Content.Headers.ContentType?.MediaType; ContentLength = response.Content.Headers.ContentLength;
-        Filename = response.Content.Headers.ContentDisposition?.FileNameStar ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"');
+        Filename = ContentDisposition.ParseFilename(response.Content.Headers.TryGetValues("Content-Disposition", out var disposition) ? disposition.FirstOrDefault() : null);
     }
     public async Task<byte[]> ReadAllAsync(CancellationToken cancellationToken = default) { using var buffer = new MemoryStream(); await Body.CopyToAsync(buffer, cancellationToken).ConfigureAwait(false); return buffer.ToArray(); }
     public void Dispose() { Body.Dispose(); response.Dispose(); owner?.Dispose(); }

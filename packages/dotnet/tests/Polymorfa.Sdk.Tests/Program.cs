@@ -121,6 +121,7 @@ try
     await CallsSocketTests.RunAsync();
     await CallsProxyTests.RunAsync();
     await RequestLogTests.RunAsync();
+    await AspNetExampleTests.RunAsync(root);
     await CallsClientTests.RunAsync();
     await MessagingUtilityTests.RunAsync();
     await MediaApiTests.RunAsync();

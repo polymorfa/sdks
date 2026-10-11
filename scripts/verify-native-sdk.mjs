@@ -1,6 +1,8 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
+import { mkdirSync } from "node:fs";
+import { homedir } from "node:os";
 
 const language = process.argv[2];
 if (!["go", "python", "php", "dotnet", "rust"].includes(language))
@@ -26,13 +28,27 @@ if (language === "go") {
   run("go", ["vet", "./..."]);
   run("go", ["test", "-race", "./..."]);
   run("go", ["build", "./..."]);
+  const host = resolve(root, "examples/go/web-host");
+  for (const args of [
+    ["test", "-race", "./..."],
+    ["build", "./..."],
+  ]) {
+    const result = spawnSync("go", args, {
+      cwd: host,
+      stdio: "inherit",
+      env: process.env,
+    });
+    if (result.error) throw result.error;
+    if (result.status !== 0)
+      throw new Error("Go framework host verification failed");
+  }
 } else if (language === "python") {
   const python = process.env.SDK_PYTHON_VERSION;
   const uv = [...(python ? ["--python", python] : []), "--extra", "test"];
   for (const args of [
     ["ruff", "check", "."],
     ["ruff", "format", "--check", "."],
-    ["mypy", "src/polymorfa"],
+    ["mypy", "--no-incremental", "src/polymorfa"],
     ["pytest"],
     ["python", "-m", "build"],
   ])
@@ -42,6 +58,26 @@ if (language === "go") {
   run("composer", ["install", "--prefer-dist", "--no-interaction"]);
   for (const script of ["lint", "typecheck", "test", "build"])
     run("composer", [script]);
+  const host = resolve(root, "examples/php/web-host");
+  const state = resolve(
+    homedir(),
+    ".polymorfa-agent-work/php-sdk-framework-checks",
+  );
+  mkdirSync(state, { recursive: true, mode: 0o700 });
+  for (const [command, args] of [
+    ["composer", ["install", "--prefer-dist", "--no-interaction"]],
+    ["node", ["build-assets.mjs"]],
+    ["php", ["tests/run.php"]],
+  ]) {
+    const result = spawnSync(command, args, {
+      cwd: host,
+      stdio: "inherit",
+      env: { ...process.env, EXAMPLE_STATE_DIR: state },
+    });
+    if (result.error) throw result.error;
+    if (result.status !== 0)
+      throw new Error("PHP framework host verification failed");
+  }
 } else if (language === "rust") {
   run("cargo", ["fmt", "--check"]);
   run("cargo", [
@@ -66,17 +102,11 @@ if (language === "go") {
     "Release",
     "--warnaserror",
   ]);
-  run("dotnet", [
-    "run",
-    "--project",
-    "tests/Polymorfa.Sdk.Tests/Polymorfa.Sdk.Tests.csproj",
-    "--configuration",
-    "Release",
-  ]);
   for (const example of [
     "aspnet-core/Polymorfa.Example.AspNet.csproj",
     "calls-agent/Polymorfa.Example.Calls.csproj",
     "blazor-components/Polymorfa.Example.Components.csproj",
+    "blazor-wasm/Polymorfa.Example.Blazor.csproj",
   ])
     run("dotnet", [
       "build",
@@ -85,6 +115,24 @@ if (language === "go") {
       "Release",
       "--warnaserror",
     ]);
+  run("node", ["examples/build-elements.mjs"]);
+  run("dotnet", [
+    "publish",
+    "examples/blazor-wasm/Polymorfa.Example.Blazor.csproj",
+    "--configuration",
+    "Release",
+    "--output",
+    "examples/blazor-wasm/bin/served",
+    "--warnaserror",
+  ]);
+  run("node", ["examples/prepare-blazor.mjs"]);
+  run("dotnet", [
+    "run",
+    "--project",
+    "tests/Polymorfa.Sdk.Tests/Polymorfa.Sdk.Tests.csproj",
+    "--configuration",
+    "Release",
+  ]);
   run("dotnet", [
     "pack",
     project,

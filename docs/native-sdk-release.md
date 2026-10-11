@@ -26,7 +26,7 @@ The pack jobs run baseline format, type, test, example and build checks; stamp a
 single accepted version into package metadata and user-agent constants; embed
 `release-contract.json`; then rebuild native distribution artifacts. Python uses
 PEP 440 `.dev<timestamp>` while the other packages use
-`-dev.<timestamp>`. The workflow uploads packages and source archives for review.
+`-dev.<timestamp>`. Each language writes to a fresh accepted artifact directory, verifies every embedded receipt, and uploads only those packages or source archives for review. Development packs produced by verification are excluded.
 It has no registry credentials or write permission.
 
 ## Publication ownership

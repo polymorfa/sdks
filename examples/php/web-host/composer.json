@@ -9,8 +9,20 @@
     "symfony/http-kernel": "^7.4",
     "twig/twig": "^3.0"
   },
-  "repositories": [{"type":"path","url":"../../../packages/php","options":{"symlink":true}}],
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../../../packages/php",
+      "options": {
+        "symlink": true
+      }
+    }
+  ],
   "minimum-stability": "dev",
   "prefer-stable": true,
-  "autoload": {"psr-4":{"PolymorfaExample\\":"src/"}}
+  "autoload": {
+    "psr-4": {
+      "PolymorfaExample\\": "src/"
+    }
+  }
 }

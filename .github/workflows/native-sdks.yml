@@ -66,6 +66,11 @@ jobs:
         run: |
           rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal --component rustfmt,clippy
           rustup default "$RUST_TOOLCHAIN"
+      - name: Build existing browser components for framework examples
+        if: matrix.language == 'dotnet' || matrix.language == 'php'
+        run: |
+          npm ci
+          npm run build:workspaces
       - name: Verify handwritten SDK and build its package
         env:
           SDK_LANGUAGE: ${{ matrix.language }}

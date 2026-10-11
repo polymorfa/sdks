@@ -4,4 +4,7 @@ window.startPolymorfa = () => {
   client ??= definePolymorfa({ tokenEndpoint: "/api/polymorfa/token" });
 };
 
-window.stopPolymorfa = () => { client?.dispose(); client = undefined; };
+window.stopPolymorfa = () => {
+  client?.dispose();
+  client = undefined;
+};

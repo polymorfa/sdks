@@ -33,7 +33,7 @@ All 439 REST operations covered by the pinned TypeScript server SDK have handwri
 
 `WhatsAppMedia.DecryptToFileAsync` and `DownloadToFileAsync` authenticate encrypted media before decrypting it into a private scratch file and atomically committing the verified result. They bound input size, clean up failures and preserve existing files unless overwrite is requested. `MessagingMedia.DownloadToFileAsync` performs bounded API media downloads over the separate credential-free storage transport.
 
-The [examples](examples/README.md) include an ASP.NET Core authenticated token/webhook server, a reusable Razor component for Blazor and MAUI Blazor Hybrid hosts, and a programmatic Calls agent. Native builds verify the examples; device and browser hosting require application-specific authentication and frontend bundling.
+The [examples](examples/README.md) include an ASP.NET Core authenticated token/webhook server, a reusable Razor component for Blazor and MAUI Blazor Hybrid hosts, and a programmatic Calls agent. Native builds verify the examples; the ASP.NET and Blazor WebAssembly hosts also run in a browser against local API fixtures. MAUI device hosting remains unexercised.
 
 Signal integration is owned by the Signal workstream and is outside this package change.
 

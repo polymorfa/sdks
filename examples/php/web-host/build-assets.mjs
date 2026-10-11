@@ -1,11 +1,24 @@
-import {build} from 'esbuild';
-import {createHash} from 'node:crypto';
-import {writeFile,mkdir} from 'node:fs/promises';
-import {fileURLToPath} from 'node:url';
-await mkdir(new URL('public/assets/',import.meta.url),{recursive:true});
-await build({entryPoints:[fileURLToPath(new URL('bridge.js',import.meta.url))],outfile:fileURLToPath(new URL('public/assets/elements.js',import.meta.url)),bundle:true,format:'esm',platform:'browser',target:'es2022'});
-const response=await fetch('https://raw.githubusercontent.com/bigskysoftware/htmx/v2.0.4/dist/htmx.min.js');
-if(!response.ok)throw new Error('Cannot fetch pinned HTMX asset.');
-const body=Buffer.from(await response.arrayBuffer());
-if(createHash('sha256').update(body).digest('hex')!=='e209dda5c8235479f3166defc7750e1dbcd5a5c1808b7792fc2e6733768fb447')throw new Error('Pinned HTMX integrity check failed.');
-await writeFile(new URL('public/assets/htmx.js',import.meta.url),body);
+import { build } from "esbuild";
+import { createHash } from "node:crypto";
+import { writeFile, mkdir } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+await mkdir(new URL("public/assets/", import.meta.url), { recursive: true });
+await build({
+  entryPoints: [fileURLToPath(new URL("bridge.js", import.meta.url))],
+  outfile: fileURLToPath(new URL("public/assets/elements.js", import.meta.url)),
+  bundle: true,
+  format: "esm",
+  platform: "browser",
+  target: "es2022",
+});
+const response = await fetch(
+  "https://raw.githubusercontent.com/bigskysoftware/htmx/v2.0.4/dist/htmx.min.js",
+);
+if (!response.ok) throw new Error("Cannot fetch pinned HTMX asset.");
+const body = Buffer.from(await response.arrayBuffer());
+if (
+  createHash("sha256").update(body).digest("hex") !==
+  "e209dda5c8235479f3166defc7750e1dbcd5a5c1808b7792fc2e6733768fb447"
+)
+  throw new Error("Pinned HTMX integrity check failed.");
+await writeFile(new URL("public/assets/htmx.js", import.meta.url), body);
