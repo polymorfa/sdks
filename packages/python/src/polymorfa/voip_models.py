@@ -124,14 +124,14 @@ class ReportClient(TypedDict):
 
 
 class CallQuality(TypedDict, total=False):
-    rttMs: int
-    jitterMs: int
-    packetsLost: int
-    packetsReceived: int
+    rttMs: float
+    jitterMs: float
+    packetsLost: float
+    packetsReceived: float
     audioCodec: str
     videoCodec: str
     candidateType: Literal["host", "srflx", "prflx", "relay"]
-    reconnects: int
+    reconnects: float
 
 
 CallErrorCode = Literal[

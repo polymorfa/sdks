@@ -73,11 +73,19 @@ and the media MAC, limits bytes, confines redirects to WhatsApp CDN hosts,
 and uses a connection without API credentials. The media key is hidden in
 object representations.
 
-Install the `calls` extra to use `MediaSocket` with native WebSockets.
-The socket authenticates in its first frame, uses `pmfa.calls.v2`, and sends
-or receives PCM and H.264 media. This is the media attachment primitive;
-application call orchestration and additional lifecycle helpers remain
-unfinished. Install the `fastapi` or `django` extras for framework examples;
+Install the `calls` extra to use `CallsClient`, `LifecycleSocket` or `MediaSocket`
+with native WebSockets. `CallsClient` follows one session, exposes incoming calls,
+and places direct, participant and group calls. A `Call` supports answer, join,
+reject, leave, end, roster controls, reactions, hand state and PCM/H.264 media.
+Its `sample_rate` comes from the media handshake. The client refreshes expiring
+credentials, reconnects media with the same connection ID, and restores confirmed
+media preferences. `set_media_state` uses an ordered queue of at most 16 commands;
+an unacknowledged command fails after five seconds and is never replayed.
+`CallsTokenSource` caches credentials with a 30-second expiry skew and keeps
+one caller's cancellation from cancelling other waiters. `CallsToken.expires_at`
+uses Unix epoch seconds. Socket credentials travel in authentication frames.
+Technical diagnostics can be disabled with `diagnostics=False`.
+Install the `fastapi` or `django` extras for framework examples;
 `fastapi_webhook_event` and `django_webhook_event` verify the raw request body.
 See `examples/python` in the source tree for executable application examples.
 

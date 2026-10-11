@@ -18,6 +18,7 @@ from .errors import (
     ConfigurationError,
     ConflictError,
     ServerError,
+    TimeoutError,
     ValidationError,
 )
 from .transport import Credential, JsonObject
@@ -43,7 +44,9 @@ class VideoFrame:
 
 
 def encode_audio_frame(samples: Sequence[int]) -> bytes:
-    if any(isinstance(v, bool) or not -32768 <= v <= 32767 for v in samples):
+    if any(
+        isinstance(v, bool) or not isinstance(v, int) or not -32768 <= v <= 32767 for v in samples
+    ):
         raise ValidationError("Audio samples must be signed 16-bit integers.")
     return b"\x01" + struct.pack("<" + "h" * len(samples), *samples)
 
@@ -51,6 +54,11 @@ def encode_audio_frame(samples: Sequence[int]) -> bytes:
 def encode_video_frame(frame: VideoFrame) -> bytes:
     if (
         not frame.data
+        or not isinstance(frame.timestamp_us, int)
+        or isinstance(frame.timestamp_us, bool)
+        or not isinstance(frame.source, int)
+        or isinstance(frame.source, bool)
+        or not isinstance(frame.keyframe, bool)
         or not 0 <= frame.timestamp_us <= 2**64 - 1
         or not 0 <= frame.source <= 2**32 - 1
     ):
@@ -190,6 +198,11 @@ class MediaSocket:
 
         try:
             await asyncio.wait_for(attach(), self._timeout)
+        except asyncio.TimeoutError:
+            await self.close()
+            raise TimeoutError(
+                "Call media did not authenticate in time.", code="media_timeout"
+            ) from None
         except BaseException:
             await self.close()
             raise
@@ -211,6 +224,16 @@ class MediaSocket:
         if not self.connected or self._socket is None:
             raise ConfigurationError("connection")
         await self._socket.send(json.dumps(frame))
+
+    async def replace_token(self, credential: Credential) -> None:
+        frame: JsonObject = {
+            "type": "auth",
+            "token": credential.value,
+            "connectionId": self.connection_id,
+        }
+        if self._participant is not None and credential.kind != "client_token":
+            frame["participant"] = self._participant
+        await self.send_control(frame)
 
     async def send_audio(self, samples: Sequence[int]) -> None:
         if not self.connected or self._socket is None:

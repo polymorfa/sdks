@@ -8,6 +8,11 @@ from .calls import (
     encode_audio_frame,
     encode_video_frame,
 )
+from .calls_diagnostics import CallReporter
+from .calls_lifecycle import LifecycleEvent, LifecycleReady, LifecycleSocket
+from .calls_media import MediaState, MediaStateUpdate
+from .calls_runtime import Call, CallCapabilities, CallClaim, CallsClient
+from .calls_tokens import CallsError, CallsToken, CallsTokenRequest, CallsTokenSource
 from .client import AsyncClient, AsyncMessagingClient, AsyncProjectClient
 from .errors import (
     AuthenticationError,
@@ -61,6 +66,15 @@ __all__ = [
     "AudioFrame",
     "AuthenticationError",
     "AuthorizationError",
+    "Call",
+    "CallCapabilities",
+    "CallClaim",
+    "CallReporter",
+    "CallsClient",
+    "CallsError",
+    "CallsToken",
+    "CallsTokenRequest",
+    "CallsTokenSource",
     "CancelledError",
     "ConfigurationError",
     "ConflictError",
@@ -68,9 +82,14 @@ __all__ = [
     "Credential",
     "CursorPage",
     "EventStream",
+    "LifecycleEvent",
+    "LifecycleReady",
+    "LifecycleSocket",
     "MediaDescriptor",
     "MediaIntegrityError",
     "MediaSocket",
+    "MediaState",
+    "MediaStateUpdate",
     "NotFoundError",
     "PaymentRequiredError",
     "PolymorfaError",
