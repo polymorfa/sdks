@@ -6,25 +6,25 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/business/collections/{collectionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.DeleteCollectionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/business/products/{productId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.DeleteProductAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/business/profile/cover-photo/{coverPhotoId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.DeleteCoverPhotoAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
@@ -126,73 +126,73 @@
       "family": "messaging",
       "method": "GET",
       "path": "/health",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient.HealthAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SystemTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/catalog",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetCatalogAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/collections",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.ListCollectionsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/collections/{collectionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetCollectionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/compliance",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetMerchantComplianceAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/eligibility",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetEligibilityAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/linked-accounts",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetLinkedAccountsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/products/{productId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetProductAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/profile",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetProfileAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
@@ -566,25 +566,25 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/bridge/route",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "BridgeClient.Routes.ResolveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SystemTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/info/status",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient.StatusAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SystemTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/info/version",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient.VersionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SystemTests.cs"
     },
     {
       "family": "messaging",
@@ -749,9 +749,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/ping",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient.PingAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/SystemTests.cs"
     },
     {
       "family": "messaging",
@@ -771,33 +771,33 @@
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/business/catalog/cart",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.SetCartEnabledAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/business/collections/{collectionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.UpdateCollectionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/business/products/{productId}/visibility",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.SetProductVisibilityAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/business/profile",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.UpdateProfileAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
@@ -841,57 +841,57 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/catalog",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.CreateCatalogAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/collections",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.CreateCollectionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/collections/{collectionId}/appeal",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.AppealCollectionAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/collections/reorder",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.ReorderCollectionsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/orders/{orderId}/lookup",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.GetOrderAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/products",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.CreateProductAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/products/{productId}/appeal",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.AppealProductAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
@@ -1531,25 +1531,25 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/business/compliance",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.SetMerchantComplianceAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/business/products/{productId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.UpdateProductAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/business/profile/cover-photo",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Business.SetCoverPhotoAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
     },
     {
       "family": "messaging",
@@ -1878,9 +1878,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/customers/{customerId}/pairing-links/{pairingLinkId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.RevokePairingLinkAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
       "family": "platform",
@@ -1942,9 +1942,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
@@ -1997,9 +1997,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
@@ -2590,41 +2590,41 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}/events",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.ListEventsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}/numbers",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.ListNumbersAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/customers/{customerId}/pairing-links",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.ListPairingLinksAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
       "family": "platform",
@@ -2838,9 +2838,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/customers/status",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.StatusAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
       "family": "platform",
@@ -2934,49 +2934,49 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhook-deliveries",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.WebhookDeliveries.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.WebhookDeliveries.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.WebhookDeliveries.ListAttemptsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.WebhookDeliveries.RetrieveAttemptAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhooks",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
@@ -3172,49 +3172,49 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhook-deliveries",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.WebhookDeliveries.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.WebhookDeliveries.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}/attempts",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.WebhookDeliveries.ListAttemptsAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.WebhookDeliveries.RetrieveAttemptAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhooks",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
@@ -3277,9 +3277,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/customers/{customerId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
       "family": "platform",
@@ -3301,9 +3301,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
@@ -3340,9 +3340,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/webhooks/{webhookId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
@@ -3765,41 +3765,41 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/archive",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.ArchiveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/numbers/{sessionId}/transfer",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.TransferNumberAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/pairing-links",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.CreatePairingLinkAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/customers/{customerId}/restore",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.RestoreAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
       "family": "platform",
@@ -3949,9 +3949,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/customers/enable",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Customers.EnableAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
       "family": "platform",
@@ -3966,7 +3966,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/events/stream/{streamId}/ack",
       "status": "covered",
-      "sdkMethod": "ProjectClient.Events.AcknowledgeStreamAsync",
+      "sdkMethod": "OrganizationClient.Events.AcknowledgeStreamAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
     },
     {
@@ -4005,33 +4005,33 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhook-deliveries/{deliveryId}/retry",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.WebhookDeliveries.RetryAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}/secret-rotations",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.RotateSecretAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}/tests",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Webhooks.TestAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
@@ -4184,33 +4184,33 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/webhook-deliveries/{deliveryId}/retry",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.WebhookDeliveries.RetryAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/webhooks",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/webhooks/{webhookId}/secret-rotations",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.RotateSecretAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/webhooks/{webhookId}/tests",
-      "status": "missing",
-      "reason": "Complete handwritten typed resource and per-operation native wire evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Webhooks.TestAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
       "family": "platform",

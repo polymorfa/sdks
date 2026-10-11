@@ -98,10 +98,14 @@ try
         Equal(valid, fixture.GetProperty("valid").GetBoolean(), id); Console.WriteLine($"PASS configuration {id}"); count++;
     }
     WebhookTests.Run();
+    await SystemTests.RunAsync();
     await MediaTests.RunAsync(root);
     await ResourceTests.RunAsync();
+    await BusinessTests.RunAsync();
     await CallsTests.RunAsync();
     await BillingTests.RunAsync();
+    await CustomerTests.RunAsync();
+    await PlatformWebhookTests.RunAsync();
     await CallConsentTests.RunAsync();
     await SessionTests.RunAsync();
     await SipTests.RunAsync();

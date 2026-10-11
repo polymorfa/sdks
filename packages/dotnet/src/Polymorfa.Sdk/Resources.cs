@@ -88,7 +88,7 @@ public sealed class Presence : Resource
     public Task<ApiResponse<AsyncCommandResponse>> SetAsync(string session, SetPresenceRequest body, RequestOptions? options = null) => Post<AsyncCommandResponse>(Path(session), body, options);
     public Task<ApiResponse<SuccessEnvelope<PresenceData>>> GetAsync(string session, RequestOptions? options = null) => Get<SuccessEnvelope<PresenceData>>(Path(session), options);
     public Task<ApiResponse<SuccessEnvelope<ChatPresenceData>>> GetForChatAsync(string session, string chat, RequestOptions? options = null) => Get<SuccessEnvelope<ChatPresenceData>>(Path(session) + "/" + E(chat), options);
-    public Task<ApiResponse<SuccessEnvelope<PresenceSubscription>>> SubscribeAsync(string session, string chat, RequestOptions? options = null) => Post<SuccessEnvelope<PresenceSubscription>>(Path(session) + "/" + E(chat) + "/subscribe", null, options);
+    public Task<ApiResponse<SuccessEnvelope<CommandResult<PresenceSubscription>>>> SubscribeAsync(string session, string chat, RequestOptions? options = null) => Post<SuccessEnvelope<CommandResult<PresenceSubscription>>>(Path(session) + "/" + E(chat) + "/subscribe", null, options);
 }
 public sealed class Labels : Resource
 {

@@ -12,7 +12,8 @@ public sealed record ApiResponse<T>(T Data, ResponseMetadata Metadata);
 
 internal sealed class HttpTransport : IDisposable
 {
-    internal Credential Credential { get; }
+    private readonly Credential? credential;
+    internal Credential Credential => credential ?? throw new PolymorfaConfigurationException("This transport has no credential.");
     internal ClientOptions Options { get; }
     private readonly HttpClient http;
     private readonly bool ownsHttp;
@@ -23,9 +24,9 @@ internal sealed class HttpTransport : IDisposable
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         Converters = { new MessageContentConverter() }
     };
-    internal HttpTransport(Credential credential, ClientOptions options)
+    internal HttpTransport(Credential? credential, ClientOptions options)
     {
-        Credential = credential; Options = options with { };
+        this.credential = credential; Options = options with { };
         ValidateUrl(options.BaseUrl);
         ValidateLimits(options.Timeout, options.MaxNetworkRetries);
         if (string.IsNullOrWhiteSpace(options.ApiVersion) || options.ApiVersion.Contains('\r') || options.ApiVersion.Contains('\n')) throw new PolymorfaConfigurationException("Invalid apiVersion.");
@@ -79,7 +80,7 @@ internal sealed class HttpTransport : IDisposable
                     request.Headers.Remove(name);
                     if (!request.Headers.TryAddWithoutValidation(name, value)) throw new PolymorfaConfigurationException("Invalid request header.");
                 }
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", Credential.Value);
+            if (credential is not null) request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", credential.Value);
             request.Headers.Remove("polymorfa-version");
             request.Headers.TryAddWithoutValidation("polymorfa-version", options.ApiVersion ?? Options.ApiVersion);
             if (options.IdempotencyKey is not null) { request.Headers.Remove("idempotency-key"); request.Headers.TryAddWithoutValidation("idempotency-key", options.IdempotencyKey); }
