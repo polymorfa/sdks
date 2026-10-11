@@ -1,8 +1,8 @@
 import hashlib
-import json
-from pathlib import Path
 import hmac
+import json
 from dataclasses import replace
+from pathlib import Path
 
 import pytest
 from cryptography.hazmat.primitives import padding
@@ -11,9 +11,9 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from polymorfa import ConfigurationError, Credential, MediaIntegrityError
 from polymorfa.media import (
     MediaDescriptor,
+    decode_whatsapp_media,
     decrypt_whatsapp_media,
     derive_whatsapp_media_keys,
-    decode_whatsapp_media,
 )
 
 
