@@ -809,7 +809,10 @@ class CallsClient:
                 if event.call_id not in self._pending and len(self._pending) >= 64:
                     self._pending.popitem(last=False)
                 queue = self._pending.setdefault(event.call_id, [])
-                terminal = lambda item: item.event in ("call.ended", "call.missed", "call.rejected")
+
+                def terminal(item: LifecycleEvent) -> bool:
+                    return item.event in ("call.ended", "call.missed", "call.rejected")
+
                 if any(terminal(item) for item in queue):
                     return
                 if terminal(event):

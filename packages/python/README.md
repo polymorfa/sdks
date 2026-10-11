@@ -56,6 +56,11 @@ your durable store. `events.stream` reconnects with the last delivered cursor;
 cancel the consuming task to stop it. `CursorPage` supports `next_page()` and
 `async for` with cursor-loop detection.
 
+`is_event(event, "message.received")` narrows the verified envelope to its typed
+payload. Guards cover every known native event; payload types are available in
+`polymorfa.webhook_models`. Message payloads retain their Linked and Official API
+variants. Parsing preserves additional fields and unknown event payloads.
+
 Run package checks with `uv sync --extra test`, `uv run ruff check`,
 `uv run ruff format --check`, `uv run mypy src/polymorfa`, `uv run pytest`, and
 `uv run python -m build`. These checks exercise local mock contracts. They

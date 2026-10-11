@@ -12,9 +12,13 @@ async def main() -> None:
     ) as client:
         response = await client.messages.send(
             os.environ["POLYMORFA_SESSION"],
-            {"conversation": {"phoneNumber": os.environ["POLYMORFA_RECIPIENT"]},
-             "content": {"text": "Hello from Python"}},
-            options=RequestOptions(idempotency_key=os.environ["POLYMORFA_IDEMPOTENCY_KEY"]),
+            {
+                "conversation": {"phoneNumber": os.environ["POLYMORFA_RECIPIENT"]},
+                "content": {"text": "Hello from Python"},
+            },
+            options=RequestOptions(
+                idempotency_key=os.environ["POLYMORFA_IDEMPOTENCY_KEY"]
+            ),
         )
         print(response.data["data"]["id"], response.metadata.request_id)
 

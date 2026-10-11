@@ -67,6 +67,8 @@ from .transport import (
     RequestOptions,
     ResponseMetadata,
 )
+from .webhook_models import MessageReceivedEvent, TypedWebhookEvent, UnknownWebhookEvent
+from .webhook_types import is_event
 from .webhooks import (
     WebhookEvent,
     WebhookFixture,
@@ -115,6 +117,7 @@ __all__ = [
     "MediaSocket",
     "MediaState",
     "MediaStateUpdate",
+    "MessageReceivedEvent",
     "NotFoundError",
     "PaymentRequiredError",
     "PolymorfaError",
@@ -124,6 +127,8 @@ __all__ = [
     "ServerError",
     "StreamedEvent",
     "TimeoutError",
+    "TypedWebhookEvent",
+    "UnknownWebhookEvent",
     "ValidationError",
     "VideoFrame",
     "WebhookEvent",
@@ -149,6 +154,7 @@ __all__ = [
     "encode_audio_frame",
     "encode_video_frame",
     "fastapi_webhook_event",
+    "is_event",
     "is_known_error_code",
     "is_whatsapp_media_url",
     "verify_local_webhook_signature",

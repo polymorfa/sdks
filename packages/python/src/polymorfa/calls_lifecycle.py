@@ -198,7 +198,7 @@ class LifecycleSocket:
                         event = LifecycleEvent(
                             cast(str, frame["event"]),
                             cast(str, frame["callId"]),
-                            cast(JsonObject, payload) if isinstance(payload, dict) else {},
+                            payload if isinstance(payload, dict) else {},
                             cast(str, frame["timestamp"]),
                         )
                         if self._on_event is not None:

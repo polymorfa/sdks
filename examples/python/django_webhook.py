@@ -4,8 +4,7 @@ import os
 
 from django.http import HttpRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
-from polymorfa import WebhookSignatureError
+from polymorfa import WebhookSignatureError, is_event
 from polymorfa.integrations import django_webhook_event
 
 
@@ -17,4 +16,6 @@ def webhook(request: HttpRequest) -> JsonResponse:
         event = django_webhook_event(request, os.environ["POLYMORFA_WEBHOOK_SECRET"])
     except WebhookSignatureError:
         return JsonResponse({"error": "invalid_signature"}, status=400)
+    if is_event(event, "message.received"):
+        return JsonResponse({"received": event.id, "message": event.payload["id"]})
     return JsonResponse({"received": event.id})

@@ -20,6 +20,7 @@ from typing import cast
 
 from .errors import ValidationError, WebhookSignatureError
 from .transport import Json, JsonObject
+from .webhook_models import TypedWebhookEvent
 
 KNOWN_EVENT_TYPES = frozenset(
     [
@@ -111,15 +112,8 @@ KNOWN_EVENT_TYPES = frozenset(
 )
 
 
-@dataclass(frozen=True)
-class WebhookEvent:
-    id: str
-    session: str
-    timestamp: str
-    event: str
-    payload: Json = field(repr=False)
-    raw: JsonObject = field(repr=False)
-    known: bool
+class WebhookEvent(TypedWebhookEvent[str, Json]):
+    pass
 
 
 def verify_webhook_signature(raw_body: bytes, signature: str, secret: str) -> bool:
@@ -231,8 +225,10 @@ class WebhookFixture:
     content_type: str = "application/json"
 
 
-def create_webhook_fixture(event: WebhookEvent | JsonObject, secret: str) -> WebhookFixture:
-    value = event.raw if isinstance(event, WebhookEvent) else event
+def create_webhook_fixture(
+    event: TypedWebhookEvent[str, object] | JsonObject, secret: str
+) -> WebhookFixture:
+    value = event.raw if isinstance(event, TypedWebhookEvent) else event
     body = json.dumps(value, separators=(",", ":"), ensure_ascii=False, allow_nan=False).encode(
         "utf-8"
     )
