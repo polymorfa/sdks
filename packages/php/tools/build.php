@@ -8,7 +8,7 @@ if (!is_dir($destination)) {
     mkdir($destination, 0777, true);
 }
 $archive = new PharData($destination . '/polymorfa-sdk.tar');
-foreach (['src', 'README.md', 'composer.json', 'LICENSE'] as $relative) {
+foreach (['src', 'README.md', 'composer.json', 'LICENSE', 'release-contract.json'] as $relative) {
     $path = $root . '/' . $relative;
     if (is_dir($path)) {
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($path)) as $file) {

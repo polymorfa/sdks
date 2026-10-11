@@ -134,3 +134,10 @@ idempotency key per invocation. Organization and immutable project views use
 their respective native routes. `requestLogs.list`, `follow` and `tail` read the
 project log; tail reverses backfill into chronological order, follows new records,
 honors cancellation and bounds `Retry-After` delays.
+
+`officialGroups` provides typed Official API group reads and writes. Every change
+is sent once, including keyed requests with retry overrides. The API enforces
+Number eligibility and enrollment. `hybridLink`, `observationPolicies`,
+`cloudOnboarding` and `testing` follow the existing server contracts.
+`SystemClient` sends credential-free liveness and version probes; `BridgeClient`
+accepts only a project token and resolves regional Bridge routes.

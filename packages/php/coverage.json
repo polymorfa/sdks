@@ -70,9 +70,9 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/official-groups/{group}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::officialGroups.delete",
+      "testFile": "tests/official_groups.php"
     },
     {
       "family": "messaging",
@@ -126,9 +126,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/health",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient::health",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",
@@ -406,9 +406,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/hybrid-link",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::hybridLink.state",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",
@@ -446,41 +446,41 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/observation-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::observationPolicies.retrieveForSession",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::officialGroups.list",
+      "testFile": "tests/official_groups.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups/{group}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::officialGroups.retrieve",
+      "testFile": "tests/official_groups.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups/{group}/invite-link",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::officialGroups.getInviteLink",
+      "testFile": "tests/official_groups.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/official-groups/{group}/join-requests",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::officialGroups.listJoinRequests",
+      "testFile": "tests/official_groups.php"
     },
     {
       "family": "messaging",
@@ -566,25 +566,25 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/bridge/route",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "BridgeClient::routes.resolve",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/info/status",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient::status",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/info/version",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient::version",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",
@@ -622,9 +622,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/observation-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::observationPolicies.retrieveForProject",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",
@@ -710,17 +710,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/routing/hybrid",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::hybridLink.getPolicy",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/testing/{projectId}/events/fixtures",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::testing.listEventFixtures",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",
@@ -750,9 +750,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/ping",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "SystemClient::ping",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",
@@ -806,9 +806,9 @@
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/official-groups/{group}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::officialGroups.update",
+      "testFile": "tests/official_groups.php"
     },
     {
       "family": "messaging",
@@ -1134,49 +1134,49 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::officialGroups.create",
+      "testFile": "tests/official_groups.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/invite-link/reset",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::officialGroups.resetInviteLink",
+      "testFile": "tests/official_groups.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/join-requests/approve",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::officialGroups.approveJoinRequests",
+      "testFile": "tests/official_groups.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/join-requests/reject",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::officialGroups.rejectJoinRequests",
+      "testFile": "tests/official_groups.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/participants/remove",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::officialGroups.removeParticipants",
+      "testFile": "tests/official_groups.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/official-groups/{group}/pins",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::officialGroups.pin",
+      "testFile": "tests/official_groups.php"
     },
     {
       "family": "messaging",
@@ -1214,9 +1214,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/cloud-api/embedded-signup",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::cloudOnboarding.advance",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",
@@ -1334,17 +1334,17 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/testing/{projectId}/events",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::testing.triggerEvent",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/testing/{projectId}/history-fixtures",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::testing.createHistoryFixture",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",
@@ -1654,9 +1654,9 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/hybrid-link",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::hybridLink.setPaused",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",
@@ -1758,9 +1758,9 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/routing/hybrid",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::hybridLink.setPolicy",
+      "testFile": "tests/onboarding.php"
     },
     {
       "family": "messaging",

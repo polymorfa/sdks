@@ -39,4 +39,4 @@ check(Polymorfa\Resources\RequestLogs::retryAfterMilliseconds('0') === 0 && Poly
 $history = [];
 $client = (new Polymorfa\Client($credential, http:mocked([jsonResponse(['data' => [],'page' => ['hasMore' => false,'followCursor' => 'f']])], $history)))->project('project');
 $error = raises(fn () => $client->requestLogs->list(), Polymorfa\ServerException::class);
-check($error->errorCode === 'invalid_response' && $error->metadata !== null,'Request log invalid page retains metadata');
+check($error->errorCode === 'invalid_response' && $error->metadata !== null, 'Request log invalid page retains metadata');

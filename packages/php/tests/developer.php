@@ -79,4 +79,4 @@ $history = [];
 $client = new Polymorfa\Client($credential, http:mocked([jsonResponse(['data' => $cancellation])], $history));
 $client->operations->cancel('op');
 check($history[0]['request']->getHeaderLine('Idempotency-Key') !== '', 'Operation cancellation mints invocation key');
-raises(fn () => $client->operations->retrieve('op',['wait' => 31]),Polymorfa\ConfigurationException::class);
+raises(fn () => $client->operations->retrieve('op', ['wait' => 31]), Polymorfa\ConfigurationException::class);

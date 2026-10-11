@@ -165,3 +165,7 @@ require __DIR__.'/functions.php';
 require __DIR__.'/developer.php';
 
 require __DIR__.'/request_logs.php';
+
+require __DIR__.'/official_groups.php';
+
+require __DIR__.'/onboarding.php';

@@ -122,12 +122,44 @@ for prefix in ['/platform','/platform/projects/{projectId}']:
 evidence.extend([
  ('POST','/platform/projects/{projectId}/events/stream/{streamId}/ack','events.acknowledgeStream','developer'),
 ])
+
+evidence.extend([
+ ('GET','/messaging/{session}/official-groups','officialGroups.list','official_groups'),
+ ('POST','/messaging/{session}/official-groups','officialGroups.create','official_groups'),
+ ('GET','/messaging/{session}/official-groups/{group}','officialGroups.retrieve','official_groups'),
+ ('PATCH','/messaging/{session}/official-groups/{group}','officialGroups.update','official_groups'),
+ ('DELETE','/messaging/{session}/official-groups/{group}','officialGroups.delete','official_groups'),
+ ('GET','/messaging/{session}/official-groups/{group}/invite-link','officialGroups.getInviteLink','official_groups'),
+ ('POST','/messaging/{session}/official-groups/{group}/invite-link/reset','officialGroups.resetInviteLink','official_groups'),
+ ('POST','/messaging/{session}/official-groups/{group}/participants/remove','officialGroups.removeParticipants','official_groups'),
+ ('GET','/messaging/{session}/official-groups/{group}/join-requests','officialGroups.listJoinRequests','official_groups'),
+ ('POST','/messaging/{session}/official-groups/{group}/join-requests/approve','officialGroups.approveJoinRequests','official_groups'),
+ ('POST','/messaging/{session}/official-groups/{group}/join-requests/reject','officialGroups.rejectJoinRequests','official_groups'),
+ ('POST','/messaging/{session}/official-groups/{group}/pins','officialGroups.pin','official_groups'),
+ ('GET','/messaging/routing/hybrid','hybridLink.getPolicy','onboarding'),
+ ('PUT','/messaging/routing/hybrid','hybridLink.setPolicy','onboarding'),
+ ('GET','/messaging/{session}/hybrid-link','hybridLink.state','onboarding'),
+ ('PUT','/messaging/{session}/hybrid-link','hybridLink.setPaused','onboarding'),
+ ('GET','/messaging/projects/{projectId}/observation-policy','observationPolicies.retrieveForProject','onboarding'),
+ ('GET','/messaging/{session}/observation-policy','observationPolicies.retrieveForSession','onboarding'),
+ ('POST','/messaging/cloud-api/embedded-signup','cloudOnboarding.advance','onboarding'),
+ ('POST','/messaging/testing/{projectId}/history-fixtures','testing.createHistoryFixture','onboarding'),
+ ('POST','/messaging/testing/{projectId}/events','testing.triggerEvent','onboarding'),
+ ('GET','/messaging/testing/{projectId}/events/fixtures','testing.listEventFixtures','onboarding'),
+ ('GET','/messaging/info/status','SystemClient.status','onboarding'),
+ ('GET','/messaging/info/version','SystemClient.version','onboarding'),
+ ('GET','/health','SystemClient.health','onboarding'),
+ ('GET','/ping','SystemClient.ping','onboarding'),
+ ('GET','/messaging/bridge/route','BridgeClient.routes.resolve','onboarding'),
+])
 for method,path,name,test in evidence:
- matches=[op for op in manifest['operations'] if op['family']=='platform' and op['method']==method and op['path']==path]
+ matches=[op for op in manifest['operations'] if op['method']==method and op['path']==path]
  assert len(matches)==1, (method,path)
  assert (package/'tests'/f'{test}.php').exists()
  op=matches[0]
  for field in ['reason','milestone']:op.pop(field,None)
- op.update(status='covered',sdkMethod=f"{'ProjectClient' if name.startswith('functions.') else 'Client'}::{name}",testFile=f'tests/{test}.php')
+ owner = 'ProjectClient' if name.startswith('functions.') else ('Client' if op['family']=='platform' else 'MessagingClient')
+ if name.startswith('SystemClient.') or name.startswith('BridgeClient.'): owner,name=name.split('.',1)
+ op.update(status='covered',sdkMethod=f'{owner}::{name}',testFile=f'tests/{test}.php')
 (package/'coverage.json').write_text(json.dumps(manifest,indent=2)+'\n')
 print({status:sum(op['status']==status for op in manifest['operations']) for status in ['covered','excluded','missing']})

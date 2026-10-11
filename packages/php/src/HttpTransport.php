@@ -19,7 +19,7 @@ final class HttpTransport
     private readonly string $baseUrl;
 
     public function __construct(
-        private readonly Credential $credential,
+        private readonly ?Credential $credential,
         string $baseUrl = 'https://api.polymorfa.com',
         private readonly string $apiVersion = self::API_VERSION,
         private readonly float $timeout = 30,
@@ -32,7 +32,7 @@ final class HttpTransport
             || !in_array($url['scheme'], ['http', 'https'], true)
             || isset($url['user']) || isset($url['pass']) || isset($url['query']) || isset($url['fragment'])
             || (isset($url['path']) && !in_array($url['path'], ['', '/'], true))
-            || ($url['scheme'] === 'http' && !in_array($url['host'], ['localhost', '127.0.0.1', '[::1]'], true))) {
+            || ($credential !== null && $url['scheme'] === 'http' && !in_array($url['host'], ['localhost', '127.0.0.1', '[::1]'], true))) {
             throw new ConfigurationException('baseUrl');
         }
         new RequestOptions($timeout, $maxNetworkRetries, $apiVersion);
@@ -42,7 +42,7 @@ final class HttpTransport
 
     public function credentialKind(): string
     {
-        return $this->credential->kind;
+        return $this->credential === null ? 'none' : $this->credential->kind;
     }
 
     /**
@@ -70,7 +70,9 @@ final class HttpTransport
                 throw new ConfigurationException('headers');
             }
         }
-        $headers['Authorization'] = $this->credential->authorization();
+        if ($this->credential !== null) {
+            $headers['Authorization'] = $this->credential->authorization();
+        }
         $headers['Polymorfa-Version'] = $options->apiVersion ?? $this->apiVersion;
         $headers['User-Agent'] = 'polymorfa-php/' . self::SDK_VERSION . ' PHP/' . PHP_VERSION;
         $headers['Accept'] ??= $accept;
