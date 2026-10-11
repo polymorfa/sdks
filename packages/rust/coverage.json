@@ -38,25 +38,25 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/channels/{id}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.delete",
+      "testFile": "tests/channels.rs"
     },
     {
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.delete_message",
+      "testFile": "tests/history.rs"
     },
     {
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/groups/{id}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.delete",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
@@ -214,81 +214,81 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/channels",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.list",
+      "testFile": "tests/channels.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/channels/{id}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.retrieve",
+      "testFile": "tests/channels.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/channels/{id}/message-updates",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.list_message_updates",
+      "testFile": "tests/channels.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/channels/{id}/messages",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.list_messages",
+      "testFile": "tests/channels.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.list",
+      "testFile": "tests/history.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.retrieve",
+      "testFile": "tests/history.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/messages",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.list_messages",
+      "testFile": "tests/history.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.retrieve_message",
+      "testFile": "tests/history.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}/media",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.download_message_media_stream",
+      "testFile": "tests/history.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/service-window",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.get_service_window",
+      "testFile": "tests/history.rs"
     },
     {
       "family": "messaging",
@@ -366,41 +366,41 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/groups",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.list",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/groups/{id}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.retrieve",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/groups/{id}/invite-code",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.get_invite_code",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/groups/{id}/participants",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.list_participants",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/groups/join-info",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.get_join_info",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
@@ -918,81 +918,81 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.create",
+      "testFile": "tests/channels.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/follow",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.follow",
+      "testFile": "tests/channels.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/live-updates",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.subscribe_to_live_updates",
+      "testFile": "tests/channels.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/messages/{messageId}/reaction",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.react_to_message",
+      "testFile": "tests/channels.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/messages/{messageId}/viewed",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.mark_message_viewed",
+      "testFile": "tests/channels.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/mute",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.mute",
+      "testFile": "tests/channels.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/unfollow",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.unfollow",
+      "testFile": "tests/channels.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/channels/{id}/unmute",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.channels.unmute",
+      "testFile": "tests/channels.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/chats/{conversation}/archive",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.archive",
+      "testFile": "tests/history.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/chats/{conversation}/unarchive",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.unarchive",
+      "testFile": "tests/history.rs"
     },
     {
       "family": "messaging",
@@ -1022,65 +1022,65 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.create",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/admin/demote",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.demote_participants",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/admin/promote",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.promote_participants",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/invite-code/revoke",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.revoke_invite_code",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/leave",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.leave",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/participants/add",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.add_participants",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups/{id}/participants/remove",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.remove_participants",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/groups/join",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.join",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
@@ -1582,73 +1582,73 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/chats/{conversation}/disappearing",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.set_disappearing_timer",
+      "testFile": "tests/history.rs"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.chats.edit_message",
+      "testFile": "tests/history.rs"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/description",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.set_description",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/picture",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.set_picture",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/settings/info-edit",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.set_info_editing",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/settings/join-approval",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.set_join_approval",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/settings/member-add",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.set_member_add_mode",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/settings/messages",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.set_messaging",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/groups/{id}/subject",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.groups.set_subject",
+      "testFile": "tests/groups.rs"
     },
     {
       "family": "messaging",
@@ -2574,9 +2574,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/call-retention",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.call_retention.retrieve",
+      "testFile": "tests/settings.rs"
     },
     {
       "family": "platform",
@@ -3054,17 +3054,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/quicklink",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.quick_link_settings.retrieve",
+      "testFile": "tests/settings.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/session-configuration",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.session_configuration.retrieve",
+      "testFile": "tests/settings.rs"
     },
     {
       "family": "platform",
@@ -3102,9 +3102,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/capabilities",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.get_capabilities",
+      "testFile": "tests/platform_sessions.rs"
     },
     {
       "family": "platform",
@@ -3118,17 +3118,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/safe-mode",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.get_safe_mode",
+      "testFile": "tests/platform_sessions.rs"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/tier-quotes/{quoteId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.retrieve_tier_change",
+      "testFile": "tests/platform_sessions.rs"
     },
     {
       "family": "platform",
@@ -3390,9 +3390,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/sessions/{sessionId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.set_tier_override",
+      "testFile": "tests/platform_sessions.rs"
     },
     {
       "family": "platform",
@@ -4214,9 +4214,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/tier-quotes",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.quote_tier_change",
+      "testFile": "tests/platform_sessions.rs"
     },
     {
       "family": "platform",
@@ -4230,17 +4230,17 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/delete",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.delete_many",
+      "testFile": "tests/platform_sessions.rs"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/sessions/stop",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.stop_many",
+      "testFile": "tests/platform_sessions.rs"
     },
     {
       "family": "platform",
@@ -4486,9 +4486,9 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/call-retention",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.call_retention.update",
+      "testFile": "tests/settings.rs"
     },
     {
       "family": "platform",
@@ -4550,17 +4550,17 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/quicklink",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.quick_link_settings.update",
+      "testFile": "tests/settings.rs"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/session-configuration",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.session_configuration.update",
+      "testFile": "tests/settings.rs"
     },
     {
       "family": "platform",
@@ -4590,9 +4590,9 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}/safe-mode",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.sessions.update_safe_mode",
+      "testFile": "tests/platform_sessions.rs"
     },
     {
       "family": "platform",

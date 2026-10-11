@@ -54,11 +54,13 @@ WhatsApp host allowlist. No plaintext is returned before verification. Calls
 expose server control methods and programmatic PCM/H.264 media sockets.
 
 Typed coverage is still being expanded. The current implementation includes
-sessions, all merged message content variants, QuickLinks, webhooks, contacts, profile, privacy,
+sessions, all merged message content variants, hosted chat/message history with stored
+media streaming and service windows, Linked Devices groups and Channels, QuickLinks, webhooks, contacts, profile, privacy,
 presence, identities, labels, quick replies, core projects, events, media and
 VoIP controls, Official API credential health/pricing, Hybrid Link controls and
 client-token grants/rules, resolved session configuration and sparse revision
-patches, and Platform webhook/delivery/operation resources in both owner scopes.
+patches, organization Number batches/tier quotes/safety/capabilities, owner-bound
+QuickLink/default configuration and team call retention, and Platform webhook/delivery/operation resources in both owner scopes.
 Some event payload models remain
 partial; the raw escape hatch is not typed coverage. No feature access or
 release availability changes: the API continues enforcing permission, funding,

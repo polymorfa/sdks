@@ -18,6 +18,15 @@ impl MessagingClient {
     pub fn sessions(&self) -> Sessions<'_> {
         Sessions(&self.http)
     }
+    pub fn channels(&self) -> crate::channels::Channels<'_> {
+        crate::channels::Channels(&self.http)
+    }
+    pub fn groups(&self) -> crate::groups::Groups<'_> {
+        crate::groups::Groups(&self.http)
+    }
+    pub fn chats(&self) -> crate::history::Chats<'_> {
+        crate::history::Chats(&self.http)
+    }
     pub fn messages(&self) -> Messages<'_> {
         Messages(&self.http)
     }

@@ -158,6 +158,17 @@ impl ConversationReference {
     }
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConversationIdentity {
+    pub id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub phone_number: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bsuid: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub username: Option<String>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum MessageTransport {
     Auto,
@@ -330,7 +341,7 @@ pub struct MessageReceipt {
     #[serde(rename = "operationId")]
     pub operation_id: Option<String>,
     pub whatsapp_ids: WhatsAppMessageIds,
-    pub conversation: ConversationReference,
+    pub conversation: ConversationIdentity,
     pub timestamp: String,
     pub status: String,
     pub transport: Option<MessageTransport>,

@@ -21,8 +21,26 @@ impl OrganizationClient {
     pub fn project(&self, project_id: impl Into<String>) -> Result<ProjectClient> {
         ProjectClient::from_transport(self.http.clone(), project_id.into())
     }
+    pub fn sessions(&self) -> crate::platform_sessions::PlatformSessions<'_> {
+        crate::platform_sessions::PlatformSessions(&self.http)
+    }
     pub fn projects(&self) -> Projects<'_> {
         Projects(&self.http)
+    }
+    pub fn session_configuration(&self) -> crate::settings::SessionDefaults<'_> {
+        crate::settings::SessionDefaults {
+            http: &self.http,
+            project_id: None,
+        }
+    }
+    pub fn quick_link_settings(&self) -> crate::settings::QuickLinkDefaults<'_> {
+        crate::settings::QuickLinkDefaults {
+            http: &self.http,
+            project_id: None,
+        }
+    }
+    pub fn call_retention(&self) -> crate::settings::CallRetentionResource<'_> {
+        crate::settings::CallRetentionResource(&self.http)
     }
     pub fn operations(&self) -> crate::operations::Operations<'_> {
         crate::operations::Operations {
@@ -83,6 +101,21 @@ impl ProjectClient {
     }
     pub fn project_id(&self) -> &str {
         &self.project_id
+    }
+    pub fn session_configuration(&self) -> crate::settings::SessionDefaults<'_> {
+        crate::settings::SessionDefaults {
+            http: &self.http,
+            project_id: Some(&self.project_id),
+        }
+    }
+    pub fn quick_link_settings(&self) -> crate::settings::QuickLinkDefaults<'_> {
+        crate::settings::QuickLinkDefaults {
+            http: &self.http,
+            project_id: Some(&self.project_id),
+        }
+    }
+    pub fn call_retention(&self) -> crate::settings::CallRetentionResource<'_> {
+        crate::settings::CallRetentionResource(&self.http)
     }
     pub fn operations(&self) -> crate::operations::Operations<'_> {
         crate::operations::Operations {
