@@ -24,7 +24,9 @@ from .models import (
     ContactCheck,
     ContactInfo,
     ContactPicture,
+    CustomerServiceWindow,
     DataEnvelope,
+    EditMessage,
     Envelope,
     HistoryChat,
     HistoryChatsParams,
@@ -420,7 +422,7 @@ class Chats(Resource):
         session: str,
         conversation: str,
         message_id: str,
-        body: JsonObject,
+        body: EditMessage,
         *,
         options: RequestOptions = O,
     ) -> ApiResponse[Success]:
@@ -437,7 +439,7 @@ class Chats(Resource):
         conversation: str,
         message_id: str,
         *,
-        transport: str | None = None,
+        transport: Literal["auto", "linked_devices", "official_api"] | None = None,
         options: RequestOptions = O,
     ) -> ApiResponse[Success]:
         return await self._request(
@@ -462,7 +464,12 @@ class Chats(Resource):
         )
 
     async def set_disappearing_timer(
-        self, session: str, conversation: str, duration_seconds: int, *, options: RequestOptions = O
+        self,
+        session: str,
+        conversation: str,
+        duration_seconds: Literal[0, 86400, 604800, 7776000],
+        *,
+        options: RequestOptions = O,
     ) -> ApiResponse[Success]:
         return await self._request(
             "PUT",
@@ -473,7 +480,7 @@ class Chats(Resource):
 
     async def get_service_window(
         self, session: str, conversation: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[CustomerServiceWindow]]:
         self._server()
         return await self._request(
             "GET", self._path(session, conversation) + "/service-window", options=options

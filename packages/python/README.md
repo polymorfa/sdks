@@ -80,3 +80,10 @@ application call orchestration and additional lifecycle helpers remain
 unfinished. Install the `fastapi` or `django` extras for framework examples;
 `fastapi_webhook_event` and `django_webhook_event` verify the raw request body.
 See `examples/python` in the source tree for executable application examples.
+
+`chats` exposes typed stored history pages, message media downloads, message
+edits, archive controls and service-window observations. Hosted history
+requires the API's HMS enrollment and history permission; service windows
+have separate Official API eligibility. `business` exposes profile,
+catalog, product, collection, order, compliance and linked-account methods,
+including asynchronous accepted response variants.

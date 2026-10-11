@@ -6,25 +6,25 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/business/collections/{collectionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->deleteCollection",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/business/products/{productId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->deleteProduct",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/business/profile/cover-photo/{coverPhotoId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->deleteCoverPhoto",
+      "testFile": "tests/business.php"
     },
     {
       "family": "messaging",
@@ -46,9 +46,9 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$chats->deleteMessage",
+      "testFile": "tests/chats.php"
     },
     {
       "family": "messaging",
@@ -134,65 +134,65 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/catalog",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->getCatalog",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/collections",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->listCollections",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/collections/{collectionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->getCollection",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/compliance",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->getMerchantCompliance",
+      "testFile": "tests/business.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/eligibility",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->getEligibility",
+      "testFile": "tests/business.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/linked-accounts",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->getLinkedAccounts",
+      "testFile": "tests/business.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/products/{productId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->getProduct",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/business/profile",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->getProfile",
+      "testFile": "tests/business.php"
     },
     {
       "family": "messaging",
@@ -246,49 +246,49 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$chats->list",
+      "testFile": "tests/chats.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$chats->retrieve",
+      "testFile": "tests/chats.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/messages",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$chats->listMessages",
+      "testFile": "tests/chats.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$chats->retrieveMessage",
+      "testFile": "tests/chats.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}/media",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$chats->downloadMessageMedia",
+      "testFile": "tests/chats.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/chats/{conversation}/service-window",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$chats->getServiceWindow",
+      "testFile": "tests/chats.php"
     },
     {
       "family": "messaging",
@@ -774,33 +774,33 @@
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/business/catalog/cart",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->setCartEnabled",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/business/collections/{collectionId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->updateCollection",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/business/products/{productId}/visibility",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->setProductVisibility",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/{session}/business/profile",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->updateProfile",
+      "testFile": "tests/business.php"
     },
     {
       "family": "messaging",
@@ -846,57 +846,57 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/catalog",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->createCatalog",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/collections",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->createCollection",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/collections/{collectionId}/appeal",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->appealCollection",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/collections/reorder",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->reorderCollections",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/orders/{orderId}/lookup",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->getOrder",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/products",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->createProduct",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/business/products/{productId}/appeal",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->appealProduct",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
@@ -982,17 +982,17 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/chats/{conversation}/archive",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$chats->archive",
+      "testFile": "tests/chats.php"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{session}/chats/{conversation}/unarchive",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$chats->unarchive",
+      "testFile": "tests/chats.php"
     },
     {
       "family": "messaging",
@@ -1550,25 +1550,25 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/business/compliance",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->setMerchantCompliance",
+      "testFile": "tests/business.php"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/business/products/{productId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->updateProduct",
+      "testFile": "tests/business_catalog.php"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/business/profile/cover-photo",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$business->setCoverPhoto",
+      "testFile": "tests/business.php"
     },
     {
       "family": "messaging",
@@ -1582,17 +1582,17 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/chats/{conversation}/disappearing",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$chats->setDisappearingTimer",
+      "testFile": "tests/chats.php"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$chats->editMessage",
+      "testFile": "tests/chats.php"
     },
     {
       "family": "messaging",

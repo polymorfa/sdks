@@ -63,3 +63,10 @@ additional lifecycle orchestration remains unfinished.
 `WebhookRequest::fromSymfony()`, `fromLaravel()` and `fromPsr()` authenticate
 raw framework bodies; install the relevant framework package. Application
 examples are in `examples/php` in the source tree.
+
+`chats` provides typed stored history pages, message media downloads,
+message edits, archive controls and service-window observations. The API
+requires HMS enrollment for hosted history and separate Official API
+eligibility for service-window access. `business` provides typed profile,
+catalog, product, collection, order, compliance, linked-account and
+eligibility methods, including asynchronous accepted response variants.

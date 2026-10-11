@@ -326,24 +326,96 @@ class Profile(TypedDict):
     ]
 
 
-class HistoryMessage(TypedDict, total=False):
+class ConversationIdentity(TypedDict):
     id: str
-    whatsapp_ids: dict[str, str]
+    phoneNumber: NotRequired[str]
+    bsuid: NotRequired[str]
+    username: NotRequired[str]
+
+
+class HistoryConversation(ConversationIdentity):
+    sender: NotRequired[ConversationIdentity]
+
+
+class HistoryMessageSummary(TypedDict):
+    id: str
+    whatsapp_ids: WhatsAppMessageIds
+    whatsapp_id: NotRequired[str]
     direction: Literal["inbound", "outbound"]
     type: str
     timestamp: str
-    conversation: Conversation
+
+
+class HistoryMedia(TypedDict):
+    id: str
+    mimeType: str
+    fileLength: int
+    url: str
+
+
+class HistoryMediaRetrieval(TypedDict):
+    state: Literal[
+        "pending",
+        "stored",
+        "unavailable",
+        "expired",
+        "too_large",
+        "unsupported_type",
+        "failed",
+        "cancelled",
+    ]
+    reason: NotRequired[str]
+
+
+class HistoryPollOption(TypedDict):
+    name: str
+    hash: str
+
+
+class HistoryMessage(HistoryMessageSummary):
+    conversation: HistoryConversation
     fromMe: bool
+    pushName: NotRequired[str]
+    text: NotRequired[str]
+    caption: NotRequired[str]
+    mimeType: NotRequired[str]
+    filename: NotRequired[str]
+    ptt: NotRequired[bool]
+    latitude: NotRequired[float]
+    longitude: NotRequired[float]
+    displayName: NotRequired[str]
+    title: NotRequired[str]
+    reaction: NotRequired[str]
+    reactionTo: NotRequired[str]
+    edited: NotRequired[bool]
+    unavailable: NotRequired[bool]
+    unavailableReason: NotRequired[str]
+    pollOptions: NotRequired[list[HistoryPollOption]]
+    media: NotRequired[list[HistoryMedia]]
+    mediaRetrieval: NotRequired[HistoryMediaRetrieval]
+
+
+class EditMessage(TypedDict):
     text: str
-    media: list[JsonObject]
-    mediaRetrieval: JsonObject
+    transport: NotRequired[Literal["auto", "linked_devices", "official_api"]]
+
+
+class CustomerServiceWindow(TypedDict):
+    state: Literal["open", "closed", "unknown"]
+    reason: (
+        Literal["not_tracked", "tracking_started", "notifications_interrupted", "identity_unlinked"]
+        | None
+    )
+    openedAt: str | None
+    expiresAt: str | None
+    checkedAt: str
 
 
 class HistoryChat(TypedDict):
-    conversation: Conversation
+    conversation: ConversationIdentity
     kind: Literal["direct", "group", "channel", "broadcast"]
     lastActivityAt: str
-    lastMessage: HistoryMessage
+    lastMessage: HistoryMessageSummary
 
 
 class HistoryPage(TypedDict, Generic[T]):
@@ -357,7 +429,7 @@ class HistoryPage(TypedDict, Generic[T]):
 class HistoryChatsParams(TypedDict, total=False):
     limit: int
     cursor: str
-    kind: str
+    kind: Literal["direct", "group", "channel", "broadcast"]
     activeSince: str
     activeBefore: str
 

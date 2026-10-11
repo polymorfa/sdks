@@ -8,6 +8,7 @@ from typing import Any
 from typing_extensions import Self
 
 from . import messaging, platform
+from .business import Business
 from .client_tokens import ClientTokens
 from .errors import ConfigurationError
 from .groups import Groups
@@ -18,6 +19,7 @@ from .transport import Credential, Transport
 @dataclass(frozen=True, init=False)
 class AsyncMessagingClient:
     _transport: Transport
+    business: Business
     client_tokens: ClientTokens
     identities: Identities
     labels: Labels
@@ -39,6 +41,7 @@ class AsyncMessagingClient:
         transport = Transport(credential, **options)
         object.__setattr__(self, "_transport", transport)
         for name, resource in (
+            ("business", Business),
             ("client_tokens", ClientTokens),
             ("identities", Identities),
             ("labels", Labels),
