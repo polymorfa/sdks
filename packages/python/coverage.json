@@ -110,9 +110,9 @@
       "family": "messaging",
       "method": "DELETE",
       "path": "/messaging/voip/calls/{id}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.end",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "messaging",
@@ -206,9 +206,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/call-permissions/{to}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.retrieve_call_permission",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "messaging",
@@ -1350,33 +1350,33 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/voip/call-links",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.create_call_link",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/voip/call-links/preview",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.preview_call_link",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/voip/calls",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.place",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/accept",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.accept",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "messaging",
@@ -1390,17 +1390,17 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/hand",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.set_hand_raised",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/leave",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.leave",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "messaging",
@@ -1414,33 +1414,33 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/participants",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.add_participant",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/participants/ring",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.ring_participant",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/reaction",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.send_reaction",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/reject",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.reject",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "messaging",
@@ -1454,17 +1454,17 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/voip/calls/{id}/reports",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.report",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/voip/calls/check",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.check",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "messaging",
@@ -3078,9 +3078,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{session}/call-settings",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.retrieve_call_settings",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "platform",
@@ -4566,9 +4566,9 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/sessions/{session}/call-settings",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.voip.update_call_settings",
+      "testFile": "tests/test_voip.py"
     },
     {
       "family": "platform",

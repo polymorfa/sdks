@@ -70,3 +70,10 @@ requires HMS enrollment for hosted history and separate Official API
 eligibility for service-window access. `business` provides typed profile,
 catalog, product, collection, order, compliance, linked-account and
 eligibility methods, including asynchronous accepted response variants.
+
+`voip` provides typed Calls REST controls, permission checks, participant
+controls, call settings and quality/error reports. Call-link creation and
+preview reject idempotency keys and never retry. Reactions and hand-state
+changes also never retry. Other call writes retry only with an explicit
+idempotency key. Client tokens cannot select a server participant and are
+refused by server-only link, permission, check and settings operations.

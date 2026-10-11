@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import builtins
 import math
+import re
 from collections.abc import Mapping
 from dataclasses import replace
 from typing import Literal, TypeVar, cast
@@ -23,7 +24,6 @@ from .models import (
     CallAcceptanceResult,
     CallPlacement,
     CallPlacementResult,
-    CallSettings,
     ChatPresenceData,
     Contact,
     ContactBlocklist,
@@ -69,11 +69,26 @@ from .models import (
     StatusResult,
     Success,
     Typing,
+    UpdateCallSettings,
     Webhook,
     WebhookCreate,
     WebhookUpdate,
 )
 from .transport import ApiResponse, JsonObject, QueryValue, RequestOptions, Transport
+from .voip_models import (
+    CallCheck,
+    CallCheckRequest,
+    CallLinkRequest,
+    CallParticipant,
+    CallPermission,
+    CallReaction,
+    CallReport,
+    CreatedCallLink,
+    HandRaised,
+    PreviewCallLinkRequest,
+    PreviewedCallLink,
+    SessionCallSettings,
+)
 
 T = TypeVar("T")
 O = RequestOptions()
@@ -673,18 +688,18 @@ class Voip(Resource):
     def _participant(self, participant: str | None) -> None:
         import re
 
-        if participant is not None and (
-            self._kind == "client_token"
-            or not re.fullmatch(r"[A-Za-z0-9._:@-]{1,128}", participant)
-        ):
-            raise ValidationError("Invalid participant.")
+        if participant is not None:
+            if self._kind == "client_token":
+                raise ConfigurationError("participant")
+            if not re.fullmatch(r"[A-Za-z0-9._:@-]{1,128}", participant):
+                raise ValidationError("Invalid participant.")
 
     async def place(
         self, body: CallPlacement, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CallPlacementResult]]:
         import re
 
-        if self._kind != "client_token" and not body.get("session"):
+        if self._kind != "client_token" and not body.get("session", "").strip():
             raise ValidationError("A server call requires session.")
         self._participant(body.get("participant"))
         to, participants, group = body.get("to"), body.get("participants"), body.get("groupId")
@@ -762,7 +777,7 @@ class Voip(Resource):
 
     async def add_participant(
         self, call_id: str, to: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[CallParticipant]]:
         return await self._request(
             "POST",
             f"/messaging/voip/calls/{segment(call_id)}/participants",
@@ -782,32 +797,232 @@ class Voip(Resource):
 
     async def retrieve_call_permission(
         self, session: str, to: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[Envelope[CallPermission]]:
         self._server()
+        if not session.strip():
+            raise ConfigurationError("session")
+        if not to.strip():
+            raise ConfigurationError("to")
         return await self._request(
             "GET", f"/messaging/{segment(session)}/call-permissions/{segment(to)}", options=options
         )
 
     async def retrieve_call_settings(
         self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[CallSettings]]:
+    ) -> ApiResponse[Envelope[SessionCallSettings]]:
         self._server()
         return await self._request(
             "GET", f"/platform/sessions/{segment(session)}/call-settings", options=options
         )
 
     async def update_call_settings(
-        self, session: str, body: CallSettings, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[CallSettings]]:
+        self, session: str, body: UpdateCallSettings, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[SessionCallSettings]]:
         self._server()
-        if not body or "includeSelfAudio" in body:
+        if (
+            not any(
+                key in body
+                for key in (
+                    "callsEnabled",
+                    "conferenceMode",
+                    "inboundRoute",
+                    "sipTrunkId",
+                    "sipClaim",
+                    "hostCloudApiCalls",
+                )
+            )
+            or "includeSelfAudio" in body
+        ):
             raise ValidationError("Provide a supported call setting.")
         for key in ("callsEnabled", "conferenceMode", "sipClaim", "hostCloudApiCalls"):
             if key in body and not isinstance(body[key], bool):
                 raise ValidationError("Call switches must be booleans.")
+        if "inboundRoute" in body and body["inboundRoute"] not in ("clients", "sip_trunk"):
+            raise ValidationError("Invalid inbound call route.")
+        revision = body.get("expectedRevision")
+        if revision is not None and (
+            isinstance(revision, bool)
+            or not isinstance(revision, int)
+            or not 0 <= revision <= 9007199254740991
+        ):
+            raise ValidationError("Invalid expected call-settings revision.")
         return await self._request(
             "PUT",
             f"/platform/sessions/{segment(session)}/call-settings",
             body=body,
             options=options,
         )
+
+    def _call_link(self, body: CallLinkRequest, options: RequestOptions) -> None:
+        self._server()
+        if (
+            not isinstance(body.get("session"), str)
+            or not body["session"].strip()
+            or len(body["session"]) > 128
+            or ("video" in body and not isinstance(body["video"], bool))
+        ):
+            raise ValidationError("Call links require a session and optional video flag.")
+        if options.idempotency_key is not None or any(
+            name.lower() == "idempotency-key" for name in options.headers
+        ):
+            raise ValidationError("Call links do not support Idempotency-Key.")
+
+    async def create_call_link(
+        self, body: CallLinkRequest, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[CreatedCallLink]]:
+        self._call_link(body, options)
+        return await self._request(
+            "POST",
+            "/messaging/voip/call-links",
+            body=body,
+            options=replace(options, max_network_retries=0),
+        )
+
+    async def preview_call_link(
+        self, body: PreviewCallLinkRequest, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[PreviewedCallLink]]:
+        self._call_link(body, options)
+        if not isinstance(body.get("token"), str) or not re.fullmatch(
+            r"[A-Za-z0-9_-]{1,256}", body["token"]
+        ):
+            raise ValidationError("Invalid call-link token.")
+        return await self._request(
+            "POST",
+            "/messaging/voip/call-links/preview",
+            body=body,
+            options=replace(options, max_network_retries=0),
+        )
+
+    async def check(
+        self, body: CallCheckRequest, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[CallCheck]]:
+        self._server()
+        if not body.get("session", "").strip() or not body.get("to", "").strip():
+            raise ValidationError("Call checks require session and destination.")
+        return await self._request(
+            "POST", "/messaging/voip/calls/check", body=body, options=options
+        )
+
+    async def send_reaction(
+        self, call_id: str, body: CallReaction, *, options: RequestOptions = O
+    ) -> ApiResponse[Success]:
+        self._participant(body.get("participant"))
+        self._connection(body.get("connectionId"))
+        if body.get("emoji") not in ("", "👍", "❤️", "😂", "😮", "😢", "🙏"):
+            raise ValidationError("Invalid call reaction.")
+        return await self._request(
+            "POST",
+            f"/messaging/voip/calls/{segment(call_id)}/reaction",
+            body=body,
+            options=replace(options, max_network_retries=0),
+        )
+
+    async def set_hand_raised(
+        self, call_id: str, body: HandRaised, *, options: RequestOptions = O
+    ) -> ApiResponse[Success]:
+        self._participant(body.get("participant"))
+        self._connection(body.get("connectionId"))
+        if not isinstance(body.get("raised"), bool):
+            raise ValidationError("Invalid raised hand state.")
+        return await self._request(
+            "POST",
+            f"/messaging/voip/calls/{segment(call_id)}/hand",
+            body=body,
+            options=replace(options, max_network_retries=0),
+        )
+
+    async def report(
+        self, call_id: str, body: CallReport, *, options: RequestOptions = O
+    ) -> ApiResponse[Success]:
+        value = cast(JsonObject, body)
+        self._connection(value.get("connectionId"))
+        kind = value.get("kind")
+        if kind not in ("quality", "error") or set(value) - {
+            "kind",
+            "connectionId",
+            "participant",
+            "client",
+            kind,
+        }:
+            raise ValidationError("Invalid call report fields.")
+        client = value.get("client")
+        if client is not None:
+            self._report_client(client)
+        if kind == "error":
+            error = value.get("error")
+            if (
+                not isinstance(error, dict)
+                or set(error) != {"code"}
+                or error.get("code")
+                not in (
+                    "media_permission_denied",
+                    "device_not_found",
+                    "device_in_use",
+                    "ice_failed",
+                    "negotiation_failed",
+                    "media_timeout",
+                    "reconnect_exhausted",
+                    "token_refresh_failed",
+                    "unsupported_browser",
+                    "other",
+                )
+            ):
+                raise ValidationError("Invalid call report error.")
+        else:
+            quality = value.get("quality")
+            if not isinstance(quality, dict) or not quality:
+                raise ValidationError("A quality report requires measured figures.")
+            bounds = {
+                "rttMs": 60000,
+                "jitterMs": 60000,
+                "packetsLost": 2147483647,
+                "packetsReceived": 2147483647,
+                "reconnects": 1000,
+            }
+            for name, figure in quality.items():
+                if name in bounds:
+                    valid = (
+                        isinstance(figure, int)
+                        and not isinstance(figure, bool)
+                        and 0 <= figure <= bounds[name]
+                    )
+                elif name in ("audioCodec", "videoCodec"):
+                    valid = isinstance(figure, str) and bool(
+                        re.fullmatch(r"[A-Za-z0-9/.-]{1,32}", figure)
+                    )
+                elif name == "candidateType":
+                    valid = figure in ("host", "srflx", "prflx", "relay")
+                else:
+                    valid = False
+                if not valid:
+                    raise ValidationError("Invalid call quality figure.")
+        participant = value.get("participant")
+        if participant is not None and not isinstance(participant, str):
+            raise ValidationError("Invalid participant.")
+        self._participant(participant)
+        return await self._request(
+            "POST", f"/messaging/voip/calls/{segment(call_id)}/reports", body=body, options=options
+        )
+
+    @staticmethod
+    def _connection(value: object) -> None:
+        if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9_-]{8,64}", value):
+            raise ValidationError("Invalid connectionId.")
+
+    @staticmethod
+    def _report_client(value: object) -> None:
+        if not isinstance(value, dict) or set(value) - {"sdk", "version", "platform"}:
+            raise ValidationError("Invalid call report client.")
+        sdk, version = value.get("sdk"), value.get("version")
+        if not isinstance(sdk, str) or not re.fullmatch(r"[a-z0-9@/._-]{1,32}", sdk):
+            raise ValidationError("Invalid call report SDK.")
+        if (
+            not isinstance(version, str)
+            or len(version) > 32
+            or not re.fullmatch(
+                r"[0-9]{1,6}\.[0-9]{1,6}\.[0-9]{1,6}(?:[-+][0-9A-Za-z.+-]{1,24})?", version
+            )
+        ):
+            raise ValidationError("Invalid call report version.")
+        if value.get("platform") not in ("browser", "node", "other"):
+            raise ValidationError("Invalid call report platform.")

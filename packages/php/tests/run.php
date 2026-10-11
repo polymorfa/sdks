@@ -139,3 +139,5 @@ require __DIR__."/quick_replies_users.php";
 require __DIR__."/cloud_sessions.php";
 
 require __DIR__."/channels.php";
+
+require __DIR__."/voip.php";

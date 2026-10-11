@@ -462,6 +462,8 @@ class CallAcceptance(TypedDict, total=False):
 
 class CallPlacementResult(TypedDict):
     callId: str
+    session: str
+    video: bool
 
 
 class CallAcceptanceResult(TypedDict):
@@ -470,13 +472,7 @@ class CallAcceptanceResult(TypedDict):
     exclusive: bool
 
 
-class CallParticipant(TypedDict, total=False):
-    id: str
-    state: str
-    video: bool
-
-
-class CallSettings(TypedDict, total=False):
+class UpdateCallSettings(TypedDict, total=False):
     callsEnabled: bool
     conferenceMode: bool
     inboundRoute: Literal["clients", "sip_trunk"]
