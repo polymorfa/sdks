@@ -64,6 +64,12 @@ additional lifecycle orchestration remains unfinished.
 raw framework bodies; install the relevant framework package. Application
 examples are in `examples/php` in the source tree.
 
+[`web-host`](../../examples/php/web-host/README.md) provides runnable Laravel
+with Blade and Symfony HttpKernel with Twig, using HTMX and the existing Web
+Components. Its authenticated POST endpoint mints browser tokens from
+server-owned user and number assignments. Both hosts have native HTTP tests
+and browser-tested sign-in, component mounting and sign-out flows.
+
 `chats` provides typed stored history pages, message media downloads,
 message edits, archive controls and service-window observations. The API
 requires HMS enrollment for hosted history and separate Official API
