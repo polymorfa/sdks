@@ -25,7 +25,7 @@ pub enum WebhookEvent {
     },
     MessageSent {
         envelope: WebhookEnvelope,
-        payload: MessageSentPayload,
+        payload: Box<MessageSentPayload>,
     },
     SessionStatus {
         envelope: WebhookEnvelope,
