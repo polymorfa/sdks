@@ -141,3 +141,5 @@ require __DIR__."/cloud_sessions.php";
 require __DIR__."/channels.php";
 
 require __DIR__."/voip.php";
+
+require __DIR__."/bansafe.php";

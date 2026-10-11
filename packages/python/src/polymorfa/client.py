@@ -8,6 +8,7 @@ from typing import Any
 from typing_extensions import Self
 
 from . import messaging, platform
+from .bansafe import BanSafe
 from .business import Business
 from .channels import Channels
 from .client_tokens import ClientTokens
@@ -21,6 +22,7 @@ from .transport import Credential, Transport
 @dataclass(frozen=True, init=False)
 class AsyncMessagingClient:
     _transport: Transport
+    ban_safe: BanSafe
     channels: Channels
     quick_replies: QuickReplies
     users: Users
@@ -46,6 +48,7 @@ class AsyncMessagingClient:
         transport = Transport(credential, **options)
         object.__setattr__(self, "_transport", transport)
         for name, resource in (
+            ("ban_safe", BanSafe),
             ("channels", Channels),
             ("quick_replies", QuickReplies),
             ("users", Users),

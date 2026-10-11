@@ -77,3 +77,10 @@ preview reject idempotency keys and never retry. Reactions and hand-state
 changes also never retry. Other call writes retry only with an explicit
 idempotency key. Client tokens cannot select a server participant and are
 refused by server-only link, permission, check and settings operations.
+
+`banSafe` reads and changes project ceilings, warmup plans, insurance
+evidence, health policies and Number overrides with server credentials.
+Platform equivalents are under `Client::$projects` and `Client::$sessions`.
+Responses retain entitlement and applied-state fields; configuring a
+setting does not grant access. Send the version from a recent health-policy
+read when updating it.

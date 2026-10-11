@@ -6,11 +6,15 @@ namespace Polymorfa;
 
 use GuzzleHttp\ClientInterface;
 use Polymorfa\Resources\Events;
+use Polymorfa\Resources\Projects;
+use Polymorfa\Resources\PlatformSessions;
 use Polymorfa\Resources\PlatformWebhooks;
 
 final readonly class Client
 {
     private HttpTransport $transport;
+    public PlatformSessions $sessions;
+    public Projects $projects;
     public Events $events;
     public PlatformWebhooks $webhooks;
     public RawClient $raw;
@@ -27,6 +31,8 @@ final readonly class Client
             throw new ConfigurationException('credential');
         }
         $this->transport = new HttpTransport($credential, $baseUrl, $apiVersion, $timeout, $maxNetworkRetries, $proxy, $http);
+        $this->sessions = new PlatformSessions($this->transport);
+        $this->projects = new Projects($this->transport);
         $this->events = new Events($this->transport, '/platform');
         $this->webhooks = new PlatformWebhooks($this->transport, '/platform');
         $this->raw = new RawClient($this->transport);

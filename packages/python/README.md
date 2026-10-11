@@ -94,3 +94,10 @@ preview reject idempotency keys and never retry. Reactions and hand-state
 changes also never retry. Other call writes retry only with an explicit
 idempotency key. A browser client token cannot choose a server participant;
 server-only link, permission, check and settings operations reject it.
+
+`ban_safe` reads and changes project ceilings, warmup plans, insurance
+evidence, health policies and Number overrides with server credentials.
+Platform equivalents are under `AsyncClient.projects` and
+`AsyncClient.sessions`. Entitlement and applied-state fields remain in the
+response; configuring a setting does not grant access. Send the version
+from a recent health-policy read when updating it.

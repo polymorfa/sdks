@@ -10,10 +10,23 @@ from dataclasses import replace
 from typing import TypeVar, cast
 from urllib.parse import unquote
 
+from .bansafe import (
+    ProjectHealthPolicy,
+    ProjectInsuranceEvidence,
+    ProjectSafeMode,
+    ProjectWarmupPlan,
+    SessionSafeMode,
+    UpdateProjectHealthPolicy,
+    UpdateProjectInsuranceEvidence,
+    UpdateProjectSafeMode,
+    UpdateProjectWarmupPlan,
+    UpdateSessionSafeMode,
+)
 from .errors import ConfigurationError, ServerError, ValidationError
 from .events import EventStream
 from .messaging import O, Resource, segment
 from .models import (
+    DataEnvelope,
     Envelope,
     Event,
     Operation,
@@ -98,28 +111,28 @@ class Projects(Resource):
 
     async def get_safe_mode(
         self, project_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[DataEnvelope[ProjectSafeMode]]:
         return await self._request(
             "GET", f"/platform/projects/{segment(project_id)}/safe-mode", options=options
         )
 
     async def update_safe_mode(
-        self, project_id: str, body: JsonObject, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+        self, project_id: str, body: UpdateProjectSafeMode, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ProjectSafeMode]]:
         return await self._request(
             "PUT", f"/platform/projects/{segment(project_id)}/safe-mode", body=body, options=options
         )
 
     async def get_warmup_plan(
         self, project_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[DataEnvelope[ProjectWarmupPlan]]:
         return await self._request(
             "GET", f"/platform/projects/{segment(project_id)}/warmup-plan", options=options
         )
 
     async def update_warmup_plan(
-        self, project_id: str, body: JsonObject, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+        self, project_id: str, body: UpdateProjectWarmupPlan, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ProjectWarmupPlan]]:
         return await self._request(
             "PUT",
             f"/platform/projects/{segment(project_id)}/warmup-plan",
@@ -129,14 +142,14 @@ class Projects(Resource):
 
     async def get_insurance_evidence(
         self, project_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[DataEnvelope[ProjectInsuranceEvidence]]:
         return await self._request(
             "GET", f"/platform/projects/{segment(project_id)}/insurance-evidence", options=options
         )
 
     async def update_insurance_evidence(
-        self, project_id: str, body: JsonObject, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+        self, project_id: str, body: UpdateProjectInsuranceEvidence, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ProjectInsuranceEvidence]]:
         return await self._request(
             "PUT",
             f"/platform/projects/{segment(project_id)}/insurance-evidence",
@@ -146,14 +159,14 @@ class Projects(Resource):
 
     async def get_health_policy(
         self, project_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[DataEnvelope[ProjectHealthPolicy]]:
         return await self._request(
             "GET", f"/platform/projects/{segment(project_id)}/health-policy", options=options
         )
 
     async def update_health_policy(
-        self, project_id: str, body: JsonObject, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+        self, project_id: str, body: UpdateProjectHealthPolicy, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ProjectHealthPolicy]]:
         return await self._request(
             "PUT",
             f"/platform/projects/{segment(project_id)}/health-policy",
@@ -292,14 +305,14 @@ class PlatformSessions(Resource):
 
     async def get_safe_mode(
         self, session_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+    ) -> ApiResponse[DataEnvelope[SessionSafeMode]]:
         return await self._request(
             "GET", f"/platform/sessions/{segment(session_id)}/safe-mode", options=options
         )
 
     async def update_safe_mode(
-        self, session_id: str, body: JsonObject, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[JsonObject]]:
+        self, session_id: str, body: UpdateSessionSafeMode, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[SessionSafeMode]]:
         return await self._request(
             "PUT", f"/platform/sessions/{segment(session_id)}/safe-mode", body=body, options=options
         )

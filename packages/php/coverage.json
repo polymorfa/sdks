@@ -534,9 +534,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$banSafe->getSessionSafeMode",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "messaging",
@@ -606,17 +606,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/health-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$banSafe->getProjectHealthPolicy",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/insurance-evidence",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$banSafe->getProjectInsuranceEvidence",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "messaging",
@@ -630,17 +630,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$banSafe->getProjectSafeMode",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/warmup-plan",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$banSafe->getProjectWarmupPlan",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "messaging",
@@ -1718,41 +1718,41 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$banSafe->updateSessionSafeMode",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/health-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$banSafe->updateProjectHealthPolicy",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/insurance-evidence",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$banSafe->updateProjectInsuranceEvidence",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$banSafe->updateProjectSafeMode",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/warmup-plan",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "MessagingClient::$banSafe->updateProjectWarmupPlan",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "messaging",
@@ -2942,9 +2942,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/health-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::$projects->getHealthPolicy",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "platform",
@@ -2958,9 +2958,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/insurance-evidence",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::$projects->getInsuranceEvidence",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "platform",
@@ -2990,17 +2990,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::$projects->getSafeMode",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/warmup-plan",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::$projects->getWarmupPlan",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "platform",
@@ -3118,9 +3118,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::$sessions->getSafeMode",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "platform",
@@ -4518,33 +4518,33 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/projects/{projectId}/health-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::$projects->updateHealthPolicy",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/projects/{projectId}/insurance-evidence",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::$projects->updateInsuranceEvidence",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/projects/{projectId}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::$projects->updateSafeMode",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/projects/{projectId}/warmup-plan",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::$projects->updateWarmupPlan",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "platform",
@@ -4590,9 +4590,9 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "Client::$sessions->updateSafeMode",
+      "testFile": "tests/bansafe.php"
     },
     {
       "family": "platform",

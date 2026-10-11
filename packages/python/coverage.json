@@ -534,9 +534,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{session}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.ban_safe.get_session_safe_mode",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "messaging",
@@ -606,17 +606,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/health-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.ban_safe.get_project_health_policy",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/insurance-evidence",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.ban_safe.get_project_insurance_evidence",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "messaging",
@@ -630,17 +630,17 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.ban_safe.get_project_safe_mode",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/projects/{projectId}/warmup-plan",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.ban_safe.get_project_warmup_plan",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "messaging",
@@ -1718,41 +1718,41 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/{session}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.ban_safe.update_session_safe_mode",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/health-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.ban_safe.update_project_health_policy",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/insurance-evidence",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.ban_safe.update_project_insurance_evidence",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.ban_safe.update_project_safe_mode",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/projects/{projectId}/warmup-plan",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.ban_safe.update_project_warmup_plan",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "messaging",
@@ -2942,9 +2942,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/health-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.projects.get_health_policy",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "platform",
@@ -2958,9 +2958,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/insurance-evidence",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.projects.get_insurance_evidence",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "platform",
@@ -2990,17 +2990,17 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.projects.get_safe_mode",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/warmup-plan",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.projects.get_warmup_plan",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "platform",
@@ -3118,9 +3118,9 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sessions.get_safe_mode",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "platform",
@@ -4518,33 +4518,33 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/projects/{projectId}/health-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.projects.update_health_policy",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/projects/{projectId}/insurance-evidence",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.projects.update_insurance_evidence",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/projects/{projectId}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.projects.update_safe_mode",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/projects/{projectId}/warmup-plan",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.projects.update_warmup_plan",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "platform",
@@ -4590,9 +4590,9 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}/safe-mode",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.sessions.update_safe_mode",
+      "testFile": "tests/test_bansafe.py"
     },
     {
       "family": "platform",
