@@ -17,7 +17,7 @@ Install Rust 1.85 or later, Trunk 0.21, and Node.js. From the SDK repository roo
 
 ```sh
 rustup target add wasm32-unknown-unknown
-pnpm install --frozen-lockfile
+npm ci
 node examples/rust/yew/build-elements.mjs
 cd examples/rust/yew/frontend
 trunk build --release
