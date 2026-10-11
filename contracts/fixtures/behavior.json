@@ -62,7 +62,10 @@
         "query": {
           "limit": "25",
           "active": "true",
-          "tag": ["alpha", "beta"],
+          "tag": [
+            "alpha",
+            "beta"
+          ],
           "search": "a & b"
         }
       },
@@ -857,6 +860,136 @@
       ],
       "outcome": {
         "attempts": 1
+      }
+    },
+    {
+      "id": "operation-admitted-final",
+      "request": {
+        "method": "POST",
+        "path": "/messaging/fixtures/mutation",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22",
+          "idempotency-key": "fixture-stable-key"
+        },
+        "body": {
+          "fixture": true
+        }
+      },
+      "responses": [
+        {
+          "status": 503,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "retry-after": "0",
+            "x-polymorfa-operation-id": "op_fixture"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          }
+        },
+        {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          }
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "error": "server",
+        "operationId": "op_fixture"
+      }
+    },
+    {
+      "id": "operation-admitted-body-timeout",
+      "request": {
+        "method": "POST",
+        "path": "/messaging/fixtures/mutation",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22",
+          "idempotency-key": "fixture-stable-key"
+        },
+        "body": {
+          "fixture": true
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "retry-after": "0",
+            "x-polymorfa-operation-id": "op_fixture"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          },
+          "bodyDelayMs": 250
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "error": "timeout",
+        "operationId": "op_fixture",
+        "metadataRequestId": "req_fixture",
+        "timeoutMs": 75
+      }
+    },
+    {
+      "id": "operation-admitted-body-truncated",
+      "request": {
+        "method": "POST",
+        "path": "/messaging/fixtures/mutation",
+        "headers": {
+          "authorization": "Bearer pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "polymorfa-version": "2026-09-22",
+          "idempotency-key": "fixture-stable-key"
+        },
+        "body": {
+          "fixture": true
+        }
+      },
+      "responses": [
+        {
+          "status": 200,
+          "headers": {
+            "content-type": "application/json",
+            "x-request-id": "req_fixture",
+            "polymorfa-version": "2026-09-22",
+            "retry-after": "0",
+            "x-polymorfa-operation-id": "op_fixture"
+          },
+          "body": {
+            "data": {
+              "id": "fixture"
+            }
+          },
+          "disconnectAfterBytes": 6
+        }
+      ],
+      "outcome": {
+        "attempts": 1,
+        "error": "connection",
+        "operationId": "op_fixture",
+        "metadataRequestId": "req_fixture",
+        "timeoutMs": 1000
       }
     }
   ],

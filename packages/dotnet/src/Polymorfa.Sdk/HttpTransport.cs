@@ -38,11 +38,27 @@ internal sealed class HttpTransport : IDisposable
     {
         var options = requestOptions ?? new RequestOptions();
         var bytes = body is null ? null : JsonSerializer.SerializeToUtf8Bytes(body, body.GetType(), Json);
-        using var response = await OpenAsync(method, path, bytes, options, "application/json", query).ConfigureAwait(false);
-        var data = await ReadAsync<T>(response.Response, options).ConfigureAwait(false);
-        return new(data, response.Metadata);
+        var previousAttempts = 0;
+        var maximumRetries = options.MaxNetworkRetries ?? Options.MaxNetworkRetries;
+        var safe = method == HttpMethod.Get || method == HttpMethod.Head || method == HttpMethod.Options || !string.IsNullOrEmpty(options.IdempotencyKey);
+        for (; ; )
+        {
+            OpenedResponse opened;
+            try { opened = await OpenAsync(method, path, bytes, options with { MaxNetworkRetries = maximumRetries - previousAttempts }, "application/json", query).ConfigureAwait(false); }
+            catch (PolymorfaException error) when (error.Metadata is not null) { error.Metadata = error.Metadata with { Attempts = error.Metadata.Attempts + previousAttempts }; throw; }
+            using (opened)
+            {
+                var metadata = opened.Metadata with { Attempts = opened.Metadata.Attempts + previousAttempts };
+                try { var data = await ReadAsync<T>(opened.Response, options, metadata).ConfigureAwait(false); return new(data, metadata); }
+                catch (PolymorfaException error) when (error is PolymorfaConnectionException or PolymorfaTimeoutException && metadata.OperationId is null && safe && metadata.Attempts <= maximumRetries)
+                {
+                    previousAttempts = metadata.Attempts;
+                    await WaitAsync(Delay(null, previousAttempts), options.CancellationToken).ConfigureAwait(false);
+                }
+            }
+        }
     }
-    internal async Task<OpenedResponse> OpenAsync(HttpMethod method, string path, byte[]? body, RequestOptions options, string accept, IReadOnlyList<KeyValuePair<string, string>>? query = null)
+    internal async Task<OpenedResponse> OpenAsync(HttpMethod method, string path, byte[]? body, RequestOptions options, string accept, IReadOnlyList<KeyValuePair<string, string>>? query = null, bool allowMediaRedirect = false)
     {
         ValidatePath(path);
         var timeout = options.Timeout ?? Options.Timeout;
@@ -84,8 +100,8 @@ internal sealed class HttpTransport : IDisposable
                 throw new PolymorfaConnectionException("Cannot reach the Polymorfa API.");
             }
             var metadata = Metadata(response, attempt);
-            if (response.IsSuccessStatusCode) return new(response, metadata);
-            if (safe && attempt <= retries && IsRetryable(metadata.Status) && Header(response, "idempotent-replayed") != "true")
+            if (response.IsSuccessStatusCode || allowMediaRedirect && metadata.Status is 301 or 302 or 303 or 307 or 308) return new(response, metadata);
+            if (safe && attempt <= retries && IsRetryable(metadata.Status) && Header(response, "idempotent-replayed") != "true" && metadata.OperationId is null)
             {
                 var delay = Delay(response, attempt); response.Dispose();
                 await WaitAsync(delay, options.CancellationToken).ConfigureAwait(false); continue;
@@ -93,13 +109,13 @@ internal sealed class HttpTransport : IDisposable
             using (response)
             {
                 JsonElement error;
-                try { error = await ReadAsync<JsonElement>(response, options).ConfigureAwait(false); }
+                try { error = await ReadAsync<JsonElement>(response, options, metadata).ConfigureAwait(false); }
                 catch (PolymorfaServerException) { error = default; }
                 throw PolymorfaException.FromResponse(error, metadata);
             }
         }
     }
-    private async Task<T> ReadAsync<T>(HttpResponseMessage response, RequestOptions options)
+    private async Task<T> ReadAsync<T>(HttpResponseMessage response, RequestOptions options, ResponseMetadata? metadata = null)
     {
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken);
         linked.CancelAfter(options.Timeout ?? Options.Timeout);
@@ -109,9 +125,10 @@ internal sealed class HttpTransport : IDisposable
             if (bytes.Length == 0 || response.StatusCode is System.Net.HttpStatusCode.NoContent or System.Net.HttpStatusCode.ResetContent) return default!;
             return JsonSerializer.Deserialize<T>(bytes, Json)!;
         }
-        catch (JsonException) { throw new PolymorfaServerException("Polymorfa returned invalid JSON.", "invalid_response"); }
-        catch (OperationCanceledException) { if (options.CancellationToken.IsCancellationRequested) throw new PolymorfaCancelledException(); throw new PolymorfaTimeoutException("Response body timed out."); }
-        catch (HttpRequestException) { throw new PolymorfaConnectionException("Response body interrupted."); }
+        catch (JsonException) { throw new PolymorfaServerException("Polymorfa returned invalid JSON.", "invalid_response", metadata); }
+        catch (OperationCanceledException) { if (options.CancellationToken.IsCancellationRequested) throw new PolymorfaCancelledException(metadata); throw new PolymorfaTimeoutException(metadata?.OperationId is null ? "Response body timed out." : "Response body timed out. Query the operation status before retrying.", metadata); }
+        catch (IOException) { throw new PolymorfaConnectionException(metadata?.OperationId is null ? "Response body interrupted." : "Response body interrupted. Query the operation status before retrying.", metadata); }
+        catch (HttpRequestException) { throw new PolymorfaConnectionException(metadata?.OperationId is null ? "Response body interrupted." : "Response body interrupted. Query the operation status before retrying.", metadata); }
     }
     private static void ValidateHandler(HttpMessageHandler handler)
     {

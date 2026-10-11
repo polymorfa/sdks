@@ -20,9 +20,10 @@ public sealed class MessagingClient : IDisposable
     public ClientTokens ClientTokens { get; }
     public Identities Identities { get; }
     public Users Users { get; }
+    public MessagingMedia Media { get; }
     public MessagingClient(Credential credential, ClientOptions? options = null)
     {
-        http = new(credential, options ?? new()); Sessions = new(http); Messages = new(http); QuickLinks = new(http); Webhooks = new(http); Calls = new(http); Contacts = new(http); Groups = new(http); Chats = new(http); Labels = new(http); Presence = new(http); Profile = new(http); Privacy = new(http); ClientTokens = new(http); Identities = new(http); Users = new(http);
+        http = new(credential, options ?? new()); Sessions = new(http); Messages = new(http); QuickLinks = new(http); Webhooks = new(http); Calls = new(http); Contacts = new(http); Groups = new(http); Chats = new(http); Labels = new(http); Presence = new(http); Profile = new(http); Privacy = new(http); ClientTokens = new(http); Identities = new(http); Users = new(http); Media = new(http);
     }
     public Task<ApiResponse<T>> RawAsync<T>(HttpMethod method, string path, JsonElement? body = null, RequestOptions? options = null, IReadOnlyList<KeyValuePair<string, string>>? query = null) => http.RequestAsync<T>(method, path, body, options, query);
     public void Dispose() => http.Dispose();

@@ -24,7 +24,7 @@ public record CallPermissionState(string Status, string? ExpiresAt, string? Sour
 public sealed record CallPermission(string Status, string? ExpiresAt, string? Source, string? UpdatedAt, string? CheckedAt, bool Fresh, CallPermissionActions? Actions, ConversationReference Conversation) : CallPermissionState(Status, ExpiresAt, Source, UpdatedAt, CheckedAt, Fresh, Actions);
 public sealed record CallCheck(bool Allowed, string? Refusal, CallPermissionState? Permission);
 public sealed record SessionCallSettings(bool CallsEnabled, bool ConferenceMode, string InboundRoute, string? SipTrunkId, bool SipClaim, bool HostCloudApiCalls, long Revision, string? UpdatedAt);
-public sealed record UpdateCallSettingsRequest(bool? CallsEnabled = null, bool? ConferenceMode = null, string? InboundRoute = null, string? SipTrunkId = null, bool? SipClaim = null, bool? HostCloudApiCalls = null, long? ExpectedRevision = null);
+public sealed record UpdateCallSettingsRequest(bool? CallsEnabled = null, bool? ConferenceMode = null, string? InboundRoute = null, [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] PatchValue<string> SipTrunkId = default, bool? SipClaim = null, bool? HostCloudApiCalls = null, long? ExpectedRevision = null);
 public sealed record CallReportClient(string Sdk, string Version, string Platform);
 public sealed record CallQuality(int? RttMs = null, int? JitterMs = null, int? PacketsLost = null, int? PacketsReceived = null, int? Reconnects = null, string? AudioCodec = null, string? VideoCodec = null, string? CandidateType = null);
 public sealed record CallReportError(string Code);
@@ -81,7 +81,7 @@ public sealed class Calls
     public Task<ApiResponse<SuccessEnvelope<SessionCallSettings>>> UpdateCallSettingsAsync(string session, UpdateCallSettingsRequest body, RequestOptions? options = null)
     {
         http.Credential.RequireServer(); NonEmpty(session, "session");
-        if (body.CallsEnabled is null && body.ConferenceMode is null && body.InboundRoute is null && body.SipTrunkId is null && body.SipClaim is null && body.HostCloudApiCalls is null || body.ExpectedRevision < 0 || body.InboundRoute is not null && body.InboundRoute is not ("clients" or "sip_trunk")) throw new PolymorfaValidationException("Invalid call settings update.", "invalid_parameter");
+        if (body.CallsEnabled is null && body.ConferenceMode is null && body.InboundRoute is null && !body.SipTrunkId.IsSpecified && body.SipClaim is null && body.HostCloudApiCalls is null || body.ExpectedRevision < 0 || body.InboundRoute is not null && body.InboundRoute is not ("clients" or "sip_trunk")) throw new PolymorfaValidationException("Invalid call settings update.", "invalid_parameter");
         return http.RequestAsync<SuccessEnvelope<SessionCallSettings>>(HttpMethod.Put, $"/platform/sessions/{Uri.EscapeDataString(session)}/call-settings", body, options);
     }
     public Task<ApiResponse<SuccessResponse>> ReportAsync(string callId, CallReportRequest body, RequestOptions? options = null)

@@ -61,6 +61,7 @@ try
         catch (PolymorfaException error) { failure = error; metadata = error.Metadata; }
         var errorKind = outcome.TryGetProperty("error", out var kind) ? kind.GetString() : null;
         Equal(failure is null ? null : Kind(failure), errorKind, id);
+        if (outcome.TryGetProperty("operationId", out var operationId)) Equal(metadata?.OperationId, operationId.GetString(), id);
         if (outcome.TryGetProperty("code", out var code)) Equal(failure?.Code, code.GetString(), id);
         if (outcome.TryGetProperty("requestId", out var requestId)) Equal(failure?.RequestId, requestId.GetString(), id);
         if (outcome.TryGetProperty("metadataRequestId", out var metadataId)) Equal(metadata?.RequestId, metadataId.GetString(), id);
@@ -96,7 +97,12 @@ try
         catch (PolymorfaConfigurationException) { valid = false; }
         Equal(valid, fixture.GetProperty("valid").GetBoolean(), id); Console.WriteLine($"PASS configuration {id}"); count++;
     }
-    Console.WriteLine($"Passed {count} shared behavior cases.");
+    await MediaTests.RunAsync(root);
+    await ResourceTests.RunAsync();
+    await CallsTests.RunAsync();
+    await BillingTests.RunAsync();
+    await CallConsentTests.RunAsync();
+    Console.WriteLine($"Passed {count} shared behavior cases and media integrity tests.");
 }
 finally { if (!server.HasExited) server.Kill(entireProcessTree: true); await server.WaitForExitAsync(); }
 static void Equal<T>(T actual, T expected, string name) { if (!EqualityComparer<T>.Default.Equals(actual, expected)) throw new Exception($"{name}: expected {expected}, received {actual}"); }
@@ -111,6 +117,7 @@ static string Kind(PolymorfaException error) => error switch
     PolymorfaRateLimitException => "rate_limit",
     PolymorfaServerException => "server",
     PolymorfaTimeoutException => "timeout",
+    PolymorfaConnectionException => "connection",
     PolymorfaCancelledException => "cancelled",
     _ => throw new Exception($"Unmapped error {error.GetType().Name}")
 };

@@ -20,7 +20,7 @@ public sealed record QrCode(string? Qr, string? Event);
 public sealed record WhatsAppAccount(string? Id, string? Bsuid, string? Username, string? PhoneNumber, string PushName, string? BusinessName, string? PhonePlatform, string? AccountType, string? ProfilePicUrl);
 
 public sealed record ConversationReference(string? Id = null, string? PhoneNumber = null, string? Bsuid = null, string? Username = null);
-public sealed record QuotedMessage(string Id, string? Participant = null);
+public sealed record QuotedMessage(string Id, string? Type = null, string? Text = null);
 public sealed record SendMessageRequest(ConversationReference Conversation, MessageContent Content, string? Transport = null, bool? IsForwarded = null, IReadOnlyList<string>? Mentions = null, QuotedMessage? QuotedMessage = null);
 public abstract record MessageContent;
 public sealed record TextContent(string Text) : MessageContent;
@@ -92,7 +92,19 @@ internal sealed class MessageContentConverter : JsonConverter<MessageContent>
         if (root.TryGetProperty("poll", out _)) return root.Deserialize<PollContent>(options)!;
         if (root.TryGetProperty("location", out _)) return root.Deserialize<LocationContent>(options)!;
         if (root.TryGetProperty("contact", out _)) return root.Deserialize<ContactContent>(options)!;
-        throw new JsonException("Unrecognized message content.");
+        if (root.TryGetProperty("requestPhoneNumber", out _)) return root.Deserialize<PhoneNumberRequestContent>(options)!;
+        if (root.TryGetProperty("product", out _)) return root.Deserialize<ProductContent>(options)!;
+        if (root.TryGetProperty("productList", out _)) return root.Deserialize<ProductListContent>(options)!;
+        if (root.TryGetProperty("order", out _)) return root.Deserialize<OrderContent>(options)!;
+        if (root.TryGetProperty("list", out _)) return root.Deserialize<ListContent>(options)!;
+        if (root.TryGetProperty("buttons", out _)) return root.Deserialize<ButtonsContent>(options)!;
+        if (root.TryGetProperty("addressMessage", out _)) return root.Deserialize<AddressContent>(options)!;
+        if (root.TryGetProperty("flow", out _)) return root.Deserialize<FlowContent>(options)!;
+        if (root.TryGetProperty("callPermissionRequest", out _)) return root.Deserialize<CallPermissionRequestContent>(options)!;
+        if (root.TryGetProperty("orderDetails", out _)) return root.Deserialize<OrderDetailsContent>(options)!;
+        if (root.TryGetProperty("orderStatus", out _)) return root.Deserialize<OrderStatusContent>(options)!;
+        if (root.TryGetProperty("template", out _)) return root.Deserialize<TemplateContent>(options)!;
+        return new UnknownMessageContent(root.Clone());
     }
-    public override void Write(Utf8JsonWriter writer, MessageContent value, JsonSerializerOptions options) => JsonSerializer.Serialize(writer, value, value.GetType(), options);
+    public override void Write(Utf8JsonWriter writer, MessageContent value, JsonSerializerOptions options) { if (value is UnknownMessageContent unknown) unknown.Value.WriteTo(writer); else JsonSerializer.Serialize(writer, value, value.GetType(), options); }
 }

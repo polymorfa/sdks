@@ -11,7 +11,7 @@ public class PolymorfaException : Exception
     public string? DocUrl { get; internal set; }
     public string? RateLimitReason { get; }
     public JsonElement? Details { get; }
-    public ResponseMetadata? Metadata { get; }
+    public ResponseMetadata? Metadata { get; internal set; }
     public PolymorfaException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? error = null) : base(message)
     {
         Code = code; Metadata = metadata; Status = metadata?.Status;
@@ -28,7 +28,7 @@ public class PolymorfaException : Exception
         var code = String(error, "code");
         var exception = metadata.Status switch
         {
-            400 or 422 => new PolymorfaValidationException(message, code, metadata, error),
+            400 or 413 or 422 => new PolymorfaValidationException(message, code, metadata, error),
             401 => new PolymorfaAuthenticationException(message, code, metadata, error),
             402 => new PolymorfaPaymentRequiredException(message, code, metadata, error),
             403 => new PolymorfaAuthorizationException(message, code, metadata, error),
@@ -51,7 +51,7 @@ public sealed class PolymorfaNotFoundException(string message, string? code = nu
 public sealed class PolymorfaConflictException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? details = null) : PolymorfaException(message, code, metadata, details);
 public sealed class PolymorfaRateLimitException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? details = null) : PolymorfaException(message, code, metadata, details);
 public sealed class PolymorfaServerException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? details = null) : PolymorfaException(message, code, metadata, details);
-public sealed class PolymorfaConnectionException(string message) : PolymorfaException(message, "connection_error");
-public sealed class PolymorfaTimeoutException(string message) : PolymorfaException(message, "request_timeout");
-public sealed class PolymorfaCancelledException() : PolymorfaException("Request cancelled by caller.", "request_cancelled");
+public sealed class PolymorfaConnectionException(string message, ResponseMetadata? metadata = null) : PolymorfaException(message, "connection_error", metadata);
+public sealed class PolymorfaTimeoutException(string message, ResponseMetadata? metadata = null) : PolymorfaException(message, "request_timeout", metadata);
+public sealed class PolymorfaCancelledException(ResponseMetadata? metadata = null) : PolymorfaException("Request cancelled by caller.", "request_cancelled", metadata);
 public sealed class WebhookSignatureException() : PolymorfaException("Webhook signature verification failed.", "invalid_webhook_signature");
