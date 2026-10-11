@@ -473,6 +473,12 @@ impl Events<'_> {
             params,
         ))
     }
+    pub fn live_source(
+        &self,
+        params: crate::stream::EventStreamOptions,
+    ) -> Result<crate::stream::EventStreamSource> {
+        Ok(self.stream(params)?.live_source())
+    }
     pub async fn acknowledge_stream(
         &self,
         stream_id: &str,

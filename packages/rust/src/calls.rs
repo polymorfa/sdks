@@ -92,7 +92,6 @@ impl<'a> Calls<'a> {
         body: &PlaceCallRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<PlaceCallResult>> {
-        self.http.server()?;
         if options
             .idempotency_key
             .as_ref()
@@ -102,6 +101,10 @@ impl<'a> Calls<'a> {
         }
         // TS chooses one destination form, so omit `to` when group/participants is used.
         let mut value = serde_json::to_value(body).map_err(|_| configuration("call"))?;
+        if self.http.is_client_token() {
+            value.as_object_mut().unwrap().remove("session");
+            value.as_object_mut().unwrap().remove("participant");
+        }
         if body.group_id.is_some() {
             value.as_object_mut().unwrap().remove("participants");
             value.as_object_mut().unwrap().remove("to");
@@ -126,14 +129,17 @@ impl<'a> Calls<'a> {
         body: &AcceptCallRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<AcceptCallResult>> {
-        self.http.server()?;
+        let mut value = serde_json::to_value(body).map_err(|_| configuration("call"))?;
+        if self.http.is_client_token() {
+            value.as_object_mut().unwrap().remove("participant");
+        }
         unwrap(
             self.http
                 .request(
                     Method::POST,
                     &path(call_id, "/accept"),
                     &[],
-                    Some(body),
+                    Some(&value),
                     options,
                 )
                 .await?,
@@ -145,7 +151,7 @@ impl<'a> Calls<'a> {
         participant: Option<&str>,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.http.server()?;
+        let participant = participant.filter(|_| !self.http.is_client_token());
         self.http
             .request(
                 Method::POST,
@@ -167,7 +173,7 @@ impl<'a> Calls<'a> {
         participant: Option<&str>,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.http.server()?;
+        let participant = participant.filter(|_| !self.http.is_client_token());
         self.http
             .request(
                 Method::POST,
@@ -186,7 +192,6 @@ impl<'a> Calls<'a> {
         call_id: &str,
         mut options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.http.server()?;
         if options.idempotency_key.is_none() {
             options.idempotency_key = Some(format!("voip-end:{call_id}"));
         }
@@ -200,7 +205,6 @@ impl<'a> Calls<'a> {
         to: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<Participant>> {
-        self.http.server()?;
         unwrap(
             self.http
                 .request(
@@ -219,7 +223,6 @@ impl<'a> Calls<'a> {
         to: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.http.server()?;
         self.http
             .request(
                 Method::POST,
@@ -262,7 +265,6 @@ impl<'a> Calls<'a> {
         participant: Option<&str>,
         cancellation: CancellationToken,
     ) -> Result<MediaSocket> {
-        self.http.server()?;
         if !(8..=64).contains(&connection_id.len())
             || !connection_id
                 .bytes()
@@ -310,7 +312,7 @@ impl<'a> Calls<'a> {
             ));
         }
         let mut frame = serde_json::json!({"type":"auth","token":self.http.credential_value()?,"connectionId":connection_id});
-        if let Some(participant) = participant {
+        if let Some(participant) = participant.filter(|_| !self.http.is_client_token()) {
             frame["participant"] = participant.into();
         }
         socket
@@ -354,14 +356,14 @@ impl<'a> Calls<'a> {
         })??;
         Ok(media)
     }
-    /// Server lifecycle socket. Only session and participant are sent in the URL.
+    /// Native lifecycle socket. Client-token identity comes from the grant;
+    /// server credentials send only session and participant in the URL.
     pub async fn open_lifecycle(
         &self,
         session: &str,
         participant: Option<&str>,
         cancellation: CancellationToken,
     ) -> Result<LifecycleSocket> {
-        self.http.server()?;
         if session.trim().is_empty() || participant.is_some_and(|p| !is_participant_name(p)) {
             return Err(configuration("session or participant"));
         }
@@ -371,10 +373,12 @@ impl<'a> Calls<'a> {
         url.set_query(None);
         url.set_scheme(if url.scheme() == "https" { "wss" } else { "ws" })
             .map_err(|_| configuration("socket URL"))?;
-        url.query_pairs_mut().append_pair("session", session);
-        if let Some(participant) = participant {
-            url.query_pairs_mut()
-                .append_pair("participant", participant);
+        if !self.http.is_client_token() {
+            url.query_pairs_mut().append_pair("session", session);
+            if let Some(participant) = participant {
+                url.query_pairs_mut()
+                    .append_pair("participant", participant);
+            }
         }
         let (socket, _) = tokio::select! {
             _=cancellation.cancelled()=>return Err(crate::transport::cancelled()),
@@ -541,7 +545,10 @@ impl MediaSocket {
         if !self.video {
             return Err(configuration("video: not negotiated for this connection"));
         }
-        self.send(Message::Binary(encode_video(frame).into())).await
+        let mut outgoing = frame.clone();
+        outgoing.source = 0;
+        self.send(Message::Binary(encode_video(&outgoing).into()))
+            .await
     }
     /// Send one media state command. Match its request ID in `read`; never replay
     /// a command after an uncertain timeout.

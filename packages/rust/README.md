@@ -95,7 +95,7 @@ needed or performed by the test suite.
 Platform resources include typed BanSafe observations, project Functions and Flow drafts, Voice assets and provider credentials, call diagnostics/statistics/exports, and WhatsApp Analytics. Function and Flow writes are sent once; uncertain provider receipts are reconciled by reads. Project views preserve their identity and check organization-key resource mutations before acting. Voice upload URLs and one-time signing secrets omit `Debug`. Credit quantities named `Cents` retain fractional values.
 
 
-Programmatic calls use `calls_runtime::CallsClient` and `calls_token::CallsTokenSource`.
+Programmatic calls use `calls_runtime::CallsClient` and `calls_token::CallsTokenSource`. Native processes can use a short-lived client token for the granted Calls subset; placement omits session and participant identity, socket identity comes from the grant, and server-only resources remain refused. Server credentials and the Rust SDK stay outside browser/WASM builds.
 A token source shares cached credentials across HTTP, lifecycle and media requests,
 refreshes near expiry, and isolates cancellation among callers. Static server credentials
 and asynchronous providers are supported; credentials never appear in socket URLs or
@@ -118,3 +118,5 @@ not complete the asset and errors never retain the signed upload URL or storage 
 Calls diagnostics send technical error codes and final reconnect counts without blocking media. `calls_diagnostics::CallReporter` also accepts measured quality figures, removes invalid codecs and candidate types, clamps numeric limits, enforces one quality report per five seconds and twenty errors per minute, and stops after permanent HTTP refusals. Reports never retry and expire after five seconds.
 
 `POLYMORFA_ERROR_CODES` exports all known documented API codes. `is_known_error_code` recognizes this catalog while every error retains its original open `code`, including future API or SDK codes.
+
+`Events::live_source` adapts SSE to a native application-store listener. Subscribe with an optional resume cursor and error callback; each subscription delivers retained `WebhookEnvelope` bodies with their cursor and skips events without a body. `unsubscribe`, `close`, or dropping the subscription cancels only that consumer. Run subscriptions inside a Tokio runtime. `Call::snapshot().video_sources` exposes typed connection or participant owners and labels; removed participants, socket drops, and ended calls clear stale owners.

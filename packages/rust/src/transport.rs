@@ -273,6 +273,9 @@ impl HttpTransport {
             .ok_or_else(|| configuration("credential"))?
             .server()
     }
+    pub(crate) fn is_client_token(&self) -> bool {
+        matches!(self.credential, Some(Credential::ClientToken(_)))
+    }
     pub(crate) fn credential_value(&self) -> Result<&str> {
         Ok(self
             .credential

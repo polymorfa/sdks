@@ -5,7 +5,7 @@ use crate::{
     },
     calls_protocol::{
         create_connection_id, is_participant_name, LifecycleFrame, MediaControlFrame,
-        MediaStateUpdate,
+        MediaStateUpdate, VideoSourceOwner,
     },
     calls_token::{CallsToken, CallsTokenRequest, CallsTokenSource},
     transport::{cancelled, configuration},
@@ -73,6 +73,12 @@ pub struct CallClaim {
     pub can_join: bool,
 }
 #[derive(Clone, Debug)]
+pub struct CallVideoSource {
+    pub id: u32,
+    pub label: String,
+    pub owner: VideoSourceOwner,
+}
+#[derive(Clone, Debug)]
 pub struct CallSnapshot {
     pub state: CallState,
     pub direction: CallDirection,
@@ -81,6 +87,7 @@ pub struct CallSnapshot {
     pub capabilities: CallCapabilities,
     pub claim: CallClaim,
     pub participants: Vec<Participant>,
+    pub video_sources: Vec<CallVideoSource>,
     pub started_at: SystemTime,
     pub connected_at: Option<SystemTime>,
     pub ended_at: Option<SystemTime>,
@@ -177,6 +184,7 @@ struct ClientInner {
     run: Mutex<Option<CancellationToken>>,
     generation: AtomicU64,
     connected: AtomicBool,
+    participant: Mutex<Option<String>>,
 }
 #[derive(Clone)]
 pub struct CallsClient(Arc<ClientInner>, Option<Arc<ClientOwner>>);
@@ -246,9 +254,15 @@ impl ClientInner {
                 cancellation,
             })
             .await?;
-        token.credential.server()?;
         let client = MessagingClient::new(token.credential.clone(), self.options.client.clone())?;
         Ok((client, token))
+    }
+    fn server_participant(&self, token: &CallsToken) -> Option<&str> {
+        if matches!(token.credential, crate::Credential::ClientToken(_)) {
+            None
+        } else {
+            self.options.participant.as_deref()
+        }
     }
     fn emit(&self, event: CallsEvent) {
         let _ = self.events.send(event);
@@ -280,6 +294,7 @@ impl CallsClient {
             run: Mutex::new(None),
             generation: AtomicU64::new(0),
             connected: AtomicBool::new(false),
+            participant: Mutex::new(None),
         });
         let owner = Arc::new(ClientOwner(Arc::downgrade(&inner)));
         Ok(Self(inner, Some(owner)))
@@ -386,7 +401,7 @@ impl CallsClient {
                 (id.clone(), None, Some(id))
             }
         };
-        let (api, _) = self
+        let (api, token) = self
             .0
             .api(false, options.request.cancellation.clone())
             .await?;
@@ -401,7 +416,7 @@ impl CallsClient {
                     participants,
                     group_id,
                     exclusive: Some(options.exclusive),
-                    participant: self.0.options.participant.clone(),
+                    participant: self.0.server_participant(&token).map(str::to_owned),
                 },
                 request.clone(),
             )
@@ -459,8 +474,8 @@ impl CallsClient {
                         let Some(inner) = inner.upgrade() else {
                             return Ok(());
                         };
-                        report.participant = inner.options.participant.clone();
-                        let (api, _) = inner.api(false, None).await?;
+                        let (api, token) = inner.api(false, None).await?;
+                        report.participant = inner.server_participant(&token).map(str::to_owned);
                         api.voip()
                             .report(
                                 &call_id,
@@ -502,6 +517,7 @@ impl CallsClient {
                     can_join: false,
                 },
                 participants: Vec::new(),
+                video_sources: Vec::new(),
                 started_at: SystemTime::now(),
                 connected_at: None,
                 ended_at: None,
@@ -646,6 +662,7 @@ impl Call {
         if snapshot.state == CallState::Ended {
             return;
         }
+        snapshot.video_sources.clear();
         snapshot.state = CallState::Ended;
         snapshot.ended_at = Some(SystemTime::now());
         snapshot.end_reason = Some(reason);
@@ -677,7 +694,7 @@ impl Call {
             ));
         }
         self.transition(CallState::Connecting).await;
-        let (api, _) = match self.0.client.api(false, None).await {
+        let (api, token) = match self.0.client.api(false, None).await {
             Ok(api) => api,
             Err(error) => {
                 self.transition(CallState::Incoming).await;
@@ -691,7 +708,7 @@ impl Call {
                 &AcceptCallRequest {
                     exclusive: options.exclusive,
                     video: Some(options.video.unwrap_or(snapshot.has_video)),
-                    participant: self.0.client.options.participant.clone(),
+                    participant: self.0.client.server_participant(&token).map(str::to_owned),
                 },
                 Default::default(),
             )
@@ -740,11 +757,11 @@ impl Call {
         if s.state != CallState::Incoming || s.claim.answered {
             return Err(invalid("call_not_ringing", "Call is no longer ringing"));
         }
-        let (api, _) = self.0.client.api(false, None).await?;
+        let (api, token) = self.0.client.api(false, None).await?;
         api.calls()
             .reject(
                 &self.0.id,
-                self.0.client.options.participant.as_deref(),
+                self.0.client.server_participant(&token),
                 Default::default(),
             )
             .await?;
@@ -761,12 +778,12 @@ impl Call {
             return self.end_inner().await;
         }
         if self.0.accepted.load(Ordering::Acquire) {
-            let (api, _) = self.0.client.api(false, None).await?;
+            let (api, token) = self.0.client.api(false, None).await?;
             api.calls()
                 .leave(
                     &self.0.id,
                     &self.0.connection_id,
-                    self.0.client.options.participant.as_deref(),
+                    self.0.client.server_participant(&token),
                     Default::default(),
                 )
                 .await?;
@@ -856,13 +873,13 @@ impl Call {
         if s.state != CallState::Connected || !s.social_supported {
             return Err(invalid("invalid_state", "Reactions unavailable"));
         }
-        let (api, _) = self.0.client.api(false, None).await?;
+        let (api, token) = self.0.client.api(false, None).await?;
         api.voip()
             .send_reaction(
                 &self.0.id,
                 &crate::voip::CallReactionRequest {
                     connection_id: self.0.connection_id.clone(),
-                    participant: self.0.client.options.participant.clone(),
+                    participant: self.0.client.server_participant(&token).map(str::to_owned),
                     emoji: emoji.into(),
                 },
                 Default::default(),
@@ -875,13 +892,13 @@ impl Call {
         if s.state != CallState::Connected || !s.social_supported {
             return Err(invalid("invalid_state", "Hand controls unavailable"));
         }
-        let (api, _) = self.0.client.api(false, None).await?;
+        let (api, token) = self.0.client.api(false, None).await?;
         api.voip()
             .set_hand_raised(
                 &self.0.id,
                 &crate::voip::HandRaisedRequest {
                     connection_id: self.0.connection_id.clone(),
-                    participant: self.0.client.options.participant.clone(),
+                    participant: self.0.client.server_participant(&token).map(str::to_owned),
                     raised,
                 },
                 Default::default(),
@@ -905,7 +922,7 @@ impl Call {
         }
     }
     async fn attach(&self) -> Result<()> {
-        let (api, _) = self
+        let (api, token) = self
             .0
             .client
             .api(false, Some(self.0.cancel.clone()))
@@ -915,7 +932,7 @@ impl Call {
             .open_media(
                 &self.0.id,
                 &self.0.connection_id,
-                self.0.client.options.participant.as_deref(),
+                self.0.client.server_participant(&token),
                 self.0.cancel.clone(),
             )
             .await
@@ -955,7 +972,7 @@ impl Call {
             return;
         }
         let request = async {
-            if let Ok((api, _)) = self.0.client.api(false, None).await {
+            if let Ok((api, token)) = self.0.client.api(false, None).await {
                 let options = RequestOptions {
                     timeout: Some(Duration::from_secs(5)),
                     max_network_retries: Some(0),
@@ -969,7 +986,7 @@ impl Call {
                         .leave(
                             &self.0.id,
                             &self.0.connection_id,
-                            self.0.client.options.participant.as_deref(),
+                            self.0.client.server_participant(&token),
                             options,
                         )
                         .await;
@@ -994,17 +1011,12 @@ impl Call {
                 s.claim.answered_by = payload["answeredBy"].as_str().map(str::to_owned);
                 s.claim.exclusive =
                     payload["exclusive"] == true || self.0.claimed.load(Ordering::Acquire);
-                let own = format!(
-                    "server:{}",
-                    self.0
-                        .client
-                        .options
-                        .participant
-                        .as_deref()
-                        .unwrap_or("default")
-                );
+                let own = self.0.client.participant.lock().await.clone();
                 s.claim.claimed_by_other = s.claim.exclusive
-                    && s.claim.answered_by.as_deref().is_some_and(|p| p != own)
+                    && s.claim
+                        .answered_by
+                        .as_deref()
+                        .is_some_and(|p| Some(p) != own.as_deref())
                     && !self.0.accepted.load(Ordering::Acquire);
                 s.claim.can_join = s.state == CallState::Incoming && !s.claim.exclusive;
                 let attach =
@@ -1026,25 +1038,17 @@ impl Call {
             "call.ended" => self.finish(reason(payload["reason"].as_str())).await,
             "call.missed" => self.finish(CallEndReason::Missed).await,
             "call.rejected" => self.finish(CallEndReason::Rejected).await,
-            "call.participant_joined" | "call.participant_state" => {
+            "call.participant_joined" | "call.participant_state"
+                if payload["callId"] == self.0.id =>
+            {
                 if let Ok(p) = serde_json::from_value::<Participant>(payload["participant"].clone())
                 {
-                    let mut s = self.0.snapshot.lock().await;
-                    if let Some(existing) = s.participants.iter_mut().find(|v| v.id == p.id) {
-                        *existing = p;
-                    } else {
-                        s.participants.push(p);
-                    }
+                    update_participant(&mut *self.0.snapshot.lock().await, p);
                 }
             }
-            "call.participant_left" => {
+            "call.participant_left" if payload["callId"] == self.0.id => {
                 if let Some(id) = payload["participantId"].as_str() {
-                    self.0
-                        .snapshot
-                        .lock()
-                        .await
-                        .participants
-                        .retain(|p| p.id != id);
+                    remove_participant(&mut *self.0.snapshot.lock().await, id);
                 }
             }
             _ => {}
@@ -1095,7 +1099,7 @@ async fn lifecycle_worker(
                 .calls()
                 .open_lifecycle(
                     &inner.options.session,
-                    inner.options.participant.as_deref(),
+                    inner.server_participant(&token),
                     cancel.clone(),
                 )
                 .await?;
@@ -1140,6 +1144,7 @@ async fn lifecycle_worker(
         };
         attempt = 0;
         refresh = false;
+        *inner.participant.lock().await = socket.participant.clone();
         inner.connected.store(true, Ordering::Release);
         inner.emit(CallsEvent::Ready);
         if let Some(first) = first.take() {
@@ -1270,22 +1275,36 @@ async fn media_worker(
                         }
                         MediaControlFrame::ParticipantJoined { participant }
                         | MediaControlFrame::ParticipantState { participant } => {
+                            update_participant(
+                                &mut *call.0.snapshot.lock().await,
+                                participant.clone(),
+                            );
+                        }
+                        MediaControlFrame::ParticipantLeft { participant_id, .. } => {
+                            remove_participant(&mut *call.0.snapshot.lock().await, participant_id);
+                        }
+                        MediaControlFrame::VideoSource { source, owner } => {
                             let mut s = call.0.snapshot.lock().await;
-                            if let Some(existing) =
-                                s.participants.iter_mut().find(|p| p.id == participant.id)
+                            let entry = CallVideoSource {
+                                id: *source,
+                                label: video_label(owner),
+                                owner: owner.clone(),
+                            };
+                            if let Some(old) = s.video_sources.iter_mut().find(|v| v.id == *source)
                             {
-                                *existing = participant.clone();
+                                *old = entry;
                             } else {
-                                s.participants.push(participant.clone());
+                                s.video_sources.push(entry);
                             }
                         }
-                        MediaControlFrame::ParticipantLeft { participant_id, .. } => call
-                            .0
-                            .snapshot
-                            .lock()
-                            .await
-                            .participants
-                            .retain(|p| p.id != *participant_id),
+                        MediaControlFrame::VideoSourceRemoved { source } => {
+                            call.0
+                                .snapshot
+                                .lock()
+                                .await
+                                .video_sources
+                                .retain(|v| v.id != *source);
+                        }
                         _ => {}
                     }
                 }
@@ -1295,6 +1314,7 @@ async fn media_worker(
                 });
             }
             Err(error) => {
+                call.0.snapshot.lock().await.video_sources.clear();
                 if let Some(p) = pending.take() {
                     let _ = p.reply.send(Err(invalid(
                         "media_control_unknown",
@@ -1367,7 +1387,7 @@ async fn media_worker(
                         break;
                     }
                     let opened = async {
-                        let (api, _) = call
+                        let (api, token) = call
                             .0
                             .client
                             .api(refresh, Some(call.0.cancel.clone()))
@@ -1376,7 +1396,7 @@ async fn media_worker(
                             .open_media(
                                 &call.0.id,
                                 &call.0.connection_id,
-                                call.0.client.options.participant.as_deref(),
+                                call.0.client.server_participant(&token),
                                 call.0.cancel.clone(),
                             )
                             .await
@@ -1458,5 +1478,44 @@ async fn media_worker(
             ..Default::default()
         });
         reporter.stop();
+    }
+}
+
+fn video_label(owner: &VideoSourceOwner) -> String {
+    match owner {
+        VideoSourceOwner::Connection {
+            connection_id,
+            connection_participant,
+        } => connection_participant
+            .clone()
+            .unwrap_or_else(|| connection_id.clone()),
+        VideoSourceOwner::Participant { participant } => participant
+            .phone_number
+            .clone()
+            .unwrap_or_else(|| participant.id.clone()),
+    }
+}
+fn remove_participant(s: &mut CallSnapshot, id: &str) {
+    s.participants.retain(|p| p.id != id);
+    s.video_sources.retain(|v| !matches!(&v.owner, VideoSourceOwner::Participant { participant } if participant.id == id));
+}
+fn update_participant(s: &mut CallSnapshot, participant: Participant) {
+    if participant.state == "left" {
+        remove_participant(s, &participant.id);
+        return;
+    }
+    for source in &mut s.video_sources {
+        if matches!(&source.owner, VideoSourceOwner::Participant { participant: old } if old.id == participant.id)
+        {
+            source.owner = VideoSourceOwner::Participant {
+                participant: participant.clone(),
+            };
+            source.label = video_label(&source.owner);
+        }
+    }
+    if let Some(old) = s.participants.iter_mut().find(|p| p.id == participant.id) {
+        *old = participant;
+    } else {
+        s.participants.push(participant);
     }
 }

@@ -218,7 +218,12 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
                 let n = hits.fetch_add(1, Ordering::SeqCst);
                 assert_eq!(request.refresh, n == 1);
                 Ok(CallsToken {
-                    credential: credential(if n == 0 { 'a' } else { 'b' }),
+                    credential: Credential::client_token(if n == 0 {
+                        "pmfa_ct_native_a"
+                    } else {
+                        "pmfa_ct_native_b"
+                    })
+                    .unwrap(),
                     expires_at: None,
                 })
             })
@@ -227,19 +232,24 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
     let (close_tx, close_rx) = tokio::sync::oneshot::channel();
     let server = tokio::spawn(async move {
         let (stream, _) = listener.accept().await.unwrap();
-        let mut lifecycle = accept_async(stream).await.unwrap();
+        let mut lifecycle = accept_hdr_async(stream, client_lifecycle_protocol)
+            .await
+            .unwrap();
         auth(&mut lifecycle).await;
         lifecycle
-            .send(Message::Text("{\"type\":\"ready\"}".into()))
+            .send(Message::Text(
+                "{\"type\":\"ready\",\"participant\":\"client:self\"}".into(),
+            ))
             .await
             .unwrap();
         let (stream, _) = listener.accept().await.unwrap();
         // The acceptance intentionally arrives before the placement response.
-        lifecycle.send(Message::Text(json!({"type":"event","event":"call.accepted","callId":"outbound","payload":{"answeredBy":"server:default","exclusive":false},"timestamp":"now"}).to_string().into())).await.unwrap();
+        lifecycle.send(Message::Text(json!({"type":"event","event":"call.accepted","callId":"outbound","payload":{"answeredBy":"client:self","exclusive":false},"timestamp":"now"}).to_string().into())).await.unwrap();
         tokio::time::sleep(Duration::from_millis(5)).await;
         let (head, body, headers) = http(stream, json!({"data":{"callId":"outbound"}})).await;
         assert_eq!(head, "POST /messaging/voip/calls HTTP/1.1");
-        assert_eq!(body["session"], "support");
+        assert!(body.get("session").is_none());
+        assert!(body.get("participant").is_none());
         assert_eq!(body["to"], "+15551234567");
         assert!(headers.to_ascii_lowercase().contains("idempotency-key:"));
         let mut connection = None;
@@ -251,6 +261,7 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
                 .as_str()
                 .unwrap()
                 .ends_with(if index == 0 { 'a' } else { 'b' }));
+            assert!(a.get("participant").is_none());
             let current = a["connectionId"].as_str().unwrap().to_owned();
             if let Some(connection) = &connection {
                 assert_eq!(&current, connection);
@@ -265,6 +276,15 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
                 ))
                 .await
                 .unwrap();
+            for frame in [
+                json!({"type":"video_source","source":42,"connectionId":"connection_other","connectionParticipant":"client:other"}),
+                json!({"type":"video_source","source":43,"participant":{"id":"15550000001","phoneNumber":"+15550000001","audioMuted":false,"video":true,"state":"connected"}}),
+            ] {
+                media
+                    .send(Message::Text(frame.to_string().into()))
+                    .await
+                    .unwrap();
+            }
             media
                 .send(Message::Binary(vec![1, 1, 0, 255, 255].into()))
                 .await
@@ -284,6 +304,15 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
                     .await
                     .unwrap();
             } else {
+                media.send(Message::Text(json!({"type":"participant_state","participant":{"id":"15550000001","username":"nickname","audioMuted":false,"video":true,"state":"connected"}}).to_string().into())).await.unwrap();
+                media
+                    .send(Message::Text(
+                        json!({"type":"video_source_removed","source":42})
+                            .to_string()
+                            .into(),
+                    ))
+                    .await
+                    .unwrap();
                 let binary = media.next().await.unwrap().unwrap();
                 assert_eq!(binary.into_data().as_ref(), [1, 3, 0, 253, 255]);
                 let (stream, _) = listener.accept().await.unwrap();
@@ -297,7 +326,9 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
         }
         let _ = lifecycle.next().await;
     });
-    let client = CallsClient::new(source, options(format!("http://{addr}"))).unwrap();
+    let mut o = options(format!("http://{addr}"));
+    o.participant = Some("forged-server-identity".into());
+    let client = CallsClient::new(source, o).unwrap();
     let mut events = client.subscribe();
     client.connect().await.unwrap();
     let call = client
@@ -335,11 +366,50 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
             }
         }
     }
+    loop {
+        if let CallsEvent::Media {
+            frame:
+                polymorfa_sdk::calls::MediaFrame::Control(
+                    polymorfa_sdk::calls_protocol::MediaControlFrame::VideoSourceRemoved {
+                        source: 42,
+                    },
+                ),
+            ..
+        } = receive(&mut events).await
+        {
+            break;
+        }
+    }
+    assert_eq!(
+        call.snapshot()
+            .await
+            .video_sources
+            .iter()
+            .map(|s| s.id)
+            .collect::<Vec<_>>(),
+        vec![43]
+    );
+    assert_eq!(call.snapshot().await.video_sources[0].label, "15550000001");
     call.write_audio(vec![3, -3]).await.unwrap();
     call.leave().await.unwrap();
     close_rx.await.unwrap();
     assert_eq!(call.snapshot().await.end_reason, Some(CallEndReason::Left));
+    assert!(call.snapshot().await.video_sources.is_empty());
     assert_eq!(hits.load(Ordering::SeqCst), 2);
+    let scoped = polymorfa_sdk::MessagingClient::new(
+        Credential::client_token("pmfa_ct_native_a").unwrap(),
+        Default::default(),
+    )
+    .unwrap();
+    assert_eq!(
+        scoped
+            .sessions()
+            .list(Default::default())
+            .await
+            .unwrap_err()
+            .kind,
+        ErrorKind::Configuration
+    );
     client.disconnect().await.unwrap();
     tokio::time::timeout(Duration::from_secs(2), server)
         .await
@@ -408,4 +478,132 @@ async fn lifecycle_http_connect_proxy_keeps_bearer_out_of_tunnel_and_handshake()
     client.connect().await.unwrap();
     client.disconnect().await.unwrap();
     server.await.unwrap();
+}
+
+#[allow(clippy::result_large_err)]
+fn client_lifecycle_protocol(
+    request: &Request,
+    response: Response,
+) -> std::result::Result<Response, tokio_tungstenite::tungstenite::handshake::server::ErrorResponse>
+{
+    assert_eq!(request.uri().path(), "/voip/ws");
+    assert!(request.uri().query().is_none());
+    assert!(!request.headers().contains_key("authorization"));
+    Ok(response)
+}
+
+#[tokio::test]
+async fn client_grant_answers_controls_and_leaves_without_server_identity() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let server = tokio::spawn(async move {
+        let (stream, _) = listener.accept().await.unwrap();
+        let mut lifecycle = accept_hdr_async(stream, client_lifecycle_protocol)
+            .await
+            .unwrap();
+        assert_eq!(auth(&mut lifecycle).await["token"], "pmfa_ct_native_grant");
+        lifecycle
+            .send(Message::Text(
+                json!({"type":"ready","participant":"client:bound"})
+                    .to_string()
+                    .into(),
+            ))
+            .await
+            .unwrap();
+        lifecycle.send(Message::Text(json!({"type":"event","event":"call.received","callId":"inbound","payload":{"from":"peer","hasVideo":false},"timestamp":"now"}).to_string().into())).await.unwrap();
+        let (stream, _) = listener.accept().await.unwrap();
+        let (head, body, headers) = http(
+            stream,
+            json!({"data":{"answered":true,"answeredBy":"client:bound","exclusive":true}}),
+        )
+        .await;
+        assert_eq!(head, "POST /messaging/voip/calls/inbound/accept HTTP/1.1");
+        assert_eq!(body, json!({"exclusive":true,"video":false}));
+        assert!(headers
+            .to_lowercase()
+            .contains("authorization: bearer pmfa_ct_native_grant"));
+        let (stream, _) = listener.accept().await.unwrap();
+        let mut media = accept_hdr_async(stream, media_protocol).await.unwrap();
+        let authorization = auth(&mut media).await;
+        assert!(authorization.get("participant").is_none());
+        let id = authorization["connectionId"].clone();
+        media
+            .send(Message::Text(
+                json!({"type":"ready","sampleRate":48000,"video":false})
+                    .to_string()
+                    .into(),
+            ))
+            .await
+            .unwrap();
+        media
+            .send(Message::Text(
+                json!({"type":"hand_state","raised":false,"supported":true})
+                    .to_string()
+                    .into(),
+            ))
+            .await
+            .unwrap();
+        for (route, expected) in [
+            ("reaction", json!({"connectionId":id,"emoji":"👍"})),
+            ("hand", json!({"connectionId":id,"raised":true})),
+            ("leave", json!({"connectionId":id})),
+        ] {
+            let (stream, _) = listener.accept().await.unwrap();
+            let (head, body, _) = http(stream, json!({"success":true})).await;
+            assert_eq!(
+                head,
+                format!("POST /messaging/voip/calls/inbound/{route} HTTP/1.1")
+            );
+            assert_eq!(body, expected);
+        }
+        let _ = media.next().await;
+        let _ = lifecycle.next().await;
+    });
+    let mut config = options(format!("http://{addr}"));
+    config.participant = Some("server-forgery".into());
+    let client = CallsClient::new(
+        CallsTokenSource::static_credential(
+            Credential::client_token("pmfa_ct_native_grant").unwrap(),
+        )
+        .unwrap(),
+        config,
+    )
+    .unwrap();
+    let mut events = client.subscribe();
+    client.connect().await.unwrap();
+    let call = loop {
+        if let CallsEvent::Incoming(call) = receive(&mut events).await {
+            break call;
+        }
+    };
+    call.answer(AnswerOptions {
+        exclusive: true,
+        video: None,
+    })
+    .await
+    .unwrap();
+    loop {
+        if let CallsEvent::Media {
+            frame:
+                polymorfa_sdk::calls::MediaFrame::Control(
+                    polymorfa_sdk::calls_protocol::MediaControlFrame::HandState {
+                        supported: true,
+                        ..
+                    },
+                ),
+            ..
+        } = receive(&mut events).await
+        {
+            break;
+        }
+    }
+    assert!(!call.snapshot().await.claim.claimed_by_other);
+    call.send_reaction("👍").await.unwrap();
+    call.set_hand_raised(true).await.unwrap();
+    call.leave().await.unwrap();
+    client.disconnect().await.unwrap();
+    tokio::time::timeout(Duration::from_secs(2), server)
+        .await
+        .unwrap()
+        .unwrap();
 }

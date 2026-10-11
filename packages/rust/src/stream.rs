@@ -54,6 +54,13 @@ impl EventStream {
             params,
         }
     }
+    pub fn live_source(self) -> EventStreamSource {
+        EventStreamSource {
+            http: self.http,
+            path: self.path,
+            params: self.params,
+        }
+    }
     pub fn cursor(&self) -> Option<String> {
         self.cursor
             .lock()
@@ -213,5 +220,88 @@ impl SseParser {
             }
         }
         Ok(messages)
+    }
+}
+
+/// A native application-store adapter. Each subscription owns its cursor and
+/// cancellation; events without retained webhook bodies are skipped.
+#[derive(Clone)]
+pub struct EventStreamSource {
+    http: HttpTransport,
+    path: String,
+    params: EventStreamOptions,
+}
+#[derive(Clone, Default)]
+pub struct EventSubscriptionOptions {
+    pub cursor: Option<String>,
+    pub on_error: Option<Arc<dyn Fn(Error) + Send + Sync>>,
+}
+pub struct EventSubscription {
+    cancellation: tokio_util::sync::CancellationToken,
+    worker: Option<tokio::task::JoinHandle<()>>,
+}
+impl EventStreamSource {
+    pub fn subscribe(
+        &self,
+        listener: Arc<dyn Fn(WebhookEnvelope, String) + Send + Sync>,
+        options: EventSubscriptionOptions,
+    ) -> Result<EventSubscription> {
+        let runtime = tokio::runtime::Handle::try_current().map_err(|_| {
+            crate::transport::configuration("event subscription: Tokio runtime required")
+        })?;
+        let cancellation = self
+            .params
+            .request_options
+            .cancellation
+            .as_ref()
+            .map(tokio_util::sync::CancellationToken::child_token)
+            .unwrap_or_default();
+        let mut params = self.params.clone();
+        params.since = options.cursor;
+        params.request_options.cancellation = Some(cancellation.clone());
+        let mut stream =
+            EventStream::new(self.http.clone(), self.path.clone(), params).into_stream();
+        let worker_cancel = cancellation.clone();
+        let worker = runtime.spawn(async move {
+            while let Some(item) = stream.next().await {
+                match item {
+                    Ok(item) => {
+                        if let Some(webhook) = item.webhook {
+                            if !worker_cancel.is_cancelled() {
+                                listener(webhook, item.cursor);
+                            }
+                        }
+                    }
+                    Err(error) => {
+                        if !worker_cancel.is_cancelled() {
+                            if let Some(handler) = &options.on_error {
+                                handler(error);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+        Ok(EventSubscription {
+            cancellation,
+            worker: Some(worker),
+        })
+    }
+}
+impl EventSubscription {
+    pub fn unsubscribe(&self) {
+        self.cancellation.cancel();
+    }
+    pub async fn close(mut self) {
+        self.unsubscribe();
+        if let Some(worker) = self.worker.take() {
+            let _ = worker.await;
+        }
+    }
+}
+impl Drop for EventSubscription {
+    fn drop(&mut self) {
+        self.unsubscribe();
     }
 }

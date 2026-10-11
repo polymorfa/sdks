@@ -146,13 +146,16 @@ async fn media_socket_authentication_audio_video_controls_and_cancellation() {
         let video = ws.next().await.unwrap().unwrap().into_data();
         assert_eq!(
             video.as_ref(),
-            &[2, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 226, 64, 0, 0, 1, 103]
+            &[2, 1, 1, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 1, 103]
         );
         ws.send(Message::Binary(vec![1, 0, 128, 255, 127].into()))
             .await
             .unwrap();
         ws.send(Message::Binary(
-            vec![2, 1, 0, 0, 0, 0, 7, 0, 0, 0, 0, 0, 0, 0, 42, 0, 0, 1, 101].into(),
+            vec![
+                2, 1, 0, 0, 0, 0, 7, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 1, 101,
+            ]
+            .into(),
         ))
         .await
         .unwrap();
@@ -162,6 +165,11 @@ async fn media_socket_authentication_audio_video_controls_and_cancellation() {
             json!({"type":"media_state","requestId":"request_01","audioMuted":true})
         );
         ws.send(Message::Text(json!({"type":"media_state","requestId":"request_01","audioMuted":true,"videoEnabled":false}).to_string().into())).await.unwrap();
+        ws.send(Message::Text(
+            json!({"type":"keyframe_request"}).to_string().into(),
+        ))
+        .await
+        .unwrap();
         ws.send(Message::Text(json!({"type":"video_source","source":7,"connectionId":"remote_01","connectionParticipant":"server:bot"}).to_string().into())).await.unwrap();
     });
     let client = support::messaging(base);
@@ -182,8 +190,8 @@ async fn media_socket_authentication_audio_video_controls_and_cancellation() {
     media
         .write_video(&VideoFrame {
             keyframe: true,
-            source: 0,
-            timestamp_us: 123456,
+            source: 77,
+            timestamp_us: u64::MAX,
             data: vec![0, 0, 1, 103],
         })
         .await
@@ -192,7 +200,7 @@ async fn media_socket_authentication_audio_video_controls_and_cancellation() {
         matches!(media.read().await.unwrap(),Some(MediaFrame::Audio(pcm)) if pcm==vec![-32768,32767])
     );
     assert!(
-        matches!(media.read().await.unwrap(),Some(MediaFrame::Video(frame)) if frame.source==7 && frame.timestamp_us==42 && !frame.keyframe)
+        matches!(media.read().await.unwrap(),Some(MediaFrame::Video(frame)) if frame.source==7 && frame.timestamp_us==u64::MAX && !frame.keyframe)
     );
     media
         .set_media_state(
@@ -207,6 +215,10 @@ async fn media_socket_authentication_audio_video_controls_and_cancellation() {
     assert!(
         matches!(media.read().await.unwrap(),Some(MediaFrame::Control(MediaControlFrame::MediaState { request_id,audio_muted:true,.. })) if request_id=="request_01")
     );
+    assert!(matches!(
+        media.read().await.unwrap(),
+        Some(MediaFrame::Control(MediaControlFrame::KeyframeRequest))
+    ));
     assert!(matches!(
         media.read().await.unwrap(),
         Some(MediaFrame::Control(MediaControlFrame::VideoSource {

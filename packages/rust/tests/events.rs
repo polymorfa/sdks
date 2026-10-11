@@ -330,3 +330,114 @@ async fn cancelled_stream_ends_cleanly() {
         .into_stream();
     assert!(stream.next().await.is_none());
 }
+
+#[tokio::test]
+async fn live_source_pushes_retained_bodies_with_cursor_and_isolates_unsubscribe() {
+    use base64::{engine::general_purpose::STANDARD, Engine};
+    use polymorfa_sdk::stream::EventSubscriptionOptions;
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let base = format!("http://{}", listener.local_addr().unwrap());
+    let server = tokio::spawn(async move {
+        for index in 0..2 {
+            let (mut socket, _) = listener.accept().await.unwrap();
+            let head = headers(&mut socket).await;
+            assert!(head.to_lowercase().contains(if index == 0 {
+                "last-event-id: seed"
+            } else {
+                "last-event-id: second"
+            }));
+            let envelope = json!({"id":"webhook","session":"support","timestamp":"now","event":"future.event","payload":{"preserved":true}});
+            let mut retained = event("retained", Some("project"));
+            retained["payloadAvailability"] = json!("retained");
+            retained["payload"] = json!({"contentType":"application/json","encoding":"base64","data":STANDARD.encode(envelope.to_string())});
+            let mut body = format!(
+                "data: {}\r\rdata: {}\r\n\r\n",
+                json!({"type":"event","streamId":"stream","sequence":1,"cursor":"skip","event":event("not-retained",Some("project"))}),
+                json!({"type":"event","streamId":"stream","sequence":2,"cursor":"delivered","event":retained})
+            );
+            if index == 0 {
+                body.push_str(&format!("data: {}\n\n", json!({"type":"revoked"})));
+            }
+            socket.write_all(format!("HTTP/1.1 200 OK\r\ncontent-type: text/event-stream\r\ncontent-length: {}\r\nconnection: close\r\n\r\n", if index == 0 { body.len() } else { body.len()+4096 }).as_bytes()).await.unwrap();
+            for chunk in body.as_bytes().chunks(3) {
+                socket.write_all(chunk).await.unwrap();
+            }
+            if index == 1 {
+                let mut byte = [0];
+                assert_eq!(
+                    tokio::time::timeout(Duration::from_secs(2), socket.read(&mut byte))
+                        .await
+                        .unwrap()
+                        .unwrap(),
+                    0
+                );
+            }
+        }
+    });
+    let parent_cancel = CancellationToken::new();
+    let source = support::organization(base)
+        .project("project")
+        .unwrap()
+        .events()
+        .live_source(EventStreamOptions {
+            request_options: RequestOptions {
+                cancellation: Some(parent_cancel.clone()),
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .unwrap();
+    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+    let (errors, mut errors_rx) = tokio::sync::mpsc::unbounded_channel();
+    let subscription = source
+        .subscribe(
+            Arc::new(move |event, cursor| {
+                let _ = tx.send((event, cursor));
+            }),
+            EventSubscriptionOptions {
+                cursor: Some("seed".into()),
+                on_error: Some(Arc::new(move |error| {
+                    let _ = errors.send(error);
+                })),
+            },
+        )
+        .unwrap();
+    let (webhook, cursor) = tokio::time::timeout(Duration::from_secs(2), rx.recv())
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(webhook.id, "webhook");
+    assert_eq!(webhook.payload["preserved"], true);
+    assert_eq!(cursor, "delivered");
+    assert_eq!(
+        tokio::time::timeout(Duration::from_secs(2), errors_rx.recv())
+            .await
+            .unwrap()
+            .unwrap()
+            .code
+            .as_deref(),
+        Some("stream_revoked")
+    );
+    subscription.close().await;
+    assert!(rx.try_recv().is_err());
+    assert!(!parent_cancel.is_cancelled());
+    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
+    let next = source
+        .subscribe(
+            Arc::new(move |event, cursor| {
+                let _ = tx.send((event, cursor));
+            }),
+            EventSubscriptionOptions {
+                cursor: Some("second".into()),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    assert!(tokio::time::timeout(Duration::from_secs(2), rx.recv())
+        .await
+        .unwrap()
+        .is_some());
+    next.close().await;
+    assert!(!parent_cancel.is_cancelled());
+    server.await.unwrap();
+}
