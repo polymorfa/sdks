@@ -184,12 +184,30 @@ final class HttpTransport
     /** @return ApiResponse<string> */
     public function binary(string $path, ?RequestOptions $options = null): ApiResponse
     {
-        $download = $this->mediaStream($path, $options);
-        try {
-            return new ApiResponse($download->body->getContents(), $download->metadata);
-        } finally {
-            $download->close();
+        $options ??= new RequestOptions();
+        $retries = $options->maxNetworkRetries ?? $this->maxNetworkRetries;
+        $once = new RequestOptions($options->timeout, 0, $options->apiVersion, $options->idempotencyKey, $options->headers, $options->cancellation);
+        for ($attempt = 1;$attempt <= $retries + 1;$attempt++) {
+            $download = null;
+            try {
+                $download = $this->mediaStream($path, $once);
+                $body = $download->body->getContents();
+                $m = $download->metadata;
+                $metadata = new ResponseMetadata($m->status, $attempt, $m->headers, $m->requestId, $m->apiVersion, $m->operationId, $m->transport, $m->routingReason);
+                return new ApiResponse($body, $metadata);
+            } catch (PolymorfaException $error) {
+                $admitted = isset($error->metadata?->headers['x-polymorfa-operation-id']);
+                $retryable = $error instanceof ConnectionException || $error instanceof TimeoutException || in_array($error->status, [408,409,429], true) || ($error->status ?? 0) >= 500;
+                if ($attempt <= $retries && !$admitted && $retryable) {
+                    self::sleep(self::retryDelay(null, $attempt), $options);
+                    continue;
+                }
+                throw self::errorWithAttempts($error, $attempt);
+            } finally {
+                $download?->close();
+            }
         }
+        throw new \LogicException('Unreachable buffered media retry state.');
     }
 
     public function mediaUrl(string $path, ?RequestOptions $options = null): MediaDownloadUrl
@@ -197,7 +215,7 @@ final class HttpTransport
         [$response, $metadata] = $this->openStream('GET', $path, options:$options, accept:'application/octet-stream');
         try {
             if (in_array($response->getStatusCode(), [301,302,303,307,308], true)) {
-                $location = $this->mediaLocation($response->getHeaderLine('Location'), $metadata);
+                $location = $this->mediaLocation($response->getHeaderLine('Location'), $metadata, $path);
                 return new MediaDownloadUrl(false, $location, MediaFiles::signedUrlExpiry($location), $metadata);
             }
             return new MediaDownloadUrl(true, null, null, $metadata);
@@ -225,7 +243,7 @@ final class HttpTransport
             $redirected = in_array($response->getStatusCode(), [301,302,303,307,308], true);
             if ($redirected) {
                 try {
-                    $location = $this->mediaLocation($response->getHeaderLine('Location'), $metadata);
+                    $location = $this->mediaLocation($response->getHeaderLine('Location'), $metadata, $path);
                 } finally {
                     $response->getBody()->close();
                 }
@@ -233,7 +251,7 @@ final class HttpTransport
                     $response = $this->http->send(new \GuzzleHttp\Psr7\Request('GET', $location, ['Accept' => 'application/octet-stream','User-Agent' => 'polymorfa-php/'.self::SDK_VERSION]), ['http_errors' => false,'allow_redirects' => ['max' => 5,'protocols' => ['https','http'],'referer' => false],'headers' => null,'auth' => null,'cookies' => false,'stream' => true,'timeout' => $options->timeout ?? $this->timeout,'read_timeout' => $options->timeout ?? $this->timeout]);
                 } catch (TransferException) {
                     $options->cancellation?->throwIfCancelled();
-                    if ($attempt <= $retries) {
+                    if ($attempt <= $retries && !isset($metadata->headers['x-polymorfa-operation-id'])) {
                         self::sleep(self::retryDelay(null, $attempt), $options);
                         continue;
                     }
@@ -241,7 +259,7 @@ final class HttpTransport
                 }
                 if ($response->getStatusCode() >= 300) {
                     $response->getBody()->close();
-                    if ($attempt <= $retries && (in_array($response->getStatusCode(), [408,409,429], true) || $response->getStatusCode() >= 500)) {
+                    if ($attempt <= $retries && !isset($metadata->headers['x-polymorfa-operation-id']) && (in_array($response->getStatusCode(), [408,409,429], true) || $response->getStatusCode() >= 500)) {
                         self::sleep(self::retryDelay($response, $attempt), $options);
                         continue;
                     }
@@ -255,10 +273,25 @@ final class HttpTransport
         throw new \LogicException('Unreachable media retry state.');
     }
 
-    private function mediaLocation(string $location, ResponseMetadata $metadata): string
+    private static function errorWithAttempts(PolymorfaException $error, int $attempt): PolymorfaException
     {
-        if (str_starts_with($location, '/')) {
-            $location = $this->baseUrl.$location;
+        $m = $error->metadata;
+        if ($m === null || $m->attempts === $attempt) {
+            return $error;
+        }
+        $metadata = new ResponseMetadata($m->status, $attempt, $m->headers, $m->requestId, $m->apiVersion, $m->operationId, $m->transport, $m->routingReason);
+        $type = $error::class;
+        return new $type($error->getMessage(), $error->errorCode, $error->status, $error->requestId, $metadata, $error->requestLogUrl, $error->docUrl, $error->rateLimitReason, $error->details);
+    }
+    private function mediaLocation(string $location, ResponseMetadata $metadata, string $path): string
+    {
+        if ($location === '') {
+            throw new ServerException('The API returned an empty media redirect.', 'invalid_redirect', metadata:$metadata);
+        }
+        try {
+            $location = (string)\GuzzleHttp\Psr7\UriResolver::resolve(new \GuzzleHttp\Psr7\Uri($this->baseUrl.$path), new \GuzzleHttp\Psr7\Uri($location));
+        } catch (\InvalidArgumentException) {
+            throw new ServerException('The API returned an invalid media redirect.', 'invalid_redirect', metadata:$metadata);
         }
         $url = parse_url($location);
         if ($url === false || !isset($url['scheme'],$url['host']) || isset($url['user']) || isset($url['pass']) || !($url['scheme'] === 'https' || ($url['scheme'] === 'http' && in_array($url['host'], ['localhost','127.0.0.1','[::1]'], true)))) {

@@ -56,3 +56,16 @@ try {
     }
 }
 echo "Native media streams, filenames, signed URLs, cancellation and atomic output checks passed.\n";
+$history = [];
+$client = new Polymorfa\MessagingClient($credential, http:mocked([new GuzzleHttp\Psr7\Response(302, ['Location' => '../relative?capability=fixture','X-Request-Id' => 'relative'])], $history));
+check($client->media->downloadUrl('media')->url === 'https://api.polymorfa.com/messaging/relative?capability=fixture', 'Relative redirects resolve against exact native resource path');
+$history = [];
+$broken = GuzzleHttp\Psr7\FnStream::decorate(GuzzleHttp\Psr7\Utils::streamFor('x'), ['read' => fn () => throw new RuntimeException('Synthetic read failure')]);
+$client = new Polymorfa\MessagingClient($credential, http:mocked([new GuzzleHttp\Psr7\Response(200, ['X-Request-Id' => 'first'], $broken),new GuzzleHttp\Psr7\Response(200, ['X-Request-Id' => 'second'], 'complete')], $history));
+$result = $client->media->download('media', new Polymorfa\RequestOptions(maxNetworkRetries:1));
+check($result->data === 'complete' && $result->metadata->attempts === 2 && $result->metadata->requestId === 'second' && count($history) === 2, 'Buffered media retries safe body read failure and preserves final attempt metadata');
+$history = [];
+$broken = GuzzleHttp\Psr7\FnStream::decorate(GuzzleHttp\Psr7\Utils::streamFor('x'), ['read' => fn () => throw new RuntimeException('Synthetic read failure')]);
+$client = new Polymorfa\MessagingClient($credential, http:mocked([new GuzzleHttp\Psr7\Response(200, ['X-Request-Id' => 'admitted','X-Polymorfa-Operation-Id' => 'operation'], $broken)], $history));
+$error = raises(fn () => $client->media->download('media', new Polymorfa\RequestOptions(maxNetworkRetries:2)), Polymorfa\ConnectionException::class);
+check(count($history) === 1 && $error->metadata->operationId === 'operation' && $error->metadata->requestId === 'admitted', 'Buffered media admitted read failure never retries');

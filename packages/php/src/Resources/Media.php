@@ -28,9 +28,21 @@ final class Media extends Resource
         $size = MediaFiles::write($download->body, $destination, $overwrite, $maxBytes, $options?->cancellation);
         return new ApiResponse(['path' => $destination,'bytes' => $size], $download->metadata);
     }
-    public function downloadFromWhatsApp(MediaDescriptor $descriptor, int $maxBytes = WhatsAppMedia::MAX_BYTES, ?CancellationToken $cancellation = null): string
+    /** @param MediaDescriptor|array{type:string,media:string} $descriptor */
+    public function downloadFromWhatsApp(MediaDescriptor|array $descriptor, int $maxBytes = WhatsAppMedia::MAX_BYTES, ?CancellationToken $cancellation = null): string
     {
-        return WhatsAppMedia::download($descriptor, $maxBytes, $cancellation);
+        return WhatsAppMedia::download(WhatsAppMedia::descriptor($descriptor), $maxBytes, $cancellation);
+    }
+    /** @param MediaDescriptor|array{type:string,media:string} $input
+     * @param 'before-release'|'streaming' $verify */
+    public function downloadFromWhatsAppStream(MediaDescriptor|array $input, int $maxBytes = WhatsAppMedia::MAX_BYTES, string $verify = 'before-release', ?CancellationToken $cancellation = null): \Polymorfa\WhatsAppDownload
+    {
+        return WhatsAppMedia::downloadStream($input, $maxBytes, $verify, $cancellation);
+    }
+    /** @param MediaDescriptor|array{type:string,media:string} $input */
+    public function downloadFromWhatsAppToFile(MediaDescriptor|array $input, string $destination, bool $overwrite = true, int $maxBytes = WhatsAppMedia::MAX_BYTES, ?CancellationToken $cancellation = null): int
+    {
+        return WhatsAppMedia::downloadStream($input, $maxBytes, 'streaming', $cancellation)->writeToFile($destination, $overwrite, $maxBytes, $cancellation);
     }
     /** @return ApiResponse<array{success:true,data:array{id:string,session:string,messageId:string,mimeType:string,fileLength:int,persisted:bool,s3Url?:?string}}> */
     public function retrieve(string $id, ?RequestOptions $options = null): ApiResponse
@@ -38,6 +50,6 @@ final class Media extends Resource
     }
     /** @return ApiResponse<array{success:bool,message?:string}> */
     public function persist(string $id, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{success:bool,message?:string}> */ return $this->request('POST','/messaging/media/'.self::segment($id).'/download-and-save',options:$options);
+    { /** @var ApiResponse<array{success:bool,message?:string}> */ return $this->request('POST', '/messaging/media/'.self::segment($id).'/download-and-save', options:$options);
     }
 }

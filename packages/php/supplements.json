@@ -123,6 +123,12 @@
       "status": "covered",
       "testFile": "tests/webhook_models.php",
       "behavior": "89 known stable codes and arbitrary unknown code preservation."
+    },
+    {
+      "sdkMethod": "WhatsAppMedia.decryptChunks / downloadStream / descriptor / WhatsAppDownload.bytes / writeToFile / media.downloadFromWhatsAppStream / downloadFromWhatsAppToFile",
+      "status": "covered",
+      "testFile": "tests/whatsapp_stream.php",
+      "behavior": "Five independent crypto vectors with split cipher/MAC boundaries; before-release and streaming verification; descriptor message input; isolated CDN fallback; byte limits, cancellation and atomic verified file replacement."
     }
   ]
 }

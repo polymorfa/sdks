@@ -238,6 +238,196 @@ final class WhatsAppMedia
         }
         throw new ConnectionException('WhatsApp media download failed.', 'media_download_failed', status:$status);
     }
+    /** Resolve a webhook message's opaque encrypted descriptor, or accept an already decoded descriptor.
+     * @param MediaDescriptor|array{type:string,media:string} $input */
+    public static function descriptor(MediaDescriptor|array $input): MediaDescriptor
+    {
+        if ($input instanceof MediaDescriptor) {
+            return $input;
+        }
+        $kind = $input['type'];
+        if (!self::isKind($kind)) {
+            self::invalid();
+        }
+        /** @var 'image'|'video'|'audio'|'document'|'sticker' $kind */
+        return self::decode($input['media'], $kind);
+    }
+    /** Incremental AES-CBC/HMAC/hash processing. Streaming plaintext remains provisional until EOF succeeds.
+     * @param 'before-release'|'streaming' $verify
+     * @return \Generator<int,string> */
+    public static function decryptChunks(\Psr\Http\Message\StreamInterface $source, MediaDescriptor $descriptor, int $maxBytes = self::MAX_BYTES, string $verify = 'before-release', ?CancellationToken $cancellation = null): \Generator
+    {
+        if ($maxBytes <= 0 || $maxBytes > 9007199254740991) {
+            throw new ConfigurationException('maxBytes');
+        }
+        self::validateMode($verify);
+        if ($descriptor->fileLength !== null && $descriptor->fileLength > $maxBytes) {
+            self::fail('media_too_large');
+        }
+        $limit = (intdiv(min($maxBytes, $descriptor->fileLength ?? $maxBytes), 16) + 1) * 16 + 10;
+        $keys = self::deriveKeys($descriptor->mediaKey, $descriptor->mediaKind);
+        $encryptedHash = hash_init('sha256');
+        $plainHash = hash_init('sha256');
+        $mac = hash_init('sha256', HASH_HMAC, $keys['macKey']);
+        hash_update($mac, $keys['iv']);
+        $iv = $keys['iv'];
+        $pending = '';
+        $buffered = '';
+        $encryptedBytes = 0;
+        $plainBytes = 0;
+        try {
+            while (!self::sourceEnded($source)) {
+                $cancellation?->throwIfCancelled();
+                try {
+                    $chunk = $source->read(65536);
+                } catch (\RuntimeException) {
+                    $cancellation?->throwIfCancelled();
+                    throw new ConnectionException('Encrypted media body could not be read.', 'connection_error');
+                }
+                if ($chunk === '' && !self::sourceEnded($source)) {
+                    throw new ConnectionException('Encrypted media body stopped advancing.', 'connection_error');
+                }
+                $encryptedBytes += strlen($chunk);
+                if ($encryptedBytes > $limit) {
+                    self::fail('media_too_large');
+                }
+                hash_update($encryptedHash, $chunk);
+                $pending .= $chunk;
+                // Keep the final cipher block and the ten-byte MAC for padding and authentication.
+                $take = max(0, intdiv(strlen($pending) - 26, 16) * 16);
+                if ($take === 0) {
+                    continue;
+                }
+                $cipher = substr($pending, 0, $take);
+                $pending = substr($pending, $take);
+                hash_update($mac, $cipher);
+                $plaintext = openssl_decrypt($cipher, 'aes-256-cbc', $keys['cipherKey'], OPENSSL_RAW_DATA | OPENSSL_ZERO_PADDING, $iv);
+                if ($plaintext === false) {
+                    self::fail('media_invalid_ciphertext');
+                }
+                $iv = substr($cipher, -16);
+                $plainBytes += strlen($plaintext);
+                if ($plainBytes > $maxBytes) {
+                    self::fail('media_too_large');
+                } hash_update($plainHash, $plaintext);
+                if ($verify === 'streaming') {
+                    if ($plaintext !== '') {
+                        yield $plaintext;
+                    }
+                } else {
+                    $buffered .= $plaintext;
+                }
+            }
+            $cancellation?->throwIfCancelled();
+            if ($encryptedBytes <= 10) {
+                self::fail('media_too_short');
+            }
+            if ($descriptor->fileEncSha256 !== null && !hash_equals($descriptor->fileEncSha256, hash_final($encryptedHash, true))) {
+                self::fail('media_enc_hash_mismatch');
+            }
+            $cipher = substr($pending, 0, -10);
+            $expectedMac = substr($pending, -10);
+            hash_update($mac, $cipher);
+            if (!hash_equals($expectedMac, substr(hash_final($mac, true), 0, 10))) {
+                self::fail('media_mac_mismatch');
+            }
+            if ($cipher === '' || strlen($cipher) % 16 !== 0) {
+                self::fail('media_invalid_ciphertext');
+            }
+            $final = openssl_decrypt($cipher, 'aes-256-cbc', $keys['cipherKey'], OPENSSL_RAW_DATA, $iv);
+            if ($final === false) {
+                self::fail('media_invalid_padding');
+            }
+            $plainBytes += strlen($final);
+            if ($plainBytes > $maxBytes) {
+                self::fail('media_too_large');
+            } hash_update($plainHash, $final);
+            if ($descriptor->fileSha256 !== null && !hash_equals($descriptor->fileSha256, hash_final($plainHash, true))) {
+                self::fail('media_hash_mismatch');
+            }
+            if ($verify === 'streaming') {
+                if ($final !== '') {
+                    yield $final;
+                }
+            } else {
+                $buffered .= $final;
+                for ($offset = 0;$offset < strlen($buffered);$offset += 65536) {
+                    $cancellation?->throwIfCancelled();
+                    yield substr($buffered, $offset, 65536);
+                }
+            }
+        } finally {
+            $source->close();
+        }
+    }
+    /** Open the CDN body without API credentials. Status fallback ends once plaintext processing begins.
+     * @param MediaDescriptor|array{type:string,media:string} $input
+     * @param 'before-release'|'streaming' $verify */
+    public static function downloadStream(MediaDescriptor|array $input, int $maxBytes = self::MAX_BYTES, string $verify = 'before-release', ?CancellationToken $cancellation = null, ?ClientInterface $http = null): WhatsAppDownload
+    {
+        $descriptor = self::descriptor($input);
+        if ($maxBytes <= 0 || $maxBytes > 9007199254740991) {
+            throw new ConfigurationException('maxBytes');
+        }
+        self::validateMode($verify);
+        if ($descriptor->fileSha256 === null) {
+            self::invalid();
+        }
+        if ($descriptor->fileLength !== null && $descriptor->fileLength > $maxBytes) {
+            self::fail('media_too_large');
+        }
+        $limit = (intdiv(min($maxBytes, $descriptor->fileLength ?? $maxBytes), 16) + 1) * 16 + 10;
+        $client = $http ?? new Client(['allow_redirects' => false]);
+        $status = null;
+        foreach (self::candidateUrls($descriptor) as $url) {
+            for ($hop = 0;$hop <= 3;$hop++) {
+                $cancellation?->throwIfCancelled();
+                try {
+                    $response = $client->send(new \GuzzleHttp\Psr7\Request('GET', $url, ['Origin' => 'https://web.whatsapp.com','Referer' => 'https://web.whatsapp.com/']), ['http_errors' => false,'allow_redirects' => false,'timeout' => 30,'read_timeout' => 30,'stream' => true,'headers' => null,'auth' => null,'cookies' => false]);
+                } catch (TransferException) {
+                    $cancellation?->throwIfCancelled();
+                    break;
+                }
+                $status = $response->getStatusCode();
+                if (in_array($status, [301,302,303,307,308], true)) {
+                    $response->getBody()->close();
+                    $location = $response->getHeaderLine('Location');
+                    $next = (string)\GuzzleHttp\Psr7\UriResolver::resolve(new \GuzzleHttp\Psr7\Uri($url), new \GuzzleHttp\Psr7\Uri($location));
+                    if ($location === '' || !self::isMediaUrl($next)) {
+                        self::invalid();
+                    }
+                    if ($hop === 3) {
+                        throw new ConnectionException('Too many media redirects.', 'connection_error');
+                    }
+                    $url = $next;
+                    continue;
+                }
+                if ($status !== 200) {
+                    $response->getBody()->close();
+                    break;
+                }
+                $length = $response->getHeaderLine('Content-Length');
+                if (ctype_digit($length) && (int)$length > $limit) {
+                    $response->getBody()->close();
+                    self::fail('media_too_large');
+                }
+                $cancellation?->throwIfCancelled();
+                return new WhatsAppDownload(new WhatsAppDecryptBody($response->getBody(), $descriptor, $maxBytes, $verify, $cancellation), $descriptor);
+            }
+        }
+        throw new ConnectionException('WhatsApp media download failed.', 'media_download_failed', status:$status);
+    }
+    private static function validateMode(string $verify): void
+    {
+        if (!in_array($verify, ['before-release','streaming'], true)) {
+            throw new ConfigurationException('verify');
+        }
+    }
+    /** @phpstan-impure */
+    private static function sourceEnded(\Psr\Http\Message\StreamInterface $source): bool
+    {
+        return $source->eof();
+    }
     public static function isKind(string $mediaKind): bool
     {
         return isset(self::FIELDS[$mediaKind]);

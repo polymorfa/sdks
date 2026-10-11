@@ -186,3 +186,13 @@ webhook signatures authenticate the raw body without a timestamp.
 `Webhooks::createFixture()` creates a body and matching native signature.
 `ErrorCodes::KNOWN` lists the pinned API codes; `isKnown()` checks membership and
 exceptions preserve unknown `errorCode` values.
+
+`WhatsAppMedia::downloadStream()` and `media->downloadFromWhatsAppStream()` accept
+a decoded descriptor or a webhook `{type, media}` pair. They return a read-once
+`WhatsAppDownload` with a PSR body and attachment metadata. The default
+`before-release` mode authenticates all plaintext before exposing any bytes.
+Explicit `streaming` mode processes CBC, MAC and both hashes incrementally;
+read through EOF to detect final integrity failures. `writeToFile()` writes a
+private sibling and replaces the destination only after EOF succeeds. The
+incremental path uses the same five independent crypto vectors as the buffered
+path, with block/MAC split boundaries, cancellation and failed-file checks.
