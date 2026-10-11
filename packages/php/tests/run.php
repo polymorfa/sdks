@@ -120,6 +120,8 @@ check(!Webhooks::verifySignature($raw . ' ', $signature, 'secret'), 'Exact bytes
 raises(fn () => Webhooks::constructEvent('invalid JSON', $signature, 'secret'), WebhookSignatureException::class);
 echo count($cases) . " typed operation fixtures and client behavior checks passed.\n";
 require __DIR__ . '/wire.php';
+require __DIR__ . '/native.php';
+require __DIR__ . '/accounts.php';
 require __DIR__ . '/contacts.php';
 require __DIR__ . '/media.php';
 require __DIR__ . '/groups.php';
@@ -143,3 +145,9 @@ require __DIR__."/channels.php";
 require __DIR__."/voip.php";
 
 require __DIR__."/bansafe.php";
+
+require __DIR__.'/platform_sessions.php';
+
+require __DIR__.'/security.php';
+
+require __DIR__.'/billing.php';

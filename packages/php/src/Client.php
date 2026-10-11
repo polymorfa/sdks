@@ -18,6 +18,15 @@ final readonly class Client
     public Events $events;
     public PlatformWebhooks $webhooks;
     public RawClient $raw;
+    public Resources\Billing $billing;
+    public Resources\AuditLogs $auditLogs;
+    public Resources\SessionBans $sessionBans;
+    public Resources\SecurityIncidents $securityIncidents;
+    public Resources\OptOuts $optOuts;
+    public Resources\Organizations $organizations;
+    public Resources\Members $members;
+    public Resources\ApiKeys $apiKeys;
+    public Resources\ProjectTokens $projectTokens;
     public function __construct(
         private Credential $credential,
         string $baseUrl = 'https://api.polymorfa.com',
@@ -31,6 +40,15 @@ final readonly class Client
             throw new ConfigurationException('credential');
         }
         $this->transport = new HttpTransport($credential, $baseUrl, $apiVersion, $timeout, $maxNetworkRetries, $proxy, $http);
+        $this->billing = new Resources\Billing($this->transport);
+        $this->auditLogs = new Resources\AuditLogs($this->transport);
+        $this->sessionBans = new Resources\SessionBans($this->transport);
+        $this->securityIncidents = new Resources\SecurityIncidents($this->transport);
+        $this->optOuts = new Resources\OptOuts($this->transport);
+        $this->organizations = new Resources\Organizations($this->transport);
+        $this->members = new Resources\Members($this->transport);
+        $this->apiKeys = new Resources\ApiKeys($this->transport);
+        $this->projectTokens = new Resources\ProjectTokens($this->transport);
         $this->sessions = new PlatformSessions($this->transport);
         $this->projects = new Projects($this->transport);
         $this->events = new Events($this->transport, '/platform');

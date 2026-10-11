@@ -84,3 +84,18 @@ Platform equivalents are under `Client::$projects` and `Client::$sessions`.
 Responses retain entitlement and applied-state fields; configuring a
 setting does not grant access. Send the version from a recent health-policy
 read when updating it.
+
+Platform account resources expose organization details, members, API-key and
+project-token metadata. `projects` creates development projects, lists Hybrid
+Link merge candidates and submits or approves production enrollment. `sessions`
+provides lifecycle and batch controls, tier quotes, quote confirmation and
+WhatsApp capability observations. Quote requests reject simultaneous merge and
+resolution choices; tier confirmation requires a reviewed quote ID.
+
+`auditLogs`, `sessionBans`, `securityIncidents` and `optOuts` preserve their
+native Platform envelopes. `billing` reads balances, transactions, pricing,
+limits and priorities, and writes revision-guarded controls. Billing methods
+validate UUIDs, revisions, priorities and six-decimal credit quantities before
+sending a request. Passing validation grants no billing authority or feature
+access. These families have native HTTP socket tests in addition to PHPStan
+shape checks.

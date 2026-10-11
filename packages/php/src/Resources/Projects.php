@@ -4,9 +4,16 @@ declare(strict_types=1);
 
 namespace Polymorfa\Resources;
 
-use Polymorfa\{ApiResponse, BanSafeModels, RequestOptions};
+use Polymorfa\{ApiResponse, AccountModels, BanSafeModels, RequestOptions};
 
 /**
+ * @phpstan-import-type ProjectStats from AccountModels
+ * @phpstan-import-type CreateProject from AccountModels
+ * @phpstan-import-type CreatedProject from AccountModels
+ * @phpstan-import-type Business from AccountModels as ProductionBusiness
+ * @phpstan-import-type Enrollment from AccountModels
+ * @phpstan-import-type EnrollmentCommand from AccountModels
+ * @phpstan-import-type MergeCandidate from AccountModels
  * @phpstan-import-type ProjectSafeMode from BanSafeModels
  * @phpstan-import-type UpdateProjectSafeMode from BanSafeModels
  * @phpstan-import-type ProjectWarmupPlan from BanSafeModels
@@ -69,6 +76,45 @@ final class Projects extends Resource
     {
         /** @var ApiResponse<array{data:ProjectHealthPolicy}> */
         return $this->request('PUT', self::path($projectId).'/health-policy', $body, options:$options);
+    }
+
+    /** @return ApiResponse<array{data:list<ProjectStats>}> */
+    public function list(?RequestOptions $options = null): ApiResponse
+    {
+        /** @var ApiResponse<array{data:list<ProjectStats>}> */
+        return $this->request('GET', '/platform/projects', options:$options);
+    }
+    /** @param CreateProject $body
+     * @return ApiResponse<array{data:CreatedProject}> */
+    public function create(array $body, ?RequestOptions $options = null): ApiResponse
+    {
+        /** @var ApiResponse<array{data:CreatedProject}> */
+        return $this->request('POST', '/platform/projects', $body, options:$options);
+    }
+    /** @return ApiResponse<array{data:list<MergeCandidate>}> */
+    public function listHybridMergeCandidates(string $projectId, ?RequestOptions $options = null): ApiResponse
+    {
+        /** @var ApiResponse<array{data:list<MergeCandidate>}> */
+        return $this->request('GET', self::path($projectId).'/hybrid-merge-candidates', options:$options);
+    }
+    /** @param array{business:ProductionBusiness} $body
+     * @return ApiResponse<array{data:Enrollment}> */
+    public function requestProductionEnrollment(string $projectId, array $body, ?RequestOptions $options = null): ApiResponse
+    {
+        /** @var ApiResponse<array{data:Enrollment}> */
+        return $this->request('POST', self::path($projectId).'/promote', $body, options:$options);
+    }
+    /** @return ApiResponse<array{data:EnrollmentCommand}> */
+    public function approveProductionEnrollment(string $projectId, string $operationId, ?RequestOptions $options = null): ApiResponse
+    {
+        /** @var ApiResponse<array{data:EnrollmentCommand}> */
+        return $this->request('POST', self::path($projectId).'/production-enrollments/'.self::segment($operationId).'/approve', options:$options);
+    }
+    /** @return ApiResponse<array{data:EnrollmentCommand}> */
+    public function cancelProductionEnrollment(string $projectId, string $operationId, ?RequestOptions $options = null): ApiResponse
+    {
+        /** @var ApiResponse<array{data:EnrollmentCommand}> */
+        return $this->request('POST', self::path($projectId).'/production-enrollments/'.self::segment($operationId).'/cancel', options:$options);
     }
     private static function path(string $projectId): string
     {
