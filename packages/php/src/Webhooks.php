@@ -39,6 +39,37 @@ final class Webhooks
         }
         return self::parseVerifiedEvent($rawBody);
     }
+    public static function verifyFlowForwardSignature(string $rawBody, ?string $signature, #[\SensitiveParameter] string $secret, float $toleranceSeconds = 300, ?float $nowUnixSeconds = null): bool
+    {
+        if ($signature === null || $secret === '' || !is_finite($toleranceSeconds) || $toleranceSeconds < 0 || !preg_match('/^t=(\d{1,12}),v1=([a-fA-F0-9]{64})$/D', trim($signature), $match)) {
+            return false;
+        }
+        $now = $nowUnixSeconds ?? microtime(true);
+        if (!is_finite($now) || abs($now - (float)$match[1]) > $toleranceSeconds) {
+            return false;
+        }
+        return hash_equals(hash_hmac('sha256', $match[1].'.'.$rawBody, $secret), strtolower($match[2]));
+    }
+    public static function verifyLocal(string $rawBody, string $signature, #[\SensitiveParameter] string $secret, int $toleranceSeconds = 300, ?float $nowUnixSeconds = null): WebhookEvent
+    {
+        if (!preg_match('/^[A-Za-z0-9_-]{43}$/D', $secret) || !preg_match('/^t=(\d+),v1=([a-f0-9]{64})$/D', $signature, $match) || $toleranceSeconds < 0) {
+            throw new WebhookSignatureException('Local webhook signature verification failed.', 'invalid_webhook_signature');
+        }
+        $key = base64_decode(strtr($secret, '-_', '+/').'=', true);
+        $timestamp = (float)$match[1];
+        $now = $nowUnixSeconds ?? floor(microtime(true));
+        if ($key === false || strlen($key) !== 32 || $timestamp > 9007199254740991 || !is_finite($now) || abs($now - $timestamp) > $toleranceSeconds || !hash_equals(hash_hmac('sha256', sprintf('%.0f', $timestamp).'.'.$rawBody, $key), $match[2])) {
+            throw new WebhookSignatureException('Local webhook signature verification failed.', 'invalid_webhook_signature');
+        }
+        return self::parseVerifiedEvent($rawBody);
+    }
+    /** @return array{body:string,contentType:'application/json',signature:string,headers:array{'content-type':'application/json','x-webhook-signature':string}} */
+    public static function createFixture(WebhookEvent $event, #[\SensitiveParameter] string $secret): array
+    {
+        $body = json_encode($event->raw, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $signature = hash_hmac('sha256', $body, $secret);
+        return ['body' => $body,'contentType' => 'application/json','signature' => $signature,'headers' => ['content-type' => 'application/json','x-webhook-signature' => $signature]];
+    }
     public static function parseVerifiedEvent(string $rawBody): WebhookEvent
     {
         try {
@@ -56,6 +87,6 @@ final class Webhooks
             }
         }
         /** @var array<string,mixed> $value */
-        return new WebhookEvent($value['id'], $value['session'], $value['timestamp'], $value['event'], $value['payload'], $value, in_array($value['event'], self::KNOWN_TYPES, true));
+        return new WebhookEvent($value['id'], $value['session'], $value['timestamp'], $value['event'], $value['payload'], $value, in_array($value['event'], self::KNOWN_TYPES, true), is_string($value['externalId'] ?? null) ? $value['externalId'] : null);
     }
 }

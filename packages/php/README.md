@@ -165,3 +165,24 @@ the API streams the body. Storage requests omit API credentials and caller
 headers. `downloadToFile` writes a private sibling and replaces the destination
 only after completion; bounded, cancelled or failed reads preserve the previous
 file. Media filenames are display names stripped of path segments and controls.
+
+The handwritten REST resources cover the 439 operations supported by the pinned
+TypeScript SDK. `coverage.json` also records three explicitly tested Campaign
+supplements separately from the TypeScript exclusions. `supplements.json` names
+Graph catalog reads, marketing observations, Flow public key registration,
+testing phone helpers, and additional runtime helper evidence.
+
+`$event->knownEvent()` returns a PHPStan discriminated array union for all 84
+known webhook names. Switch on `event` to narrow its `payload`. Linked and
+Official API messages, session status, template status, history sync, and order
+payment reports retain their distinct payload variants. Unknown events return
+`null` from `knownEvent()` and keep their exact body in `raw` and `payload`.
+`externalId` contains the application's supplied QuickLink reference.
+
+`Webhooks::verifyFlowForwardSignature()` verifies the exact decrypted Flow request
+body with the endpoint secret and a bounded timestamp. `Webhooks::verifyLocal()`
+uses the separate local-forward protocol and its base64url byte secret. Native
+webhook signatures authenticate the raw body without a timestamp.
+`Webhooks::createFixture()` creates a body and matching native signature.
+`ErrorCodes::KNOWN` lists the pinned API codes; `isKnown()` checks membership and
+exceptions preserve unknown `errorCode` values.

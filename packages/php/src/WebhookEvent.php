@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Polymorfa;
 
+/** @phpstan-import-type KnownEvent from WebhookModels */
 final readonly class WebhookEvent
 {
     /**
@@ -15,8 +16,20 @@ final readonly class WebhookEvent
         public string $event,
         public mixed $payload,
         public array $raw,
-        public bool $known
+        public bool $known,
+        public ?string $externalId = null
     ) {
+    }
+    /** Typed discriminated union for known events; unknown event payloads remain available through raw and payload.
+     * @return KnownEvent|null */
+    public function knownEvent(): ?array
+    {
+        if (!$this->known) {
+            return null;
+        }
+        /** @var KnownEvent $event */
+        $event = $this->raw;
+        return $event;
     }
     /**
  *

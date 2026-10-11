@@ -62,8 +62,6 @@ func NewCallsClient(c CallsClientConfig) (*CallsClient, error) {
 	return client, nil
 }
 func (c *CallsClient) Place(ctx context.Context, b PlaceCallRequest, o ...RequestOptions) (Response[Envelope[PlacedCall]], error) {
-	b.Session = c.session
-	b.Participant = c.participant
 	opts, err := idempotent(options(o))
 	if err != nil {
 		return Response[Envelope[PlacedCall]]{}, err
@@ -71,6 +69,11 @@ func (c *CallsClient) Place(ctx context.Context, b PlaceCallRequest, o ...Reques
 	m, _, err := c.api(ctx, false)
 	if err != nil {
 		return Response[Envelope[PlacedCall]]{}, err
+	}
+	if m.t.config.Credential.Kind == ClientToken {
+		b.Session, b.Participant = "", ""
+	} else {
+		b.Session, b.Participant = c.session, c.participant
 	}
 	return m.VoIP().Place(ctx, b, opts)
 }

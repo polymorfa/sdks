@@ -188,3 +188,7 @@ require __DIR__.'/event_stream.php';
 require __DIR__.'/analytics.php';
 require __DIR__.'/call-records.php';
 require __DIR__.'/call-consent.php';
+
+require __DIR__.'/graph.php';
+
+require __DIR__.'/webhook_models.php';

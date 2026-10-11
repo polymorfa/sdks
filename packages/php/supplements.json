@@ -50,6 +50,41 @@
       "sdkMethod": "Client::requestLogs.list / ProjectClient::requestLogs.list",
       "status": "covered",
       "testFile": "tests/request_logs.php"
+    },
+    {
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/product_catalogs",
+      "sdkMethod": "MessagingClient::cloudCatalogs.list",
+      "status": "covered",
+      "testFile": "tests/graph.php"
+    },
+    {
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/product_catalogs/123/products",
+      "sdkMethod": "MessagingClient::cloudCatalogs.listProducts",
+      "status": "covered",
+      "testFile": "tests/graph.php"
+    },
+    {
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/marketing_messages/status",
+      "sdkMethod": "MessagingClient::cloudMarketing.status",
+      "status": "covered",
+      "testFile": "tests/graph.php"
+    },
+    {
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/phone/whatsapp_business_encryption",
+      "sdkMethod": "MessagingClient::flowEncryption.retrieve",
+      "status": "covered",
+      "testFile": "tests/graph.php"
+    },
+    {
+      "method": "POST",
+      "fixturePath": "/graph/whatsapp/v26.0/phone/whatsapp_business_encryption",
+      "sdkMethod": "MessagingClient::flowEncryption.register",
+      "status": "covered",
+      "testFile": "tests/graph.php"
     }
   ],
   "helpers": [
@@ -76,6 +111,18 @@
       "status": "covered",
       "testFile": "tests/media_stream.php",
       "behavior": "Native PSR body; API metadata; isolated redirect storage requests; sanitized filenames; secret-redacted signed URL; bounded/cancelled atomic output; admitted body failure metadata."
+    },
+    {
+      "sdkMethod": "WebhookEvent.knownEvent / Webhooks.createFixture / verifyLocal / verifyFlowForwardSignature",
+      "status": "covered",
+      "testFile": "tests/webhook_models.php",
+      "behavior": "Handwritten discriminated 84-name union; signed linked and Cloud message/history/status variants, customer lifecycle, payment union and fractional credits; unknown event preservation; distinct native/Flow/local signature grammars."
+    },
+    {
+      "sdkMethod": "ErrorCodes.KNOWN / ErrorCodes.isKnown",
+      "status": "covered",
+      "testFile": "tests/webhook_models.php",
+      "behavior": "89 known stable codes and arbitrary unknown code preservation."
     }
   ]
 }
