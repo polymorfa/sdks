@@ -2326,105 +2326,105 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/claims",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListClaims",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/claims/{claimId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.GetClaim",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/collection",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListCollection",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/enforcement",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListEnforcement",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/findings",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListFindings",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/health",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListHealth",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/health-actions",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListHealthActions",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/health/{session}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.GetHealth",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/health/{session}/history",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListHealthHistory",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/incidents",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListIncidents",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/signals",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListSignals",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/telemetry/{session}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.GetTelemetry",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/bansafe/telemetry/{session}/history",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.ListTelemetryHistory",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
@@ -2510,33 +2510,33 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Calls.List",
+      "testFile": "calls_analytics_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls/{callId}",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Calls.Retrieve",
+      "testFile": "calls_analytics_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls/export",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Calls.Export",
+      "testFile": "calls_analytics_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/calls/stats",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Calls.Stats",
+      "testFile": "calls_analytics_test.go"
     },
     {
       "family": "platform",
@@ -3638,17 +3638,17 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/bansafe/incidents",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.CreateIncident",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/bansafe/incidents/{incidentId}/retract",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.BanSafe.RetractIncident",
+      "testFile": "bansafe_test.go"
     },
     {
       "family": "platform",
@@ -4459,33 +4459,33 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/analytics",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Analytics.Get",
+      "testFile": "calls_analytics_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/analytics",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Analytics.Get",
+      "testFile": "calls_analytics_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/analytics/metrics",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.Analytics.Metrics",
+      "testFile": "calls_analytics_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/projects/{projectId}/analytics/metrics",
-      "status": "missing",
-      "reason": "Handwritten typed resource and per-operation native request/response test have not both been verified.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Analytics.Metrics",
+      "testFile": "calls_analytics_test.go"
     },
     {
       "family": "platform",
