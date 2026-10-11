@@ -1894,9 +1894,9 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/platform/call-opt-outs/{optOutId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.call_opt_outs.delete",
+      "testFile": "tests/test_call_policy.py"
     },
     {
       "family": "platform",
@@ -2502,81 +2502,81 @@
       "family": "platform",
       "method": "GET",
       "path": "/platform/billing",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.billing.retrieve",
+      "testFile": "tests/test_billing.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/billing/controls/{scope}/{resourceId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.billing.get_resource_controls",
+      "testFile": "tests/test_billing.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/billing/limits",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.billing.get_limits",
+      "testFile": "tests/test_billing.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/billing/pricing",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.billing.list_pricing",
+      "testFile": "tests/test_billing.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/billing/priorities",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.billing.get_priorities",
+      "testFile": "tests/test_billing.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/billing/transactions",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.billing.list_transactions",
+      "testFile": "tests/test_billing.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/billing/usage",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.billing.usage",
+      "testFile": "tests/test_billing.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/call-opt-outs",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.call_opt_outs.list",
+      "testFile": "tests/test_call_policy.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/call-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.call_policy.retrieve",
+      "testFile": "tests/test_call_policy.py"
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/call-retention",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.call_retention.retrieve",
+      "testFile": "tests/test_call_policy.py"
     },
     {
       "family": "platform",
@@ -3774,17 +3774,17 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/call-opt-outs",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.call_opt_outs.create",
+      "testFile": "tests/test_call_policy.py"
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/platform/call-opt-outs/import",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.call_opt_outs.import_entries",
+      "testFile": "tests/test_call_policy.py"
     },
     {
       "family": "platform",
@@ -4446,49 +4446,49 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/billing/controls/{scope}/{resourceId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.billing.set_resource_controls",
+      "testFile": "tests/test_billing.py"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/billing/limits/{scope}/{resourceId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.billing.set_limit",
+      "testFile": "tests/test_billing.py"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/billing/priorities",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.billing.reorder_priorities",
+      "testFile": "tests/test_billing.py"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/billing/priorities/{scope}/{resourceId}",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.billing.set_priority",
+      "testFile": "tests/test_billing.py"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/call-policy",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.call_policy.update",
+      "testFile": "tests/test_call_policy.py"
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/platform/call-retention",
-      "status": "missing",
-      "reason": "Complete handwritten typed public request/response and per-operation native evidence are still in progress.",
-      "milestone": "server-sdk-parity"
+      "status": "covered",
+      "sdkMethod": "AsyncClient.call_retention.update",
+      "testFile": "tests/test_call_policy.py"
     },
     {
       "family": "platform",

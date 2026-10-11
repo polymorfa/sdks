@@ -66,7 +66,26 @@ async def test_shared_wire_scenario(fixture_url, scenario):
 
             if outcome.get("error") == "cancelled":
                 task = asyncio.create_task(run())
-                await asyncio.sleep(outcome["cancelAfterMs"] / 1000)
+
+                async def wait_for_admission():
+                    while True:
+                        admitted = (
+                            await admin.get(
+                                fixture_url + "/__fixtures/" + scenario["id"] + "/state"
+                            )
+                        ).json()
+                        if admitted["attempts"] > 0:
+                            return
+                        if task.done():
+                            await task
+                            pytest.fail("Request finished before cancellation fixture admission.")
+
+                try:
+                    await asyncio.wait_for(wait_for_admission(), timeout=10)
+                except BaseException:
+                    task.cancel()
+                    await asyncio.gather(task, return_exceptions=True)
+                    raise
                 task.cancel()
                 with pytest.raises(asyncio.CancelledError):
                     await task

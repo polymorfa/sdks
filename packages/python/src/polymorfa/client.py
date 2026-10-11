@@ -9,7 +9,9 @@ from typing_extensions import Self
 
 from . import messaging, platform
 from .bansafe import BanSafe
+from .billing import Billing
 from .business import Business
+from .call_policy import CallOptOuts, CallPolicies, CallRetentions
 from .channels import Channels
 from .client_tokens import ClientTokens
 from .cloud_graph import CloudCatalogs, CloudMarketing, FlowEncryption
@@ -99,6 +101,7 @@ class AsyncProjectClient:
     _transport: Transport
     _credential: Credential
     project_id: str
+    call_retention: CallRetentions
     events: platform.Events
     webhooks: platform.PlatformWebhooks
     webhook_deliveries: platform.WebhookDeliveries
@@ -127,6 +130,7 @@ class AsyncProjectClient:
             ("operations", platform.Operations),
         ):
             object.__setattr__(self, name, resource(transport, prefix))
+        object.__setattr__(self, "call_retention", CallRetentions(transport, prefix))
         object.__setattr__(self, "raw", platform.Raw(transport, project_id))
 
     def project(self, project_id: str) -> AsyncProjectClient:
@@ -148,6 +152,10 @@ class AsyncProjectClient:
 class AsyncClient:
     _transport: Transport
     _credential: Credential
+    call_retention: CallRetentions
+    call_policy: CallPolicies
+    call_opt_outs: CallOptOuts
+    billing: Billing
     projects: platform.Projects
     sessions: platform.PlatformSessions
     events: platform.Events
@@ -163,11 +171,15 @@ class AsyncClient:
         object.__setattr__(self, "_transport", transport)
         object.__setattr__(self, "_credential", credential)
         for name, resource in (
+            ("billing", Billing),
             ("projects", platform.Projects),
             ("sessions", platform.PlatformSessions),
         ):
             object.__setattr__(self, name, resource(transport, credential.kind))
         for name, scoped in (
+            ("call_retention", CallRetentions),
+            ("call_policy", CallPolicies),
+            ("call_opt_outs", CallOptOuts),
             ("events", platform.Events),
             ("webhooks", platform.PlatformWebhooks),
             ("webhook_deliveries", platform.WebhookDeliveries),

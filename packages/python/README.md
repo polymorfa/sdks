@@ -113,3 +113,8 @@ marketing status and Flow public-key registration use their distinct provider
 contracts. Provider template writes, template submission and Flow registration
 send one request even when an idempotency key is supplied; reconcile an uncertain
 result by reading provider state before sending another write.
+
+Team call controls provide typed retention, blocked destination prefixes and a
+cursor-paginated do-not-call list. Billing methods retain fractional credit
+amounts, enforce UUID and revision bounds, and normalize ordered resource IDs.
+Saving these settings uses the API's existing authorization and availability.
