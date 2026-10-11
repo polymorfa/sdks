@@ -28,6 +28,7 @@ if (language === "go") {
   run("go", ["vet", "./..."]);
   run("go", ["test", "-race", "./..."]);
   run("go", ["build", "./..."]);
+  run("node", [resolve(root, "examples/go/web-host/build-assets.mjs")]);
   const host = resolve(root, "examples/go/web-host");
   for (const args of [
     ["test", "-race", "./..."],
@@ -43,6 +44,7 @@ if (language === "go") {
       throw new Error("Go framework host verification failed");
   }
 } else if (language === "python") {
+  run("node", [resolve(root, "examples/python/web_host/build-assets.mjs")]);
   const python = process.env.SDK_PYTHON_VERSION;
   const uv = [...(python ? ["--python", python] : []), "--extra", "test"];
   for (const args of [
@@ -79,6 +81,23 @@ if (language === "go") {
       throw new Error("PHP framework host verification failed");
   }
 } else if (language === "rust") {
+  run("node", [resolve(root, "examples/rust/yew/build-elements.mjs")]);
+  for (const [manifest, target] of [
+    ["examples/rust/axum/Cargo.toml", undefined],
+    ["examples/rust/yew/frontend/Cargo.toml", "wasm32-unknown-unknown"],
+  ]) {
+    run("cargo", [
+      "check",
+      "--manifest-path",
+      resolve(root, manifest),
+      ...(target ? ["--target", target] : []),
+    ]);
+  }
+  run("cargo", [
+    "test",
+    "--manifest-path",
+    resolve(root, "examples/rust/yew/server/Cargo.toml"),
+  ]);
   run("cargo", ["fmt", "--check"]);
   run("cargo", [
     "clippy",

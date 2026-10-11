@@ -95,13 +95,13 @@ jobs:
         run: |
           rustup toolchain install 1.85.0 --profile minimal --component rustfmt,clippy
           rustup default 1.85.0
+          rustup target add wasm32-unknown-unknown --toolchain 1.85.0
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: accepted-native-contract
           include-hidden-files: true
           path: .release/native
       - name: Build existing browser components for framework examples
-        if: matrix.language == 'dotnet' || matrix.language == 'php'
         run: |
           npm ci
           npm run build:workspaces
