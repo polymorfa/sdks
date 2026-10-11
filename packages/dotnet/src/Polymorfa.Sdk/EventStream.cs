@@ -5,7 +5,7 @@ using System.Text.Json;
 namespace Polymorfa.Sdk;
 
 public sealed record EventStreamGap(string Reason, long MissedEvents, string? RequestedCursor);
-public sealed record EventStreamItem(EventRecord Event, string StreamId, long Sequence, WebhookEnvelope? Webhook, string Cursor);
+public sealed record EventStreamItem(EventRecord Event, string StreamId, long Sequence, WebhookEvent? Webhook, string Cursor);
 public sealed record EventStreamOptions
 {
     public string? ProjectId { get; init; }
@@ -106,11 +106,11 @@ public sealed class EventStream : IAsyncEnumerable<EventStreamItem>
                 case "event":
                     var record = frame.GetProperty("event").Deserialize<EventRecord>(HttpTransport.Json) ?? throw new PolymorfaServerException("Invalid event stream envelope.", "invalid_stream");
                     Cursor = frame.GetProperty("cursor").GetString() ?? throw new PolymorfaServerException("Missing stream cursor.", "invalid_stream");
-                    WebhookEnvelope? webhook = null;
+                    WebhookEvent? webhook = null;
                     if (record.Payload is { } payload)
                     {
                         if (payload.Encoding != "base64") throw new PolymorfaServerException("Unsupported event payload encoding.", "invalid_stream");
-                        webhook = JsonSerializer.Deserialize<WebhookEnvelope>(Convert.FromBase64String(payload.Data), HttpTransport.Json);
+                        webhook = Webhooks.ParseVerifiedEvent(Convert.FromBase64String(payload.Data));
                     }
                     yield return new(record, frame.GetProperty("streamId").GetString()!, frame.GetProperty("sequence").GetInt64(), webhook, Cursor);
                     break;

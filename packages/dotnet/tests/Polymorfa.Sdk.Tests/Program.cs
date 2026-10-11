@@ -97,6 +97,7 @@ try
         catch (PolymorfaConfigurationException) { valid = false; }
         Equal(valid, fixture.GetProperty("valid").GetBoolean(), id); Console.WriteLine($"PASS configuration {id}"); count++;
     }
+    WebhookTests.Run();
     await MediaTests.RunAsync(root);
     await ResourceTests.RunAsync();
     await CallsTests.RunAsync();
