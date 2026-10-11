@@ -131,6 +131,12 @@ internal sealed class HttpTransport : IDisposable
         catch (IOException) { throw new PolymorfaConnectionException(metadata?.OperationId is null ? "Response body interrupted." : "Response body interrupted. Query the operation status before retrying.", metadata); }
         catch (HttpRequestException) { throw new PolymorfaConnectionException(metadata?.OperationId is null ? "Response body interrupted." : "Response body interrupted. Query the operation status before retrying.", metadata); }
     }
+    internal HttpClient CreateStorageClient()
+    {
+        var handler = Options.StorageTransportHandlerFactory?.Invoke() ?? new SocketsHttpHandler { AllowAutoRedirect = false, UseCookies = false, Proxy = Options.Proxy, UseProxy = Options.Proxy is not null };
+        ValidateHandler(handler);
+        return new HttpClient(handler, disposeHandler: true) { Timeout = Timeout.InfiniteTimeSpan };
+    }
     private static void ValidateHandler(HttpMessageHandler handler)
     {
         if (handler is SocketsHttpHandler { AllowAutoRedirect: true } or HttpClientHandler { AllowAutoRedirect: true })

@@ -23,7 +23,11 @@ Every response includes status, API version, request ID, attempt count, and safe
 
 `Webhooks.ConstructEvent` verifies native HMAC signatures against the exact raw request bytes before parsing. `ConstructLocalEvent` separately verifies timestamped CLI forwarding signatures. Unknown event names retain their envelope and payload. Deduplicate processed event IDs in your application.
 
-The typed resources include sessions, messages, QuickLinks, webhooks, call controls, contacts, groups, chats, profile, presence, labels, privacy, identities, client token rules, organization metadata, API key metadata, project token metadata, audit logs, security incidents, and ban history. Event streams provide async enumeration and reconnect from the saved cursor. Remaining resources, full webhook payload typing, media, server Calls sockets, and framework examples are being implemented. The coverage ledger records those gaps; this package does not claim TypeScript parity or customer availability.
+Typed resources include sessions, all 20 message content kinds, QuickLinks, webhooks, Business, Channels, contacts, groups, hosted history, profile, presence, labels, privacy, identities, client token rules, organization metadata, billing, customer management, project settings, BanSafe, Flows, Functions, Voice, usage, SIP, and call controls. Native HTTP tests check the methods recorded in `coverage.json`.
+
+Known webhooks have typed payloads for all 84 names in the pinned TypeScript contract. Unknown events retain their envelope and payload. Event streams provide asynchronous enumeration and resume from a saved cursor. Media helpers verify SHA-256 and HMAC before releasing decrypted content; API downloads use a separate credential-free storage client. Voice upload sends bytes over that independent storage transport, then completes the asset through the API.
+
+Remaining resource families, server Calls sockets, and framework examples are in progress. The coverage ledger records those gaps. This package does not claim TypeScript parity or customer availability.
 
 Signal integration is owned by the Signal workstream and is outside this package change.
 

@@ -102,6 +102,13 @@ try
     await MediaTests.RunAsync(root);
     await ResourceTests.RunAsync();
     await AccountTests.RunAsync();
+await UsageTests.RunAsync();
+await BanSafeTests.RunAsync();
+await VoiceTests.RunAsync();
+await FunctionTests.RunAsync();
+await MessageContentTests.RunAsync();
+await MessagingUtilityTests.RunAsync();
+await MediaApiTests.RunAsync();
     await BusinessTests.RunAsync();
     await ChannelCloudTests.RunAsync();
     await CallsTests.RunAsync();

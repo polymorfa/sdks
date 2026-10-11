@@ -41,6 +41,8 @@ public sealed record ClientOptions
     public IWebProxy? Proxy { get; init; }
     /// <summary>An application-owned transport handler. Standard HTTP handlers must disable redirects; custom handlers must honor that policy.</summary>
     public HttpMessageHandler? TransportHandler { get; init; }
+    /// <summary>Creates an independent credential-free storage handler. Standard handlers must disable redirects and cookies. The SDK disposes each returned handler.</summary>
+    public Func<HttpMessageHandler>? StorageTransportHandlerFactory { get; init; }
 }
 public sealed record RequestOptions
 {

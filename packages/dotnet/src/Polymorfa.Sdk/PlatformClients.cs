@@ -21,17 +21,21 @@ public sealed class OrganizationClient : IDisposable
     public Members Members { get; }
     public ApiKeys ApiKeys { get; }
     public ProjectTokens ProjectTokens { get; }
+    public OptOuts OptOuts { get; }
+    public BanSafe BanSafe { get; }
     public AuditLogs AuditLogs { get; }
     public SecurityIncidents SecurityIncidents { get; }
     public SessionBans SessionBans { get; }
     public Events Events { get; }
+    public Voice Voice { get; }
+    public Usage Usage { get; }
     public PlatformWebhooks Webhooks { get; }
     public WebhookDeliveries WebhookDeliveries { get; }
     public OrganizationClient(Credential credential, ClientOptions? options = null)
     {
         credential.RequireServer();
         if (credential.Kind != CredentialKind.OrganizationApiKey) throw new PolymorfaConfigurationException("OrganizationClient requires an organization API key.");
-        http = new(credential, options ?? new()); Projects = new(http); Sessions = new(http); Configuration = new(http, null); SipTrunks = new(http, null); Operations = new(http, null); CallPolicy = new(http); CallOptOuts = new(http); CallRetention = new(http); Media = new(http); Billing = new(http); Customers = new(http); Organizations = new(http); Members = new(http); ApiKeys = new(http); ProjectTokens = new(http); AuditLogs = new(http); SecurityIncidents = new(http); SessionBans = new(http); Events = new(http, "/platform", null); Webhooks = new(http, null); WebhookDeliveries = new(http, null);
+        http = new(credential, options ?? new()); Projects = new(http); Sessions = new(http); Configuration = new(http, null); SipTrunks = new(http, null); Operations = new(http, null); CallPolicy = new(http); CallOptOuts = new(http); CallRetention = new(http); Media = new(http); Billing = new(http); Customers = new(http); Organizations = new(http); Members = new(http); ApiKeys = new(http); ProjectTokens = new(http); BanSafe = new(http); OptOuts = new(http); Voice = new(http, null); Usage = new(http, null); AuditLogs = new(http); SecurityIncidents = new(http); SessionBans = new(http); Events = new(http, "/platform", null); Webhooks = new(http, null); WebhookDeliveries = new(http, null);
     }
     public ProjectClient Project(string projectId) => new(http, projectId);
     public Task<ApiResponse<T>> RawAsync<T>(HttpMethod method, string path, JsonElement? body = null, RequestOptions? options = null, IReadOnlyList<KeyValuePair<string, string>>? query = null) => http.RequestAsync<T>(method, path, body, options, query);
@@ -43,12 +47,15 @@ public sealed class ProjectClient : IDisposable
     private readonly bool ownsTransport;
     public string ProjectId { get; }
     public ProjectSettings Settings { get; }
+    public Functions Functions { get; }
     public Flows Flows { get; }
     public ConfigurationResource Configuration { get; }
     public SipTrunks SipTrunks { get; }
     public Operations Operations { get; }
     public CallRetentionResource CallRetention { get; }
     public Events Events { get; }
+    public Voice Voice { get; }
+    public Usage Usage { get; }
     public PlatformWebhooks Webhooks { get; }
     public WebhookDeliveries WebhookDeliveries { get; }
     private string Prefix => $"/platform/projects/{Uri.EscapeDataString(ProjectId)}";
@@ -57,7 +64,7 @@ public sealed class ProjectClient : IDisposable
     internal ProjectClient(HttpTransport http, string projectId)
     {
         if (string.IsNullOrWhiteSpace(projectId)) throw new PolymorfaConfigurationException("A non-empty projectId is required.");
-        this.http = http; ProjectId = projectId; Settings = new(http, projectId); Flows = new(http, projectId); Configuration = new(http, projectId); SipTrunks = new(http, projectId); Operations = new(http, projectId); CallRetention = new(http); Events = new(http, Prefix, ProjectId); Webhooks = new(http, ProjectId); WebhookDeliveries = new(http, ProjectId);
+        this.http = http; ProjectId = projectId; Settings = new(http, projectId); Functions = new(http, projectId); Flows = new(http, projectId); Voice = new(http, projectId); Usage = new(http, projectId); Configuration = new(http, projectId); SipTrunks = new(http, projectId); Operations = new(http, projectId); CallRetention = new(http); Events = new(http, Prefix, ProjectId); Webhooks = new(http, ProjectId); WebhookDeliveries = new(http, ProjectId);
     }
     public ProjectClient Project(string projectId)
     {
@@ -148,8 +155,10 @@ public sealed class CursorPage<T> : IAsyncEnumerable<T>
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
         CursorPage<T>? page = this;
+        var seen = new HashSet<string>(StringComparer.Ordinal);
         while (page is not null)
         {
+            if (page.NextCursor is not null && !seen.Add(page.NextCursor)) throw new PolymorfaServerException("The API repeated a collection cursor.", "invalid_response", page.Metadata);
             foreach (var item in page.Items) { cancellationToken.ThrowIfCancellationRequested(); yield return item; }
             page = await page.NextPageAsync(cancellationToken).ConfigureAwait(false);
         }

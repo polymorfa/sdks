@@ -79,7 +79,7 @@ public sealed class MessagingMedia : Resource
             {
                 var url = Location(response, new Uri(http.Options.BaseUrl, path), metadata); response.Dispose();
                 // A separate client sends no API authorization, cookies, or application request headers.
-                storage = new HttpClient(new SocketsHttpHandler { AllowAutoRedirect = false, UseCookies = false, Proxy = http.Options.Proxy, UseProxy = http.Options.Proxy is not null }) { Timeout = Timeout.InfiniteTimeSpan };
+                storage = http.CreateStorageClient();
                 for (var hop = 0; ; hop++)
                 {
                     using var linked = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken); linked.CancelAfter(options.Timeout ?? http.Options.Timeout);

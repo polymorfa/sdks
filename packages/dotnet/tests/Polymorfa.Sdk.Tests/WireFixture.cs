@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.Json;
 
@@ -7,17 +9,19 @@ internal sealed class WireFixture : IDisposable
 {
     private readonly TcpListener listener = new(IPAddress.Loopback, 0);
     public Uri Url { get; }
+    private readonly X509Certificate2? certificate;
     public string? Authorization { get; init; }
     public IReadOnlyDictionary<string, string>? ExpectedHeaders { get; init; }
     public int FragmentBytes { get; init; }
     public IReadOnlyList<string> AbsentHeaders { get; init; } = [];
     public IReadOnlyList<string> RequiredHeaders { get; init; } = [];
-    public WireFixture() { listener.Start(); Url = new($"http://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}"); }
+    public WireFixture(X509Certificate2? certificate = null) { this.certificate = certificate; listener.Start(); Url = new($"{(certificate is null ? "http" : "https")}://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}"); }
     public async Task ServeAsync(string method, string path, string? body, string response, int status = 200, IReadOnlyDictionary<string, string>? responseHeaders = null, string? absentHeader = null, IReadOnlyDictionary<string, string>? expectedHeaders = null)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         using var connection = await listener.AcceptTcpClientAsync(timeout.Token);
-        await using var stream = connection.GetStream();
+        await using Stream stream = certificate is null ? connection.GetStream() : new SslStream(connection.GetStream());
+        if (stream is SslStream tls) await tls.AuthenticateAsServerAsync(new SslServerAuthenticationOptions { ServerCertificate = certificate }, timeout.Token);
         var bytes = new List<byte>(); var one = new byte[1];
         while (true)
         {
@@ -39,8 +43,9 @@ internal sealed class WireFixture : IDisposable
         if (body is null) { if (length != 0) throw new Exception("Unexpected native body."); }
         else
         {
-            using var actual = JsonDocument.Parse(input); using var expected = JsonDocument.Parse(body);
-            if (!EqualJson(actual.RootElement, expected.RootElement)) throw new Exception("Native JSON request shape differs.");
+            if (body.StartsWith("bytes:", StringComparison.Ordinal)) { if (!input.SequenceEqual(Convert.FromBase64String(body[6..]))) throw new Exception("Native binary request differs."); }
+            else { using var actual = JsonDocument.Parse(input); using var expected = JsonDocument.Parse(body);
+            if (!EqualJson(actual.RootElement, expected.RootElement)) throw new Exception("Native JSON request shape differs."); }
         }
         var output = Encoding.UTF8.GetBytes(response);
         var contentType = responseHeaders?.GetValueOrDefault("content-type") ?? "application/json";
