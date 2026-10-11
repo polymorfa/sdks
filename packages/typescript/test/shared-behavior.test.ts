@@ -3,6 +3,11 @@ import { once } from "node:events";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { HttpTransport } from "../src/transport/http.js";
 import { MessagingClient } from "../src/messaging/client.js";
+import { Client } from "../src/client.js";
+import type {
+  OrganizationClientOptions,
+  ProjectScopedClientOptions,
+} from "../src/credentials.js";
 import { webhooks } from "../src/webhooks/utilities.js";
 import type { RawRequest } from "../src/transport/types.js";
 // The server is a dependency-free, language-neutral wire fixture process.
@@ -21,6 +26,32 @@ beforeAll(async () => {
   server.listen(0, "127.0.0.1");
   await once(server, "listening");
   base = `http://127.0.0.1:${server.address().port}`;
+});
+
+describe("shared local configuration", () => {
+  for (const vector of fixture.configuration) {
+    it(vector.id, () => {
+      const options = {
+        credential: { type: vector.credentialType, value: vector.credential },
+        ...(vector.projectId ? { projectId: vector.projectId } : {}),
+        ...(vector.baseUrl ? { baseUrl: vector.baseUrl } : {}),
+        ...(vector.maxNetworkRetries !== undefined
+          ? { maxNetworkRetries: vector.maxNetworkRetries }
+          : {}),
+        ...(vector.timeoutMs !== undefined
+          ? { timeoutMs: vector.timeoutMs }
+          : {}),
+      };
+      const construct = () =>
+        vector.client === "messaging"
+          ? new MessagingClient(options)
+          : vector.projectId
+            ? new Client(options as ProjectScopedClientOptions)
+            : new Client(options as OrganizationClientOptions);
+      if (vector.valid) expect(construct).not.toThrow();
+      else expect(construct).toThrow();
+    });
+  }
 });
 afterAll(async () => {
   server.closeAllConnections();

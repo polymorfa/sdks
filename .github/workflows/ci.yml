@@ -32,6 +32,7 @@ jobs:
       - run: node --test scripts/sdk-fixture-server.test.mjs scripts/multi-language-coverage.test.mjs
       - run: npm run build
       - run: npm run check:coverage
+      - run: node scripts/check-native-coverage.mjs
       - run: npm run check:functions
       - run: npm run check:names
       - run: npm pack --dry-run --workspaces --ignore-scripts

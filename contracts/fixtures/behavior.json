@@ -951,5 +951,120 @@
       "toleranceSeconds": 300,
       "valid": false
     }
+  ],
+  "configuration": [
+    {
+      "id": "organization-valid",
+      "client": "platform",
+      "credentialType": "organizationApiKey",
+      "credential": "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "valid": true
+    },
+    {
+      "id": "messaging-org-valid",
+      "client": "messaging",
+      "credentialType": "apiKey",
+      "credential": "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "valid": true
+    },
+    {
+      "id": "project-valid",
+      "client": "platform",
+      "credentialType": "projectToken",
+      "credential": "pmfa_pt_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaA",
+      "projectId": "project_fixture",
+      "valid": true
+    },
+    {
+      "id": "project-missing-id",
+      "client": "platform",
+      "credentialType": "projectToken",
+      "credential": "pmfa_pt_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaA",
+      "valid": false,
+      "field": "projectId"
+    },
+    {
+      "id": "project-noncanonical-tail",
+      "client": "platform",
+      "credentialType": "projectToken",
+      "credential": "pmfa_pt_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaB",
+      "projectId": "project_fixture",
+      "valid": false,
+      "field": "credential"
+    },
+    {
+      "id": "organization-short",
+      "client": "platform",
+      "credentialType": "organizationApiKey",
+      "credential": "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "valid": false,
+      "field": "credential"
+    },
+    {
+      "id": "organization-wrong-principal",
+      "client": "platform",
+      "credentialType": "organizationApiKey",
+      "credential": "pmfa_pt_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaA",
+      "valid": false,
+      "field": "credential"
+    },
+    {
+      "id": "project-wrong-principal",
+      "client": "platform",
+      "credentialType": "projectToken",
+      "credential": "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "projectId": "project_fixture",
+      "valid": false,
+      "field": "credential"
+    },
+    {
+      "id": "listener-refused",
+      "client": "platform",
+      "credentialType": "organizationApiKey",
+      "credential": "pmfa_ls_fixture",
+      "valid": false,
+      "field": "credential"
+    },
+    {
+      "id": "client-token-refused-platform",
+      "client": "platform",
+      "credentialType": "projectToken",
+      "credential": "pmfa_ct_fixture",
+      "projectId": "project_fixture",
+      "valid": false,
+      "field": "credential"
+    },
+    {
+      "id": "client-token-valid-messaging",
+      "client": "messaging",
+      "credentialType": "clientToken",
+      "credential": "pmfa_ct_fixture",
+      "valid": true
+    },
+    {
+      "id": "invalid-base-url",
+      "client": "platform",
+      "credentialType": "organizationApiKey",
+      "credential": "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "baseUrl": "https://user:password@example.invalid",
+      "valid": false,
+      "field": "baseUrl"
+    },
+    {
+      "id": "negative-retries",
+      "client": "platform",
+      "credentialType": "organizationApiKey",
+      "credential": "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "maxNetworkRetries": -1,
+      "valid": false
+    },
+    {
+      "id": "zero-timeout",
+      "client": "platform",
+      "credentialType": "organizationApiKey",
+      "credential": "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "timeoutMs": 0,
+      "valid": false
+    }
   ]
 }
