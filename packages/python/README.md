@@ -406,3 +406,48 @@ calls are atomic. Setup requires the Worker's explicit operator setting. A timed
 out or cancelled commit may have completed; reconcile through conditional
 revisions, event markers and checkpoint CAS. The application secret is distinct
 from Polymorfa credentials. The SDK refuses redirects and credential forwarding.
+
+For native drivers, install the matching extra, for example
+`polymorfa-sdk[postgres]`. The factories accept application-owned clients:
+
+| Factory | Native client | Atomic boundary |
+| --- | --- | --- |
+| `postgres_adapter(pool)` | `asyncpg.Pool` | PostgreSQL transaction with conditional revisions |
+| `mysql_adapter(pool)` | `aiomysql.Pool` | InnoDB transaction with conditional revisions |
+| `libsql_adapter(client)` | `libsql_client.Client` | Guarded atomic batch, including HTTP clients |
+| `mongodb_adapter(client, database, namespace=...)` | PyMongo `AsyncMongoClient` | Snapshot transaction with majority writes; replica set required |
+| `dynamodb_adapter(client, namespace=..., table_name=...)` | `aioboto3` DynamoDB client | Conditional `TransactWriteItems`, up to 100 writes |
+| `firestore_adapter(client, namespace=...)` | Google `AsyncClient` | Transaction with all reads before writes |
+| `cosmos_adapter(container, namespace=...)` | Azure asynchronous `ContainerProxy` | One `/namespace` partition batch, ETag-fenced tombstones |
+| `convex_adapter(client, references)` | Native Python `ConvexClient` | Application-installed storage query/mutation handlers |
+
+The extra names are `postgres`, `mysql`, `libsql`, `mongodb`, `dynamodb`,
+`firestore`, `cosmos` and `convex`. SQL adapters accept a trusted `table_prefix`;
+PostgreSQL also accepts `schema`. Initialize an empty database with `setup()`;
+existing schema versions require an explicit migration. libSQL installs the
+same conditional guard table used by the TypeScript adapter. MySQL pools use
+`autocommit=True`. SQL JSON codecs must accept JSON strings.
+
+Document database namespaces come from trusted application identity. Bounded
+queries fail if the configured read limit is exceeded. Cosmos requires
+`await adapter.setup()` to verify `/namespace` before advertising atomicity.
+DynamoDB can create its customer-owned table only with `create_table=True`.
+No factory accepts a Polymorfa database credential or changes hosted retention.
+Borrowed clients remain open unless that adapter's `close_client=True` option
+is selected. Cosmos and Convex always borrow their container/client.
+
+`supabase_preset()` returns customer-installed SQL with FORCE RLS, live
+session membership, a separate server writer and browser SELECT only. Review
+and install it through your own administrative connection. It grants no browser
+storage writes or membership management. Use `postgres_adapter` for the server
+writer. Convex applications install the owning TypeScript schema and handlers,
+then pass `ConvexFunctionReferences("storage:get", "storage:commit",
+"storage:query")`; the server resolves the namespace from authenticated identity.
+Python sends no caller namespace to those functions.
+
+SQLite, PostgreSQL, MySQL, libSQL's file driver, MongoDB and DynamoDB were checked
+with native local drivers/servers; Firestore used its emulator, and D1 used a
+real Worker binding. Cosmos and Convex have adapter contract tests without a
+hosted service acceptance claim. JavaScript IndexedDB, Drizzle and Prisma exports
+remain integrations for their owning browser/ORM runtimes; Python uses its
+native database factories and the shared schema2 wire format.
