@@ -267,8 +267,8 @@ schema-defined scope and cursor indexes. Invalid or oversized derived identifier
 are refused before connecting, preventing PostgreSQL name truncation. Driver
 errors omit connection strings, SQL and customer row values. These adapters are
 server clients; hosted Supabase/Neon/PlanetScale authority and deployment acceptance
-require the customer's own configuration and verification. The libSQL, Supabase
-RLS, document-store and browser adapters are separate work.
+require the customer's own configuration and verification. The libSQL, document-store and browser adapters remain separate work. A Supabase
+RLS preset is exported below.
 
 ### Customer-owned S3 media
 
@@ -328,3 +328,34 @@ writer role. Membership deletion takes effect on the next database query.
 Native PostgreSQL tests prove all 17 entities, anonymous/write denial, a
 non-superuser owner's FORCE-RLS boundary, revocation and missing-subject denial.
 Hosted Supabase JWT and deployment acceptance remain separate gates.
+
+
+### Customer-owned DynamoDB
+
+The optional `storage-dynamodb` feature adds
+`storage::dynamodb::DynamoStorageAdapter` using the official AWS SDK. Pass an
+independent customer `aws_sdk_dynamodb::Client` and
+`DynamoStorageOptions::new(namespace, table_name)`. The caller configures
+credentials, TLS/endpoints, retries and operation deadlines. The adapter clones
+that client and never reads Polymorfa API credentials.
+
+The table needs string partition key `pk` and sort key `sk`. Setup validates
+these key names and can create a table only with explicit `create_table: true`.
+Use operator-managed active tables for deployments; AWS table activation is a
+separate provisioning gate. Namespaces separate stored keys; configure customer
+IAM/table authority independently.
+
+Each conditional transaction contains at most 100 writes, including the
+engine's session fence. Reads are strongly consistent and queries page at
+1,000 rows, scanning the entity partition before applying the schema index.
+`max_query_rows` defaults to 100,000 for the whole scanned partition, so bound
+customer retention or adjust it explicitly. DynamoDB item and transaction byte
+limits still apply. A timeout or transport failure can leave a write outcome
+unknown; resume using saved event/checkpoint state and conditional revisions.
+
+The adapter follows storage source
+`3bacf46f9c4213426314001586f5bae43aaa77de`. Tests against DynamoDB Local use the
+official native driver and cover all 17 entities, nested/scalar JSON, atomic
+rollback, 2,000 messages, replay, cursor paging, checkpoint conflicts and expired
+writer fencing. Hosted AWS credentials, IAM and deployment acceptance remain
+separate gates. This SDK remains unpublished.

@@ -214,8 +214,8 @@ follow schema 2. Invalid or oversized derived identifiers fail before connecting
 preventing PostgreSQL name truncation. Driver errors omit connection strings, SQL
 and customer values. SQL adapters require a server application. Hosted
 Supabase/Neon/PlanetScale authority and deployment acceptance remain customer
-configuration and verification gates. The libSQL, Supabase RLS, document-store
-and browser adapters are separate work.
+configuration and verification gates. The libSQL, document-store and browser adapters remain separate work; a
+Supabase RLS preset is exported below.
 
 
 The separate, unpublished `Polymorfa.Storage.S3` package adds
@@ -274,3 +274,29 @@ writer role. Membership deletion takes effect on the next query. Native
 PostgreSQL tests cover all 17 entities, anonymous/write denial, a non-superuser
 owner's FORCE-RLS boundary, revocation and missing-subject denial. Hosted
 Supabase JWT and deployment acceptance remain separate gates.
+
+
+The separate, unpublished `Polymorfa.Storage.DynamoDb` package adds
+`Polymorfa.Storage.DynamoDb.DynamoDbStorageAdapter` through the official AWS
+driver. Pass a customer-owned `IAmazonDynamoDB` client and
+`new DynamoDbStorageOptions(namespace, tableName)`. The caller configures
+credentials, TLS/endpoints, retries and deadlines, and owns client lifetime.
+The adapter never reads Polymorfa API credentials and requires a server app.
+
+The table needs string partition key `pk` and sort key `sk`. Setup validates
+these key names. Set `CreateTable = true` only for explicit table creation; AWS
+table activation is a separate provisioning gate. Namespaces separate stored
+keys; configure customer IAM/table authority independently.
+
+Conditional transactions contain at most 100 writes, including the session
+fence. Strongly consistent queries page at 1,000 rows and scan the entity
+partition before applying its schema index. `MaxQueryRows` defaults to 100,000
+for the complete scanned partition. DynamoDB item and transaction byte limits
+still apply. Timeout and transport failures can leave a commit outcome unknown;
+resume with saved event/checkpoint state and conditional revisions.
+
+The storage source is `3bacf46f9c4213426314001586f5bae43aaa77de`. DynamoDB
+Local tests use the official driver and cover all 17 entities, JSON scalars,
+atomic rollback, 2,000-message history, replay, cursor paging, checkpoints,
+expired-writer fences and caller-mutation capture. Hosted AWS credentials, IAM
+and deployment acceptance remain separate gates.
