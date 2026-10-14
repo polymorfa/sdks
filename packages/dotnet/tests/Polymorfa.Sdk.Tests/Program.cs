@@ -142,6 +142,7 @@ try
     await SipTests.RunAsync();
     await EventsTests.RunAsync();
     await OperationsTests.RunAsync();
+    await ReviewRegressionTests.RunAsync();
     Console.WriteLine($"Passed {count} shared behavior cases and media integrity tests.");
 }
 finally { if (!server.HasExited) server.Kill(entireProcessTree: true); await server.WaitForExitAsync(); }

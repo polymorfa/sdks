@@ -17,12 +17,15 @@ use tokio_tungstenite::{
 };
 use tokio_util::sync::CancellationToken;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlaceCallRequest {
-    pub session: String,
-    pub to: String,
-    pub video: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub session: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub to: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub video: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub participants: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]

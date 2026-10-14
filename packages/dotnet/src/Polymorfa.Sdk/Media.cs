@@ -64,7 +64,7 @@ public sealed class MessagingMedia : Resource
         options ??= new();
         using var opened = await Http.OpenAsync(HttpMethod.Get, Path(id), null, options, "*/*", allowMediaRedirect: true).ConfigureAwait(false);
         if (opened.Response.IsSuccessStatusCode) return new(true, null, null, opened.Metadata.RequestId);
-        var url = Location(opened.Response, new Uri(Http.Options.BaseUrl, Path(id)), opened.Metadata);
+        var url = Location(opened.Response, Http.ApiUrl(Path(id)), opened.Metadata);
         return new(false, url, SignedUrlExpiry(url.AbsoluteUri), opened.Metadata.RequestId);
     }
     internal static async Task<MediaDownload> OpenDownloadAsync(HttpTransport http, string path, RequestOptions options)
@@ -77,7 +77,7 @@ public sealed class MessagingMedia : Resource
             var metadata = opened.Metadata; var redirected = !response.IsSuccessStatusCode;
             if (redirected)
             {
-                var url = Location(response, new Uri(http.Options.BaseUrl, path), metadata); response.Dispose();
+                var url = Location(response, http.ApiUrl(path), metadata); response.Dispose();
                 // A separate client sends no API authorization, cookies, or application request headers.
                 storage = http.CreateStorageClient();
                 for (var hop = 0; ; hop++)

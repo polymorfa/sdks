@@ -16,7 +16,18 @@ pub enum Credential {
 impl Credential {
     pub fn organization_api_key(value: impl Into<String>) -> Result<Self> {
         let value = value.into();
-        if !canonical(&value, "pmfa_", 72) {
+        if !canonical(&value, "pmfa_", 72)
+            || [
+                "pmfa_pt_",
+                "pmfa_ct_",
+                "pmfa_ls_",
+                "pmfa_at_",
+                "pmfa_wst_",
+                "pmfa_sd_",
+            ]
+            .iter()
+            .any(|prefix| value.starts_with(prefix))
+        {
             return Err(configuration("credential"));
         }
         Ok(Self::OrganizationApiKey(value))
@@ -571,9 +582,11 @@ impl HttpTransport {
             .and_then(|v| v.to_str().ok())
             .and_then(filename);
         let mut stream = response.bytes_stream();
+        let deadline =
+            tokio::time::Instant::now() + options.timeout.unwrap_or(self.options.timeout);
         let body = async_stream::try_stream! {
             loop {
-                let next = tokio::select! { _ = token.cancelled() => Err(cancelled()), next = stream.next() => Ok(next) }?;
+                let next = tokio::select! { _ = token.cancelled() => Err(cancelled()), next = tokio::time::timeout_at(deadline,stream.next()) => next.map_err(|_|Error::local(ErrorKind::Timeout,"Download response body timed out.","request_timeout")) }?;
                 match next { Some(Ok(bytes)) => yield bytes, Some(Err(_)) => Err(Error::local(ErrorKind::Connection,"Media stream interrupted.","connection_error"))?, None => break }
             }
         };
