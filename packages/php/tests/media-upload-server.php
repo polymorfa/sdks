@@ -63,7 +63,35 @@ try {
         $mapped = match ($kind) {
             'document' => 'file', 'ptt','audio' => 'voice', default => $kind
         };
-        if ($mode === 'send' && str_ends_with($path, '/messages/send')) {
+        if (str_starts_with($mode, 'history-api')) {
+            $posts++;
+            $data = json_decode($body, true, flags:JSON_THROW_ON_ERROR);
+            $valid = $valid && ($headers['polymorfa-version'] ?? '') === ($posts === 2 ? '2026-12-01' : '2026-10-14') && str_starts_with($headers['authorization'] ?? '', 'Bearer ');
+            if (str_ends_with($path, '/chunks/retry')) {
+                $valid = $valid && $data === ['syncType' => 'RECENT','chunkOrder' => 4294967295,'chunkMessageId' => 'fixture_message','regenerate' => false];
+                $reply = '{"success":true,"data":{"requestId":"fixture_retry","status":"requested"}}';
+            } elseif (str_ends_with($path, '/media/delete')) {
+                $valid = $valid && $data === ['directPath' => '/fixture/history?ccb=1','fileEncSha256' => base64_encode(str_repeat(chr(255), 32)),'encHandle' => 'handle','companionMetaNonce' => 'nonce'];
+                $reply = '{"success":true,"data":{"status":"deleted"}}';
+            } else {
+                $valid = false;
+            }
+            if ($mode === 'history-api-error') {
+                $status = 503;
+                $reply = '{"error":{"code":"service_unavailable"}}';
+            }
+        } elseif ($mode === 'history') {
+            $posts++;
+            foreach (['authorization','cookie','polymorfa-version','idempotency-key','x-caller-private'] as $name) {
+                $valid = $valid && !isset($headers[$name]);
+            }
+            $valid = $valid && ($headers['origin'] ?? '') === 'https://web.whatsapp.com' && ($query['mms-type'] ?? '') === 'md-msg-hist';
+            $fixture = json_decode(file_get_contents(__DIR__.'/fixtures/history-local.json'), true, flags:JSON_THROW_ON_ERROR);
+            $reply = base64_decode($fixture['encrypted'], true);
+            if ($kind === 'corrupt') {
+                $reply[0] = chr(ord($reply[0]) ^ 1);
+            }
+        } elseif ($mode === 'send' && str_ends_with($path, '/messages/send')) {
             $posts++;
             $data = json_decode($body, true, flags:JSON_THROW_ON_ERROR);
             $expectedDate = $posts === 1 ? '2026-10-14' : ($posts === 2 ? '2026-09-22' : '2026-12-01');

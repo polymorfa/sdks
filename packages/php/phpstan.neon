@@ -6,3 +6,4 @@ parameters:
         - tests/campaign_followup_types.php
         - tests/raw_parity_types.php
         - tests/media_send_types.php
+        - tests/history_types.php

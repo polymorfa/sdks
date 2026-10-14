@@ -42,6 +42,7 @@ final readonly class MessagingClient
     public Media $media;
     public Voip $voip;
     public Resources\WhatsAppMedia $whatsappMedia;
+    public Resources\HistorySync $historySync;
     public RawClient $raw;
 
     public function __construct(
@@ -87,6 +88,7 @@ final readonly class MessagingClient
         $this->media = new Media($transport);
         $this->voip = new Voip($transport);
         $this->whatsappMedia = new Resources\WhatsAppMedia($transport);
+        $this->historySync = new Resources\HistorySync($transport);
         $this->raw = new RawClient($transport);
     }
 }

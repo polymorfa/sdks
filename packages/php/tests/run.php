@@ -205,3 +205,5 @@ require __DIR__.'/media_encryption.php';
 require __DIR__.'/media_upload.php';
 
 require __DIR__.'/media_send.php';
+
+require __DIR__.'/history_local.php';
