@@ -375,7 +375,8 @@ or WhatsApp acceptance.
 `polymorfa.storage` provides customer-owned schema version 2 with 17 entities,
 per-field version merges, event deduplication, permanent content revocation,
 clear-chat watermarks and cleanup of media/reactions/receipts/poll votes.
-`Storage(adapter)` requires atomic conditional commits. Durable session leases
+`Storage(adapter)` requires atomic conditional commits. A failed commit stops
+processing even when the adapter reports no conflicting row IDs. Durable session leases
 fence every write chunk; a checkpoint can require its previous cursor. This
 stores customer chat data only in the database your application supplies.
 
