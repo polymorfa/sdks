@@ -74,3 +74,7 @@ Schema version 2 includes durable lease fences. `STORAGE_SCHEMA`, `encodeKey`, `
 `./conformance` exports `defineStorageConformance(testApi, adapterName, createAdapter)`. Run every test against a real driver and the runtime you will deploy, including transactions, stale deletes, atomic rollback, paused-writer fencing, checkpoint conflicts, ordering, replay and a 2,000-message history chunk. `conformance-fixtures.json` carries fixed events and expected public rows for handwritten language ports; adapter concurrency tests remain required in addition to those fixtures.
 
 Local unit/emulator success does not prove cloud IAM/RLS rules, deployed credentials, vendor-hosted connections, a browser's IndexedDB behavior, event retention availability or registry installation. Consult the change's acceptance report for exact tested versions and blocked boundaries.
+
+## D1 from native applications
+
+Host `@polymorfa/storage/d1-bridge` in your own Worker to reach the atomic D1 binding from a native application. The bridge fixes customer authority and table prefix in trusted configuration and signs a fresh nonce handshake and each response. Native clients must validate that contract before accepting atomic storage support. The D1 administrative REST API is not used as an atomic adapter. See [the bridge contract](./D1-BRIDGE.md) for setup, authentication, conditional deletion and failure semantics.
