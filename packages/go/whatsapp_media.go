@@ -60,8 +60,8 @@ func mediaError(code, message string) error {
 	return &Error{Kind: ValidationError, Code: code, Message: message}
 }
 
-var mediaInfo = map[string]string{"image": "WhatsApp Image Keys", "video": "WhatsApp Video Keys", "audio": "WhatsApp Audio Keys", "document": "WhatsApp Document Keys", "sticker": "WhatsApp Image Keys"}
-var mediaMIME = map[string]string{"image": "image/jpeg", "video": "video/mp4", "audio": "audio/ogg", "document": "application/octet-stream", "sticker": "image/webp"}
+var mediaInfo = map[string]string{"image": "WhatsApp Image Keys", "video": "WhatsApp Video Keys", "audio": "WhatsApp Audio Keys", "document": "WhatsApp Document Keys", "sticker": "WhatsApp Image Keys", "ptt": "WhatsApp Audio Keys", "md-msg-hist": "WhatsApp History Keys"}
+var mediaMIME = map[string]string{"image": "image/jpeg", "video": "video/mp4", "audio": "audio/ogg", "document": "application/octet-stream", "sticker": "image/webp", "ptt": "audio/ogg", "md-msg-hist": "application/octet-stream"}
 
 func DeriveWhatsAppMediaKeys(key []byte, kind string) (WhatsAppMediaKeys, error) {
 	info, ok := mediaInfo[kind]

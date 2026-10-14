@@ -290,3 +290,27 @@ application-owned. `GraphTransport::headers('official_api')` produces the
 `X-Polymorfa-Transport` request header; it also accepts `linked_devices` and `auto`
 and rejects other values. Pass its result through `RequestOptions(headers: ...)`.
 This header selects routing; API permissions and transport eligibility still apply.
+
+### Local upload encryption
+
+`MediaEncryption::encrypt()` returns encrypted bytes and `EncryptedMediaInfo`.
+`MediaEncryption::chunks()` consumes a PSR-7 stream incrementally and yields
+ciphertext chunks with bounded working memory. Its generator return value is
+the final `EncryptedMediaInfo`. Supported kinds are `image`, `video`, `audio`,
+`ptt`, `document` and `sticker`. The helper creates a cryptographically random
+32-byte media key; the default plaintext limit is 256 MiB.
+
+```php
+$encrypted = \Polymorfa\MediaEncryption::encrypt($plaintext, 'image', mimeType: 'image/jpeg');
+// $encrypted->ciphertext includes its ten-byte MAC. Keep the media key private.
+```
+
+To verify an immutable repeat pass, give `chunks()` the first pass's `mediaKey`
+and `EncryptedMediaInfo` through its `expected` argument. It checks source EOF,
+plaintext/encrypted hashes and lengths before yielding the final ciphertext
+block and MAC. Changed sources, cancellation, premature reads and size overruns
+fail without a complete upload body. The caller owns and closes the source,
+and must discard partial output after failure. The helper performs local
+encryption; it does not finalize a CDN upload or send a message. Debug and JSON
+serialization redact media keys and ciphertext. Independent vectors,
+block-boundary round trips and repeat-pass failure tests cover all six kinds.
