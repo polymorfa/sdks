@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Polymorfa.Sdk;
@@ -12,7 +13,10 @@ public sealed record VoiceProviderCredential(string Id, string? ProjectId, strin
 public sealed record VoiceResourceDeleted(string Id, bool Deleted);
 public sealed record ListVoiceAudioParameters(string? Status = null, string? Cursor = null, int? Limit = null);
 public sealed record CreateVoiceAudioUploadInput(string Name, string ContentType, long SizeBytes, int? RetentionDays = null);
-public sealed record SynthesizeVoiceAudioInput(string Name, string Text, string Provider, string VoiceId, string? Model = null, string? CredentialId = null, int? RetentionDays = null);
+[JsonConverter(typeof(SynthesizeVoiceAudioConverter))]
+public abstract record SynthesizeVoiceAudioInput(string Name, string Text, string? CredentialId = null, int? RetentionDays = null);
+public sealed record OpenAiVoiceAudioInput(string Name, string Text, OpenAiTtsVoice VoiceId, OpenAiTtsModel? Model = null, string? CredentialId = null, int? RetentionDays = null) : SynthesizeVoiceAudioInput(Name, Text, CredentialId, RetentionDays);
+public sealed record ElevenLabsVoiceAudioInput(string Name, string Text, string VoiceId, ElevenLabsTtsModel? Model = null, string? CredentialId = null, int? RetentionDays = null) : SynthesizeVoiceAudioInput(Name, Text, CredentialId, RetentionDays);
 public sealed record UpdateVoiceAudioInput(long? ExpectedRevision = null, string? Name = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<int?> RetentionDays = default);
 public sealed record CreateVoiceProviderCredentialInput(string Provider, string Label, string ApiKey, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<string> ProjectId = default) { public override string ToString() => $"CreateVoiceProviderCredentialInput(provider={Provider}, apiKey=redacted)"; }
 public sealed record WaitForVoiceAudioOptions(TimeSpan? Timeout = null, TimeSpan? Interval = null, CancellationToken CancellationToken = default);
@@ -32,7 +36,12 @@ public sealed class VoiceAudio : Resource
     private async Task<ApiResponse<T>> Request<T>(HttpMethod method, string path, object? body, RequestOptions? options) { var r = await Http.RequestAsync<DataEnvelope<T>>(method, path, body, options).ConfigureAwait(false); return new(r.Data.Data, r.Metadata); }
     public Task<CursorPage<VoiceAudioAsset>> ListAsync(string? projectId = null, ListVoiceAudioParameters? parameters = null, RequestOptions? options = null) => CursorPage<VoiceAudioAsset>.LoadAsync(Http, Path, Query(new { projectId = Project(projectId), parameters?.Status, parameters?.Cursor, parameters?.Limit }), options ?? new());
     public Task<ApiResponse<VoiceAudioUploadCreated>> CreateUploadAsync(CreateVoiceAudioUploadInput input, string? projectId = null, RequestOptions? options = null) => Request<VoiceAudioUploadCreated>(HttpMethod.Post, Path, new { input.Name, input.ContentType, input.SizeBytes, input.RetentionDays, projectId = Project(projectId) }, options);
-    public Task<ApiResponse<VoiceAudioAsset>> SynthesizeAsync(SynthesizeVoiceAudioInput input, string? projectId = null, RequestOptions? options = null) => Request<VoiceAudioAsset>(HttpMethod.Post, Path + "/tts", new { input.Name, input.Text, input.Provider, input.VoiceId, input.Model, input.CredentialId, input.RetentionDays, projectId = Project(projectId) }, options);
+    public Task<ApiResponse<VoiceAudioAsset>> SynthesizeAsync(SynthesizeVoiceAudioInput input, string? projectId = null, RequestOptions? options = null)
+    {
+        var fields = JsonSerializer.SerializeToElement<SynthesizeVoiceAudioInput>(input, HttpTransport.Json).EnumerateObject().ToDictionary(p => p.Name, p => p.Value);
+        fields["projectId"] = JsonSerializer.SerializeToElement(Project(projectId));
+        return Request<VoiceAudioAsset>(HttpMethod.Post, Path + "/tts", fields, options);
+    }
     private Task<ApiResponse<VoiceAudioAsset>> Read(string id, RequestOptions? options) => Request<VoiceAudioAsset>(HttpMethod.Get, AssetPath(id), null, options);
     private void AssertProject(VoiceAudioAsset asset) { if (projectId is not null && !string.Equals(projectId, asset.ProjectId, StringComparison.OrdinalIgnoreCase)) throw new PolymorfaNotFoundException("Audio asset not found.", "resource_not_found"); }
     private async Task Confine(string id, RequestOptions? options) { if (projectId is null || Http.Credential.Kind == CredentialKind.ProjectToken) return; AssertProject((await Read(id, (options ?? new()) with { IdempotencyKey = null }).ConfigureAwait(false)).Data); }
@@ -51,32 +60,40 @@ public sealed class VoiceAudio : Resource
     }
     public async Task<ApiResponse<VoiceAudioAsset>> UploadAsync(CreateVoiceAudioUploadInput input, Stream body, string? projectId = null, RequestOptions? options = null)
     {
-        options ??= new();
-        if (input.SizeBytes is < 1 or > 16777216) throw new PolymorfaValidationException("The upload size is out of range.", "invalid_parameter");
-        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken); deadline.CancelAfter(options.Timeout ?? Http.Options.Timeout);
-        using var bytes = new MemoryStream(); var buffer = new byte[65536];
-        try
-        {
-            while (true) { var count = await body.ReadAsync(buffer, deadline.Token).ConfigureAwait(false); if (count == 0) break; if (bytes.Length + count > input.SizeBytes) throw new PolymorfaValidationException("The upload size does not match the audio bytes.", "invalid_parameter"); await bytes.WriteAsync(buffer.AsMemory(0, count), deadline.Token).ConfigureAwait(false); }
-        }
-        catch (OperationCanceledException) { if (options.CancellationToken.IsCancellationRequested) throw new PolymorfaCancelledException(); throw new PolymorfaTimeoutException("Audio input timed out."); }
-        return await UploadAsync(input, bytes.ToArray(), projectId, options).ConfigureAwait(false);
-    }
-    public async Task<ApiResponse<VoiceAudioAsset>> UploadAsync(CreateVoiceAudioUploadInput input, ReadOnlyMemory<byte> body, string? projectId = null, RequestOptions? options = null)
-    {
-        options ??= new(); if (input.SizeBytes != body.Length || body.Length is < 1 or > 16777216) throw new PolymorfaValidationException("The upload size does not match the audio bytes.", "invalid_parameter");
+        options ??= new(); ArgumentNullException.ThrowIfNull(body);
+        if (input.SizeBytes is < 1 or > 16777216 || !body.CanRead) throw new PolymorfaValidationException("The upload size or input stream is invalid.", "invalid_parameter");
         if (input.ContentType is not ("audio/mpeg" or "audio/wav" or "audio/x-wav" or "audio/ogg" or "audio/mp4" or "audio/x-m4a")) throw new PolymorfaValidationException("Unsupported audio content type.", "invalid_parameter");
         var created = await CreateUploadAsync(input, projectId, options).ConfigureAwait(false); var upload = created.Data.Upload;
-        if (!Uri.TryCreate(upload.Url, UriKind.Absolute, out var url) || url.UserInfo.Length != 0 || url.Scheme != "https" || upload.Method != "POST" || upload.MaxBytes < body.Length) throw new PolymorfaServerException("Invalid audio upload target.", "invalid_response", created.Metadata);
+        if (!Uri.TryCreate(upload.Url, UriKind.Absolute, out var url) || url.UserInfo.Length != 0 || url.Scheme != "https" || upload.Method != "POST" || upload.MaxBytes < input.SizeBytes) throw new PolymorfaServerException("Invalid audio upload target.", "invalid_response", created.Metadata);
         using var storage = Http.CreateStorageClient();
-        using var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = new ByteArrayContent(body.ToArray()) };
-        foreach (var (name, value) in upload.Headers) { if (name.Equals("authorization", StringComparison.OrdinalIgnoreCase) || name.Equals("cookie", StringComparison.OrdinalIgnoreCase) || name.Equals("host", StringComparison.OrdinalIgnoreCase)) throw new PolymorfaServerException("Invalid audio upload header.", "invalid_response", created.Metadata); if (!request.Headers.TryAddWithoutValidation(name, value) && !request.Content.Headers.TryAddWithoutValidation(name, value)) throw new PolymorfaServerException("Invalid audio upload header.", "invalid_response", created.Metadata); }
+        using var content = new ExactLengthAudioContent(body, input.SizeBytes);
+        using var request = new HttpRequestMessage(HttpMethod.Post, url) { Content = content };
+        content.Headers.ContentType = new(input.ContentType);
+        foreach (var (name, value) in upload.Headers)
+        {
+            if (name.Equals("authorization", StringComparison.OrdinalIgnoreCase) || name.Equals("cookie", StringComparison.OrdinalIgnoreCase) || name.Equals("host", StringComparison.OrdinalIgnoreCase) || name.Equals("transfer-encoding", StringComparison.OrdinalIgnoreCase)) throw new PolymorfaServerException("Invalid audio upload header.", "invalid_response", created.Metadata);
+            if (name.Equals("content-length", StringComparison.OrdinalIgnoreCase)) { if (value != input.SizeBytes.ToString(System.Globalization.CultureInfo.InvariantCulture)) throw new PolymorfaServerException("Invalid audio upload length.", "invalid_response", created.Metadata); continue; }
+            if (name.Equals("content-type", StringComparison.OrdinalIgnoreCase)) { if (!string.Equals(value, input.ContentType, StringComparison.OrdinalIgnoreCase)) throw new PolymorfaServerException("Invalid audio upload content type.", "invalid_response", created.Metadata); continue; }
+            if (!request.Headers.TryAddWithoutValidation(name, value) && !content.Headers.TryAddWithoutValidation(name, value)) throw new PolymorfaServerException("Invalid audio upload header.", "invalid_response", created.Metadata);
+        }
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken); linked.CancelAfter(options.Timeout ?? Http.Options.Timeout);
-        try { using var response = await storage.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linked.Token).ConfigureAwait(false); if (!response.IsSuccessStatusCode) throw new PolymorfaException("Audio storage rejected the upload.", "voice_upload_failed", created.Metadata); }
+        try
+        {
+            using var response = await storage.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linked.Token).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode) throw new PolymorfaException("Audio storage rejected the upload.", "voice_upload_failed", created.Metadata);
+        }
         catch (OperationCanceledException) { if (options.CancellationToken.IsCancellationRequested) throw new PolymorfaCancelledException(); throw new PolymorfaTimeoutException("Audio upload timed out."); }
+        catch (HttpRequestException) when (content.Failure is not null) { throw content.Failure; }
         catch (HttpRequestException) { throw new PolymorfaConnectionException("Cannot reach audio storage."); }
         return await Request<VoiceAudioAsset>(HttpMethod.Post, AssetPath(created.Data.Asset.Id) + "/complete", null, options with { IdempotencyKey = null }).ConfigureAwait(false);
     }
+    public async Task<ApiResponse<VoiceAudioAsset>> UploadAsync(CreateVoiceAudioUploadInput input, ReadOnlyMemory<byte> body, string? projectId = null, RequestOptions? options = null)
+    {
+        if (input.SizeBytes != body.Length || body.Length is < 1 or > 16777216) throw new PolymorfaValidationException("The upload size does not match the audio bytes.", "invalid_parameter");
+        using var stream = new MemoryStream(body.ToArray(), writable: false);
+        return await UploadAsync(input, stream, projectId, options).ConfigureAwait(false);
+    }
+
 }
 public sealed class VoiceProviderCredentials : Resource
 {
@@ -92,4 +109,20 @@ public sealed class VoiceProviderCredentials : Resource
     private async Task Confine(string id, RequestOptions? options) { if (projectId is null || Http.Credential.Kind == CredentialKind.ProjectToken) return; var c = (await RetrieveAsync(id, (options ?? new()) with { IdempotencyKey = null }).ConfigureAwait(false)).Data; if (c.ProjectId is null) throw new PolymorfaAuthorizationException("Manage team-wide credentials from the organization client.", "permission_denied"); }
     public async Task<ApiResponse<VoiceProviderCredential>> VerifyAsync(string id, RequestOptions? options = null) { await Confine(id, options).ConfigureAwait(false); return await Request<VoiceProviderCredential>(HttpMethod.Post, CredentialPath(id) + "/verify", null, options).ConfigureAwait(false); }
     public async Task<ApiResponse<VoiceResourceDeleted>> DeleteAsync(string id, RequestOptions? options = null) { await Confine(id, options).ConfigureAwait(false); return await Request<VoiceResourceDeleted>(HttpMethod.Delete, CredentialPath(id), null, options).ConfigureAwait(false); }
+}
+
+internal sealed class SynthesizeVoiceAudioConverter : JsonConverter<SynthesizeVoiceAudioInput>
+{
+    public override SynthesizeVoiceAudioInput Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        using var document = JsonDocument.ParseValue(ref reader); var body = document.RootElement;
+        return body.GetProperty("provider").GetString() switch { "openai" => body.Deserialize<OpenAiVoiceAudioInput>(options)!, "elevenlabs" => body.Deserialize<ElevenLabsVoiceAudioInput>(options)!, _ => throw new JsonException("Unknown voice provider.") };
+    }
+    public override void Write(Utf8JsonWriter writer, SynthesizeVoiceAudioInput value, JsonSerializerOptions options)
+    {
+        var provider = value switch { OpenAiVoiceAudioInput => "openai", ElevenLabsVoiceAudioInput => "elevenlabs", _ => throw new JsonException("Unknown voice provider.") };
+        writer.WriteStartObject(); writer.WriteString("provider", provider);
+        foreach (var property in JsonSerializer.SerializeToElement(value, value.GetType(), options).EnumerateObject()) property.WriteTo(writer);
+        writer.WriteEndObject();
+    }
 }

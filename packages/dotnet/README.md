@@ -56,3 +56,35 @@ returned timing fields also remain optional. Clear a draft follow-up with an exp
 null (`PatchValue<CampaignFollowUp>.Set(null)`).
 The API requires beta enrollment and a single first message, and owns receipt timing,
 reply and opt-out cancellation, expiry, and send eligibility. The SDK never grants access.
+
+Use `PaginateRawAsync` for a raw endpoint with its own page shape. Supply a
+`RawRequest`, a decoder returning `DecodedRawPage<T>`, and an optional cursor
+parameter name. `RawCursorPage<T>` retains the response and metadata, supports
+`NextPageAsync` and `await foreach`, and preserves request bodies, filters,
+headers, and cancellation across pages. A project client accepts only paths
+relative to its bound project.
+
+Voice synthesis uses provider-specific inputs:
+
+```csharp
+using var platform = new OrganizationClient(Credential.OrganizationApiKey(
+    Environment.GetEnvironmentVariable("POLYMORFA_API_KEY")!));
+var speech = new OpenAiVoiceAudioInput(
+    "Greeting", "Hello", OpenAiTtsVoice.Alloy, OpenAiTtsModel.Gpt4oMiniTts);
+var synthesis = await platform.Voice.Audio.SynthesizeAsync(speech, "project-id");
+```
+
+Use `ElevenLabsVoiceAudioInput` with a provider voice ID and an
+`ElevenLabsTtsModel` for ElevenLabs. These inputs replace the former string-based
+`SynthesizeVoiceAudioInput` constructor. Template definitions use
+`TemplateDefinitionVersion.V1`, `TemplateKind`, `TemplateCategory`,
+`TemplateVariableType`, `TemplateOtpType`, and `TemplateSurface`. Carousel headers
+must be `TemplateImageHeader`, `TemplateVideoHeader`, or `TemplateDocumentHeader`.
+Replace numeric/string arguments with those types when updating source callers.
+
+The `Voice.Audio.UploadAsync` stream overload uploads as the source produces
+bytes, using a bounded buffer. Declare the exact byte length and content type in
+`CreateVoiceAudioUploadInput`; the maximum is 16 MiB. The SDK leaves the caller's
+stream open, refuses shorter or longer input, and never completes or retries a
+failed storage write. Storage requests use a separate HTTP client, contain no
+API credential, and refuse redirects.

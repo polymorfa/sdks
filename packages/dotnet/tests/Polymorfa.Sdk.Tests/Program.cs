@@ -108,6 +108,9 @@ try
     await AccountTests.RunAsync();
     await UsageTests.RunAsync();
     await BanSafeTests.RunAsync();
+    await RawPaginationTests.RunAsync();
+    await ConstrainedTypeTests.RunAsync();
+    await VoiceStreamingTests.RunAsync();
     await VoiceTests.RunAsync();
     await FunctionTests.RunAsync();
     await MessageContentTests.RunAsync();

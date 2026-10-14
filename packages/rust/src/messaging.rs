@@ -111,6 +111,24 @@ impl MessagingClient {
     pub fn client_tokens(&self) -> crate::connections::ClientTokens<'_> {
         crate::connections::ClientTokens(&self.http)
     }
+    /// Paginate a raw request with a caller-defined response decoder.
+    pub async fn raw_paginate<T, F>(
+        &self,
+        request: crate::raw::RawRequest,
+        decode: F,
+        cursor_parameter: Option<&str>,
+    ) -> Result<crate::raw::RawCursorPage<T>>
+    where
+        F: Fn(
+                &serde_json::Value,
+                &crate::ResponseMetadata,
+            ) -> Result<crate::raw::DecodedRawPage<T>>
+            + Send
+            + Sync
+            + 'static,
+    {
+        crate::raw::RawCursorPage::load(self.http.clone(), request, decode, cursor_parameter).await
+    }
     /// Explicit escape hatch for newly released endpoints; never counts as typed coverage.
     pub async fn raw<T: serde::de::DeserializeOwned>(
         &self,

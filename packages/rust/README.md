@@ -132,3 +132,15 @@ returned timing fields also remain optional. Clear a draft follow-up with an exp
 null (`Some(None)`).
 The API requires beta enrollment and a single first message, and owns receipt timing,
 reply and opt-out cancellation, expiry, and send eligibility. The SDK never grants access.
+
+Raw requests also support caller-defined pagination through `raw_paginate`,
+`raw::RawRequest`, and `raw::DecodedRawPage`. A decoder receives the response JSON
+and metadata, and returns items and an optional next cursor. Pass a custom cursor
+parameter when the API uses a key other than `cursor`. Pages preserve the method,
+body, filters, headers, cancellation token, and response metadata. Project clients
+accept project-relative paths and keep every subsequent page in that project.
+Use `next_page` for individual pages or `into_stream` for all items, including
+when an intermediate page is empty.
+
+`cloud_graph::graph_transport_headers(models::MessageTransport)` returns the
+Graph route-choice header for raw requests. It does not grant access to a transport.

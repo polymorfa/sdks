@@ -37,6 +37,7 @@ pub mod pagination;
 pub mod platform;
 pub mod platform_sessions;
 pub mod policies;
+pub mod raw;
 pub mod settings;
 pub mod sip;
 pub mod stream;

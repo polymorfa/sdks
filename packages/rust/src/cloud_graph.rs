@@ -186,3 +186,15 @@ impl FlowEncryption<'_> {
             .await
     }
 }
+
+/// Set the Graph-compatible route choice on a raw request.
+pub fn graph_transport_headers(
+    transport: crate::models::MessageTransport,
+) -> std::collections::BTreeMap<String, String> {
+    let value = match transport {
+        crate::models::MessageTransport::Auto => "auto",
+        crate::models::MessageTransport::LinkedDevices => "linked_devices",
+        crate::models::MessageTransport::OfficialApi => "official_api",
+    };
+    [("X-Polymorfa-Transport".into(), value.into())].into()
+}

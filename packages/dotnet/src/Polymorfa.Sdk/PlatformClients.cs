@@ -44,6 +44,7 @@ public sealed class OrganizationClient : IDisposable
         http = new(credential, options ?? new()); Audiences = new(http); Campaigns = new(http); QuickLinkSettings = new(http, null); Calls = new(http, null); Analytics = new(http, null); RequestLogs = new(http, null); Projects = new(http); Sessions = new(http); Configuration = new(http, null); SipTrunks = new(http, null); Operations = new(http, null); CallPolicy = new(http); CallOptOuts = new(http); CallRetention = new(http); Media = new(http); Billing = new(http); Customers = new(http); Organizations = new(http); Members = new(http); ApiKeys = new(http); ProjectTokens = new(http); BanSafe = new(http); OptOuts = new(http); Voice = new(http, null); Usage = new(http, null); AuditLogs = new(http); SecurityIncidents = new(http); SessionBans = new(http); Events = new(http, "/platform", null); Webhooks = new(http, null); WebhookDeliveries = new(http, null);
     }
     public ProjectClient Project(string projectId) => new(http, projectId);
+    public Task<RawCursorPage<T>> PaginateRawAsync<T>(RawRequest request, RawPageDecoder<T> decode, string cursorParameter = "cursor") => RawCursorPage<T>.LoadAsync(http, request, decode, cursorParameter);
     public Task<ApiResponse<T>> RawAsync<T>(HttpMethod method, string path, JsonElement? body = null, RequestOptions? options = null, IReadOnlyList<KeyValuePair<string, string>>? query = null) => http.RequestAsync<T>(method, path, body, options, query);
     public void Dispose() => http.Dispose();
 }
@@ -80,6 +81,12 @@ public sealed class ProjectClient : IDisposable
     {
         if (http.Credential.Kind == CredentialKind.ProjectToken && ProjectId != projectId) throw new PolymorfaConfigurationException("A project token cannot be rebound to another project.");
         return new(http, projectId);
+    }
+    public Task<RawCursorPage<T>> PaginateRawAsync<T>(RawRequest request, RawPageDecoder<T> decode, string cursorParameter = "cursor")
+    {
+        HttpTransport.ValidatePath(request.Path);
+        if (Uri.UnescapeDataString(request.Path).StartsWith("/platform/projects/", StringComparison.Ordinal)) throw new PolymorfaValidationException("Raw paths must be relative to the bound project.", "invalid_project_request_path");
+        return RawCursorPage<T>.LoadAsync(http, request with { Path = Prefix + request.Path }, decode, cursorParameter);
     }
     public Task<ApiResponse<T>> RawAsync<T>(HttpMethod method, string relativePath, JsonElement? body = null, RequestOptions? options = null, IReadOnlyList<KeyValuePair<string, string>>? query = null)
     {
