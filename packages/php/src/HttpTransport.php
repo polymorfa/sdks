@@ -266,7 +266,27 @@ final class HttpTransport
                     $response->getBody()->close();
                 }
                 try {
-                    $response = $this->http->send(new \GuzzleHttp\Psr7\Request('GET', $location, ['Accept' => 'application/octet-stream','User-Agent' => 'polymorfa-php/'.self::SDK_VERSION]), ['http_errors' => false,'allow_redirects' => ['max' => 5,'protocols' => ['https','http'],'referer' => false],'headers' => null,'auth' => null,'cookies' => false,'stream' => true,'timeout' => $options->timeout ?? $this->timeout,'read_timeout' => $options->timeout ?? $this->timeout]);
+                    for ($hop = 0; ; ++$hop) {
+                        if ($hop >= 5) {
+                            throw new ServerException('Media storage returned too many redirects.', 'invalid_redirect', metadata:$metadata, requestId:$metadata->requestId);
+                        }
+                        $options->cancellation?->throwIfCancelled();
+                        $request = ['http_errors' => false,'allow_redirects' => false,'headers' => null,'auth' => null,'cookies' => false,'stream' => true,'timeout' => $options->timeout ?? $this->timeout,'read_timeout' => $options->timeout ?? $this->timeout];
+                        if ($options->cancellation !== null) {
+                            $request['progress'] = static function () use ($options): void {
+                                $options->cancellation->throwIfCancelled();
+                            };
+                        }
+                        $response = $this->http->send(new \GuzzleHttp\Psr7\Request('GET', $location, ['Accept' => 'application/octet-stream','User-Agent' => 'polymorfa-php/'.self::SDK_VERSION]), $request);
+                        if (!in_array($response->getStatusCode(), [301,302,303,307,308], true)) {
+                            break;
+                        }
+                        try {
+                            $location = $this->mediaLocation($response->getHeaderLine('Location'), $metadata, $path, $location);
+                        } finally {
+                            $response->getBody()->close();
+                        }
+                    }
                 } catch (TransferException) {
                     $options->cancellation?->throwIfCancelled();
                     if ($attempt <= $retries && !isset($metadata->headers['x-polymorfa-operation-id'])) {
@@ -301,13 +321,13 @@ final class HttpTransport
         $type = $error::class;
         return new $type($error->getMessage(), $error->errorCode, $error->status, $error->requestId, $metadata, $error->requestLogUrl, $error->docUrl, $error->rateLimitReason, $error->details);
     }
-    private function mediaLocation(string $location, ResponseMetadata $metadata, string $path): string
+    private function mediaLocation(string $location, ResponseMetadata $metadata, string $path, ?string $currentUrl = null): string
     {
         if ($location === '') {
             throw new ServerException('The API returned an empty media redirect.', 'invalid_redirect', metadata:$metadata);
         }
         try {
-            $location = (string)\GuzzleHttp\Psr7\UriResolver::resolve(new \GuzzleHttp\Psr7\Uri($this->baseUrl.$path), new \GuzzleHttp\Psr7\Uri($location));
+            $location = (string)\GuzzleHttp\Psr7\UriResolver::resolve(new \GuzzleHttp\Psr7\Uri($currentUrl ?? $this->baseUrl.$path), new \GuzzleHttp\Psr7\Uri($location));
         } catch (\InvalidArgumentException) {
             throw new ServerException('The API returned an invalid media redirect.', 'invalid_redirect', metadata:$metadata);
         }

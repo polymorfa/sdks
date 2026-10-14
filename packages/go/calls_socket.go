@@ -101,8 +101,8 @@ func (c *CallsClient) End(ctx context.Context, id string, o ...RequestOptions) (
 }
 func (c *CallsClient) socketURL(path string) string {
 	u := *c.messaging.t.base
-	u.Path, _ = url.PathUnescape(path)
-	u.RawPath = path
+	u.RawPath = strings.TrimRight(c.messaging.t.base.EscapedPath(), "/") + path
+	u.Path, _ = url.PathUnescape(u.RawPath)
 	u.RawQuery = ""
 	u.Fragment = ""
 	if u.Scheme == "https" {

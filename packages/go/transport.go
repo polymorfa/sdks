@@ -256,7 +256,7 @@ func (t *transport) open(ctx context.Context, method, path string, q url.Values,
 			return nil, Metadata{}, validation("Request path cannot contain traversal segments.")
 		}
 	}
-	u.RawPath = path
+	u.RawPath = strings.TrimRight(t.base.EscapedPath(), "/") + path
 	u.Path, err = url.PathUnescape(u.RawPath)
 	if err != nil {
 		return nil, Metadata{}, validation("Invalid request path.")

@@ -34,7 +34,10 @@ type MediaDownloadURL struct {
 }
 type MessagingMedia struct{ t *transport }
 
-func mediaPath(id string) string { return "/messaging/media/" + escaped(id) }
+func mediaPath(id string) string            { return "/messaging/media/" + escaped(id) }
+func (d MediaDownloadURL) String() string   { return "MediaDownloadURL[redacted]" }
+func (d MediaDownloadURL) GoString() string { return d.String() }
+
 func (r *MessagingMedia) Retrieve(ctx context.Context, id string, o ...RequestOptions) (Response[Envelope[MediaInfo]], error) {
 	return request[Envelope[MediaInfo]](ctx, r.t, "GET", mediaPath(id)+"/info", nil, nil, options(o))
 }
@@ -78,13 +81,57 @@ func safeRedirect(resp *http.Response) (*url.URL, error) {
 	}
 	return location, nil
 }
-func downloadStream(ctx context.Context, t *transport, path string, o RequestOptions) (*MediaDownload, error) {
+
+type mediaDeadlineBody struct {
+	io.ReadCloser
+	caller, deadline context.Context
+	cancel           context.CancelFunc
+	metadata         Metadata
+}
+
+func (body *mediaDeadlineBody) Read(buffer []byte) (int, error) {
+	n, err := body.ReadCloser.Read(buffer)
+	if err != nil && err != io.EOF {
+		body.cancel()
+		kind, message := ConnectionError, "Media body could not be read."
+		var cause error
+		if body.caller.Err() != nil {
+			kind, message, cause = CancelledError, "Media download was cancelled.", body.caller.Err()
+			if cause == context.DeadlineExceeded {
+				kind, message = TimeoutError, "Media download deadline exceeded."
+			}
+		} else if body.deadline.Err() == context.DeadlineExceeded {
+			kind, message, cause = TimeoutError, "Media download timed out.", context.DeadlineExceeded
+		}
+		return n, &Error{Kind: kind, Message: message, Metadata: body.metadata, Cause: cause}
+	}
+	if err == io.EOF {
+		body.cancel()
+	}
+	return n, err
+}
+func (body *mediaDeadlineBody) Close() error { defer body.cancel(); return body.ReadCloser.Close() }
+func downloadStream(ctx context.Context, t *transport, path string, o RequestOptions) (_ *MediaDownload, failure error) {
+	timeout := t.timeout
+	if o.Timeout != 0 {
+		timeout = o.Timeout
+	}
+	if timeout <= 0 {
+		return nil, configuration("timeout", "timeout must be positive.")
+	}
+	downloadCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer func() {
+		if failure != nil {
+			cancel()
+		}
+	}()
+
 	o.Headers = o.Headers.Clone()
 	if o.Headers == nil {
 		o.Headers = http.Header{}
 	}
 	o.Headers.Set("Accept", "application/octet-stream, */*")
-	resp, md, err := t.open(ctx, "GET", path, nil, nil, o, true)
+	resp, md, err := t.open(downloadCtx, "GET", path, nil, nil, o, true)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +142,7 @@ func downloadStream(ctx context.Context, t *transport, path string, o RequestOpt
 		if e != nil {
 			return nil, e
 		}
-		req, e := http.NewRequestWithContext(ctx, "GET", location.String(), nil)
+		req, e := http.NewRequestWithContext(downloadCtx, "GET", location.String(), nil)
 		if e != nil {
 			return nil, &Error{Kind: ConnectionError, Message: "Invalid media redirect request."}
 		}
@@ -103,6 +150,9 @@ func downloadStream(ctx context.Context, t *transport, path string, o RequestOpt
 		storageClient.Jar = nil
 		resp, e = storageClient.Do(req)
 		if e != nil {
+			if downloadCtx.Err() != nil {
+				return nil, contextError(downloadCtx, downloadCtx.Err())
+			}
 			return nil, &Error{Kind: ConnectionError, Message: "The storage download could not be reached."}
 		}
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
@@ -111,7 +161,7 @@ func downloadStream(ctx context.Context, t *transport, path string, o RequestOpt
 		}
 		redirected = true
 	}
-	return &MediaDownload{Body: resp.Body, ContentType: resp.Header.Get("Content-Type"), ContentLength: resp.ContentLength, Filename: ParseContentDispositionFilename(resp.Header.Get("Content-Disposition")), Redirected: redirected, Metadata: md}, nil
+	return &MediaDownload{Body: &mediaDeadlineBody{ReadCloser: resp.Body, caller: ctx, deadline: downloadCtx, cancel: cancel, metadata: md}, ContentType: resp.Header.Get("Content-Type"), ContentLength: resp.ContentLength, Filename: ParseContentDispositionFilename(resp.Header.Get("Content-Disposition")), Redirected: redirected, Metadata: md}, nil
 }
 func downloadBytes(ctx context.Context, t *transport, path string, o RequestOptions) (Response[[]byte], error) {
 	d, err := downloadStream(ctx, t, path, o)
@@ -121,7 +171,7 @@ func downloadBytes(ctx context.Context, t *transport, path string, o RequestOpti
 	defer d.Body.Close()
 	b, err := io.ReadAll(d.Body)
 	if err != nil {
-		return Response[[]byte]{Metadata: d.Metadata}, &Error{Kind: ConnectionError, Message: "Media body could not be read.", Metadata: d.Metadata}
+		return Response[[]byte]{Metadata: d.Metadata}, err
 	}
 	return Response[[]byte]{Data: b, Metadata: d.Metadata}, nil
 }
