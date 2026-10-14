@@ -8,7 +8,8 @@
     "ext-json": "*",
     "ext-openssl": "*",
     "guzzlehttp/guzzle": "^7.9",
-    "ext-curl": "*"
+    "ext-curl": "*",
+    "ext-zlib": "*"
   },
   "require-dev": {
     "phpstan/phpstan": "^2.1",

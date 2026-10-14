@@ -6,7 +6,7 @@ namespace Polymorfa;
 
 final readonly class MediaDescriptor
 {
-    /** @param 'image'|'video'|'audio'|'document'|'sticker' $mediaKind */
+    /** @param 'image'|'video'|'audio'|'ptt'|'document'|'sticker'|'md-msg-hist' $mediaKind */
     public function __construct(
         public string $mediaKind,
         #[\SensitiveParameter] public string $mediaKey,

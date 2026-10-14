@@ -200,3 +200,32 @@ ordinary sends keep the legacy default. A standard message send transmits its
 media key to Polymorfa. Applications requiring customer key custody send through
 their application sidecar instead. Keep descriptors and explicit wire maps out
 of logs and error details.
+
+### Local history chunks
+
+`DownloadHistoryChunk(ctx, input, options)` accepts either a
+`HistorySyncChunkDescriptor` or compressed `InlinePayload`. Descriptor downloads
+use the WhatsApp History HKDF label and verify the encrypted hash, MAC,
+compressed hash and optional length before decompression or a decoder callback.
+No Polymorfa credential reaches the CDN. Compressed input defaults to a 256 MiB
+bound and inflated data to 512 MiB; configure smaller limits for your process.
+Gzip, zlib and raw deflate are accepted. Truncated data, trailing bytes, malformed
+wire fields and size overruns fail. Context cancellation covers network bodies,
+inflation steps and decoder admission.
+
+`HistorySyncData.Protobuf` preserves the exact inflated proto2 message.
+`Fields` retains every wire field, including unknown fields and groups.
+`Conversations` exposes chat IDs, message protobuf and unsigned message order IDs;
+`SyncType`, `ChunkOrder` and `Progress` expose core metadata. This handwritten
+view does not replace the full WhatsApp schema. Supply `DecodeHistorySyncOptions.Decoder`
+for your complete proto2 model; it receives a private verified copy, while the
+original bytes remain available. Formatting and ordinary JSON redact content.
+No decode helper stores data, acknowledges events or deletes chunks.
+
+`MessagingClient.HistorySync().RequestChunkRetry()` requests another chunk from
+the phone; `DeleteChunk()` explicitly deletes a processed CDN blob. Store the
+chunk durably before deletion. Both commands require a server credential and
+select API revision `2026-10-14` by default. The API enforces session authority,
+consent and availability. Delete requests accept binary SHA-256 and encode it as
+standard padded base64. Neither command retries automatically; timeouts and
+cancellation do not undo an accepted request.

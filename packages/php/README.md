@@ -372,3 +372,30 @@ wire. Response descriptors are typed objects and redact debug/JSON output;
 Descriptor sends select `2026-10-14` unless explicitly overridden. Ordinary
 sends retain the existing API default. Standard sends transmit the media key to
 Polymorfa; customer key custody requires the application's sidecar path.
+
+### Local history chunks
+
+`HistorySyncCodec::download($input)` accepts a `HistorySyncChunkDescriptor` or
+compressed inline bytes. It verifies the encrypted SHA-256, MAC, compressed
+SHA-256 and optional length before inflating or invoking your decoder. CDN
+requests exclude API credentials. Compressed and inflated limits default to
+256 MiB and 512 MiB; choose smaller bounds for your PHP process. Gzip, zlib and
+raw deflate are accepted. Truncation, trailing bytes, invalid wire fields and
+size overruns fail. Cancellation is checked during download and inflation.
+
+`HistorySyncData` keeps exact `protobuf` and every wire field, including unknown
+fields and groups. It exposes core metadata, chat IDs and raw message protobuf;
+unsigned message order varints remain bytes, avoiding PHP float conversion.
+The handwritten core view does not replace the full WhatsApp proto2 schema.
+Pass `decoder: fn(string $verifiedProtobuf) => ...` for your complete model;
+the original bytes remain available. PHP's official generator does not support
+this proto2 schema, so the SDK does not silently convert it to proto3. All history
+objects redact debug and ordinary JSON output. Decoding alone performs no
+storage write, event acknowledgement or CDN deletion.
+
+`$client->historySync->requestChunkRetry()` asks the phone for a fresh chunk;
+`deleteChunk()` explicitly deletes a processed CDN blob after durable local
+storage. Both require server credentials and default to `2026-10-14` per request.
+The API enforces session authority, consent and availability. Delete takes a
+32-byte binary encrypted hash and sends standard padded base64. Commands do not
+retry automatically. Timeout or cancellation does not undo an accepted effect.
