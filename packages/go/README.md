@@ -121,3 +121,32 @@ application-owned; validate the endpoint's response shape before returning items
 The follow-up union replaces the unpublished `CampaignFollowUpMessage` struct.
 Use the text or template variant when upgrading a source checkout. Follow-up
 business constraints and enrollment remain enforced by the API.
+
+### Local upload encryption
+
+`EncryptWhatsAppMedia` encrypts a byte slice. `EncryptWhatsAppMediaTo` reads an
+`io.Reader` incrementally and writes encrypted bytes to an `io.Writer` with
+bounded working memory. Choose `UploadImage`, `UploadVideo`, `UploadAudio`,
+`UploadVoiceNote`, `UploadDocument` or `UploadSticker`; a 32-byte media key is
+created with the operating system random source unless you supply one for an
+immutable repeat pass. Plaintext defaults to a 256 MiB limit.
+
+```go
+media, err := polymorfa.EncryptWhatsAppMedia(ctx, plaintext, polymorfa.EncryptMediaOptions{
+    MediaType: polymorfa.UploadImage,
+    MimeType: "image/jpeg",
+})
+if err != nil { return err }
+// media.Ciphertext is ciphertext plus its ten-byte MAC. Keep MediaKey private.
+```
+
+For a repeat pass, supply the first pass's `MediaKey` in `EncryptMediaOptions`
+and its `EncryptedMediaInfo` as the final argument to `EncryptWhatsAppMediaTo`.
+The source must reach EOF and match both hashes and lengths before the final
+ciphertext block and MAC are released. Changed sources, cancellation, missing
+EOF, read/write failures and size overruns fail without a complete upload body.
+The caller owns and closes the reader/writer and must discard partial output
+on failure. This helper performs local encryption; it does not finalize a CDN
+upload or send a message. Formatting and JSON serialization omit the media key
+and ciphertext. Independently calculated vectors and repeat-pass failure tests
+cover all six media kinds.

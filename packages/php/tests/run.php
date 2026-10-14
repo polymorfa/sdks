@@ -200,3 +200,4 @@ require __DIR__.'/webhook_models.php';
 require __DIR__.'/whatsapp_stream.php';
 
 require __DIR__.'/media_redirect_review.php';
+require __DIR__.'/media_encryption.php';

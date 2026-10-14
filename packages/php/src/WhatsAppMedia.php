@@ -23,7 +23,7 @@ final class WhatsAppMedia
     /** @param 'image'|'video'|'audio'|'document'|'sticker' $mediaKind */
     public static function decode(string $encoded, string $mediaKind): MediaDescriptor
     {
-        if ($encoded === '' || strlen($encoded) > 1048576 || !self::isKind($mediaKind)) {
+        if ($encoded === '' || strlen($encoded) > 1048576 || !self::isDescriptorKind($mediaKind)) {
             self::invalid();
         }
         $raw = base64_decode(strtr($encoded, '-_', '+/'), true);
@@ -83,14 +83,16 @@ final class WhatsAppMedia
         $string = static fn (string $name): ?string => isset($values[$name]) && is_string($values[$name]) ? $values[$name] : null;
         return new MediaDescriptor($mediaKind, $values['mediaKey'], $string('url'), $string('directPath'), $string('fileSha256'), $string('fileEncSha256'), isset($values['fileLength']) && is_int($values['fileLength']) ? $values['fileLength'] : null, $string('mimetype'), $string('fileName'));
     }
-    /** @param 'image'|'video'|'audio'|'document'|'sticker' $mediaKind
+    /** @param 'image'|'video'|'audio'|'ptt'|'document'|'sticker'|'md-msg-hist' $mediaKind
      * @return array{iv:string,cipherKey:string,macKey:string} */
     public static function deriveKeys(#[\SensitiveParameter] string $key, string $mediaKind): array
     {
         if (strlen($key) !== 32 || !self::isKind($mediaKind)) {
             self::invalid();
         }
-        $info = 'WhatsApp '.ucfirst($mediaKind === 'sticker' ? 'image' : $mediaKind).' Keys';
+        $info = 'WhatsApp '.ucfirst(match ($mediaKind) {
+            'sticker' => 'image', 'ptt' => 'audio', 'md-msg-hist' => 'history', default => $mediaKind
+        }).' Keys';
         $expanded = hash_hkdf('sha256', $key, 112, $info, '');
         return ['iv' => substr($expanded, 0, 16),'cipherKey' => substr($expanded, 16, 32),'macKey' => substr($expanded, 48, 32)];
     }
@@ -431,9 +433,13 @@ final class WhatsAppMedia
     {
         return $source->eof();
     }
-    public static function isKind(string $mediaKind): bool
+    private static function isDescriptorKind(string $mediaKind): bool
     {
         return isset(self::FIELDS[$mediaKind]);
+    }
+    public static function isKind(string $mediaKind): bool
+    {
+        return isset(self::FIELDS[$mediaKind]) || in_array($mediaKind, ['ptt','md-msg-hist'], true);
     }
     private static function varint(string $raw, int &$offset): int
     {
