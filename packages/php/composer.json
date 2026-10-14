@@ -32,7 +32,7 @@
     "format": "php-cs-fixer fix --config=.php-cs-fixer.dist.php",
     "format:check": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff",
     "test": "php tests/run.php",
-    "typecheck": "phpstan analyse --configuration=phpstan.neon --no-progress",
+    "typecheck": "phpstan analyse --configuration=phpstan.neon --no-progress --memory-limit=512M",
     "build": "php tools/build.php"
   },
   "suggest": {

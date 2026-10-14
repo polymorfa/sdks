@@ -203,3 +203,5 @@ require __DIR__.'/media_redirect_review.php';
 require __DIR__.'/media_encryption.php';
 
 require __DIR__.'/media_upload.php';
+
+require __DIR__.'/media_send.php';

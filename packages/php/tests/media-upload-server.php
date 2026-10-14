@@ -3,7 +3,7 @@
 declare(strict_types=1);
 $mode = $argv[1] ?? 'direct';
 $kind = $argv[2] ?? 'image';
-$directory = getenv('HOME').'/.polymorfa-agent-work/php-media-upload-'.getmypid();
+$directory = getenv('HOME').'/.polymorfa-agent-work/php-media-upload-'.getmypid().'-'.bin2hex(random_bytes(8));
 mkdir($directory, 0700, true);
 $valid = true;
 $grants = $posts = $probes = $finals = 0;
@@ -63,7 +63,18 @@ try {
         $mapped = match ($kind) {
             'document' => 'file', 'ptt','audio' => 'voice', default => $kind
         };
-        if (str_ends_with($path, '/upload-grants')) {
+        if ($mode === 'send' && str_ends_with($path, '/messages/send')) {
+            $posts++;
+            $data = json_decode($body, true, flags:JSON_THROW_ON_ERROR);
+            $expectedDate = $posts === 1 ? '2026-10-14' : ($posts === 2 ? '2026-09-22' : '2026-12-01');
+            $valid = $valid && ($headers['polymorfa-version'] ?? '') === $expectedDate && isset($headers['idempotency-key']) && str_starts_with($headers['authorization'] ?? '', 'Bearer ');
+            if ($posts !== 2) {
+                $media = $data['content'][$mapped];
+                $wire = $media['descriptor'];
+                $valid = $valid && $wire['mediaKey'] === base64_encode(str_repeat(chr(24), 32)) && $wire['fileLength'] === 25 && count($data['content']) === 1 && !isset($media['url']) && !isset($media['base64']);
+            }
+            $reply = json_encode(['success' => true,'data' => ['id' => 'fixture','type' => $posts === 2 ? 'text' : $mapped,'content' => $data['content']]]);
+        } elseif (str_ends_with($path, '/upload-grants')) {
             $grants++;
             $data = json_decode($body, true, flags:JSON_THROW_ON_ERROR);
             $valid = $valid && ($headers['polymorfa-version'] ?? '') === '2026-10-14' && str_starts_with($headers['authorization'] ?? '', 'Bearer ');
