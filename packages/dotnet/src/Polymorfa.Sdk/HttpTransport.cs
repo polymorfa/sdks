@@ -79,7 +79,7 @@ internal sealed class HttpTransport : IDisposable
         var timeout = options.Timeout ?? Options.Timeout;
         var retries = options.MaxNetworkRetries ?? Options.MaxNetworkRetries;
         ValidateLimits(timeout, retries);
-        var url = new Uri(Options.BaseUrl, path);
+        var url = ApiUrl(path);
         if (query is { Count: > 0 }) url = new UriBuilder(url) { Query = string.Join("&", query.Select(p => $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value)}")) }.Uri;
         var safe = method == HttpMethod.Get || method == HttpMethod.Head || method == HttpMethod.Options || !string.IsNullOrEmpty(options.IdempotencyKey);
         for (var attempt = 1; ; attempt++)
@@ -168,6 +168,7 @@ internal sealed class HttpTransport : IDisposable
         var headers = SafeHeaders.Select(name => (name, value: Header(response, name))).Where(p => p.value is not null).ToDictionary(p => p.name, p => p.value!);
         return new((int)response.StatusCode, headers.GetValueOrDefault("x-request-id") ?? headers.GetValueOrDefault("request-id"), headers.GetValueOrDefault("polymorfa-version"), attempts, new ReadOnlyDictionary<string, string>(headers), headers.GetValueOrDefault("x-polymorfa-transport"), headers.GetValueOrDefault("x-polymorfa-routing-reason"), headers.GetValueOrDefault("x-polymorfa-operation-id"));
     }
+    internal Uri ApiUrl(string path) { ValidatePath(path); return new Uri(Options.BaseUrl.AbsoluteUri.TrimEnd('/') + path); }
     internal static void ValidatePath(string path)
     {
         var decoded = Uri.UnescapeDataString(path);

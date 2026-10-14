@@ -16,9 +16,9 @@ use tokio_util::sync::CancellationToken;
 #[tokio::test]
 async fn server_call_control_native_http_contracts() {
     let body = PlaceCallRequest {
-        session: "s".into(),
-        to: "+15551234567".into(),
-        video: false,
+        session: Some("s".into()),
+        to: Some("+15551234567".into()),
+        video: Some(false),
         participants: None,
         group_id: None,
         exclusive: None,

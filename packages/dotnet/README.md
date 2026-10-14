@@ -88,3 +88,5 @@ bytes, using a bounded buffer. Declare the exact byte length and content type in
 stream open, refuses shorter or longer input, and never completes or retries a
 failed storage write. Storage requests use a separate HTTP client, contain no
 API credential, and refuse redirects.
+
+Configured API base URLs can include a reverse-proxy path. Requests and relative download capabilities retain that prefix; a trailing slash does not change the request path.

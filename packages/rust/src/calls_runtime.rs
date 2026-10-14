@@ -410,9 +410,9 @@ impl CallsClient {
             .calls()
             .place(
                 &PlaceCallRequest {
-                    session: self.0.options.session.clone(),
-                    to: to.clone(),
-                    video: options.video,
+                    session: Some(self.0.options.session.clone()),
+                    to: Some(to.clone()),
+                    video: Some(options.video),
                     participants,
                     group_id,
                     exclusive: Some(options.exclusive),
