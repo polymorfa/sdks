@@ -4,6 +4,7 @@ from typing import Literal
 
 from typing_extensions import NotRequired, TypedDict
 
+from .direct_media import MediaSendDescriptor
 from .transport import Json
 
 
@@ -64,6 +65,24 @@ class UrlVoice(UrlMedia):
 
 class Base64Voice(Base64Media):
     ptt: NotRequired[bool]
+
+
+class DescriptorMedia(TypedDict):
+    descriptor: MediaSendDescriptor
+    caption: NotRequired[str]
+
+
+class DescriptorFile(DescriptorMedia):
+    filename: NotRequired[str]
+
+
+class DescriptorVoice(TypedDict):
+    descriptor: MediaSendDescriptor
+    ptt: NotRequired[bool]
+
+
+class DescriptorSticker(TypedDict):
+    descriptor: MediaSendDescriptor
 
 
 class ProductUrlMedia(TypedDict):
@@ -355,19 +374,23 @@ class TextContent(TypedDict):
 
 
 class ImageContent(TypedDict):
-    image: UrlMedia | Base64Media
+    image: UrlMedia | Base64Media | DescriptorMedia
 
 
 class VideoContent(TypedDict):
-    video: UrlMedia | Base64Media
+    video: UrlMedia | Base64Media | DescriptorMedia
 
 
 class FileContent(TypedDict):
-    file: UrlFile | Base64File
+    file: UrlFile | Base64File | DescriptorFile
 
 
 class VoiceContent(TypedDict):
-    voice: UrlVoice | Base64Voice
+    voice: UrlVoice | Base64Voice | DescriptorVoice
+
+
+class StickerContent(TypedDict):
+    sticker: DescriptorSticker
 
 
 class PollContent(TypedDict):
@@ -436,6 +459,7 @@ Content = (
     | VideoContent
     | FileContent
     | VoiceContent
+    | StickerContent
     | PollContent
     | LocationContent
     | ContactContent
