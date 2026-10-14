@@ -399,3 +399,30 @@ storage. Both require server credentials and default to `2026-10-14` per request
 The API enforces session authority, consent and availability. Delete takes a
 32-byte binary encrypted hash and sends standard padded base64. Commands do not
 retry automatically. Timeout or cancellation does not undo an accepted effect.
+
+### Customer-hosted D1 binding
+
+`Polymorfa\Storage\D1Bridge` implements the storage-only `Adapter` interface for
+a customer Worker using the atomic D1 binding. Supply its URL, fixed authority,
+table prefix and a separate application secret. HTTPS is required except on
+loopback. A fresh signed handshake must confirm schema 2, identity, atomicity and
+bounds before capability is exposed. Setup requires the Worker's explicit
+permission. `get()`, `query()` and conditional `commit()` validate schema, row
+identity and revision, query scope/order and conflict IDs.
+
+Fresh request nonces bind method/path/exact body; response signatures bind the
+nonce/status/exact body. Wrong authority, prefix, schema, capability, nonce or
+body fails closed. Redirects and automatic retries are disabled. Bounded reads
+and operation deadlines cover response bodies. A delete without an explicit
+revision requires a same-session CAS lease write in the same atomic commit.
+Endpoint URLs and secrets stay out of errors, debug output and ordinary JSON.
+
+The producer is pinned to
+`9ae35e671f7f4868a67c1562422c5af9284b95c1`. Administrative D1 REST is not advertised
+as atomic. Native PHP HTTP tests exercised the actual bundled Worker/Miniflare
+D1 binding with all-entity fixtures, 2,000-row paging, rollback, lease-fenced
+deletion and checkpoint CAS. Repeat the opt-in proof using
+`POLYMORFA_D1_BRIDGE_FIXTURE_URL`; the Docker test transport can use
+`POLYMORFA_D1_BRIDGE_FIXTURE_HOST` to reach the host fixture. The adapter persists
+rows only; reducers, merge/replay policy and the full provider matrix remain
+separate integration work.

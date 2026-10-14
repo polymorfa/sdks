@@ -229,3 +229,30 @@ select API revision `2026-10-14` by default. The API enforces session authority,
 consent and availability. Delete requests accept binary SHA-256 and encode it as
 standard padded base64. Neither command retries automatically; timeouts and
 cancellation do not undo an accepted request.
+
+### Customer-hosted D1 binding
+
+Import `github.com/polymorfa/sdks/packages/go/storage` for the storage-only
+`Adapter` interface, schema-2 definitions/key encoding and `NewD1Adapter()`.
+Provide your Worker URL, immutable authority and table prefix, and a separate
+application secret. HTTPS is required except on loopback. The constructor
+verifies a fresh signed handshake before exposing atomic commit capability;
+a zero-value adapter exposes no capability. It supports setup only when the
+Worker permits it, bounded get/query, and all-or-none conditional commits.
+
+Every request signs its fresh nonce, method, exact path and exact body. Every
+response must authenticate that nonce, status and exact body and match the
+configured authority/prefix/schema. Foreign rows, scope/order violations and
+unrelated conflict IDs fail closed. Redirects and automatic retries are refused;
+operation deadlines cover response bodies. Unconditional deletes require a
+same-session CAS lease write in the same atomic batch. Secrets and endpoint URLs
+are omitted from errors and ordinary formatting/JSON.
+
+This uses the customer Worker bridge pinned at
+`9ae35e671f7f4868a67c1562422c5af9284b95c1`, backed by the D1 Worker binding.
+Administrative D1 REST is not an atomic adapter. Native tests exercised the
+actual bundled Worker/Miniflare binding with all-entity fixtures, 2,000-row
+pagination, rollback, fenced deletion and checkpoint CAS. Set
+`POLYMORFA_D1_BRIDGE_FIXTURE_URL` to repeat that opt-in proof. The storage-only
+adapter does not implement event reducers, merge/replay policy or the complete
+provider matrix; those consumers remain a separate integration boundary.

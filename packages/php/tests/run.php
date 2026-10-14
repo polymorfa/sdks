@@ -207,3 +207,5 @@ require __DIR__.'/media_upload.php';
 require __DIR__.'/media_send.php';
 
 require __DIR__.'/history_local.php';
+
+require __DIR__.'/storage_d1.php';
