@@ -62,11 +62,14 @@ template/HTMX integration and mounting the existing browser components. They do
 not establish live membership integration, a connected WhatsApp number or real
 provider acceptance.
 
-Customer-owned direct media/history and self-hosted storage remain blocked on
-the unmerged TypeScript reference branches `feat/direct-media-history` and
-`feat/self-hosted-storage` and corresponding backend contracts. Signal decisions
-and integration are outside this task's scope. Browser-only WASM, IndexedDB and
-UI implementations remain in their existing TypeScript packages.
+Customer-owned media encryption, relay/direct uploads, send descriptors and
+history recovery commands follow TypeScript `254fc6a` and backend
+`87af94a85ab5f17dbcca2a06295dcb321ffadf3a`, with new requests selecting pending
+`2026-10-14`. Golden vectors, real HTTP relay and negative/static wire checks
+verify local behavior. These checks do not prove deployed Number access or
+WhatsApp provider acceptance. Local history decoding, customer-owned storage,
+and the external Signal application consumer are being ported separately.
+Browser-only WASM, IndexedDB and UI implementations remain in TypeScript.
 
 API contracts are consumed without server changes. The SDK and local examples
 are updated; public Mintlify pages and release preparation are consolidated by

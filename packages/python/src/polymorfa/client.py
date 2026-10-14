@@ -19,6 +19,7 @@ from .channels import Channels
 from .client_tokens import ClientTokens
 from .cloud_graph import CloudCatalogs, CloudMarketing, FlowEncryption
 from .customers import Customers
+from .direct_media import HistorySync, WhatsAppMedia
 from .errors import ConfigurationError
 from .flows import Flows
 from .functions import Functions
@@ -50,6 +51,8 @@ from .voice import Voice
 @dataclass(frozen=True, init=False)
 class AsyncMessagingClient:
     _transport: Transport
+    whatsapp_media: WhatsAppMedia
+    history_sync: HistorySync
     campaigns: MessagingCampaigns
     official_groups: OfficialGroups
     cloud_onboarding: CloudOnboarding
@@ -87,6 +90,8 @@ class AsyncMessagingClient:
     def __init__(self, credential: Credential, **options: Unpack[ClientOptions]) -> None:
         transport = Transport(credential, **options)
         object.__setattr__(self, "_transport", transport)
+        object.__setattr__(self, "whatsapp_media", WhatsAppMedia(transport, credential.kind))
+        object.__setattr__(self, "history_sync", HistorySync(transport, credential.kind))
         for name, resource in (
             ("campaigns", MessagingCampaigns),
             ("official_groups", OfficialGroups),

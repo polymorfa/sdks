@@ -312,6 +312,8 @@ class Transport:
         options: RequestOptions = DEFAULT_OPTIONS,
         accept: str = "application/json",
         buffer_body: bool = False,
+        binary_body: bytes | AsyncIterable[bytes] | None = None,
+        binary_length: int | None = None,
     ) -> tuple[httpx.Response, ResponseMetadata]:
         safe = method in ("GET", "HEAD", "OPTIONS") or bool(options.idempotency_key)
         retries = options.max_network_retries
@@ -319,6 +321,19 @@ class Transport:
             retries = self._defaults.max_network_retries or 0
         for attempt in range(1, retries + 2):
             request = self._request(method, path, query or {}, body, options, accept)
+            if binary_body is not None:
+                if binary_length is None or binary_length < 0:
+                    raise ConfigurationError("binary_length")
+                headers = dict(request.headers)
+                headers["content-type"] = "application/octet-stream"
+                headers["content-length"] = str(binary_length)
+                request = self._http.build_request(
+                    method,
+                    request.url,
+                    headers=headers,
+                    content=binary_body,
+                    timeout=options.timeout or self._defaults.timeout,
+                )
             request.extensions["polymorfa_attempt"] = attempt
             try:
                 response = await self._http.send(request, stream=True, follow_redirects=False)
@@ -435,9 +450,17 @@ class Transport:
         body: object = None,
         options: RequestOptions = DEFAULT_OPTIONS,
         require_object: bool,
+        binary_body: bytes | AsyncIterable[bytes] | None = None,
+        binary_length: int | None = None,
     ) -> ApiResponse[Json]:
         response, meta = await self.open_stream(
-            method, path, query=query, body=body, options=options
+            method,
+            path,
+            query=query,
+            body=body,
+            options=options,
+            binary_body=binary_body,
+            binary_length=binary_length,
         )
         try:
             await self._read_body(response, meta)
@@ -472,6 +495,29 @@ class Transport:
     ) -> ApiResponse[Json]:
         return await self._request_json(
             method, path, query=query, body=body, options=options, require_object=False
+        )
+
+    async def request_binary_json(
+        self,
+        method: str,
+        path: str,
+        content: bytes | AsyncIterable[bytes],
+        length: int,
+        *,
+        query: Mapping[str, QueryValue] | None = None,
+        options: RequestOptions = DEFAULT_OPTIONS,
+    ) -> ApiResponse[Json]:
+        """Authenticated, single-attempt binary upload with the normal JSON/error contract."""
+        if isinstance(length, bool) or not isinstance(length, int) or length < 1:
+            raise ConfigurationError("length")
+        return await self._request_json(
+            method,
+            path,
+            query=query,
+            options=replace(options, max_network_retries=0),
+            require_object=True,
+            binary_body=content,
+            binary_length=length,
         )
 
     async def request(

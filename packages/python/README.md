@@ -311,3 +311,37 @@ Prometheus/OpenMetrics gauge exports. Project analytics keeps its bound route.
 `usage` provides metered records and totals; metering does not establish charging.
 Organization `ban_safe` exposes health, telemetry, collection, findings,
 enforcement, incidents and claim evidence. The API owns access and applied state.
+
+Customer-owned upload and history commands select the pending `2026-10-14`
+contract unless `RequestOptions.api_version` overrides it. Their local
+implementation does not establish deployed availability. The default client
+contract remains `2026-09-22`.
+
+`encrypt_whatsapp_media` encrypts bytes or asynchronous byte iterators locally.
+`encrypt_whatsapp_media_stream` returns a single-use ciphertext iterator and
+an `info` future; consume the stream before awaiting that future. Encryption
+supports image, video, audio, voice note (`ptt`), document and sticker.
+
+`client.whatsapp_media.upload(session, source, media_type="image",
+mimetype="image/jpeg")` uses relay egress by default. The relay upload receives
+ciphertext and its hash, without the key or plaintext. Choose `egress="direct"`
+to request a short-lived grant and upload from this process. Direct uploads
+preserve the granted URL's auth/token/media_id, refuse redirects, refresh a
+401 grant, resume interrupted uploads and upload large documents in parts.
+Pass a callable returning a fresh asynchronous byte iterator for large media;
+its hashing and upload passes stream without buffering the file. Changed
+sources fail integrity checks before upload finalization. Custom transports
+implement `MediaUploadTransport`; `whatsapp_media.transport(...)` creates a
+reusable relay or direct transport.
+
+`to_whatsapp_media_send_descriptor(upload)` produces the typed descriptor used
+by `messages.send`. Standard descriptor sends include the media key in the API
+request. Zero-knowledge sends use the customer Signal service instead. Stickers
+require WebP, support dimensions and animation metadata, and exclude captions
+and thumbnails. Descriptor sends select `2026-10-14` unless explicitly overridden.
+
+`client.history_sync.request_chunk_retry(session, {"syncType": "FULL",
+"chunkOrder": 0})` requests another history chunk. After storing a chunk,
+`history_sync.delete_chunk` accepts its `directPath`, unpadded base64url
+`fileEncSha256`, and optional `encHandle` and `companionMetaNonce`. Both commands
+require a server credential and remain subject to API scopes and Number support.
