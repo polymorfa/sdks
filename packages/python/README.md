@@ -371,3 +371,38 @@ cancellation remove the spool. SDK-generated object metadata contains the media
 kind and plaintext hash, with no media key. The SDK never closes the supplied
 S3 client. Local protocol and filesystem checks do not establish hosted bucket
 or WhatsApp acceptance.
+
+`polymorfa.storage` provides customer-owned schema version 2 with 17 entities,
+per-field version merges, event deduplication, permanent content revocation,
+clear-chat watermarks and cleanup of media/reactions/receipts/poll votes.
+`Storage(adapter)` requires atomic conditional commits. Durable session leases
+fence every write chunk; a checkpoint can require its previous cursor. This
+stores customer chat data only in the database your application supplies.
+
+Use `memory_adapter()` for transient tests, or
+`sqlite_adapter("customer.sqlite")` for native persistent SQLite. Call
+`await adapter.setup()` to initialize an empty schema. Existing schema versions
+require an explicit migration. SQL names and columns match the TypeScript
+schema. A path-based SQLite adapter owns its connection and settles a native
+transaction before propagating cancellation. A supplied SQLite connection
+remains application-owned unless `close_client=True` is selected.
+
+`reduce_event` and `reduce_history_chunk` produce deterministic operation
+batches. History IDs use native `wa:` keys unless you supply a
+`HistoryIdentityIndex`; direction and chat scope distinguish reused message IDs.
+`storage_webhook_handler` commits a verified webhook before returning.
+`sync_to_storage(project.events, storage)` resumes its saved cursor, writes data,
+CASes the checkpoint, then acknowledges the event stream. Missing bodies and
+retention gaps stop synchronization without advancing the cursor. Stop with
+`sync.stop()` or `await sync.close()`. Configure a history decoder explicitly
+when history payloads need downloading or decoding.
+
+`await d1_bridge_adapter(url, application_secret, authority=..., table_prefix=...)`
+connects to the customer-hosted D1 Worker bridge. It verifies fresh request-bound
+response signatures, fixed authority/prefix/schema and conditional atomic
+capabilities before exposing an adapter. Requests and responses are bounded.
+This uses the Worker's actual D1 binding, without claiming administrative REST
+calls are atomic. Setup requires the Worker's explicit operator setting. A timed
+out or cancelled commit may have completed; reconcile through conditional
+revisions, event markers and checkpoint CAS. The application secret is distinct
+from Polymorfa credentials. The SDK refuses redirects and credential forwarding.
