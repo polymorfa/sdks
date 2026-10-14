@@ -8,3 +8,4 @@ parameters:
         - tests/media_send_types.php
         - tests/history_types.php
         - tests/storage_types.php
+        - tests/signal_types.php
