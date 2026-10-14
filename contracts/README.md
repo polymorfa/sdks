@@ -1,5 +1,14 @@
 # Contract coverage
 
+## Interactive message candidate
+
+`interactive-messages.json` pins button, carousel and list branches to draft API PR #562.
+Linked Devices accepts ten total controls and at most three CTAs. Replies can mix with URL/call; copy/catalog cannot mix with replies. Carousels contain 2–10 image/video cards with homogeneous controls within each card. Media headers and carousel payloads remain one send.
+Native list bounds follow the thirty-row contract; Official lists retain ten rows.
+Official API replies retain the three-button limit. SDK arrays preserve all
+parameters. Replace the draft pin with the accepted API revision and verify
+matching staging before package publication.
+
 ## Request log supplement
 
 `request-logs.json` pins `GET /platform/projects/{projectId}/request-logs` and

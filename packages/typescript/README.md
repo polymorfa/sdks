@@ -3168,3 +3168,34 @@ configuration changes that do not change capabilities produce no event. Treat
 the event ID as the deduplication key. Eligibility is checked before publication
 and delivery; withdrawn events wait for re-enablement and expire after seven days.
 These additions require an API and SDK release containing this contract.
+
+### Interactive-message candidate
+
+These types target draft API PR #562. They require its backend implementation;
+this source change does not establish hosted availability or package publication.
+Linked Devices permits ten total controls with at most three CTAs. Replies can
+mix with URL/call controls; copy and catalog controls cannot mix with replies.
+Image, video and document headers use exactly one URL or base64 source.
+
+```ts
+await messaging.messages.send(sessionId, {
+  conversation: { phoneNumber: "+15551234567" },
+  content: {
+    buttons: {
+      body: "Choose an option",
+      media: { type: "image", url: "https://example.com/header.jpg" },
+      buttons: [
+        { type: "reply", text: "Interested", id: "offer-interested" },
+        { type: "url", text: "Details", url: "https://example.com/offer" },
+      ],
+    },
+  },
+});
+```
+
+`CarouselMessageContent` contains a body, optional footer and 2–10 cards.
+Each card has a body, optional footer, native buttons, and exactly one `image`
+or `video` source. Native controls within each card share a category, and reply
+IDs must be unique across all cards. One carousel is one send; clients do not
+split it into separately metered messages. Official API media buttons and
+carousels use approved templates through their existing template route.

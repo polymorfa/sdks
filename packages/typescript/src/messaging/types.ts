@@ -2394,11 +2394,68 @@ export type MessageButton =
       readonly catalogProductId?: string;
     };
 
-export interface ButtonsMessageContent {
-  readonly title?: string;
+/** One media source; the API enforces size, URL and decoded media limits. */
+export type InteractiveMediaSource = {
+  readonly mimeType?: string;
+} & (
+  | { readonly url: string; readonly base64?: never }
+  | { readonly base64: string; readonly url?: never }
+);
+
+export type ButtonsMedia = InteractiveMediaSource &
+  (
+    | {
+        readonly type: "image";
+        readonly thumbnail?: never;
+        readonly filename?: never;
+      }
+    | {
+        readonly type: "video";
+        readonly thumbnail?: string;
+        readonly filename?: never;
+      }
+    | {
+        readonly type: "document";
+        readonly filename?: string;
+        readonly thumbnail?: never;
+      }
+  );
+
+/** Linked Devices accepts ten total buttons with at most three CTAs.
+ * Replies can mix with URL/call; copy/catalog cannot mix with replies.
+ * Official API accepts three replies; media headers require approved templates. */
+export type ButtonsMessageContent = {
   readonly body: string;
   readonly footer?: string;
   readonly buttons: readonly MessageButton[];
+} & (
+  | { readonly title?: string; readonly media?: never }
+  | { readonly title?: never; readonly media: ButtonsMedia }
+);
+
+/** Each card has replies or CTAs; IDs are unique across the complete carousel. */
+export type CarouselCard = {
+  readonly body: string;
+  readonly footer?: string;
+  readonly buttons: readonly MessageButton[];
+} & (
+  | {
+      readonly image: InteractiveMediaSource;
+      readonly video?: never;
+      readonly thumbnail?: never;
+    }
+  | {
+      readonly video: InteractiveMediaSource & { readonly thumbnail?: string };
+      readonly image?: never;
+      readonly thumbnail?: never;
+    }
+);
+
+/** Linked Devices only: 2–10 image/video cards, at most 50 MiB total media. */
+export interface CarouselMessageContent {
+  readonly body: string;
+  readonly footer?: string;
+  readonly cards: readonly CarouselCard[];
 }
 
 export interface AddressMessageContent {
@@ -2524,6 +2581,10 @@ export interface SendOrderMessageRequest extends MessageSendContext {
 
 export interface SendListMessageRequest extends MessageSendContext {
   readonly content: { readonly list: ListMessageContent };
+}
+
+export interface SendCarouselMessageRequest extends MessageSendContext {
+  readonly content: { readonly carousel: CarouselMessageContent };
 }
 
 export interface SendButtonsMessageRequest extends MessageSendContext {
@@ -2704,6 +2765,7 @@ export type SendMessageRequest =
   | SendOrderMessageRequest
   | SendListMessageRequest
   | SendButtonsMessageRequest
+  | SendCarouselMessageRequest
   | SendAddressMessageRequest
   | SendFlowMessageRequest
   | SendCallPermissionRequestMessageRequest
