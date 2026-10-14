@@ -2459,15 +2459,36 @@ export interface SendTextMessageRequest extends MessageSendContext {
   readonly content: { readonly text: string };
 }
 
-export type MediaMessageKind = "image" | "file" | "voice" | "video";
+export type MediaMessageKind = "image" | "file" | "voice" | "video" | "sticker";
 
 export type MessageMediaContent<Kind extends MediaMessageKind = "image"> = (
-  | { readonly url: string; readonly base64?: never }
-  | { readonly url?: never; readonly base64: string }
-) & {
-  readonly mimeType?: string;
-  readonly caption?: string;
-} & (Kind extends "file"
+  | (Kind extends "sticker"
+      ? never
+      : {
+          readonly url: string;
+          readonly base64?: never;
+          readonly descriptor?: never;
+          readonly mimeType?: string;
+        })
+  | (Kind extends "sticker"
+      ? never
+      : {
+          readonly url?: never;
+          readonly base64: string;
+          readonly descriptor?: never;
+          readonly mimeType?: string;
+        })
+  | {
+      readonly url?: never;
+      readonly base64?: never;
+      readonly descriptor: import("../media/send-descriptor.js").WhatsAppMediaSendDescriptor;
+      readonly mimeType?: never;
+    }
+) &
+  (Kind extends "sticker"
+    ? { readonly caption?: never }
+    : { readonly caption?: string }) &
+  (Kind extends "file"
     ? { readonly filename?: string; readonly ptt?: never }
     : Kind extends "voice"
       ? { readonly ptt?: boolean; readonly filename?: never }
@@ -2477,7 +2498,8 @@ export type SendMediaMessageRequest = MessageSendContext & {
     | { readonly image: MessageMediaContent }
     | { readonly video: MessageMediaContent }
     | { readonly file: MessageMediaContent<"file"> }
-    | { readonly voice: MessageMediaContent<"voice"> };
+    | { readonly voice: MessageMediaContent<"voice"> }
+    | { readonly sticker: MessageMediaContent<"sticker"> };
 };
 
 export interface SendPollMessageRequest extends MessageSendContext {

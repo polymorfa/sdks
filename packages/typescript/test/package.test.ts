@@ -42,6 +42,11 @@ describe("npm package", () => {
     expect(paths).toContain("dist/calls/internal.js");
     expect(paths).toContain("dist/node.js");
     expect(paths).toContain("dist/node.d.ts");
+    expect(paths).toContain("dist/history/index.js");
+    expect(paths).toContain("dist/history/gen/whatsapp_pb.js");
+    expect(paths).toContain("dist/history/gen/whatsapp_pb.d.ts");
+    expect(paths).toContain("dist/s3.js");
+    expect(paths).toContain("dist/s3.d.ts");
     expect(paths).toContain("package.json");
     expect(
       paths.some((path) => path.includes("/src/") || path.includes("/test/")),
@@ -55,11 +60,23 @@ describe("npm package", () => {
     });
     expect(initialize.status, initialize.stderr).toBe(0);
     const tarball = join(directory, metadata[0]?.filename ?? "missing.tgz");
-    const install = spawnSync("npm", ["install", "--ignore-scripts", tarball], {
-      cwd: directory,
-      encoding: "utf8",
-      env: environment,
-    });
+    const install = spawnSync(
+      "npm",
+      [
+        "install",
+        "--ignore-scripts",
+        "--offline",
+        "--legacy-peer-deps",
+        "--no-audit",
+        "--no-fund",
+        tarball,
+      ],
+      {
+        cwd: directory,
+        encoding: "utf8",
+        env: environment,
+      },
+    );
     expect(install.status, install.stderr).toBe(0);
     writeFileSync(
       consumer,
@@ -158,6 +175,8 @@ describe("npm package", () => {
         "downloadMediaToFile",
         "downloadWhatsAppMediaToFile",
         "nodeMediaCrypto",
+        "nodeMediaEncryptor",
+        "whatsAppMediaFileSource",
         "writeStreamToFile",
       ],
       stream: "function",

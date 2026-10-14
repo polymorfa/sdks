@@ -445,7 +445,10 @@ export class HttpTransport {
       "maxNetworkRetries",
       true,
     );
-    const eligible = canRetryRequest(request.method, request.idempotencyKey);
+    // A stream body is consumed by the first attempt and cannot be replayed.
+    const eligible =
+      !(request.body instanceof ReadableStream) &&
+      canRetryRequest(request.method, request.idempotencyKey);
     let attempt = 0;
 
     while (true) {
@@ -617,8 +620,9 @@ export class HttpTransport {
         headers,
         redirect: this.#authorization === undefined ? "follow" : "error",
         ...(encoded.body === undefined ? {} : { body: encoded.body }),
+        ...(encoded.body instanceof ReadableStream ? { duplex: "half" } : {}),
         signal: controller.signal,
-      });
+      } as RequestInit);
     } catch (error) {
       request.signal?.removeEventListener("abort", cancel);
       if (request.signal?.aborted === true) {
@@ -682,8 +686,9 @@ export class HttpTransport {
         headers,
         redirect: this.#authorization === undefined ? "follow" : "error",
         ...(encoded.body === undefined ? {} : { body: encoded.body }),
+        ...(encoded.body instanceof ReadableStream ? { duplex: "half" } : {}),
         signal: controller.signal,
-      });
+      } as RequestInit);
       onResponse(response);
       return { response, data: await decode(response) };
     } catch (error) {

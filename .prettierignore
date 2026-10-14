@@ -17,3 +17,5 @@ examples/**/dist/
 examples/**/bin/
 examples/**/obj/
 examples/rust/yew/frontend/public/elements.js
+packages/typescript/src/history/gen/
+packages/typescript/proto/whatsapp.proto
