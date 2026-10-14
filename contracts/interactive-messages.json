@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "99c36bd39f51a2c1da309782fdbe0963597f68ca",
+  "commit": "ae30811ef6675a38a507482676b7213141ebebb6",
   "sourcePath": "apps/api/docs/openapi.json",
   "sourceSha256": "4375210d40d5bd21cf0605bd89d73eabc41a32f67613cd6a56027e8704005f1f",
   "releaseStatus": "draft; requires accepted API revision and staging acceptance",
