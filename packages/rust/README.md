@@ -310,3 +310,21 @@ driver against MinIO, including verification before PUT, conditional reads,
 changed objects, cancellation and ciphertext-only relay/direct uploads. Hosted
 AWS/R2 credentials, IAM policies and deployment acceptance remain separate gates.
 This SDK remains unpublished.
+
+
+`storage::sql::supabase_preset` exports the schema-2 customer database tables,
+live session memberships and forced-RLS policies from storage source
+`3bacf46f9c4213426314001586f5bae43aaa77de`. Review and install the SQL once in a
+customer-owned migration using `SupabasePresetOptions`; adapter setup never
+installs these policies. Pass the resulting schema and prefix to the server
+SQL adapter with `create_tables: false`.
+
+The separate reader role can select only sessions mapped to `auth.uid()` in
+`storage_memberships`. It cannot write storage data or memberships. Configure
+trusted Supabase/PostgREST JWT enforcement; never expose a direct reader SQL
+credential or let a browser set the database subject. Keep reader and server
+roles distinct, without superuser/BYPASSRLS rights or reader inheritance of the
+writer role. Membership deletion takes effect on the next database query.
+Native PostgreSQL tests prove all 17 entities, anonymous/write denial, a
+non-superuser owner's FORCE-RLS boundary, revocation and missing-subject denial.
+Hosted Supabase JWT and deployment acceptance remain separate gates.
