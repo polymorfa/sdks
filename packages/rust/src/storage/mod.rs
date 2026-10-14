@@ -204,3 +204,6 @@ impl std::fmt::Debug for StorageError {
 }
 
 pub mod d1;
+
+#[cfg(feature = "storage-sql")]
+pub mod sql;

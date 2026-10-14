@@ -225,3 +225,105 @@ fn webhook_mac_uses_exact_bytes_timestamp_and_preserves_extensions() {
     let mut parser = polymorfa_sdk::stream::SseParser::default();
     assert!(parser.feed(&vec![b'x'; 4 * 1024 * 1024 + 1]).is_err());
 }
+
+/// Optional integration against the exact private producer's synthetic local HTTP harness.
+#[tokio::test]
+async fn actual_service_auth_and_sessions_contract() {
+    let Ok(directory) = std::env::var("POLYMORFA_SIGNAL_FIXTURE_DIRECTORY") else {
+        return;
+    };
+    let bytes = tokio::fs::read(std::path::Path::new(&directory).join("metadata.json"))
+        .await
+        .unwrap();
+    let meta: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(meta["sourceCommit"], SIGNAL_SERVICE_CONTRACT);
+    assert_eq!(meta["syntheticOnly"], true);
+    let base = meta["url"].as_str().unwrap();
+    let secret = meta["applicationSecret"].as_str().unwrap();
+    let client = SignalClient::new(SignalClientOptions::new(base, secret)).unwrap();
+    let sessions = client.sessions(&CancellationToken::new()).await.unwrap();
+    assert_eq!(sessions.sessions[0].id, meta["sessionId"].as_str().unwrap());
+    assert!(sessions.sessions[0].claimed);
+    let wrong = SignalClient::new(SignalClientOptions::new(
+        base,
+        "incorrect-synthetic-application-secret",
+    ))
+    .unwrap();
+    assert_eq!(
+        match wrong.sessions(&CancellationToken::new()).await {
+            Err(error) => error.kind,
+            Ok(_) => panic!("Incorrect application secret accepted"),
+        },
+        ErrorKind::Authentication
+    );
+    let http = reqwest::Client::new();
+    let response = http
+        .get(format!("{base}/v1/sessions"))
+        .bearer_auth(secret)
+        .header("Origin", "null")
+        .send()
+        .await
+        .unwrap();
+    assert_eq!(response.status(), 403);
+    let health: serde_json::Value = http
+        .get(format!("{base}/healthz"))
+        .send()
+        .await
+        .unwrap()
+        .json()
+        .await
+        .unwrap();
+    assert_eq!(health, serde_json::json!({"status":"ok"}));
+    if std::env::var("POLYMORFA_SIGNAL_FIXTURE_INJECT").as_deref() != Ok("1") {
+        return;
+    }
+    let root = std::path::Path::new(&directory);
+    let receipt = root.join("receipt.json");
+    if let Err(error) = tokio::fs::remove_file(&receipt).await {
+        assert_eq!(error.kind(), std::io::ErrorKind::NotFound);
+    }
+    let id = format!("rust-native-{}", uuid::Uuid::new_v4());
+    let stop = CancellationToken::new();
+    let mut events = client.events(Some(meta["sessionId"].as_str().unwrap()), stop.clone());
+    let receive = tokio::spawn(async move { events.next().await.unwrap().unwrap() });
+    tokio::time::sleep(Duration::from_millis(100)).await;
+    tokio::fs::write(
+        root.join("inject.json"),
+        serde_json::to_vec(&serde_json::json!({"messageId":id,"text":"rust-native-synthetic"}))
+            .unwrap(),
+    )
+    .await
+    .unwrap();
+    let event = tokio::time::timeout(Duration::from_secs(4), receive)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(event.message_id, id);
+    assert_eq!(event.text.as_deref(), Some("rust-native-synthetic"));
+    assert_eq!(event.timestamp, 1720000000);
+    assert_eq!(event.sender_alt.as_deref(), Some("123456@lid"));
+    assert!(!event.message_proto.is_empty());
+    assert!(!receipt.exists());
+    let mut file = tokio::fs::File::create(root.join("rust-received.json"))
+        .await
+        .unwrap();
+    file.write_all(&serde_json::to_vec(&serde_json::json!({"id":event.id,"messageProto":event.message_proto,"text":event.text})).unwrap()).await.unwrap();
+    file.sync_all().await.unwrap();
+    client
+        .acknowledge(&event.id, &CancellationToken::new())
+        .await
+        .unwrap();
+    tokio::time::timeout(Duration::from_secs(3), async {
+        loop {
+            if let Ok(bytes) = tokio::fs::read(&receipt).await {
+                let receipt: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+                assert_eq!(receipt["acknowledged"], true);
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(10)).await;
+        }
+    })
+    .await
+    .unwrap();
+    stop.cancel();
+}
