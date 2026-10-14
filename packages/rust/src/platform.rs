@@ -149,6 +149,24 @@ impl OrganizationClient {
             project_id: None,
         }
     }
+    /// Paginate a raw request with a caller-defined response decoder.
+    pub async fn raw_paginate<T, F>(
+        &self,
+        request: crate::raw::RawRequest,
+        decode: F,
+        cursor_parameter: Option<&str>,
+    ) -> Result<crate::raw::RawCursorPage<T>>
+    where
+        F: Fn(
+                &serde_json::Value,
+                &crate::ResponseMetadata,
+            ) -> Result<crate::raw::DecodedRawPage<T>>
+            + Send
+            + Sync
+            + 'static,
+    {
+        crate::raw::RawCursorPage::load(self.http.clone(), request, decode, cursor_parameter).await
+    }
     pub async fn raw<T: serde::de::DeserializeOwned>(
         &self,
         method: Method,
@@ -285,6 +303,32 @@ impl ProjectClient {
     pub(crate) fn prefix(&self) -> String {
         format!("/platform/projects/{}", encode(&self.project_id))
     }
+    /// Paginate a raw request with a caller-defined response decoder.
+    pub async fn raw_paginate<T, F>(
+        &self,
+        mut request: crate::raw::RawRequest,
+        decode: F,
+        cursor_parameter: Option<&str>,
+    ) -> Result<crate::raw::RawCursorPage<T>>
+    where
+        F: Fn(
+                &serde_json::Value,
+                &crate::ResponseMetadata,
+            ) -> Result<crate::raw::DecodedRawPage<T>>
+            + Send
+            + Sync
+            + 'static,
+    {
+        crate::transport::validate_path(&request.path)?;
+        if percent_encoding::percent_decode_str(&request.path)
+            .decode_utf8_lossy()
+            .starts_with("/platform/projects/")
+        {
+            return Err(configuration("project-relative path"));
+        }
+        request.path = format!("{}{}", self.prefix(), request.path);
+        crate::raw::RawCursorPage::load(self.http.clone(), request, decode, cursor_parameter).await
+    }
     pub async fn raw<T: serde::de::DeserializeOwned>(
         &self,
         method: Method,
@@ -294,7 +338,10 @@ impl ProjectClient {
         options: RequestOptions,
     ) -> Result<ApiResponse<T>> {
         crate::transport::validate_path(relative_path)?;
-        if relative_path.starts_with("/platform/projects/") {
+        if percent_encoding::percent_decode_str(relative_path)
+            .decode_utf8_lossy()
+            .starts_with("/platform/projects/")
+        {
             return Err(configuration("project-relative path"));
         }
         let pairs = query_pairs(query)?;

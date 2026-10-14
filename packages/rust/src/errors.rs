@@ -42,6 +42,10 @@ pub struct ErrorInfo {
 }
 
 impl Error {
+    /// Create a local error from a caller-defined response decoder.
+    pub fn new(kind: ErrorKind, message: impl Into<String>, code: &str) -> Self {
+        Self::local(kind, message, code)
+    }
     pub(crate) fn local(kind: ErrorKind, message: impl Into<String>, code: &str) -> Self {
         Self {
             inner: Box::new(ErrorInfo {

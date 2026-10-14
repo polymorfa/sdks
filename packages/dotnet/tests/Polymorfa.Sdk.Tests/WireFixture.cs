@@ -9,6 +9,7 @@ internal sealed class WireFixture : IDisposable
 {
     private readonly TcpListener listener = new(IPAddress.Loopback, 0);
     public Uri Url { get; }
+    internal bool Pending => listener.Pending();
     private readonly X509Certificate2? certificate;
     public string? Authorization { get; init; }
     public IReadOnlyDictionary<string, string>? ExpectedHeaders { get; init; }

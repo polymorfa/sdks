@@ -3,14 +3,15 @@ using System.Text.Json.Serialization;
 
 namespace Polymorfa.Sdk;
 
-public sealed record TemplateVariable(string Name, string Type, string Example);
+public sealed record TemplateVariable(string Name, TemplateVariableType Type, string Example);
 [JsonConverter(typeof(TemplateHeaderConverter))]
 public abstract record TemplateHeader;
 public sealed record TemplateNoneHeader : TemplateHeader;
 public sealed record TemplateTextHeader(string Text) : TemplateHeader;
-public sealed record TemplateImageHeader(string? Example = null, string? Filename = null) : TemplateHeader;
-public sealed record TemplateVideoHeader(string? Example = null, string? Filename = null) : TemplateHeader;
-public sealed record TemplateDocumentHeader(string? Example = null, string? Filename = null) : TemplateHeader;
+[JsonConverter(typeof(TemplateMediaHeaderConverter))] public abstract record TemplateMediaHeader : TemplateHeader;
+public sealed record TemplateImageHeader(string? Example = null, string? Filename = null) : TemplateMediaHeader;
+public sealed record TemplateVideoHeader(string? Example = null, string? Filename = null) : TemplateMediaHeader;
+public sealed record TemplateDocumentHeader(string? Example = null, string? Filename = null) : TemplateMediaHeader;
 public sealed record TemplateLocationExample(double Latitude, double Longitude, string? Name = null, string? Address = null);
 public sealed record TemplateLocationHeader(TemplateLocationExample? Example = null) : TemplateHeader;
 [JsonConverter(typeof(TemplateButtonConverter))]
@@ -19,15 +20,15 @@ public sealed record TemplateQuickReplyButton(string Text) : TemplateButton;
 public sealed record TemplateUrlButton(string Text, string Url) : TemplateButton;
 public sealed record TemplatePhoneButton(string Text, string Phone) : TemplateButton;
 public sealed record TemplateCopyCodeButton(string? Text = null, string? Example = null) : TemplateButton;
-public sealed record TemplateCarouselCard(TemplateHeader Header, string Body, IReadOnlyList<TemplateButton>? Buttons = null);
+public sealed record TemplateCarouselCard(TemplateMediaHeader Header, string Body, IReadOnlyList<TemplateButton>? Buttons = null);
 public sealed record TemplateCarousel(IReadOnlyList<TemplateCarouselCard> Cards);
-public sealed record TemplateAuthentication(string OtpType, string? CodeExample = null, bool? AddSecurityRecommendation = null, int? CodeExpirationMinutes = null);
+public sealed record TemplateAuthentication(TemplateOtpType OtpType, string? CodeExample = null, bool? AddSecurityRecommendation = null, int? CodeExpirationMinutes = null);
 public sealed record TemplateLimitedTimeOffer(string Text, bool HasExpiration);
-public sealed record TemplateDefinition(int Version, string Kind, string Category, string Language, string Body, IReadOnlyList<TemplateVariable> Variables, TemplateHeader? Header = null, string? Footer = null, IReadOnlyList<TemplateButton>? Buttons = null, TemplateCarousel? Carousel = null, TemplateAuthentication? Authentication = null, TemplateLimitedTimeOffer? LimitedTimeOffer = null);
+public sealed record TemplateDefinition(TemplateDefinitionVersion Version, TemplateKind Kind, TemplateCategory Category, string Language, string Body, IReadOnlyList<TemplateVariable> Variables, TemplateHeader? Header = null, string? Footer = null, IReadOnlyList<TemplateButton>? Buttons = null, TemplateCarousel? Carousel = null, TemplateAuthentication? Authentication = null, TemplateLimitedTimeOffer? LimitedTimeOffer = null);
 public sealed record ProjectTemplate(string Id, string Name, string Category, string Language, string Status, string Kind, IReadOnlyList<JsonElement> CloudLinks, long CreatedAt, long UpdatedAt, TemplateDefinition? Definition = null, IReadOnlyDictionary<string, string>? SampleValues = null);
 public sealed record CreateProjectTemplateRequest(string Name, TemplateDefinition Definition, IReadOnlyDictionary<string, string>? SampleValues = null);
 public sealed record UpdateProjectTemplateRequest(string? Name = null, string? Status = null, TemplateDefinition? Definition = null, IReadOnlyDictionary<string, string>? SampleValues = null);
-public sealed record PreviewProjectTemplateRequest(IReadOnlyDictionary<string, string>? Values = null, string? Surface = null);
+public sealed record PreviewProjectTemplateRequest(IReadOnlyDictionary<string, string>? Values = null, TemplateSurface? Surface = null);
 public sealed record SubmitProjectTemplateRequest(string Session);
 public sealed class Templates : Resource
 {
@@ -42,8 +43,8 @@ public sealed class Templates : Resource
     public Task<ApiResponse<SuccessEnvelope<JsonElement>>> PreviewAsync(string slug, string id, PreviewProjectTemplateRequest? body = null, RequestOptions? options = null) => Post<SuccessEnvelope<JsonElement>>(Path(slug, id) + "/preview", body ?? new(), options);
     public Task<ApiResponse<SuccessEnvelope<JsonElement>>> SubmitAsync(string slug, string id, SubmitProjectTemplateRequest body, RequestOptions? options = null) => Post<SuccessEnvelope<JsonElement>>(Path(slug, id) + "/submit", body, (options ?? new()) with { MaxNetworkRetries = 0 });
 }
-public sealed record CloudTemplate(string Id, string TenantId, string Session, string WabaId, string Name, string Language, string Category, string Status, IReadOnlyList<JsonElement> Components, string CreatedAt, string UpdatedAt, string? MetaTemplateId = null, string? RejectionReason = null, string? QualityScore = null);
-public sealed record CreateCloudTemplateRequest(string Name, string Language, string Category, IReadOnlyList<JsonElement> Components);
+public sealed record CloudTemplate(string Id, string TenantId, string Session, string WabaId, string Name, string Language, TemplateCategory Category, string Status, IReadOnlyList<JsonElement> Components, string CreatedAt, string UpdatedAt, string? MetaTemplateId = null, string? RejectionReason = null, string? QualityScore = null);
+public sealed record CreateCloudTemplateRequest(string Name, string Language, TemplateCategory Category, IReadOnlyList<JsonElement> Components);
 public sealed record EditCloudTemplateRequest(IReadOnlyList<JsonElement> Components);
 public sealed record EditCloudTemplateResult(bool Accepted, string Name, string Language);
 public sealed class CloudTemplates : Resource
@@ -90,4 +91,10 @@ internal sealed class TemplateButtonConverter : JsonConverter<TemplateButton>
         foreach (var property in JsonSerializer.SerializeToElement(value, value.GetType(), options).EnumerateObject()) property.WriteTo(writer);
         writer.WriteEndObject();
     }
+}
+
+internal sealed class TemplateMediaHeaderConverter : JsonConverter<TemplateMediaHeader>
+{
+    public override TemplateMediaHeader Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => new TemplateHeaderConverter().Read(ref reader, typeof(TemplateHeader), options) as TemplateMediaHeader ?? throw new JsonException("A carousel header must contain image, video or document media.");
+    public override void Write(Utf8JsonWriter writer, TemplateMediaHeader value, JsonSerializerOptions options) => new TemplateHeaderConverter().Write(writer, value, options);
 }
