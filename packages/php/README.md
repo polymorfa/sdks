@@ -426,3 +426,39 @@ deletion and checkpoint CAS. Repeat the opt-in proof using
 `POLYMORFA_D1_BRIDGE_FIXTURE_HOST` to reach the host fixture. The adapter persists
 rows only; reducers, merge/replay policy and the full provider matrix remain
 separate integration work.
+
+
+## Customer-owned Signal service client
+
+The server-side sidecar client consumes the application HTTP contract pinned to
+`8aa191ef0d4c318229c91bcdf474bf2d79dac47c`. The separate application bearer secret
+is not a Polymorfa API credential. Device keys remain with the customer-operated
+Signal service; the SDK imports no Signal core and uses no FFI. Require HTTPS
+except on loopback. Redirects, credential cookies and automatic retries are
+refused. Request deadlines and caller cancellation do not undo a send or ACK.
+
+Create `new SignalSidecarClient($serviceUrl, $applicationSecret)`. Use
+`health()`, `sessions()`, `send()` with `SignalSendRequest`, and
+`events($sessionId, $cancellation)`. Iterate the returned stream and close it.
+`SignalMediaDescriptor::fromUpload($upload)` converts a completed local media
+upload into a secret-bearing send descriptor, including PTT audio.
+
+An SSE connection delivers each record immediately and validates its ID, event
+type and requested session. The SDK retains exact JSON and protobuf bytes,
+including unknown fields; history notification enums remain nullable integers.
+There is no cursor, automatic reconnection or automatic ACK. Durably persist
+an event and its effects before calling `acknowledge()`.
+
+`SignalWebhooks::constructEvent()` verifies the timestamp window and HMAC of the exact raw
+body. `SignalWebhooks::process()` requires a persistence callback
+that atomically deduplicates and durably commits effects. Return HTTP 2xx only
+after it succeeds. No in-memory deduplication fallback is supplied. Ordinary
+formatting and JSON serialization redact secret-bearing DTOs; explicit raw
+bytes and wire conversion are customer-owned sensitive data and must not be logged.
+
+Native tests cover HTTP, streaming cancellation, redirects, header isolation,
+nullable history, raw protobuf and independent webhook HMAC vectors. The opt-in
+`POLYMORFA_SIGNAL_FIXTURE_DIRECTORY` proof exercised the pinned service and real
+core with synthetic pairing, encrypted receive, caller fsync before manual ACK,
+and sends through a fake upstream WebSocket. This proves those local boundaries;
+it does not establish live WhatsApp pairing, provider delivery or peer decryption.
