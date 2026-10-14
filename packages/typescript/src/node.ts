@@ -221,7 +221,9 @@ export const nodeMediaEncryptor: WhatsAppMediaEncryptor = Object.freeze({
                 const last = new Uint8Array(cipher.final());
                 mac.update(last);
                 emit(controller, last);
-                const tag = new Uint8Array(mac.digest().subarray(0, MAC_LENGTH));
+                const tag = new Uint8Array(
+                  mac.digest().subarray(0, MAC_LENGTH),
+                );
                 emit(controller, tag);
                 settle.resolve(
                   Object.freeze({

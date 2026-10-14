@@ -3168,3 +3168,29 @@ configuration changes that do not change capabilities produce no event. Treat
 the event ID as the deduplication key. Eligibility is checked before publication
 and delivery; withdrawn events wait for re-enablement and expire after seven days.
 These additions require an API and SDK release containing this contract.
+
+
+### Customer-owned media and history (development contract)
+
+The media upload helpers and `@polymorfa/sdk/history` require the 2026-10-14 API
+contract. Their presence in a development build does not establish deployed
+availability. `messaging.whatsappMedia.upload()` encrypts media locally and
+supports encrypted relay or a short-lived direct upload grant. The direct path
+preserves the exact grant URL and keeps API credentials off the media host.
+`toWhatsAppMediaSendDescriptor()` constructs the standard message descriptor;
+standard descriptor sending includes the media key in the API request. Use the
+customer-owned Signal service for message stanza encryption under customer key
+custody.
+
+`downloadHistoryChunk()` verifies, decrypts, inflates and decodes chunks locally;
+inline notifications skip the download. Set `maxBytes` and `maxInflatedBytes`
+for application limits. Protobuf integer values and unknown fields survive
+processing. The helper does not download a notification automatically.
+
+The Node-only `@polymorfa/sdk/s3` entry point provides `S3MediaStore`. Its
+`archive()` verifies a private local spool before it writes the plaintext to
+S3-compatible storage, then removes the spool on every outcome. Use
+`scratchDirectory` to select that private directory. `uploadToWhatsApp()` reads
+an object twice with a matching ETag; both passes must see the same object.
+Install the optional `@aws-sdk/client-s3` peer for S3 and `@bufbuild/protobuf`
+for history decoding. Never log media keys or upload-grant URLs.

@@ -8,6 +8,7 @@
 import { fromBinary } from "@bufbuild/protobuf";
 
 import {
+  PolymorfaCancelledError,
   PolymorfaConfigurationError,
   PolymorfaMediaIntegrityError,
 } from "../errors.js";
@@ -105,7 +106,9 @@ function bytesField(
   return bytes;
 }
 
-function isInline(input: HistorySyncChunkInput): input is HistorySyncInlinePayload {
+function isInline(
+  input: HistorySyncChunkInput,
+): input is HistorySyncInlinePayload {
   return (
     typeof input === "object" &&
     input !== null &&
@@ -127,7 +130,7 @@ function resolveInflatedLimit(value: number | undefined): number {
 
 function compressionFormat(header: Uint8Array): CompressionFormat {
   // WhatsApp Web inflates with fflate's decompressSync, which detects gzip,
-  // zlib and raw deflate (Cellar whatsapp-1049257521 WAGzip.js,
+  // zlib and raw deflate (Cellar whatsapp-1049950004 WAGzip.js,
   // WAWebHandleHistorySyncChunk.js:134). whatsmeow and the phone produce zlib.
   if (header[0] === 0x1f && header[1] === 0x8b) return "gzip";
   if (
@@ -158,8 +161,9 @@ async function inflate(
   });
   const reader = source
     .pipeThrough(
-      new DecompressionStream(compressionFormat(compressed)) as unknown as
-        ReadableWritablePair<Uint8Array, Uint8Array>,
+      new DecompressionStream(
+        compressionFormat(compressed),
+      ) as unknown as ReadableWritablePair<Uint8Array, Uint8Array>,
     )
     .getReader();
   const chunks: Uint8Array[] = [];
@@ -218,7 +222,9 @@ export async function decodeHistorySyncPayload(
   }
 }
 
-async function collect(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
+async function collect(
+  stream: ReadableStream<Uint8Array>,
+): Promise<Uint8Array> {
   const reader = stream.getReader();
   const chunks: Uint8Array[] = [];
   let total = 0;
@@ -240,8 +246,8 @@ async function collect(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> 
 /**
  * Downloads a history chunk from the WhatsApp CDN by `directPath`, verifies
  * `fileEncSha256`, the MAC and `fileSha256`, decrypts it with the
- * `WhatsApp History Keys` HKDF label (Cellar whatsapp-1049257521
- * WAMediaHkdfInfo.js:12), inflates it and decodes `HistorySync`. An inline
+ * `WhatsApp History Keys` HKDF label (Cellar whatsapp-1049950004
+ * WAMediaHkdfInfo.js:14), inflates it and decodes `HistorySync`. An inline
  * payload skips the download and decryption. No Polymorfa credential is
  * used. Nothing is parsed before verification succeeds.
  */
@@ -249,8 +255,28 @@ export async function downloadHistoryChunk(
   input: HistorySyncChunkInput,
   options: DownloadHistoryChunkOptions = {},
 ): Promise<HistorySync> {
+  if (options.signal?.aborted === true) {
+    throw new PolymorfaCancelledError("The history download was cancelled.", {
+      code: "request_cancelled",
+      cause: options.signal.reason,
+    });
+  }
   if (isInline(input)) {
-    return decodeHistorySyncPayload(input.inlinePayload, options);
+    const compressed = bytesField(input.inlinePayload, "inlinePayload");
+    const limit = options.maxBytes ?? 256 * 1024 * 1024;
+    if (!Number.isSafeInteger(limit) || limit <= 0) {
+      throw new PolymorfaConfigurationError(
+        "maxBytes must be a positive integer.",
+        "maxBytes",
+      );
+    }
+    if (compressed.length > limit) {
+      throw new PolymorfaMediaIntegrityError(
+        "The compressed history chunk exceeds the permitted size.",
+        "media_too_large",
+      );
+    }
+    return decodeHistorySyncPayload(compressed, options);
   }
   if (typeof input !== "object" || input === null) {
     throw invalid("The history chunk descriptor must be an object.");

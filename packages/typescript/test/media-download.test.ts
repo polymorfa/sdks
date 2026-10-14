@@ -438,19 +438,29 @@ describe("downloadMediaToFile", () => {
 
 describe("module boundaries", () => {
   it("keeps node:fs out of the main entry graph", async () => {
-    const { readdirSync, readFileSync } = await import("node:fs");
-    const { join } = await import("node:path");
+    const { readFileSync } = await import("node:fs");
+    const { dirname, join, relative } = await import("node:path");
     const root = new URL("../src/", import.meta.url).pathname;
-    const offenders = (
-      readdirSync(root, { recursive: true }) as string[]
-    ).filter(
-      (file) =>
-        file.endsWith(".ts") &&
-        file !== "node.ts" &&
-        /from "node:(fs|path|stream)/.test(
-          readFileSync(join(root, file), "utf8"),
-        ),
-    );
+    const visited = new Set<string>();
+    const offenders: string[] = [];
+    function visit(file: string): void {
+      if (visited.has(file)) return;
+      visited.add(file);
+      const source = readFileSync(file, "utf8");
+      for (const match of source.matchAll(
+        /(?:import|export)\s+(?!type\b)[\s\S]*?\bfrom\s*["']([^"']+)["']/g,
+      )) {
+        const dependency = match[1]!;
+        if (/^node:(fs|path|stream)/.test(dependency))
+          offenders.push(relative(root, file));
+        if (dependency.startsWith("."))
+          visit(join(dirname(file), dependency.replace(/\.js$/, ".ts")));
+      }
+    }
+    visit(join(root, "index.ts"));
+    expect(visited.size).toBeGreaterThan(20);
+    expect(visited.has(join(root, "node.ts"))).toBe(false);
+    expect(visited.has(join(root, "s3.ts"))).toBe(false);
     expect(offenders).toEqual([]);
   });
 });

@@ -19,7 +19,7 @@ import {
   type WhatsAppMediaPlaintext,
   type WhatsAppUploadMediaType,
 } from "./encrypt.js";
-import { timingSafeEqualBytes } from "./whatsapp.js";
+import { isWhatsAppMediaUrl, timingSafeEqualBytes } from "./whatsapp.js";
 
 /**
  * Plaintext to upload. Bytes, a `Blob` and an `{ open }` factory can be read
@@ -292,9 +292,7 @@ export async function prepareWhatsAppUpload(
   };
   if (reopenable && encryptor.incremental) {
     const open = async (): Promise<ReadableStream<Uint8Array>> =>
-      isFactory(source)
-        ? await source.open()
-        : plaintextStream(source as Blob);
+      isFactory(source) ? await source.open() : plaintextStream(source as Blob);
     const mediaKey = generateWhatsAppMediaKey();
     const first = encryptWhatsAppMediaStream(await open(), {
       ...common,
@@ -343,7 +341,10 @@ export async function prepareWhatsAppUpload(
 export function base64UrlUnpadded(bytes: Uint8Array): string {
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 }
 
 /**
@@ -378,7 +379,7 @@ export function createRelayUploadTransport(
   });
 }
 
-// Upload path per media type. Cellar whatsapp-1049257521
+// Upload path per media type. Cellar whatsapp-1049950004
 // WAWebMmsClientFormatHashUrl.js:6-24.
 const UPLOAD_PATH: Readonly<Record<WhatsAppUploadMediaType, string>> = {
   image: "/mms/image",
@@ -416,7 +417,7 @@ class UploadAttemptError extends Error {
   }
 }
 
-// Retry rules: Cellar whatsapp-1049257521 WAWebMmsClientIsErrorRetryable.js:6-11
+// Retry rules: Cellar whatsapp-1049950004 WAWebMmsClientIsErrorRetryable.js:6-11
 // (401, 408, network errors and 5xx except 507 retry). Status meanings:
 // WAWebMmsClientMmsUpload.js:75-81.
 function statusError(status: number): UploadAttemptError {
@@ -446,20 +447,34 @@ function statusError(status: number): UploadAttemptError {
 function uploadUrl(
   host: string,
   body: WhatsAppEncryptedUploadBody,
-  auth: string,
+  grantUrl: string,
   query: Readonly<Record<string, string | undefined>>,
 ): string {
   // https://{host}{path}/{b64url(encHash)}?auth=..&token=.. with `token`
-  // defaulting to the encrypted file hash. Cellar whatsapp-1049257521
+  // defaulting to the encrypted file hash. Cellar whatsapp-1049950004
   // WAWebMmsClientFormatUploadUrl.js:6-24, WAWebMmsClientFormatHashUrl.js:25-32,
   // WAWebUploadManagerMainThread.js:36.
-  if (!/^[A-Za-z0-9.-]+$/.test(host)) {
+  if (
+    !/^[A-Za-z0-9.-]+$/.test(host) ||
+    !isWhatsAppMediaUrl(`https://${host}/`)
+  ) {
     throw new PolymorfaError("The upload grant contains an invalid host.", {
       code: "invalid_response",
     });
   }
   const hash = base64UrlUnpadded(body.fileEncSha256);
-  const params = new URLSearchParams({ auth, token: hash });
+  const approved = new URL(grantUrl);
+  if (
+    !isWhatsAppMediaUrl(approved.href) ||
+    approved.hostname !== host ||
+    approved.pathname !== `${UPLOAD_PATH[body.mediaType]}/${hash}`
+  ) {
+    throw new PolymorfaError(
+      "The upload grant does not match the encrypted media.",
+      { code: "invalid_response" },
+    );
+  }
+  const params = new URLSearchParams(approved.search);
   for (const [name, value] of Object.entries(query)) {
     if (value !== undefined) params.set(name, value);
   }
@@ -627,7 +642,7 @@ export function createDirectUploadTransport(
       };
 
       // Asks WhatsApp how much of an interrupted upload it holds.
-      // Cellar whatsapp-1049257521 WAWebMmsClientMmsGetUploadProgress.js:16-47,
+      // Cellar whatsapp-1049950004 WAWebMmsClientMmsGetUploadProgress.js:16-47,
       // WAWebMmsClientMmsCheckIfUploadExists.js:21-38.
       const resumeOffset = async (
         host: string,
@@ -635,7 +650,7 @@ export function createDirectUploadTransport(
         let progress: unknown;
         try {
           progress = await post(
-            uploadUrl(host, body, grant.auth, { resume: "1" }),
+            uploadUrl(host, body, grant.uploadUrl, { resume: "1" }),
             undefined,
             0,
           );
@@ -661,7 +676,7 @@ export function createDirectUploadTransport(
       const total = body.encryptedLength;
       if (body.mediaType === "document" && total > partSize) {
         // Chunked upload: `stream=1` with byte ranges, then a finalize call
-        // with `final_hash`. Cellar whatsapp-1049257521
+        // with `final_hash`. Cellar whatsapp-1049950004
         // WAWebMmsClientUploadStreamer.js:31-44, WAWebMmsClientMmsUploadStream.js:14-77.
         const parts = new SequentialParts(body);
         try {
@@ -669,7 +684,7 @@ export function createDirectUploadTransport(
             const end = Math.min(start + partSize, total);
             await withRetries(async (host) => {
               await post(
-                uploadUrl(host, body, grant.auth, {
+                uploadUrl(host, body, grant.uploadUrl, {
                   stream: "1",
                   bytestart: String(start),
                   byteend: String(end),
@@ -685,7 +700,7 @@ export function createDirectUploadTransport(
         return withRetries(async (host) =>
           parseLocation(
             await post(
-              uploadUrl(host, body, grant.auth, {
+              uploadUrl(host, body, grant.uploadUrl, {
                 stream: "1",
                 final_hash: base64UrlUnpadded(body.fileEncSha256),
               }),
@@ -710,7 +725,7 @@ export function createDirectUploadTransport(
             uploadUrl(
               host,
               body,
-              grant.auth,
+              grant.uploadUrl,
               offset > 0
                 ? { bytestart: String(offset), byteend: String(total) }
                 : {},

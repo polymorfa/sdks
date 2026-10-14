@@ -4,8 +4,11 @@
  * dependency. Media keys never leave this process and are never written to
  * object metadata.
  */
-import { Readable } from "node:stream";
-import type { ReadableStream as NodeReadableStream } from "node:stream/web";
+import { createReadStream } from "node:fs";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { finished } from "node:stream/promises";
 
 import {
   GetObjectCommand,
@@ -15,7 +18,10 @@ import {
 } from "@aws-sdk/client-s3";
 
 import { assertServerRuntime } from "./credentials.js";
-import { PolymorfaConfigurationError } from "./errors.js";
+import {
+  PolymorfaConfigurationError,
+  PolymorfaMediaIntegrityError,
+} from "./errors.js";
 import type { WhatsAppUploadMediaType } from "./media/encrypt.js";
 import type {
   UploadWhatsAppMediaOptions,
@@ -25,12 +31,11 @@ import type {
 } from "./media/upload.js";
 import {
   decodeWhatsAppMedia,
-  downloadWhatsAppMedia,
   type WhatsAppMediaDescriptor,
   type WhatsAppMediaDownloadOptions,
   type WhatsAppMediaInput,
 } from "./media/whatsapp.js";
-import { nodeMediaCrypto, nodeMediaEncryptor } from "./node.js";
+import { downloadWhatsAppMediaToFile, nodeMediaEncryptor } from "./node.js";
 
 export interface S3MediaStoreOptions {
   /** Your S3 client, configured for AWS, R2 or MinIO. */
@@ -40,11 +45,10 @@ export interface S3MediaStoreOptions {
   readonly prefix?: string;
 }
 
-export interface S3UploadToWhatsAppOptions
-  extends Pick<
-    UploadWhatsAppMediaOptions,
-    "egress" | "maxBytes" | "signal" | "fetch"
-  > {
+export interface S3UploadToWhatsAppOptions extends Pick<
+  UploadWhatsAppMediaOptions,
+  "egress" | "maxBytes" | "signal" | "fetch"
+> {
   /** Anything with the Messaging client's `whatsappMedia` resource. */
   readonly messaging: { readonly whatsappMedia: WhatsAppMediaResource };
   readonly session: string;
@@ -55,12 +59,16 @@ export interface S3UploadToWhatsAppOptions
   readonly mimetype?: string;
 }
 
-export interface S3ArchiveOptions
-  extends Pick<WhatsAppMediaDownloadOptions, "fetch" | "signal" | "maxBytes"> {
+export interface S3ArchiveOptions extends Pick<
+  WhatsAppMediaDownloadOptions,
+  "fetch" | "signal" | "maxBytes"
+> {
   /** Object key, relative to `prefix`. */
   readonly key: string;
   /** Extra object metadata (ASCII). Keys are lowercased by S3. */
   readonly metadata?: Readonly<Record<string, string>>;
+  /** Directory for the private verified spool; removed on success, cancellation or failure. */
+  readonly scratchDirectory?: string;
 }
 
 export interface S3ArchiveResult {
@@ -130,6 +138,12 @@ export class S3MediaStore {
       options.signal === undefined ? {} : { abortSignal: options.signal },
     );
     const etag = head.ETag;
+    if (etag === undefined || etag.length === 0) {
+      throw new PolymorfaConfigurationError(
+        "The object must expose an ETag for stable reads.",
+        "key",
+      );
+    }
     const source: WhatsAppMediaSource = {
       ...(head.ContentLength === undefined ? {} : { size: head.ContentLength }),
       open: async () => {
@@ -137,7 +151,7 @@ export class S3MediaStore {
           new GetObjectCommand({
             Bucket: this.#bucket,
             Key: key,
-            ...(etag === undefined ? {} : { IfMatch: etag }),
+            IfMatch: etag,
           }),
           options.signal === undefined ? {} : { abortSignal: options.signal },
         );
@@ -165,9 +179,10 @@ export class S3MediaStore {
   /**
    * Downloads WhatsApp media (for example from an inbound message webhook,
    * before the CDN copy expires), verifies and decrypts it, and writes the
-   * plaintext to the bucket. With a known `fileLength` the plaintext streams
-   * into a single PUT, which S3 discards if verification fails at the end;
-   * otherwise the file is verified in memory first.
+   * plaintext to the bucket. Verification completes in a private local spool
+   * before an object PUT starts, keeping memory bounded and preventing an
+   * integrity failure from replacing a valid object. The spool is removed
+   * after success, cancellation or failure.
    */
   async archive(
     input: WhatsAppMediaInput,
@@ -181,52 +196,67 @@ export class S3MediaStore {
           typeof input.media === "string"
         ? decodeWhatsAppMedia(input.media, input.type)
         : input;
-    const length = isDescriptor(descriptor) ? descriptor.fileLength : undefined;
-    const streaming = length !== undefined;
-    const download = await downloadWhatsAppMedia(descriptor, {
-      crypto: nodeMediaCrypto,
-      verify: streaming ? "streaming" : "before-release",
-      ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
-      ...(options.signal === undefined ? {} : { signal: options.signal }),
-      ...(options.maxBytes === undefined ? {} : { maxBytes: options.maxBytes }),
-    });
-    const metadata: Record<string, string> = {
-      ...options.metadata,
-      "wa-media-kind": download.mediaKind,
-      ...(isDescriptor(descriptor) && descriptor.fileSha256 !== undefined
-        ? { "wa-file-sha256": hex(descriptor.fileSha256) }
-        : {}),
-      ...(download.fileName === undefined
-        ? {}
-        : { "wa-file-name": encodeURIComponent(download.fileName) }),
-    };
-    let body: Uint8Array | Readable;
-    let bytes: number;
-    if (streaming) {
-      body = Readable.fromWeb(download.body as NodeReadableStream<Uint8Array>);
-      bytes = length;
-    } else {
-      const buffered = new Uint8Array(await download.arrayBuffer());
-      body = buffered;
-      bytes = buffered.length;
-    }
-    const result = await this.#client.send(
-      new PutObjectCommand({
-        Bucket: this.#bucket,
-        Key: key,
-        Body: body,
-        ContentLength: bytes,
-        ContentType: download.mimetype,
-        Metadata: metadata,
-      }),
-      options.signal === undefined ? {} : { abortSignal: options.signal },
+    const directory = await mkdtemp(
+      join(options.scratchDirectory ?? tmpdir(), "polymorfa-media-"),
     );
-    return Object.freeze({
-      bucket: this.#bucket,
-      key,
-      bytes,
-      mimetype: download.mimetype,
-      ...(result.ETag === undefined ? {} : { etag: result.ETag }),
-    });
+    let body: ReturnType<typeof createReadStream> | undefined;
+    try {
+      const download = await downloadWhatsAppMediaToFile(
+        descriptor,
+        join(directory, "verified"),
+        {
+          ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
+          ...(options.signal === undefined ? {} : { signal: options.signal }),
+          ...(options.maxBytes === undefined
+            ? {}
+            : { maxBytes: options.maxBytes }),
+        },
+      );
+      if (
+        isDescriptor(descriptor) &&
+        descriptor.fileLength !== undefined &&
+        descriptor.fileLength !== download.bytes
+      ) {
+        throw new PolymorfaMediaIntegrityError(
+          "The media length does not match the descriptor.",
+          "media_invalid_descriptor",
+        );
+      }
+      const metadata: Record<string, string> = {
+        ...options.metadata,
+        "wa-media-kind": download.mediaKind,
+        ...(isDescriptor(descriptor) && descriptor.fileSha256 !== undefined
+          ? { "wa-file-sha256": hex(descriptor.fileSha256) }
+          : {}),
+        ...(download.fileName === undefined
+          ? {}
+          : { "wa-file-name": encodeURIComponent(download.fileName) }),
+      };
+      body = createReadStream(download.path);
+      const result = await this.#client.send(
+        new PutObjectCommand({
+          Bucket: this.#bucket,
+          Key: key,
+          Body: body,
+          ContentLength: download.bytes,
+          ContentType: download.mimetype,
+          Metadata: metadata,
+        }),
+        options.signal === undefined ? {} : { abortSignal: options.signal },
+      );
+      return Object.freeze({
+        bucket: this.#bucket,
+        key,
+        bytes: download.bytes,
+        mimetype: download.mimetype,
+        ...(result.ETag === undefined ? {} : { etag: result.ETag }),
+      });
+    } finally {
+      if (body !== undefined) {
+        body.destroy();
+        await finished(body, { cleanup: true }).catch(() => undefined);
+      }
+      await rm(directory, { recursive: true, force: true });
+    }
   }
 }

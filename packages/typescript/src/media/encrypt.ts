@@ -136,7 +136,7 @@ function tooLarge(): PolymorfaMediaIntegrityError {
 }
 
 /**
- * Encrypts like WhatsApp Web's `encryptAndHmac` (Cellar whatsapp-1049257521
+ * Encrypts like WhatsApp Web's `encryptAndHmac` (Cellar whatsapp-1049950004
  * WAMediaCrypto.js:75-101): AES-256-CBC with PKCS#7 padding, then
  * HMAC-SHA256(macKey, iv || ciphertext) truncated to 10 bytes and appended.
  * `fileEncSha256` is SHA-256 of `ciphertext || mac10` (`ciphertextHash`).
@@ -292,7 +292,9 @@ export function plaintextStream(
   if (typeof Blob !== "undefined" && input instanceof Blob) {
     return input.stream() as ReadableStream<Uint8Array>;
   }
-  return toStream(input as Uint8Array | ArrayBuffer | ReadableStream<Uint8Array>);
+  return toStream(
+    input as Uint8Array | ArrayBuffer | ReadableStream<Uint8Array>,
+  );
 }
 
 /**
@@ -320,16 +322,15 @@ export function encryptWhatsAppMediaStream(
   });
   const info = ready
     .then(() => digest!)
-    .then(
-      (value): EncryptedWhatsAppMediaInfo =>
-        Object.freeze({
-          mediaType,
-          mediaKey,
-          ...value,
-          ...(options.mimetype === undefined
-            ? {}
-            : { mimetype: options.mimetype }),
-        }),
+    .then((value): EncryptedWhatsAppMediaInfo =>
+      Object.freeze({
+        mediaType,
+        mediaKey,
+        ...value,
+        ...(options.mimetype === undefined
+          ? {}
+          : { mimetype: options.mimetype }),
+      }),
     );
   info.catch(() => undefined);
   const body = new ReadableStream<Uint8Array>(

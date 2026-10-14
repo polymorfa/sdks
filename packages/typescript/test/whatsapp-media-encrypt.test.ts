@@ -118,7 +118,10 @@ describe("WhatsApp media encryption", () => {
           expect(result.ciphertext).toHaveLength(result.encryptedLength);
           expect(result.fileSha256).toEqual(sha256(input));
           expect(result.fileEncSha256).toEqual(sha256(result.ciphertext));
-          const keys = await deriveWhatsAppMediaKeys(result.mediaKey, mediaType);
+          const keys = await deriveWhatsAppMediaKeys(
+            result.mediaKey,
+            mediaType,
+          );
           for (const crypto of [undefined, nodeMediaCrypto]) {
             const out = await bytesOf(
               decryptWhatsAppMedia(result.ciphertext, keys, {
@@ -145,11 +148,14 @@ describe("WhatsApp media encryption", () => {
 
     it("accepts Blob and ArrayBuffer input", async () => {
       const input = pattern(5000);
-      const fromBlob = await encryptWhatsAppMedia(new Blob([input]), {
-        mediaType: "document",
-        mediaKey,
-        ...backend,
-      });
+      const fromBlob = await encryptWhatsAppMedia(
+        new Blob([input.slice().buffer]),
+        {
+          mediaType: "document",
+          mediaKey,
+          ...backend,
+        },
+      );
       const fromBuffer = await encryptWhatsAppMedia(input.slice().buffer, {
         mediaType: "document",
         mediaKey,
@@ -163,7 +169,13 @@ describe("WhatsApp media encryption", () => {
     // WAMediaHkdfInfo.js: audio and ptt share "WhatsApp Audio Keys".
     const ptt = await deriveWhatsAppMediaKeys(mediaKey, "ptt");
     const expected = new Uint8Array(
-      hkdfSync("sha256", mediaKey, new Uint8Array(0), "WhatsApp Audio Keys", 112),
+      hkdfSync(
+        "sha256",
+        mediaKey,
+        new Uint8Array(0),
+        "WhatsApp Audio Keys",
+        112,
+      ),
     );
     expect(ptt.iv).toEqual(expected.subarray(0, 16));
     expect(ptt.cipherKey).toEqual(expected.subarray(16, 48));
@@ -218,7 +230,8 @@ describe("WhatsApp media encryption", () => {
       { highWaterMark: 0 },
     );
     const plainHash = createHash("sha256");
-    for (let offset = 0; offset < total; offset += chunk) plainHash.update(block);
+    for (let offset = 0; offset < total; offset += chunk)
+      plainHash.update(block);
     const encHash = createHash("sha256");
     global.gc?.();
     const before = process.memoryUsage().heapUsed;
@@ -283,7 +296,7 @@ describe("send descriptor", () => {
       fileSha256: Buffer.from(encrypted.fileSha256).toString("base64"),
       fileEncSha256: Buffer.from(encrypted.fileEncSha256).toString("base64"),
       fileLength: 32,
-      mimetype: "audio/ogg; codecs=opus",
+      mimeType: "audio/ogg; codecs=opus",
       seconds: 3,
       waveform: Buffer.from(new Uint8Array(64)).toString("base64"),
     });

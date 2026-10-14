@@ -579,6 +579,7 @@ export const webCryptoMediaCrypto: WhatsAppMediaCrypto = Object.freeze({
         );
         const plaintext = await result;
         if (plaintext.length > 0) controller.enqueue(plaintext);
+        controller.close();
       },
       async cancel(reason) {
         await ciphertext.cancel(reason).catch(() => undefined);
@@ -891,11 +892,16 @@ export interface EncryptedBlobDescriptor extends CdnObject {
  * plaintext stream. Shared by media downloads and history chunk downloads.
  * @internal
  */
+function assertDownloadActive(signal: AbortSignal | undefined): void {
+  if (signal?.aborted) throw cancelled(signal.reason);
+}
+
 export async function downloadEncryptedBlob(
   descriptor: EncryptedBlobDescriptor,
   keyType: WhatsAppMediaKeyType,
   options: WhatsAppMediaDownloadOptions,
 ): Promise<ReadableStream<Uint8Array>> {
+  assertDownloadActive(options.signal);
   const crypto = options.crypto ?? webCryptoMediaCrypto;
   const verify = resolveVerify(options.verify, crypto);
   const maxBytes = resolveLimit(options.maxBytes);
@@ -911,6 +917,7 @@ export async function downloadEncryptedBlob(
   let failure: unknown;
   let response: Response | undefined;
   for (const url of urls) {
+    assertDownloadActive(options.signal);
     try {
       const candidate = await fetchCdn(url, fetcher, options.signal);
       if (candidate.ok) {
@@ -923,7 +930,7 @@ export async function downloadEncryptedBlob(
         { status: candidate.status, code: "media_download_failed" },
       );
     } catch (error) {
-      if (options.signal?.aborted === true) throw cancelled(error);
+      if (options.signal?.aborted) throw cancelled(error);
       if (error instanceof PolymorfaError) throw error;
       failure = new PolymorfaConnectionError(
         "The WhatsApp media host could not be reached.",

@@ -1,19 +1,19 @@
 /**
  * Polymorfa API calls used by direct media upload and direct history.
  *
- * PENDING BACKEND ALIGNMENT. The paths, request bodies and response shapes in
- * this module are the SDK's proposal while the API endpoints are built. Every
- * wire detail lives here so it can be aligned with the published contract in
- * one place. Nothing in this module sends a media key or plaintext.
+ * Uses the 2026-10-14 direct media/history contract. Uploads carry encrypted
+ * bytes and hashes; upload requests never carry a media key or plaintext.
+ * Standard descriptor sending is a separate API and includes the media key.
  */
 import { PolymorfaError } from "../errors.js";
 import type { HttpTransport } from "../transport/http.js";
 import type { RequestOptions } from "../transport/types.js";
 import type { WhatsAppUploadMediaType } from "./encrypt.js";
+import { isWhatsAppMediaUrl } from "./whatsapp.js";
 
 /**
  * `POST /messaging/{session}/media/upload-grants` request.
- * @experimental Pending backend alignment.
+ * @experimental Requires the 2026-10-14 API contract.
  */
 export interface WhatsAppUploadGrantRequest {
   readonly mediaType: WhatsAppUploadMediaType;
@@ -26,11 +26,13 @@ export interface WhatsAppUploadGrantRequest {
 /**
  * A short-lived WhatsApp upload credential for one session. `auth` is a
  * bearer secret: never log or store it.
- * @experimental Pending backend alignment.
+ * @experimental Requires the 2026-10-14 API contract.
  */
 export interface WhatsAppUploadGrant {
   /** WhatsApp media upload hostnames in preference order. */
   readonly hosts: readonly string[];
+  /** Exact server-issued URL; retains authorization and upload parameters. */
+  readonly uploadUrl: string;
   /** The `media_conn` `auth` value. */
   readonly auth: string;
   /** ISO 8601 expiry. */
@@ -38,10 +40,11 @@ export interface WhatsAppUploadGrant {
 }
 
 /**
- * `POST /messaging/{session}/media/relay-uploads` response. The request body
+ * `POST /messaging/{session}/media/uploads` response. The request body
  * is `ciphertext || mac10` (`application/octet-stream`) with query
- * parameters `mediaType`, `fileEncSha256` (base64url) and `encryptedLength`.
- * @experimental Pending backend alignment.
+ * parameters `type`, `fileEncSha256` (base64url) and optional `ptt`.
+ * The encrypted length is carried in `Content-Length`.
+ * @experimental Requires the 2026-10-14 API contract.
  */
 export interface WhatsAppRelayUploadResponse {
   readonly directPath: string;
@@ -51,19 +54,26 @@ export interface WhatsAppRelayUploadResponse {
 
 /**
  * Asks the phone to send a history chunk again (peer data operation
- * `HISTORY_SYNC_CHUNK_RETRY`). `POST /messaging/{session}/history/chunk-retries`.
- * @experimental Pending backend alignment.
+ * `HISTORY_SYNC_CHUNK_RETRY`). `POST /messaging/{session}/history/chunks/retry`.
+ * @experimental Requires the 2026-10-14 API contract.
  */
 export interface HistorySyncChunkRetryRequest {
-  /** `HistorySync.HistorySyncType` name or number from the chunk notification. */
-  readonly syncType: string | number;
+  /** `HistorySync.HistorySyncType` name from the chunk notification. */
+  readonly syncType:
+    | "INITIAL_BOOTSTRAP"
+    | "INITIAL_STATUS_V3"
+    | "FULL"
+    | "RECENT"
+    | "PUSH_NAME"
+    | "NON_BLOCKING_DATA"
+    | "ON_DEMAND";
   readonly chunkOrder: number;
   /** The ID of the message that carried the chunk notification. */
-  readonly chunkNotificationId: string;
-  readonly regenerateChunk?: boolean;
+  readonly chunkMessageId?: string;
+  readonly regenerate?: boolean;
 }
 
-/** @experimental Pending backend alignment. */
+/** @experimental Requires the 2026-10-14 API contract. */
 export interface HistorySyncChunkRetryResponse {
   /** Identifier of the peer data request, when the API returns one. */
   readonly requestId?: string;
@@ -71,13 +81,15 @@ export interface HistorySyncChunkRetryResponse {
 
 /**
  * Asks the session to delete a processed history blob from the WhatsApp CDN.
- * `POST /messaging/{session}/history/chunk-deletions`.
- * @experimental Pending backend alignment.
+ * `POST /messaging/{session}/history/media/delete`.
+ * @experimental Requires the 2026-10-14 API contract.
  */
 export interface HistorySyncChunkDeleteRequest {
   readonly directPath: string;
   /** Base64url SHA-256 of the encrypted chunk, unpadded. */
   readonly fileEncSha256: string;
+  readonly encHandle?: string;
+  readonly companionMetaNonce?: string;
 }
 
 /** @internal */
@@ -85,12 +97,29 @@ export const DIRECT_MEDIA_PATHS = Object.freeze({
   uploadGrants: (session: string) =>
     `/messaging/${encodeURIComponent(session)}/media/upload-grants`,
   relayUploads: (session: string) =>
-    `/messaging/${encodeURIComponent(session)}/media/relay-uploads`,
+    `/messaging/${encodeURIComponent(session)}/media/uploads`,
   historyChunkRetries: (session: string) =>
-    `/messaging/${encodeURIComponent(session)}/history/chunk-retries`,
+    `/messaging/${encodeURIComponent(session)}/history/chunks/retry`,
   historyChunkDeletions: (session: string) =>
-    `/messaging/${encodeURIComponent(session)}/history/chunk-deletions`,
+    `/messaging/${encodeURIComponent(session)}/history/media/delete`,
 });
+
+function uploadRequest(
+  mediaType: WhatsAppUploadMediaType,
+  fileEncSha256: string,
+) {
+  const type =
+    mediaType === "document"
+      ? "file"
+      : mediaType === "audio" || mediaType === "ptt"
+        ? "voice"
+        : mediaType;
+  return {
+    type,
+    fileEncSha256,
+    ...(type === "voice" ? { ptt: mediaType === "ptt" } : {}),
+  };
+}
 
 function unwrap(body: unknown): Record<string, unknown> {
   if (typeof body !== "object" || body === null) return {};
@@ -126,25 +155,37 @@ export class DirectMediaApi {
     const response = await this.transport.request<unknown>({
       method: "POST",
       path: DIRECT_MEDIA_PATHS.uploadGrants(session),
-      body: request,
+      body: uploadRequest(request.mediaType, request.fileEncSha256),
       ...options,
     });
     const data = unwrap(response.data);
-    const hosts = data["hosts"];
+    const rawUrl = data["uploadUrl"];
+    const host = data["host"];
+    const expiry = data["expiresAt"];
+    let url: URL;
+    try {
+      url = new URL(typeof rawUrl === "string" ? rawUrl : "");
+    } catch {
+      throw invalidResponse("upload grant");
+    }
+    const auth = url.searchParams.get("auth");
     if (
-      !Array.isArray(hosts) ||
-      hosts.length === 0 ||
-      !hosts.every(nonEmptyString) ||
-      !nonEmptyString(data["auth"])
+      !isWhatsAppMediaUrl(url.href) ||
+      typeof host !== "string" ||
+      url.hostname !== host ||
+      !auth ||
+      typeof expiry !== "number" ||
+      !Number.isSafeInteger(expiry) ||
+      expiry <= 0 ||
+      expiry > 8_640_000_000_000
     ) {
       throw invalidResponse("upload grant");
     }
     return Object.freeze({
-      hosts: Object.freeze([...hosts]),
-      auth: data["auth"],
-      ...(nonEmptyString(data["expiresAt"])
-        ? { expiresAt: data["expiresAt"] }
-        : {}),
+      hosts: Object.freeze([host]),
+      auth,
+      uploadUrl: url.href,
+      expiresAt: new Date(expiry * 1000).toISOString(),
     });
   }
 
@@ -155,7 +196,12 @@ export class DirectMediaApi {
     },
     options: RequestOptions = {},
   ): Promise<WhatsAppRelayUploadResponse> {
-    const { body, ...query } = request;
+    const { body } = request;
+    const grant = uploadRequest(request.mediaType, request.fileEncSha256);
+    const query = {
+      ...grant,
+      ...(grant.ptt === undefined ? {} : { ptt: String(grant.ptt) }),
+    };
     const response = await this.transport.request<unknown>({
       ...options,
       method: "POST",
