@@ -349,3 +349,26 @@ own encrypted-body factory and own its integrity checks. These methods select
 API revision `2026-10-14` by default; existing methods retain `2026-09-22`.
 The additive contract must be enabled and available in the target environment;
 a source checkout does not establish customer access.
+
+### Sending uploaded media
+
+Convert an upload using `WhatsAppMediaSendDescriptor::fromUpload($upload)` and
+pass the descriptor object to the matching message content:
+
+```php
+$descriptor = \Polymorfa\WhatsAppMediaSendDescriptor::fromUpload($result);
+$client->messages->send('session', ['conversation' => ['id' => 'conversation'],
+    'content' => ['image' => ['descriptor' => $descriptor, 'caption' => 'Photo']]]);
+```
+
+Image, video, file, voice and sticker content accept typed descriptors; voice
+notes also set `ptt` to true. `WhatsAppMediaSendMetadata` supplies optional
+thumbnails, dimensions, duration, waveform, key timestamp and sticker animation.
+Stickers require `image/webp`. URL/base64/MIME inputs are exclusive with a
+descriptor. Keys and hashes stay binary locally and use standard base64 on the
+wire. Response descriptors are typed objects and redact debug/JSON output;
+`toWire()` explicitly returns secret fields and must not be logged.
+
+Descriptor sends select `2026-10-14` unless explicitly overridden. Ordinary
+sends retain the existing API default. Standard sends transmit the media key to
+Polymorfa; customer key custody requires the application's sidecar path.

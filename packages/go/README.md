@@ -182,3 +182,21 @@ level methods own source immutability and integrity checks. Upload methods
 select API version `2026-10-14` per request by default; existing SDK methods
 retain their `2026-09-22` default. The additive API must be enabled and available
 in the selected environment; a source checkout does not establish that access.
+
+### Sending uploaded media
+
+`ToWhatsAppMediaSendDescriptor(upload)` converts an encrypted upload result to a
+validated descriptor. Set `MediaContent.Descriptor` for image, video, file or
+voice messages, or `StickerContent.Descriptor` for a sticker. Voice notes also
+set `MediaContent.PTT` to true. Optional `WhatsAppMediaSendMetadata` carries a
+thumbnail, dimensions, duration, waveform, key timestamp or sticker animation.
+Descriptors cannot be combined with URL/base64/MIME inputs; stickers require
+`image/webp`. Keys and hashes use binary slices locally and standard base64 on
+the wire. Returned descriptors remain typed and redact ordinary formatting and
+JSON; `Wire()` explicitly exposes secret fields.
+
+Descriptor message sends select API revision `2026-10-14` unless overridden;
+ordinary sends keep the legacy default. A standard message send transmits its
+media key to Polymorfa. Applications requiring customer key custody send through
+their application sidecar instead. Keep descriptors and explicit wire maps out
+of logs and error details.

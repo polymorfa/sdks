@@ -25,12 +25,13 @@ type QuotedMessage struct {
 	Text string `json:"text,omitempty"`
 }
 type MediaContent struct {
-	URL      string `json:"url,omitempty"`
-	Base64   string `json:"base64,omitempty"`
-	MimeType string `json:"mimeType,omitempty"`
-	Caption  string `json:"caption,omitempty"`
-	Filename string `json:"filename,omitempty"`
-	PTT      *bool  `json:"ptt,omitempty"`
+	Descriptor *WhatsAppMediaSendDescriptor `json:"-"`
+	URL        string                       `json:"url,omitempty"`
+	Base64     string                       `json:"base64,omitempty"`
+	MimeType   string                       `json:"mimeType,omitempty"`
+	Caption    string                       `json:"caption,omitempty"`
+	Filename   string                       `json:"filename,omitempty"`
+	PTT        *bool                        `json:"ptt,omitempty"`
 }
 type PollContent struct {
 	Title       string   `json:"title"`
@@ -214,6 +215,7 @@ type OrderStatusContent struct {
 // MessageContent is a tagged union: set exactly one field. Send validates this
 // invariant before transport while leaving API business validation authoritative.
 type MessageContent struct {
+	Sticker               *StickerContent               `json:"sticker,omitempty"`
 	Text                  *string                       `json:"text,omitempty"`
 	Image                 *MediaContent                 `json:"image,omitempty"`
 	Video                 *MediaContent                 `json:"video,omitempty"`

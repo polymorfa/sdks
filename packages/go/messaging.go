@@ -21,11 +21,19 @@ func (r *Messages) Send(ctx context.Context, session string, b SendMessageReques
 	if b.Conversation.ID == "" && b.Conversation.PhoneNumber == "" && b.Conversation.BSUID == "" {
 		return Response[Envelope[MessageResult]]{}, validation("A conversation ID, phoneNumber or BSUID is required.")
 	}
-	o, err := idempotent(options(opts))
+	wire, descriptor, err := descriptorMessage(b)
 	if err != nil {
 		return Response[Envelope[MessageResult]]{}, err
 	}
-	return request[Envelope[MessageResult]](ctx, r.t, "POST", messageAction(session, "send"), nil, b, o)
+	settings := options(opts)
+	if descriptor && settings.APIVersion == "" {
+		settings.APIVersion = CustomerOwnedAPIVersion
+	}
+	o, err := idempotent(settings)
+	if err != nil {
+		return Response[Envelope[MessageResult]]{}, err
+	}
+	return request[Envelope[MessageResult]](ctx, r.t, "POST", messageAction(session, "send"), nil, wire, o)
 }
 func messageAction(session, action string) string {
 	return "/messaging/" + escaped(session) + "/messages/" + action
