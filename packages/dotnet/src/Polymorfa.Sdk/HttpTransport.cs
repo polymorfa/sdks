@@ -59,6 +59,11 @@ internal sealed class HttpTransport : IDisposable
             }
         }
     }
+    internal async Task<ApiResponse<T>> RequestBinaryAsync<T>(string path, HttpContent body, RequestOptions options, IReadOnlyList<KeyValuePair<string, string>> query)
+    {
+        using var opened = await OpenAsync(HttpMethod.Post, path, null, options with { MaxNetworkRetries = 0 }, "application/json", query, binaryContent: body).ConfigureAwait(false);
+        return new(await ReadAsync<T>(opened.Response, options, opened.Metadata).ConfigureAwait(false), opened.Metadata);
+    }
     internal async Task<ApiResponse<string>> RequestTextAsync(string path, string accept, RequestOptions? requestOptions, IReadOnlyList<KeyValuePair<string, string>>? query = null)
     {
         var options = requestOptions ?? new(); var previousAttempts = 0; var maximum = options.MaxNetworkRetries ?? Options.MaxNetworkRetries;
@@ -73,7 +78,7 @@ internal sealed class HttpTransport : IDisposable
             previousAttempts = metadata.Attempts; await WaitAsync(Delay(null, previousAttempts), options.CancellationToken).ConfigureAwait(false);
         }
     }
-    internal async Task<OpenedResponse> OpenAsync(HttpMethod method, string path, byte[]? body, RequestOptions options, string accept, IReadOnlyList<KeyValuePair<string, string>>? query = null, bool allowMediaRedirect = false)
+    internal async Task<OpenedResponse> OpenAsync(HttpMethod method, string path, byte[]? body, RequestOptions options, string accept, IReadOnlyList<KeyValuePair<string, string>>? query = null, bool allowMediaRedirect = false, HttpContent? binaryContent = null)
     {
         ValidatePath(path);
         var timeout = options.Timeout ?? Options.Timeout;
@@ -81,7 +86,7 @@ internal sealed class HttpTransport : IDisposable
         ValidateLimits(timeout, retries);
         var url = ApiUrl(path);
         if (query is { Count: > 0 }) url = new UriBuilder(url) { Query = string.Join("&", query.Select(p => $"{Uri.EscapeDataString(p.Key)}={Uri.EscapeDataString(p.Value)}")) }.Uri;
-        var safe = method == HttpMethod.Get || method == HttpMethod.Head || method == HttpMethod.Options || !string.IsNullOrEmpty(options.IdempotencyKey);
+        var safe = binaryContent is null && (method == HttpMethod.Get || method == HttpMethod.Head || method == HttpMethod.Options || !string.IsNullOrEmpty(options.IdempotencyKey));
         for (var attempt = 1; ; attempt++)
         {
             using var request = new HttpRequestMessage(method, url);
@@ -98,7 +103,8 @@ internal sealed class HttpTransport : IDisposable
             request.Headers.Remove("polymorfa-version");
             request.Headers.TryAddWithoutValidation("polymorfa-version", options.ApiVersion ?? Options.ApiVersion);
             if (options.IdempotencyKey is not null) { request.Headers.Remove("idempotency-key"); request.Headers.TryAddWithoutValidation("idempotency-key", options.IdempotencyKey); }
-            if (body is not null) { request.Content = new ByteArrayContent(body); request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json"); }
+            if (binaryContent is not null) request.Content = binaryContent;
+            else if (body is not null) { request.Content = new ByteArrayContent(body); request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json"); }
             using var linked = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken);
             linked.CancelAfter(timeout);
             HttpResponseMessage response;
@@ -109,8 +115,9 @@ internal sealed class HttpTransport : IDisposable
                 if (safe && attempt <= retries) { await WaitAsync(Delay(null, attempt), options.CancellationToken).ConfigureAwait(false); continue; }
                 throw new PolymorfaTimeoutException("Request timed out.");
             }
-            catch (HttpRequestException)
+            catch (HttpRequestException error)
             {
+                if (PreparedWhatsAppUpload.HasChangedSource(error)) throw PreparedWhatsAppUpload.Changed();
                 if (safe && attempt <= retries) { await WaitAsync(Delay(null, attempt), options.CancellationToken).ConfigureAwait(false); continue; }
                 throw new PolymorfaConnectionException("Cannot reach the Polymorfa API.");
             }

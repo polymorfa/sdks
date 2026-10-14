@@ -213,6 +213,21 @@ impl SendMessageRequest {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum MessageContent {
+    DescriptorImage {
+        image: crate::media_descriptor::DescriptorMediaContent,
+    },
+    DescriptorVideo {
+        video: crate::media_descriptor::DescriptorMediaContent,
+    },
+    DescriptorFile {
+        file: crate::media_descriptor::DescriptorFileContent,
+    },
+    DescriptorVoice {
+        voice: crate::media_descriptor::DescriptorVoiceContent,
+    },
+    Sticker {
+        sticker: crate::media_descriptor::MediaSendDescriptor,
+    },
     Text {
         text: String,
     },

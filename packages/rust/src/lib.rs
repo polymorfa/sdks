@@ -19,10 +19,13 @@ pub mod configuration;
 pub mod connections;
 pub mod customers;
 pub mod developer;
+pub mod direct_media;
 pub mod errors;
 pub mod groups;
 pub mod history;
+pub mod history_chunks;
 pub mod media;
+pub mod media_encrypt;
 pub mod media_stream;
 pub mod message_content;
 pub mod messaging;
@@ -39,6 +42,7 @@ pub mod platform_sessions;
 pub mod policies;
 pub mod raw;
 pub mod settings;
+pub mod signal;
 pub mod sip;
 pub mod stream;
 pub mod system;
@@ -78,3 +82,7 @@ pub mod calls_runtime;
 pub mod request_logs;
 
 pub mod calls_diagnostics;
+
+pub mod media_upload;
+
+pub mod media_descriptor;

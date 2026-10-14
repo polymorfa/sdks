@@ -109,11 +109,11 @@ public static partial class WhatsAppMedia
         var mime = descriptor.Mimetype ?? descriptor.MediaKind switch { "image" => "image/jpeg", "video" => "video/mp4", "audio" => "audio/ogg", "sticker" => "image/webp", _ => "application/octet-stream" };
         return new(plaintext, descriptor.MediaKind, mime, descriptor.FileName, descriptor.FileLength);
     }
-    private static async Task<T> ReadDownloadAsync<T>(WhatsAppMediaDescriptor descriptor, WhatsAppMediaOptions options, Func<Stream, Task<T>> consume)
+    internal static async Task<T> ReadDownloadAsync<T>(WhatsAppMediaDescriptor descriptor, WhatsAppMediaOptions options, Func<Stream, Task<T>> consume, string? mmsType = null)
     {
         var limit = EncryptedLimit(options.MaxBytes, descriptor.FileLength);
         if (descriptor.FileSha256 is null) throw Invalid("Descriptor requires a plaintext SHA-256 hash.");
-        var urls = CandidateUrls(descriptor);
+        var urls = CandidateUrls(descriptor, mmsType);
         using var client = CreateCdnClient(options);
         PolymorfaException? lastFailure = null;
         foreach (var candidate in urls)
@@ -145,7 +145,7 @@ public static partial class WhatsAppMedia
         }
         throw lastFailure ?? new PolymorfaConnectionException("Media download failed.");
     }
-    private static IReadOnlyList<Uri> CandidateUrls(WhatsAppMediaDescriptor descriptor)
+    private static IReadOnlyList<Uri> CandidateUrls(WhatsAppMediaDescriptor descriptor, string? mmsType = null)
     {
         _ = FieldMap(descriptor.MediaKind); var urls = new List<Uri>();
         if (!string.IsNullOrEmpty(descriptor.Url)) { if (!IsMediaUrl(descriptor.Url)) throw Invalid("Media URL must name an HTTPS WhatsApp media host."); urls.Add(new(descriptor.Url)); }
@@ -154,7 +154,7 @@ public static partial class WhatsAppMedia
             var path = descriptor.DirectPath;
             if (!path.StartsWith('/') || path.StartsWith("//", StringComparison.Ordinal)) throw Invalid("directPath must start with one slash.");
             var hash = descriptor.FileEncSha256 is null ? "" : Convert.ToBase64String(descriptor.FileEncSha256).Replace('+', '-').Replace('/', '_');
-            var fallback = $"https://mmg.whatsapp.net{path}{(path.Contains('?') ? '&' : '?')}hash={Uri.EscapeDataString(hash)}&mms-type={(descriptor.MediaKind == "sticker" ? "image" : descriptor.MediaKind)}&__wa-mms=";
+            var fallback = $"https://mmg.whatsapp.net{path}{(path.Contains('?') ? '&' : '?')}hash={Uri.EscapeDataString(hash)}&mms-type={(mmsType ?? (descriptor.MediaKind == "sticker" ? "image" : descriptor.MediaKind))}&__wa-mms=";
             if (!IsMediaUrl(fallback)) throw Invalid("Invalid media directPath."); var uri = new Uri(fallback); if (!urls.Contains(uri)) urls.Add(uri);
         }
         if (urls.Count == 0) throw Invalid("Descriptor requires url or directPath."); return urls;

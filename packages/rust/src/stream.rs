@@ -169,11 +169,20 @@ pub struct SseParser {
     data: Vec<String>,
     id: Option<String>,
     carriage_return: bool,
+    frame_bytes: usize,
 }
 impl SseParser {
     pub fn feed(&mut self, bytes: &[u8]) -> Result<Vec<SseMessage>> {
         let mut messages = Vec::new();
         for byte in bytes {
+            self.frame_bytes = self.frame_bytes.saturating_add(1);
+            if self.frame_bytes > 4 * 1024 * 1024 {
+                return Err(Error::local(
+                    ErrorKind::Server,
+                    "Event stream frame exceeds its size limit.",
+                    "invalid_response",
+                ));
+            }
             if self.carriage_return {
                 self.carriage_return = false;
                 if *byte == b'\n' {
@@ -191,6 +200,7 @@ impl SseParser {
                     )
                 })?;
                 if line.is_empty() {
+                    self.frame_bytes = 0;
                     if !self.data.is_empty() {
                         messages.push(SseMessage {
                             event: if self.event.is_empty() {

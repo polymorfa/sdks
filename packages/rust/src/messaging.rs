@@ -72,6 +72,12 @@ impl MessagingClient {
     pub fn webhooks(&self) -> Webhooks<'_> {
         Webhooks(&self.http)
     }
+    pub fn whatsapp_media(&self) -> crate::direct_media::WhatsAppMediaResource<'_> {
+        crate::direct_media::WhatsAppMediaResource(&self.http)
+    }
+    pub fn history_sync(&self) -> crate::direct_media::HistorySyncResource<'_> {
+        crate::direct_media::HistorySyncResource(&self.http)
+    }
     pub fn media(&self) -> Media<'_> {
         Media(&self.http)
     }
@@ -302,13 +308,19 @@ impl Messages<'_> {
         &self,
         session: &str,
         body: &SendMessageRequest,
-        options: RequestOptions,
+        mut options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<MessageResponse>>> {
         if body.conversation.id.is_none()
             && body.conversation.phone_number.is_none()
             && body.conversation.bsuid.is_none()
         {
             return Err(crate::transport::configuration("conversation"));
+        }
+        if let Some((descriptor, kind)) = body.content.descriptor_kind() {
+            descriptor.validate(kind)?;
+            if options.api_version.is_none() {
+                options.api_version = Some(crate::direct_media::CUSTOMER_OWNED_API_VERSION.into());
+            }
         }
         match &body.content {
             MessageContent::OrderDetails { order_details } => {

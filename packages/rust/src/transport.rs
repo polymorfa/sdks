@@ -381,8 +381,59 @@ impl HttpTransport {
         options: &RequestOptions,
         accept: &str,
     ) -> Result<(reqwest::Response, ResponseMetadata)> {
-        self.open_internal(method, path, query, body, options, accept, false)
-            .await
+        self.open_internal(
+            method,
+            path,
+            query,
+            body.map(reqwest::Body::from),
+            options,
+            accept,
+            false,
+            "application/json",
+        )
+        .await
+    }
+    pub(crate) async fn request_binary<T: DeserializeOwned>(
+        &self,
+        path: &str,
+        query: &[(&str, String)],
+        body: reqwest::Body,
+        length: u64,
+        mut options: RequestOptions,
+    ) -> Result<ApiResponse<T>> {
+        options.max_network_retries = Some(0);
+        options.headers.retain(|k, _| {
+            !k.eq_ignore_ascii_case("content-length") && !k.eq_ignore_ascii_case("content-type")
+        });
+        options
+            .headers
+            .insert("content-length".into(), length.to_string());
+        let (response, metadata) = self
+            .open_internal(
+                Method::POST,
+                path,
+                query,
+                Some(body),
+                &options,
+                "application/json",
+                false,
+                "application/octet-stream",
+            )
+            .await?;
+        let bytes = read_body(
+            response,
+            &options,
+            options.timeout.unwrap_or(self.options.timeout),
+        )
+        .await?;
+        let data = serde_json::from_slice(&bytes).map_err(|_| {
+            Error::local(
+                ErrorKind::Server,
+                "The API returned invalid upload JSON.",
+                "invalid_response",
+            )
+        })?;
+        Ok(ApiResponse { data, metadata })
     }
     #[allow(clippy::too_many_arguments)]
     async fn open_internal(
@@ -390,10 +441,11 @@ impl HttpTransport {
         method: Method,
         path: &str,
         query: &[(&str, String)],
-        body: Option<Vec<u8>>,
+        mut body: Option<reqwest::Body>,
         options: &RequestOptions,
         accept: &str,
         allow_redirect: bool,
+        content_type: &str,
     ) -> Result<(reqwest::Response, ResponseMetadata)> {
         validate_path(path)?;
         let retries = options
@@ -412,11 +464,13 @@ impl HttpTransport {
                 pairs.append_pair(key, value);
             }
         }
-        let eligible = matches!(method, Method::GET | Method::HEAD | Method::OPTIONS)
-            || options
-                .idempotency_key
-                .as_ref()
-                .is_some_and(|v| !v.is_empty());
+        let replay_body = body.as_ref().and_then(|b| b.as_bytes().map(|v| v.to_vec()));
+        let eligible = (body.is_none() || replay_body.is_some())
+            && (matches!(method, Method::GET | Method::HEAD | Method::OPTIONS)
+                || options
+                    .idempotency_key
+                    .as_ref()
+                    .is_some_and(|v| !v.is_empty()));
         let mut attempt = 0;
         loop {
             attempt += 1;
@@ -447,10 +501,13 @@ impl HttpTransport {
             if let Some(key) = &options.idempotency_key {
                 request = request.header("idempotency-key", key);
             }
-            if let Some(body) = &body {
-                request = request
-                    .header("content-type", "application/json")
-                    .body(body.clone());
+            let payload = if attempt == 1 {
+                body.take()
+            } else {
+                replay_body.as_ref().map(|v| reqwest::Body::from(v.clone()))
+            };
+            if let Some(body) = payload {
+                request = request.header("content-type", content_type).body(body);
             }
             let cancellation = options.cancellation.clone().unwrap_or_default();
             let outcome = tokio::select! {
@@ -532,6 +589,7 @@ impl HttpTransport {
                 &options,
                 "application/octet-stream, */*",
                 true,
+                "application/json",
             )
             .await?;
         let mut redirected = false;
@@ -613,6 +671,7 @@ impl HttpTransport {
                 &options,
                 "application/octet-stream, */*",
                 true,
+                "application/json",
             )
             .await?;
         if response.status().is_redirection() {

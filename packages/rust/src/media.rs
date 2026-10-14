@@ -418,6 +418,9 @@ pub fn is_whatsapp_media_url(value: &str) -> bool {
             .is_some_and(|host| host == "whatsapp.net" || host.ends_with(".whatsapp.net"))
 }
 pub fn candidate_urls(descriptor: &MediaDescriptor) -> Result<Vec<String>> {
+    candidate_urls_for(descriptor, descriptor.media_kind.mms())
+}
+fn candidate_urls_for(descriptor: &MediaDescriptor, mms_type: &str) -> Result<Vec<String>> {
     let mut urls = Vec::new();
     if let Some(url) = descriptor.url.as_ref().filter(|v| !v.is_empty()) {
         if !is_whatsapp_media_url(url) {
@@ -438,7 +441,7 @@ pub fn candidate_urls(descriptor: &MediaDescriptor) -> Result<Vec<String>> {
         let fallback = format!(
             "https://mmg.whatsapp.net{path}{separator}hash={}&mms-type={}&__wa-mms=",
             crate::transport::encode(&hash),
-            descriptor.media_kind.mms()
+            mms_type
         );
         if !is_whatsapp_media_url(&fallback) {
             return Err(invalid());
@@ -458,13 +461,21 @@ pub async fn download_stream(
     descriptor: &MediaDescriptor,
     options: MediaDownloadOptions,
 ) -> Result<MediaDownloadStream> {
+    let keys = derive_keys(&descriptor.media_key, descriptor.media_kind)?;
+    download_blob(descriptor, options, keys, descriptor.media_kind.mms()).await
+}
+pub(crate) async fn download_blob(
+    descriptor: &MediaDescriptor,
+    options: MediaDownloadOptions,
+    keys: MediaKeys,
+    mms_type: &str,
+) -> Result<MediaDownloadStream> {
     if options.timeout.is_zero() {
         return Err(crate::transport::configuration("media timeout"));
     }
     let limit = encrypted_limit(options.max_bytes, descriptor.file_length)?;
     let sha = descriptor.file_sha256.as_ref().ok_or_else(invalid)?;
-    let urls = candidate_urls(descriptor)?;
-    let keys = derive_keys(&descriptor.media_key, descriptor.media_kind)?;
+    let urls = candidate_urls_for(descriptor, mms_type)?;
     let mut builder = reqwest::Client::builder();
     if let Some(configure) = &options.configure_http {
         builder = configure(builder);

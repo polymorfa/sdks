@@ -95,6 +95,11 @@ internal sealed class MessageContentConverter : JsonConverter<MessageContent>
         using var document = JsonDocument.ParseValue(ref reader);
         var root = document.RootElement;
         if (root.TryGetProperty("text", out _)) return root.Deserialize<TextContent>(options)!;
+        if (root.TryGetProperty("image", out var image) && image.TryGetProperty("directPath", out _)) return root.Deserialize<DescriptorImageContent>(options)!;
+        if (root.TryGetProperty("video", out var video) && video.TryGetProperty("directPath", out _)) return root.Deserialize<DescriptorVideoContent>(options)!;
+        if (root.TryGetProperty("file", out var file) && file.TryGetProperty("directPath", out _)) return root.Deserialize<DescriptorFileContent>(options)!;
+        if (root.TryGetProperty("voice", out var voice) && voice.TryGetProperty("directPath", out _)) return root.Deserialize<DescriptorVoiceContent>(options)!;
+        if (root.TryGetProperty("sticker", out _)) return root.Deserialize<StickerContent>(options)!;
         if (root.TryGetProperty("image", out _)) return root.Deserialize<ImageContent>(options)!;
         if (root.TryGetProperty("video", out _)) return root.Deserialize<VideoContent>(options)!;
         if (root.TryGetProperty("file", out _)) return root.Deserialize<FileContent>(options)!;
