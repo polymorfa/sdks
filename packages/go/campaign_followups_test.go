@@ -16,8 +16,8 @@ import (
 
 func TestCampaignFollowUpNativeWrites(t *testing.T) {
 	delay, expiry := 60, 86400
-	minimal := CampaignFollowUp{Message: CampaignFollowUpMessage{Type: "text", Text: "Hi {{first_name}}"}}
-	explicit := CampaignFollowUp{DelaySeconds: &delay, ExpirySeconds: &expiry, Message: CampaignFollowUpMessage{Type: "template", TemplateID: "template"}}
+	minimal := CampaignFollowUp{Message: CampaignFollowUpTextMessage{Text: "Hi {{first_name}}"}}
+	explicit := CampaignFollowUp{DelaySeconds: &delay, ExpirySeconds: &expiry, Message: CampaignFollowUpTemplateMessage{TemplateID: "template"}}
 	for _, surface := range []string{"messaging", "platform"} {
 		for _, action := range []string{"create", "update", "clear", "omitted"} {
 			t.Run(surface+"/"+action, func(t *testing.T) {
@@ -88,7 +88,7 @@ func TestCampaignFollowUpNativeWrites(t *testing.T) {
 					if e != nil {
 						t.Fatal(e)
 					}
-					if r.Data.Data.FollowUp == nil || r.Data.Data.FollowUp.DelaySeconds != nil || r.Data.Data.FollowUp.ExpirySeconds != nil || r.Data.Data.FollowUp.Message.Text != minimal.Message.Text {
+					if r.Data.Data.FollowUp == nil || r.Data.Data.FollowUp.DelaySeconds != nil || r.Data.Data.FollowUp.ExpirySeconds != nil || r.Data.Data.FollowUp.Message != minimal.Message {
 						t.Error("minimal response timing changed")
 					}
 				} else {
@@ -185,7 +185,7 @@ func TestCampaignFollowUpEnrollmentDenial(t *testing.T) {
 		io.WriteString(w, `{"error":{"code":"feature_unavailable","message":"Enrollment required."}}`)
 	}))
 	defer s.Close()
-	followUp := CampaignFollowUp{Message: CampaignFollowUpMessage{Type: "text", Text: "Hi"}}
+	followUp := CampaignFollowUp{Message: CampaignFollowUpTextMessage{Text: "Hi"}}
 	_, err := mustMessaging(t, s.URL).Campaigns().Update(context.Background(), "project", "campaign", UpdateCampaignRequest{FollowUp: &Nullable[CampaignFollowUp]{Value: &followUp}})
 	var apiError *Error
 	if !errors.As(err, &apiError) || apiError.Code != "feature_unavailable" || apiError.Status != http.StatusForbidden || count != 1 {

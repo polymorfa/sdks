@@ -65,12 +65,13 @@ framing and source/keyframe controls.
 
 Both campaign surfaces accept `CampaignFollowUp` on create and update. A nil
 `FollowUp` request field omits the setting; `&Nullable[CampaignFollowUp]{}` sends
-`null` to remove it from an unlaunched draft. Set `Message.Type` to `"text"` and
-`Message.Text`, or to `"template"` and `Message.TemplateID`.
+`null` to remove it from an unlaunched draft. Use `CampaignFollowUpTextMessage{Text: ...}` or
+`CampaignFollowUpTemplateMessage{TemplateID: ...}`. Each variant supplies its own
+discriminator; a nil message is rejected before transport.
 
 ```go
 followUp := polymorfa.CampaignFollowUp{
-    Message: polymorfa.CampaignFollowUpMessage{Type: "text", Text: "Hi {{first_name}}, still interested?"},
+    Message: polymorfa.CampaignFollowUpTextMessage{Text: "Hi {{first_name}}, still interested?"},
 }
 _, err := client.Campaigns().Update(ctx, projectSlug, campaignID, polymorfa.UpdateCampaignRequest{
     FollowUp: &polymorfa.Nullable[polymorfa.CampaignFollowUp]{Value: &followUp},
@@ -91,3 +92,32 @@ and reason. `CampaignAnalytics.FollowUps` is optional; the Platform report is
 required. `CampaignFollowUpReport` counts these outcomes separately from the first
 message. Follow-up timestamps are Unix milliseconds. Native fixture verification
 covers the merged contract; no live follow-up campaign or publication was exercised.
+
+## Raw pagination
+
+`PaginateRaw[T]` accepts any SDK client with a `Raw` method and a decoder that
+receives the JSON body and response metadata. Return `PageResult[T]` with items
+and the next cursor; an empty cursor ends pagination. `RawPaginationOptions`
+changes the cursor query key from `cursor` to the API's key. `NextPage(ctx)` loads
+one more page, and `All(ctx)` iterates lazily. Cancellation, request options and
+project confinement apply to every page. Repeated cursors fail with
+`invalid_response`. Query parameters and headers are copied before loading.
+
+```go
+page, err := polymorfa.PaginateRaw(ctx, project, polymorfa.RawRequest{
+    Method: "GET", Path: "/events",
+}, func(body json.RawMessage, metadata polymorfa.Metadata) (polymorfa.PageResult[polymorfa.PlatformEvent], error) {
+    var wire struct {
+        Data []polymorfa.PlatformEvent `json:"data"`
+        Page struct { NextCursor string `json:"nextCursor"` } `json:"page"`
+    }
+    if err := json.Unmarshal(body, &wire); err != nil { return polymorfa.PageResult[polymorfa.PlatformEvent]{}, err }
+    return polymorfa.PageResult[polymorfa.PlatformEvent]{Items: wire.Data, NextCursor: wire.Page.NextCursor}, nil
+})
+```
+
+Use the typed resource method when it represents the endpoint. Raw decoders are
+application-owned; validate the endpoint's response shape before returning items.
+The follow-up union replaces the unpublished `CampaignFollowUpMessage` struct.
+Use the text or template variant when upgrading a source checkout. Follow-up
+business constraints and enrollment remain enforced by the API.
