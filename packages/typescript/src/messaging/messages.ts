@@ -45,7 +45,23 @@ export class MessagesResource {
     body: SendMessageRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SendMessageResponse>> {
-    return this.post(session, "send", body, withIdempotencyKey(options));
+    const descriptor =
+      typeof body.content === "object" &&
+      body.content !== null &&
+      Object.values(body.content).some(
+        (value) =>
+          typeof value === "object" && value !== null && "descriptor" in value,
+      );
+    return this.post(
+      session,
+      "send",
+      body,
+      withIdempotencyKey(
+        descriptor
+          ? { ...options, apiVersion: options.apiVersion ?? "2026-10-14" }
+          : options,
+      ),
+    );
   }
 
   markSeen(

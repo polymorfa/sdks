@@ -72,7 +72,6 @@ function client(baseUrl: string) {
   return new MessagingClient({
     credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
     baseUrl,
-    apiVersion: "2026-10-14",
     maxNetworkRetries: 0,
   });
 }
@@ -293,6 +292,49 @@ describe("customer-owned media upload over native HTTP", () => {
     ).rejects.toMatchObject({ code: "media_enc_hash_mismatch" });
   });
 
+  it("verifies the final streamed document part before finalization", async () => {
+    const api = await server((request) => ({
+      value: {
+        success: true,
+        data: {
+          uploadUrl: `https://mmg.whatsapp.net/mms/document/${json(request).fileEncSha256}?auth=fixture&token=fixture`,
+          host: "mmg.whatsapp.net",
+          expiresAt: 2_000_000_000,
+        },
+      },
+    }));
+    const requests: URL[] = [];
+    const fetcher: typeof fetch = async (input, init) => {
+      const url = new URL(String(input));
+      requests.push(url);
+      if (init?.body instanceof ReadableStream)
+        await new Response(init.body).arrayBuffer();
+      return Response.json(location);
+    };
+    const sdk = client(api.url);
+    const transport = sdk.whatsappMedia.transport("direct", {
+      documentPartSize: 16,
+      fetch: fetcher,
+      maxAttempts: 1,
+    });
+    let opens = 0;
+    await expect(
+      sdk.whatsappMedia.upload(
+        "s",
+        { open: () => new Blob([new Uint8Array(43).fill(opens++)]).stream() },
+        {
+          mediaType: "document",
+          encryptor: nodeMediaEncryptor,
+          egress: transport,
+        },
+      ),
+    ).rejects.toMatchObject({ code: "media_enc_hash_mismatch" });
+    expect(requests.length).toBeGreaterThan(1);
+    expect(requests.some((url) => url.searchParams.has("final_hash"))).toBe(
+      false,
+    );
+  });
+
   it("sends a pre-uploaded descriptor through the standard-session message API", async () => {
     const api = await server((request) => ({
       value: request.url.pathname.endsWith("/media/uploads")
@@ -314,6 +356,7 @@ describe("customer-owned media upload over native HTTP", () => {
     };
     await sdk.messages.send("s", body);
     expect(json(api.requests[1]!).content).toEqual({ image: { descriptor } });
+    expect(api.requests[1]!.headers["polymorfa-version"]).toBe("2026-10-14");
     expect(descriptor.mimeType).toBe("image/jpeg");
   });
 

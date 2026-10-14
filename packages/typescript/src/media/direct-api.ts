@@ -11,6 +11,9 @@ import type { RequestOptions } from "../transport/types.js";
 import type { WhatsAppUploadMediaType } from "./encrypt.js";
 import { isWhatsAppMediaUrl } from "./whatsapp.js";
 
+/** First contract defining these additive operations. */
+export const CUSTOMER_OWNED_API_VERSION = "2026-10-14";
+
 /**
  * `POST /messaging/{session}/media/upload-grants` request.
  * @experimental Requires the 2026-10-14 API contract.
@@ -19,7 +22,7 @@ export interface WhatsAppUploadGrantRequest {
   readonly mediaType: WhatsAppUploadMediaType;
   /** Base64url SHA-256 of `ciphertext || mac10`, unpadded. */
   readonly fileEncSha256: string;
-  /** Length of `ciphertext || mac10`. */
+  /** Local length for relay Content-Length; the grant body contains only type/hash/ptt. */
   readonly encryptedLength: number;
 }
 
@@ -157,6 +160,7 @@ export class DirectMediaApi {
       path: DIRECT_MEDIA_PATHS.uploadGrants(session),
       body: uploadRequest(request.mediaType, request.fileEncSha256),
       ...options,
+      apiVersion: options.apiVersion ?? CUSTOMER_OWNED_API_VERSION,
     });
     const data = unwrap(response.data);
     const rawUrl = data["uploadUrl"];
@@ -204,6 +208,7 @@ export class DirectMediaApi {
     };
     const response = await this.transport.request<unknown>({
       ...options,
+      apiVersion: options.apiVersion ?? CUSTOMER_OWNED_API_VERSION,
       method: "POST",
       path: DIRECT_MEDIA_PATHS.relayUploads(session),
       query,
@@ -235,6 +240,7 @@ export class DirectMediaApi {
       path: DIRECT_MEDIA_PATHS.historyChunkRetries(session),
       body: request,
       ...options,
+      apiVersion: options.apiVersion ?? CUSTOMER_OWNED_API_VERSION,
     });
     const data = unwrap(response.data);
     return Object.freeze(
@@ -252,6 +258,7 @@ export class DirectMediaApi {
       path: DIRECT_MEDIA_PATHS.historyChunkDeletions(session),
       body: request,
       ...options,
+      apiVersion: options.apiVersion ?? CUSTOMER_OWNED_API_VERSION,
     });
   }
 }

@@ -206,6 +206,25 @@ class SequentialParts {
           }
           remaining -= chunk.length;
           this.#position += chunk.length;
+          if (remaining === 0 && this.#position === this.body.encryptedLength) {
+            // EOF performs the second-pass hash comparison. Validate before
+            // handing out the last bytes or allowing provider finalization.
+            if (this.#pending !== undefined && this.#pending.length > 0) {
+              throw new PolymorfaMediaIntegrityError(
+                "The encrypted source exceeded its declared length.",
+                "media_invalid_ciphertext",
+              );
+            }
+            const tail = await reader.read();
+            if (!tail.done)
+              throw new PolymorfaMediaIntegrityError(
+                "The encrypted source exceeded its declared length.",
+                "media_invalid_ciphertext",
+              );
+            controller.enqueue(chunk);
+            controller.close();
+            return;
+          }
           controller.enqueue(chunk);
         },
       },
