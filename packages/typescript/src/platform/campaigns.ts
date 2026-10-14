@@ -14,6 +14,7 @@ import type {
   ListCampaignsParams,
   ListPlatformCampaignRecipientsParams,
   PlatformCampaign,
+  PlatformCampaignAnalytics,
   PlatformCampaignParams,
   PlatformCampaignRecipientsEnvelope,
   PlatformPayload,
@@ -191,8 +192,13 @@ export class CampaignsResource {
     campaignId: string,
     params: PlatformCampaignParams,
     options: RequestOptions = {},
-  ): CampaignResponse {
-    return this.read(campaignId, "analytics", params, options);
+  ): CampaignResult<PlatformCampaignAnalytics> {
+    return this.read<PlatformCampaignAnalytics>(
+      campaignId,
+      "analytics",
+      params,
+      options,
+    );
   }
 
   events(
@@ -307,12 +313,12 @@ export class CampaignsResource {
     );
   }
 
-  private read(
+  private read<T = PlatformPayload>(
     campaignId: string,
     resource: CampaignRead,
     params: PlatformCampaignParams,
     options: RequestOptions,
-  ): CampaignResponse {
+  ): CampaignResult<T> {
     return this.transport.request({
       method: "GET",
       path: `${campaignPath(campaignId)}/${resource}`,

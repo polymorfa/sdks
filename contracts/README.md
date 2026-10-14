@@ -600,3 +600,31 @@ webhook to backend source `2f9efad933b3a7a455f73245a566c827ac004608`. Both consu
 revision. The full legacy snapshots retain their recorded revision; unrelated
 API drift is not declared covered by this scoped update. The capability methods
 remain subject to the enrolled beta. Source integration does not publish a package.
+
+## Campaign message variation supplement
+
+`campaign-message-variations.json` records the weighted message variation
+schemas and the `messageVariations` fields of the Messaging and Platform
+campaign create, update and response schemas from API `dev` merge commit
+`9dc523d940edc5954a37ad85647b89be1cd58e3c` (polymorfa/polymorfa#409), with
+both source paths and file hashes. `campaign-message-variations-contract.test.ts`
+checks the SDK types against it. The full snapshots stay pinned to
+`contracts/source.json` until the next repin.
+
+## Campaign A/B test supplement
+
+`campaign-ab-tests.json` records the A/B variant, strategy, outcome and result
+schemas, and the related Messaging and Platform campaign and analytics fields,
+from API `dev` merge commit `8d248b578a7c76034b30a5a97349adcd15ce5c55`
+(polymorfa/polymorfa#406), with both source paths and file hashes.
+`campaign-ab-tests-contract.test.ts` checks the SDK types against it.
+
+## Campaign follow-up supplement
+
+`campaign-follow-ups.json` records the receipt-timed follow-up schemas
+(`CampaignFollowUp`, `CampaignFollowUpSummary`, `CampaignFollowUpReport`) and
+the `followUp`/`followUps` fields of the Messaging and Platform campaign,
+create, update, recipient and analytics schemas from API `dev` merge commit
+`87b25fd9e2494d90f01f7511fb47be6a28845fa1` (polymorfa/polymorfa#503), with both source paths and file
+hashes. `campaign-follow-ups-contract.test.ts` checks the SDK types against it.
+The full snapshots stay pinned to `contracts/source.json` until the next repin.
