@@ -236,6 +236,36 @@ never enables hosted history or acknowledges Signal events automatically.
 
 The schema/merge baseline is storage source
 `3bacf46f9c4213426314001586f5bae43aaa77de`; the native engine additionally
-stops immediately after a failed CAS chunk to preserve marker ordering. Provider
-adapters beyond memory and the D1 bridge, and full event/history reducers, are
-not included in this slice. This package remains unpublished.
+stops immediately after a failed CAS chunk to preserve marker ordering. Full event/history reducers and the remaining provider adapters are in progress.
+This package remains unpublished.
+
+
+Enable the optional `storage-sql` feature for `storage::sql::SqlStorageAdapter`.
+It uses SQLx 0.8.6's native PostgreSQL, MySQL and SQLite drivers. Choose the
+matching `SqlDialect` explicitly and pass your customer database connection URL.
+The client does not read Polymorfa database configuration. Configure transport
+security and database roles in that connection; a table prefix is naming, not
+tenant authorization. PostgreSQL supports an explicitly configured schema.
+`SqlStorageOptions::create_tables = false` leaves schema creation to your operator.
+`schema_statements` exports schema-2 DDL for that workflow.
+
+```rust,no_run
+# async fn sql_example() -> Result<(), Box<dyn std::error::Error>> {
+# #[cfg(feature="storage-sql")] {
+use polymorfa_sdk::storage::sql::{SqlDialect, SqlStorageAdapter, SqlStorageOptions};
+let adapter = SqlStorageAdapter::connect(SqlDialect::Postgres,
+    &std::env::var("CUSTOMER_DATABASE_URL")?, SqlStorageOptions::default()).await?;
+# let _ = adapter;
+# }
+# Ok(()) }
+```
+
+Every SQL commit runs in one database transaction and rolls back all its writes
+on a stale revision. The engine reserves a write for its session fence. Commit
+capacities are 500 writes for SQLite and 1,000 for PostgreSQL/MySQL. Queries use
+schema-defined scope and cursor indexes. Invalid or oversized derived identifiers
+are refused before connecting, preventing PostgreSQL name truncation. Driver
+errors omit connection strings, SQL and customer row values. These adapters are
+server clients; hosted Supabase/Neon/PlanetScale authority and deployment acceptance
+require the customer's own configuration and verification. The libSQL, Supabase
+RLS, document-store and browser adapters are separate work.

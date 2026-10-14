@@ -9,6 +9,10 @@ repository = "https://github.com/polymorfa/sdks"
 readme = "README.md"
 include = ["Cargo.toml", "Cargo.lock", "README.md", "src/**", "tests/**", "fixtures/**", "coverage.json", "supplements.json", "protocol-notes.md", "release-contract.json", ".cargo/config.toml"]
 
+[features]
+default = []
+storage-sql = ["dep:sqlx"]
+
 [dependencies]
 async-stream = "0.3"
 aes = "0.8"
@@ -27,6 +31,7 @@ rand = "0.9"
 reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+sqlx = { version = "=0.8.6", optional = true, default-features = false, features = ["runtime-tokio-rustls", "any", "postgres", "mysql", "sqlite"] }
 sha2 = "0.10"
 subtle = "2"
 tokio = { version = "1", features = ["time", "sync", "rt", "macros", "net", "io-util", "fs"] }

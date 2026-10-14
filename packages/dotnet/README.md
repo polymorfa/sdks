@@ -185,5 +185,34 @@ automatically acknowledges Signal events.
 The schema/merge baseline is storage source
 `3bacf46f9c4213426314001586f5bae43aaa77de`; the native engine additionally
 stops after the first failed CAS chunk. Memory and the D1 bridge are included in
-this slice. Other provider adapters and full event/history reducers remain in
+the base SDK. Other provider adapters and full event/history reducers remain in
 progress. This package remains unpublished.
+
+
+The separate, unpublished `Polymorfa.Storage.Sql` package adds
+`Polymorfa.Storage.Sql.SqlStorageAdapter`. It uses maintained native ADO.NET
+SQLite, Npgsql and MySqlConnector drivers without adding database dependencies to
+the base SDK. `SqliteAsync`, `Postgres` and `MySql` accept customer database
+connection strings. They do not read Polymorfa database settings. Configure TLS
+and customer database roles explicitly; a table prefix is naming, not tenant
+authorization. PostgreSQL also accepts an explicit schema. Set
+`SqlStorageOptions.CreateTables = false` for operator-managed tables and export
+schema-2 DDL with `StorageSqlSchema.Statements`.
+
+```csharp
+using Polymorfa.Storage.Sql;
+await using var adapter = SqlStorageAdapter.Postgres(
+    Environment.GetEnvironmentVariable("CUSTOMER_DATABASE_CONNECTION")!,
+    new() { TablePrefix = "app_", CreateTables = false });
+var storage = new Polymorfa.Sdk.Storage.CustomerStorage(adapter);
+```
+
+Every SQL commit uses a database transaction and rolls back all writes after a
+stale revision. Commit capacities are 500 writes for SQLite and 1,000 for
+PostgreSQL/MySQL, including the engine's session fence. Scope and cursor indexes
+follow schema 2. Invalid or oversized derived identifiers fail before connecting,
+preventing PostgreSQL name truncation. Driver errors omit connection strings, SQL
+and customer values. SQL adapters require a server application. Hosted
+Supabase/Neon/PlanetScale authority and deployment acceptance remain customer
+configuration and verification gates. The libSQL, Supabase RLS, document-store
+and browser adapters are separate work.
