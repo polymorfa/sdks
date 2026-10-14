@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 	_ "modernc.org/sqlite"
 	"os"
 	"path/filepath"
@@ -193,4 +194,21 @@ func TestSQLIdentifierOwnershipAndMigration(t *testing.T) {
 	if db.Ping() == nil || own.Capabilities().AtomicCommit {
 		t.Fatal("owned client not closed")
 	}
+}
+
+func TestLibSQLNativeHTTPConformance(t *testing.T) {
+	endpoint := os.Getenv("POLYMORFA_LIBSQL_FIXTURE_URL")
+	if endpoint == "" {
+		t.Skip("Requires actual libSQL HTTP server")
+	}
+	db, err := sql.Open("libsql", endpoint)
+	if err != nil {
+		t.Fatal("open libSQL driver")
+	}
+	defer db.Close()
+	a, err := NewLibSQLAdapter(context.Background(), db, SQLOptions{TablePrefix: fmt.Sprintf("libsql_%d_", time.Now().UnixNano()%1000000000000)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	exerciseSQLAdapter(t, a)
 }

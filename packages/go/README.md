@@ -362,4 +362,19 @@ pagination, rollback, lease/checkpoint behavior and schema-version refusal.
 They verify borrowed/owned close behavior and reject nontransactional MySQL.
 Set `POLYMORFA_SQL_FIXTURE_METADATA` to a task-owned metadata file containing
 `postgres` and `mysql` test DSNs to repeat the optional server proofs. This
-adapter does not yet establish libSQL, ORM or the remaining provider matrix.
+adapter does not yet establish ORM or the remaining provider matrix.
+
+
+`storage.NewLibSQLAdapter(ctx, db, options)` accepts an application-configured
+`github.com/tursodatabase/libsql-client-go/libsql` pool and uses the same schema2
+SQL contract. The official HTTP client pinned at
+`v0.0.0-20260528064733-9d5d30a29a60` passed the complete native SQL conformance
+suite against an actual libSQL server, including conditional rollback and
+2,000-row paging. Set `POLYMORFA_LIBSQL_FIXTURE_URL` to repeat that opt-in proof.
+
+The official driver controls transport timeouts. Its commit/rollback methods
+use their own context; caller cancellation does not promise to interrupt an
+in-flight commit. The adapter waits for the native transaction to settle before
+returning or closing an owned pool, and never changes global HTTP settings.
+A cancelled or failed operation can have an uncertain committed outcome; replay
+from the durable checkpoint and deduplication marker rather than assuming undo.

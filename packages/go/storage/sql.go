@@ -245,6 +245,9 @@ func (a *SQLAdapter) version(ctx context.Context) (int, error) {
 	return version, err
 }
 func sqlMissing(err error) bool {
+	if strings.Contains(err.Error(), "no such table:") {
+		return true
+	}
 	var state interface{ SQLState() string }
 	if errors.As(err, &state) {
 		return state.SQLState() == "42P01" || state.SQLState() == "3F000"
@@ -260,6 +263,11 @@ func sqlMissing(err error) bool {
 	return false
 }
 func sqlConflict(err error) bool {
+	for _, code := range []string{"SQLITE_CONSTRAINT", "UNIQUE constraint failed:", "NOT NULL constraint failed:", "SQLITE_BUSY", "database is locked"} {
+		if strings.Contains(err.Error(), code) {
+			return true
+		}
+	}
 	var state interface{ SQLState() string }
 	if errors.As(err, &state) {
 		switch state.SQLState() {
@@ -720,3 +728,10 @@ func SQLMigration(dialect SQLDialect, options SQLOptions) (string, error) {
 }
 
 var _ Adapter = (*SQLAdapter)(nil)
+
+// NewLibSQLAdapter uses the same schema2 SQL contract with an application's
+// configured official libsql-client-go database/sql pool. Transport timeouts
+// remain a property of that driver; the SDK never changes global HTTP settings.
+func NewLibSQLAdapter(ctx context.Context, db *sql.DB, options SQLOptions) (*SQLAdapter, error) {
+	return NewSQLAdapter(ctx, db, SQLite, options)
+}
