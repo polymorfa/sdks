@@ -39,7 +39,7 @@ Use `Call.MediaFramesAsync` for PCM, H.264, source ownership and keyframe reques
 
 The [examples](examples/README.md) include an ASP.NET Core authenticated token/webhook server, Blazor WebAssembly and MAUI Blazor Hybrid hosts, and a programmatic Calls agent. Native builds verify the examples; ASP.NET and Blazor WebAssembly run in a browser against local API fixtures. The MAUI Mac Catalyst app completes sign-in, component mounting, token minting, inbox loading and logout against the same fixtures. Other MAUI platforms remain unexercised.
 
-Signal integration is owned by the Signal workstream and is outside this package change.
+Signal cryptography and key custody remain in the customer-operated Signal service; the SDK connects to its local application API.
 
 Run the native checks from the repository root:
 
@@ -90,3 +90,60 @@ failed storage write. Storage requests use a separate HTTP client, contain no
 API credential, and refuse redirects.
 
 Configured API base URLs can include a reverse-proxy path. Requests and relative download capabilities retain that prefix; a trailing slash does not change the request path.
+
+## Customer-owned media, history and Signal service
+
+These unpublished helpers follow TypeScript `254fc6a2d073e7fc79420cf95f9b03927d00c04a`
+and Signal service `8aa191ef0d4c318229c91bcdf474bf2d79dac47c`. Local implementation
+does not establish deployed access or enrollment. New media/history operations
+and descriptor sends select API revision `2026-10-14` per request; existing
+operations keep their previous default.
+
+`WhatsAppMedia.EncryptAsync(source, destination, options)` encrypts incrementally
+and keeps caller streams open. `PrepareUploadAsync` accepts bytes, a single-use
+stream, or a factory returning a fresh stream of identical plaintext. Factories
+use a hash pass followed by bounded streaming encryption; the SDK owns and
+closes each factory stream. It withholds the final bytes until EOF verifies the
+second hash. Single-use inputs buffer bounded ciphertext. The default plaintext
+limit is 256 MiB. Cancellation does not undo provider-side bytes already sent.
+
+```csharp
+var prepared = await WhatsAppMedia.PrepareUploadAsync(
+    _ => Task.FromResult<Stream>(File.OpenRead("attachment.jpg")),
+    new(WhatsAppUploadMediaType.Image) { Mimetype = "image/jpeg" });
+var uploaded = await client.WhatsAppMedia.UploadRelayAsync("support", prepared);
+var descriptor = WhatsAppMedia.ToSendDescriptor(uploaded.Info, uploaded.Location);
+await client.Messages.SendAsync("support",
+    new(new(PhoneNumber: "+15551234567"), new DescriptorImageContent(descriptor)));
+```
+
+Relay sends ciphertext only through the session's connection. `UploadDirectAsync`
+uses a short-lived grant and a separate HTTPS client confined to WhatsApp media
+hosts. It preserves grant parameters, refuses redirects, refreshes unauthorized
+grants, resumes interrupted uploads and sends documents above 50 MiB in parts.
+`WhatsAppDirectUploadOptions` configures the separate CDN proxy/trust settings.
+No changed source can reach multipart finalization.
+
+Standard `DescriptorImageContent`, `DescriptorVideoContent`,
+`DescriptorFileContent`, `DescriptorVoiceContent` and `StickerContent` send the
+media key through the API. For zero-knowledge sessions, pass
+`descriptor.ToSignalDescriptor(...)` to the local `SignalClient` instead.
+That conversion rejects thumbnail, waveform and animation metadata because the
+pinned service does not accept them.
+
+`HistoryChunks.DownloadAsync` authenticates encrypted history before decompression
+and protobuf parsing. It accepts descriptors or inline payloads, detects
+zlib/gzip/raw DEFLATE, and limits inflated data to 512 MiB by default.
+Common fields have native types; original protobuf bytes, unknown fields and
+`ulong` values remain in `HistoryChunk.Proto`. `DecodeWith` accepts your
+application's full-schema decoder. Native history typing covers fewer fields
+than TypeScript's complete generated schema.
+
+`SignalClient` is server-only and uses a separate application bearer secret.
+It rejects browser execution, sends no Origin header, refuses redirects, and
+never holds Signal master/session keys. Native SSE has no resume cursor or
+automatic acknowledgement. Commit application data before `AcknowledgeAsync`;
+delivery can repeat. `VerifyWebhook` authenticates the exact timestamp and raw
+body before parsing. Use a timestamp window and durable event-ID deduplication
+before returning 2xx. `SignalHistoryDescriptor.ChunkInput` converts local history
+notifications into verified download inputs.

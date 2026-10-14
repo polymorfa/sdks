@@ -2,8 +2,7 @@
 
 Handwritten asynchronous clients for the native Messaging and Platform APIs.
 The crate requires Rust 1.85 or later and Tokio. This development package has
-not been published to crates.io. Its contract source is the merged TypeScript
-SDK at `ff51567105b64bf6997e7330ba8eb502d875e7b9`.
+not been published to crates.io. Its baseline REST contract source is recorded in `coverage.json`.
 
 ```rust,no_run
 use polymorfa_sdk::{ClientOptions, Credential, MessagingClient, RequestOptions};
@@ -146,3 +145,53 @@ when an intermediate page is empty.
 Graph route-choice header for raw requests. It does not grant access to a transport.
 
 Call placement accepts optional `session`, `to` and `video`. Group/participant calls omit `to`; client-token calls omit `session`. Omitting `video` preserves the server default. Streamed API downloads enforce the configured timeout while reading the response body. Organization keys reject every reserved special-purpose token prefix, including padded values.
+
+## Customer-owned media, history and Signal service
+
+These development helpers follow TypeScript `254fc6a2d073e7fc79420cf95f9b03927d00c04a`
+and the Signal service application contract `8aa191ef0d4c318229c91bcdf474bf2d79dac47c`.
+They are unpublished. Server availability and enrollment remain separate gates.
+New grant, relay, history retry/delete and descriptor-send requests select API
+revision `2026-10-14`; existing operations retain their previous default.
+
+`media_encrypt::encrypt_media_stream` encrypts incrementally. For uploads,
+`media_upload::MediaSource::Reopen` supplies a fresh stream of identical plaintext
+on every call. `prepare_upload` computes the encrypted hash first, then reopens
+and streams the upload. It withholds the final bytes until EOF confirms the
+second encrypted hash. Bytes and single-use streams buffer bounded ciphertext.
+The default plaintext limit is 256 MiB. Cancellation stops local work; it does
+not roll back bytes already accepted by a provider.
+
+`client.whatsapp_media().upload_relay(...)` transfers ciphertext only through the
+session's connection. `upload_direct(...)` obtains a short-lived grant and uses
+an independent HTTPS client restricted to WhatsApp media hosts. It preserves the
+exact grant URL parameters, refuses redirects, refreshes grants after 401,
+resumes interrupted uploads, and uploads documents above 50 MiB in parts.
+Configure separate CDN trust/proxy settings with `DirectUploadOptions`.
+A failed or changed source never reaches multipart finalization.
+
+`media_descriptor::media_send_descriptor` validates upload metadata and builds a
+standard descriptor. `MessageContent::DescriptorImage`, `DescriptorVideo`,
+`DescriptorFile`, `DescriptorVoice` and `Sticker` send that descriptor, including
+its media key, through the standard API. For a zero-knowledge session, use
+`descriptor.signal_descriptor(...)` with `SignalSendRequest::Media` instead.
+The pinned service does not accept thumbnail, waveform or animation metadata;
+the conversion rejects those fields instead of dropping them.
+
+`history_chunks::download_history_chunk` authenticates the ciphertext and hashes
+with the History Keys HKDF label before decompressing or parsing. It accepts
+an encrypted descriptor or inline compressed payload, detects zlib/gzip/raw
+DEFLATE and bounds inflation at 512 MiB by default. Common history fields are
+typed; the complete original protobuf, unknown fields and full-width integers
+remain in `HistoryChunk::proto`. Use `decode_with` with your application's full
+schema. This is narrower typed support than TypeScript's complete generated
+history schema, without importing the Signal core into this MIT package.
+
+`signal::SignalClient` takes the service URL and a separate application bearer
+secret. It runs on servers, sends no Origin header, refuses redirects, and never
+receives a Signal master or session key. Its native SSE stream has no resume
+cursor and never automatically acknowledges an event. Commit application data
+before `ack`; repeated delivery is possible. `verify_signal_webhook` verifies
+HMAC over the exact timestamp and raw body before parsing. Enforce a timestamp
+window and durable event-ID deduplication before returning 2xx. Convert local
+history notifications with `SignalHistoryDescriptor::chunk_input`.

@@ -1,0 +1,227 @@
+use futures_util::StreamExt as _;
+use hmac::{Hmac, Mac};
+use polymorfa_sdk::{signal::*, ErrorKind};
+use sha2::Sha256;
+use std::{
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    },
+    time::Duration,
+};
+use tokio::{
+    io::{AsyncReadExt, AsyncWriteExt},
+    net::{TcpListener, TcpStream},
+};
+use tokio_util::sync::CancellationToken;
+const SECRET: &str = "application-fixture-secret";
+fn event() -> serde_json::Value {
+    serde_json::json!({"id":"event-fixture","type":"message","session_id":"s","chat":"111@s.whatsapp.net","sender":"111:1@s.whatsapp.net","message_id":"m","timestamp":100,"is_from_me":false,"redelivered":false,"identity_changed":false,"message_proto":"","text":"private text ✓","future":{"retained":true}})
+}
+async fn request(socket: &mut TcpStream) -> (String, serde_json::Value) {
+    let mut bytes = Vec::new();
+    let mut one = [0];
+    while !bytes.ends_with(b"\r\n\r\n") {
+        socket.read_exact(&mut one).await.unwrap();
+        bytes.push(one[0]);
+        assert!(bytes.len() < 65536);
+    }
+    let header = String::from_utf8(bytes).unwrap();
+    let lower = header.to_lowercase();
+    assert!(lower.contains(&format!("authorization: bearer {SECRET}\r\n")));
+    assert!(!lower.contains("\r\norigin:"));
+    assert!(!lower.contains("\r\ncookie:"));
+    let length = header
+        .lines()
+        .find_map(|l| {
+            l.to_lowercase()
+                .strip_prefix("content-length: ")
+                .map(|n| n.parse::<usize>().unwrap())
+        })
+        .unwrap_or(0);
+    let mut bytes = vec![0; length];
+    socket.read_exact(&mut bytes).await.unwrap();
+    (
+        header,
+        if bytes.is_empty() {
+            serde_json::Value::Null
+        } else {
+            serde_json::from_slice(&bytes).unwrap()
+        },
+    )
+}
+async fn respond(socket: &mut TcpStream, status: u16, kind: &str, body: &str, extra: &str) {
+    socket.write_all(format!("HTTP/1.1 {status} Fixture\r\ncontent-type: {kind}\r\ncontent-length: {}\r\nconnection: close\r\n{extra}\r\n",body.len()).as_bytes()).await.unwrap();
+    for part in body.as_bytes().chunks(7) {
+        socket.write_all(part).await.unwrap();
+    }
+}
+#[tokio::test]
+async fn native_sidecar_sends_and_streams_without_automatic_ack() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let url = format!("http://{}", listener.local_addr().unwrap());
+    let acks = Arc::new(AtomicUsize::new(0));
+    let seen = acks.clone();
+    let server = tokio::spawn(async move {
+        let (mut socket, _) = listener.accept().await.unwrap();
+        let (header, _) = request(&mut socket).await;
+        assert!(header.starts_with("GET /v1/sessions "));
+        respond(&mut socket,200,"application/json",r#"{"node_id":"node","sessions":[{"id":"s","lease_generation":2,"claimed":true,"has_device_keys":true,"state":"connected","pn":null,"lid":null}]}"#,"").await;
+        let (mut socket, _) = listener.accept().await.unwrap();
+        let (header, body) = request(&mut socket).await;
+        assert!(header.starts_with("POST /v1/sessions/s%2F1/messages "));
+        assert_eq!(
+            body,
+            serde_json::json!({"to":"111@s.whatsapp.net","text":"private"})
+        );
+        respond(
+            &mut socket,
+            200,
+            "application/json",
+            r#"{"message_id":"m","server_timestamp":100,"resent":false}"#,
+            "",
+        )
+        .await;
+        let (mut socket, _) = listener.accept().await.unwrap();
+        let (header, _) = request(&mut socket).await;
+        assert!(header.starts_with("GET /v1/events?session_id=s%20one "));
+        respond(
+            &mut socket,
+            200,
+            "text/event-stream",
+            &format!(
+                ": keepalive\r\n\r\nid: event-fixture\r\nevent: message\r\ndata: {}\r\n\r\n",
+                event()
+            ),
+            "",
+        )
+        .await;
+        let (mut socket, _) = listener.accept().await.unwrap();
+        let (header, _) = request(&mut socket).await;
+        assert!(header.starts_with("POST /v1/events/event-fixture/ack "));
+        seen.fetch_add(1, Ordering::SeqCst);
+        respond(&mut socket, 204, "application/json", "", "").await;
+    });
+    let client = SignalClient::new(SignalClientOptions::new(url, SECRET)).unwrap();
+    let stop = CancellationToken::new();
+    assert_eq!(
+        client.sessions(&stop).await.unwrap().sessions[0].lease_generation,
+        2
+    );
+    assert_eq!(
+        client
+            .send(
+                "s/1",
+                &SignalSendRequest::Text {
+                    to: "111@s.whatsapp.net".into(),
+                    text: "private".into()
+                },
+                &stop
+            )
+            .await
+            .unwrap()
+            .message_id,
+        "m"
+    );
+    let mut events = client.events(Some("s one"), stop.clone());
+    let received = events.next().await.unwrap().unwrap();
+    assert_eq!(received.text.as_deref(), Some("private text ✓"));
+    assert_eq!(received.additional["future"]["retained"], true);
+    tokio::time::sleep(Duration::from_millis(25)).await;
+    assert_eq!(acks.load(Ordering::SeqCst), 0);
+    client.acknowledge(&received.id, &stop).await.unwrap();
+    assert_eq!(acks.load(Ordering::SeqCst), 1);
+    server.await.unwrap();
+}
+#[tokio::test]
+async fn sidecar_rejects_auth_errors_and_never_follows_redirects() {
+    for status in [401, 403, 307] {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let url = format!("http://{}", listener.local_addr().unwrap());
+        let forbidden = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let location = format!(
+            "Location: http://{}/capture\r\n",
+            forbidden.local_addr().unwrap()
+        );
+        let server = tokio::spawn(async move {
+            let (mut socket, _) = listener.accept().await.unwrap();
+            request(&mut socket).await;
+            respond(
+                &mut socket,
+                status,
+                "text/html",
+                "<html>private-signed-url?secret=value</html>",
+                &location,
+            )
+            .await;
+        });
+        let client = SignalClient::new(SignalClientOptions::new(url, SECRET)).unwrap();
+        let error = match client.sessions(&CancellationToken::new()).await {
+            Ok(_) => panic!("non-success accepted"),
+            Err(e) => e,
+        };
+        assert_eq!(error.status, Some(status));
+        assert!(!error.to_string().contains("secret"));
+        if status == 401 {
+            assert_eq!(error.kind, ErrorKind::Authentication);
+        }
+        if status == 403 {
+            assert_eq!(error.kind, ErrorKind::Authorization);
+        }
+        assert!(
+            tokio::time::timeout(Duration::from_millis(50), forbidden.accept())
+                .await
+                .is_err()
+        );
+        server.await.unwrap();
+    }
+}
+#[test]
+fn webhook_mac_uses_exact_bytes_timestamp_and_preserves_extensions() {
+    let body = serde_json::to_vec(&event()).unwrap();
+    let mut mac = Hmac::<Sha256>::new_from_slice(SECRET.as_bytes()).unwrap();
+    mac.update(b"100.");
+    mac.update(&body);
+    let signature = format!("v1={}", hex::encode(mac.finalize().into_bytes()));
+    let parsed = verify_signal_webhook(
+        SECRET.as_bytes(),
+        100,
+        &body,
+        &signature,
+        105,
+        Duration::from_secs(5),
+    )
+    .unwrap();
+    assert_eq!(parsed.id, "event-fixture");
+    assert_eq!(parsed.additional["future"]["retained"], true);
+    assert!(verify_signal_webhook(
+        SECRET.as_bytes(),
+        100,
+        &body,
+        &signature,
+        106,
+        Duration::from_secs(5)
+    )
+    .is_err());
+    let mut changed = body.clone();
+    changed.push(b' ');
+    assert!(verify_signal_webhook(
+        SECRET.as_bytes(),
+        100,
+        &changed,
+        &signature,
+        100,
+        Duration::from_secs(5)
+    )
+    .is_err());
+    for (url, secret) in [
+        ("http://remote.invalid", SECRET),
+        ("https://u:pass@remote.invalid", SECRET),
+        ("https://remote.invalid?secret=x", SECRET),
+        ("https://remote.invalid", "spaces are forbidden"),
+    ] {
+        assert!(SignalClient::new(SignalClientOptions::new(url, secret)).is_err());
+    }
+    let mut parser = polymorfa_sdk::stream::SseParser::default();
+    assert!(parser.feed(&vec![b'x'; 4 * 1024 * 1024 + 1]).is_err());
+}
