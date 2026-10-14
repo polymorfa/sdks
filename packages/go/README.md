@@ -150,3 +150,35 @@ on failure. This helper performs local encryption; it does not finalize a CDN
 upload or send a message. Formatting and JSON serialization omit the media key
 and ciphertext. Independently calculated vectors and repeat-pass failure tests
 cover all six media kinds.
+
+### Encrypted upload egress
+
+`MessagingClient.WhatsAppMedia().UploadBytes()` uploads a byte slice;
+`Upload()` accepts a `WhatsAppMediaSource` factory returning a fresh
+`io.ReadCloser` of the same plaintext on every call. The SDK closes each
+returned stream. A hashing pass obtains the encrypted hash before the upload
+pass; changed sources fail before a complete encrypted body or document
+finalization is released.
+
+`UploadWhatsAppMediaOptions.Egress` defaults to `relay`: the API receives
+ciphertext plus its MAC and forwards it through the session's connection.
+`direct` requests a short-lived grant and uploads from your process. Neither
+upload mode sends plaintext or the media key to an upload endpoint. Keep the
+returned `MediaKey` and location private.
+
+Direct uploads preserve the exact grant token and upload parameters, refresh a
+401 grant, resume interrupted ordinary uploads, and retry network errors,
+408 and server errors except 507. Redirects are refused. Document uploads above
+50 MiB use consecutive parts and finalize only after the source's EOF/hash
+check. Part size is configurable from 1 byte to 64 MiB; the SDK buffers one
+part for repeatable retries. API credentials, cookies and caller headers are
+excluded from CDN requests. The direct network operation's timeout covers
+requests and response bodies; the caller's context also cancels source reads.
+A cancellation or timeout does not undo a provider upload that already ran.
+
+`CreateUploadGrant()` and `RelayUpload()` are also available for applications
+that supply their own encrypted-body factory. Applications using these lower
+level methods own source immutability and integrity checks. Upload methods
+select API version `2026-10-14` per request by default; existing SDK methods
+retain their `2026-09-22` default. The additive API must be enabled and available
+in the selected environment; a source checkout does not establish that access.

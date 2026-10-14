@@ -95,7 +95,18 @@ final class HttpTransport
             }, 'headers' => $headers, 'http_errors' => false, 'allow_redirects' => false,
                 'timeout' => $options->timeout ?? $this->timeout, 'read_timeout' => $readTimeout ?? $options->timeout ?? $this->timeout,
                 'stream' => $accept !== 'application/json'];
-            if ($body !== null) {
+            $binaryStream = null;
+            if ($body instanceof BinaryRequestBody) {
+                foreach (array_keys($request['headers']) as $name) {
+                    if (strtolower($name) === 'content-type') {
+                        unset($request['headers'][$name]);
+                    }
+                }
+                $binaryStream = ($body->open)($options->cancellation);
+                $request['body'] = $binaryStream;
+                $request['headers']['Content-Type'] = 'application/octet-stream';
+                $request['headers']['Content-Length'] = (string) $body->length;
+            } elseif ($body !== null) {
                 $request['json'] = $body;
             }
             if ($options->cancellation !== null) {
@@ -106,6 +117,9 @@ final class HttpTransport
             try {
                 $response = $this->http->request($method, $url, $request);
             } catch (ConnectException $error) {
+                if ($binaryStream instanceof EncryptedUploadStream && $binaryStream->failure() !== null) {
+                    throw $binaryStream->failure();
+                }
                 $options->cancellation?->throwIfCancelled();
                 if ($receivedMetadata !== null && isset($receivedMetadata->headers['x-polymorfa-operation-id'])) {
                     $context = $error->getHandlerContext();
@@ -122,6 +136,9 @@ final class HttpTransport
                 }
                 throw new ConnectionException('Could not reach Polymorfa.', 'connection_error');
             } catch (TransferException $error) {
+                if ($binaryStream instanceof EncryptedUploadStream && $binaryStream->failure() !== null) {
+                    throw $binaryStream->failure();
+                }
                 $options->cancellation?->throwIfCancelled();
                 if ($receivedMetadata !== null && isset($receivedMetadata->headers['x-polymorfa-operation-id'])) {
                     $context = $error instanceof RequestException ? $error->getHandlerContext() : [];
@@ -133,6 +150,11 @@ final class HttpTransport
                     continue;
                 }
                 throw new ConnectionException('Could not reach Polymorfa.', 'connection_error');
+            } finally {
+                $binaryStream?->close();
+            }
+            if ($binaryStream instanceof EncryptedUploadStream && $response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
+                $binaryStream->complete();
             }
             $status = $response->getStatusCode();
             $metadata = ResponseMetadata::fromResponse($response, $attempt);

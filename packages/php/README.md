@@ -314,3 +314,38 @@ and must discard partial output after failure. The helper performs local
 encryption; it does not finalize a CDN upload or send a message. Debug and JSON
 serialization redact media keys and ciphertext. Independent vectors,
 block-boundary round trips and repeat-pass failure tests cover all six kinds.
+
+### Encrypted upload egress
+
+Use `$client->whatsappMedia->uploadBytes()` for a string or `upload()` with a
+closure that returns a fresh immutable PSR-7 plaintext stream. The factory
+accepts the optional `CancellationToken`; its reads must honor cancellation
+and bounded timeouts. The SDK closes streams it opens.
+
+```php
+$result = $client->whatsappMedia->uploadBytes('session', $plaintext,
+    new \Polymorfa\UploadWhatsAppMediaOptions('image', mimeType: 'image/jpeg'));
+// Keep $result->info->mediaKey and $result->location private.
+```
+
+Egress defaults to `relay`, which forwards ciphertext plus its MAC through the
+session's connection. Choose `egress: 'direct'` to request a short-lived grant
+and upload from your process. Upload endpoints receive encrypted bytes and
+hashes; they do not receive plaintext or the media key. Results redact keys
+and locations in debug and JSON output.
+
+Direct uploads preserve grant parameters, refresh a rejected 401 grant, resume
+ordinary uploads and retry connection errors, 408 and server errors except
+507. Redirects are refused. Documents above 50 MiB use consecutive byte ranges;
+the final part and `final_hash` are sent only after the repeat pass reaches EOF
+and verifies both hashes and lengths. One part is buffered for stable retries;
+`documentPartSize` accepts 1 byte to 64 MiB. CDN requests omit API credentials,
+cookies, default client headers and caller headers. The direct operation's
+timeout covers all requests and response-body reads. Timeout or cancellation
+does not undo an upload already accepted by its provider.
+
+`createUploadGrant()` and `relayUpload()` support applications that supply their
+own encrypted-body factory and own its integrity checks. These methods select
+API revision `2026-10-14` by default; existing methods retain `2026-09-22`.
+The additive contract must be enabled and available in the target environment;
+a source checkout does not establish customer access.
