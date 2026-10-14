@@ -83,6 +83,10 @@
     "./prisma": {
       "types": "./dist/orm/prisma.d.ts",
       "import": "./dist/orm/prisma.js"
+    },
+    "./d1-bridge": {
+      "types": "./dist/d1-bridge.d.ts",
+      "import": "./dist/d1-bridge.js"
     }
   },
   "files": [
@@ -90,7 +94,9 @@
     "README.md",
     "LICENSE",
     "prisma",
-    "conformance-fixtures.json"
+    "conformance-fixtures.json",
+    "D1-BRIDGE.md",
+    "d1-bridge-fixtures.json"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
