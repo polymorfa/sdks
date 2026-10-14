@@ -5,3 +5,5 @@ coverage/
 contracts/openapi.messaging.json
 contracts/openapi.platform.json
 package-lock.json
+packages/typescript/src/history/gen/
+packages/typescript/proto/whatsapp.proto

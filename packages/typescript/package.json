@@ -56,7 +56,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && tsc -p tsconfig.calls.json",
+    "build": "tsc -p tsconfig.build.json && tsc -p tsconfig.calls.json && node ../../scripts/copy-generated-proto.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "generate:proto": "cd proto && buf generate --type whatsapp.HistorySync"
   },
