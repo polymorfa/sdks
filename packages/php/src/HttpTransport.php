@@ -161,6 +161,21 @@ final class HttpTransport
         mixed $body = null,
         ?RequestOptions $options = null
     ): ApiResponse {
+        /** @var ApiResponse<array<string,mixed>|null> */
+        return $this->decodeJsonResponse($method, $path, $query, $body, $options, true);
+    }
+
+    /** @param array<string,mixed> $query
+     * @return ApiResponse<mixed> */
+    public function requestJson(string $method, string $path, array $query = [], mixed $body = null, ?RequestOptions $options = null): ApiResponse
+    {
+        return $this->decodeJsonResponse($method, $path, $query, $body, $options, false);
+    }
+
+    /** @param array<string,mixed> $query
+     * @return ApiResponse<mixed> */
+    private function decodeJsonResponse(string $method, string $path, array $query, mixed $body, ?RequestOptions $options, bool $objectOnly): ApiResponse
+    {
         [$response, $metadata] = $this->openStream($method, $path, $query, $body, $options);
         try {
             $raw = $response->getBody()->getContents();
@@ -175,10 +190,9 @@ final class HttpTransport
             } catch (\JsonException) {
                 throw new ServerException('Invalid JSON response.', 'invalid_response', metadata: $metadata);
             }
-            if (!is_array($value) || !str_starts_with(ltrim($raw), '{')) {
+            if ($objectOnly && (!is_array($value) || !str_starts_with(ltrim($raw), '{'))) {
                 throw new ServerException('Expected an object response.', 'invalid_response', metadata: $metadata);
             }
-            /** @var array<string,mixed> $value */
             return new ApiResponse($value, $metadata);
         } finally {
             $response->getBody()->close();

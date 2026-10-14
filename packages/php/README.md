@@ -258,3 +258,35 @@ from first-message counts; it is optional on Messaging and required on Platform.
 Follow-up timestamps are Unix milliseconds. Native fixtures and PHPStan consumer
 checks verify the merged contract; no live follow-up campaign or publication was
 exercised.
+
+## Raw JSON and pagination
+
+`RawClient::request()` returns any successful JSON value, including objects,
+arrays, strings, numbers, booleans and null. Objects decode to associative arrays.
+Typed resource methods continue to require object response envelopes. Raw calls
+still reject HTML, invalid JSON, unauthorized project paths and reserved headers.
+
+`RawClient::paginate()` accepts a decoder for the endpoint's response shape.
+Return `['items' => $items, 'nextCursor' => $cursor]`; omit the cursor or return
+null to end pagination. `RawCursorPage<T>` retains the raw response and metadata,
+provides `nextPage()`, and loads subsequent pages lazily when iterated. Set the
+`cursorParameter` argument for a custom query key. Request bodies, options and the
+bound project apply to every page. Repeated or malformed cursors fail.
+
+```php
+$page = $project->raw->paginate('GET', '/events', static function ($body, $metadata) {
+    if (!is_array($body) || !isset($body['data']) || !is_array($body['data'])) {
+        throw new RuntimeException('Expected an event collection.');
+    }
+    return ['items' => $body['data'], 'nextCursor' => $body['page']['nextCursor'] ?? null];
+});
+foreach ($page as $event) {
+    // Consume one event. Further pages load as iteration advances.
+}
+```
+
+Use typed resource methods when they represent the endpoint. Raw decoders are
+application-owned. `GraphTransport::headers('official_api')` produces the
+`X-Polymorfa-Transport` request header; it also accepts `linked_devices` and `auto`
+and rejects other values. Pass its result through `RequestOptions(headers: ...)`.
+This header selects routing; API permissions and transport eligibility still apply.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9",
+  "sourceSdkCommit": "daac84b1bd24c9460a2bcad555629a5466d85e2c",
   "operations": [
     {
       "method": "PATCH",
@@ -159,6 +159,12 @@
       "status": "covered",
       "testFile": "tests/campaign_followups.php",
       "behavior": "Both audience create/update/clear/omit bodies, optional returned timing, typed recipient receipt timestamps and nullable fields, follow-up counts separate from first-message counts."
+    },
+    {
+      "sdkMethod": "RawClient.request / RawClient.paginate / RawCursorPage / GraphTransport.headers",
+      "status": "covered",
+      "testFile": "tests/raw_parity.php",
+      "behavior": "Native arbitrary JSON success values without relaxing typed object envelopes; lazy custom decoder/cursor pagination with project scope, cancellation, preserved request body/options, malformed cursor checks and Graph routing headers."
     }
   ]
 }

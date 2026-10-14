@@ -80,13 +80,29 @@ type CampaignMessageVariation struct {
 	Blueprint CampaignBlueprint `json:"blueprint"`
 }
 
-// CampaignFollowUpMessage sends text or a message template. Set Text for type
-// "text" or TemplateID for type "template". Text supports campaign variables,
-// but the API refuses tracked links.
-type CampaignFollowUpMessage struct {
-	Type       string `json:"type"`
-	Text       string `json:"text,omitempty"`
-	TemplateID string `json:"templateId,omitempty"`
+// CampaignFollowUpMessage is a sealed text/template union. Each variant supplies
+// its own fixed discriminator, so callers cannot mix text and template fields.
+type CampaignFollowUpMessage interface{ campaignFollowUpMessage() }
+type CampaignFollowUpTextMessage struct {
+	Text string `json:"text"`
+}
+type CampaignFollowUpTemplateMessage struct {
+	TemplateID string `json:"templateId"`
+}
+
+func (CampaignFollowUpTextMessage) campaignFollowUpMessage()     {}
+func (CampaignFollowUpTemplateMessage) campaignFollowUpMessage() {}
+func (v CampaignFollowUpTextMessage) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Type string `json:"type"`
+		Text string `json:"text"`
+	}{"text", v.Text})
+}
+func (v CampaignFollowUpTemplateMessage) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Type       string `json:"type"`
+		TemplateID string `json:"templateId"`
+	}{"template", v.TemplateID})
 }
 
 // CampaignFollowUp configures one receipt-timed follow-up (beta). The first
@@ -99,6 +115,60 @@ type CampaignFollowUp struct {
 	// the API defaults to 604800. Expiry starts at the first message's send.
 	ExpirySeconds *int                    `json:"expirySeconds,omitempty"`
 	Message       CampaignFollowUpMessage `json:"message"`
+}
+
+func (v CampaignFollowUp) MarshalJSON() ([]byte, error) {
+	switch message := v.Message.(type) {
+	case CampaignFollowUpTextMessage, CampaignFollowUpTemplateMessage:
+	case *CampaignFollowUpTextMessage:
+		if message == nil {
+			return nil, validation("A follow-up message is required.")
+		}
+	case *CampaignFollowUpTemplateMessage:
+		if message == nil {
+			return nil, validation("A follow-up message is required.")
+		}
+	default:
+		return nil, validation("A text or template follow-up message is required.")
+	}
+	type config CampaignFollowUp
+	return json.Marshal(config(v))
+}
+func (v *CampaignFollowUp) UnmarshalJSON(data []byte) error {
+	var wire struct {
+		DelaySeconds  *int                       `json:"delaySeconds"`
+		ExpirySeconds *int                       `json:"expirySeconds"`
+		Message       map[string]json.RawMessage `json:"message"`
+	}
+	if err := json.Unmarshal(data, &wire); err != nil {
+		return err
+	}
+	var kind string
+	if err := json.Unmarshal(wire.Message["type"], &kind); err != nil {
+		return validation("A follow-up message discriminator is required.")
+	}
+	if len(wire.Message) != 2 {
+		return validation("A follow-up message must contain its discriminator and variant field.")
+	}
+	var message CampaignFollowUpMessage
+	switch kind {
+	case "text":
+		var text *string
+		if err := json.Unmarshal(wire.Message["text"], &text); err != nil || text == nil {
+			return validation("A text follow-up requires text.")
+		}
+		message = CampaignFollowUpTextMessage{Text: *text}
+	case "template":
+		var id *string
+		if err := json.Unmarshal(wire.Message["templateId"], &id); err != nil || id == nil {
+			return validation("A template follow-up requires templateId.")
+		}
+		message = CampaignFollowUpTemplateMessage{TemplateID: *id}
+	default:
+		return validation("A follow-up must use text or template.")
+	}
+	*v = CampaignFollowUp{DelaySeconds: wire.DelaySeconds, ExpirySeconds: wire.ExpirySeconds, Message: message}
+	return nil
 }
 
 type CampaignFollowUpStatus string

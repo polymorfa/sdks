@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9",
+  "sourceSdkCommit": "daac84b1bd24c9460a2bcad555629a5466d85e2c",
   "operations": [
     {
       "sdkMethod": "MessagingClient.CloudCatalogs.List",
@@ -168,6 +168,12 @@
       "status": "covered",
       "testFile": "campaign_followups_test.go",
       "behavior": "Both audience create/update/clear/omit bodies, optional returned timing, typed recipient receipt timestamps and nullable fields, follow-up counts separate from first-message counts."
+    },
+    {
+      "sdkMethod": "PaginateRaw / sealed CampaignFollowUpMessage variants",
+      "status": "covered",
+      "testFile": "raw_pagination_test.go",
+      "behavior": "Native custom decoder/cursor pagination with immutable query/header snapshots, project confinement, cancellation, decoder errors and non-advancing cursors; follow-up text/template round trips and invalid variant refusal."
     }
   ]
 }
