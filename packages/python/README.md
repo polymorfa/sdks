@@ -30,7 +30,7 @@ asyncio.run(main())
 Use `AsyncClient` for organization Platform operations, and
 `client.project(project_id)` for an immutable project binding. Initialize
 `AsyncProjectClient` directly with a project token. A project client refuses
-rebinding and confines `raw.request` paths to its bound project. A project
+rebinding and confines `raw.request` and `raw.paginate` paths to its bound project. A project
 view shares its organization's connection pool; close the root after all
 views have finished.
 
@@ -55,6 +55,53 @@ signatures have no timestamp/replay checks; deduplicate verified event IDs in
 your durable store. `events.stream` reconnects with the last delivered cursor;
 cancel the consuming task to stop it. `CursorPage` supports `next_page()` and
 `async for` with cursor-loop detection.
+
+`raw.request` returns arbitrary JSON, including lists, scalar values and null.
+Typed API resources keep their object-envelope checks. For a custom page shape,
+use `raw.paginate(method, path, decode, cursor_parameter="after")`. The decoder
+receives JSON and response metadata and returns `PageResult(items, next_cursor)`.
+`RawCursorPage` supports `next_page()` and `async for`, preserves the original
+method, body, options and other query values, and refuses repeated cursors.
+
+```python
+from polymorfa import PageResult
+from polymorfa.transport import Json, ResponseMetadata
+
+
+def decode_rows(value: Json, metadata: ResponseMetadata) -> PageResult[str]:
+    if not isinstance(value, dict):
+        raise ValueError("Expected a row page")
+    rows = value.get("rows")
+    cursor = value.get("after")
+    if not isinstance(rows, list) or any(not isinstance(row, str) for row in rows):
+        raise ValueError("Expected string rows")
+    if cursor is not None and not isinstance(cursor, str):
+        raise ValueError("Expected a string cursor")
+    return PageResult([row for row in rows if isinstance(row, str)], cursor)
+
+
+# Within your async application, using a route your API exposes:
+# page = await client.raw.paginate("GET", "/your-route", decode_rows,
+#                                  cursor_parameter="after")
+# async for row in page:
+#     print(row)
+```
+
+Seen, typing, reaction and star request targets require at least one of `id`,
+`phoneNumber` or `bsuid`. The typed requests reject an empty target and fields
+with the wrong value type. Presence catalogs are exported as immutable
+`PRESENCE_STATES`, `PRESENCE_OBSERVATION_STATUSES`, `PRESENCE_UNKNOWN_REASONS`
+and `PRESENCE_CHAT_STATES` tuples.
+
+Platform campaign list, retrieve, create and update return dictionary-compatible
+`campaign_models.PlatformCampaign` values. Read additional fields with
+`campaign["field"]` and statically typed standard fields with
+`campaign.known["id"]`. When updating code that previously treated every raw
+response as a dictionary, narrow the returned JSON value before indexing it.
+For statically typed Platform campaign field access, use `.known`.
+For unnamed draft update fields, pass
+`extra_fields={"field": value}` to `client.campaigns.update`; named fields stay
+in its typed body. An extra field cannot replace a named campaign field.
 
 `is_event(event, "message.received")` narrows the verified envelope to its typed
 payload. Guards cover every known native event; payload types are available in

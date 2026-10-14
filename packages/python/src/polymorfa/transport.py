@@ -426,7 +426,7 @@ class Transport:
             metadata=meta,
         )
 
-    async def request(
+    async def _request_json(
         self,
         method: str,
         path: str,
@@ -434,7 +434,8 @@ class Transport:
         query: Mapping[str, QueryValue] | None = None,
         body: object = None,
         options: RequestOptions = DEFAULT_OPTIONS,
-    ) -> ApiResponse[JsonObject | None]:
+        require_object: bool,
+    ) -> ApiResponse[Json]:
         response, meta = await self.open_stream(
             method, path, query=query, body=body, options=options
         )
@@ -452,13 +453,40 @@ class Transport:
                 raise ServerError(
                     "Invalid JSON response.", code="invalid_response", metadata=meta
                 ) from None
-            if not isinstance(value, dict):
+            if require_object and not isinstance(value, dict):
                 raise ServerError(
                     "Expected an object response.", code="invalid_response", metadata=meta
                 )
-            return ApiResponse(cast(JsonObject, value), meta)
+            return ApiResponse(cast(Json, value), meta)
         finally:
             await response.aclose()
+
+    async def request_json(
+        self,
+        method: str,
+        path: str,
+        *,
+        query: Mapping[str, QueryValue] | None = None,
+        body: object = None,
+        options: RequestOptions = DEFAULT_OPTIONS,
+    ) -> ApiResponse[Json]:
+        return await self._request_json(
+            method, path, query=query, body=body, options=options, require_object=False
+        )
+
+    async def request(
+        self,
+        method: str,
+        path: str,
+        *,
+        query: Mapping[str, QueryValue] | None = None,
+        body: object = None,
+        options: RequestOptions = DEFAULT_OPTIONS,
+    ) -> ApiResponse[JsonObject | None]:
+        response = await self._request_json(
+            method, path, query=query, body=body, options=options, require_object=True
+        )
+        return ApiResponse(cast(JsonObject | None, response.data), response.metadata)
 
     async def text(
         self,

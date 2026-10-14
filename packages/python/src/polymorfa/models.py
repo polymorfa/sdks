@@ -9,7 +9,7 @@ from typing_extensions import NotRequired, TypedDict
 from .configuration import ConfigurationPatch, ConfigurationView
 from .developer_models import Event as Event  # noqa: PLC0414
 from .developer_models import Operation as Operation  # noqa: PLC0414
-from .message_content import Content
+from .message_content import Content, ConversationReference
 from .message_content import SendMessage as TypedSendMessage
 from .platform_core import CreateProject
 from .quicklink_models import Create, Link, Status
@@ -93,7 +93,7 @@ class MessageResponse(MessageReceipt):
 
 
 class Seen(TypedDict):
-    conversation: Conversation
+    conversation: ConversationReference
     id: str
 
 
@@ -107,7 +107,7 @@ class Star(Seen):
 
 
 class Typing(TypedDict):
-    conversation: Conversation
+    conversation: ConversationReference
     id: NotRequired[str]
     state: Literal["typing", "recording", "paused"]
 

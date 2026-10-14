@@ -1,6 +1,6 @@
 """Handwritten campaign and customer-supplied audience wire contracts."""
 
-from typing import Literal
+from typing import Literal, cast
 
 from typing_extensions import NotRequired, TypedDict
 
@@ -198,6 +198,14 @@ class Campaign(TypedDict):
     experimentOutcome: NotRequired[ExperimentOutcome | None]
     messageVariations: NotRequired[list[MessageVariation] | None]
     followUp: NotRequired[FollowUp | None]
+
+
+class PlatformCampaign(dict[str, Json]):
+    """Open Platform response; use known for typed access to named campaign fields."""
+
+    @property
+    def known(self) -> Campaign:
+        return cast(Campaign, self)
 
 
 class CampaignOperation(Campaign):

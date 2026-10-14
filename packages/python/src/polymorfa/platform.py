@@ -53,7 +53,16 @@ from .platform_core import (
     TierConfirmation,
     TierQuoteRequest,
 )
-from .transport import ApiResponse, CursorPage, JsonObject, QueryValue, RequestOptions, Transport
+from .raw_pagination import PageResult, RawCursorPage
+from .transport import (
+    ApiResponse,
+    CursorPage,
+    Json,
+    QueryValue,
+    RequestOptions,
+    ResponseMetadata,
+    Transport,
+)
 
 T = TypeVar("T")
 
@@ -70,7 +79,7 @@ class Raw:
         query: Mapping[str, QueryValue] | None = None,
         body: object = None,
         options: RequestOptions = O,
-    ) -> ApiResponse[JsonObject | None]:
+    ) -> ApiResponse[Json]:
         if self._project_id is not None:
             decoded = unquote(path)
             if (
@@ -82,7 +91,57 @@ class Raw:
             ):
                 raise ValidationError("Raw path must be relative to the bound project.")
             path = f"/platform/projects/{segment(self._project_id)}" + path
-        return await self._transport.request(method, path, query=query, body=body, options=options)
+        return await self._transport.request_json(
+            method, path, query=query, body=body, options=options
+        )
+
+    async def paginate(
+        self,
+        method: str,
+        path: str,
+        decode: Callable[[Json, ResponseMetadata], PageResult[T]],
+        *,
+        query: Mapping[str, QueryValue] | None = None,
+        body: object = None,
+        options: RequestOptions = O,
+        cursor_parameter: str = "cursor",
+    ) -> RawCursorPage[T]:
+        """Decode arbitrary JSON pages while preserving the original request."""
+        if (
+            not isinstance(cursor_parameter, str)
+            or not cursor_parameter
+            or any(char in cursor_parameter for char in "\r\n")
+        ):
+            raise ValidationError("cursor_parameter must be a nonempty query name.")
+        initial = dict(query or {})
+        cursor = initial.get(cursor_parameter)
+        seen = frozenset({cursor}) if isinstance(cursor, str) else frozenset[str]()
+
+        async def load(params: dict[str, QueryValue], cursors: frozenset[str]) -> RawCursorPage[T]:
+            response = await self.request(method, path, query=params, body=body, options=options)
+            decoded = decode(response.data, response.metadata)
+            if not isinstance(decoded, PageResult) or (
+                decoded.next_cursor is not None
+                and (
+                    not isinstance(decoded.next_cursor, str)
+                    or not decoded.next_cursor
+                    or decoded.next_cursor in cursors
+                )
+            ):
+                raise ServerError(
+                    "Invalid or repeated raw page cursor.",
+                    code="invalid_response",
+                    metadata=response.metadata,
+                )
+
+            async def next_page(next_cursor: str) -> RawCursorPage[T]:
+                return await load(
+                    {**params, cursor_parameter: next_cursor}, cursors | {next_cursor}
+                )
+
+            return RawCursorPage(response, decoded, next_page)
+
+        return await load(initial, seen)
 
 
 class PlatformResource(Resource):

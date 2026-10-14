@@ -28,6 +28,10 @@ from .catalogs import (
     ELEVENLABS_TTS_MODELS,
     OPENAI_TTS_MODELS,
     OPENAI_TTS_VOICES,
+    PRESENCE_CHAT_STATES,
+    PRESENCE_OBSERVATION_STATUSES,
+    PRESENCE_STATES,
+    PRESENCE_UNKNOWN_REASONS,
     PRIVACY_SETTING_VALUES,
     TEST_EVENT_FIXTURES,
     VOICE_AUDIO_FAILURE_REASONS,
@@ -94,6 +98,7 @@ from .media_streams import (
     download_whatsapp_media_stream,
 )
 from .policies import graph_transport_headers
+from .raw_pagination import PageResult, RawCursorPage
 from .request_logs import (
     RequestLog,
     RequestLogCredential,
@@ -134,6 +139,10 @@ __all__ = [
     "OPENAI_TTS_MODELS",
     "OPENAI_TTS_VOICES",
     "POLYMORFA_ERROR_CODES",
+    "PRESENCE_CHAT_STATES",
+    "PRESENCE_OBSERVATION_STATUSES",
+    "PRESENCE_STATES",
+    "PRESENCE_UNKNOWN_REASONS",
     "PRIVACY_SETTING_VALUES",
     "SDK_VERSION",
     "TEST_EVENT_FIXTURES",
@@ -191,9 +200,11 @@ __all__ = [
     "MessageReceivedEvent",
     "NotFoundError",
     "OutgoingVideoFrame",
+    "PageResult",
     "PaymentRequiredError",
     "PolymorfaError",
     "RateLimitError",
+    "RawCursorPage",
     "RequestLog",
     "RequestLogCredential",
     "RequestLogFilters",
