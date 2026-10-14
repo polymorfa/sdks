@@ -88,3 +88,6 @@ pub mod media_upload;
 pub mod media_descriptor;
 
 pub mod storage;
+
+#[cfg(feature = "storage-s3")]
+pub mod s3;

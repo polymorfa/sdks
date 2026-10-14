@@ -235,9 +235,11 @@ var uploaded = await store.UploadToWhatsAppAsync(
         Polymorfa.Sdk.WhatsAppUploadMediaType.Image));
 ```
 
-`ArchiveAsync` requires a caller-selected private spool parent. It verifies the
-complete ciphertext hash, MAC, padding, plaintext hash and known length before
-starting any object PUT, then removes its private spool. A corrupt, truncated or
+`ArchiveAsync` accepts a decoded descriptor or inbound base64 media and message
+type fields. It snapshots mutable descriptor bytes before I/O and requires a
+caller-selected private spool parent. It verifies the MAC, padding and plaintext hash, plus the ciphertext hash and
+exact length when supplied, before starting any object PUT, then removes its
+private spool. A corrupt, truncated or
 cancelled download cannot overwrite an existing object. Metadata contains only
 the selected media kind, plaintext hash, optional encoded filename and explicit
 caller metadata; the helper never derives metadata from the media key.

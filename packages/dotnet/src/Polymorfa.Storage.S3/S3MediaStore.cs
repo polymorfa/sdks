@@ -31,14 +31,14 @@ public sealed record S3ArchiveResult(string Bucket, string Key, long Bytes, stri
     public override string ToString() => $"S3ArchiveResult(bytes={Bytes}, location=redacted)";
 }
 public sealed class CustomerMediaStorageException(string message) : PolymorfaException(message, "customer_storage_error");
-/// <summary>Media archive and ETag-pinned source bridge, matching TypeScript producer254fc6a. No Signal or API credential is used by storage.</summary>
+/// <summary>Media archive and ETag-pinned source bridge, matching TypeScript source 254fc6a. No Signal or API credential is used by storage.</summary>
 public sealed class S3MediaStore
 {
     public const string SourceSdkCommit = "254fc6a2d073e7fc79420cf95f9b03927d00c04a";
     private readonly IAmazonS3 client; private readonly string bucket, prefix;
     public S3MediaStore(S3MediaStoreOptions options)
     {
-        if (OperatingSystem.IsBrowser() || options.Client is null || string.IsNullOrEmpty(options.Bucket) || options.Bucket.Any(c => c < '!' || c > '~') || options.Prefix.IndexOf('\0') >= 0) throw new PolymorfaConfigurationException("Invalid customer S3 store configuration."); client = options.Client; bucket = options.Bucket; prefix = options.Prefix;
+        if (OperatingSystem.IsBrowser() || options.Client is null || string.IsNullOrEmpty(options.Bucket) || options.Bucket.Any(c => c < '!' || c > '~') || options.Prefix is null || options.Prefix.IndexOf('\0') >= 0) throw new PolymorfaConfigurationException("Invalid customer S3 store configuration."); client = options.Client; bucket = options.Bucket; prefix = options.Prefix;
     }
     private string Key(string key)
     {
@@ -54,7 +54,7 @@ public sealed class S3MediaStore
     /// <summary>Each reopen issues GetObject with the same If-Match ETag. The native uploader verifies the complete second-pass encrypted hash before final bytes.</summary>
     public async Task<WhatsAppMediaUploadResult> UploadToWhatsAppAsync(S3UploadToWhatsAppOptions options, CancellationToken cancellation = default)
     {
-        var key = Key(options.Key); if (!Enum.IsDefined(options.Egress) || options.MaxBytes <= 0) throw new PolymorfaConfigurationException("Invalid S3 upload options."); using var stop = CancellationTokenSource.CreateLinkedTokenSource(cancellation, options.RequestOptions?.CancellationToken ?? default, options.DirectOptions?.CancellationToken ?? default); var token = stop.Token;
+        var key = Key(options.Key); if (!Enum.IsDefined(options.Egress) || options.MaxBytes <= 0) throw new PolymorfaConfigurationException("Invalid S3 upload options."); using var stop = CancellationTokenSource.CreateLinkedTokenSource(cancellation, options.RequestOptions?.CancellationToken ?? default, options.DirectOptions?.CancellationToken ?? default); var token = stop.Token; if (token.IsCancellationRequested) throw new PolymorfaCancelledException();
         var head = await Storage(() => client.GetObjectMetadataAsync(new GetObjectMetadataRequest { BucketName = bucket, Key = key }, token), token).ConfigureAwait(false); var etag = head.ETag; if (string.IsNullOrEmpty(etag) || etag.Length > 1024 || etag.Any(c => c < ' ' || c > '~')) throw new CustomerMediaStorageException("The customer object requires a stable ETag."); if (head.Headers.ContentLength < 0 || head.Headers.ContentLength > options.MaxBytes) throw new PolymorfaMediaIntegrityException("Media exceeds its permitted size.", "media_too_large");
         async Task<Stream> Open(CancellationToken next)
         {
@@ -63,9 +63,13 @@ public sealed class S3MediaStore
         }
         var prepared = await WhatsAppMedia.PrepareUploadAsync(Open, new(options.MediaType) { Mimetype = options.Mimetype ?? head.Headers.ContentType, MaxBytes = options.MaxBytes, CancellationToken = token }).ConfigureAwait(false); if (prepared.Info.FileLength != head.Headers.ContentLength) throw Changed(); var request = (options.RequestOptions ?? new()) with { CancellationToken = token }; return options.Egress == S3WhatsAppEgress.Relay ? await options.Messaging.UploadRelayAsync(options.Session, prepared, request).ConfigureAwait(false) : await options.Messaging.UploadDirectAsync(options.Session, prepared, (options.DirectOptions ?? new()) with { CancellationToken = token }, request).ConfigureAwait(false);
     }
-    /// <summary>Verifies ciphertext, MAC, plaintext SHA-256, padding and known length in a private spool before any object PUT begins.</summary>
+    /// <summary>Archives the base64 media descriptor and message type from an inbound message.</summary>
+    public Task<S3ArchiveResult> ArchiveAsync(string media, string messageType, S3ArchiveOptions options, CancellationToken cancellation = default)
+        => ArchiveAsync(WhatsAppMedia.Decode(media, messageType), options, cancellation);
+    /// <summary>Verifies MAC, padding, plaintext SHA-256 and supplied ciphertext hash/length in a private spool before any object PUT begins.</summary>
     public async Task<S3ArchiveResult> ArchiveAsync(WhatsAppMediaDescriptor descriptor, S3ArchiveOptions options, CancellationToken cancellation = default)
     {
+        descriptor = descriptor with { MediaKey = descriptor.MediaKey.ToArray(), FileSha256 = descriptor.FileSha256?.ToArray(), FileEncSha256 = descriptor.FileEncSha256?.ToArray() };
         var key = Key(options.Key); if (string.IsNullOrWhiteSpace(options.ScratchDirectory)) throw new PolymorfaConfigurationException("A private spool parent directory is required."); var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase); if (options.Metadata is not null) foreach (var entry in options.Metadata) { if (string.IsNullOrEmpty(entry.Key) || entry.Key.Length > 128 || entry.Key.Any(c => !char.IsAsciiLetterOrDigit(c) && c is not ('-' or '_' or '.')) || entry.Value.Any(c => c < ' ' || c > '~')) throw new PolymorfaConfigurationException("Object metadata requires ASCII keys and values."); metadata[entry.Key] = entry.Value; }
         metadata["wa-media-kind"] = descriptor.MediaKind; if (descriptor.FileSha256 is { } sha) metadata["wa-file-sha256"] = Convert.ToHexString(sha).ToLowerInvariant(); if (descriptor.FileName is { } name) metadata["wa-file-name"] = Component(name); if (metadata.Sum(p => p.Key.Length + p.Value.Length) > 2048) throw new PolymorfaConfigurationException("Object metadata exceeds 2 KiB.");
         using var stop = CancellationTokenSource.CreateLinkedTokenSource(cancellation, options.DownloadOptions?.CancellationToken ?? default); var token = stop.Token; if (token.IsCancellationRequested) throw new PolymorfaCancelledException(); var directory = Path.Combine(Path.GetFullPath(options.ScratchDirectory), "polymorfa-media-" + Guid.NewGuid().ToString("N")); if (OperatingSystem.IsWindows()) Directory.CreateDirectory(directory); else Directory.CreateDirectory(directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
