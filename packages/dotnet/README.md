@@ -147,3 +147,43 @@ delivery can repeat. `VerifyWebhook` authenticates the exact timestamp and raw
 body before parsing. Use a timestamp window and durable event-ID deduplication
 before returning 2xx. `SignalHistoryDescriptor.ChunkInput` converts local history
 notifications into verified download inputs.
+
+### Customer-owned storage
+
+`Polymorfa.Sdk.Storage` provides schema-2 operations, deterministic per-field
+merges, conditional checkpoints, durable session leases and a memory adapter.
+`D1BridgeStorageAdapter.ConnectAsync` verifies a signed handshake with a
+customer-hosted D1 Worker binding before returning an atomic adapter. Read the
+expected authority and table prefix from trusted application configuration and
+use an independent customer application secret. Never use a Polymorfa API
+credential for the bridge. HTTPS is required outside loopback fixtures, and
+redirects are refused.
+
+```csharp
+using Polymorfa.Sdk.Storage;
+using var adapter = await D1BridgeStorageAdapter.ConnectAsync(new(
+    new Uri("https://storage.example.com/"), "customer-app", "app_",
+    Environment.GetEnvironmentVariable("CUSTOMER_STORAGE_SECRET")!));
+var storage = new CustomerStorage(adapter);
+```
+
+The bridge protocol is `polymorfa-d1-storage-v1`, schema 2, source
+`9ae35e671f7f4868a67c1562422c5af9284b95c1`. Every response must match the
+request nonce, valid exact-body HMAC, expected authority, table prefix and schema.
+Commits contain at most 50 writes, including the engine's session fence; reads
+and queries are paged at 1,000 rows. Request and response bodies are limited to
+8 MiB. Schema setup requires explicit operator enablement in the Worker.
+The adapter does not use D1 administrative REST or assume its batches are atomic.
+
+Large batches span fenced commits, with the deduplication marker committed last.
+A failed chunk stops before later rows or the marker. Timeouts and cancellation
+can leave a commit outcome unknown. Resume through conditional revisions and
+saved event/checkpoint state. Persist content, then the conditional checkpoint,
+then acknowledge the application event. Storage never enables hosted history or
+automatically acknowledges Signal events.
+
+The schema/merge baseline is storage source
+`3bacf46f9c4213426314001586f5bae43aaa77de`; the native engine additionally
+stops after the first failed CAS chunk. Memory and the D1 bridge are included in
+this slice. Other provider adapters and full event/history reducers remain in
+progress. This package remains unpublished.

@@ -195,3 +195,47 @@ before `ack`; repeated delivery is possible. `verify_signal_webhook` verifies
 HMAC over the exact timestamp and raw body before parsing. Enforce a timestamp
 window and durable event-ID deduplication before returning 2xx. Convert local
 history notifications with `SignalHistoryDescriptor::chunk_input`.
+
+### Customer-owned storage
+
+`polymorfa_sdk::storage` provides schema-2 operations, deterministic per-field
+merges, conditional checkpoints, durable session leases and an in-memory adapter.
+`storage::d1::D1BridgeAdapter::connect` verifies the signed capabilities of a
+customer-hosted D1 Worker binding before returning an atomic adapter. Configure
+its expected authority and table prefix from trusted application configuration.
+Use a separate customer application secret, never a Polymorfa API credential.
+HTTPS is required outside loopback fixtures; redirects are refused.
+
+```rust,no_run
+# async fn example() -> Result<(), Box<dyn std::error::Error>> {
+use polymorfa_sdk::storage::{d1::{D1BridgeAdapter, D1BridgeOptions}, Storage, StorageOptions};
+use std::sync::Arc;
+let adapter = D1BridgeAdapter::connect(D1BridgeOptions::new(
+    "https://storage.example.com/", "customer-app", "app_",
+    std::env::var("CUSTOMER_STORAGE_SECRET")?,
+)).await?;
+let storage = Storage::new(Arc::new(adapter), StorageOptions::default())?;
+# let _ = storage;
+# Ok(()) }
+```
+
+The D1 adapter uses `polymorfa-d1-storage-v1`, schema 2, bridge source
+`9ae35e671f7f4868a67c1562422c5af9284b95c1`. It signs the exact request bytes
+and authenticates each response's exact body, nonce, authority and table prefix.
+Commit limits are 50 writes, including the engine's session fence; reads and
+queries are paged at 1,000 rows. Requests and responses are bounded at 8 MiB.
+Schema setup is disabled unless the customer explicitly enables it in the Worker.
+D1 administrative REST batches are not used or represented as atomic commits.
+
+Large operation batches span multiple fenced commits. The deduplication marker
+is committed last; a failed chunk stops before later rows or the marker. A
+request timeout or cancellation can leave a commit outcome unknown. Resume
+through conditional revisions and durable event/checkpoint state. Persist content,
+then its conditional checkpoint, then acknowledge the application event. Storage
+never enables hosted history or acknowledges Signal events automatically.
+
+The schema/merge baseline is storage source
+`3bacf46f9c4213426314001586f5bae43aaa77de`; the native engine additionally
+stops immediately after a failed CAS chunk to preserve marker ordering. Provider
+adapters beyond memory and the D1 bridge, and full event/history reducers, are
+not included in this slice. This package remains unpublished.
