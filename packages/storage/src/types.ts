@@ -2,9 +2,7 @@ import type { EntityName } from "./schema.js";
 
 export type JsonPrimitive = string | number | boolean | null;
 export type JsonValue =
-  | JsonPrimitive
-  | readonly JsonValue[]
-  | { readonly [key: string]: JsonValue };
+  JsonPrimitive | readonly JsonValue[] | { readonly [key: string]: JsonValue };
 
 /** A stored field value. `json` fields hold any JSON value. */
 export type FieldValue = JsonValue;
@@ -79,6 +77,8 @@ export interface CheckpointOperation {
   readonly sessionId: string;
   readonly stream: string;
   readonly cursor: string;
+  /** Required by sync: checkpoint must still equal this prior cursor. */
+  readonly expectedCursor?: string | null;
   readonly position?: JsonValue;
   /** Unix milliseconds supplied by the caller. */
   readonly updatedAt?: number;

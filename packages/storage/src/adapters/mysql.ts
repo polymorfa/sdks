@@ -47,7 +47,9 @@ export function mysqlAdapter(
         return { rows: result as Record<string, unknown>[], affected: 0 };
       return {
         rows: [],
-        affected: Number((result as { affectedRows?: number }).affectedRows ?? 0),
+        affected: Number(
+          (result as { affectedRows?: number }).affectedRows ?? 0,
+        ),
       };
     },
   });

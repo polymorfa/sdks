@@ -36,7 +36,10 @@ export function sqliteAdapter(
   const run = (sql: string, params: readonly SqlParam[]) => {
     const statement = database.prepare(sql);
     if (READS.test(sql))
-      return { rows: statement.all(...params) as Record<string, unknown>[], affected: 0 };
+      return {
+        rows: statement.all(...params) as Record<string, unknown>[],
+        affected: 0,
+      };
     return { rows: [], affected: Number(statement.run(...params).changes) };
   };
   const driver: BatchSqlDriver = {
@@ -47,7 +50,8 @@ export function sqliteAdapter(
     async batch(statements) {
       database.exec("BEGIN IMMEDIATE");
       try {
-        for (const statement of statements) run(statement.sql, statement.params);
+        for (const statement of statements)
+          run(statement.sql, statement.params);
         database.exec("COMMIT");
       } catch (error) {
         database.exec("ROLLBACK");

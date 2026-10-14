@@ -41,6 +41,7 @@ export const ENTITY_NAMES = [
   "history_progress",
   "checkpoints",
   "events",
+  "leases",
 ] as const;
 
 export type EntityName = (typeof ENTITY_NAMES)[number];
@@ -277,6 +278,12 @@ const entities = {
     fields: { cursor: "string", position: "json", updatedAt: "number" },
     indexes: [],
   },
+  leases: {
+    name: "leases",
+    key: ["sessionId"],
+    fields: { owner: "string", expiresAt: "number" },
+    indexes: [],
+  },
   events: {
     name: "events",
     key: ["sessionId", "eventId"],
@@ -289,7 +296,7 @@ export const STORAGE_SCHEMA: Readonly<Record<EntityName, EntityDefinition>> =
   entities;
 
 /** Bumped when a field, entity or index changes. Stored by SQL migrations. */
-export const STORAGE_SCHEMA_VERSION = 1;
+export const STORAGE_SCHEMA_VERSION = 2;
 
 /**
  * Columns every stored row carries in addition to its key and fields:

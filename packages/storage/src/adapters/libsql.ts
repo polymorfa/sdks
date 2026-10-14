@@ -10,7 +10,10 @@ export type { SqlAdapterOptions } from "./sql/core.js";
 
 /** The parts of a `@libsql/client` client the adapter uses. */
 export interface LibsqlClientLike {
-  execute(statement: { sql: string; args: (string | number | null)[] }): Promise<{
+  execute(statement: {
+    sql: string;
+    args: (string | number | null)[];
+  }): Promise<{
     columns: string[];
     rows: ArrayLike<unknown>[];
     rowsAffected: number;
@@ -36,13 +39,18 @@ export function libsqlAdapter(
     async run(sql, params) {
       const result = await client.execute({ sql, args: [...params] });
       const rows = result.rows.map((row) =>
-        Object.fromEntries(result.columns.map((column, index) => [column, row[index]])),
+        Object.fromEntries(
+          result.columns.map((column, index) => [column, row[index]]),
+        ),
       );
       return { rows, affected: result.rowsAffected };
     },
     async batch(statements) {
       await client.batch(
-        statements.map((statement) => ({ sql: statement.sql, args: [...statement.params] })),
+        statements.map((statement) => ({
+          sql: statement.sql,
+          args: [...statement.params],
+        })),
         "write",
       );
     },

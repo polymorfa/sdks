@@ -1,13 +1,14 @@
 import type {
   EventStreamItem,
   EventStreamParams,
+  EventStreamAcknowledgement,
   LinkedHistorySyncPayload,
   WebhookEvent,
 } from "@polymorfa/sdk";
 
 import { createStorage, type ApplyResult, type Storage } from "./engine.js";
 import type { HistorySyncChunk } from "./history-types.js";
-import { reduceEvent } from "./reducer/events.js";
+import { reduceEvent, STORED_EVENT_TYPES } from "./reducer/events.js";
 import { historyIdentityIndex, reduceHistoryChunk } from "./reducer/history.js";
 import type { StorageAdapter } from "./types.js";
 
@@ -38,26 +39,29 @@ export async function applyEvent(
   options: ApplyEventOptions = {},
 ): Promise<ApplyResult> {
   const storage = asStorage(target);
+  let batch = reduceEvent(event);
   if (
     event.event === "history.sync" &&
     options.decodeHistory &&
     (event.payload as { kind?: unknown } | null)?.kind !== "history"
   ) {
-    const payload = event.payload as LinkedHistorySyncPayload;
     if (await storage.hasEvent(event.session, event.id))
       return { applied: false, writes: 0 };
+    const payload = event.payload as LinkedHistorySyncPayload;
     const chunk = await options.decodeHistory(payload, event);
     if (chunk) {
-      // Applied without its own marker; the event marker below covers it.
-      const batch = reduceHistoryChunk({
+      const history = reduceHistoryChunk({
         sessionId: event.session,
         chunk,
         identities: historyIdentityIndex(payload),
       });
-      await storage.apply({ sessionId: batch.sessionId, operations: batch.operations });
+      batch = {
+        ...batch,
+        operations: [...history.operations, ...batch.operations],
+      };
     }
   }
-  return storage.apply(reduceEvent(event));
+  return storage.apply(batch);
 }
 
 /**
@@ -75,13 +79,19 @@ export function storageWebhookHandler(
 /** The part of `client.events` that `syncToStorage` uses. */
 export interface EventStreamSource {
   stream(params: EventStreamParams): AsyncIterable<EventStreamItem>;
+  acknowledgeStream(
+    streamId: string,
+    input: EventStreamAcknowledgement,
+  ): Promise<unknown>;
 }
 
 export interface SyncToStorageOptions extends ApplyEventOptions {
   /** Where the stream cursor is saved. Default `{ sessionId: "*", stream: "events" }`. */
   readonly checkpoint?: { readonly sessionId: string; readonly stream: string };
   /** Stream parameters, such as event `types`. `since` comes from the checkpoint. */
-  readonly params?: Omit<EventStreamParams, "since" | "signal">;
+  readonly params?: Omit<EventStreamParams, "since" | "signal" | "ack">;
+  /** Explicit metadata-only consumption may skip absent payloads. Default true. */
+  readonly requirePayload?: boolean;
   readonly signal?: AbortSignal;
   /** Called after each event is stored and the cursor saved. */
   readonly onApplied?: (item: EventStreamItem, result: ApplyResult) => void;
@@ -117,16 +127,35 @@ export function syncToStorage(
       checkpoint.sessionId,
       checkpoint.stream,
     );
+    let expectedCursor = saved?.cursor ?? null;
+    let gapError: Error | undefined;
     const stream = source.stream({
+      types: STORED_EVENT_TYPES,
       ...options.params,
       ...(saved ? { since: saved.cursor } : {}),
       signal,
+      ack: "manual",
+      onGap(gap) {
+        gapError = new Error(
+          "The event retention window has a storage gap. Reconcile customer-owned history before resuming.",
+        );
+        controller.abort();
+        options.params?.onGap?.(gap);
+      },
     });
     for await (const item of stream) {
       if (signal.aborted) break;
+      if (!item.webhook && options.requirePayload !== false)
+        throw new Error(
+          "The event body is unavailable. The storage checkpoint and acknowledgement were not advanced.",
+        );
       let result: ApplyResult = { applied: false, writes: 0 };
       if (item.webhook)
-        result = await applyEvent(storage, item.webhook as WebhookEvent, options);
+        result = await applyEvent(
+          storage,
+          item.webhook as WebhookEvent,
+          options,
+        );
       await storage.apply({
         sessionId: checkpoint.sessionId,
         operations: [
@@ -135,12 +164,19 @@ export function syncToStorage(
             sessionId: checkpoint.sessionId,
             stream: checkpoint.stream,
             cursor: item.cursor,
+            expectedCursor,
             updatedAt: now(),
           },
         ],
       });
+      expectedCursor = item.cursor;
+      await source.acknowledgeStream(item.streamId, {
+        cursor: item.cursor,
+        sequence: item.sequence,
+      });
       options.onApplied?.(item, result);
     }
+    if (gapError) throw gapError;
   })();
   return { done, stop: () => controller.abort() };
 }

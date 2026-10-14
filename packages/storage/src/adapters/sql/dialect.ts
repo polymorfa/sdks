@@ -33,13 +33,19 @@ export function tableName(
   entity: EntityName,
   naming: SqlNaming = {},
 ): string {
-  const table = quoteIdent(dialect, `${naming.tablePrefix ?? "polymorfa_"}${entity}`);
+  const table = quoteIdent(
+    dialect,
+    `${naming.tablePrefix ?? "polymorfa_"}${entity}`,
+  );
   return naming.schema && dialect === "postgres"
     ? `${quoteIdent(dialect, naming.schema)}.${table}`
     : table;
 }
 
-function columnType(dialect: SqlDialect, type: FieldType | "key" | "id"): string {
+function columnType(
+  dialect: SqlDialect,
+  type: FieldType | "key" | "id",
+): string {
   switch (dialect) {
     case "postgres":
       return {
@@ -78,9 +84,13 @@ export function schemaStatements(
 ): string[] {
   const statements: string[] = [];
   if (naming.schema && dialect === "postgres")
-    statements.push(`CREATE SCHEMA IF NOT EXISTS ${quoteIdent(dialect, naming.schema)}`);
+    statements.push(
+      `CREATE SCHEMA IF NOT EXISTS ${quoteIdent(dialect, naming.schema)}`,
+    );
   for (const entity of ENTITY_NAMES)
-    statements.push(...tableStatements(dialect, STORAGE_SCHEMA[entity], naming));
+    statements.push(
+      ...tableStatements(dialect, STORAGE_SCHEMA[entity], naming),
+    );
   const meta = metaTable(dialect, naming);
   statements.push(
     `CREATE TABLE IF NOT EXISTS ${meta} (${quoteIdent(dialect, "id")} ${columnType(dialect, "key")} PRIMARY KEY, ${quoteIdent(dialect, "version")} integer NOT NULL)`,
@@ -89,14 +99,20 @@ export function schemaStatements(
 }
 
 export function metaTable(dialect: SqlDialect, naming: SqlNaming = {}): string {
-  const table = quoteIdent(dialect, `${naming.tablePrefix ?? "polymorfa_"}storage_schema`);
+  const table = quoteIdent(
+    dialect,
+    `${naming.tablePrefix ?? "polymorfa_"}storage_schema`,
+  );
   return naming.schema && dialect === "postgres"
     ? `${quoteIdent(dialect, naming.schema)}.${table}`
     : table;
 }
 
 /** Records the schema version; part of every migration. */
-export function schemaVersionStatement(dialect: SqlDialect, naming: SqlNaming = {}): string {
+export function schemaVersionStatement(
+  dialect: SqlDialect,
+  naming: SqlNaming = {},
+): string {
   const meta = metaTable(dialect, naming);
   const id = quoteIdent(dialect, "id");
   const version = quoteIdent(dialect, "version");
@@ -119,27 +135,37 @@ function tableStatements(
   const table = tableName(dialect, definition.name, naming);
   const columns = [
     `${q("_id")} ${columnType(dialect, "id")} NOT NULL PRIMARY KEY`,
-    ...definition.key.map((field) => `${q(field)} ${columnType(dialect, "key")} NOT NULL`),
-    ...Object.entries(definition.fields).map(
-      ([field, type]) => `${q(field)} ${columnType(dialect, type)}`,
+    ...definition.key.map(
+      (field) => `${q(field)} ${columnType(dialect, "key")} NOT NULL`,
     ),
-    `${q("_rev")} integer NOT NULL`,
+    ...Object.entries(definition.fields).map(
+      ([field, type]) =>
+        `${q(field)} ${columnType(dialect, dialect === "mysql" && type === "string" && definition.indexes.some((index) => index.equals.includes(field)) ? "key" : type)}`,
+    ),
+    `${q("_rev")} bigint NOT NULL`,
     `${q("_v")} ${columnType(dialect, "json")} NOT NULL`,
   ];
   const indexName = (name: string) =>
-    quoteIdent(dialect, `${naming.tablePrefix ?? "polymorfa_"}${definition.name}_${name}`);
+    quoteIdent(
+      dialect,
+      `${naming.tablePrefix ?? "polymorfa_"}${definition.name}_${name}`,
+    );
   const indexColumns = (fields: readonly string[]) => fields.map(q).join(", ");
   if (dialect === "mysql") {
     for (const index of definition.indexes)
       columns.push(
         `KEY ${indexName(index.name)} (${indexColumns([...index.equals, index.sort, "_id"])})`,
       );
-    columns.push(`UNIQUE KEY ${indexName("key")} (${indexColumns(definition.key)})`);
+    columns.push(
+      `UNIQUE KEY ${indexName("key")} (${indexColumns(definition.key)})`,
+    );
     return [
       `CREATE TABLE IF NOT EXISTS ${table} (\n  ${columns.join(",\n  ")}\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin`,
     ];
   }
-  const statements = [`CREATE TABLE IF NOT EXISTS ${table} (\n  ${columns.join(",\n  ")}\n)`];
+  const statements = [
+    `CREATE TABLE IF NOT EXISTS ${table} (\n  ${columns.join(",\n  ")}\n)`,
+  ];
   for (const index of definition.indexes)
     statements.push(
       `CREATE INDEX IF NOT EXISTS ${indexName(index.name)} ON ${table} (${indexColumns([...index.equals, index.sort, "_id"])})`,
@@ -148,9 +174,15 @@ function tableStatements(
 }
 
 /** A complete migration script: schema plus the version record. */
-export function migrationSql(dialect: SqlDialect, naming: SqlNaming = {}): string {
+export function migrationSql(
+  dialect: SqlDialect,
+  naming: SqlNaming = {},
+): string {
   return (
-    [...schemaStatements(dialect, naming), schemaVersionStatement(dialect, naming)]
+    [
+      ...schemaStatements(dialect, naming),
+      schemaVersionStatement(dialect, naming),
+    ]
       .map((statement) => `${statement};`)
       .join("\n\n") + "\n"
   );

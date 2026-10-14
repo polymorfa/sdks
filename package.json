@@ -18,7 +18,8 @@
     "packages/store",
     "packages/nextjs",
     "packages/devtools",
-    "examples/calls-example"
+    "examples/calls-example",
+    "packages/storage"
   ],
   "engines": {
     "node": ">=20"
@@ -52,7 +53,7 @@
     "eslint": "^9.39.5",
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.11.2",
-    "miniflare": "^5.20261006.1-alpha",
+    "miniflare": "^4.20260730.0",
     "mongodb": "^7.7.0",
     "mysql2": "^3.24.5",
     "pg": "^8.23.1",
@@ -63,5 +64,11 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.67.0",
     "vitest": "^3.2.7"
+  },
+  "overrides": {
+    "miniflare": {
+      "undici": "^7.29.1",
+      "sharp": "^0.35.5"
+    }
   }
 }

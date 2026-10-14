@@ -1,3 +1,4 @@
+import { validateCommit } from "./validation.js";
 import { ENTITY_NAMES, entityDefinition, type EntityName } from "../schema.js";
 import type {
   CommitResult,
@@ -38,27 +39,38 @@ export function memoryAdapter(): MemoryAdapter {
       return result;
     },
     async commit(writes: readonly RowWrite[]): Promise<CommitResult> {
+      validateCommit(writes, 10_000);
       const conflicts: string[] = [];
       for (const write of writes) {
         const id = write.kind === "put" ? write.row._id : write.id;
         const current = table(write.entity).get(id);
         if (write.kind === "put") {
-          if (write.expectedRev === null ? current : current?._rev !== write.expectedRev)
+          if (
+            write.expectedRev === null
+              ? current
+              : current?._rev !== write.expectedRev
+          )
             conflicts.push(id);
-        } else if (write.expectedRev !== undefined && current?._rev !== write.expectedRev)
+        } else if (
+          write.expectedRev !== undefined &&
+          current?._rev !== write.expectedRev
+        )
           conflicts.push(id);
       }
       if (conflicts.length > 0) return { ok: false, conflicts };
       for (const write of writes) {
-        if (write.kind === "put") table(write.entity).set(write.row._id, clone(write.row));
+        if (write.kind === "put")
+          table(write.entity).set(write.row._id, clone(write.row));
         else table(write.entity).delete(write.id);
       }
       return { ok: true };
     },
     async query(entity, query: IndexQuery) {
-      return filterRows(entityDefinition(entity), table(entity).values(), query).map(
-        clone,
-      );
+      return filterRows(
+        entityDefinition(entity),
+        table(entity).values(),
+        query,
+      ).map(clone);
     },
     async truncate() {
       for (const rows of tables.values()) rows.clear();

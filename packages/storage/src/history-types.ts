@@ -9,12 +9,7 @@
  */
 
 export type ProtoInt =
-  | number
-  | bigint
-  | string
-  | { toNumber(): number }
-  | null
-  | undefined;
+  number | bigint | string | { toNumber(): number } | null | undefined;
 
 export type ProtoBytes = Uint8Array | string | null | undefined;
 
@@ -97,13 +92,21 @@ export interface HistoryMessageContent {
     readonly editedMessage?: HistoryMessageContent | null;
     readonly timestampMs?: ProtoInt;
   } | null;
-  readonly ephemeralMessage?: { readonly message?: HistoryMessageContent | null } | null;
-  readonly viewOnceMessage?: { readonly message?: HistoryMessageContent | null } | null;
-  readonly viewOnceMessageV2?: { readonly message?: HistoryMessageContent | null } | null;
+  readonly ephemeralMessage?: {
+    readonly message?: HistoryMessageContent | null;
+  } | null;
+  readonly viewOnceMessage?: {
+    readonly message?: HistoryMessageContent | null;
+  } | null;
+  readonly viewOnceMessageV2?: {
+    readonly message?: HistoryMessageContent | null;
+  } | null;
   readonly documentWithCaptionMessage?: {
     readonly message?: HistoryMessageContent | null;
   } | null;
-  readonly editedMessage?: { readonly message?: HistoryMessageContent | null } | null;
+  readonly editedMessage?: {
+    readonly message?: HistoryMessageContent | null;
+  } | null;
 }
 
 export interface HistoryPollCreation {
@@ -151,10 +154,12 @@ export interface HistoryGroupParticipant {
 
 export interface HistoryConversation {
   readonly id?: string | null;
-  readonly messages?: readonly {
-    readonly message?: WebMessageInfo | null;
-    readonly msgOrderId?: ProtoInt;
-  }[] | null;
+  readonly messages?:
+    | readonly {
+        readonly message?: WebMessageInfo | null;
+        readonly msgOrderId?: ProtoInt;
+      }[]
+    | null;
   readonly newJid?: string | null;
   readonly lastMsgTimestamp?: ProtoInt;
   readonly unreadCount?: number | null;
@@ -185,24 +190,32 @@ export interface HistorySyncChunk {
   readonly statusV3Messages?: readonly WebMessageInfo[] | null;
   readonly chunkOrder?: ProtoInt;
   readonly progress?: ProtoInt;
-  readonly pushnames?: readonly {
-    readonly id?: string | null;
-    readonly pushname?: string | null;
-  }[] | null;
-  readonly pastParticipants?: readonly {
-    readonly groupJid?: string | null;
-    readonly pastParticipants?: readonly {
-      readonly userJid?: string | null;
-      /** 0 LEFT, 1 REMOVED. */
-      readonly leaveReason?: number | string | null;
-      /** Unix seconds. */
-      readonly leaveTs?: ProtoInt;
-    }[] | null;
-  }[] | null;
-  readonly phoneNumberToLidMappings?: readonly {
-    readonly pnJid?: string | null;
-    readonly lidJid?: string | null;
-  }[] | null;
+  readonly pushnames?:
+    | readonly {
+        readonly id?: string | null;
+        readonly pushname?: string | null;
+      }[]
+    | null;
+  readonly pastParticipants?:
+    | readonly {
+        readonly groupJid?: string | null;
+        readonly pastParticipants?:
+          | readonly {
+              readonly userJid?: string | null;
+              /** 0 LEFT, 1 REMOVED. */
+              readonly leaveReason?: number | string | null;
+              /** Unix seconds. */
+              readonly leaveTs?: ProtoInt;
+            }[]
+          | null;
+      }[]
+    | null;
+  readonly phoneNumberToLidMappings?:
+    | readonly {
+        readonly pnJid?: string | null;
+        readonly lidJid?: string | null;
+      }[]
+    | null;
 }
 
 /**

@@ -26,15 +26,11 @@ export interface PgPoolLike {
   end?(): Promise<void>;
 }
 
-/** The parts of a postgres.js `sql` instance the adapter uses. */
-export interface PostgresJsLike {
-  unsafe(
-    query: string,
-    parameters?: unknown[],
-  ): PromiseLike<readonly Record<string, unknown>[] & { readonly count?: number }>;
-  begin<T>(body: (sql: PostgresJsLike) => Promise<T>): PromiseLike<T>;
-  end?(): PromiseLike<void>;
-}
+/** Native postgres.js signatures, including its transaction-scoped client. */
+export type PostgresJsLike = Pick<
+  import("postgres").Sql,
+  "unsafe" | "begin" | "end" | "json"
+>;
 
 export interface PostgresAdapterOptions extends SqlAdapterOptions {
   /** Close the pool when the adapter closes. Default `false`. */
@@ -91,16 +87,36 @@ export function postgresJsAdapter(
   sql: PostgresJsLike,
   options: PostgresAdapterOptions = {},
 ): StorageAdapter {
-  const runner = (client: PostgresJsLike): SqlRunner => ({
+  const runner = (
+    client: Pick<PostgresJsLike, "unsafe" | "json">,
+  ): SqlRunner => ({
     async run(text: string, params: readonly SqlParam[]) {
-      const rows = await client.unsafe(text, [...params]);
+      const jsonParameters = new Set(
+        [...text.matchAll(/\$(\d+)::jsonb/g)].map(
+          (match) => Number(match[1]) - 1,
+        ),
+      );
+      const native = params.map((value, index) =>
+        value !== null && jsonParameters.has(index)
+          ? client.json(
+              JSON.parse(String(value)) as import("postgres").JSONValue,
+            )
+          : value,
+      );
+      const rows = await client.unsafe(text, native);
       return { rows: [...rows], affected: rows.count ?? rows.length };
     },
   });
   const driver: InteractiveSqlDriver = {
     dialect: "postgres",
     ...runner(sql),
-    transaction: (body) => Promise.resolve(sql.begin((tx) => body(runner(tx)))),
+    async transaction<T>(body: (tx: SqlRunner) => Promise<T>): Promise<T> {
+      let result!: T;
+      await sql.begin(async (tx) => {
+        result = await body(runner(tx));
+      });
+      return result;
+    },
     isConflict,
     async close() {
       if (options.closeClient) await sql.end?.();

@@ -10,7 +10,10 @@ export type { SqlAdapterOptions } from "./sql/core.js";
 
 interface D1PreparedLike {
   bind(...values: unknown[]): D1PreparedLike;
-  all(): Promise<{ results?: Record<string, unknown>[]; meta?: { changes?: number } }>;
+  all(): Promise<{
+    results?: Record<string, unknown>[];
+    meta?: { changes?: number };
+  }>;
   run(): Promise<{ meta?: { changes?: number } }>;
 }
 
@@ -22,8 +25,8 @@ export interface D1DatabaseLike {
 
 /**
  * Cloudflare D1 adapter. Each commit is one D1 batch, which D1 runs as a
- * single transaction. Commits are capped at 50 statements' worth of rows
- * to stay inside D1's per-batch limits.
+ * single transaction. The adapter caps each commit at 50 conditional rows;
+ * guard statements enforce compare-and-swap rollback for updates and deletes.
  */
 export function d1Adapter(
   database: D1DatabaseLike,
@@ -44,7 +47,9 @@ export function d1Adapter(
     },
     async batch(statements) {
       await database.batch(
-        statements.map((statement) => database.prepare(statement.sql).bind(...statement.params)),
+        statements.map((statement) =>
+          database.prepare(statement.sql).bind(...statement.params),
+        ),
       );
     },
   };

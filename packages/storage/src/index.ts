@@ -46,6 +46,8 @@ export {
 } from "./merge.js";
 export {
   StorageConflictError,
+  StorageLeaseLostError,
+  StorageCheckpointConflictError,
   createStorage,
   type ApplyResult,
   type Checkpoint,
@@ -60,7 +62,11 @@ export {
   SELF_ID,
   type MessageStatus,
 } from "./reducer/common.js";
-export { STORED_EVENT_TYPES, ackStatus, reduceEvent } from "./reducer/events.js";
+export {
+  STORED_EVENT_TYPES,
+  ackStatus,
+  reduceEvent,
+} from "./reducer/events.js";
 export {
   HistoryKeys,
   historyIdentityIndex,

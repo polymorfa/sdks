@@ -132,5 +132,7 @@ export function nonEmpty(value: unknown): string | undefined {
 }
 
 export function finite(value: unknown): number | undefined {
-  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+  return typeof value === "number" && Number.isFinite(value)
+    ? value
+    : undefined;
 }

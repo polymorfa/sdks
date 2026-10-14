@@ -124,6 +124,7 @@ export function publicRow(
   row: StoredRow,
 ): Record<string, FieldValue> {
   const result: Record<string, FieldValue> = {};
-  for (const column of columnsOf(definition)) result[column] = row[column] ?? null;
+  for (const column of columnsOf(definition))
+    result[column] = row[column] ?? null;
   return result;
 }

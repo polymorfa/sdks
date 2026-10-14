@@ -115,7 +115,10 @@ function eventOperations(
     case "message.edited":
       return messageOperations(sessionId, payload, at, { edit: true });
     case "message.sent":
-      return sentOperations(sessionId, payload as unknown as MessageSentPayload);
+      return sentOperations(
+        sessionId,
+        payload as unknown as MessageSentPayload,
+      );
     case "message.reaction":
       return reactionOperations(sessionId, payload, at);
     case "message.revoked":
@@ -127,9 +130,17 @@ function eventOperations(
         at,
       );
     case "message.ack":
-      return ackOperations(sessionId, payload as unknown as MessageAckPayload, at);
+      return ackOperations(
+        sessionId,
+        payload as unknown as MessageAckPayload,
+        at,
+      );
     case "message.vote":
-      return voteOperations(sessionId, payload as unknown as PollVotePayload, at);
+      return voteOperations(
+        sessionId,
+        payload as unknown as PollVotePayload,
+        at,
+      );
     case "chat.archive": {
       const p = payload as unknown as ChatArchivePayload;
       const fields: Fields = {};
@@ -162,7 +173,12 @@ function eventOperations(
       const chatId = nonEmpty(from?.id);
       if (!chatId || at === 0) return [];
       const fields: Fields = {};
-      put(fields, event.event === "chat.clear" ? "clearedAt" : "deletedAt", at, at);
+      put(
+        fields,
+        event.event === "chat.clear" ? "clearedAt" : "deletedAt",
+        at,
+        at,
+      );
       return [
         upsert("chats", { sessionId, chatId }, fields),
         { kind: "clearChat", sessionId, chatId, upTo: at },
@@ -262,7 +278,8 @@ interface MessageIdentity {
 
 function messageIdentity(payload: Payload): MessageIdentity | undefined {
   const messageId = nonEmpty(payload.id);
-  const conversation = payload.conversation as ConversationReference | undefined;
+  const conversation = payload.conversation as
+    ConversationReference | undefined;
   const chatId = nonEmpty(conversation?.id);
   if (!messageId || !chatId) return undefined;
   const raw = payload.timestamp;
@@ -272,7 +289,8 @@ function messageIdentity(payload: Payload): MessageIdentity | undefined {
   const fromMe = payload.fromMe === true;
   const senderId = fromMe
     ? SELF_ID
-    : (nonEmpty(conversation?.sender?.id) ?? (isGroupPayload(payload) ? undefined : chatId));
+    : (nonEmpty(conversation?.sender?.id) ??
+      (isGroupPayload(payload) ? undefined : chatId));
   return { messageId, chatId, timestamp, fromMe, senderId };
 }
 
@@ -294,8 +312,7 @@ function whatsappIds(payload: Payload): {
   official?: string;
 } {
   const ids = payload.whatsapp_ids as
-    | { linked_devices?: string; official_api?: string }
-    | undefined;
+    { linked_devices?: string; official_api?: string } | undefined;
   return {
     ...(nonEmpty(ids?.linked_devices) ? { linked: ids!.linked_devices! } : {}),
     ...(nonEmpty(ids?.official_api) ? { official: ids!.official_api! } : {}),
@@ -310,7 +327,12 @@ function json(value: unknown): JsonValue | undefined {
 function contentFields(payload: Payload, version: number): Fields {
   const fields: Fields = {};
   const cloudText = (payload.text as { body?: unknown } | undefined)?.body;
-  put(fields, "text", nonEmpty(payload.text) ?? nonEmpty(cloudText) ?? null, version);
+  put(
+    fields,
+    "text",
+    nonEmpty(payload.text) ?? nonEmpty(cloudText) ?? null,
+    version,
+  );
   put(fields, "caption", nonEmpty(payload.caption) ?? null, version);
   put(fields, "mimeType", nonEmpty(payload.mimeType) ?? null, version);
   put(fields, "fileName", nonEmpty(payload.filename) ?? null, version);
@@ -355,7 +377,8 @@ function chatFromConversation(
     put(fields, "bsuid", nonEmpty(conversation?.bsuid), version);
     put(fields, "username", nonEmpty(conversation?.username), version);
   }
-  if (timestamp !== undefined) put(fields, "lastMessageAt", timestamp, timestamp);
+  if (timestamp !== undefined)
+    put(fields, "lastMessageAt", timestamp, timestamp);
   return [upsert("chats", { sessionId, chatId }, fields)];
 }
 
@@ -379,13 +402,23 @@ function messageOperations(
   put(fields, "chatId", identity.chatId, 0);
   put(fields, "fromMe", identity.fromMe, 0);
   put(fields, "senderId", identity.senderId, 0);
-  put(fields, "timestamp", options.edit ? undefined : (identity.timestamp ?? 0), 0);
+  put(
+    fields,
+    "timestamp",
+    options.edit ? undefined : (identity.timestamp ?? 0),
+    0,
+  );
   const ids = whatsappIds(payload);
   put(fields, "waMessageId", ids.linked, 0);
   put(fields, "cloudMessageId", ids.official, 0);
   put(fields, "quotedId", nonEmpty(payload.parentMessageId), 0);
   if (!identity.fromMe)
-    put(fields, "pushName", nonEmpty(payload.pushName) ?? nonEmpty(payload.senderName), 0);
+    put(
+      fields,
+      "pushName",
+      nonEmpty(payload.pushName) ?? nonEmpty(payload.senderName),
+      0,
+    );
   if (options.edit) {
     Object.assign(fields, contentFields(payload, editVersion));
     put(fields, "editedAt", editVersion, editVersion);
@@ -407,10 +440,19 @@ function messageOperations(
       guard,
     ),
   ];
-  const media = mediaFields(payload, identity.chatId, options.edit ? editVersion : 0);
+  const media = mediaFields(
+    payload,
+    identity.chatId,
+    options.edit ? editVersion : 0,
+  );
   if (media)
     operations.push(
-      upsert("media", { sessionId, messageId: identity.messageId }, media, guard),
+      upsert(
+        "media",
+        { sessionId, messageId: identity.messageId },
+        media,
+        guard,
+      ),
     );
   const pushName = nonEmpty(payload.pushName) ?? nonEmpty(payload.senderName);
   const contactId = identity.fromMe ? undefined : identity.senderId;
@@ -418,7 +460,12 @@ function messageOperations(
     const contact: Fields = {};
     put(contact, "pushName", pushName, identity.timestamp);
     const reference = isGroup ? conversation.sender : conversation;
-    put(contact, "phoneNumber", nonEmpty(reference?.phoneNumber), identity.timestamp);
+    put(
+      contact,
+      "phoneNumber",
+      nonEmpty(reference?.phoneNumber),
+      identity.timestamp,
+    );
     operations.push(upsert("contacts", { sessionId, contactId }, contact));
   }
   return operations;
@@ -451,7 +498,10 @@ function sentOperations(
   sessionId: string,
   payload: MessageSentPayload,
 ): StorageOperation[] {
-  const identity = messageIdentity({ ...payload, fromMe: true } as unknown as Payload);
+  const identity = messageIdentity({
+    ...payload,
+    fromMe: true,
+  } as unknown as Payload);
   if (!identity) return [];
   const fields: Fields = {};
   put(fields, "chatId", identity.chatId, 0);
@@ -490,7 +540,12 @@ function reactionOperations(
   const version = identity.timestamp ?? at;
   const fields: Fields = {};
   put(fields, "chatId", identity.chatId, 0);
-  put(fields, "emoji", typeof payload.reaction === "string" ? payload.reaction : "", version);
+  put(
+    fields,
+    "emoji",
+    typeof payload.reaction === "string" ? payload.reaction : "",
+    version,
+  );
   put(fields, "timestamp", version, version);
   return [
     upsert(
@@ -700,7 +755,11 @@ function participantOperations(
       put(fields, "phoneNumber", nonEmpty(participant.phoneNumber), at);
       put(fields, "changedAt", at, at);
       operations.push(
-        upsert("group_participants", { sessionId, groupId, participantId }, fields),
+        upsert(
+          "group_participants",
+          { sessionId, groupId, participantId },
+          fields,
+        ),
       );
     }
   };
@@ -729,7 +788,12 @@ function labelOperations(
     case "label_edit": {
       if (!labelId) return [];
       const fields: Fields = {};
-      put(fields, "name", nonEmpty(payload.name) ?? nonEmpty(payload.label), version);
+      put(
+        fields,
+        "name",
+        nonEmpty(payload.name) ?? nonEmpty(payload.label),
+        version,
+      );
       put(fields, "color", finite(payload.color), version);
       put(fields, "orderIndex", finite(payload.orderIndex), version);
       put(fields, "deleted", payload.deleted ?? false, version);

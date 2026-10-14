@@ -33,6 +33,11 @@ export interface CreateStorageOptions {
   readonly maxRetries?: number;
   /** Rows deleted per page by `clearChat`. Default 200. */
   readonly clearPageSize?: number;
+  /** Fenced per-session lease duration. Default 30 seconds. */
+  readonly leaseDurationMs?: number;
+  /** Maximum wait to acquire a busy lease. Default 30 seconds. */
+  readonly leaseWaitMs?: number;
+  readonly now?: () => number;
 }
 
 export interface ApplyResult {
@@ -70,6 +75,23 @@ export interface Storage {
   hasEvent(sessionId: string, eventId: string): Promise<boolean>;
 }
 
+export class StorageLeaseLostError extends Error {
+  override readonly name = "StorageLeaseLostError";
+  constructor() {
+    super(
+      "The storage write lease expired or changed. Replay from the saved checkpoint.",
+    );
+  }
+}
+export class StorageCheckpointConflictError extends Error {
+  override readonly name = "StorageCheckpointConflictError";
+  constructor() {
+    super(
+      "The storage checkpoint changed. Stop this consumer and resume from the saved checkpoint.",
+    );
+  }
+}
+
 type RowOperation = Exclude<StorageOperation, ClearChatOperation>;
 
 /** Wraps a storage-only adapter with the shared merge and dedupe rules. */
@@ -77,9 +99,113 @@ export function createStorage(
   adapter: StorageAdapter,
   options: CreateStorageOptions = {},
 ): Storage {
+  if (
+    !adapter.capabilities.atomicCommit ||
+    !Number.isSafeInteger(adapter.capabilities.maxCommitSize) ||
+    adapter.capabilities.maxCommitSize < 2
+  )
+    throw new TypeError(
+      "Storage requires atomic conditional commits with capacity for a row and its lease fence.",
+    );
   const maxRetries = options.maxRetries ?? 8;
+  const now = options.now ?? Date.now;
+  const leaseDuration = options.leaseDurationMs ?? 30_000;
+  const leaseWait = options.leaseWaitMs ?? 30_000;
+  if (
+    !Number.isFinite(leaseDuration) ||
+    leaseDuration <= 0 ||
+    !Number.isFinite(leaseWait) ||
+    leaseWait < 0
+  )
+    throw new TypeError(
+      "Storage lease durations must be finite and non-negative.",
+    );
   const clearPageSize = options.clearPageSize ?? 200;
-  const commitSize = Math.max(1, adapter.capabilities.maxCommitSize);
+  if (
+    !Number.isSafeInteger(maxRetries) ||
+    maxRetries < 0 ||
+    maxRetries > 100 ||
+    !Number.isSafeInteger(clearPageSize) ||
+    clearPageSize < 1 ||
+    clearPageSize > 10_000
+  )
+    throw new TypeError("Storage retry and clear-page bounds are invalid.");
+  const commitSize = adapter.capabilities.maxCommitSize - 1;
+  // Scoped by the durable session lease, not by a process-local mutex.
+  interface Lease {
+    row: StoredRow;
+    lost: boolean;
+  }
+  async function acquire(sessionId: string): Promise<Lease> {
+    const id = encodeKey(STORAGE_SCHEMA.leases, { sessionId });
+    const owner = crypto.randomUUID();
+    const deadline = performance.now() + leaseWait;
+    for (;;) {
+      const existing = (await adapter.get("leases", [id])).get(id);
+      if (!existing || !existing.owner || Number(existing.expiresAt) <= now()) {
+        const row: StoredRow = {
+          ...(existing ?? emptyRow(STORAGE_SCHEMA.leases, { sessionId })),
+          owner,
+          expiresAt: now() + leaseDuration,
+          _rev: (existing?._rev ?? 0) + 1,
+        };
+        const result = await adapter.commit([
+          {
+            kind: "put",
+            entity: "leases",
+            row,
+            expectedRev: existing?._rev ?? null,
+          },
+        ]);
+        if (result.ok) return { row, lost: false };
+      }
+      if (performance.now() >= deadline) throw new StorageLeaseLostError();
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+  }
+  async function fencedCommit(lease: Lease, writes: readonly RowWrite[]) {
+    if (lease.lost || Number(lease.row.expiresAt) <= now())
+      throw new StorageLeaseLostError();
+    const next: StoredRow = {
+      ...lease.row,
+      expiresAt: now() + leaseDuration,
+      _rev: lease.row._rev + 1,
+    };
+    const result = await adapter.commit([
+      ...writes,
+      { kind: "put", entity: "leases", row: next, expectedRev: lease.row._rev },
+    ]);
+    if (result.ok) lease.row = next;
+    else if (result.conflicts.includes(lease.row._id)) {
+      const current = (await adapter.get("leases", [lease.row._id])).get(
+        lease.row._id,
+      );
+      if (
+        current?._rev !== lease.row._rev ||
+        current.owner !== lease.row.owner
+      ) {
+        lease.lost = true;
+        throw new StorageLeaseLostError();
+      }
+    }
+    return result;
+  }
+  async function release(lease: Lease) {
+    // Do not delete the row: its revision prevents a stale writer from reusing a generation.
+    await adapter.commit([
+      {
+        kind: "put",
+        entity: "leases",
+        row: {
+          ...lease.row,
+          owner: null,
+          expiresAt: 0,
+          _rev: lease.row._rev + 1,
+        },
+        expectedRev: lease.row._rev,
+      },
+    ]);
+  }
 
   async function readMany(
     entity: EntityName,
@@ -127,6 +253,11 @@ export function createStorage(
           deleted.add(slot);
           break;
         case "checkpoint": {
+          if (
+            operation.expectedCursor !== undefined &&
+            (current?.cursor ?? null) !== operation.expectedCursor
+          )
+            throw new StorageCheckpointConflictError();
           const base =
             current ??
             emptyRow(definition, {
@@ -178,15 +309,16 @@ export function createStorage(
   async function applyRows(
     operations: readonly RowOperation[],
     extra: readonly RowWrite[] = [],
+    lease: Lease,
   ): Promise<number> {
     let total = 0;
     // Plan in groups so a huge history chunk is not held in memory twice.
     const groupSize = Math.max(commitSize, 500);
-    for (let offset = 0; offset < operations.length || offset === 0; ) {
+    for (let offset = 0; offset < operations.length || offset === 0;) {
       const group = operations.slice(offset, offset + groupSize);
       offset += groupSize;
       const last = offset >= operations.length;
-      total += await commitWithRetry(group, last ? extra : []);
+      total += await commitWithRetry(group, last ? extra : [], lease);
       if (last) break;
     }
     return total;
@@ -195,6 +327,7 @@ export function createStorage(
   async function commitWithRetry(
     group: readonly RowOperation[],
     extra: readonly RowWrite[],
+    lease: Lease,
   ): Promise<number> {
     let conflicts: readonly string[] = [];
     for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
@@ -202,7 +335,8 @@ export function createStorage(
       if (writes.length === 0) return 0;
       let failed: readonly string[] = [];
       for (let start = 0; start < writes.length; start += commitSize) {
-        const result = await adapter.commit(
+        const result = await fencedCommit(
+          lease,
           writes.slice(start, start + commitSize),
         );
         if (!result.ok) failed = [...failed, ...result.conflicts];
@@ -216,7 +350,10 @@ export function createStorage(
     throw new StorageConflictError(conflicts);
   }
 
-  async function clearChat(operation: ClearChatOperation): Promise<number> {
+  async function clearChat(
+    operation: ClearChatOperation,
+    lease: Lease,
+  ): Promise<number> {
     let removed = 0;
     for (;;) {
       const messages = await adapter.query("messages", {
@@ -246,15 +383,24 @@ export function createStorage(
               entity,
               id: row._id,
             }));
-            for (let start = 0; start < childWrites.length; start += commitSize)
-              await adapter.commit(childWrites.slice(start, start + commitSize));
+            for (
+              let start = 0;
+              start < childWrites.length;
+              start += commitSize
+            ) {
+              const result = await fencedCommit(
+                lease,
+                childWrites.slice(start, start + commitSize),
+              );
+              if (!result.ok) throw new StorageConflictError(result.conflicts);
+            }
             removed += children.length;
             if (children.length < 500) break;
           }
         }
         deletes.push({ kind: "delete", entity: "messages", key });
       }
-      removed += await applyRows(deletes);
+      removed += await applyRows(deletes, [], lease);
     }
   }
 
@@ -300,56 +446,84 @@ export function createStorage(
   const storage: Storage = {
     adapter,
     async apply(batch) {
-      const eventsDefinition = STORAGE_SCHEMA.events;
-      let marker: RowWrite[] = [];
-      if (batch.eventId !== undefined) {
-        const key = { sessionId: batch.sessionId, eventId: batch.eventId };
-        const id = encodeKey(eventsDefinition, key);
-        const existing = await adapter.get("events", [id]);
-        if (existing.has(id)) return { applied: false, writes: 0 };
-        marker = [
-          {
-            kind: "put",
-            entity: "events",
-            row: {
-              ...emptyRow(eventsDefinition, key),
-              type: batch.eventType ?? null,
-              _rev: 1,
-            },
-            expectedRev: null,
-          },
-        ];
-      }
-      const plain: RowOperation[] = [];
-      const guarded: RowOperation[] = [];
-      const clears: ClearChatOperation[] = [];
+      if (!batch.sessionId)
+        throw new TypeError("A storage session is required.");
       for (const operation of batch.operations) {
-        if (operation.kind === "clearChat") clears.push(operation);
-        else if (
-          (operation.kind === "upsert" || operation.kind === "patch") &&
-          operation.guard
-        )
-          guarded.push(operation);
-        else plain.push(operation);
-      }
-      let writes = 0;
-      writes += await applyRows(plain);
-      for (const clear of clears) writes += await clearChat(clear);
-      const kept = await watermarks(guarded);
-      try {
-        writes += await applyRows(kept, marker);
-      } catch (error) {
-        // A concurrent apply of the same event wrote the marker first.
+        const session =
+          operation.kind === "clearChat" || operation.kind === "checkpoint"
+            ? operation.sessionId
+            : operation.key.sessionId;
         if (
-          marker.length > 0 &&
-          error instanceof StorageConflictError &&
-          error.ids.length === 1 &&
-          error.ids[0] === (marker[0] as { row: StoredRow }).row._id
+          session !== batch.sessionId ||
+          ((operation.kind === "upsert" || operation.kind === "patch") &&
+            operation.guard &&
+            operation.guard.sessionId !== batch.sessionId)
         )
-          return { applied: false, writes };
-        throw error;
+          throw new TypeError(
+            "A storage batch cannot write a foreign session.",
+          );
+        if (
+          operation.kind !== "clearChat" &&
+          operation.kind !== "checkpoint" &&
+          operation.entity === "leases"
+        )
+          throw new TypeError("Storage lease rows are owned by the engine.");
       }
-      return { applied: true, writes };
+      const lease = await acquire(batch.sessionId);
+      try {
+        const eventsDefinition = STORAGE_SCHEMA.events;
+        let marker: RowWrite[] = [];
+        if (batch.eventId !== undefined) {
+          const key = { sessionId: batch.sessionId, eventId: batch.eventId };
+          const id = encodeKey(eventsDefinition, key);
+          const existing = await adapter.get("events", [id]);
+          if (existing.has(id)) return { applied: false, writes: 0 };
+          marker = [
+            {
+              kind: "put",
+              entity: "events",
+              row: {
+                ...emptyRow(eventsDefinition, key),
+                type: batch.eventType ?? null,
+                _rev: 1,
+              },
+              expectedRev: null,
+            },
+          ];
+        }
+        const plain: RowOperation[] = [];
+        const guarded: RowOperation[] = [];
+        const clears: ClearChatOperation[] = [];
+        for (const operation of batch.operations) {
+          if (operation.kind === "clearChat") clears.push(operation);
+          else if (
+            (operation.kind === "upsert" || operation.kind === "patch") &&
+            operation.guard
+          )
+            guarded.push(operation);
+          else plain.push(operation);
+        }
+        let writes = 0;
+        writes += await applyRows(plain, [], lease);
+        for (const clear of clears) writes += await clearChat(clear, lease);
+        const kept = await watermarks(guarded);
+        try {
+          writes += await applyRows(kept, marker, lease);
+        } catch (error) {
+          // A concurrent apply of the same event wrote the marker first.
+          if (
+            marker.length > 0 &&
+            error instanceof StorageConflictError &&
+            error.ids.length === 1 &&
+            error.ids[0] === (marker[0] as { row: StoredRow }).row._id
+          )
+            return { applied: false, writes };
+          throw error;
+        }
+        return { applied: true, writes };
+      } finally {
+        await release(lease);
+      }
     },
     async get(entity, key) {
       const definition = entityDefinition(entity);

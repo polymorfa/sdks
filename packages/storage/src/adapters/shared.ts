@@ -1,3 +1,4 @@
+import { validateQuery } from "./validation.js";
 import {
   entityDefinition,
   type EntityDefinition,
@@ -7,7 +8,9 @@ import {
 import type { IndexQuery, StoredRow } from "../types.js";
 
 export function indexOf(entity: EntityName, name: string): IndexDefinition {
-  const index = entityDefinition(entity).indexes.find((item) => item.name === name);
+  const index = entityDefinition(entity).indexes.find(
+    (item) => item.name === name,
+  );
   if (!index) throw new TypeError(`${entity} has no index named ${name}`);
   return index;
 }
@@ -18,6 +21,7 @@ export function filterRows(
   rows: Iterable<StoredRow>,
   query: IndexQuery,
 ): StoredRow[] {
+  validateQuery(definition.name, query);
   const index = indexOf(definition.name, query.index);
   const descending = query.order === "desc";
   const range = query.range ?? {};
@@ -31,7 +35,12 @@ export function filterRows(
     if (range.lt !== undefined && !(sort < range.lt)) continue;
     if (range.lte !== undefined && !(sort <= range.lte)) continue;
     if (query.after) {
-      const cmp = compareSortId(sort, row._id, query.after.sort, query.after.id);
+      const cmp = compareSortId(
+        sort,
+        row._id,
+        query.after.sort,
+        query.after.id,
+      );
       if (descending ? cmp >= 0 : cmp <= 0) continue;
     }
     matched.push(row);
@@ -61,7 +70,10 @@ export function compareSortId(
 /** Fixed-width, order-preserving text form of a sort value (KV stores). */
 export function sortableNumber(value: number): string {
   // Sort fields are non-negative integers (timestamps, ranks, orders).
-  const safe = Math.max(0, Math.min(Number.MAX_SAFE_INTEGER, Math.trunc(value)));
+  const safe = Math.max(
+    0,
+    Math.min(Number.MAX_SAFE_INTEGER, Math.trunc(value)),
+  );
   return safe.toString().padStart(16, "0");
 }
 

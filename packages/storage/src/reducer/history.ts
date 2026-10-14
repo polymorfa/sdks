@@ -49,7 +49,8 @@ export function historySyncTypeName(value: unknown): string {
 
 export function protoNumber(value: ProtoInt): number | undefined {
   if (value === null || value === undefined) return undefined;
-  if (typeof value === "number") return Number.isFinite(value) ? value : undefined;
+  if (typeof value === "number")
+    return Number.isFinite(value) ? value : undefined;
   if (typeof value === "bigint") return Number(value);
   if (typeof value === "string") {
     const parsed = Number(value);
@@ -119,7 +120,9 @@ export function historyProgressOperations(
   // Progress only moves forward: the value is its own version.
   put(progress, "progress", input.progress, input.progress ?? 0);
   put(progress, "lastChunkOrder", input.chunkOrder, input.chunkOrder ?? 0);
-  operations.push(upsert("history_progress", { sessionId, syncType }, progress));
+  operations.push(
+    upsert("history_progress", { sessionId, syncType }, progress),
+  );
   return operations;
 }
 
@@ -144,7 +147,9 @@ export function historyIdentityIndex(
       nativeId,
       id: message.id,
       chatId,
-      ...(typeof message.fromMe === "boolean" ? { fromMe: message.fromMe } : {}),
+      ...(typeof message.fromMe === "boolean"
+        ? { fromMe: message.fromMe }
+        : {}),
     });
   }
   return { messages };
@@ -160,7 +165,10 @@ export class HistoryKeys {
   readonly #contacts = new Map<string, string>();
   readonly #messages = new Map<string, HistoryIdentityIndex["messages"]>();
 
-  constructor(index: HistoryIdentityIndex | undefined, chunk?: HistorySyncChunk) {
+  constructor(
+    index: HistoryIdentityIndex | undefined,
+    chunk?: HistorySyncChunk,
+  ) {
     for (const [jid, id] of Object.entries(index?.conversations ?? {}))
       this.#conversations.set(normalizeJid(jid), id);
     for (const [jid, id] of Object.entries(index?.contacts ?? {}))
@@ -177,8 +185,13 @@ export class HistoryKeys {
       for (const entry of conversation.messages ?? []) {
         const nativeId = nonEmpty(entry.message?.key?.id);
         const fromMe = entry.message?.key?.fromMe ?? undefined;
-        for (const candidate of (nativeId && this.#messages.get(nativeId)) || [])
-          if (candidate.fromMe === undefined || fromMe === undefined || candidate.fromMe === fromMe)
+        for (const candidate of (nativeId && this.#messages.get(nativeId)) ||
+          [])
+          if (
+            candidate.fromMe === undefined ||
+            fromMe === undefined ||
+            candidate.fromMe === fromMe
+          )
             found.add(candidate.chatId);
       }
       if (found.size === 1)
@@ -195,7 +208,9 @@ export class HistoryKeys {
     const bare = normalizeJid(jid);
     return (
       this.#contacts.get(bare) ??
-      (chatKind(bare) === "direct" ? this.#conversations.get(bare) : undefined) ??
+      (chatKind(bare) === "direct"
+        ? this.#conversations.get(bare)
+        : undefined) ??
       `wa:${bare}`
     );
   }
@@ -265,7 +280,9 @@ interface MappedContent {
   readonly type: string;
   readonly fields: Fields;
   readonly quotedId: string | undefined;
-  readonly media: { readonly kind: string; readonly message: HistoryMediaMessage } | undefined;
+  readonly media:
+    | { readonly kind: string; readonly message: HistoryMediaMessage }
+    | undefined;
 }
 
 function mapContent(
@@ -364,7 +381,12 @@ function mediaWrites(
   put(fields, "fileEncSha256", base64(message.fileEncSha256), version);
   put(fields, "directPath", nonEmpty(message.directPath), version);
   put(fields, "mediaKey", base64(message.mediaKey), version);
-  put(fields, "mediaKeyTimestamp", toMillis(protoNumber(message.mediaKeyTimestamp)), version);
+  put(
+    fields,
+    "mediaKeyTimestamp",
+    toMillis(protoNumber(message.mediaKeyTimestamp)),
+    version,
+  );
   return fields;
 }
 
@@ -395,8 +417,14 @@ export function reduceWebMessageInfo(
   const group = chatKind(normalizeJid(jid)) === "group";
   const senderJid = fromMe
     ? undefined
-    : (nonEmpty(key.participant) ?? nonEmpty(info.participant) ?? (group ? undefined : jid));
-  const senderId = fromMe ? SELF_ID : senderJid ? keys.contactId(senderJid) : undefined;
+    : (nonEmpty(key.participant) ??
+      nonEmpty(info.participant) ??
+      (group ? undefined : jid));
+  const senderId = fromMe
+    ? SELF_ID
+    : senderJid
+      ? keys.contactId(senderJid)
+      : undefined;
   const timestamp = toMillis(protoNumber(info.messageTimestamp));
   const guard: ChatWatermarkGuard | undefined =
     timestamp === undefined ? undefined : { sessionId, chatId, timestamp };
@@ -419,7 +447,8 @@ export function reduceWebMessageInfo(
       ];
     }
     if (type === 14 && protocol.editedMessage) {
-      const version = toMillis(protoNumber(protocol.timestampMs)) ?? timestamp ?? 0;
+      const version =
+        toMillis(protoNumber(protocol.timestampMs)) ?? timestamp ?? 0;
       const mapped = mapContent(unwrap(protocol.editedMessage) ?? {}, version);
       if (!mapped) return [];
       const fields: Fields = { ...mapped.fields };
@@ -433,7 +462,8 @@ export function reduceWebMessageInfo(
     const reaction = content.reactionMessage;
     const target = reaction.key ? keys.messageId(reaction.key, jid) : undefined;
     if (!target || !senderId) return [];
-    const version = toMillis(protoNumber(reaction.senderTimestampMs)) ?? timestamp ?? 0;
+    const version =
+      toMillis(protoNumber(reaction.senderTimestampMs)) ?? timestamp ?? 0;
     const fields: Fields = {};
     put(fields, "chatId", chatId, 0);
     put(fields, "emoji", reaction.text ?? "", version);
@@ -480,7 +510,12 @@ export function reduceWebMessageInfo(
   operations.push(upsert("messages", { sessionId, messageId }, fields, guard));
   if (media)
     operations.push(
-      upsert("media", { sessionId, messageId }, mediaWrites(media, chatId, 0), guard),
+      upsert(
+        "media",
+        { sessionId, messageId },
+        mediaWrites(media, chatId, 0),
+        guard,
+      ),
     );
 
   for (const receipt of info.userReceipt ?? []) {
@@ -515,10 +550,11 @@ export function reduceWebMessageInfo(
     const reactionKey = reaction.key ?? {};
     const reactor = reactionKey.fromMe
       ? SELF_ID
-      : nonEmpty(reactionKey.participant) ?? (group ? undefined : jid);
+      : (nonEmpty(reactionKey.participant) ?? (group ? undefined : jid));
     if (!reactor) continue;
     const reactorId = reactor === SELF_ID ? SELF_ID : keys.contactId(reactor);
-    const version = toMillis(protoNumber(reaction.senderTimestampMs)) ?? timestamp ?? 0;
+    const version =
+      toMillis(protoNumber(reaction.senderTimestampMs)) ?? timestamp ?? 0;
     const reactionFields: Fields = {};
     put(reactionFields, "chatId", chatId, 0);
     put(reactionFields, "emoji", reaction.text ?? "", version);
@@ -532,12 +568,21 @@ export function reduceWebMessageInfo(
       ),
     );
   }
-  if (!fromMe && senderJid && nonEmpty(info.pushName) && timestamp !== undefined) {
+  if (
+    !fromMe &&
+    senderJid &&
+    nonEmpty(info.pushName) &&
+    timestamp !== undefined
+  ) {
     const contact: Fields = {};
     put(contact, "jid", normalizeJid(senderJid), 0);
     put(contact, "pushName", nonEmpty(info.pushName), timestamp);
     operations.push(
-      upsert("contacts", { sessionId, contactId: keys.contactId(senderJid) }, contact),
+      upsert(
+        "contacts",
+        { sessionId, contactId: keys.contactId(senderJid) },
+        contact,
+      ),
     );
   }
   return operations;
@@ -568,21 +613,46 @@ function conversationOperations(
   const fields: Fields = {};
   put(fields, "jid", bare, 0);
   put(fields, "kind", kind, 0);
-  put(fields, "name", nonEmpty(conversation.name) ?? nonEmpty(conversation.displayName), snapshot);
+  put(
+    fields,
+    "name",
+    nonEmpty(conversation.name) ?? nonEmpty(conversation.displayName),
+    snapshot,
+  );
   put(fields, "username", nonEmpty(conversation.username), snapshot);
   if (kind === "direct" && conversation.pnJid)
-    put(fields, "phoneNumber", `+${normalizeJid(conversation.pnJid).split("@")[0]}`, snapshot);
+    put(
+      fields,
+      "phoneNumber",
+      `+${normalizeJid(conversation.pnJid).split("@")[0]}`,
+      snapshot,
+    );
   put(fields, "archived", conversation.archived ?? undefined, snapshot);
-  put(fields, "markedUnread", conversation.markedAsUnread ?? undefined, snapshot);
+  put(
+    fields,
+    "markedUnread",
+    conversation.markedAsUnread ?? undefined,
+    snapshot,
+  );
   put(fields, "unreadCount", conversation.unreadCount ?? undefined, snapshot);
   put(fields, "readOnly", conversation.readOnly ?? undefined, snapshot);
-  put(fields, "ephemeralExpiration", conversation.ephemeralExpiration ?? undefined, snapshot);
+  put(
+    fields,
+    "ephemeralExpiration",
+    conversation.ephemeralExpiration ?? undefined,
+    snapshot,
+  );
   const pinned = protoNumber(conversation.pinned);
   if (pinned !== undefined) put(fields, "pinned", pinned > 0, snapshot);
   const muteEnd = protoNumber(conversation.muteEndTime);
   if (muteEnd !== undefined) {
     put(fields, "muted", muteEnd !== 0, snapshot);
-    put(fields, "muteEndAt", muteEnd > 0 ? toMillis(muteEnd) ?? null : null, snapshot);
+    put(
+      fields,
+      "muteEndAt",
+      muteEnd > 0 ? (toMillis(muteEnd) ?? null) : null,
+      snapshot,
+    );
   }
   if (lastMessageAt !== undefined)
     put(fields, "lastMessageAt", lastMessageAt, lastMessageAt);
@@ -619,7 +689,11 @@ function conversationOperations(
       operations.push(
         upsert(
           "group_participants",
-          { sessionId, groupId: chatId, participantId: keys.contactId(userJid) },
+          {
+            sessionId,
+            groupId: chatId,
+            participantId: keys.contactId(userJid),
+          },
           member,
         ),
       );
@@ -628,7 +702,11 @@ function conversationOperations(
   for (const entry of conversation.messages ?? []) {
     if (entry.message)
       operations.push(
-        ...reduceWebMessageInfo(entry.message, { sessionId, keys, chatJid: bare }),
+        ...reduceWebMessageInfo(entry.message, {
+          sessionId,
+          keys,
+          chatJid: bare,
+        }),
       );
   }
   return operations;
@@ -666,7 +744,11 @@ export function reduceHistoryChunk(input: HistoryChunkInput): OperationBatch {
       put(fields, "phoneNumber", phoneNumber, 0);
       put(fields, "lidJid", normalizeJid(lid), 0);
       operations.push(
-        upsert("contacts", { sessionId, contactId: keys.contactId(jid) }, fields),
+        upsert(
+          "contacts",
+          { sessionId, contactId: keys.contactId(jid) },
+          fields,
+        ),
       );
     }
   }
@@ -678,7 +760,10 @@ export function reduceHistoryChunk(input: HistoryChunkInput): OperationBatch {
       const userJid = nonEmpty(participant.userJid);
       if (!userJid) continue;
       const leftAt = toMillis(protoNumber(participant.leaveTs)) ?? 0;
-      const reason = enumNumber(participant.leaveReason, { LEFT: 0, REMOVED: 1 });
+      const reason = enumNumber(participant.leaveReason, {
+        LEFT: 0,
+        REMOVED: 1,
+      });
       const fields: Fields = {};
       put(fields, "jid", normalizeJid(userJid), 0);
       put(fields, "active", false, leftAt);
@@ -708,7 +793,9 @@ export function reduceHistoryChunk(input: HistoryChunkInput): OperationBatch {
   );
   return {
     sessionId,
-    ...(input.chunkId === undefined ? {} : { eventId: `history:${input.chunkId}` }),
+    ...(input.chunkId === undefined
+      ? {}
+      : { eventId: `history:${input.chunkId}` }),
     eventType: "history.chunk",
     operations,
   };
