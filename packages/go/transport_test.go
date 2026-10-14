@@ -58,7 +58,7 @@ func TestBaseURLAndProjectRawConfinement(t *testing.T) {
 	calls := 0
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		calls++
-		if r.URL.EscapedPath() != "/platform/projects/a%2Fb/events" {
+		if r.URL.EscapedPath() != "/discarded/platform/projects/a%2Fb/events" {
 			t.Error(r.URL.EscapedPath())
 		}
 		w.Header().Set("Content-Type", "application/json")

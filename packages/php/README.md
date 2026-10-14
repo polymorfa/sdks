@@ -18,7 +18,7 @@ $requestId = $response->metadata->requestId;
 
 Response array shapes have handwritten PHPStan types. Responses retain metadata, including status, attempts, version and request ID. Errors use status-specific exception classes and retain safe server error fields. Raw access is an explicit escape hatch, and project raw access remains confined to its project. Request options include per-request version, timeout, idempotency key, headers and cooperative cancellation. Reserved authentication headers cannot be overridden.
 
-Reads retry transient failures at most twice by default. Writes retry only when an idempotency key exists; send and react create one key for each call when omitted. Retry-After is bounded, and a replayed final result never retries. Storage redirects do not receive API credentials.
+Reads retry transient failures at most twice by default. Writes retry only when an idempotency key exists; send and react create one key for each call when omitted. Retry-After is bounded, and a replayed final result never retries. Storage redirects do not receive API credentials. The SDK validates every hop, resolves relative targets against the current storage URL, rejects public HTTP targets and stops after five storage requests. HTTP targets are accepted only on loopback.
 
 ```php
 use Polymorfa\Webhooks;
