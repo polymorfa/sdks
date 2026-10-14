@@ -44,6 +44,7 @@ class HistorySync(TypedDict, total=False):
     consent: Literal["ask", "force_on", "force_off"]
     mode: Literal["metadata_only", "deliver"]
     requestFull: bool
+    delivery: Literal["archive", "descriptor"]
 
 
 class Configuration(TypedDict, total=False):

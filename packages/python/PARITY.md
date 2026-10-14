@@ -67,7 +67,11 @@ history recovery commands follow TypeScript `254fc6a` and backend
 `87af94a85ab5f17dbcca2a06295dcb321ffadf3a`, with new requests selecting pending
 `2026-10-14`. Golden vectors, real HTTP relay and negative/static wire checks
 verify local behavior. These checks do not prove deployed Number access or
-WhatsApp provider acceptance. Local history decoding, customer-owned storage,
+WhatsApp provider acceptance. Local history download/decrypt/inflate/protobuf
+decoding, complete protocol types, direct webhook variants, and ETag-pinned
+S3 upload/verified archive helpers follow the same producer pins. Generated
+protobuf protocol artifacts have schema SHA and compiler provenance; SDK
+implementation remains handwritten and strict checked. Customer-owned storage
 and the external Signal application consumer are being ported separately.
 Browser-only WASM, IndexedDB and UI implementations remain in TypeScript.
 

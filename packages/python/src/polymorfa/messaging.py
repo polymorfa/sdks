@@ -142,7 +142,9 @@ class Messages(Resource):
         self, session: str, body: SendMessage, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[MessageResponse]]:
         content = body.get("content")
-        if isinstance(content, dict) and any(isinstance(part, dict) and "descriptor" in part for part in content.values()):
+        if isinstance(content, dict) and any(
+            isinstance(part, dict) and "descriptor" in part for part in content.values()
+        ):
             from .direct_media import owned_options
 
             options = owned_options(options)

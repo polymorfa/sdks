@@ -13,11 +13,13 @@ ValueSource = Source | Literal["consent"]
 class HistorySync(TypedDict):
     mode: Literal["metadata_only", "deliver"]
     requestFull: bool
+    delivery: NotRequired[Literal["archive", "descriptor"]]
 
 
 class HistorySyncPatch(TypedDict, total=False):
     mode: Literal["metadata_only", "deliver"]
     requestFull: bool
+    delivery: Literal["archive", "descriptor"]
 
 
 class HmsDisabled(TypedDict):
@@ -67,6 +69,7 @@ ConfigurationSources = TypedDict(
     {
         "historySync.mode": ValueSource,
         "historySync.requestFull": ValueSource,
+        "historySync.delivery": NotRequired[ValueSource],
         "hms": Source,
         "observation.presenceMode": Source,
         "observation.typingMode": Source,
@@ -105,6 +108,7 @@ class ConfigurationPatch(TypedDict, total=False):
             "historySync",
             "historySync.mode",
             "historySync.requestFull",
+            "historySync.delivery",
             "hms",
             "observation",
             "observation.presenceMode",
