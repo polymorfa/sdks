@@ -50,3 +50,28 @@ public static class StorageSqlSchema
         var meta = Table(dialect, options, "storage_schema"); var id = Quote(dialect, "id"); var version = Quote(dialect, "version"); result.Add($"CREATE TABLE IF NOT EXISTS {meta} ({id} {KeyType(dialect)} PRIMARY KEY, {version} integer NOT NULL)"); result.Add($"INSERT INTO {meta} ({id},{version}) VALUES ('storage',2) " + (dialect == StorageSqlDialect.MySql ? $"ON DUPLICATE KEY UPDATE {version}=VALUES({version})" : $"ON CONFLICT ({id}) DO UPDATE SET {version}=excluded.{version}")); return result;
     }
 }
+
+public sealed record SupabasePresetOptions
+{
+    public SqlStorageOptions Sql { get; init; } = new() { Schema = "public" };
+    public string ServerRole { get; init; } = "polymorfa_storage_writer";
+    public string ReaderRole { get; init; } = "authenticated";
+}
+/// <summary>Customer-installed Supabase schema and forced-RLS policies. Adapter setup never installs these policies.</summary>
+public static class SupabaseStoragePreset
+{
+    /// <summary>Readers require trusted Supabase JWT-to-auth.uid() binding and live membership; the writer is a separate server principal.</summary>
+    public static string Sql(SupabasePresetOptions? configuration = null)
+    {
+        var preset = configuration ?? new(); var options = preset.Sql with { Schema = preset.Sql.Schema ?? "public" }; string Q(string name) => StorageSqlSchema.Quote(StorageSqlDialect.Postgres, name);
+        if (string.Equals(preset.ServerRole, preset.ReaderRole, StringComparison.OrdinalIgnoreCase) || string.Equals(preset.ServerRole, "public", StringComparison.OrdinalIgnoreCase) || string.Equals(preset.ReaderRole, "public", StringComparison.OrdinalIgnoreCase)) throw new StorageValidationException("Storage reader and server roles must be distinct named roles.");
+        var writer = Q(preset.ServerRole); var reader = Q(preset.ReaderRole); var members = Q(options.Schema!) + "." + Q(options.TablePrefix + "storage_memberships"); var statements = StorageSqlSchema.Statements(StorageSqlDialect.Postgres, options).ToList();
+        statements.AddRange(new[] { $"CREATE TABLE IF NOT EXISTS {members} (session_id text NOT NULL, subject uuid NOT NULL, PRIMARY KEY (session_id, subject))", $"ALTER TABLE {members} ENABLE ROW LEVEL SECURITY", $"ALTER TABLE {members} FORCE ROW LEVEL SECURITY", $"REVOKE ALL ON {members} FROM PUBLIC", $"GRANT USAGE ON SCHEMA {Q(options.Schema!)} TO {reader}, {writer}", $"GRANT SELECT ON {members} TO {reader}", $"GRANT SELECT, INSERT, UPDATE, DELETE ON {members} TO {writer}", $"CREATE POLICY {Q(options.TablePrefix + "members_self")} ON {members} FOR SELECT TO {reader} USING (subject = auth.uid())", $"CREATE POLICY {Q(options.TablePrefix + "members_writer")} ON {members} TO {writer} USING (true) WITH CHECK (true)" });
+        foreach (var entity in Enum.GetValues<StorageEntity>())
+        {
+            var definition = StorageSchema.Definition(entity); var table = StorageSqlSchema.Table(StorageSqlDialect.Postgres, options, definition.Name);
+            statements.AddRange(new[] { $"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY", $"ALTER TABLE {table} FORCE ROW LEVEL SECURITY", $"REVOKE ALL ON {table} FROM PUBLIC", $"GRANT SELECT ON {table} TO {reader}", $"GRANT SELECT, INSERT, UPDATE, DELETE ON {table} TO {writer}", $"CREATE POLICY {Q(options.TablePrefix + definition.Name + "_reader")} ON {table} FOR SELECT TO {reader} USING (EXISTS (SELECT 1 FROM {members} m WHERE m.session_id = {table}.session_id AND m.subject = auth.uid()))", $"CREATE POLICY {Q(options.TablePrefix + definition.Name + "_writer")} ON {table} TO {writer} USING (true) WITH CHECK (true)" });
+        }
+        return string.Join(";\n", statements) + ";\n";
+    }
+}

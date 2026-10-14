@@ -717,3 +717,65 @@ impl StorageAdapter for SqlStorageAdapter {
         })
     }
 }
+
+/// Customer-installed Supabase schema and forced-RLS policies; never installed by adapter setup.
+/// Browser reads require Supabase's trusted JWT-to-auth.uid() boundary and live membership.
+/// The writer role is a separate trusted server principal, never a browser credential.
+#[derive(Clone)]
+pub struct SupabasePresetOptions {
+    pub sql: SqlStorageOptions,
+    pub server_role: String,
+    pub reader_role: String,
+}
+impl Default for SupabasePresetOptions {
+    fn default() -> Self {
+        Self {
+            sql: SqlStorageOptions {
+                schema: Some("public".into()),
+                ..Default::default()
+            },
+            server_role: "polymorfa_storage_writer".into(),
+            reader_role: "authenticated".into(),
+        }
+    }
+}
+pub fn supabase_preset(options: &SupabasePresetOptions) -> StorageResult<String> {
+    let mut sql = options.sql.clone();
+    let schema = sql.schema.get_or_insert_with(|| "public".into()).clone();
+    let q = |name: &str| SqlDialect::Postgres.quote(name);
+    if options
+        .server_role
+        .eq_ignore_ascii_case(&options.reader_role)
+        || [&options.server_role, &options.reader_role]
+            .iter()
+            .any(|role| role.eq_ignore_ascii_case("public"))
+    {
+        return Err(StorageError::Invalid(
+            "Storage reader and server roles must be distinct named roles.",
+        ));
+    }
+    let writer = q(&options.server_role)?;
+    let reader = q(&options.reader_role)?;
+    let members = format!(
+        "{}.{}",
+        q(&schema)?,
+        q(&format!("{}storage_memberships", sql.table_prefix))?
+    );
+    let mut statements = schema_statements(SqlDialect::Postgres, &sql)?;
+    statements.extend([
+        format!("CREATE TABLE IF NOT EXISTS {members} (session_id text NOT NULL, subject uuid NOT NULL, PRIMARY KEY (session_id, subject))"),
+        format!("ALTER TABLE {members} ENABLE ROW LEVEL SECURITY"),format!("ALTER TABLE {members} FORCE ROW LEVEL SECURITY"),format!("REVOKE ALL ON {members} FROM PUBLIC"),
+        format!("GRANT USAGE ON SCHEMA {} TO {reader}, {writer}",q(&schema)?),format!("GRANT SELECT ON {members} TO {reader}"),format!("GRANT SELECT, INSERT, UPDATE, DELETE ON {members} TO {writer}"),
+        format!("CREATE POLICY {} ON {members} FOR SELECT TO {reader} USING (subject = auth.uid())",q(&format!("{}members_self",sql.table_prefix))?),
+        format!("CREATE POLICY {} ON {members} TO {writer} USING (true) WITH CHECK (true)",q(&format!("{}members_writer",sql.table_prefix))?),
+    ]);
+    for entity in ALL_ENTITIES {
+        let d = entity.definition();
+        let target = table(SqlDialect::Postgres, &sql, d.name)?;
+        statements.extend([format!("ALTER TABLE {target} ENABLE ROW LEVEL SECURITY"),format!("ALTER TABLE {target} FORCE ROW LEVEL SECURITY"),format!("REVOKE ALL ON {target} FROM PUBLIC"),format!("GRANT SELECT ON {target} TO {reader}"),format!("GRANT SELECT, INSERT, UPDATE, DELETE ON {target} TO {writer}"),
+            format!("CREATE POLICY {} ON {target} FOR SELECT TO {reader} USING (EXISTS (SELECT 1 FROM {members} m WHERE m.session_id = {target}.session_id AND m.subject = auth.uid()))",q(&format!("{}{}_reader",sql.table_prefix,d.name))?),
+            format!("CREATE POLICY {} ON {target} TO {writer} USING (true) WITH CHECK (true)",q(&format!("{}{}_writer",sql.table_prefix,d.name))?),
+        ]);
+    }
+    Ok(statements.join(";\n") + ";\n")
+}

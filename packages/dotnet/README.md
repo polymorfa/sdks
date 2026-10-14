@@ -256,3 +256,21 @@ driver against MinIO, including verified spooling, conditional reads, changed
 objects, cancellation and ciphertext-only relay/direct uploads. Hosted AWS/R2
 credentials, IAM policies and deployment behavior remain separate acceptance
 gates. This package has not been published.
+
+
+`Polymorfa.Storage.Sql.SupabaseStoragePreset.Sql` exports the schema-2 customer
+tables, live session memberships and forced-RLS policies from storage source
+`3bacf46f9c4213426314001586f5bae43aaa77de`. Review and install it once in a
+customer-owned migration using `SupabasePresetOptions`. Adapter setup never
+installs these policies. Reuse the schema and prefix in `SqlStorageOptions` and
+set `CreateTables = false` for the server SQL adapter.
+
+The separate reader role can select only sessions mapped to `auth.uid()` in
+`storage_memberships`. It cannot write storage data or memberships. Configure
+trusted Supabase/PostgREST JWT enforcement; never expose a direct reader SQL
+credential or let a browser set the database subject. Keep reader and server
+roles distinct, without superuser/BYPASSRLS rights or reader inheritance of the
+writer role. Membership deletion takes effect on the next query. Native
+PostgreSQL tests cover all 17 entities, anonymous/write denial, a non-superuser
+owner's FORCE-RLS boundary, revocation and missing-subject denial. Hosted
+Supabase JWT and deployment acceptance remain separate gates.
