@@ -237,7 +237,8 @@ func (t *transport) request(ctx context.Context, method, path string, q url.Valu
 func (t *transport) open(ctx context.Context, method, path string, q url.Values, body any, o RequestOptions, streaming bool) (*http.Response, Metadata, error) {
 	var data []byte
 	var err error
-	if body != nil {
+	binary, isBinary := body.(*binaryRequest)
+	if body != nil && !isBinary {
 		data, err = json.Marshal(body)
 		if err != nil {
 			return nil, Metadata{}, validation("Request body must be JSON serializable.")
@@ -287,9 +288,22 @@ func (t *transport) open(ctx context.Context, method, path string, q url.Values,
 		}
 		reqCtx, cancel := context.WithCancel(ctx)
 		timer := time.AfterFunc(timeout, cancel)
-		req, err := http.NewRequestWithContext(reqCtx, method, u.String(), bytes.NewReader(data))
+		var requestBody io.Reader = bytes.NewReader(data)
+		if isBinary {
+			requestBody, err = binary.open(reqCtx)
+			if err != nil {
+				timer.Stop()
+				cancel()
+				return nil, Metadata{}, err
+			}
+		}
+		req, err := http.NewRequestWithContext(reqCtx, method, u.String(), requestBody)
 		if err != nil {
+			timer.Stop()
 			cancel()
+			if closer, ok := requestBody.(io.Closer); ok {
+				closer.Close()
+			}
 			return nil, Metadata{}, validation("Invalid HTTP request.")
 		}
 		req.Header.Set("Accept", "application/json")
@@ -306,7 +320,7 @@ func (t *transport) open(ctx context.Context, method, path string, q url.Values,
 		req.Header.Set("Polymorfa-Version", version)
 		req.Header.Set("User-Agent", "polymorfa-go/"+Version+" Go/"+runtime.Version())
 		for k, v := range o.Headers {
-			req.Header[k] = append([]string(nil), v...)
+			req.Header[http.CanonicalHeaderKey(k)] = append([]string(nil), v...)
 		}
 		if t.config.Credential.Value != "" {
 			req.Header.Set("Authorization", "Bearer "+t.config.Credential.Value)
@@ -314,6 +328,11 @@ func (t *transport) open(ctx context.Context, method, path string, q url.Values,
 		req.Header.Set("Polymorfa-Version", version)
 		if key != "" {
 			req.Header.Set("Idempotency-Key", key)
+		}
+		if isBinary {
+			req.Header.Set("Content-Type", "application/octet-stream")
+			req.Header.Del("Content-Length")
+			req.ContentLength = binary.length
 		}
 		resp, err := t.client.Do(req)
 		if err != nil {
