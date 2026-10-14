@@ -345,3 +345,29 @@ and thumbnails. Descriptor sends select `2026-10-14` unless explicitly overridde
 `history_sync.delete_chunk` accepts its `directPath`, unpadded base64url
 `fileEncSha256`, and optional `encHandle` and `companionMetaNonce`. Both commands
 require a server credential and remain subject to API scopes and Number support.
+
+Install the `history` extra for `polymorfa.history`. Its
+`decode_history_sync_payload` accepts zlib, gzip or raw-deflate compressed
+protobuf bytes and enforces a separate inflated byte limit (512 MiB by default).
+`download_history_chunk(HistoryChunkDescriptor(...))` downloads without API
+credentials, verifies encrypted/plaintext hashes and the media MAC, decrypts
+with History keys, then decodes. `HistoryInlinePayload` skips download and
+decryption. The result is the complete pinned `HistorySync` protobuf, including
+nested messages and unknown wire fields. `history_sync_to_dict` returns protobuf
+JSON names and lossless decimal strings for 64-bit integers.
+
+Verified `history.sync` envelopes accept archive, Official API and mutually
+exclusive direct `media` or `inline` payload variants. To select direct delivery
+in session or QuickLink configuration, set `historySync.delivery="descriptor"`
+and explicitly request `RequestOptions(api_version="2026-10-14")`. Earlier
+contracts omit that optional field. Consent and runtime availability remain
+server decisions.
+
+`polymorfa.s3.S3MediaStore` accepts an application-owned async S3 client, such as
+aioboto3, for S3/R2/MinIO APIs. `upload_to_whatsapp` pins both streaming reads to
+the object's ETag. `archive` verifies into a private spool before beginning a
+PUT; supply `scratch_directory` on durable local storage. Success, failure and
+cancellation remove the spool. SDK-generated object metadata contains the media
+kind and plaintext hash, with no media key. The SDK never closes the supplied
+S3 client. Local protocol and filesystem checks do not establish hosted bucket
+or WhatsApp acceptance.

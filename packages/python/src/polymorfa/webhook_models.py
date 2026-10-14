@@ -493,7 +493,44 @@ class LinkedHistorySyncPayload(TypedDict):
     whatsapp: HistoryData
 
 
-HistorySyncPayload = LinkedHistorySyncPayload | CloudHistorySyncPayload
+class DirectHistoryCommon(TypedDict):
+    delivery: Literal["descriptor"]
+    whatsapp_ids: WhatsAppMessageIds
+    whatsapp_id: NotRequired[str]
+    original_whatsapp_ids: NotRequired[WhatsAppMessageIds]
+    original_whatsapp_id: NotRequired[str]
+    syncType: str
+    chunkOrder: NotRequired[int]
+    progress: NotRequired[int]
+    fileLength: int
+    oldestMessageAt: NotRequired[str]
+    peerDataRequestSessionId: NotRequired[str]
+
+
+class DirectHistoryMedia(TypedDict):
+    type: Literal["md-msg-hist"]
+    directPath: str
+    mediaKey: str
+    fileSha256: str
+    fileEncSha256: str
+    encHandle: NotRequired[str]
+
+
+class DirectHistoryInline(TypedDict):
+    encoding: Literal["zlib-base64-protobuf"]
+    data: str
+
+
+class DirectHistoryMediaPayload(DirectHistoryCommon):
+    media: DirectHistoryMedia
+
+
+class DirectHistoryInlinePayload(DirectHistoryCommon):
+    inline: DirectHistoryInline
+
+
+DirectHistorySyncPayload = DirectHistoryMediaPayload | DirectHistoryInlinePayload
+HistorySyncPayload = LinkedHistorySyncPayload | CloudHistorySyncPayload | DirectHistorySyncPayload
 
 
 class ContactsSyncPayload(TypedDict):
