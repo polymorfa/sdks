@@ -424,8 +424,8 @@ D1 binding with all-entity fixtures, 2,000-row paging, rollback, lease-fenced
 deletion and checkpoint CAS. Repeat the opt-in proof using
 `POLYMORFA_D1_BRIDGE_FIXTURE_URL`; the Docker test transport can use
 `POLYMORFA_D1_BRIDGE_FIXTURE_HOST` to reach the host fixture. The adapter persists
-rows only; reducers, merge/replay policy and the full provider matrix remain
-separate integration work.
+rows only; the shared engine below owns reducers and merge/replay policy. The
+full provider matrix remains separate integration work.
 
 
 ## Customer-owned Signal service client
@@ -462,3 +462,44 @@ nullable history, raw protobuf and independent webhook HMAC vectors. The opt-in
 core with synthetic pairing, encrypted receive, caller fsync before manual ACK,
 and sends through a fake upstream WebSocket. This proves those local boundaries;
 it does not establish live WhatsApp pairing, provider delivery or peer decryption.
+
+
+## Schema2 engine, reducers and synchronization
+
+`Polymorfa\Storage\Engine` wraps a durable `Adapter` with the shared merge,
+deduplication, lease and checkpoint policy. Pass a typed `Batch` containing
+`Upsert`, `Patch`, `Delete`, `ClearChat` or `Checkpoint` operations and versioned
+`FieldWrite` values. `expectedCursor: Unspecified::Value` skips the checkpoint assertion;
+`expectedCursor: null` explicitly requires no saved cursor. Customer applications
+own database access, namespace isolation, retention and row contents.
+
+Each field merges by version and a deterministic value tie-breaker. Revoked
+content and media references use a final version so older history cannot restore
+them. Every payload chunk reserves a slot for the same-transaction lease CAS;
+release advances its durable revision. The first failed chunk stops later data
+and the final event marker, including failures without conflict IDs. Large events
+can partially commit and recover through replay before the marker is saved.
+Clear-chat deletes media, reactions, receipts and votes with messages, while a
+stored chat watermark rejects equal or older late copies.
+
+`EventReducer::reduce($verifiedEvent)` covers the documented chat-data events;
+calls, campaigns, billing and presence do not enter chat storage.
+`HistoryReducer::reduce(...)` consumes complete decoded protocol arrays.
+When passing `HistorySyncData`, provide its complete-schema decoder-hook result;
+the minimal built-in protobuf view is rejected. Keep the codec's original
+protobuf bytes when unknown fields must remain available. Local decoding and
+reduction never enable the Signal service's history consent.
+
+`WebhookHandler` applies verified events and can call the customer's local
+history decoder. `new Sync(new ApiEventSource($project->events), $engine)` creates
+a cooperative consumer: call `pump()` to run and `close()` to stop it. It resumes
+from the durable checkpoint and commits the event, checkpoint CAS, then manual
+ACK. Missing required payloads, retention gaps and checkpoint conflicts stop
+before advancing or acknowledging the affected record. No SDK helper logs data
+or creates a hosted database.
+
+PHP 8.2/8.4 native tests cover the portable event/history fixtures, 2,000-message
+history, replay, permanent revocation, child deletion, lease expiry/replacement,
+first-failed-chunk refusal and explicit-null checkpoint CAS. A native HTTP/SSE
+fixture proves event persistence and checkpoint-before-manual-ACK order. The
+opt-in signed Worker/D1 proof runs the same engine with actual atomic commits.

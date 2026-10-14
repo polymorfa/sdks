@@ -211,3 +211,7 @@ require __DIR__.'/history_local.php';
 require __DIR__.'/storage_d1.php';
 
 require __DIR__.'/signal_sidecar.php';
+
+require_once __DIR__.'/storage_engine_sync.php';
+require_once __DIR__.'/storage_engine_http.php';
+require_once __DIR__.'/storage_engine_d1.php';

@@ -57,4 +57,4 @@ for ($i = 0;$i < 2;$i++) {
     fclose($socket);
 }
 fclose($server);
-echo json_encode(['valid' => $valid,'calls' => $calls],JSON_THROW_ON_ERROR)."\n";
+echo json_encode(['valid' => $valid,'calls' => $calls], JSON_THROW_ON_ERROR)."\n";

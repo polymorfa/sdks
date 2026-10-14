@@ -49,7 +49,7 @@ WhatsApp media behavior was checked against TypeScript SDK source and Cellar's s
 
 This is shipped-client protocol evidence, not proof of a current server or live-provider download. No live API credentials, real WhatsApp media, registry release or deployment were exercised.
 
-`write_coverage.py` reconciles manually authored public-method wire fixtures with the pinned ledger. It emits coverage metadata only; SDK resources and types are handwritten. Operations remain missing until both the typed method and its request/response fixture pass. Direct-media history and self-hosted-storage contracts are not ported from unmerged customer-owned TypeScript branches.
+`write_coverage.py` reconciles manually authored public-method wire fixtures with the pinned ledger. It emits coverage metadata only; SDK resources and types are handwritten. Operations remain missing until both the typed method and its request/response fixture pass. Direct-media/history and customer-owned storage consumers record their separate source pins below; the primary API default remains 2026-09-22.
 
 The neutral Calls media interface is `Call.WriteAudio`, `Call.WriteVideo` and
 `Call.Events`. Audio events contain signed 16-bit PCM at `Call.Snapshot().SampleRate`.
@@ -253,9 +253,7 @@ This uses the customer Worker bridge pinned at
 Administrative D1 REST is not an atomic adapter. Native tests exercised the
 actual bundled Worker/Miniflare binding with all-entity fixtures, 2,000-row
 pagination, rollback, fenced deletion and checkpoint CAS. Set
-`POLYMORFA_D1_BRIDGE_FIXTURE_URL` to repeat that opt-in proof. The storage-only
-adapter does not implement event reducers, merge/replay policy or the complete
-provider matrix; those consumers remain a separate integration boundary.
+`POLYMORFA_D1_BRIDGE_FIXTURE_URL` to repeat that opt-in proof. The adapter persists rows only; the shared engine below owns reducers and merge/replay policy. The complete provider matrix remains an integration boundary.
 
 
 ## Customer-owned Signal service client
@@ -292,3 +290,76 @@ nullable history, raw protobuf and independent webhook HMAC vectors. The opt-in
 core with synthetic pairing, encrypted receive, caller fsync before manual ACK,
 and sends through a fake upstream WebSocket. This proves those local boundaries;
 it does not establish live WhatsApp pairing, provider delivery or peer decryption.
+
+
+## Schema2 storage engine and local history reduction
+
+`storage.NewEngine(adapter, storage.EngineOptions{})` adds the shared deterministic
+merge, deduplication and checkpoint policy to a storage-only adapter. The
+process-local `storage.NewMemoryAdapter(500)` is available for tests and ephemeral
+applications; use a durable adapter for restart recovery. Applications own data,
+connections, namespaces and retention. The SDK does not send stored content to a
+hosted database or log row contents.
+
+`Apply` accepts a `storage.Batch` with typed field writes and operation kinds.
+Each field uses its version and a deterministic value tie-breaker, including
+UTF-16 ordering and ECMAScript canonical number spellings. Revoked content and
+media references use a final version so older history cannot restore them.
+Every payload chunk reserves one slot for the durable session lease CAS. Lease
+release advances its revision rather than deleting it. A failed chunk stops
+later writes, including the event marker, even when no conflict IDs are returned.
+Retries re-read and re-plan; a large event can partially commit and is recovered
+by replay before the final deduplication marker appears.
+
+`ReduceEvent` covers the listed WhatsApp chat-data events and excludes calls,
+campaigns, billing and presence from chat storage. `ReduceHistoryChunk` consumes
+complete decoded protocol JSON, with scoped chat/direction/participant identity
+and device-JID normalization. `ReduceHistoryData` requires the local history
+codec's explicit complete-schema decoder result; the minimal built-in protobuf
+view is insufficient and fails closed. Retain the codec's exact raw protobuf
+when unknown fields must remain available. Local history decoding and reduction
+never enable service history consent.
+
+`engine.ApplyEvent` accepts a verified webhook and an optional local history
+decoder. `SyncToStorage(ctx, storage.APIEventSource{Events: project.Events()},
+engine, options)` resumes from the saved cursor and orders event commit,
+checkpoint CAS, then manual ACK. A retention gap or missing required payload
+stops consumption before checkpoint or ACK. `ExpectedCursor == nil` means no
+cursor assertion; `&storage.ExpectedCursor{}` explicitly requires no saved cursor.
+Callers cancel the context to stop the consumer.
+
+Native race tests cover both shared portable event/history fixtures, 2,000-message
+history, replay, concurrent engines, atomic rollback, permanent revocation,
+clear-chat media/child deletion, equal/late watermarks, first-failed-chunk refusal,
+checkpoint CAS and actual API HTTP/SSE persistence-before-ACK. The opt-in D1 proof
+runs the same engine over the signed actual Worker/Miniflare binding; administrative
+D1 REST is never treated as atomic.
+
+
+## PostgreSQL, MySQL and SQLite
+
+`storage.NewSQLAdapter(ctx, db, storage.PostgreSQL, options)` accepts a configured
+`*sql.DB` using pgx's standard driver; use `storage.MySQL` with go-sql-driver/mysql
+or `storage.SQLite` with modernc SQLite. Connections remain borrowed unless
+`OwnsClient` is selected. Use a trusted `TablePrefix` and optional PostgreSQL
+`Schema` for independent application namespaces. The exported
+`SQLSchemaStatements` and `SQLMigration` use the shared schema2 column names and
+indexes. PostgreSQL clients include customer-operated Supabase and Neon SQL
+connections; MySQL clients include compatible customer PlanetScale connections.
+Their actual cloud hosting and credentials were not exercised by local tests.
+
+Setup creates schema2 tables unless `CreateTables` is explicitly false. It never
+rewrites a different saved version. Reads and writes verify that version and
+fail closed on mismatch. MySQL also requires InnoDB for every storage table and
+strict SQL mode before atomic commits are exposed. Conditional writes execute
+in one native transaction; stale revisions roll the entire batch back. An
+unconditional delete requires a matching session lease CAS in that same batch.
+Errors omit database URLs, credentials and upstream exception text.
+
+Native tests use pgx with PostgreSQL 16, go-sql-driver/mysql with MySQL 8.4 and
+modernc SQLite. Each runs shared event/history fixtures, 2,000-message history,
+pagination, rollback, lease/checkpoint behavior and schema-version refusal.
+They verify borrowed/owned close behavior and reject nontransactional MySQL.
+Set `POLYMORFA_SQL_FIXTURE_METADATA` to a task-owned metadata file containing
+`postgres` and `mysql` test DSNs to repeat the optional server proofs. This
+adapter does not yet establish libSQL, ORM or the remaining provider matrix.
