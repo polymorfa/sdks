@@ -269,3 +269,44 @@ errors omit connection strings, SQL and customer row values. These adapters are
 server clients; hosted Supabase/Neon/PlanetScale authority and deployment acceptance
 require the customer's own configuration and verification. The libSQL, Supabase
 RLS, document-store and browser adapters are separate work.
+
+### Customer-owned S3 media
+
+The optional `storage-s3` feature adds `polymorfa_sdk::s3::S3MediaStore` using
+the official AWS S3 driver. It stays outside the default dependency graph. Pass
+a separately configured `aws_sdk_s3::Client` with customer credentials, endpoint,
+TLS trust, retry policy and operation deadlines. The store clones that client;
+it does not read Polymorfa configuration or copy API credentials into storage.
+
+```rust,ignore
+use polymorfa_sdk::s3::{S3ArchiveOptions, S3MediaStore, S3UploadOptions};
+use polymorfa_sdk::media_encrypt::UploadMediaType;
+let store = S3MediaStore::new(customer_s3_client, "customer-media", "app/")?;
+let archived = store.archive(&descriptor,
+    S3ArchiveOptions::new("incoming/photo", customer_private_spool_directory)).await?;
+let uploaded = store.upload_to_whatsapp(&messaging.whatsapp_media(), &session_id,
+    S3UploadOptions::new("incoming/photo", UploadMediaType::Image)).await?;
+```
+
+`archive` accepts decoded descriptors; `archive_input` also accepts inbound
+media/type message fields. Both require a caller-selected private spool parent. It writes a private
+bounded disk spool, then verifies the MAC, padding and plaintext hash, plus the ciphertext hash
+and exact length when supplied, before starting an object PUT. Corrupt,
+truncated and cancelled downloads preserve an existing object. Metadata contains
+the selected media kind, plaintext hash, optional encoded filename and explicit
+caller metadata; the helper never derives metadata from the media key.
+
+`upload_to_whatsapp` uses two streaming GETs pinned to the same object ETag.
+A failed conditional GET or changed complete second-pass hash fails before
+final encrypted bytes or finalization. Relay is the default; select
+`S3WhatsAppEgress::Direct` and configure independent direct-upload TLS/proxy
+options for grant-based upload. Cancellation and transport failures during PUT
+can leave the object-write outcome uncertain. Spool directories are removed on
+completion, failure and dropped futures on Unix.
+
+The media helper follows source
+`254fc6a2d073e7fc79420cf95f9b03927d00c04a`. Native tests exercise the official
+driver against MinIO, including verification before PUT, conditional reads,
+changed objects, cancellation and ciphertext-only relay/direct uploads. Hosted
+AWS/R2 credentials, IAM policies and deployment acceptance remain separate gates.
+This SDK remains unpublished.

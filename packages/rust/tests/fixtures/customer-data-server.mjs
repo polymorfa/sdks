@@ -26,9 +26,22 @@ const api=http.createServer(async(req,res)=>{const parts=new URL(req.url,'http:/
 if(req.url.includes('upload-grants')){const request=JSON.parse(body);if(Object.keys(request).some(k=>!['type','fileEncSha256','ptt'].includes(k)))return send(res,400,{});const kind=request.type==='file'?'document':request.type==='voice'?(request.ptt?'ptt':'audio'):request.type;grants++;return send(res,200,{data:{host:'mmg.whatsapp.net',uploadUrl:`https://mmg.whatsapp.net/mms/${kind}/${request.fileEncSha256}?auth=synthetic-grant-${grants}&token=kept&scenario=${session}`,expiresAt:2000000000}})}
 if(req.url.includes('media/uploads')){const hash=new URL(req.url,'http://fixture').searchParams.get('fileEncSha256');if(sha(body).toString('base64url')!==hash)return send(res,415,{});return send(res,200,{data:{directPath:'/stored.enc',url:'https://mmg.whatsapp.net/stored.enc'}})}
 if(req.url.includes('/messages/send'))return send(res,200,{success:true,data:{id:'message',whatsapp_ids:{linked_devices:'wa'},conversation:{id:'c'},timestamp:'2026-10-14',status:'sent',type:'image'}});return send(res,200,{data:{requestId:'request'}})});
+const archiveVector=JSON.parse(readFileSync(new URL('./whatsapp-media.json',import.meta.url),'utf8')).fixtures.find(v=>v.kind==='image');
+const archiveBytes=Buffer.from(archiveVector.encrypted,'hex'),archiveWaiting=[],s3Requests=[],s3Pending=[];let s3ChangeKey=null,s3ChangeGets=0;
+const s3Endpoint=process.env.POLYMORFA_MINIO_ENDPOINT;const s3=s3Endpoint?http.createServer((req,res)=>{
+ const url=new URL(req.url,'http://fixture');s3Requests.push({method:req.method,path:url.pathname,ifMatch:req.headers['if-match']??null,bearer:req.headers.authorization?.startsWith('Bearer ')??false,cookie:!!req.headers.cookie,origin:!!req.headers.origin,version:!!req.headers['polymorfa-version']});
+ const forward=()=>{const endpoint=new URL(s3Endpoint);const target=http.request({hostname:endpoint.hostname,port:endpoint.port,method:req.method,path:req.url,headers:req.headers},response=>{res.writeHead(response.statusCode,response.headers);response.pipe(res)});target.on('error',()=>{res.writeHead(502);res.end()});req.pipe(target)};
+ if(req.method==='GET'&&decodeURIComponent(url.pathname).endsWith('/'+s3ChangeKey)&&++s3ChangeGets===2){s3Pending.push(forward);return;}forward();
+}):null;
 const cdn=https.createServer({key:readFileSync(path.join(directory,'key.pem')),cert:readFileSync(path.join(directory,'cert.pem'))},async(req,res)=>{
-const url=new URL(req.url,'https://mmg.whatsapp.net');if(url.pathname==='/state')return send(res,200,{requests,grants,states:[...states].map(([name,s])=>({name,attempts:s.attempts,finals:s.finals,size:s.bytes.length}))});
+const url=new URL(req.url,'https://mmg.whatsapp.net');
+if(url.pathname==='/s3-state')return send(res,200,{requests:s3Requests,pending:s3Pending.length});
+if(url.pathname==='/s3-arm-change'){s3ChangeKey=url.searchParams.get('key');s3ChangeGets=0;return send(res,200,{armed:true});}
+if(url.pathname==='/s3-release'){for(const forward of s3Pending.splice(0))forward();return send(res,200,{released:true});}
+if(url.pathname==='/release-archive'){for(const pending of archiveWaiting.splice(0))pending.end(archiveBytes.subarray(-1));return send(res,200,{released:true});}
+if(url.pathname==='/state')return send(res,200,{requests,grants,states:[...states].map(([name,s])=>({name,attempts:s.attempts,finals:s.finals,size:s.bytes.length}))});
 requests.push({boundary:'cdn',path:req.url,authorization:!!req.headers.authorization,cookie:!!req.headers.cookie,origin:req.headers.origin,referer:req.headers.referer});
+if(['/archive.enc','/archive-bad.enc','/archive-gate.enc'].includes(url.pathname)){const body=Buffer.from(archiveBytes);if(url.pathname==='/archive-bad.enc')body[0]^=1;res.writeHead(200,{'content-length':body.length});if(url.pathname==='/archive-gate.enc'){res.write(body.subarray(0,-1));archiveWaiting.push(res);}else res.end(body);return;}
 if(url.pathname==='/history.enc'){if(url.searchParams.get('mms-type')!=='md-msg-hist')return send(res,400,{});res.writeHead(200,{'content-length':encrypted.length});res.end(encrypted);return;}
 if(url.pathname==='/history-bad.enc'){let bad=Buffer.from(encrypted);bad[0]^=1;res.writeHead(200,{'content-length':bad.length});res.end(bad);return;}
 const scenario=url.searchParams.get('scenario'),s=state(scenario),hash=url.pathname.split('/').at(-1);if(url.searchParams.get('resume'))return send(res,200,{resume:s.bytes.length?String(s.bytes.length):'0'});
@@ -42,5 +55,5 @@ const start=Number(url.searchParams.get('bytestart')??0),end=Number(url.searchPa
 s.bytes=Buffer.concat([s.bytes.subarray(0,start),bytes]);if(url.searchParams.get('stream'))return send(res,200,{});
 if(sha(s.bytes).toString('base64url')!==hash)return send(res,415,{});return send(res,200,{direct_path:'/stored.enc',url:'https://mmg.whatsapp.net/stored.enc',handle:'handle'});
 });
-await Promise.all([new Promise(r=>api.listen(0,'127.0.0.1',r)),new Promise(r=>cdn.listen(0,'127.0.0.1',r))]);
-console.log(JSON.stringify({apiPort:api.address().port,port:cdn.address().port,directory,certificate:readFileSync(authority).toString('base64'),history:{directPath:'/history.enc',mediaKey:mediaKey.toString('hex'),fileSha256:sha(compressed).toString('hex'),fileEncSha256:sha(encrypted).toString('hex'),fileLength:compressed.length},proto:proto.toString('base64'),zlib:compressed.toString('base64'),gzip:gzipSync(proto).toString('base64'),raw:deflateRawSync(proto).toString('base64')}));
+await Promise.all([new Promise(r=>api.listen(0,'127.0.0.1',r)),new Promise(r=>cdn.listen(0,'127.0.0.1',r)),...(s3?[new Promise(r=>s3.listen(0,'127.0.0.1',r))]:[])]);
+console.log(JSON.stringify({archive:archiveVector,s3Port:s3?.address().port,apiPort:api.address().port,port:cdn.address().port,directory,certificate:readFileSync(authority).toString('base64'),history:{directPath:'/history.enc',mediaKey:mediaKey.toString('hex'),fileSha256:sha(compressed).toString('hex'),fileEncSha256:sha(encrypted).toString('hex'),fileLength:compressed.length},proto:proto.toString('base64'),zlib:compressed.toString('base64'),gzip:gzipSync(proto).toString('base64'),raw:deflateRawSync(proto).toString('base64')}));
