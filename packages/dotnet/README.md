@@ -216,3 +216,41 @@ and customer values. SQL adapters require a server application. Hosted
 Supabase/Neon/PlanetScale authority and deployment acceptance remain customer
 configuration and verification gates. The libSQL, Supabase RLS, document-store
 and browser adapters are separate work.
+
+
+The separate, unpublished `Polymorfa.Storage.S3` package adds
+`Polymorfa.Storage.S3.S3MediaStore` using the official AWS S3 driver. Pass a
+customer-owned `IAmazonS3` client with explicit credentials, endpoint, TLS and
+retry settings. The helper borrows that client and does not dispose it or copy
+Polymorfa API credentials into it. Storage and media operations require a server
+application.
+
+```csharp
+using Polymorfa.Storage.S3;
+var store = new S3MediaStore(new(customerS3Client, "customer-media", "app/"));
+var archived = await store.ArchiveAsync(descriptor,
+    new("incoming/photo", customerPrivateSpoolDirectory));
+var uploaded = await store.UploadToWhatsAppAsync(
+    new(messaging.WhatsAppMedia, sessionId, "incoming/photo",
+        Polymorfa.Sdk.WhatsAppUploadMediaType.Image));
+```
+
+`ArchiveAsync` requires a caller-selected private spool parent. It verifies the
+complete ciphertext hash, MAC, padding, plaintext hash and known length before
+starting any object PUT, then removes its private spool. A corrupt, truncated or
+cancelled download cannot overwrite an existing object. Metadata contains only
+the selected media kind, plaintext hash, optional encoded filename and explicit
+caller metadata; the helper never derives metadata from the media key.
+
+`UploadToWhatsAppAsync` uses two streaming reads pinned to the same object ETag.
+A failed conditional GET or a changed complete second-pass hash fails before
+final encrypted bytes or finalization. Relay is the default; select
+`S3WhatsAppEgress.Direct` to use grant-based direct upload. Object writes can
+have an uncertain outcome after cancellation or transport failure.
+
+This media helper follows source
+`254fc6a2d073e7fc79420cf95f9b03927d00c04a`. Native tests exercise the official
+driver against MinIO, including verified spooling, conditional reads, changed
+objects, cancellation and ciphertext-only relay/direct uploads. Hosted AWS/R2
+credentials, IAM policies and deployment behavior remain separate acceptance
+gates. This package has not been published.
