@@ -367,6 +367,42 @@ async def test_project_binding_and_raw_confinement() -> None:
     AsyncProjectClient(Credential("project_token", "pmfa_pt_" + "a" * 93 + "A"), "project_1")
 
 
+async def test_borrowed_project_close_preserves_root_and_other_views() -> None:
+    class TrackedTransport(httpx.MockTransport):
+        closes = 0
+
+        async def aclose(self):
+            self.closes += 1
+            await super().aclose()
+
+    native = TrackedTransport(lambda request: httpx.Response(200, json={"data": {"id": "event_1"}}))
+    client = AsyncClient(KEY, http_transport=native)
+    other = client.project("project_2")
+    async with client.project("project_1") as view:
+        await view.events.retrieve("event_1")
+    await view.close()
+    assert native.closes == 0
+    assert (await other.events.retrieve("event_1")).data["id"] == "event_1"
+    assert (await client.raw.request("GET", "/platform/projects")).metadata.status == 200
+    await client.close()
+    assert native.closes == 1
+
+
+async def test_owned_project_context_closes_its_transport() -> None:
+    class TrackedTransport(httpx.MockTransport):
+        closes = 0
+
+        async def aclose(self):
+            self.closes += 1
+            await super().aclose()
+
+    native = TrackedTransport(lambda request: httpx.Response(200, json={"data": {"id": "event_1"}}))
+    async with AsyncProjectClient(KEY, "project_1", http_transport=native) as project:
+        await project.events.retrieve("event_1")
+    await project.close()
+    assert native.closes == 1
+
+
 async def test_cancellation_and_pagination() -> None:
     started = asyncio.Event()
     cancelled = asyncio.Event()

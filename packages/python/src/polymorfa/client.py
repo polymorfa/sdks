@@ -137,6 +137,7 @@ class AsyncMessagingClient:
 @dataclass(frozen=True, init=False)
 class AsyncProjectClient:
     _transport: Transport
+    _owns_transport: bool
     _credential: Credential
     project_id: str
     request_logs: RequestLogs
@@ -168,6 +169,7 @@ class AsyncProjectClient:
             raise ConfigurationError("project_id")
         transport = _transport or Transport(credential, **options)
         object.__setattr__(self, "_transport", transport)
+        object.__setattr__(self, "_owns_transport", _transport is None)
         object.__setattr__(self, "_credential", credential)
         object.__setattr__(self, "project_id", project_id)
         object.__setattr__(self, "request_logs", RequestLogs(transport, project_id))
@@ -197,7 +199,8 @@ class AsyncProjectClient:
         return self
 
     async def close(self) -> None:
-        await self._transport.close()
+        if self._owns_transport:
+            await self._transport.close()
 
     async def __aenter__(self) -> Self:
         return self

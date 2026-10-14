@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import hmac
 import json
@@ -7,6 +8,7 @@ import pytest
 from django.conf import settings
 from django.test import RequestFactory
 from fastapi import FastAPI, Request
+from starlette.requests import Request as ASGIRequest
 from websockets.asyncio.server import serve
 
 from polymorfa import (
@@ -16,6 +18,7 @@ from polymorfa import (
     ConflictError,
     Credential,
     ServerError,
+    ValidationError,
     WebhookSignatureError,
 )
 from polymorfa.calls import (
@@ -53,6 +56,70 @@ async def test_fastapi_verifies_raw_body_before_decoding():
         assert (
             await client.post("/webhook", content=RAW + b" ", headers={"x-webhook-signature": SIG})
         ).status_code == 400
+
+
+@pytest.mark.parametrize("declared", ["5", "999999999999999999999999999999999999"])
+async def test_fastapi_declared_oversize_refused_without_receiving_body(declared):
+    async def receive():
+        pytest.fail("Oversized Content-Length must fail before reading the ASGI body")
+
+    request = ASGIRequest(
+        {"type": "http", "headers": [(b"content-length", declared.encode())]}, receive
+    )
+    with pytest.raises(ValidationError) as failure:
+        await fastapi_webhook_event(request, "secret", max_body_bytes=4)
+    assert failure.value.status == 413 and failure.value.code == "webhook_body_too_large"
+
+
+@pytest.mark.parametrize("declared", [None, "1"])
+async def test_fastapi_incremental_limit_stops_chunked_or_underreported_body(declared):
+    messages = iter(
+        [
+            {"type": "http.request", "body": b"123", "more_body": True},
+            {"type": "http.request", "body": b"45", "more_body": True},
+        ]
+    )
+    received = 0
+
+    async def receive():
+        nonlocal received
+        received += 1
+        assert received <= 2, "Adapter must stop receiving immediately at the limit"
+        return next(messages)
+
+    headers = [] if declared is None else [(b"content-length", declared.encode())]
+    request = ASGIRequest({"type": "http", "headers": headers}, receive)
+    with pytest.raises(ValidationError) as failure:
+        await fastapi_webhook_event(request, "secret", max_body_bytes=4)
+    assert failure.value.status == 413 and received == 2
+
+
+async def test_fastapi_chunk_boundaries_preserve_exact_signed_bytes():
+    chunks = iter([RAW[:5], RAW[5:17], RAW[17:]])
+
+    async def receive():
+        chunk = next(chunks)
+        return {"type": "http.request", "body": chunk, "more_body": chunk != RAW[17:]}
+
+    request = ASGIRequest(
+        {"type": "http", "headers": [(b"x-webhook-signature", SIG.encode())]}, receive
+    )
+    assert (await fastapi_webhook_event(request, "secret", max_body_bytes=len(RAW))).id == "event_1"
+
+
+@pytest.mark.parametrize("length", ["-1", "1.0", "1,1", "invalid"])
+async def test_fastapi_malformed_content_length_refused(length):
+    request = ASGIRequest({"type": "http", "headers": [(b"content-length", length.encode())]})
+    with pytest.raises(ValidationError) as failure:
+        await fastapi_webhook_event(request, "secret")
+    assert failure.value.status == 400
+
+
+@pytest.mark.parametrize("limit", [0, -1, True, 1.5])
+async def test_fastapi_invalid_body_limit_refused(limit):
+    request = ASGIRequest({"type": "http", "headers": []})
+    with pytest.raises(ConfigurationError):
+        await fastapi_webhook_event(request, "secret", max_body_bytes=limit)
 
 
 def test_django_original_request_body_signature():
@@ -114,6 +181,36 @@ async def test_real_calls_websocket_native_handshake_auth_and_binary_media():
             assert await socket.receive() == AudioFrame((2, -2))
             await socket.leave()
     assert seen == ["/voip/calls/call_1/media"]
+
+
+async def test_media_close_cleans_socket_after_native_heartbeat_send_failure():
+    async def handler(websocket):
+        await websocket.recv()
+        await websocket.send(json.dumps({"type": "ready", "sampleRate": 16000, "video": False}))
+        await websocket.close(code=1011, reason="fixture disconnect")
+
+    async with serve(handler, "127.0.0.1", 0, subprotocols=["pmfa.calls.v2"]) as server:
+        port = server.sockets[0].getsockname()[1]
+        socket = MediaSocket(
+            Credential("client_token", "pmfa_ct_local"),
+            "call_1",
+            "connection_1",
+            base_url=f"http://127.0.0.1:{port}",
+            heartbeat_interval=0.001,
+        )
+        await socket.connect()
+        beat = socket._beat
+        assert beat is not None
+
+        async def failed():
+            while not beat.done():
+                await asyncio.sleep(0.001)
+
+        await asyncio.wait_for(failed(), 1)
+        assert beat.exception() is not None
+        await socket.close()
+        assert socket._socket is None and socket._beat is None and not socket.connected
+        await socket.close()
 
 
 @pytest.mark.parametrize(

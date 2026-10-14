@@ -275,16 +275,16 @@ class MediaSocket:
 
     async def close(self) -> None:
         self.connected = False
-        if self._beat is not None:
-            self._beat.cancel()
-            try:
-                await self._beat
-            except asyncio.CancelledError:
-                pass
-            self._beat = None
-        if self._socket is not None:
-            await self._socket.close()
-            self._socket = None
+        beat, self._beat = self._beat, None
+        socket, self._socket = self._socket, None
+        try:
+            if beat is not None:
+                beat.cancel()
+                # A failed heartbeat is already terminal; collect its error and still close.
+                await asyncio.gather(beat, return_exceptions=True)
+        finally:
+            if socket is not None:
+                await socket.close()
 
     async def __aenter__(self) -> Self:
         await self.connect()

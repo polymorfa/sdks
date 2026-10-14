@@ -31,8 +31,9 @@ Use `AsyncClient` for organization Platform operations, and
 `client.project(project_id)` for an immutable project binding. Initialize
 `AsyncProjectClient` directly with a project token. A project client refuses
 rebinding and confines `raw.request` and `raw.paginate` paths to its bound project. A project
-view shares its organization's connection pool; close the root after all
-views have finished.
+view shares its organization's connection pool. Closing that view or leaving its
+context keeps the pool open; close the root after all views have finished.
+A directly constructed project client owns and closes its pool.
 
 Every response has `data` and `metadata` (status, request ID, API version,
 headers and attempts). Messaging methods retain API envelopes. Developer
@@ -185,6 +186,10 @@ subscriber to 256 frames. The optional mixed `receive_media` buffer keeps its la
 256 frames while track subscriptions consume media.
 Install the `fastapi` or `django` extras for framework examples;
 `fastapi_webhook_event` and `django_webhook_event` verify the raw request body.
+The FastAPI adapter streams at most 1 MiB before signature verification. Set
+`max_body_bytes` to your application's limit. Oversized declared or streamed
+bodies raise `ValidationError` with status 413 and code `webhook_body_too_large`;
+map that exception to a 413 response in your route.
 See `examples/python` in the source tree for executable application examples.
 The `web_host` example runs FastAPI or Django with templates, HTMX and the existing
 Web Components, including application sign-in, server-selected browser grants
