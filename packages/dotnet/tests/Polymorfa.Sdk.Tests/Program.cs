@@ -146,6 +146,7 @@ try
     await SignalTests.RunAsync();
     await MediaEncryptionTests.RunAsync(root);
     await CustomerDataTests.RunAsync(root);
+    await StorageCoreTests.RunAsync();
     Console.WriteLine($"Passed {count} shared behavior cases and media integrity tests.");
 }
 finally { if (!server.HasExited) server.Kill(entireProcessTree: true); await server.WaitForExitAsync(); }
@@ -165,3 +166,5 @@ static string Kind(PolymorfaException error) => error switch
     PolymorfaCancelledException => "cancelled",
     _ => throw new Exception($"Unmapped error {error.GetType().Name}")
 };
+
+await StorageD1Tests.RunAsync();
