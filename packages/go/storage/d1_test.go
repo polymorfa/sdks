@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -52,9 +53,9 @@ func TestD1HandshakeFailClosedAndBodyDeadline(t *testing.T) {
 		t.Run(mode, func(t *testing.T) {
 			v := d1Fixture(t)
 			secret := v["secret"].(string)
-			calls := 0
+			var calls atomic.Int32
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				calls++
+				calls.Add(1)
 				nonce := r.Header.Get("Polymorfa-Storage-Nonce")
 				if len(nonce) != 43 || r.Header.Get("Authorization") != "Bearer "+secret || r.Header.Get("Origin") != "" || r.Header.Get("Cookie") != "" {
 					t.Error("D1 request custody headers")
@@ -127,7 +128,7 @@ func TestD1HandshakeFailClosedAndBodyDeadline(t *testing.T) {
 					}
 				}
 			}
-			if calls != 1 {
+			if calls.Load() != 1 {
 				t.Fatal("D1 followed redirect/retried")
 			}
 		})
