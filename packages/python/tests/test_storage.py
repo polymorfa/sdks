@@ -328,7 +328,8 @@ def test_identity_index_separates_same_native_id_by_chat_and_sender_direction():
     )
 
 
-async def test_failed_earlier_chunk_cannot_write_later_event_marker():
+@pytest.mark.parametrize("reported_conflicts", [True, False])
+async def test_failed_earlier_chunk_cannot_write_later_event_marker(reported_conflicts):
     class FailFirst(memory_adapter().__class__):
         capabilities = StorageCapabilities(True, 2)
         failing = True
@@ -346,7 +347,7 @@ async def test_failed_earlier_chunk_cannot_write_later_event_marker():
                     None,
                 )
                 if bad is not None:
-                    return CommitResult(False, (bad.row.id,))
+                    return CommitResult(False, (bad.row.id,) if reported_conflicts else ())
             return await super().commit(writes)
 
     native = FailFirst()

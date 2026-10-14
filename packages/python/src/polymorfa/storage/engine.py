@@ -253,13 +253,15 @@ class Storage:
             for attempt in range(self._retries + 1):
                 writes = [*await self._plan(group), *additional]
                 failures: list[str] = []
+                failed = False
                 for start in range(0, len(writes), self._size):
                     result = await self._fenced_commit(lease, writes[start : start + self._size])
-                    failures.extend(result.conflicts if not result.ok else ())
                     if not result.ok:
+                        failed = True
+                        failures.extend(result.conflicts)
                         # A later chunk may contain the event marker; never mark a partial failure.
                         break
-                if not failures:
+                if not failed:
                     total += len(writes)
                     break
                 conflicts = failures
