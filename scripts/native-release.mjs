@@ -10,6 +10,8 @@ import {
   releaseVersion,
 } from "./release-gate.mjs";
 
+import { compareCoverage, extractOperations } from "./check-coverage.mjs";
+
 const root = resolve(import.meta.dirname, "..");
 export const nativeLanguages = ["go", "python", "php", "dotnet", "rust"];
 export function versions(channel, requested, date = new Date()) {
@@ -20,8 +22,13 @@ export function versions(channel, requested, date = new Date()) {
     goTag: `packages/go/v${semver}`,
   };
 }
-export function requireNativeCoverage(ledger, manifests) {
+export function requireNativeCoverage(ledger, manifests, actual) {
   assert.equal(ledger.schemaVersion, 2);
+  assert.ok(
+    Array.isArray(actual),
+    "Pinned contract operations are required for release",
+  );
+  compareCoverage(actual, ledger, true);
   for (const language of nativeLanguages) {
     const manifest = manifests[language];
     assert.match(manifest.sourceSdkCommit, /^[a-f0-9]{40}$/);
@@ -102,6 +109,14 @@ export async function prepareNativeRelease() {
   requireNativeCoverage(
     JSON.parse(readFileSync(join(root, "contracts/coverage.json"))),
     manifests,
+    ["messaging", "platform"].flatMap((family) =>
+      extractOperations(
+        family,
+        JSON.parse(
+          readFileSync(join(root, "contracts", `openapi.${family}.json`)),
+        ),
+      ),
+    ),
   );
   const expected = {
     ...expectedContract(),

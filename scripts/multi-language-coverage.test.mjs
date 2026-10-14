@@ -43,7 +43,20 @@ test("contract drift marks each language for review", () => {
   const report = compareCoverage(
     [{ ...operation, fingerprint: "c".repeat(64) }],
     ledger(),
-    true,
+    false,
+  );
+  assert.throws(
+    () =>
+      compareCoverage(
+        [{ ...operation, fingerprint: "c".repeat(64) }],
+        ledger(),
+        true,
+      ),
+    /contract drift/,
+  );
+  assert.throws(
+    () => compareCoverage([], ledger(), true),
+    /removed operations/,
   );
   for (const language of SDK_LANGUAGES)
     assert.equal(report.languages[language].changed, 1);

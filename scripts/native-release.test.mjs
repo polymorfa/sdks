@@ -27,11 +27,13 @@ function fixture() {
     family: "messaging",
     method: "GET",
     path: "/messaging/test",
-    typescript: { status: "covered" },
+    operationId: "testRead",
+    fingerprint: "b".repeat(64),
+    typescript: { status: "covered", method: "Test.Read" },
   };
   const manifests = Object.fromEntries(
     nativeLanguages.map((language) => {
-      operation[language] = { status: "covered" };
+      operation[language] = { status: "covered", method: "Test.Read" };
       return [
         language,
         {
@@ -48,25 +50,59 @@ function fixture() {
       ];
     }),
   );
-  return { ledger: { schemaVersion: 2, operations: [operation] }, manifests };
+  return {
+    ledger: {
+      schemaVersion: 2,
+      sourceCommit: "a".repeat(40),
+      languages: ["typescript", ...nativeLanguages],
+      operations: [operation],
+    },
+    manifests,
+    actual: [operation],
+  };
 }
 test("release refuses missing language, stale ledger and unsupported TypeScript method", () => {
-  const { ledger, manifests } = fixture();
-  requireNativeCoverage(ledger, manifests);
+  const { ledger, manifests, actual } = fixture();
+  requireNativeCoverage(ledger, manifests, actual);
   manifests.php.operations = [];
-  assert.throws(() => requireNativeCoverage(ledger, manifests), /php: missing/);
+  assert.throws(
+    () => requireNativeCoverage(ledger, manifests, actual),
+    /php: missing/,
+  );
   const f = fixture();
   f.manifests.python.operations[0].status = "excluded";
   f.manifests.python.operations[0].reason = "later";
   f.ledger.operations[0].python.status = "excluded";
+  f.ledger.operations[0].python.reason = "later";
   assert.throws(
-    () => requireNativeCoverage(f.ledger, f.manifests),
+    () => requireNativeCoverage(f.ledger, f.manifests, f.actual),
     /missing pinned TypeScript method/,
   );
   const g = fixture();
   g.ledger.operations[0].rust.status = "partial";
+  g.ledger.operations[0].rust.reason = "later";
+  g.ledger.operations[0].rust.milestone = "next";
   assert.throws(
-    () => requireNativeCoverage(g.ledger, g.manifests),
+    () => requireNativeCoverage(g.ledger, g.manifests, g.actual),
     /ledger mismatch/,
+  );
+});
+
+test("release recomputes changed and removed operations and refuses omitted snapshots", () => {
+  const f = fixture();
+  assert.throws(
+    () => requireNativeCoverage(f.ledger, f.manifests),
+    /Pinned contract operations/,
+  );
+  assert.throws(
+    () =>
+      requireNativeCoverage(f.ledger, f.manifests, [
+        { ...f.actual[0], fingerprint: "c".repeat(64) },
+      ]),
+    /contract drift/,
+  );
+  assert.throws(
+    () => requireNativeCoverage(f.ledger, f.manifests, []),
+    /removed operations/,
   );
 });

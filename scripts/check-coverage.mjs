@@ -299,6 +299,13 @@ export function compareCoverage(actual, ledger, strict) {
     );
   }
 
+  const removedRows = resolutions.filter((entry) => entry.status === "removed");
+  if (strict && (changed > 0 || removedRows.length > 0)) {
+    throw new Error(
+      `Coverage ledger has contract drift: ${changed} changed and ${removedRows.length} removed operations. Reconcile fingerprints and every affected language before release.`,
+    );
+  }
+
   return {
     schemaVersion: ledger.schemaVersion,
     sourceCommit: ledger.sourceCommit,
