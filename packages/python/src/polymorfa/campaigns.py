@@ -8,11 +8,11 @@ from dataclasses import replace
 from typing import cast
 
 from . import campaign_models as C
-from .errors import ValidationError
+from .errors import ServerError, ValidationError
 from .messaging import O, Resource, segment
 from .models import DataEnvelope, Envelope
 from .platform import PlatformResource
-from .transport import ApiResponse, CursorPage, JsonObject, QueryValue, RequestOptions
+from .transport import ApiResponse, CursorPage, Json, JsonObject, QueryValue, RequestOptions
 
 
 def _query(params: Mapping[str, object]) -> dict[str, QueryValue]:
@@ -173,37 +173,78 @@ class MessagingCampaigns(Resource):
         )
 
 
+def platform_campaign_response(
+    response: ApiResponse[DataEnvelope[C.Campaign | list[C.Campaign] | None]],
+) -> ApiResponse[DataEnvelope[C.PlatformCampaign | list[C.PlatformCampaign] | None]]:
+    if not isinstance(response.data, dict) or "data" not in response.data:
+        raise ServerError(
+            "Invalid campaign envelope.", code="invalid_response", metadata=response.metadata
+        )
+    envelope = cast(JsonObject, response.data)
+    value = envelope.get("data")
+    if isinstance(value, dict):
+        converted: C.PlatformCampaign | list[C.PlatformCampaign] | None = C.PlatformCampaign(value)
+    elif isinstance(value, list) and all(isinstance(item, dict) for item in value):
+        converted = [C.PlatformCampaign(cast(JsonObject, item)) for item in value]
+    elif value is None:
+        converted = None
+    else:
+        raise ServerError(
+            "Invalid campaign response.", code="invalid_response", metadata=response.metadata
+        )
+    data = {**envelope, "data": converted}
+    return ApiResponse(
+        cast(DataEnvelope[C.PlatformCampaign | list[C.PlatformCampaign] | None], data),
+        response.metadata,
+    )
+
+
 class Campaigns(Resource):
     async def list(
         self, params: C.ListCampaigns, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[builtins.list[C.Campaign]]]:
-        return await self._request(
-            "GET", "/platform/campaigns", query=_query(params), options=options
+    ) -> ApiResponse[DataEnvelope[builtins.list[C.PlatformCampaign]]]:
+        response: ApiResponse[
+            DataEnvelope[C.Campaign | list[C.Campaign] | None]
+        ] = await self._request("GET", "/platform/campaigns", query=_query(params), options=options)
+        return cast(
+            ApiResponse[DataEnvelope[builtins.list[C.PlatformCampaign]]],
+            platform_campaign_response(response),
         )
 
     async def create(
         self, body: C.CreatePlatformCampaign, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[C.Campaign]]:
+    ) -> ApiResponse[DataEnvelope[C.PlatformCampaign]]:
         # Platform draft creation declares neither request-key replay nor automatic retry.
         if options.idempotency_key is not None or options.max_network_retries is not None:
             raise ValidationError(
                 "Platform campaign creation does not accept idempotency or retry overrides."
             )
-        return await self._request(
+        response: ApiResponse[
+            DataEnvelope[C.Campaign | list[C.Campaign] | None]
+        ] = await self._request(
             "POST",
             "/platform/campaigns",
             body=body,
             options=replace(options, max_network_retries=0),
         )
+        return cast(
+            ApiResponse[DataEnvelope[C.PlatformCampaign]], platform_campaign_response(response)
+        )
 
     async def retrieve(
         self, campaign_id: str, params: C.CampaignParams, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[C.Campaign | None]]:
-        return await self._request(
+    ) -> ApiResponse[DataEnvelope[C.PlatformCampaign | None]]:
+        response: ApiResponse[
+            DataEnvelope[C.Campaign | list[C.Campaign] | None]
+        ] = await self._request(
             "GET",
             f"/platform/campaigns/{segment(campaign_id)}",
             query=_query(params),
             options=options,
+        )
+        return cast(
+            ApiResponse[DataEnvelope[C.PlatformCampaign | None]],
+            platform_campaign_response(response),
         )
 
     async def update(
@@ -213,13 +254,22 @@ class Campaigns(Resource):
         params: C.CampaignParams,
         *,
         options: RequestOptions = O,
-    ) -> ApiResponse[DataEnvelope[C.Campaign]]:
-        return await self._request(
+        extra_fields: Mapping[str, Json] | None = None,
+    ) -> ApiResponse[DataEnvelope[C.PlatformCampaign]]:
+        if extra_fields and set(extra_fields) & C.UpdateCampaign.__optional_keys__:
+            raise ValidationError("Use the typed body for named campaign fields.")
+        merged = {**(body or {}), **(extra_fields or {})} if extra_fields else body
+        response: ApiResponse[
+            DataEnvelope[C.Campaign | list[C.Campaign] | None]
+        ] = await self._request(
             "PATCH",
             f"/platform/campaigns/{segment(campaign_id)}",
-            body=body,
+            body=merged,
             query=_query(params),
             options=options,
+        )
+        return cast(
+            ApiResponse[DataEnvelope[C.PlatformCampaign]], platform_campaign_response(response)
         )
 
     async def delete(

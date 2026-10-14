@@ -3,6 +3,9 @@
 Reference: handwritten TypeScript server SDK and Calls source at
 `ff51567105b64bf6997e7330ba8eb502d875e7b9`. Native source is handwritten;
 OpenAPI snapshots supply coverage attribution, not generated implementations.
+The raw pagination, presence catalogs and typing audit also inspected merged
+TypeScript `daac84b1bd24c9460a2bcad555629a5466d85e2c` on 2026-10-14.
+Primary operation and supplemental API contract pins retain their own revisions.
 
 `coverage.json` attributes all 439 primary covered operations to typed public
 methods and passing request/response tests. The other 140 primary operations
@@ -20,16 +23,19 @@ resource has a Python public method; `supplements.json` adds twelve route entrie
 outside the primary ledger and maps the helper groups below to executed tests.
 Python uses `cryptography` for the exported TypeScript WebCrypto media algorithms
 and asyncio tasks/events for cancellation. The language-specific adapters do not
-change the wire protocol. There are no known missing merged server operations or
-helpers in this inventory.
+change the wire protocol. The table records the exercised inventory; route coverage alone does not
+establish helper or typing parity.
 
 | Surface beyond primary route coverage | Public Python surface | Execution evidence |
 | --- | --- | --- |
 | Official API supplements | `cloud_catalogs`, `cloud_marketing`, `flow_encryption` | `tests/test_templates_graph.py` |
 | Testing supplements | `testing` phone methods | `tests/test_onboarding.py` |
 | Campaign supplements | `campaigns.update` and organization/project `reschedule` | `tests/test_campaigns.py` |
+| Generic raw JSON and decoded pagination | `raw.request`, `raw.paginate`, `PageResult`, `RawCursorPage` | `tests/test_python_parity.py`: native HTTP arrays/scalars/null, custom envelopes/cursor names, metadata, request replay, project confinement, invalid cursor and error paths |
+| Conversation targets and open Platform campaigns | request target union, `PlatformCampaign.known`, update `extra_fields` | `tests/test_python_parity.py`: native request bodies and preserved unknown fields, strict positive/negative mypy checks |
+| Presence catalogs | four public immutable `PRESENCE_*` tuples | `tests/test_python_parity.py`: exact known values |
 | Project request logs | `request_logs.list`, `follow`, `tail` | `tests/test_request_logs.py`: actual HTTP for both principals, filter/cursor/date serialization, metadata, oldest-first backfill, rate limits and cancellation |
-| Known public catalog values | immutable privacy/testing/voice tuples and mappings, Calls reactions/sample rate and media limit | `tests/test_catalogs.py`: pinned public-export values and frozen privacy mapping |
+| Known public catalog values | immutable privacy/presence/testing/voice tuples and mappings, Calls reactions/sample rate and media limit | `tests/test_catalogs.py`: pinned public-export values and frozen privacy mapping |
 | Native and local forwarded webhook signatures | `construct_webhook_event`, `construct_local_webhook_event`, signature/fixture helpers | Shared native fixture bodies; `tests/test_wire.py`, `tests/test_webhook_utilities.py` |
 | Known webhook DTOs and unknown preservation | `webhook_models`, `is_event` | `tests/test_webhook_models.py`: all 84 event names, typed overload map, signed payloads and envelope extras |
 | Decrypted Flow forwarding | `verify_flow_forward_signature` | `tests/test_additional_helpers.py`: exact timestamp bytes, tolerance, altered body, wrong secret and malformed signatures |

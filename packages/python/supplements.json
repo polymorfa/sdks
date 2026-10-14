@@ -182,6 +182,21 @@
       "sdkMethod": "FastAPI / Django authenticated template-HTMX Web Component token hosts",
       "status": "covered",
       "testFile": "tests/test_browser_hosts.py"
+    },
+    {
+      "sdkMethod": "raw.request arbitrary JSON / raw.paginate custom decoder and cursor name",
+      "status": "covered",
+      "testFile": "tests/test_python_parity.py"
+    },
+    {
+      "sdkMethod": "Known presence catalog values",
+      "status": "covered",
+      "testFile": "tests/test_python_parity.py"
+    },
+    {
+      "sdkMethod": "Conversation request targets / open Platform campaign known fields and extras",
+      "status": "covered",
+      "testFile": "tests/test_python_parity.py"
     }
   ]
 }

@@ -80,3 +80,8 @@ PRIVACY_SETTING_VALUES: Final = MappingProxyType(
         "stickers": ("contacts", "contact_allowlist", "none"),
     }
 )
+
+PRESENCE_STATES: Final = ("available", "unavailable")
+PRESENCE_OBSERVATION_STATUSES: Final = ("unknown", "fresh", "stale")
+PRESENCE_UNKNOWN_REASONS: Final = ("disabled", "not_observed", "suspended")
+PRESENCE_CHAT_STATES: Final = ("composing", "paused")
