@@ -451,3 +451,71 @@ real Worker binding. Cosmos and Convex have adapter contract tests without a
 hosted service acceptance claim. JavaScript IndexedDB, Drizzle and Prisma exports
 remain integrations for their owning browser/ORM runtimes; Python uses its
 native database factories and the shared schema2 wire format.
+
+Native aioboto3/MinIO tests also verify two-pass S3 reads, ETag precondition
+failure when an object changes, and integrity-checked archive replacement.
+The helper keeps the application-owned S3 client open.
+
+`SignalNodeClient` talks to the customer-operated Signal service's local
+application API. This is a server client. Supply the service's application bearer
+secret; Polymorfa project, organization and client credentials are refused.
+The default address is `http://127.0.0.1:8080`. HTTPS endpoints are supported;
+private-network HTTP outside loopback requires `allow_insecure_http=True`.
+Redirects, proxy environment settings and cookie forwarding are disabled. Health
+checks omit credentials. Request failures preserve safe status/code information,
+and sends are attempted once because a lost response may follow a completed send.
+
+```python
+from polymorfa import SignalNodeClient
+
+async with SignalNodeClient(application_secret) as signal:
+    sessions = await signal.list_sessions()
+    outcome = await signal.send_text("my-session", "15551234567@s.whatsapp.net", "Hello")
+    async with signal.events(session_id="my-session") as events:
+        async for event in events:
+            await persist_and_deduplicate(event.id, event.message_bytes(), event.raw)
+            await signal.acknowledge_event(event.id)
+```
+
+The event stream never acknowledges automatically. It reconnects after transport
+loss without inventing cursor replay: the service relies on unacknowledged
+ciphertext redelivery from the relay. Use the event ID for durable deduplication.
+Closing the client or stream cancels a waiting read. Keep the stream in an async
+context manager, especially when leaving iteration early. Event size is bounded
+by `max_event_bytes` (8 MiB by default). Errors and object representations omit
+plaintext, media keys and upstream response text.
+
+`SignalTextMessage` and `SignalMediaMessage` form the send request union.
+`to_signal_media_descriptor(upload_result)` converts an encrypted upload result
+into the service's snake_case media descriptor; PTT remains audio with `ptt=True`.
+Image, video, audio, document and sticker kinds use the exact pinned service
+shape. The local application contract has no thumbnail, waveform or animation
+field; those descriptor options are not exposed by this client. The service
+constructs the encrypted message and retains its Signal keys. Send standard API
+media descriptors only when that Number's standard custody mode permits them.
+Metadata that the pinned service ignores for a media kind is refused before send.
+
+`SignalNodeEvent` retains the complete raw event and serialized message protobuf.
+History descriptors preserve nullable numeric `sync_type`, `chunk_order`,
+`progress` and `file_length`, plus the serialized notification. Optional media and
+history values remain local to the application. Decode/download history through
+the explicit local helpers, after the service operator enables history delivery
+and the customer grants consent. The client grants neither history consent nor
+hosted retention.
+
+For a local signed webhook, call
+`verify_signal_node_webhook(raw_body, headers, webhook_secret)` after enforcing the
+raw request body limit while reading. It verifies the service's exact HMAC,
+timestamp window and event-ID header before parsing the event. Persist and
+deduplicate before returning a successful webhook response. Its signing secret is
+separate from both the local application bearer and Polymorfa credentials.
+
+This consumer is pinned to Signal service
+`8aa191ef0d4c318229c91bcdf474bf2d79dac47c` and its application OpenAPI. Fixture and
+loopback HTTP tests establish the local boundary. An opt-in harness also uses the
+actual Rust service and Signal core with synthetic accounts to verify encrypted
+receive, decoded protobuf and persistence before manual acknowledgement. These
+tests do not establish WhatsApp acceptance, registry publication or deployed
+availability. Provider receive time
+and alternate sender depend on the owning relay producer supplying those values;
+a parsed zero timestamp is not proof of provider time.
