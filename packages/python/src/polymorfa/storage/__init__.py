@@ -1,5 +1,6 @@
 """Customer-owned schema2 storage; no database credential comes from Polymorfa."""
 
+from .convex import ConvexAdapter, ConvexFunctionReferences, convex_adapter
 from .core import (
     ENTITY_NAMES,
     FINAL_VERSION,
@@ -29,7 +30,9 @@ from .core import (
     entity_definition,
     merge_fields,
 )
+from .cosmos import CosmosAdapter, cosmos_adapter
 from .d1 import D1BridgeAdapter, d1_bridge_adapter
+from .dynamodb import DynamodbAdapter, dynamodb_adapter
 from .engine import (
     ApplyResult,
     QueryPage,
@@ -40,7 +43,9 @@ from .engine import (
     StorageLeaseLostError,
     create_storage,
 )
+from .firestore import FirestoreAdapter, firestore_adapter
 from .memory import MemoryAdapter, memory_adapter
+from .mongodb import MongodbAdapter, mongodb_adapter
 from .reduce_events import STORED_EVENT_TYPES, ack_status, reduce_event
 from .reduce_history import (
     HistoryIdentityIndex,
@@ -52,7 +57,19 @@ from .reduce_history import (
     reduce_history_chunk,
     reduce_web_message_info,
 )
+from .sql import (
+    LibsqlAdapter,
+    SqlAdapter,
+    SqlConnection,
+    SqlDriver,
+    SqlResult,
+    libsql_adapter,
+    mysql_adapter,
+    postgres_adapter,
+    sql_schema_statements,
+)
 from .sqlite import SqliteAdapter, schema_statements, sqlite_adapter
+from .supabase import supabase_preset
 from .sync import (
     StoragePayloadUnavailableError,
     StorageStreamGapError,
@@ -73,16 +90,23 @@ __all__ = [
     "Checkpoint",
     "ClearChat",
     "CommitResult",
+    "ConvexAdapter",
+    "ConvexFunctionReferences",
+    "CosmosAdapter",
     "D1BridgeAdapter",
     "Delete",
+    "DynamodbAdapter",
     "EntityName",
     "FieldWrite",
+    "FirestoreAdapter",
     "HistoryIdentityIndex",
     "HistoryKeys",
     "HistoryMessageIdentity",
     "IndexQuery",
     "IndexRange",
+    "LibsqlAdapter",
     "MemoryAdapter",
+    "MongodbAdapter",
     "OperationBatch",
     "Patch",
     "QueryCursor",
@@ -90,6 +114,10 @@ __all__ = [
     "RowDelete",
     "RowPut",
     "SavedCheckpoint",
+    "SqlAdapter",
+    "SqlConnection",
+    "SqlDriver",
+    "SqlResult",
     "SqliteAdapter",
     "Storage",
     "StorageAdapter",
@@ -106,20 +134,30 @@ __all__ = [
     "apply_event",
     "canonical_json",
     "compare_values",
+    "convex_adapter",
+    "cosmos_adapter",
     "create_storage",
     "d1_bridge_adapter",
+    "dynamodb_adapter",
     "encode_key",
     "entity_definition",
+    "firestore_adapter",
     "history_identity_index",
     "history_sync_type_name",
+    "libsql_adapter",
     "memory_adapter",
     "merge_fields",
+    "mongodb_adapter",
+    "mysql_adapter",
     "normalize_jid",
+    "postgres_adapter",
     "reduce_event",
     "reduce_history_chunk",
     "reduce_web_message_info",
     "schema_statements",
+    "sql_schema_statements",
     "sqlite_adapter",
     "storage_webhook_handler",
+    "supabase_preset",
     "sync_to_storage",
 ]
