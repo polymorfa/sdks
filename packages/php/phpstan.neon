@@ -9,3 +9,4 @@ parameters:
         - tests/history_types.php
         - tests/storage_types.php
         - tests/signal_types.php
+        - tests/storage_engine_types.php

@@ -82,5 +82,5 @@ $unlock = $held;
 $unlock['_rev']++;
 $unlock['owner'] = null;
 $unlock['expiresAt'] = 0;
-storageCheck($adapter->commit([['kind' => 'put','entity' => 'leases','row' => $unlock,'expectedRev' => $held['_rev']]])['ok'],'fixture owner releases its exact claim');
+storageCheck($adapter->commit([['kind' => 'put','entity' => 'leases','row' => $unlock,'expectedRev' => $held['_rev']]])['ok'], 'fixture owner releases its exact claim');
 echo "PHP Engine -> actual signed Worker/D1: portable full-entity events/history, replay, 2000 messages, atomic rollback, checkpoint CAS and durable conflicting lease proof passed.\n";
