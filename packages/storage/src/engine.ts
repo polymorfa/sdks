@@ -1,4 +1,4 @@
-import { emptyRow, mergeFields, publicRow } from "./merge.js";
+import { canonicalJson, emptyRow, mergeFields, publicRow } from "./merge.js";
 import {
   encodeKey,
   entityDefinition,
@@ -408,7 +408,7 @@ function sameRow(entity: EntityName, a: StoredRow, b: StoredRow): boolean {
       if (
         typeof a[field] === "object" &&
         typeof b[field] === "object" &&
-        JSON.stringify(a[field]) === JSON.stringify(b[field])
+        canonicalJson(a[field]) === canonicalJson(b[field])
       )
         continue;
       return false;
