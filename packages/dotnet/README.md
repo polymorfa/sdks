@@ -474,13 +474,20 @@ await adapter.SetupAsync();
 var storage = new Polymorfa.Sdk.Storage.CustomerStorage(adapter);
 ```
 
-The caller opens and owns the connection and configures its database URL, auth
-token, TLS and timeouts. Use a server-held customer database token with the
+This adapter supports direct remote Hrana connections only. Native files,
+in-memory databases and embedded replicas are rejected before adapter commands.
+Use `Polymorfa.Storage.Sql.SqlStorageAdapter.SqliteAsync` for local SQLite.
+Turso provider 0.8.3 exhibited intermittent native reader and lock failures in
+repeated independent-file-writer tests, including with pooling enabled. The adapter does not reopen or replace the caller's connection.
+
+The caller opens and owns the remote connection and configures its database
+URL, auth token, TLS and timeouts. Use a server-held customer database token with the
 required database permissions. Pass no Polymorfa API credential to this driver.
 Keep connection strings out of browser bundles, logs and exception reports from
 application-owned connection setup. Use the provider's connection-string
-builder when composing values. Direct remote connections use Hrana over HTTPS;
-`libsql://` uses HTTPS by default. Loopback development can use `Tls=False`.
+builder when composing values. Direct remote connections require TLS;
+`libsql://` uses HTTPS by default.
+Loopback development can use `Tls=False` or HTTP.
 A table prefix provides naming, not tenant authorization. A customer database
 and its access policy remain the customer's responsibility.
 
@@ -494,33 +501,31 @@ does not establish atomicity. Driver failures surfaced by adapter operations
 omit raw errors, inner exceptions, URLs, SQL and stored values. Cancellation
 retains a sanitized `OperationCanceledException`. Network failures during commit
 can leave its outcome uncertain; inspect the saved checkpoint before resuming.
-The driver can report native lock admission failures with a generic error code.
-Those return a sanitized provider failure rather than an assumed revision
-conflict. A fresh retry still checks the original expected revision. Independent
-connections share database locks; the adapter does not bypass those locks or
-silently retry an uncertain commit.
+Unclassified transaction admission failures return a sanitized provider failure
+rather than an assumed revision conflict. A fresh retry still checks the original
+expected revision. The adapter does not silently retry an uncertain commit.
 
 `CreateTables = false` supports customer-managed schema installation. Export
 SQLite schema-2 statements with `StorageSqlSchema.Statements` and
-`StorageSqlDialect.Sqlite`. Local native files and direct remote Hrana
-connections are exercised by the adapter tests. Embedded replicas, replica
-sync, failover and production Turso credentials are not acceptance-tested;
-configure and verify those separately before use. This source package is not
-published and does not establish hosted service availability or a feature release.
+`StorageSqlDialect.Sqlite`. Direct remote Hrana connections are exercised by
+the adapter tests. Replica sync, failover and production Turso credentials are
+not acceptance-tested. This source package is not published and does not establish hosted service availability or a feature release.
 
-Run its native conformance executable with:
+Run its direct remote conformance executable with:
 
 ```bash
 dotnet run --project packages/dotnet/tests/Polymorfa.Storage.LibSql.Tests
 ```
 
 Set `POLYMORFA_STORAGE_LIBSQL_CONNECTION` to a customer-owned test connection
-string to include direct remote conformance. The tests use unique table
+string to include direct remote conformance.
+Set `POLYMORFA_STORAGE_LIBSQL_RACE_ITERATIONS` (1-1000, default 20) for repeated
+independent-client races. The tests use unique table
 prefixes and retain remote test tables. They cover all 17 entities, JSON/scalar
 round trips, 2,000-message history, paging, replay, lease fencing, stale
 checkpoints, revision and duplicate-key rollback, validation, cancellation,
-sanitized errors and borrowed connection lifetime. Independent native connections
-race on one revision and verify exactly one winner; a native lock admission
+sanitized errors and borrowed connection lifetime. Independent remote connections
+race on one revision and verify exactly one winner; an unclassified admission
 failure remains explicit. Removing the prepared-input snapshot makes the
 mutation test fail.
 
