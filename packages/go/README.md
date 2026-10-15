@@ -361,8 +361,7 @@ modernc SQLite. Each runs shared event/history fixtures, 2,000-message history,
 pagination, rollback, lease/checkpoint behavior and schema-version refusal.
 They verify borrowed/owned close behavior and reject nontransactional MySQL.
 Set `POLYMORFA_SQL_FIXTURE_METADATA` to a task-owned metadata file containing
-`postgres` and `mysql` test DSNs to repeat the optional server proofs. This
-adapter does not yet establish ORM or the remaining provider matrix.
+`postgres` and `mysql` test DSNs to repeat the optional server proofs. The provider and ORM adapters below reuse this SQL contract.
 
 
 `storage.NewLibSQLAdapter(ctx, db, options)` accepts an application-configured
@@ -378,3 +377,64 @@ in-flight commit. The adapter waits for the native transaction to settle before
 returning or closing an owned pool, and never changes global HTTP settings.
 A cancelled or failed operation can have an uncertain committed outcome; replay
 from the durable checkpoint and deduplication marker rather than assuming undo.
+
+
+## Customer-owned document databases and ORM exports
+
+All adapters borrow caller-configured official clients and use a trusted
+`storage.ProviderOptions.Namespace`. Set `Create` only when this application may
+initialize its schema2 version marker; setup refuses a different saved version.
+`MaxQueryRows` bounds indexed reads before local ordering and pagination. The
+engine supplies conditional revisions and reserves one commit slot for its
+same-transaction lease. Adapters never evaluate webhook policy or store device keys.
+
+| Adapter | Client verified by native tests | Atomic batch limit |
+| --- | --- | --- |
+| `NewMongoAdapter(ctx, database, options)` | `go.mongodb.org/mongo-driver/v2` 2.8.2, MongoDB 7 replica set | 500 |
+| `NewDynamoAdapter(ctx, client, DynamoOptions{ProviderOptions: options, TableName: table})` | AWS SDK v2 DynamoDB 1.70.3, DynamoDB Local | 100 |
+| `NewFirestoreAdapter(ctx, client, options)` | `cloud.google.com/go/firestore` 1.21.0, Firestore emulator | 250 |
+| `NewCosmosAdapter(ctx, container, options)` | Azure `azcosmos` 1.4.2, Cosmos vNext emulator | 100 |
+
+MongoDB requires a replica set and native snapshot/majority transactions.
+DynamoDB verifies an active table with string `pk` hash and `sk` range keys.
+Firestore reads all conditional rows before issuing writes in its native
+transaction. Cosmos requires exactly the `/namespace` partition key and retains
+ETag-guarded tombstones so a logical delete cannot race with recreation. Its
+physical document IDs must fit the provider's 1,023-byte limit.
+
+MongoDB and Firestore keep raw schema2 rows, with exact encoded keys as document
+IDs. DynamoDB uses `{pk: namespace+":"+entity, sk: encodedKey, row}`. Cosmos uses
+`{id: entity+":"+encodedKey, namespace, entity, row, deleted}` in one customer
+partition. These layouts match the shared TypeScript storage contract. Provider
+errors omit credentials, URLs and upstream diagnostic bodies.
+
+Clients remain borrowed by default. MongoDB, DynamoDB and Firestore support
+`OwnsClient`; closing an owned adapter waits for active adapter operations.
+Cosmos rejects `OwnsClient` because its container client exposes no close boundary.
+Neither adapter changes global transport configuration. Context cancellation and
+provider deadlines do not establish that an accepted write was undone; recover
+with checkpoint and event replay.
+
+`SupabaseSchema(SupabaseOptions{...})` exports customer-installed PostgreSQL schema
+and FORCE RLS policies. A distinct server role writes; browser readers see only
+sessions with live `auth.uid()` membership and receive no write grant. The preset
+never installs itself or grants a browser server credentials. Actual restricted
+PostgreSQL roles verified live revocation and browser write refusal; hosted
+Supabase and Neon services were not exercised.
+
+`GORMModels(dialect, sqlOptions)` exports table names and schema-derived model
+values for customer-owned GORM migrations and reads. Pass each value to
+`db.Table(model.Table).AutoMigrate(model.Value)`, then initialize the version marker
+with `SQLMigration` or `NewSQLAdapter`. Persist synchronized data through the
+shared engine; ORM models do not replace revision, watermark or lease policy.
+The official GORM 1.31.1/PostgreSQL driver 1.6.0 passed actual PostgreSQL migration,
+engine-write and ORM-read interoperability checks.
+
+Opt-in native tests use `POLYMORFA_MONGO_FIXTURE_URI`,
+`POLYMORFA_DYNAMO_FIXTURE_METADATA`, `POLYMORFA_FIRESTORE_FIXTURE_HOST` and
+`POLYMORFA_COSMOS_FIXTURE_METADATA`. They exercise the portable all-entity event
+and history fixtures, 2,000-message history, bounded paging, replay, atomic
+rollback, lease-fenced deletion, checkpoint CAS and namespace isolation against
+actual drivers. These emulator/local-server proofs do not establish cloud
+account permissions, hosting availability or deployment readiness. Convex and
+IndexedDB are outside the accepted Go adapter matrix.
