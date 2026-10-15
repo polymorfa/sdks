@@ -375,3 +375,101 @@ func TestNilJSONContainersRemainNullAndIdempotent(t *testing.T) {
 		}
 	}
 }
+
+type planningClockAdapter struct {
+	Adapter
+	now                 *time.Time
+	queryStep, readStep time.Duration
+	queries, renewals   int
+	onQuery             func(int)
+}
+
+func (a *planningClockAdapter) Query(ctx context.Context, entity string, q Query) ([]Row, error) {
+	rows, err := a.Adapter.Query(ctx, entity, q)
+	*a.now = a.now.Add(a.queryStep)
+	a.queries++
+	if a.onQuery != nil {
+		a.onQuery(a.queries)
+	}
+	return rows, err
+}
+func (a *planningClockAdapter) Get(ctx context.Context, entity string, ids []string) (map[string]Row, error) {
+	rows, err := a.Adapter.Get(ctx, entity, ids)
+	if entity != "leases" {
+		*a.now = a.now.Add(a.readStep)
+	}
+	return rows, err
+}
+func (a *planningClockAdapter) Commit(ctx context.Context, writes []Write) (CommitResult, error) {
+	if len(writes) == 1 && writes[0].Entity == "leases" && writes[0].ExpectedRev != nil && writes[0].Row["owner"] != nil {
+		a.renewals++
+	}
+	return a.Adapter.Commit(ctx, writes)
+}
+func TestClearQueryPlanningRenewsLeaseBeforeExpiry(t *testing.T) {
+	for _, mode := range []string{"renew", "stolen", "expired"} {
+		t.Run(mode, func(t *testing.T) {
+			ctx := context.Background()
+			now := time.Unix(1700000000, 0)
+			memory := memoryFor(t, 10)
+			adapter := &planningClockAdapter{Adapter: memory, now: &now}
+			engine := engineFor(t, adapter, EngineOptions{LeaseDuration: 10 * time.Second, Now: func() time.Time { return now }})
+			if _, err := engine.Apply(ctx, Batch{SessionID: "planning", Operations: []Operation{upsert("messages", "planning", map[string]any{"messageId": "m"}, map[string]any{"chatId": "chat", "timestamp": 1}, 0)}}); err != nil {
+				t.Fatal(err)
+			}
+			adapter.renewals = 0
+			adapter.queryStep = 4 * time.Second
+			leaseID, _ := EncodeKey("leases", map[string]any{"sessionId": "planning"})
+			if mode == "stolen" {
+				adapter.onQuery = func(count int) {
+					if count == 3 {
+						row := memory.rows["leases"][leaseID]
+						rev, _ := number(row["_rev"])
+						row["_rev"] = rev + 1
+						row["owner"] = "replacement owner"
+						row["expiresAt"] = float64(now.Add(time.Hour).UnixMilli())
+					}
+				}
+			}
+			if mode == "expired" {
+				adapter.queryStep = 11 * time.Second
+			}
+			batch := Batch{SessionID: "planning", EventID: str("clear"), Operations: []Operation{upsert("chats", "planning", map[string]any{"chatId": "chat"}, map[string]any{"clearedAt": 1}, 1), {Kind: "clearChat", SessionID: "planning", ChatID: "chat", UpTo: 1}}}
+			_, err := engine.Apply(ctx, batch)
+			marker, markerErr := engine.HasEvent(ctx, "planning", "clear")
+			if markerErr != nil {
+				t.Fatal(markerErr)
+			}
+			message, getErr := engine.Get(ctx, "messages", map[string]any{"sessionId": "planning", "messageId": "m"})
+			if getErr != nil {
+				t.Fatal(getErr)
+			}
+			if mode == "renew" {
+				if err != nil || !marker || message != nil || adapter.renewals == 0 {
+					t.Fatal("slow planning lost a renewable lease", err)
+				}
+			} else {
+				var typed *Error
+				if !errors.As(err, &typed) || typed.Code != "storage_lease_lost" || marker || message == nil {
+					t.Fatal("expired/stolen lease committed data or marker", err)
+				}
+				if mode == "stolen" && memory.rows["leases"][leaseID]["owner"] != "replacement owner" {
+					t.Fatal("release modified replacement lease")
+				}
+			}
+		})
+	}
+}
+func TestRowPlanningRenewsLeaseBetweenBoundedReads(t *testing.T) {
+	now := time.Unix(1700000000, 0)
+	adapter := &planningClockAdapter{Adapter: memoryFor(t, 10), now: &now, readStep: 4 * time.Second}
+	engine := engineFor(t, adapter, EngineOptions{LeaseDuration: 10 * time.Second, Now: func() time.Time { return now }})
+	_, err := engine.Apply(context.Background(), Batch{SessionID: "slow-reads", EventID: str("rows"), Operations: []Operation{
+		upsert("messages", "slow-reads", map[string]any{"messageId": "m"}, map[string]any{"text": "message"}, 0),
+		upsert("chats", "slow-reads", map[string]any{"chatId": "c"}, map[string]any{"name": "chat"}, 0),
+		upsert("contacts", "slow-reads", map[string]any{"contactId": "p"}, map[string]any{"fullName": "contact"}, 0),
+	}})
+	if err != nil || adapter.renewals == 0 {
+		t.Fatal("bounded planning reads lost renewable lease", err)
+	}
+}
