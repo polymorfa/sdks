@@ -8399,6 +8399,593 @@
           }
         ]
       }
+    },
+    {
+      "input": {
+        "sessionId": "bytes",
+        "chunkId": "bytes",
+        "chunk": {
+          "syncType": 99,
+          "chunkOrder": "0x10",
+          "progress": " 50 ",
+          "conversations": [
+            {
+              "id": "9@s.whatsapp.net",
+              "messages": [
+                {
+                  "message": {
+                    "key": {
+                      "id": "document"
+                    },
+                    "messageTimestamp": "1790856000",
+                    "status": "UNKNOWN",
+                    "message": {
+                      "documentWithCaptionMessage": {
+                        "message": {
+                          "documentMessage": {
+                            "fileName": "file",
+                            "fileLength": "9007199254740993",
+                            "mediaKey": [
+                              0,
+                              255,
+                              128
+                            ],
+                            "fileSha256": [],
+                            "fileEncSha256": [
+                              1,
+                              2,
+                              3
+                            ],
+                            "contextInfo": {
+                              "stanzaId": "quoted"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "batch": {
+        "sessionId": "bytes",
+        "eventId": "history:bytes",
+        "eventType": "history.chunk",
+        "operations": [
+          {
+            "kind": "upsert",
+            "entity": "chats",
+            "key": {
+              "sessionId": "bytes",
+              "chatId": "wa:9@s.whatsapp.net"
+            },
+            "fields": {
+              "jid": {
+                "value": "9@s.whatsapp.net",
+                "version": 0
+              },
+              "kind": {
+                "value": "direct",
+                "version": 0
+              }
+            }
+          },
+          {
+            "kind": "upsert",
+            "entity": "messages",
+            "key": {
+              "sessionId": "bytes",
+              "messageId": "wa:9@s.whatsapp.net:0::document"
+            },
+            "fields": {
+              "chatId": {
+                "value": "wa:9@s.whatsapp.net",
+                "version": 0
+              },
+              "fromMe": {
+                "value": false,
+                "version": 0
+              },
+              "senderId": {
+                "value": "wa:9@s.whatsapp.net",
+                "version": 0
+              },
+              "senderJid": {
+                "value": "9@s.whatsapp.net",
+                "version": 0
+              },
+              "timestamp": {
+                "value": 1790856000000,
+                "version": 0
+              },
+              "waMessageId": {
+                "value": "document",
+                "version": 0
+              },
+              "type": {
+                "value": "document",
+                "version": 0
+              },
+              "quotedId": {
+                "value": "quoted",
+                "version": 0
+              },
+              "caption": {
+                "value": null,
+                "version": 0
+              },
+              "mimeType": {
+                "value": null,
+                "version": 0
+              },
+              "fileName": {
+                "value": "file",
+                "version": 0
+              },
+              "title": {
+                "value": null,
+                "version": 0
+              },
+              "extra": {
+                "value": null,
+                "version": 0
+              },
+              "text": {
+                "value": null,
+                "version": 0
+              },
+              "latitude": {
+                "value": null,
+                "version": 0
+              },
+              "longitude": {
+                "value": null,
+                "version": 0
+              },
+              "displayName": {
+                "value": null,
+                "version": 0
+              },
+              "pollOptions": {
+                "value": null,
+                "version": 0
+              }
+            },
+            "guard": {
+              "sessionId": "bytes",
+              "chatId": "wa:9@s.whatsapp.net",
+              "timestamp": 1790856000000
+            }
+          },
+          {
+            "kind": "upsert",
+            "entity": "media",
+            "key": {
+              "sessionId": "bytes",
+              "messageId": "wa:9@s.whatsapp.net:0::document"
+            },
+            "fields": {
+              "chatId": {
+                "value": "wa:9@s.whatsapp.net",
+                "version": 0
+              },
+              "kind": {
+                "value": "document",
+                "version": 0
+              },
+              "fileName": {
+                "value": "file",
+                "version": 0
+              },
+              "fileLength": {
+                "value": 9007199254740992,
+                "version": 0
+              },
+              "fileEncSha256": {
+                "value": "AQID",
+                "version": 0
+              },
+              "mediaKey": {
+                "value": "AP+A",
+                "version": 0
+              }
+            },
+            "guard": {
+              "sessionId": "bytes",
+              "chatId": "wa:9@s.whatsapp.net",
+              "timestamp": 1790856000000
+            }
+          },
+          {
+            "kind": "upsert",
+            "entity": "history_chunks",
+            "key": {
+              "sessionId": "bytes",
+              "syncType": "99",
+              "chunkOrder": "16"
+            },
+            "fields": {
+              "progress": {
+                "value": 50,
+                "version": 0
+              },
+              "conversationCount": {
+                "value": 1,
+                "version": 0
+              },
+              "messageCount": {
+                "value": 1,
+                "version": 0
+              },
+              "pushnameCount": {
+                "value": 0,
+                "version": 0
+              }
+            }
+          },
+          {
+            "kind": "upsert",
+            "entity": "history_progress",
+            "key": {
+              "sessionId": "bytes",
+              "syncType": "99"
+            },
+            "fields": {
+              "progress": {
+                "value": 50,
+                "version": 50
+              },
+              "lastChunkOrder": {
+                "value": 16,
+                "version": 16
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "sessionId": "ambiguous",
+        "identities": {
+          "messages": [
+            {
+              "nativeId": "same",
+              "id": "a",
+              "chatId": "one",
+              "fromMe": false
+            },
+            {
+              "nativeId": "same",
+              "id": "b",
+              "chatId": "two",
+              "fromMe": false
+            }
+          ]
+        },
+        "chunk": {
+          "syncType": "UNKNOWN",
+          "conversations": [
+            {
+              "id": "1@g.us",
+              "messages": [
+                {
+                  "message": {
+                    "key": {
+                      "id": "same",
+                      "fromMe": false,
+                      "participant": "9:2@lid"
+                    },
+                    "message": {
+                      "conversation": "ambiguous"
+                    },
+                    "status": 0
+                  }
+                },
+                {
+                  "message": {
+                    "key": {
+                      "id": "self",
+                      "fromMe": true
+                    },
+                    "message": {
+                      "audioMessage": {
+                        "ptt": false,
+                        "mimetype": "audio/ogg"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "batch": {
+        "sessionId": "ambiguous",
+        "eventType": "history.chunk",
+        "operations": [
+          {
+            "kind": "upsert",
+            "entity": "chats",
+            "key": {
+              "sessionId": "ambiguous",
+              "chatId": "wa:1@g.us"
+            },
+            "fields": {
+              "jid": {
+                "value": "1@g.us",
+                "version": 0
+              },
+              "kind": {
+                "value": "group",
+                "version": 0
+              }
+            }
+          },
+          {
+            "kind": "upsert",
+            "entity": "groups",
+            "key": {
+              "sessionId": "ambiguous",
+              "groupId": "wa:1@g.us"
+            },
+            "fields": {
+              "jid": {
+                "value": "1@g.us",
+                "version": 0
+              }
+            }
+          },
+          {
+            "kind": "upsert",
+            "entity": "messages",
+            "key": {
+              "sessionId": "ambiguous",
+              "messageId": "wa:1@g.us:0:9@lid:same"
+            },
+            "fields": {
+              "chatId": {
+                "value": "wa:1@g.us",
+                "version": 0
+              },
+              "fromMe": {
+                "value": false,
+                "version": 0
+              },
+              "senderId": {
+                "value": "wa:9@lid",
+                "version": 0
+              },
+              "senderJid": {
+                "value": "9@lid",
+                "version": 0
+              },
+              "timestamp": {
+                "value": 0,
+                "version": 0
+              },
+              "waMessageId": {
+                "value": "same",
+                "version": 0
+              },
+              "type": {
+                "value": "text",
+                "version": 0
+              },
+              "text": {
+                "value": "ambiguous",
+                "version": 0
+              },
+              "caption": {
+                "value": null,
+                "version": 0
+              },
+              "mimeType": {
+                "value": null,
+                "version": 0
+              },
+              "fileName": {
+                "value": null,
+                "version": 0
+              },
+              "latitude": {
+                "value": null,
+                "version": 0
+              },
+              "longitude": {
+                "value": null,
+                "version": 0
+              },
+              "displayName": {
+                "value": null,
+                "version": 0
+              },
+              "title": {
+                "value": null,
+                "version": 0
+              },
+              "pollOptions": {
+                "value": null,
+                "version": 0
+              },
+              "extra": {
+                "value": null,
+                "version": 0
+              }
+            }
+          },
+          {
+            "kind": "upsert",
+            "entity": "messages",
+            "key": {
+              "sessionId": "ambiguous",
+              "messageId": "wa:1@g.us:1::self"
+            },
+            "fields": {
+              "chatId": {
+                "value": "wa:1@g.us",
+                "version": 0
+              },
+              "fromMe": {
+                "value": true,
+                "version": 0
+              },
+              "senderId": {
+                "value": "self",
+                "version": 0
+              },
+              "timestamp": {
+                "value": 0,
+                "version": 0
+              },
+              "waMessageId": {
+                "value": "self",
+                "version": 0
+              },
+              "type": {
+                "value": "audio",
+                "version": 0
+              },
+              "caption": {
+                "value": null,
+                "version": 0
+              },
+              "mimeType": {
+                "value": "audio/ogg",
+                "version": 0
+              },
+              "fileName": {
+                "value": null,
+                "version": 0
+              },
+              "title": {
+                "value": null,
+                "version": 0
+              },
+              "extra": {
+                "value": null,
+                "version": 0
+              },
+              "text": {
+                "value": null,
+                "version": 0
+              },
+              "latitude": {
+                "value": null,
+                "version": 0
+              },
+              "longitude": {
+                "value": null,
+                "version": 0
+              },
+              "displayName": {
+                "value": null,
+                "version": 0
+              },
+              "pollOptions": {
+                "value": null,
+                "version": 0
+              }
+            }
+          },
+          {
+            "kind": "upsert",
+            "entity": "media",
+            "key": {
+              "sessionId": "ambiguous",
+              "messageId": "wa:1@g.us:1::self"
+            },
+            "fields": {
+              "chatId": {
+                "value": "wa:1@g.us",
+                "version": 0
+              },
+              "kind": {
+                "value": "audio",
+                "version": 0
+              },
+              "mimeType": {
+                "value": "audio/ogg",
+                "version": 0
+              }
+            }
+          },
+          {
+            "kind": "upsert",
+            "entity": "history_progress",
+            "key": {
+              "sessionId": "ambiguous",
+              "syncType": "UNKNOWN"
+            },
+            "fields": {}
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "sessionId": "large-enum",
+        "chunk": {
+          "syncType": 1e+21,
+          "chunkOrder": "1e21",
+          "progress": 1
+        }
+      },
+      "batch": {
+        "sessionId": "large-enum",
+        "eventType": "history.chunk",
+        "operations": [
+          {
+            "kind": "upsert",
+            "entity": "history_chunks",
+            "key": {
+              "sessionId": "large-enum",
+              "syncType": "1e+21",
+              "chunkOrder": "1e+21"
+            },
+            "fields": {
+              "progress": {
+                "value": 1,
+                "version": 0
+              },
+              "conversationCount": {
+                "value": 0,
+                "version": 0
+              },
+              "messageCount": {
+                "value": 0,
+                "version": 0
+              },
+              "pushnameCount": {
+                "value": 0,
+                "version": 0
+              }
+            }
+          },
+          {
+            "kind": "upsert",
+            "entity": "history_progress",
+            "key": {
+              "sessionId": "large-enum",
+              "syncType": "1e+21"
+            },
+            "fields": {
+              "progress": {
+                "value": 1,
+                "version": 1
+              },
+              "lastChunkOrder": {
+                "value": 1e+21,
+                "version": 1e+21
+              }
+            }
+          }
+        ]
+      }
     }
   ]
 }
