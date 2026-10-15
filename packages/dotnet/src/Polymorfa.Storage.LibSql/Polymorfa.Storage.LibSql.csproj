@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PackageId>Polymorfa.Storage.LibSql</PackageId><Version>0.1.0-dev.0</Version><Description>Customer-owned schema-2 libSQL storage for the Polymorfa SDK.</Description><PackageLicenseExpression>MIT</PackageLicenseExpression><RepositoryUrl>https://github.com/polymorfa/sdks</RepositoryUrl><PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../Polymorfa.Storage.Sql/Polymorfa.Storage.Sql.csproj"/><PackageReference Include="Turso.Data.Sqlite.Provider" Version="[0.8.3]"/></ItemGroup>
+  <ItemGroup><None Include="../../README.md" Pack="true" PackagePath="/"/></ItemGroup>
+  <ItemGroup Condition="Exists('../../release-contract.json')"><None Include="../../release-contract.json" Pack="true" PackagePath="/" /></ItemGroup>
+</Project>

@@ -13,15 +13,26 @@ public sealed class SqlStorageAdapter : IStorageAdapter, IAsyncDisposable
     private readonly StorageSqlDialect dialect;
     private readonly SqlStorageOptions options;
     private readonly DbDataSource? source;
-    private readonly SqliteConnection? sqlite;
+    private readonly DbConnection? sqlite;
+    private readonly bool ownsConnection;
+    private readonly Func<DbException, bool>? providerConflict;
+    private readonly string? providerName;
+    private readonly bool insertOnConflictDoNothing;
     private readonly SemaphoreSlim sqliteGate = new(1, 1);
     private sealed record Column(string Name, StorageFieldType Type, bool Revision = false);
     private sealed class ConditionalConflict(string id) : Exception { internal string Id { get; } = id; }
-    public string Name => dialect switch { StorageSqlDialect.Postgres => "postgres", StorageSqlDialect.MySql => "mysql", _ => "sqlite" };
+    public string Name => providerName ?? dialect switch { StorageSqlDialect.Postgres => "postgres", StorageSqlDialect.MySql => "mysql", _ => "sqlite" };
     public StorageCapabilities Capabilities => new(true, dialect == StorageSqlDialect.Sqlite ? 500 : 1000);
-    private SqlStorageAdapter(StorageSqlDialect dialect, SqlStorageOptions? configuration, DbDataSource? source = null, SqliteConnection? sqlite = null)
+    private SqlStorageAdapter(StorageSqlDialect dialect, SqlStorageOptions? configuration, DbDataSource? source = null, DbConnection? sqlite = null, bool ownsConnection = true, Func<DbException, bool>? providerConflict = null, string? providerName = null, bool insertOnConflictDoNothing = false)
     {
-        if (OperatingSystem.IsBrowser()) throw new StorageValidationException("SQL storage requires a server application."); this.dialect = dialect; options = configuration ?? new(); _ = StorageSqlSchema.Statements(dialect, options); this.source = source; this.sqlite = sqlite;
+        if (OperatingSystem.IsBrowser()) throw new StorageValidationException("SQL storage requires a server application."); this.dialect = dialect; options = configuration ?? new(); _ = StorageSqlSchema.Statements(dialect, options); this.source = source; this.sqlite = sqlite; this.ownsConnection = ownsConnection; this.providerConflict = providerConflict; this.providerName = providerName; this.insertOnConflictDoNothing = insertOnConflictDoNothing;
+    }
+    // Optional provider packages borrow an already-open connection and share the SQL contract.
+    internal static SqlStorageAdapter BorrowSqlite(DbConnection connection, SqlStorageOptions? options, string name, Func<DbException, bool> conflict)
+    {
+        ValidateOptions(StorageSqlDialect.Sqlite, options);
+        if (connection.State != ConnectionState.Open) throw Invalid();
+        return new(StorageSqlDialect.Sqlite, options, sqlite: connection, ownsConnection: false, providerConflict: conflict, providerName: name, insertOnConflictDoNothing: true);
     }
     public static SqlStorageAdapter Postgres(string connectionString, SqlStorageOptions? options = null)
     {
@@ -109,11 +120,11 @@ public sealed class SqlStorageAdapter : IStorageAdapter, IAsyncDisposable
                     if (write is StoragePut put)
                     {
                         var columns = Columns(entity).Where(c => !expected.HasValue || c.Name != "_id").ToList(); values = columns.Select(c => Value(put.Row, c)).ToList(); boundColumns = columns.ToList();
-                        if (!expected.HasValue) sql = $"INSERT INTO {Table(entity)} ({string.Join(",", columns.Select(c => Q(c.Name)))}) VALUES ({string.Join(",", columns.Select((c, i) => Mark(i, c)))})";
+                        if (!expected.HasValue) sql = $"INSERT INTO {Table(entity)} ({string.Join(",", columns.Select(c => Q(c.Name)))}) VALUES ({string.Join(",", columns.Select((c, i) => Mark(i, c)))})" + (insertOnConflictDoNothing ? " ON CONFLICT DO NOTHING" : "");
                         else { var sets = string.Join(",", columns.Select((c, i) => $"{Q(c.Name)}={Mark(i, c)}")); sql = $"UPDATE {Table(entity)} SET {sets} WHERE {Q("_id")}={Mark(values.Count)} AND {Q("_rev")}={Mark(values.Count + 1)}"; values.Add(id); values.Add(expected.Value); boundColumns.Add(new("_id", StorageFieldType.String)); boundColumns.Add(new("_rev", StorageFieldType.Number, true)); }
                     }
                     else { values = new() { id }; sql = $"DELETE FROM {Table(entity)} WHERE {Q("_id")}={Mark(0)}"; if (expected.HasValue) { sql += $" AND {Q("_rev")}={Mark(1)}"; values.Add(expected.Value); } }
-                    try { await using var command = Command(connection, transaction, sql, values, boundColumns); var affected = await command.ExecuteNonQueryAsync(cancellation).ConfigureAwait(false); if (expected.HasValue && affected == 0) throw new ConditionalConflict(id); } catch (DbException error) when (Conflict(error)) { throw new ConditionalConflict(id); }
+                    try { await using var command = Command(connection, transaction, sql, values, boundColumns); var affected = await command.ExecuteNonQueryAsync(cancellation).ConfigureAwait(false); if (expected.HasValue || insertOnConflictDoNothing && write is StoragePut) { if (affected == 0) throw new ConditionalConflict(id); if (affected != 1) throw Provider(); } } catch (DbException error) when (Conflict(error) || providerConflict?.Invoke(error) == true) { throw new ConditionalConflict(id); }
                 }
                 await transaction.CommitAsync(cancellation).ConfigureAwait(false); return new StorageCommitResult(true);
             }
@@ -132,5 +143,5 @@ public sealed class SqlStorageAdapter : IStorageAdapter, IAsyncDisposable
     }
     private static StorageValidationException Invalid() => new("Invalid customer SQL storage configuration or operation.");
     private static StorageProviderException Provider() => new("Customer SQL storage operation failed.");
-    public async ValueTask DisposeAsync() { if (sqlite is not null) await sqlite.DisposeAsync().ConfigureAwait(false); if (source is not null) await source.DisposeAsync().ConfigureAwait(false); sqliteGate.Dispose(); }
+    public async ValueTask DisposeAsync() { if (sqlite is not null && ownsConnection) await sqlite.DisposeAsync().ConfigureAwait(false); if (source is not null) await source.DisposeAsync().ConfigureAwait(false); sqliteGate.Dispose(); }
 }
