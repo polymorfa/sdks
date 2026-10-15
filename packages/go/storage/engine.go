@@ -115,9 +115,14 @@ func pause(ctx context.Context, d time.Duration) error {
 		return nil
 	}
 }
-func (e *Engine) read(ctx context.Context, entity string, ids []string) (map[string]Row, error) {
+func (e *Engine) read(ctx context.Context, entity string, ids []string, leases ...*lease) (map[string]Row, error) {
 	out := map[string]Row{}
 	for start := 0; start < len(ids); start += 500 {
+		if len(leases) > 0 {
+			if err := e.renewIfNeeded(ctx, leases[0]); err != nil {
+				return nil, err
+			}
+		}
 		end := min(start+500, len(ids))
 		rows, err := e.adapter.Get(ctx, entity, ids[start:end])
 		if err != nil {
@@ -221,6 +226,26 @@ func (e *Engine) fenced(ctx context.Context, l *lease, writes []Write) (CommitRe
 	}
 	return result, nil
 }
+
+// Renew between bounded planning operations. An expired or replaced lease is
+// never extended: the same conditional fence used for data commits owns renewal.
+func (e *Engine) renewIfNeeded(ctx context.Context, l *lease) error {
+	expires, ok := number(l.row["expiresAt"])
+	if l.lost || !ok || expires <= e.millis() {
+		return storageError("storage_lease_lost")
+	}
+	if expires-e.millis() > float64(e.duration)/float64(time.Millisecond)/2 {
+		return nil
+	}
+	result, err := e.fenced(ctx, l, nil)
+	if err != nil {
+		return err
+	}
+	if !result.OK {
+		return storageError("storage_conflict")
+	}
+	return nil
+}
 func (e *Engine) release(ctx context.Context, l *lease) {
 	if l.lost {
 		return
@@ -295,7 +320,7 @@ func validateOperation(op Operation, session string) error {
 		return invalid()
 	}
 }
-func (e *Engine) plan(ctx context.Context, ops []Operation) ([]Write, error) {
+func (e *Engine) plan(ctx context.Context, ops []Operation, l *lease) ([]Write, error) {
 	type slot struct{ entity, id string }
 	order := []slot{}
 	original := map[slot]Row{}
@@ -314,7 +339,7 @@ func (e *Engine) plan(ctx context.Context, ops []Operation) ([]Write, error) {
 		}
 	}
 	for entity, ids := range byEntity {
-		rows, err := e.read(ctx, entity, ids)
+		rows, err := e.read(ctx, entity, ids, l)
 		if err != nil {
 			return nil, err
 		}
@@ -419,7 +444,7 @@ func (e *Engine) applyRows(ctx context.Context, ops []Operation, extra []Write, 
 		}
 		success := false
 		for attempt := 0; attempt <= e.retries; attempt++ {
-			writes, err := e.plan(ctx, group)
+			writes, err := e.plan(ctx, group, l)
 			if err != nil {
 				return total, err
 			}
@@ -461,6 +486,9 @@ func (e *Engine) applyRows(ctx context.Context, ops []Operation, extra []Write, 
 func (e *Engine) clearChat(ctx context.Context, op Operation, l *lease) (int, error) {
 	total := 0
 	for {
+		if err := e.renewIfNeeded(ctx, l); err != nil {
+			return total, err
+		}
 		messages, err := e.adapter.Query(ctx, "messages", Query{Index: "by_chat", Equals: map[string]string{"sessionId": op.SessionID, "chatId": op.ChatID}, Range: map[string]float64{"lte": op.UpTo}, Order: "asc", Limit: e.page})
 		if err != nil {
 			return total, err
@@ -481,6 +509,9 @@ func (e *Engine) clearChat(ctx context.Context, op Operation, l *lease) (int, er
 			deletes = append(deletes, Operation{Kind: "delete", Entity: "media", Key: key})
 			for _, entity := range []string{"reactions", "receipts", "poll_votes"} {
 				for {
+					if err := e.renewIfNeeded(ctx, l); err != nil {
+						return total, err
+					}
 					children, err := e.adapter.Query(ctx, entity, Query{Index: "by_message", Equals: map[string]string{"sessionId": op.SessionID, "messageId": messageID}, Order: "asc", Limit: 500})
 					if err != nil {
 						return total, err
@@ -543,7 +574,7 @@ func (e *Engine) Apply(ctx context.Context, batch Batch) (ApplyResult, error) {
 		if err != nil {
 			return ApplyResult{}, err
 		}
-		existing, err := e.read(ctx, "events", []string{row["_id"].(string)})
+		existing, err := e.read(ctx, "events", []string{row["_id"].(string)}, l)
 		if err != nil {
 			return ApplyResult{}, err
 		}
@@ -584,7 +615,7 @@ func (e *Engine) Apply(ctx context.Context, batch Batch) (ApplyResult, error) {
 		if err != nil {
 			return ApplyResult{}, err
 		}
-		chats, err := e.read(ctx, "chats", []string{id})
+		chats, err := e.read(ctx, "chats", []string{id}, l)
 		if err != nil {
 			return ApplyResult{}, err
 		}

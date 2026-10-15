@@ -306,7 +306,10 @@ Each field uses its version and a deterministic value tie-breaker, including
 UTF-16 ordering and ECMAScript canonical number spellings. Revoked content and
 media references use a final version so older history cannot restore them.
 Every payload chunk reserves one slot for the durable session lease CAS. Lease
-release advances its revision rather than deleting it. A failed chunk stops
+release advances its revision rather than deleting it. Between bounded planning
+reads and clear-query pages, the engine conditionally renews a lease at half its
+TTL. An expired or replaced lease still fails before data or the event marker
+can commit. A failed chunk stops
 later writes, including the event marker, even when no conflict IDs are returned.
 Retries re-read and re-plan; a large event can partially commit and is recovered
 by replay before the final deduplication marker appears.
