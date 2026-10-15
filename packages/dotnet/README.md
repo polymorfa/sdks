@@ -678,7 +678,11 @@ It covers all 17 entities, JSON/scalars, 2000-message history, pagination,
 conditional rollback, replay, stale checkpoints, lease fences, namespace binding,
 query bounds, caller mutation, active-transaction cancellation, cancellation
 after commit, schema upgrades, blocked-upgrade recovery and browser credential
-guards. A sandbox with an opaque origin exercises native storage denial.
+guards. The pinned TypeScript oracle covers 43 event and 15 history reductions;
+native row snapshots verify event/history persistence and replay. A synthetic
+full-schema decoder and application-owned event stream exercise decoded history
+and persistence/checkpoint/acknowledgement ordering without API credentials.
+A sandbox with an opaque origin exercises native storage denial.
 Safari, Firefox, browser crash recovery, device storage persistence permissions
 and production application integration remain acceptance work. This package
 has not been published and introduces no hosted feature release or entitlement.
