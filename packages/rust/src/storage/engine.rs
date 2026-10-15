@@ -216,6 +216,21 @@ impl Storage {
         }
         Ok(result)
     }
+    async fn renew_for_scan(&self, lease: &mut Lease) -> StorageResult<()> {
+        let expires = lease
+            .row
+            .fields
+            .get("expiresAt")
+            .and_then(Value::as_f64)
+            .unwrap_or(0.);
+        if expires - self.now()? <= self.options.lease_duration.as_millis() as f64 / 2. {
+            let result = self.fenced_commit(lease, &[]).await?;
+            if !result.ok {
+                return Err(StorageError::Conflict(result.conflicts));
+            }
+        }
+        Ok(())
+    }
     async fn release(&self, lease: &Lease) -> StorageResult<()> {
         let mut row = lease.row.clone();
         row.fields.insert("owner".into(), Value::Null);
@@ -418,6 +433,7 @@ impl Storage {
     ) -> StorageResult<usize> {
         let mut removed = 0;
         loop {
+            self.renew_for_scan(lease).await?;
             let messages = self
                 .adapter
                 .query(
@@ -452,6 +468,7 @@ impl Storage {
                 });
                 for entity in [Entity::Reactions, Entity::Receipts, Entity::PollVotes] {
                     loop {
+                        self.renew_for_scan(lease).await?;
                         let children = self
                             .adapter
                             .query(

@@ -38,6 +38,98 @@ fn upsert(entity: Entity, key: RowKey, fields: FieldWrites) -> StorageOperation 
         guard: None,
     }
 }
+struct SlowScan {
+    memory: MemoryAdapter,
+    clock: Arc<AtomicU64>,
+}
+impl StorageAdapter for SlowScan {
+    fn name(&self) -> &str {
+        "slow-scan"
+    }
+    fn capabilities(&self) -> StorageCapabilities {
+        self.memory.capabilities()
+    }
+    fn get<'a>(
+        &'a self,
+        entity: Entity,
+        ids: &'a [String],
+    ) -> StorageFuture<'a, BTreeMap<String, StoredRow>> {
+        self.memory.get(entity, ids)
+    }
+    fn commit<'a>(&'a self, writes: &'a [RowWrite]) -> StorageFuture<'a, CommitResult> {
+        self.memory.commit(writes)
+    }
+    fn query<'a>(
+        &'a self,
+        entity: Entity,
+        query: &'a IndexQuery,
+    ) -> StorageFuture<'a, Vec<StoredRow>> {
+        Box::pin(async move {
+            self.clock.fetch_add(4000, Ordering::SeqCst);
+            self.memory.query(entity, query).await
+        })
+    }
+}
+#[tokio::test]
+async fn long_chat_clear_renews_live_lease_between_queries() {
+    let clock = Arc::new(AtomicU64::new(0));
+    let adapter = Arc::new(SlowScan {
+        memory: MemoryAdapter::default(),
+        clock: clock.clone(),
+    });
+    let engine_clock = clock.clone();
+    let storage = Storage::new(
+        adapter.clone(),
+        StorageOptions {
+            lease_duration: Duration::from_secs(10),
+            now: Arc::new(move || engine_clock.load(Ordering::SeqCst) as f64),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    storage
+        .apply(&batch(
+            "slow",
+            Some("seed"),
+            vec![upsert(
+                Entity::Messages,
+                key(&[("sessionId", "slow"), ("messageId", "m")]),
+                BTreeMap::from([
+                    (
+                        "chatId".into(),
+                        FieldWrite {
+                            value: json!("chat"),
+                            version: 1.,
+                        },
+                    ),
+                    (
+                        "timestamp".into(),
+                        FieldWrite {
+                            value: json!(1),
+                            version: 1.,
+                        },
+                    ),
+                ]),
+            )],
+        ))
+        .await
+        .unwrap();
+    storage
+        .apply(&batch(
+            "slow",
+            Some("clear"),
+            vec![StorageOperation::ClearChat {
+                session_id: "slow".into(),
+                chat_id: "chat".into(),
+                up_to: 1.,
+            }],
+        ))
+        .await
+        .unwrap();
+    assert!(clock.load(Ordering::SeqCst) > 10000);
+    assert!(adapter.memory.rows(Entity::Messages).is_empty());
+    assert!(storage.has_event("slow", "clear").await.unwrap());
+}
 #[test]
 fn schema_canonical_merge_and_presence_are_portable() {
     assert_eq!(schema::ALL_ENTITIES.len(), 17);
