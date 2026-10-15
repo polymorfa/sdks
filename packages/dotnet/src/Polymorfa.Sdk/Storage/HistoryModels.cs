@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace Polymorfa.Sdk.Storage;
 
-/// <summary>A protobuf integer represented as a JSON number or decimal string.</summary>
+/// <summary>A protobuf integer represented as a JSON number or numeric string.</summary>
 [JsonConverter(typeof(StorageHistoryNumberConverter))]
 public readonly record struct StorageHistoryNumber
 {
@@ -13,8 +13,22 @@ public readonly record struct StorageHistoryNumber
     private readonly double? number;
     public StorageHistoryNumber(double value) { number = value; text = null; }
     public StorageHistoryNumber(string value) { text = value; number = null; }
-    public double? ToNumber() => number is { } n ? double.IsFinite(n) ? n : null : text is not null && double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed) && double.IsFinite(parsed) ? parsed : text?.Trim().Length == 0 ? 0 : null;
+    public double? ToNumber()
+    {
+        if (number is { } native) return double.IsFinite(native) ? native : null;
+        if (text is null) return null;
+        var source = text.Trim(); if (source.Length == 0) return 0;
+        if (source.Length > 2 && source[0] == '0' && source[1] is 'x' or 'X' or 'b' or 'B' or 'o' or 'O')
+        {
+            var radix = source[1] is 'x' or 'X' ? 16 : source[1] is 'b' or 'B' ? 2 : 8; var integer = BigInteger.Zero;
+            foreach (var character in source.AsSpan(2)) { var digit = character is >= '0' and <= '9' ? character - '0' : character is >= 'a' and <= 'f' ? character - 'a' + 10 : character is >= 'A' and <= 'F' ? character - 'A' + 10 : -1; if (digit < 0 || digit >= radix) return null; integer = integer * radix + digit; }
+            var converted = (double)integer; return double.IsFinite(converted) ? converted : null;
+        }
+        return double.TryParse(source, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed) && double.IsFinite(parsed) ? parsed : null;
+    }
     internal object? WireValue => text is not null ? text : number;
+    public static implicit operator StorageHistoryNumber(int value) => new(value);
+    public static implicit operator StorageHistoryNumber(uint value) => new(value);
     public static implicit operator StorageHistoryNumber(double value) => new(value);
     public static implicit operator StorageHistoryNumber(long value) => new(value);
     public static implicit operator StorageHistoryNumber(ulong value) => new(value);
@@ -55,7 +69,13 @@ public sealed record StorageHistoryBytes
 }
 internal sealed class StorageHistoryBytesConverter : JsonConverter<StorageHistoryBytes>
 {
-    public override StorageHistoryBytes Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options) => reader.TokenType == JsonTokenType.String ? new(reader.GetString()!) : throw new JsonException("History bytes must be base64 text.");
+    public override StorageHistoryBytes Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.String) return new(reader.GetString()!);
+        if (reader.TokenType != JsonTokenType.StartArray) throw new JsonException("History bytes must be base64 text or a byte array.");
+        var bytes = new List<byte>(); while (reader.Read()) { if (reader.TokenType == JsonTokenType.EndArray) return new(bytes.ToArray().AsSpan()); if (reader.TokenType != JsonTokenType.Number || !reader.TryGetByte(out var value)) throw new JsonException("Invalid history byte array."); bytes.Add(value); }
+        throw new JsonException("Incomplete history byte array.");
+    }
     public override void Write(Utf8JsonWriter writer, StorageHistoryBytes value, JsonSerializerOptions options) => writer.WriteStringValue(value.Base64);
 }
 public sealed record StorageHistoryMessageKey(string? RemoteJid = null, bool? FromMe = null, string? Id = null, string? Participant = null);
