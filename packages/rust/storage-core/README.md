@@ -48,3 +48,15 @@ two fixtures are repository checks; they are not registry packages.
 This crate is unpublished. Publish and verify its exact version before packages
 that depend on it. Successful local package tests do not establish registry or
 customer environment availability.
+
+For Rust 1.85 artifact consumers, configure MSRV-aware dependency resolution in
+the application's `.cargo/config.toml`:
+
+```toml
+[resolver]
+incompatible-rust-versions = "fallback"
+```
+
+Dependency-local Cargo configuration does not configure the consuming app. The
+independent artifact checks use this setting; retain the application's lockfile
+for reproducible builds.
