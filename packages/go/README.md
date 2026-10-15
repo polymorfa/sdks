@@ -467,3 +467,22 @@ mutation isolation, corrupt-source overwrite refusal, known-length mismatch,
 cancellation and spool cleanup. Repeat with task-owned synthetic metadata in
 `POLYMORFA_S3_FIXTURE_METADATA`. AWS and R2 account credentials, provider hosting
 and live WhatsApp delivery were not exercised by these native tests.
+
+
+`UploadWhatsAppMediaOptions.UploadTransport` accepts a customer
+`WhatsAppMediaUploadTransport` instead of an `Egress` string. Its `Name()` identifies
+the result; `Upload(ctx, session, body)` receives encrypted-body metadata and
+`body.Open(ctx, offset)`, without plaintext, the media key or API credentials.
+Each opening revalidates the immutable plaintext source before releasing final
+encrypted bytes. The SDK rejects success if no complete verified encrypted body
+was consumed and closes all outstanding streams when the callback returns.
+Custom callback failures become safe SDK errors; cancellation stops owned streams.
+
+`client.WhatsAppMedia().UploadTransport("relay", options)` and its `"direct"`
+variant return reusable built-ins that a customer transport can wrap. Existing
+grant, credential isolation, retry/resume and finalization rules remain in those
+built-ins. Native TCP tests exercise custom encrypted wire bytes and offsets,
+wrapped relay/direct uploads, changed-source refusal, incomplete consumption,
+blocked-source cancellation, error redaction and refusal to reopen a completed body.
+A customer transport owns its external endpoint and must finalize the destination
+only after its encrypted-body read succeeds.
