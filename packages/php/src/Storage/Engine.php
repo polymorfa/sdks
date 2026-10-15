@@ -77,11 +77,13 @@ final class Engine
 
     /**
      * @param list<string> $ids
+     * @param array<string,mixed> $lease
      * @return array<string,array<string,mixed>> */
-    private function read(string $entity, array $ids, ?CancellationToken $cancellation): array
+    private function read(string $entity, array $ids, ?CancellationToken $cancellation, array &$lease): array
     {
         $rows = [];
-        foreach (array_chunk($ids, 1000) as $chunk) {
+        foreach (array_chunk($ids, 500) as $chunk) {
+            $this->renewBeforeRead($lease, $cancellation);
             $rows += $this->adapter->get($entity, $chunk, $cancellation);
         }
         return $rows;
@@ -97,8 +99,9 @@ final class Engine
 
     /**
      * @param list<Upsert|Delete|Checkpoint> $operations
+     * @param array<string,mixed> $lease
      * @return list<array<string,mixed>> */
-    private function plan(array $operations, ?CancellationToken $cancellation): array
+    private function plan(array $operations, ?CancellationToken $cancellation, array &$lease): array
     {
         $grouped = [];
         foreach ($operations as $operation) {
@@ -108,7 +111,7 @@ final class Engine
         $original = [];
         $identities = [];
         foreach ($grouped as $entity => $ids) {
-            $rows = $this->read($entity, array_keys($ids), $cancellation);
+            $rows = $this->read($entity, array_keys($ids), $cancellation, $lease);
             foreach ($ids as $id => $_) {
                 $slot = $entity."\0".$id;
                 $original[$slot] = $rows[$id] ?? null;
@@ -166,7 +169,7 @@ final class Engine
         } $count = 0;
         foreach ($groups as $index => $group) {
             for ($attempt = 0; ; $attempt++) {
-                $writes = $this->plan($group, $cancellation);
+                $writes = $this->plan($group, $cancellation, $lease);
                 if ($index === count($groups) - 1) {
                     array_push($writes, ...$extra);
                 }
@@ -191,12 +194,25 @@ final class Engine
         return $count;
     }
 
+    /** @param array<string,mixed> $lease */
+    private function renewBeforeRead(array &$lease, ?CancellationToken $cancellation): void
+    {
+        $remaining = ($lease['expiresAt'] ?? 0) - ($this->now)();
+        if ($remaining <= 0) {
+            throw new StorageException('storage_lease_lost');
+        }
+        if ($remaining <= $this->leaseDurationMs / 2 && !$this->fenced($lease, [], $cancellation)['ok']) {
+            throw new StorageException('storage_lease_lost');
+        }
+    }
+
     /**
      * @param array<string,mixed> $lease */
     private function clear(ClearChat $operation, array &$lease, ?CancellationToken $cancellation): int
     {
         $count = 0;
         while (true) {
+            $this->renewBeforeRead($lease, $cancellation);
             $messages = $this->adapter->query('messages', ['index' => 'by_chat', 'equals' => ['sessionId' => $operation->sessionId, 'chatId' => $operation->chatId], 'limit' => $this->clearPageSize, 'range' => ['lte' => $operation->upTo]], $cancellation);
             if ($messages === []) {
                 return $count;
@@ -205,6 +221,7 @@ final class Engine
                 $key = ['sessionId' => $operation->sessionId, 'messageId' => $message['messageId']];
                 foreach (['reactions', 'receipts', 'poll_votes'] as $entity) {
                     do {
+                        $this->renewBeforeRead($lease, $cancellation);
                         $children = $this->adapter->query($entity, ['index' => 'by_message', 'equals' => $key, 'limit' => 500], $cancellation);
                         foreach (array_chunk($children, $this->chunkSize) as $chunk) {
                             $writes = array_map(static fn (array $row): array => ['kind' => 'delete', 'entity' => $entity, 'id' => $row['_id'], 'expectedRev' => $row['_rev']], $chunk);
@@ -224,8 +241,9 @@ final class Engine
 
     /**
      * @param list<Upsert> $operations
+     * @param array<string,mixed> $lease
      * @return list<Upsert> */
-    private function watermarks(array $operations, ?CancellationToken $cancellation): array
+    private function watermarks(array $operations, ?CancellationToken $cancellation, array &$lease): array
     {
         $ids = [];
         foreach ($operations as $op) {
@@ -233,7 +251,7 @@ final class Engine
                 $ids[] = Schema::encodeKey('chats', ['sessionId' => $op->guard->sessionId, 'chatId' => $op->guard->chatId]);
             }
         }
-        $chats = $this->read('chats', array_values(array_unique($ids)), $cancellation);
+        $chats = $this->read('chats', array_values(array_unique($ids)), $cancellation, $lease);
         $result = [];
         foreach ($operations as $operation) {
             $guard = $operation->guard;
@@ -270,7 +288,7 @@ final class Engine
             if ($batch->eventId !== null) {
                 $key = ['sessionId' => $batch->sessionId, 'eventId' => $batch->eventId];
                 $id = Schema::encodeKey('events', $key);
-                if (isset($this->adapter->get('events', [$id], $cancellation)[$id])) {
+                if (isset($this->read('events', [$id], $cancellation, $lease)[$id])) {
                     return new ApplyResult(false, 0);
                 }
                 $row = Rows::empty('events', $key);
@@ -295,7 +313,7 @@ final class Engine
                     $writes += $this->clear($op, $lease, $cancellation);
                 }
             }
-            $writes += $this->applyRows($this->watermarks($guarded, $cancellation), $lease, $cancellation, $marker);
+            $writes += $this->applyRows($this->watermarks($guarded, $cancellation, $lease), $lease, $cancellation, $marker);
             return new ApplyResult(true, $writes);
         } finally {
             $row = $lease;
