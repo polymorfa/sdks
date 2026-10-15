@@ -41,7 +41,8 @@ try
     try { await store.ArchiveAsync(descriptor, archiveOptions with { Metadata = new Dictionary<string, string> { { "unsafe\nheader", "value" } } }); throw new Exception("Metadata header injection accepted"); } catch (PolymorfaConfigurationException) { }
     using var messaging = new MessagingClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new ClientOptions { BaseUrl = new($"http://127.0.0.1:{value.GetProperty("apiPort").GetInt32()}"), MaxNetworkRetries = 0 }); var source = Enumerable.Repeat((byte)42, 100).ToArray(); await s3.SeedAsync("media/source", source); var upload = new S3UploadToWhatsAppOptions(messaging.WhatsAppMedia, "s3-relay", "source", WhatsAppUploadMediaType.Document); var closed = s3.SourceStreamsClosed; var result = await store.UploadToWhatsAppAsync(upload); Check(result.Info.FileLength == 100); Check(result.Egress == "relay"); Check(s3.Gets["media/source"].Count == 2 && s3.Gets["media/source"].Distinct(StringComparer.Ordinal).Count() == 1); Check(s3.SourceStreamsClosed == closed + 2);
     var direct = await store.UploadToWhatsAppAsync(upload with { Session = "multipart", Egress = S3WhatsAppEgress.Direct, DirectOptions = new() { ConfigureHttpHandler = Configure, DocumentPartSize = 32 } }); Check(direct.Egress == "direct"); await s3.SeedAsync("media/mutable", source); s3.MutateSecondGet = true; try { await store.UploadToWhatsAppAsync(upload with { Key = "mutable", Session = "s3-changed" }); throw new Exception("Overwritten S3 source uploaded"); } catch (PolymorfaMediaIntegrityException error) { Check(error.Code == "media_enc_hash_mismatch"); Check(!error.ToString().Contains("synthetic", StringComparison.Ordinal)); }
-    using var state = JsonDocument.Parse(await control.GetStringAsync("https://mmg.whatsapp.net/state")); foreach (var request in state.RootElement.GetProperty("requests").EnumerateArray()) if (request.GetProperty("boundary").GetString() == "cdn") { Check(!request.GetProperty("authorization").GetBoolean()); Check(!request.GetProperty("cookie").GetBoolean()); }
+    await s3.SeedAsync("media/custom-source", source); using var customBefore = JsonDocument.Parse(await control.GetStringAsync("https://mmg.whatsapp.net/state")); var apiCount = customBefore.RootElement.GetProperty("requests").EnumerateArray().Count(r => r.GetProperty("boundary").GetString() == "api"); var custom = await store.UploadToWhatsAppAsync(upload with { Key = "custom-source" }, new CustomerUpload()); Check(custom.Egress == "customer-s3" && custom.Info.FileLength == 100); Check(s3.Gets["media/custom-source"].Count == 2 && s3.Gets["media/custom-source"].Distinct(StringComparer.Ordinal).Count() == 1);
+    using var state = JsonDocument.Parse(await control.GetStringAsync("https://mmg.whatsapp.net/state")); Check(state.RootElement.GetProperty("requests").EnumerateArray().Count(r => r.GetProperty("boundary").GetString() == "api") == apiCount); foreach (var request in state.RootElement.GetProperty("requests").EnumerateArray()) if (request.GetProperty("boundary").GetString() == "cdn") { Check(!request.GetProperty("authorization").GetBoolean()); Check(!request.GetProperty("cookie").GetBoolean()); }
     Console.WriteLine("PASS actual MinIO/official .NET S3 driver: private spool before PUT, full integrity/length/cancel barriers preserve object, safe metadata, two ETag-pinned source reads, changed-object rejection, ciphertext-only relay/direct multipart and stream ownership");
 }
 finally
@@ -50,6 +51,16 @@ finally
 }
 static async Task Seen(HttpClient client, string path, int count = 1) { using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5)); while (true) { using var state = JsonDocument.Parse(await client.GetStringAsync("https://mmg.whatsapp.net/state", deadline.Token)); if (state.RootElement.GetProperty("requests").EnumerateArray().Count(r => new Uri("https://fixture" + r.GetProperty("path").GetString()).AbsolutePath == path) >= count) return; await Task.Delay(10, deadline.Token); } }
 internal sealed class StrictHttp : HttpClientFactory { public override HttpClient CreateHttpClient(IClientConfig config) => new(new SocketsHttpHandler { AllowAutoRedirect = false, UseCookies = false, Credentials = null, UseProxy = false }); }
+internal sealed class CustomerUpload : IWhatsAppMediaUploadTransport
+{
+    public string Name => "customer-s3";
+    public async Task<WhatsAppUploadLocation> UploadAsync(string session, WhatsAppEncryptedUploadBody body, CancellationToken cancellation = default)
+    {
+        await using var source = await body.OpenAsync(); using var buffer = new MemoryStream(); await source.CopyToAsync(buffer, cancellation); var bytes = buffer.ToArray();
+        if (body.EncryptedLength != bytes.Length || !System.Security.Cryptography.SHA256.HashData(bytes).SequenceEqual(body.FileEncSha256)) throw new Exception("Custom transport received invalid ciphertext.");
+        return new("/customer.enc", "https://mmg.whatsapp.net/customer.enc");
+    }
+}
 internal sealed class ObservedS3(AWSCredentials credentials, AmazonS3Config config) : AmazonS3Client(credentials, config)
 {
     internal string Bucket { get; set; } = ""; internal int PutCalls, SourceStreamsClosed; internal bool MutateSecondGet; internal Dictionary<string, List<string>> Gets { get; } = new(StringComparer.Ordinal);

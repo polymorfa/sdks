@@ -30,6 +30,7 @@ internal static class ConstrainedTypeTests
         foreach (var argument in new[] { "build", "tests/type-fixtures/invalid/Invalid.csproj", "--nologo", "--configuration", "Release", "--verbosity", "quiet" }) start.ArgumentList.Add(argument);
         using var process = Process.Start(start)!; var output = process.StandardOutput.ReadToEndAsync(); var error = process.StandardError.ReadToEndAsync(); await process.WaitForExitAsync().WaitAsync(TimeSpan.FromMinutes(1));
         ResourceTests.True(process.ExitCode != 0); var compiler = await output + await error; ResourceTests.True(compiler.Contains("CS1503", StringComparison.Ordinal)); ResourceTests.True(compiler.Contains("TemplateTextHeader", StringComparison.Ordinal)); ResourceTests.True(compiler.Contains("ElevenLabsTtsModel", StringComparison.Ordinal)); ResourceTests.True(compiler.Contains("OpenAiTtsVoice", StringComparison.Ordinal)); ResourceTests.True(compiler.Contains("TemplateDefinitionVersion", StringComparison.Ordinal)); ResourceTests.True(compiler.Contains("TemplateVariableType", StringComparison.Ordinal));
-        Console.WriteLine("PASS provider-specific voice and constrained template wire types, invalid JSON refusal and compiler-negative fixtures");
+        ResourceTests.True(compiler.Contains("CS1061", StringComparison.Ordinal)); ResourceTests.True(compiler.Contains("WhatsAppEncryptedUploadBody", StringComparison.Ordinal)); ResourceTests.True(compiler.Contains("MediaKey", StringComparison.Ordinal));
+        Console.WriteLine("PASS provider-specific voice, constrained templates, ciphertext-only custom transport types, invalid JSON refusal and compiler-negative fixtures");
     }
 }

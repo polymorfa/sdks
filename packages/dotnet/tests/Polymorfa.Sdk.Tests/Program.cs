@@ -147,6 +147,7 @@ try
     await MediaEncryptionTests.RunAsync(root);
     await CustomerDataTests.RunAsync(root);
     await StorageCoreTests.RunAsync();
+    await CustomUploadTransportTests.RunAsync();
     Console.WriteLine($"Passed {count} shared behavior cases and media integrity tests.");
 }
 finally { if (!server.HasExited) server.Kill(entireProcessTree: true); await server.WaitForExitAsync(); }

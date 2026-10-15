@@ -157,7 +157,7 @@ impl Default for DirectUploadOptions {
 pub struct MediaUploadResult {
     pub info: EncryptedMediaInfo,
     pub location: UploadLocation,
-    pub egress: &'static str,
+    pub egress: String,
 }
 impl WhatsAppMediaResource<'_> {
     pub async fn upload_relay(
@@ -169,6 +169,21 @@ impl WhatsAppMediaResource<'_> {
     ) -> Result<MediaUploadResult> {
         let cancellation = request.cancellation.clone().unwrap_or_default();
         let prepared = tokio::select! {biased;_=cancellation.cancelled()=>return Err(crate::transport::cancelled()),p=prepare_upload(source,options)=>p?};
+        let location = self
+            .upload_relay_prepared(session, &prepared, request)
+            .await?;
+        Ok(MediaUploadResult {
+            info: prepared.info,
+            location,
+            egress: "relay".into(),
+        })
+    }
+    pub(crate) async fn upload_relay_prepared(
+        &self,
+        session: &str,
+        prepared: &PreparedUpload,
+        request: RequestOptions,
+    ) -> Result<UploadLocation> {
         let (body, failure) = watch(prepared.open(0).await?);
         let location = self
             .relay_upload(
@@ -183,12 +198,7 @@ impl WhatsAppMediaResource<'_> {
         if let Some(error) = failure.lock().unwrap().take() {
             return Err(error);
         }
-        let location = location?;
-        Ok(MediaUploadResult {
-            info: prepared.info,
-            location,
-            egress: "relay",
-        })
+        location
     }
     pub async fn upload_direct(
         &self,
@@ -202,6 +212,25 @@ impl WhatsAppMediaResource<'_> {
             return Err(configuration("directUpload"));
         }
         let prepared = tokio::select! {biased;_=direct.cancellation.cancelled()=>return Err(crate::transport::cancelled()),p=prepare_upload(source,options)=>p?};
+        let location = self
+            .upload_direct_prepared(session, &prepared, direct, request)
+            .await?;
+        Ok(MediaUploadResult {
+            info: prepared.info,
+            location,
+            egress: "direct".into(),
+        })
+    }
+    pub(crate) async fn upload_direct_prepared(
+        &self,
+        session: &str,
+        prepared: &PreparedUpload,
+        direct: DirectUploadOptions,
+        request: RequestOptions,
+    ) -> Result<UploadLocation> {
+        if direct.max_attempts == 0 || direct.document_part_size == 0 || direct.timeout.is_zero() {
+            return Err(configuration("directUpload"));
+        }
         let mut builder = reqwest::Client::builder()
             .timeout(direct.timeout)
             .referer(false);
@@ -229,7 +258,7 @@ impl WhatsAppMediaResource<'_> {
             && total > direct.document_part_size
         {
             let mut position = 0;
-            let mut reader = UploadReader::new(&prepared, 0).await?;
+            let mut reader = UploadReader::new(prepared, 0).await?;
             while position < total {
                 let end = position
                     .saturating_add(direct.document_part_size)
@@ -237,7 +266,7 @@ impl WhatsAppMediaResource<'_> {
                 let mut final_error = None;
                 for attempt in 0..direct.max_attempts {
                     if attempt > 0 {
-                        reader = UploadReader::new(&prepared, position).await?;
+                        reader = UploadReader::new(prepared, position).await?;
                         if final_error
                             .as_ref()
                             .is_some_and(|e: &AttemptError| e.status == Some(401))
@@ -254,7 +283,7 @@ impl WhatsAppMediaResource<'_> {
                     }
                     let url = upload_url(
                         &grant,
-                        &prepared,
+                        prepared,
                         &[
                             ("stream", "1".into()),
                             ("bytestart", position.to_string()),
@@ -284,7 +313,7 @@ impl WhatsAppMediaResource<'_> {
             retry_post(
                 self,
                 session,
-                &prepared,
+                prepared,
                 &mut grant,
                 &client,
                 &direct,
@@ -323,7 +352,7 @@ impl WhatsAppMediaResource<'_> {
                 if attempt > 0 {
                     match post(
                         &client,
-                        upload_url(&grant, &prepared, &[("resume", "1".into())])?,
+                        upload_url(&grant, prepared, &[("resume", "1".into())])?,
                         None,
                         0,
                         &direct,
@@ -362,7 +391,7 @@ impl WhatsAppMediaResource<'_> {
                 };
                 match post(
                     &client,
-                    upload_url(&grant, &prepared, &query)?,
+                    upload_url(&grant, prepared, &query)?,
                     Some(prepared.open(offset).await?),
                     total - offset,
                     &direct,
@@ -388,11 +417,7 @@ impl WhatsAppMediaResource<'_> {
                     .unwrap_or_else(invalid_location)
             })?
         };
-        Ok(MediaUploadResult {
-            info: prepared.info,
-            location,
-            egress: "direct",
-        })
+        Ok(location)
     }
 }
 struct UploadReader {
