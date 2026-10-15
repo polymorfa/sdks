@@ -3188,17 +3188,16 @@
       "operationId": "updateProjectCampaign",
       "fingerprint": "4e4c02f896824deabf5c7742e1633ed4c6aa5615c9cbef502edbd02510e983ac",
       "typescript": {
-        "status": "excluded",
-        "reason": "Messaging campaign update is owned by SDK PR #307."
+        "status": "covered",
+        "method": "MessagingClient.campaigns.update"
       },
       "go": {
         "status": "covered",
         "method": "MessagingClient.Campaigns.Update"
       },
       "python": {
-        "status": "excluded",
-        "reason": "Messaging campaign update is owned by SDK PR #307.",
-        "milestone": "excluded-contract"
+        "status": "covered",
+        "method": "AsyncMessagingClient.campaigns.update"
       },
       "php": {
         "status": "covered",
@@ -3209,9 +3208,8 @@
         "method": "MessagingClient.Campaigns.UpdateAsync"
       },
       "rust": {
-        "status": "excluded",
-        "reason": "Messaging campaign update is owned by SDK PR #307.",
-        "milestone": "not-server-sdk"
+        "status": "covered",
+        "method": "MessagingClient.campaigns.update"
       }
     },
     {
@@ -4963,17 +4961,16 @@
       "operationId": "rescheduleCampaign",
       "fingerprint": "9b96f4321f98a3758c1b00b87a897bf5d52a48e78df99f40fab9324f6ec148ea",
       "typescript": {
-        "status": "excluded",
-        "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges."
+        "status": "covered",
+        "method": "MessagingClient.campaigns.reschedule"
       },
       "go": {
         "status": "covered",
         "method": "MessagingClient.Campaigns.Reschedule"
       },
       "python": {
-        "status": "excluded",
-        "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges.",
-        "milestone": "excluded-contract"
+        "status": "covered",
+        "method": "AsyncMessagingClient.campaigns.reschedule"
       },
       "php": {
         "status": "covered",
@@ -4984,9 +4981,8 @@
         "method": "MessagingClient.Campaigns.RescheduleAsync"
       },
       "rust": {
-        "status": "excluded",
-        "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges.",
-        "milestone": "not-server-sdk"
+        "status": "covered",
+        "method": "MessagingClient.campaigns.reschedule"
       }
     },
     {
@@ -15293,17 +15289,16 @@
       "operationId": "reschedulePlatformCampaign",
       "fingerprint": "21878cc0e7fed1e5f4c0f983a4899a70dd5fa4a410b1d293962a8ddccabe2f23",
       "typescript": {
-        "status": "excluded",
-        "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges."
+        "status": "covered",
+        "method": "Client.campaigns.reschedule"
       },
       "go": {
         "status": "covered",
         "method": "OrganizationClient.Campaigns.Reschedule"
       },
       "python": {
-        "status": "excluded",
-        "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges.",
-        "milestone": "excluded-contract"
+        "status": "covered",
+        "method": "AsyncClient.campaigns.reschedule"
       },
       "php": {
         "status": "covered",
@@ -15314,9 +15309,8 @@
         "method": "OrganizationClient.Campaigns.RescheduleAsync"
       },
       "rust": {
-        "status": "excluded",
-        "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges.",
-        "milestone": "not-server-sdk"
+        "status": "covered",
+        "method": "OrganizationClient.campaigns.reschedule"
       }
     },
     {

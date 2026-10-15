@@ -822,9 +822,9 @@
       "family": "messaging",
       "method": "PATCH",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}",
-      "status": "excluded",
-      "reason": "Messaging campaign update is owned by SDK PR #307.",
-      "milestone": "not-server-sdk"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.campaigns.update",
+      "testFile": "tests/campaigns.rs"
     },
     {
       "family": "messaging",
@@ -1278,9 +1278,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reschedule",
-      "status": "excluded",
-      "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges.",
-      "milestone": "not-server-sdk"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.campaigns.reschedule",
+      "testFile": "tests/campaigns.rs"
     },
     {
       "family": "messaging",
@@ -3854,9 +3854,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/reschedule",
-      "status": "excluded",
-      "reason": "Campaign reschedule is owned by SDK PR #310 and will be covered when that PR merges.",
-      "milestone": "not-server-sdk"
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.campaigns.reschedule",
+      "testFile": "tests/campaigns.rs"
     },
     {
       "family": "platform",
