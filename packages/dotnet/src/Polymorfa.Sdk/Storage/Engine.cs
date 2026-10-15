@@ -47,6 +47,12 @@ public sealed class CustomerStorage
         else if (result.Conflicts!.Contains(lease.Row.Id)) { var rows = await Adapter.GetAsync(StorageEntity.Leases, new[] { lease.Row.Id }, cancellation).ConfigureAwait(false); if (!rows.TryGetValue(lease.Row.Id, out var current) || current.Revision != lease.Row.Revision || Text(current, "owner") != Text(lease.Row, "owner")) { lease.Lost = true; throw new StorageLeaseLostException(); } }
         return result;
     }
+    private async Task RenewForScan(Lease lease, CancellationToken cancellation)
+    {
+        if (Number(lease.Row, "expiresAt") - Now() > options.LeaseDuration.TotalMilliseconds / 2) return;
+        var result = await FencedCommit(lease, Array.Empty<StorageWrite>(), cancellation).ConfigureAwait(false);
+        if (!result.Ok) throw new StorageConflictException(result.Conflicts!);
+    }
     private async Task Release(Lease lease)
     {
         var fields = Fields(lease.Row); fields["owner"] = StorageMerge.Null; fields["expiresAt"] = Value(0); var row = lease.Row with { Revision = Revision(lease.Row), Fields = fields }; var writes = new StorageWrite[] { new StoragePut(StorageEntity.Leases, row, lease.Row.Revision) }; ValidateReceipt(await Adapter.CommitAsync(writes).ConfigureAwait(false), writes);
@@ -98,10 +104,12 @@ public sealed class CustomerStorage
     {
         var removed = 0; while (true)
         {
+            await RenewForScan(lease, cancellation).ConfigureAwait(false);
             var messages = await Adapter.QueryAsync(StorageEntity.Messages, new("by_chat", Key(("sessionId", operation.SessionId), ("chatId", operation.ChatId)), options.ClearPageSize, new(Lte: operation.UpTo), "asc"), cancellation).ConfigureAwait(false); if (messages.Count == 0) return removed; var deletes = new List<StorageOperation>(); foreach (var message in messages)
             {
                 var id = Text(message, "messageId") ?? throw new StorageValidationException("Invalid stored message ID."); var key = Key(("sessionId", operation.SessionId), ("messageId", id)); deletes.Add(new StorageDelete(StorageEntity.Media, key)); foreach (var entity in new[] { StorageEntity.Reactions, StorageEntity.Receipts, StorageEntity.PollVotes }) while (true)
                     {
+                        await RenewForScan(lease, cancellation).ConfigureAwait(false);
                         var children = await Adapter.QueryAsync(entity, new("by_message", key, 500, Order: "asc"), cancellation).ConfigureAwait(false); if (children.Count == 0) break; var writes = children.Select(row => (StorageWrite)new StorageRowDelete(entity, row.Id)).ToArray(); foreach (var group in writes.Chunk(commitSize)) { var result = await FencedCommit(lease, group, cancellation).ConfigureAwait(false); if (!result.Ok) throw new StorageConflictException(result.Conflicts!); }
                         removed += children.Count; if (children.Count < 500) break;
                     }

@@ -20,7 +20,7 @@ internal static class StorageCoreTests
         await store.ApplyAsync(Batch("big",null,new StorageUpsert(StorageEntity.Chats,Key(("sessionId","big"),("chatId","chat")),Fields("clearedAt",1000,1000)),new StorageClearChat("big","chat",1000)));ResourceTests.Equal(memory.Rows(StorageEntity.Messages).Count,1000);
         await store.ApplyAsync(Batch("big","late",new StorageUpsert(StorageEntity.Messages,Key(("sessionId","big"),("messageId","late")),Fields("text","must stay absent",1001),new("big","chat",500))));ResourceTests.True(await store.GetAsync(StorageEntity.Messages,Key(("sessionId","big"),("messageId","late"))) is null);
         try{await store.ApplyAsync(Batch("s",null,new StorageUpsert(StorageEntity.Messages,Key(("sessionId","foreign"),("messageId","m")),Fields("text","foreign",1))));throw new Exception("Foreign session written");}catch(StorageValidationException){}
-        await Snapshot();
+        await Snapshot();await StorageLeaseScanTests.RunAsync();
         await Fences();await FailedChunk();Console.WriteLine("PASS schema2 canonical merges, atomic rollback, replay, concurrency, 2000 rows, paging, conditional checkpoints, chat watermark, durable lease fences and failed-chunk marker ordering");
     }
     private sealed class PauseAcquire(MemoryStorageAdapter memory):IStorageAdapter

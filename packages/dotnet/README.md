@@ -189,6 +189,11 @@ the base SDK. Other provider adapters and full event/history reducers remain in
 progress. This package remains unpublished.
 
 
+Chat clears renew the live lease conditionally between index queries once
+half its duration remains. Expired or replaced leases fail closed. Configure
+customer operation deadlines and lease duration so one query or commit can
+finish before expiry.
+
 The separate, unpublished `Polymorfa.Storage.Sql` package adds
 `Polymorfa.Storage.Sql.SqlStorageAdapter`. It uses maintained native ADO.NET
 SQLite, Npgsql and MySqlConnector drivers without adding database dependencies to
