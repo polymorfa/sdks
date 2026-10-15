@@ -127,3 +127,32 @@ export function armCancelOnOwnerAdd(callback) {
     IDBObjectStore.prototype.add = original;
   };
 }
+
+export async function publicRows(name) {
+  const database = await new Promise((resolve, reject) => {
+    const request = indexedDB.open(name);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = reject;
+  });
+  try {
+    return await new Promise((resolve, reject) => {
+      const names = [...database.objectStoreNames].filter(
+        (name) => name !== "events" && name !== "leases",
+      );
+      const tx = database.transaction(names, "readonly");
+      const result = {};
+      tx.oncomplete = () => resolve(result);
+      tx.onabort = () => reject(new Error("Native fixture snapshot failed."));
+      for (const name of names) {
+        const request = tx.objectStore(name).getAll();
+        request.onsuccess = () => {
+          result[name] = request.result.map(
+            ({ _id, _rev, _v, ...fields }) => fields,
+          );
+        };
+      }
+    });
+  } finally {
+    database.close();
+  }
+}
