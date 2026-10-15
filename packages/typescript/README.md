@@ -142,8 +142,13 @@ before updating it. Customer `null` restores inheritance; Project updates
 require an explicit mode. Defaults apply to future reservations and never
 convert existing Numbers or move Signal keys.
 
-`testSend` captures an idempotency key and body for retries. Other new writes
-default to no automatic retries, even if a header key is supplied. An import's
+`testSend` captures an idempotency key and body for retries. On methods that
+generate a key, the explicit `idempotencyKey` option takes precedence; otherwise
+the SDK preserves a caller's `Idempotency-Key` header regardless of casing.
+Equal case aliases collapse to one key, and conflicting aliases are refused
+before HTTP. Keep the same caller key when reconciling an uncertain response.
+Other new writes default to no automatic retries, even if a header key is
+supplied. An import's
 body `replayKey` is a separate server identity. Explicit retry overrides do not
 create a replay guarantee; reconcile ambiguous writes and revision conflicts
 before submitting another change. HTTP cancellation stops the waiter, not an
