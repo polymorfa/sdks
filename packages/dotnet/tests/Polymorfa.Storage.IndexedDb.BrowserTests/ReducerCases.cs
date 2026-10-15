@@ -16,6 +16,7 @@ internal static class ReducerCases
     private static void Compare<T>(T actual, JsonElement expected, string label) => Check(StorageMerge.CanonicalJson(JsonSerializer.SerializeToElement(actual, Json)) == StorageMerge.CanonicalJson(expected), label);
     internal static async Task Run(IJSRuntime runtime, string name, IJSObjectReference harness)
     {
+        Check(new StorageHistoryNumber("0x20000000000003").ToNumber() == 9007199254740996d, "Wide radix history integer differs from TypeScript Number rounding");
         using (var oracle = Fixture("reducer-batches-3bac.json"))
         {
             Check(oracle.RootElement.GetProperty("source").GetString() == StorageSchema.SourceCommit, "Reducer oracle source differs");
