@@ -298,13 +298,59 @@ schema-defined scope and cursor indexes. Invalid or oversized derived identifier
 are refused before connecting, preventing PostgreSQL name truncation. Driver
 errors omit connection strings, SQL and customer row values. These adapters are
 server clients; hosted Supabase/Neon/PlanetScale authority and deployment acceptance
-require the customer's own configuration and verification. The libSQL, document-store and browser adapters remain separate work. A Supabase
+require the customer's own configuration and verification. Document-store and browser adapters have separate configuration. A Supabase
 RLS preset is exported below.
 
 Chat clears and row planning renew a live lease conditionally between reads once half
 the configured lease duration remains. An expired or replaced lease still
 fails closed. Configure customer operation deadlines and lease duration so one
 individual query or commit can finish before expiry.
+
+### Customer-owned libSQL and Turso
+
+Enable `storage-libsql` for `storage::libsql::LibsqlStorageAdapter`. The adapter
+uses native `libsql` 0.9.30 with its remote and TLS features. Pass a connection
+created by your application using independent customer credentials. The adapter
+never reads a Polymorfa API key, builds an HTTP fallback or closes your database.
+
+```rust,no_run
+# async fn libsql_example() -> Result<(), Box<dyn std::error::Error>> {
+# #[cfg(feature="storage-libsql")] {
+use polymorfa_sdk::storage::libsql::{LibsqlStorageAdapter, LibsqlStorageOptions};
+let database = libsql::Builder::new_remote(
+    std::env::var("CUSTOMER_LIBSQL_URL")?,
+    std::env::var("CUSTOMER_LIBSQL_TOKEN")?,
+).build().await?;
+let adapter = LibsqlStorageAdapter::new(database.connect()?, LibsqlStorageOptions::default())?;
+# let _ = adapter;
+# }
+# Ok(()) }
+```
+
+The adapter shares all 17 schema-2 entities, JSON encoding and closed index
+queries with the SQL adapters. `schema_statements` exports DDL;
+`LibsqlStorageOptions::create_tables = false` leaves installation to the caller.
+Table prefixes select names and do not grant tenant access. Configure database
+permissions, TLS, retries and operation deadlines in the native client.
+
+Each commit uses one native `BEGIN IMMEDIATE` transaction with at most 500
+writes, including the engine's session fence. Every stale revision rolls back
+earlier writes. Duplicate inserts and other provider failures also roll back;
+remote conflict classification reads the failed row after rollback rather than
+matching private driver error text. A lost response or cancelled future can
+leave an outcome unknown. Resume through saved revisions, event markers and
+checkpoints. The adapter does not retry uncertain commits automatically.
+
+The optional feature deliberately excludes libSQL's local core/replication
+features, keeping the adapter's own driver independent of native SQLite linkage.
+Remote libSQL is tested against a task-owned libSQL server over Hrana. Local
+embedded replicas and hosted Turso credentials, permissions and availability
+are not covered by that acceptance. Native tests cover all 17 entities, JSON
+values, 2,000-message pagination, atomic stale/duplicate/provider rollback,
+independent-client CAS, lease/replay/checkpoint fences and redacted HTML errors.
+Run the real-server test with `POLYMORFA_STORAGE_LIBSQL_URL` and an optional
+`POLYMORFA_STORAGE_LIBSQL_TOKEN`; without the URL the real-server case returns
+without exercising a provider. This SDK remains unpublished.
 
 ### Customer-owned S3 media
 

@@ -213,3 +213,9 @@ pub mod dynamodb;
 
 #[cfg(feature = "storage-mongodb")]
 pub mod mongodb;
+
+#[cfg(any(feature = "storage-sql", feature = "storage-libsql"))]
+mod sql_schema;
+
+#[cfg(feature = "storage-libsql")]
+pub mod libsql;
