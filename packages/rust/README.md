@@ -196,6 +196,37 @@ HMAC over the exact timestamp and raw body before parsing. Enforce a timestamp
 window and durable event-ID deduplication before returning 2xx. Convert local
 history notifications with `SignalHistoryDescriptor::chunk_input`.
 
+### Custom encrypted upload transports
+
+Implement `media_upload_transport::MediaUploadTransport` to use application-owned
+upload code. `EncryptedUploadBody` exposes only media type, encrypted SHA-256,
+encrypted length and verified ciphertext streams from an offset. It has no media
+key, plaintext hash, plaintext or Polymorfa credential accessor. The upload result
+keeps the media key with the caller. Custom transport names use an owned `String`
+in `MediaUploadResult::egress` in this unpublished SDK.
+
+`relay_transport` and `direct_transport` return the built-in implementations of
+that same trait, so a custom transport can wrap them without reimplementing the
+wire protocol. Existing `upload_relay` and `upload_direct` methods remain available.
+
+```rust,no_run
+# async fn upload(client: &polymorfa_sdk::MessagingClient, bytes: Vec<u8>) -> polymorfa_sdk::Result<()> {
+use polymorfa_sdk::{media_encrypt::{MediaEncryptionOptions, UploadMediaType},
+    media_upload::MediaSource, media_upload_transport::upload_with_transport};
+let transport = client.whatsapp_media().relay_transport(Default::default());
+let result = upload_with_transport("session", MediaSource::Bytes(bytes),
+    MediaEncryptionOptions::new(UploadMediaType::Image), &transport).await?;
+# let _ = result;
+# Ok(())
+# }
+```
+
+Custom transports own their network requests and opened streams. Forward the
+operation cancellation token, close streams, and finalize only after the verified
+stream ends. A changed second pass fails before the final ciphertext bytes;
+caller transport errors remain unchanged. Pre-cancellation stops encryption and
+transport invocation. Cancellation drops an in-progress custom upload future.
+
 ### Customer-owned storage
 
 `polymorfa_sdk::storage` provides schema-2 operations, deterministic per-field
@@ -308,6 +339,11 @@ final encrypted bytes or finalization. Relay is the default; select
 options for grant-based upload. Cancellation and transport failures during PUT
 can leave the object-write outcome uncertain. Spool directories are removed on
 completion, failure and dropped futures on Unix.
+
+For a custom ciphertext transport, use
+`S3MediaStore::upload_to_whatsapp_with_transport` with the same upload options
+and a `MediaUploadTransport`. It retains the two ETag-pinned reads and does not
+call the Polymorfa API when the custom transport uploads independently.
 
 The media helper follows source
 `254fc6a2d073e7fc79420cf95f9b03927d00c04a`. Native tests exercise the official

@@ -1,7 +1,13 @@
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use futures_util::{stream, StreamExt as _};
 use polymorfa_sdk::{
-    history_chunks::*, media::MediaDownloadOptions, media_encrypt::*, media_upload::*,
+    history_chunks::*,
+    media::MediaDownloadOptions,
+    media_encrypt::*,
+    media_upload::*,
+    media_upload_transport::{
+        upload_with_transport, EncryptedUploadBody, MediaUploadTransport, UploadTransportFuture,
+    },
     ClientOptions, Credential, ErrorKind, MessagingClient, RequestOptions,
 };
 use serde_json::Value;
@@ -16,6 +22,27 @@ use std::{
 struct Peer {
     child: std::process::Child,
     ready: Value,
+}
+struct WrappingTransport<'a> {
+    inner: &'a dyn MediaUploadTransport,
+    calls: AtomicUsize,
+    name: String,
+}
+impl MediaUploadTransport for WrappingTransport<'_> {
+    fn name(&self) -> &str {
+        &self.name
+    }
+    fn upload<'a>(
+        &'a self,
+        session: &'a str,
+        body: EncryptedUploadBody<'a>,
+        cancellation: tokio_util::sync::CancellationToken,
+    ) -> UploadTransportFuture<'a> {
+        Box::pin(async move {
+            self.calls.fetch_add(1, Ordering::SeqCst);
+            self.inner.upload(session, body, cancellation).await
+        })
+    }
 }
 impl Peer {
     fn start() -> Self {
@@ -223,6 +250,46 @@ async fn native_relay_direct_resume_refresh_multipart_and_redirect_do_not_leak_c
         .await
         .unwrap();
     assert_eq!(relay.info.file_length, 100);
+    let builtin_relay = resource.relay_transport(RequestOptions::default());
+    let wrapped_relay = WrappingTransport {
+        inner: &builtin_relay,
+        calls: AtomicUsize::new(0),
+        name: "wrapped-relay".into(),
+    };
+    let wrapped_result = upload_with_transport(
+        "wrapped-relay",
+        MediaSource::Reopen(factory(plaintext.clone())),
+        info.clone(),
+        &wrapped_relay,
+    )
+    .await
+    .unwrap();
+    assert_eq!(wrapped_result.egress, "wrapped-relay");
+    assert_eq!(wrapped_relay.calls.load(Ordering::SeqCst), 1);
+    let builtin_direct = resource
+        .direct_transport(
+            DirectUploadOptions {
+                configure_http: peer.options().configure_http,
+                ..Default::default()
+            },
+            RequestOptions::default(),
+        )
+        .unwrap();
+    let wrapped_direct = WrappingTransport {
+        inner: &builtin_direct,
+        calls: AtomicUsize::new(0),
+        name: "wrapped-direct".into(),
+    };
+    let wrapped_result = upload_with_transport(
+        "wrapped-direct",
+        MediaSource::Reopen(factory(plaintext.clone())),
+        info.clone(),
+        &wrapped_direct,
+    )
+    .await
+    .unwrap();
+    assert_eq!(wrapped_result.egress, "wrapped-direct");
+    assert_eq!(wrapped_direct.calls.load(Ordering::SeqCst), 1);
     for scenario in ["plain", "retry", "unauthorized", "multipart"] {
         let opts = DirectUploadOptions {
             document_part_size: if scenario == "multipart" { 32 } else { 1000 },

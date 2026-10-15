@@ -52,7 +52,14 @@ public sealed class S3MediaStore
         try { return await send().ConfigureAwait(false); } catch (AmazonS3Exception error) when (error.StatusCode == HttpStatusCode.PreconditionFailed) { throw Changed(); } catch (Exception error) when (IsCancelled(error)) { if (cancellation.IsCancellationRequested) throw new PolymorfaCancelledException(); throw new PolymorfaTimeoutException("Customer media storage request timed out."); } catch (AmazonServiceException) { throw Failure(); } catch (AmazonClientException) { throw Failure(); } catch (HttpRequestException) { throw Failure(); } catch (IOException) { throw Failure(); }
     }
     /// <summary>Each reopen issues GetObject with the same If-Match ETag. The native uploader verifies the complete second-pass encrypted hash before final bytes.</summary>
-    public async Task<WhatsAppMediaUploadResult> UploadToWhatsAppAsync(S3UploadToWhatsAppOptions options, CancellationToken cancellation = default)
+    public Task<WhatsAppMediaUploadResult> UploadToWhatsAppAsync(S3UploadToWhatsAppOptions options, CancellationToken cancellation = default)
+        => UploadUsingAsync(options, null, cancellation);
+    public Task<WhatsAppMediaUploadResult> UploadToWhatsAppAsync(S3UploadToWhatsAppOptions options, IWhatsAppMediaUploadTransport transport, CancellationToken cancellation = default)
+    {
+        if (transport is null || string.IsNullOrEmpty(transport.Name)) throw new PolymorfaConfigurationException("A named upload transport is required.");
+        return UploadUsingAsync(options, transport, cancellation);
+    }
+    private async Task<WhatsAppMediaUploadResult> UploadUsingAsync(S3UploadToWhatsAppOptions options, IWhatsAppMediaUploadTransport? transport, CancellationToken cancellation)
     {
         var key = Key(options.Key); if (!Enum.IsDefined(options.Egress) || options.MaxBytes <= 0) throw new PolymorfaConfigurationException("Invalid S3 upload options."); using var stop = CancellationTokenSource.CreateLinkedTokenSource(cancellation, options.RequestOptions?.CancellationToken ?? default, options.DirectOptions?.CancellationToken ?? default); var token = stop.Token; if (token.IsCancellationRequested) throw new PolymorfaCancelledException();
         var head = await Storage(() => client.GetObjectMetadataAsync(new GetObjectMetadataRequest { BucketName = bucket, Key = key }, token), token).ConfigureAwait(false); var etag = head.ETag; if (string.IsNullOrEmpty(etag) || etag.Length > 1024 || etag.Any(c => c < ' ' || c > '~')) throw new CustomerMediaStorageException("The customer object requires a stable ETag."); if (head.Headers.ContentLength < 0 || head.Headers.ContentLength > options.MaxBytes) throw new PolymorfaMediaIntegrityException("Media exceeds its permitted size.", "media_too_large");
@@ -61,7 +68,9 @@ public sealed class S3MediaStore
             var response = await Storage(() => client.GetObjectAsync(new GetObjectRequest { BucketName = bucket, Key = key, EtagToMatch = etag }, next), next).ConfigureAwait(false); if (response.ETag != etag || response.ResponseStream is null) { response.Dispose(); throw Changed(); }
             return new OwnedObjectStream(response);
         }
-        var prepared = await WhatsAppMedia.PrepareUploadAsync(Open, new(options.MediaType) { Mimetype = options.Mimetype ?? head.Headers.ContentType, MaxBytes = options.MaxBytes, CancellationToken = token }).ConfigureAwait(false); if (prepared.Info.FileLength != head.Headers.ContentLength) throw Changed(); var request = (options.RequestOptions ?? new()) with { CancellationToken = token }; return options.Egress == S3WhatsAppEgress.Relay ? await options.Messaging.UploadRelayAsync(options.Session, prepared, request).ConfigureAwait(false) : await options.Messaging.UploadDirectAsync(options.Session, prepared, (options.DirectOptions ?? new()) with { CancellationToken = token }, request).ConfigureAwait(false);
+        var prepared = await WhatsAppMedia.PrepareUploadAsync(Open, new(options.MediaType) { Mimetype = options.Mimetype ?? head.Headers.ContentType, MaxBytes = options.MaxBytes, CancellationToken = token }).ConfigureAwait(false); if (prepared.Info.FileLength != head.Headers.ContentLength) throw Changed();
+        if (transport is not null) return await options.Messaging.UploadAsync(options.Session, prepared, transport, token).ConfigureAwait(false);
+        var request = (options.RequestOptions ?? new()) with { CancellationToken = token }; return options.Egress == S3WhatsAppEgress.Relay ? await options.Messaging.UploadRelayAsync(options.Session, prepared, request).ConfigureAwait(false) : await options.Messaging.UploadDirectAsync(options.Session, prepared, (options.DirectOptions ?? new()) with { CancellationToken = token }, request).ConfigureAwait(false);
     }
     /// <summary>Archives the base64 media descriptor and message type from an inbound message.</summary>
     public Task<S3ArchiveResult> ArchiveAsync(string media, string messageType, S3ArchiveOptions options, CancellationToken cancellation = default)

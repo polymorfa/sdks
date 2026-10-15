@@ -84,6 +84,7 @@ pub mod request_logs;
 pub mod calls_diagnostics;
 
 pub mod media_upload;
+pub mod media_upload_transport;
 
 pub mod media_descriptor;
 

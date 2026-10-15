@@ -8,6 +8,16 @@ using Polymorfa.Sdk;
 
 internal static class CustomerDataTests
 {
+    private sealed class WrappedTransport(IWhatsAppMediaUploadTransport inner) : IWhatsAppMediaUploadTransport
+    {
+        internal int Calls;
+        public string Name => "wrapped-" + inner.Name;
+        public Task<WhatsAppUploadLocation> UploadAsync(string session, WhatsAppEncryptedUploadBody body, CancellationToken cancellation = default)
+        {
+            Calls++;
+            return inner.UploadAsync(session, body, cancellation);
+        }
+    }
     internal static async Task RunAsync(string root)
     {
         var start = new ProcessStartInfo(Environment.GetEnvironmentVariable("SDK_NODE") ?? "node") { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false }; start.ArgumentList.Add("packages/dotnet/tests/Polymorfa.Sdk.Tests/customer-data-server.mjs"); using var server = Process.Start(start)!; string? directory = null;
@@ -34,6 +44,8 @@ internal static class CustomerDataTests
             using var cancellation = new CancellationTokenSource(); cancellation.Cancel(); try { await HistoryChunks.DownloadAsync(new HistoryInlinePayload([]), historyOptions with { Media = historyOptions.Media with { CancellationToken = cancellation.Token } }); throw new Exception("Precancel ignored"); } catch (PolymorfaCancelledException) { }
             using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new ClientOptions { BaseUrl = new($"http://127.0.0.1:{value.GetProperty("apiPort").GetInt32()}"), MaxNetworkRetries = 0 });
             var plaintext = Enumerable.Repeat((byte)42, 100).ToArray(); var prepared = await WhatsAppMedia.PrepareUploadAsync(plaintext, new(WhatsAppUploadMediaType.Document)); var relay = await client.WhatsAppMedia.UploadRelayAsync("relay", prepared); ResourceTests.Equal(relay.Info.FileLength, 100L);
+            var wrappedRelay = new WrappedTransport(client.WhatsAppMedia.RelayTransport()); var wrappedRelayResult = await client.WhatsAppMedia.UploadAsync("wrapped-relay", prepared, wrappedRelay); ResourceTests.Equal(wrappedRelayResult.Egress, "wrapped-relay"); ResourceTests.Equal(wrappedRelay.Calls, 1);
+            var wrappedDirect = new WrappedTransport(client.WhatsAppMedia.DirectTransport(new() { ConfigureHttpHandler = Configure })); var wrappedDirectResult = await client.WhatsAppMedia.UploadAsync("wrapped-direct", prepared, wrappedDirect); ResourceTests.Equal(wrappedDirectResult.Egress, "wrapped-direct"); ResourceTests.Equal(wrappedDirect.Calls, 1);
             foreach (var scenario in new[] { "plain", "retry", "unauthorized", "multipart" }) { var result = await client.WhatsAppMedia.UploadDirectAsync(scenario, prepared, new() { ConfigureHttpHandler = Configure, DocumentPartSize = scenario == "multipart" ? 32 : 1000 }); ResourceTests.Equal(result.Location.DirectPath, "/stored.enc"); }
             try { await client.WhatsAppMedia.UploadDirectAsync("redirect", prepared, new() { ConfigureHttpHandler = Configure }); throw new Exception("Redirect followed"); } catch (PolymorfaException error) { ResourceTests.True(!error.Message.Contains("synthetic-grant", StringComparison.Ordinal)); ResourceTests.True(!error.Message.Contains("secret=fixture", StringComparison.Ordinal)); }
             var reads = 0; Task<Stream> Changed(CancellationToken _) => Task.FromResult<Stream>(new MemoryStream(Enumerable.Repeat((byte)(Interlocked.Increment(ref reads) == 1 ? 1 : 2), 80).ToArray(), writable: false));

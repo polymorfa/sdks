@@ -150,6 +150,22 @@ notifications into verified download inputs.
 
 ### Customer-owned storage
 
+Implement `IWhatsAppMediaUploadTransport` for application-owned uploads and pass
+it to `WhatsAppMedia.UploadAsync(session, prepared, transport, cancellation)`.
+Its `WhatsAppEncryptedUploadBody` exposes media type, encrypted SHA-256, encrypted
+length and `OpenAsync(offset)`. It exposes no media key, plaintext or API
+credential. Hash getters return copies, and the returned upload information is
+captured before calling the custom transport.
+
+`RelayTransport()` and `DirectTransport(options)` implement that same interface
+and can be wrapped to add application behavior. Existing `UploadRelayAsync` and
+`UploadDirectAsync` remain available. Custom names appear in the result's
+`Egress`. Custom transports own network requests and opened streams; pass through
+cancellation, close streams and finalize only after the verified stream ends.
+Changed-source integrity errors and caller transport errors remain unchanged.
+Pre-cancellation prevents transport invocation; in-progress cancellation returns
+control to the caller. Custom network code must observe its cancellation token.
+
 `Polymorfa.Sdk.Storage` provides schema-2 operations, deterministic per-field
 merges, conditional checkpoints, durable session leases and a memory adapter.
 `D1BridgeStorageAdapter.ConnectAsync` verifies a signed handshake with a
@@ -254,6 +270,11 @@ A failed conditional GET or a changed complete second-pass hash fails before
 final encrypted bytes or finalization. Relay is the default; select
 `S3WhatsAppEgress.Direct` to use grant-based direct upload. Object writes can
 have an uncertain outcome after cancellation or transport failure.
+
+The `S3MediaStore.UploadToWhatsAppAsync(options, transport, cancellation)`
+overload accepts a custom `IWhatsAppMediaUploadTransport` and retains both
+ETag-pinned source reads. An independent custom transport makes no Polymorfa API
+request; built-in relay/direct transports can also be wrapped.
 
 This media helper follows source
 `254fc6a2d073e7fc79420cf95f9b03927d00c04a`. Native tests exercise the official

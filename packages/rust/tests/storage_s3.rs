@@ -5,17 +5,51 @@ use aws_sdk_s3::{
     Client,
 };
 use base64::{engine::general_purpose::STANDARD, Engine as _};
+use futures_util::StreamExt as _;
 use polymorfa_sdk::{
+    direct_media::UploadLocation,
     media::{MediaDescriptor, MediaDownloadOptions, MediaKind},
     media_encrypt::UploadMediaType,
+    media_upload_transport::{EncryptedUploadBody, MediaUploadTransport, UploadTransportFuture},
     s3::{S3ArchiveOptions, S3MediaStore, S3UploadOptions, S3WhatsAppEgress},
     ClientOptions, Credential, ErrorKind, MessagingClient,
 };
 use serde_json::Value;
+use sha2::{Digest as _, Sha256};
 use std::{io::BufRead, path::PathBuf, sync::Arc, time::Duration};
 struct Peer {
     child: std::process::Child,
     ready: Value,
+}
+struct CustomerUpload;
+impl MediaUploadTransport for CustomerUpload {
+    fn name(&self) -> &str {
+        "customer-s3"
+    }
+    fn upload<'a>(
+        &'a self,
+        _: &'a str,
+        body: EncryptedUploadBody<'a>,
+        _: tokio_util::sync::CancellationToken,
+    ) -> UploadTransportFuture<'a> {
+        Box::pin(async move {
+            let mut source = body.open(0).await?;
+            let mut bytes = Vec::new();
+            while let Some(chunk) = source.next().await {
+                bytes.extend_from_slice(&chunk?);
+            }
+            assert_eq!(body.encrypted_length(), bytes.len() as u64);
+            assert_eq!(
+                body.file_enc_sha256().as_slice(),
+                Sha256::digest(bytes).as_slice()
+            );
+            Ok(UploadLocation {
+                direct_path: "/customer.enc".into(),
+                url: "https://mmg.whatsapp.net/customer.enc".into(),
+                handle: None,
+            })
+        })
+    }
 }
 impl Peer {
     fn start() -> Self {
@@ -346,6 +380,48 @@ async fn actual_minio_official_driver_verified_spool_and_etag_pinned_uploads() {
         .await
         .unwrap();
     assert_eq!(uploaded.info.file_length, 100);
+    seed(&direct, &bucket, "media/custom-source", source.clone()).await;
+    let api_count = peer.get("/state").await["requests"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|r| r["boundary"] == "api")
+        .count();
+    let custom = store
+        .upload_to_whatsapp_with_transport(
+            &resource,
+            "customer-s3",
+            S3UploadOptions::new("custom-source", UploadMediaType::Document),
+            &CustomerUpload,
+        )
+        .await
+        .unwrap();
+    assert_eq!(custom.egress, "customer-s3");
+    assert_eq!(custom.info.file_length, 100);
+    let state = peer.get("/s3-state").await;
+    let custom_reads = state["requests"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|r| {
+            r["method"] == "GET"
+                && r["path"]
+                    .as_str()
+                    .unwrap()
+                    .ends_with("/media/custom-source")
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(custom_reads.len(), 2);
+    assert_eq!(custom_reads[0]["ifMatch"], custom_reads[1]["ifMatch"]);
+    assert_eq!(
+        peer.get("/state").await["requests"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|r| r["boundary"] == "api")
+            .count(),
+        api_count
+    );
     seed(&direct, &bucket, "media/mutable", source).await;
     peer.get("/s3-arm-change?key=media/mutable").await;
     let mut pending = Box::pin(store.upload_to_whatsapp(

@@ -6,6 +6,7 @@ use crate::{
     media_encrypt::{MediaEncryptionOptions, MediaInputStream, UploadMediaType},
     media_stream::MediaVerifyMode,
     media_upload::{DirectUploadOptions, MediaSource, MediaUploadResult, SourceFactory},
+    media_upload_transport::{upload_with_transport, MediaUploadTransport},
     Error, ErrorKind, RequestOptions, Result,
 };
 use aws_sdk_s3::{primitives::ByteStream, Client};
@@ -177,7 +178,29 @@ impl S3MediaStore {
         &self,
         messaging: &WhatsAppMediaResource<'_>,
         session: &str,
+        options: S3UploadOptions,
+    ) -> Result<MediaUploadResult> {
+        self.upload_using(messaging, session, options, None).await
+    }
+    pub async fn upload_to_whatsapp_with_transport(
+        &self,
+        messaging: &WhatsAppMediaResource<'_>,
+        session: &str,
+        options: S3UploadOptions,
+        transport: &dyn MediaUploadTransport,
+    ) -> Result<MediaUploadResult> {
+        if session.is_empty() || transport.name().is_empty() {
+            return Err(configuration());
+        }
+        self.upload_using(messaging, session, options, Some(transport))
+            .await
+    }
+    async fn upload_using(
+        &self,
+        messaging: &WhatsAppMediaResource<'_>,
+        session: &str,
         mut options: S3UploadOptions,
+        transport: Option<&dyn MediaUploadTransport>,
     ) -> Result<MediaUploadResult> {
         let key = self.key(&options.key)?;
         if options.encryption.max_bytes == 0 {
@@ -229,6 +252,15 @@ impl S3MediaStore {
         }
         let factory = self.source(key, etag, length, cancellations.clone());
         let upload = async {
+            if let Some(transport) = transport {
+                return upload_with_transport(
+                    session,
+                    MediaSource::Reopen(factory),
+                    options.encryption,
+                    transport,
+                )
+                .await;
+            }
             match options.egress {
                 S3WhatsAppEgress::Relay => {
                     messaging
