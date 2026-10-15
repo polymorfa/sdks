@@ -1,4 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
   <PropertyGroup><TargetFramework>net8.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors><BlazorCacheBootResources>false</BlazorCacheBootResources><WasmBuildNative>false</WasmBuildNative><RunAOTCompilation>false</RunAOTCompilation><WasmEnableWebcil>false</WasmEnableWebcil></PropertyGroup>
   <ItemGroup><PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="[8.0.25]"/><ProjectReference Include="../../src/Polymorfa.Storage.IndexedDb/Polymorfa.Storage.IndexedDb.csproj"/><Compile Include="../Polymorfa.Storage.Sql.Tests/StorageConformance.cs" Link="StorageConformance.cs"/></ItemGroup>
+<ItemGroup><EmbeddedResource Include="../Polymorfa.Storage.Reducer.Tests/fixtures/reducer-batches-3bac.json" LogicalName="reducer-batches-3bac.json"/><EmbeddedResource Include="../Polymorfa.Storage.Reducer.Tests/fixtures/storage-3bac.json" LogicalName="storage-3bac.json"/></ItemGroup>
 </Project>
