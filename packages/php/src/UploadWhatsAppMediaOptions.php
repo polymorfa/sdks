@@ -8,7 +8,7 @@ use GuzzleHttp\ClientInterface;
 
 final readonly class UploadWhatsAppMediaOptions implements \JsonSerializable
 {
-    public function __construct(public string $mediaType, public ?string $mimeType = null, #[\SensitiveParameter] public ?string $mediaKey = null, public string $egress = 'relay', public int $maxBytes = WhatsAppMedia::MAX_BYTES, public ?RequestOptions $requestOptions = null, public ?ClientInterface $http = null, public int $maxAttempts = 3, public int $documentPartSize = 52428800)
+    public function __construct(public string $mediaType, public ?string $mimeType = null, #[\SensitiveParameter] public ?string $mediaKey = null, public string $egress = 'relay', public int $maxBytes = WhatsAppMedia::MAX_BYTES, public ?RequestOptions $requestOptions = null, public ?ClientInterface $http = null, public int $maxAttempts = 3, public int $documentPartSize = 52428800, public ?WhatsAppMediaUploadTransport $uploadTransport = null)
     {
         if (!in_array($mediaType, ['image','video','audio','ptt','document','sticker'], true)) {
             throw new ConfigurationException('mediaType');

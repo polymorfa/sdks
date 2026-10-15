@@ -67,9 +67,9 @@ $s3->getHandlerList()->appendInit(static function (callable $next) use (&$phase,
     };
 }, 'synthetic_native_s3_proof');
 try {
-    foreach (['relay','direct','document','changed'] as $mode) {
+    foreach (['relay','direct','custom','document','changed'] as $mode) {
         $kind = in_array($mode, ['document','changed'], true) ? 'document' : 'image';
-        $serverMode = in_array($mode, ['document','changed'], true) ? 'document' : $mode;
+        $serverMode = in_array($mode, ['document','changed'], true) ? 'document' : ($mode === 'custom' ? 'relay' : $mode);
         $process = proc_open([PHP_BINARY,__DIR__.'/media-upload-server.php',$serverMode,$kind], [0 => ['pipe','r'],1 => ['pipe','w'],2 => ['pipe','w']], $pipes);
         storageCheck(is_resource($process), 'native TLS upload fixture started');
         try {
@@ -92,6 +92,9 @@ try {
             $matches = [];
             $change = $mode === 'changed';
             $options = new UploadWhatsAppMediaOptions($kind, mediaKey:str_repeat(chr(31), 32), egress:$mode === 'relay' ? 'relay' : 'direct', requestOptions:new RequestOptions(timeout:10), http:$http, documentPartSize:$kind === 'document' ? 37 : 52428800);
+            if ($mode === 'custom') {
+                $options = new UploadWhatsAppMediaOptions($kind, mediaKey:str_repeat(chr(31), 32), uploadTransport:$client->whatsappMedia->uploadTransport('relay', $options));
+            }
             if ($change) {
                 $error = s3Raises(fn () => $store->uploadToWhatsApp($client->whatsappMedia, 'session', 'source-'.$mode, $options), MediaIntegrityException::class);
                 storageCheck($error->getPrevious() === null && !str_contains($error->getMessage(), $native['secretAccessKey']), '412 source failure redacted');
@@ -136,7 +139,7 @@ try {
     $descriptor = WhatsAppMedia::decode($vector['descriptor'], $vector['kind']);
     $encrypted = hex2bin($vector['encrypted']);
     $plaintext = hex2bin($vector['plaintext']);
-    foreach (['good','inputmutation','corrupt','length','cancel','metadata','secret','deadline','spool'] as $mode) {
+    foreach (['good','missingmime','inputmutation','corrupt','length','cancel','metadata','secret','deadline','spool'] as $mode) {
         $phase = '';
         $key = 'media/archive-'.$mode;
         $s3->putObject(['Bucket' => $bucket,'Key' => $key,'Body' => 'previous']);
@@ -149,6 +152,9 @@ try {
             $bytes[strlen($bytes) - 1] = chr(ord($bytes[strlen($bytes) - 1]) ^ 1);
         }
         $input = $mode === 'length' ? new MediaDescriptor($descriptor->mediaKind, $descriptor->mediaKey, $descriptor->url, $descriptor->directPath, $descriptor->fileSha256, $descriptor->fileEncSha256, strlen($plaintext) + 1, $descriptor->mimetype, $descriptor->fileName) : $descriptor;
+        if ($mode === 'missingmime') {
+            $input = new MediaDescriptor($descriptor->mediaKind, $descriptor->mediaKey, $descriptor->url, $descriptor->directPath, $descriptor->fileSha256, $descriptor->fileEncSha256, $descriptor->fileLength, fileName:"name!'()*.jpg");
+        }
         $immutable = false;
         $http = new GuzzleHttp\Client(['headers' => ['Authorization' => 'never-forward','Cookie' => 'never-forward'],'handler' => static function ($request, $options) use ($bytes, $mode, $token, $descriptor, &$immutable) {
             storageCheck(!$request->hasHeader('Authorization') && !$request->hasHeader('Cookie') && $options['allow_redirects'] === false, 'CDN excludes project and caller credentials');
@@ -165,11 +171,14 @@ try {
         }]);
         $extra = $mode === 'metadata' ? ['media-key' => 'blocked'] : ($mode === 'secret' ? ['note' => base64_encode($descriptor->mediaKey)] : ['purpose' => 'fixture']);
         $options = new S3ArchiveOptions('archive-'.$mode, $extra, $mode === 'spool' ? $scratch.'/missing' : $scratch, requestOptions:new RequestOptions(timeout:$mode === 'deadline' ? 0.000001 : 10, cancellation:$token), http:$http);
-        if (in_array($mode, ['good','inputmutation'], true)) {
+        if (in_array($mode, ['good','missingmime','inputmutation'], true)) {
             $result = $store->archive($input, $options);
             storageCheck($result->bytes === strlen($plaintext) && $puts === 1, 'verified private spool before actual MinIO PUT');
             $object = $s3->getObject(['Bucket' => $bucket,'Key' => $key]);
             storageCheck((string)$object['Body'] === $plaintext && $object['Metadata']['wa-file-sha256'] === bin2hex($descriptor->fileSha256), 'native archive content and safe metadata');
+            if ($mode === 'missingmime') {
+                storageCheck($object['ContentType'] === WhatsAppMedia::defaultMimeType($descriptor->mediaKind) && $object['Metadata']['wa-file-name'] === "name!'()*.jpg", 'missing MIME and canonical encodeURIComponent metadata');
+            }
             if ($mode === 'inputmutation') {
                 storageCheck($immutable, 'PHP readonly descriptor strings cannot be mutated during archive');
             }

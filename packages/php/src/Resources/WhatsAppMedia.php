@@ -9,7 +9,7 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\{RequestException,TransferException};
 use GuzzleHttp\Psr7\{Request,Utils};
 use Psr\Http\Message\StreamInterface;
-use Polymorfa\{BinaryRequestBody,CancellationToken,ConfigurationException,ConnectionException,EncryptedMediaInfo,EncryptedUploadStream,MediaEncryption,MediaIntegrityException,PolymorfaException,RequestOptions,ServerException,TimeoutException,UploadWhatsAppMediaOptions,WhatsAppMedia as MediaCodec,WhatsAppMediaUploadResult,WhatsAppUploadGrant,WhatsAppUploadLocation};
+use Polymorfa\{BuiltinWhatsAppMediaUploadTransport,WhatsAppEncryptedUploadBody,WhatsAppMediaUploadTransport,BinaryRequestBody,CancellationToken,ConfigurationException,ConnectionException,EncryptedMediaInfo,EncryptedUploadStream,MediaEncryption,MediaIntegrityException,PolymorfaException,RequestOptions,ServerException,TimeoutException,UploadWhatsAppMediaOptions,WhatsAppMedia as MediaCodec,WhatsAppMediaUploadResult,WhatsAppUploadGrant,WhatsAppUploadLocation};
 
 final class WhatsAppMedia extends Resource
 {
@@ -106,12 +106,71 @@ final class WhatsAppMedia extends Resource
         } finally {
             $first->close();
         }
-        if ($options->egress === 'relay') {
+        $egress = $options->egress;
+        if ($options->uploadTransport !== null) {
+            $extension = $options->uploadTransport;
+            try {
+                $egress = $extension->name();
+            } catch (\Throwable) {
+                throw new ConfigurationException('uploadTransport');
+            }
+            if (!preg_match('/^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$/D', $egress)) {
+                throw new ConfigurationException('uploadTransport');
+            }
+            $deadline = hrtime(true) / 1e9 + ($options->requestOptions->timeout ?? 30);
+            $token = CancellationToken::linked(...array_values(array_filter([$cancellation, CancellationToken::after($options->requestOptions->timeout ?? 30)])));
+            $check = static function () use ($cancellation, $deadline, $token): void {
+                $cancellation?->throwIfCancelled();
+                if (hrtime(true) / 1e9 >= $deadline) {
+                    throw new TimeoutException('The media upload timed out.', 'request_timeout');
+                }
+                $token->throwIfCancelled();
+            };
+            $open = static fn (?CancellationToken $child): StreamInterface => new EncryptedUploadStream(self::openSource($source, $child), $info, $options->maxBytes, $child);
+            $body = new WhatsAppEncryptedUploadBody($info, $open, static function (self $resource, string $targetSession, string $mode, UploadWhatsAppMediaOptions $builtin) use ($source, $info, $options, $token): WhatsAppUploadLocation {
+                $request = $builtin->requestOptions ?? new RequestOptions();
+                $request = new RequestOptions($request->timeout, $request->maxNetworkRetries, $request->apiVersion, $request->idempotencyKey, $request->headers, CancellationToken::linked(...array_values(array_filter([$request->cancellation, $token]))));
+                $policy = new UploadWhatsAppMediaOptions($info->mediaType, $info->mimeType, $info->mediaKey, $mode, $options->maxBytes, $request, $builtin->http, $builtin->maxAttempts, $builtin->documentPartSize);
+                if ($mode === 'direct') {
+                    return $resource->directUpload($targetSession, $source, $info, $policy);
+                }
+                if ($mode !== 'relay') {
+                    throw new ConfigurationException('egress');
+                }
+                return $resource->relayUpload($targetSession, $info, static fn (?CancellationToken $child): StreamInterface => new EncryptedUploadStream(self::openSource($source, $child), $info, $options->maxBytes, $child), $request);
+            }, $token);
+            try {
+                try {
+                    $location = $extension->upload($session, $body);
+                } catch (\Throwable) {
+                    $check();
+                    throw new MediaIntegrityException('The custom encrypted upload transport failed.', 'media_upload_transport_failed');
+                }
+                $complete = $body->finish();
+                $check();
+                if (!$complete) {
+                    throw new MediaIntegrityException('The transport did not consume a complete verified encrypted body.', 'media_upload_incomplete');
+                }
+                if ($location->directPath === '' || $location->url === '') {
+                    throw new ServerException('The transport returned an invalid upload location.', 'invalid_response');
+                }
+            } finally {
+                $body->finish();
+            }
+        } elseif ($options->egress === 'relay') {
             $location = $this->relayUpload($session, $info, static fn (?CancellationToken $token): StreamInterface => new EncryptedUploadStream(self::openSource($source, $token), $info, $options->maxBytes, $token), $options->requestOptions);
         } else {
             $location = $this->directUpload($session, $source, $info, $options);
         }
-        return new WhatsAppMediaUploadResult($info, $location, $options->egress);
+        return new WhatsAppMediaUploadResult($info, $location, $egress);
+    }
+    public function uploadTransport(string $mode, UploadWhatsAppMediaOptions $options): WhatsAppMediaUploadTransport
+    {
+        $this->server();
+        if (!in_array($mode, ['relay','direct'], true) || $options->uploadTransport !== null) {
+            throw new ConfigurationException('uploadTransport');
+        }
+        return new BuiltinWhatsAppMediaUploadTransport($this, $mode, $options);
     }
     /** @param \Closure(?CancellationToken):StreamInterface $source */
     private static function openSource(#[\SensitiveParameter] \Closure $source, ?CancellationToken $cancellation): StreamInterface
