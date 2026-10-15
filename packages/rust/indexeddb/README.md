@@ -60,3 +60,15 @@ Normal Cargo package verification can use a temporary command-line patch pointin
 to the unpacked exact core `.crate` artifact. That proves local package composition
 without bypassing verification. The core still needs to be published and verified
 before dependent packages can be installed from a registry.
+
+For Rust 1.85 artifact consumers, configure MSRV-aware dependency resolution in
+the application's `.cargo/config.toml`:
+
+```toml
+[resolver]
+incompatible-rust-versions = "fallback"
+```
+
+Dependency-local Cargo configuration does not configure the consuming app. The
+independent artifact checks use this setting; retain the application's lockfile
+for reproducible builds.

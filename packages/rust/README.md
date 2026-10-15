@@ -577,3 +577,15 @@ checks use the native driver for the shared 17-entity conformance suite, 2,000
 history rows, rollback, replay, checkpoint CAS and expired-writer fencing.
 Hosted Google IAM, TLS, index provisioning and production availability require
 separate customer verification. This optional crate feature is unpublished.
+
+For Rust 1.85 artifact consumers, configure MSRV-aware dependency resolution in
+the application's `.cargo/config.toml`:
+
+```toml
+[resolver]
+incompatible-rust-versions = "fallback"
+```
+
+Dependency-local Cargo configuration does not configure the consuming app. The
+independent artifact checks use this setting; retain the application's lockfile
+for reproducible builds.
