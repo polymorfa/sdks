@@ -438,3 +438,29 @@ rollback, lease-fenced deletion, checkpoint CAS and namespace isolation against
 actual drivers. These emulator/local-server proofs do not establish cloud
 account permissions, hosting availability or deployment readiness. Convex and
 IndexedDB are outside the accepted Go adapter matrix.
+
+
+## S3-compatible media storage
+
+`NewS3MediaStore(S3MediaStoreOptions{Client: client, Bucket: bucket, Prefix: prefix})`
+borrows an official AWS SDK v2 S3 client configured for the customer's bucket,
+including compatible R2 or MinIO endpoints. `UploadToWhatsApp` takes a Messaging
+media resource, session, relative key and the existing encrypted upload options.
+It requires an object ETag, pins both reads with `If-Match`, and preserves the
+source-length and final encrypted-hash barriers before provider finalization.
+An object changed between reads fails instead of finalizing mismatched media.
+
+`Archive(ctx, descriptor, S3ArchiveOptions{Key: key, ScratchDirectory: privateDir})`
+snapshots the descriptor, downloads and verifies into a private file, checks its
+known plaintext length, then starts the object PUT. Corruption, wrong length or
+cancellation cannot start an overwrite. Each private spool is removed after
+success or failure. Optional metadata is bounded ASCII; the SDK adds media kind,
+plaintext hash and encoded filename, and never writes the media key. Caller
+metadata must not contain secrets.
+
+The official S3 client 1.114.3 passed actual MinIO proofs for relay/direct upload,
+both conditional reads, changed-source 412 refusal, verified archive, descriptor
+mutation isolation, corrupt-source overwrite refusal, known-length mismatch,
+cancellation and spool cleanup. Repeat with task-owned synthetic metadata in
+`POLYMORFA_S3_FIXTURE_METADATA`. AWS and R2 account credentials, provider hosting
+and live WhatsApp delivery were not exercised by these native tests.
