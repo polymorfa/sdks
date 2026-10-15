@@ -235,7 +235,7 @@ follow schema 2. Invalid or oversized derived identifiers fail before connecting
 preventing PostgreSQL name truncation. Driver errors omit connection strings, SQL
 and customer values. SQL adapters require a server application. Hosted
 Supabase/Neon/PlanetScale authority and deployment acceptance remain customer
-configuration and verification gates. The libSQL, document-store and browser adapters remain separate work; a
+configuration and verification gates. The libSQL and browser adapters remain separate work; a
 Supabase RLS preset is exported below.
 
 
@@ -414,3 +414,38 @@ keys and caller mutation. A forced concurrent replacement proves native
 ETag-batch rollback with no partial insert. Hosted Azure credentials, account
 permissions, TLS, region consistency and operational failover remain customer
 acceptance gates.
+
+### Customer-owned Firestore
+
+The separate, unpublished `Polymorfa.Storage.Firestore` package adds
+`Polymorfa.Storage.Firestore.FirestoreStorageAdapter` through the official
+`Google.Cloud.Firestore` 4.5.0 client. Pass a customer-owned `FirestoreDb` and
+`new FirestoreStorageOptions(namespace)`. The caller owns project/database
+selection, Google credentials, TLS, deadlines and client lifetime. Database
+credentials stay separate from Polymorfa API credentials. This server adapter
+refuses browser construction.
+
+```csharp
+using Polymorfa.Storage.Firestore;
+var adapter = new FirestoreStorageAdapter(customerDatabase,
+    new FirestoreStorageOptions("my_app"));
+```
+
+Collections use `polymorfa_{namespace}_{entity}`. Native transactions read all
+touched documents before writing, check row revisions and commit at most 250
+writes, including the engine lease fence. A stale revision rejects the complete
+batch. Inputs are copied before the first asynchronous call, so retries retain
+the prepared row and query scope. Queries use declared equality fields only,
+read at most `MaxQueryRows + 1` rows (default 100,001), reject an oversized scan
+and apply portable range, cursor and ordering rules. `SetupAsync` does not
+provision collections or indexes. The customer configures required composite
+indexes and retention. Firestore document, nesting, field-name and transaction
+limits still apply.
+
+This implements source `3bacf46f9c4213426314001586f5bae43aaa77de`. Literal
+JSON tag-shaped objects remain ordinary objects; Firestore-native timestamps,
+references, blobs and other non-JSON values are refused. Actual emulator tests
+use the official driver for all 17 schema entities, JSON values, 2,000 history
+rows, rollback, replay, checkpoint CAS, lease fencing, namespace separation,
+closed query scopes and scan bounds. Hosted Google IAM, TLS, indexes and
+production availability remain separate verification gates.

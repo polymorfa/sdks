@@ -213,3 +213,6 @@ pub mod dynamodb;
 
 #[cfg(feature = "storage-mongodb")]
 pub mod mongodb;
+
+#[cfg(feature = "storage-firestore")]
+pub mod firestore;
