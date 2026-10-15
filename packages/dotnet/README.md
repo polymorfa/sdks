@@ -346,3 +346,50 @@ Actual local replica-set tests cover all 17 entities, literal/scalar JSON,
 fences, namespaces, read bounds and mutation during a request. Actual standalone
 tests prove refusal without partial writes. Hosted MongoDB authorization, TLS,
 sharded deployment and operational failover remain customer acceptance gates.
+
+
+The separate, unpublished `Polymorfa.Storage.Cosmos` package adds
+`Polymorfa.Storage.Cosmos.CosmosStorageAdapter` using the official Azure Cosmos
+DB .NET driver. Pass a customer-owned `Container` and
+`new CosmosStorageOptions(namespace)`. The caller configures credentials,
+TLS, endpoints, connection mode, retry policy and timeouts and owns the client.
+The adapter uses native stream APIs for its JSON wire shape, independently of
+any custom serializer on that client. It never reads Polymorfa API credentials
+and requires a server app.
+
+```csharp
+using Polymorfa.Storage.Cosmos;
+var adapter = new CosmosStorageAdapter(customerContainer,
+    new CosmosStorageOptions("my_app"));
+await adapter.SetupAsync();
+```
+
+Provision the customer database and container separately. The container must
+have exactly one partition-key path, `/namespace`; setup verifies it and never
+creates resources. Every commit stays in that namespace's logical partition.
+Namespace keys complement customer account/container permissions and do not
+replace them.
+
+Conditional commits use native atomic batches with at most 100 writes,
+including the session fence. Each replacement carries the ETag from its point
+read, so a concurrent writer rolls back the complete batch. Deletes replace
+payloads with tombstones to preserve conditional identity. Tombstones consume
+customer storage; this adapter does not silently purge them. Cosmos document,
+batch, logical-partition and throughput limits still apply. A timeout can leave
+a write outcome unknown; resume with saved event/checkpoint state and
+conditional revisions.
+
+Queries use fixed, parameterized SQL and scan the namespace's entity rows
+before applying the schema index, range and cursor. `MaxQueryRows` defaults to
+100,000 for that scan; each query response is bounded to 8 MiB. Bound customer
+retention and configure operation deadlines and lease duration for the workload.
+Caller rows and query scopes are captured before asynchronous work.
+
+The schema source is `3bacf46f9c4213426314001586f5bae43aaa77de`.
+Actual local Cosmos DB emulator tests use the official driver and cover all
+17 entities, literal/scalar JSON, 2,000-message history, replay, checkpoints,
+expired-writer fences, tombstones, namespace/read bounds, incorrect partition
+keys and caller mutation. A forced concurrent replacement proves native
+ETag-batch rollback with no partial insert. Hosted Azure credentials, account
+permissions, TLS, region consistency and operational failover remain customer
+acceptance gates.
