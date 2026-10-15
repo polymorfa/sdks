@@ -41,6 +41,8 @@ fn upsert(entity: Entity, key: RowKey, fields: FieldWrites) -> StorageOperation 
 struct SlowScan {
     memory: MemoryAdapter,
     clock: Arc<AtomicU64>,
+    slow_reads: bool,
+    read_delay: u64,
 }
 impl StorageAdapter for SlowScan {
     fn name(&self) -> &str {
@@ -54,6 +56,9 @@ impl StorageAdapter for SlowScan {
         entity: Entity,
         ids: &'a [String],
     ) -> StorageFuture<'a, BTreeMap<String, StoredRow>> {
+        if self.slow_reads && entity != Entity::Leases {
+            self.clock.fetch_add(self.read_delay, Ordering::SeqCst);
+        }
         self.memory.get(entity, ids)
     }
     fn commit<'a>(&'a self, writes: &'a [RowWrite]) -> StorageFuture<'a, CommitResult> {
@@ -65,7 +70,9 @@ impl StorageAdapter for SlowScan {
         query: &'a IndexQuery,
     ) -> StorageFuture<'a, Vec<StoredRow>> {
         Box::pin(async move {
-            self.clock.fetch_add(4000, Ordering::SeqCst);
+            if !self.slow_reads {
+                self.clock.fetch_add(4000, Ordering::SeqCst);
+            }
             self.memory.query(entity, query).await
         })
     }
@@ -76,6 +83,8 @@ async fn long_chat_clear_renews_live_lease_between_queries() {
     let adapter = Arc::new(SlowScan {
         memory: MemoryAdapter::default(),
         clock: clock.clone(),
+        slow_reads: false,
+        read_delay: 4000,
     });
     let engine_clock = clock.clone();
     let storage = Storage::new(
@@ -129,6 +138,85 @@ async fn long_chat_clear_renews_live_lease_between_queries() {
     assert!(clock.load(Ordering::SeqCst) > 10000);
     assert!(adapter.memory.rows(Entity::Messages).is_empty());
     assert!(storage.has_event("slow", "clear").await.unwrap());
+}
+#[tokio::test]
+async fn row_planning_renews_live_lease_between_entity_reads() {
+    let clock = Arc::new(AtomicU64::new(0));
+    let adapter = Arc::new(SlowScan {
+        memory: MemoryAdapter::default(),
+        clock: clock.clone(),
+        slow_reads: true,
+        read_delay: 4000,
+    });
+    let engine_clock = clock.clone();
+    let storage = Storage::new(
+        adapter.clone(),
+        StorageOptions {
+            lease_duration: Duration::from_secs(10),
+            now: Arc::new(move || engine_clock.load(Ordering::SeqCst) as f64),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let operations = [Entity::Chats, Entity::Messages, Entity::Contacts]
+        .into_iter()
+        .map(|entity| {
+            let keys = entity
+                .definition()
+                .key
+                .iter()
+                .map(|name| {
+                    (
+                        (*name).to_owned(),
+                        if *name == "sessionId" { "slow" } else { "one" }.to_owned(),
+                    )
+                })
+                .collect();
+            upsert(entity, keys, BTreeMap::new())
+        })
+        .collect();
+    storage
+        .apply(&batch("slow", Some("planned"), operations))
+        .await
+        .unwrap();
+    assert!(clock.load(Ordering::SeqCst) > 10000);
+    for entity in [Entity::Chats, Entity::Messages, Entity::Contacts] {
+        assert_eq!(adapter.memory.rows(entity).len(), 1);
+    }
+    assert!(storage.has_event("slow", "planned").await.unwrap());
+}
+#[tokio::test]
+async fn an_expired_planning_read_cannot_renew_or_write_a_replay_marker() {
+    let clock = Arc::new(AtomicU64::new(0));
+    let adapter = Arc::new(SlowScan {
+        memory: MemoryAdapter::default(),
+        clock: clock.clone(),
+        slow_reads: true,
+        read_delay: 12000,
+    });
+    let engine_clock = clock.clone();
+    let storage = Storage::new(
+        adapter.clone(),
+        StorageOptions {
+            lease_duration: Duration::from_secs(10),
+            now: Arc::new(move || engine_clock.load(Ordering::SeqCst) as f64),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let operations = vec![upsert(
+        Entity::Messages,
+        key(&[("sessionId", "slow"), ("messageId", "m")]),
+        fields("text", json!("must stay absent"), 1.),
+    )];
+    assert!(matches!(
+        storage
+            .apply(&batch("slow", Some("expired"), operations))
+            .await,
+        Err(StorageError::LeaseLost)
+    ));
+    assert!(adapter.memory.rows(Entity::Messages).is_empty());
+    assert!(adapter.memory.rows(Entity::Events).is_empty());
 }
 #[test]
 fn schema_canonical_merge_and_presence_are_portable() {

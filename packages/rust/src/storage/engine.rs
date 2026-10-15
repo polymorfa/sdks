@@ -216,7 +216,7 @@ impl Storage {
         }
         Ok(result)
     }
-    async fn renew_for_scan(&self, lease: &mut Lease) -> StorageResult<()> {
+    async fn renew_if_needed(&self, lease: &mut Lease) -> StorageResult<()> {
         let expires = lease
             .row
             .fields
@@ -248,14 +248,20 @@ impl Storage {
         &self,
         entity: Entity,
         ids: &[String],
+        lease: &mut Lease,
     ) -> StorageResult<BTreeMap<String, StoredRow>> {
         let mut rows = BTreeMap::new();
         for group in ids.chunks(500) {
+            self.renew_if_needed(lease).await?;
             rows.extend(self.adapter.get(entity, group).await?);
         }
         Ok(rows)
     }
-    async fn plan(&self, operations: &[StorageOperation]) -> StorageResult<Vec<RowWrite>> {
+    async fn plan(
+        &self,
+        operations: &[StorageOperation],
+        lease: &mut Lease,
+    ) -> StorageResult<Vec<RowWrite>> {
         let mut wanted: BTreeMap<Entity, BTreeSet<String>> = BTreeMap::new();
         for operation in operations {
             let (entity, id) = operation_slot(operation)?;
@@ -264,7 +270,7 @@ impl Storage {
         let mut original: BTreeMap<(Entity, String), Option<StoredRow>> = BTreeMap::new();
         for (entity, ids) in wanted {
             let ids = ids.into_iter().collect::<Vec<_>>();
-            let mut rows = self.read_many(entity, &ids).await?;
+            let mut rows = self.read_many(entity, &ids, lease).await?;
             for id in ids {
                 let row = rows.remove(&id);
                 original.insert((entity, id), row);
@@ -380,7 +386,7 @@ impl Storage {
     ) -> StorageResult<usize> {
         let mut conflicts = Vec::new();
         for attempt in 0..=self.options.max_retries {
-            let mut writes = self.plan(operations).await?;
+            let mut writes = self.plan(operations, lease).await?;
             writes.extend_from_slice(extra);
             if writes.is_empty() {
                 return Ok(0);
@@ -433,7 +439,7 @@ impl Storage {
     ) -> StorageResult<usize> {
         let mut removed = 0;
         loop {
-            self.renew_for_scan(lease).await?;
+            self.renew_if_needed(lease).await?;
             let messages = self
                 .adapter
                 .query(
@@ -468,7 +474,7 @@ impl Storage {
                 });
                 for entity in [Entity::Reactions, Entity::Receipts, Entity::PollVotes] {
                     loop {
-                        self.renew_for_scan(lease).await?;
+                        self.renew_if_needed(lease).await?;
                         let children = self
                             .adapter
                             .query(
@@ -517,6 +523,7 @@ impl Storage {
     async fn watermarks(
         &self,
         operations: Vec<StorageOperation>,
+        lease: &mut Lease,
     ) -> StorageResult<Vec<StorageOperation>> {
         let mut keys = BTreeSet::new();
         for op in &operations {
@@ -528,7 +535,7 @@ impl Storage {
             }
         }
         let chats = self
-            .read_many(Entity::Chats, &keys.into_iter().collect::<Vec<_>>())
+            .read_many(Entity::Chats, &keys.into_iter().collect::<Vec<_>>(), lease)
             .await?;
         operations
             .into_iter()
@@ -606,6 +613,7 @@ impl Storage {
     ) -> StorageResult<ApplyResult> {
         let mut marker = Vec::new();
         if let Some(id) = &batch.event_id {
+            self.renew_if_needed(lease).await?;
             let mut row = empty_row(
                 Entity::Events,
                 &key(&[("sessionId", &batch.session_id), ("eventId", id)]),
@@ -659,7 +667,7 @@ impl Storage {
                 writes += self.clear_chat(session_id, chat_id, *up_to, lease).await?;
             }
         }
-        let kept = self.watermarks(guarded).await?;
+        let kept = self.watermarks(guarded, lease).await?;
         match self.apply_rows(&kept, &marker, lease).await {
             Ok(n) => Ok(ApplyResult {
                 applied: true,

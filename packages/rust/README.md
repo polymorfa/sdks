@@ -270,7 +270,7 @@ server clients; hosted Supabase/Neon/PlanetScale authority and deployment accept
 require the customer's own configuration and verification. The libSQL, document-store and browser adapters remain separate work. A Supabase
 RLS preset is exported below.
 
-Chat clears renew a live lease conditionally between index queries once half
+Chat clears and row planning renew a live lease conditionally between reads once half
 the configured lease duration remains. An expired or replaced lease still
 fails closed. Configure customer operation deadlines and lease duration so one
 individual query or commit can finish before expiry.
