@@ -17,9 +17,10 @@ import (
 type WhatsAppMediaSource func(context.Context) (io.ReadCloser, error)
 type UploadWhatsAppMediaOptions struct {
 	EncryptMediaOptions
-	Egress           string // relay (default) or direct
-	MaxAttempts      int    // direct attempts per request; default 3
-	DocumentPartSize int64  // bounded document part; default 50 MiB
+	Egress           string                       // relay (default) or direct
+	UploadTransport  WhatsAppMediaUploadTransport // optional customer encrypted-byte transport
+	MaxAttempts      int                          // direct attempts per request; default 3
+	DocumentPartSize int64                        // bounded document part; default 50 MiB
 	RequestOptions   RequestOptions
 }
 type WhatsAppMediaUploadResult struct {
@@ -122,13 +123,20 @@ func (r *WhatsAppMediaResource) Upload(ctx context.Context, session string, sour
 		return WhatsAppMediaUploadResult{}, configuration("source", "An immutable media source and session are required.")
 	}
 	mode := options.Egress
+	if options.UploadTransport != nil {
+		name := options.UploadTransport.Name()
+		if mode != "" || !uploadTransportName.MatchString(name) {
+			return WhatsAppMediaUploadResult{}, configuration("egress", "Select one valid named encrypted upload transport.")
+		}
+		mode = name
+	}
 	if mode == "" {
 		mode = "relay"
 	}
-	if mode != "relay" && mode != "direct" {
+	if options.UploadTransport == nil && mode != "relay" && mode != "direct" {
 		return WhatsAppMediaUploadResult{}, configuration("egress", "Media egress must be relay or direct.")
 	}
-	if mode == "direct" && (options.MaxAttempts < 0 || options.MaxAttempts > 100 || options.DocumentPartSize < 0 || options.DocumentPartSize > 64*1024*1024) {
+	if options.UploadTransport == nil && mode == "direct" && (options.MaxAttempts < 0 || options.MaxAttempts > 100 || options.DocumentPartSize < 0 || options.DocumentPartSize > 64*1024*1024) {
 		return WhatsAppMediaUploadResult{}, configuration("upload", "Direct attempts must be 1–100 and document part size 1–67108864 bytes.")
 	}
 	settings, err := encryptionOptions(options.EncryptMediaOptions)
@@ -140,7 +148,9 @@ func (r *WhatsAppMediaResource) Upload(ctx context.Context, session string, sour
 		return WhatsAppMediaUploadResult{}, err
 	}
 	var location WhatsAppUploadLocation
-	if mode == "relay" {
+	if options.UploadTransport != nil {
+		location, err = r.customUpload(ctx, session, source, info, settings.MaxBytes, options.UploadTransport)
+	} else if mode == "relay" {
 		var opened *encryptedUploadReader
 		location, err = r.RelayUpload(ctx, session, info, func(child context.Context) (io.ReadCloser, error) {
 			opened, err = openEncryptedUpload(child, source, info, settings.MaxBytes)
