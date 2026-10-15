@@ -216,3 +216,8 @@ pub mod mongodb;
 
 #[cfg(feature = "storage-firestore")]
 pub mod firestore;
+#[cfg(any(feature = "storage-sql", feature = "storage-libsql"))]
+mod sql_schema;
+
+#[cfg(feature = "storage-libsql")]
+pub mod libsql;
