@@ -532,6 +532,61 @@ const cases: readonly WireCase[] = [
 ];
 
 describe("2026-10-14 typed campaign and custody consumers", () => {
+  it("refuses client tokens on all six new Messaging methods before fetch", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>();
+    const base = clients("http://127.0.0.1:1");
+    const token = "pmfa_ct_synthetic_campaign_client";
+    const messaging = new MessagingClient({
+      credential: { type: "clientToken", value: token },
+      baseUrl: "http://127.0.0.1:1",
+      fetch,
+    });
+    const selected = cases.filter((row) => row.path.startsWith("/messaging/"));
+    expect(selected).toHaveLength(6);
+    for (const row of selected) {
+      const failure = await Promise.resolve()
+        .then(() => row.call({ ...base, messaging }, {}))
+        .then(
+          () => undefined,
+          (error: unknown) => error,
+        );
+      expect(failure).toBeInstanceOf(PolymorfaConfigurationError);
+      expect(failure).toMatchObject({ field: "credential" });
+      expect(String(failure)).not.toContain(token);
+    }
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { type: "apiKey" as const, value: ORGANIZATION_API_KEY },
+    { type: "projectToken" as const, value: PROJECT_TOKEN },
+  ])("retains all six Messaging methods for $type", async (credential) => {
+    const base = clients("http://127.0.0.1:1");
+    const selected = cases.filter((row) => row.path.startsWith("/messaging/"));
+    for (const row of selected) {
+      const fetch = vi.fn<typeof globalThis.fetch>().mockResolvedValue(
+        row.name === "exportProjectCampaignRecipients"
+          ? new Response("phone,status\r\n", {
+              headers: { "content-type": "text/csv" },
+            })
+          : new Response(JSON.stringify(successFixture(row.name)), {
+              headers: { "content-type": "application/json" },
+            }),
+      );
+      const messaging = new MessagingClient({
+        credential,
+        baseUrl: "http://127.0.0.1:1",
+        fetch,
+      });
+      await row.call({ ...base, messaging }, {});
+      expect(fetch).toHaveBeenCalledTimes(1);
+      const init = fetch.mock.calls[0]![1];
+      expect(new Headers(init?.headers).get("authorization")).toBe(
+        `Bearer ${credential.value}`,
+      );
+    }
+  });
+
   it("accounts for exactly the thirty pinned source operations without advancing the baseline", () => {
     const contract = JSON.parse(
       readFileSync(

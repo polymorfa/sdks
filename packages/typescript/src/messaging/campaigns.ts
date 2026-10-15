@@ -1,3 +1,5 @@
+import type { MessagingCredential } from "../credentials.js";
+import { PolymorfaConfigurationError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import type {
   CampaignRecipientExportPage,
@@ -49,7 +51,19 @@ import type {
 
 /** Exact project-slug campaign workflow exposed by the Messaging API. */
 export class MessagingCampaignsResource {
-  constructor(private readonly transport: HttpTransport) {}
+  constructor(
+    private readonly transport: HttpTransport,
+    private readonly credentialType: MessagingCredential["type"] = "apiKey",
+  ) {}
+
+  private requireServerCredential(): void {
+    if (this.credentialType === "clientToken") {
+      throw new PolymorfaConfigurationError(
+        "Campaign operations require an organization API key or project token.",
+        "credential",
+      );
+    }
+  }
 
   getReplyFlow(
     projectSlug: string,
@@ -58,6 +72,7 @@ export class MessagingCampaignsResource {
   ): Promise<
     ApiResponse<{ readonly success: true; readonly data: CampaignReplyFlow }>
   > {
+    this.requireServerCredential();
     return this.transport.request({
       ...campaignContractOptions(options),
       method: "GET",
@@ -72,6 +87,7 @@ export class MessagingCampaignsResource {
   ): Promise<
     ApiResponse<{ readonly success: true; readonly data: CampaignReplyFlow }>
   > {
+    this.requireServerCredential();
     validateReplyFlowCreate(body);
     return this.transport.request({
       ...campaignContractOptions(options, true),
@@ -92,6 +108,7 @@ export class MessagingCampaignsResource {
       readonly data: CampaignReplyFlowAssignment;
     }>
   > {
+    this.requireServerCredential();
     validateReplyFlowAssignment(body);
     return this.transport.request({
       ...campaignContractOptions(options, true),
@@ -109,6 +126,7 @@ export class MessagingCampaignsResource {
   ): Promise<
     ApiResponse<{ readonly success: true; readonly data: CampaignTestSend }>
   > {
+    this.requireServerCredential();
     validateCampaignTestSend(body);
     return this.transport.request({
       ...campaignContractOptions(options, true, true),
@@ -128,6 +146,7 @@ export class MessagingCampaignsResource {
       readonly data: readonly CampaignTrackedLinkReport[];
     }>
   > {
+    this.requireServerCredential();
     return this.transport.request({
       ...campaignContractOptions(options),
       method: "GET",
@@ -141,6 +160,7 @@ export class MessagingCampaignsResource {
     params: CampaignRecipientExportParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<CampaignRecipientExportPage>> {
+    this.requireServerCredential();
     return requestCampaignExport(
       this.transport,
       `${contractCampaignPath(projectSlug, campaignId)}/recipients/export`,

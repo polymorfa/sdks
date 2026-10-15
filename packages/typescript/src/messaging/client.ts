@@ -95,7 +95,7 @@ export class MessagingClient {
     this.banSafe = new MessagingBanSafeResource(transport, credential.type);
     this.business = new BusinessResource(transport);
     this.calls = new CallsResource(transport);
-    this.campaigns = new MessagingCampaignsResource(transport);
+    this.campaigns = new MessagingCampaignsResource(transport, credential.type);
     this.chats = new ChatsResource(transport, credential.type);
     this.channels = new ChannelsResource(transport);
     this.clientTokens = new ClientTokensResource(transport, credential.type);
