@@ -28,8 +28,90 @@ final class DynamodbAdapter implements Adapter
         if ($this->client === null) {
             throw new StorageException('storage_closed');
         }
-        $result = DocumentRows::object(DocumentRows::call($this->client, $method, [$parameters]));
+        if (self::numericMaps($parameters)) {
+            // AWS3.401.2 Validator.php:270-289 rejects sequential numeric map
+            // keys; JsonBody.php:MAP returns an array for them. Validate every
+            // original value against the official input shape using map-only
+            // surrogate keys, then fix typed M JSON before official SigV4.
+            // The command owns this handler list; the borrowed client is unchanged.
+            $command = DocumentRows::object(DocumentRows::call($this->client, 'getCommand', [$method,$parameters]));
+            $handlers = DocumentRows::object(DocumentRows::call($command, 'getHandlerList'));
+            $method = DocumentRows::call($command, 'getName');
+            $api = DocumentRows::object(DocumentRows::call($this->client, 'getApi'));
+            $operation = DocumentRows::object(DocumentRows::call($api, 'getOperation', [$method]));
+            $shape = DocumentRows::object(DocumentRows::call($operation, 'getInput'));
+            $validator = DocumentRows::construct('Aws\\Api\\Validator');
+            $nativeValidation = static function (callable $next) use ($validator, $method, $shape): \Closure {
+                return static function (object $command, ?\Psr\Http\Message\RequestInterface $request = null) use ($next, $validator, $method, $shape): mixed {
+                    DocumentRows::call($validator, 'validate', [$method,$shape,self::validationView(DocumentRows::call($command, 'toArray'))]);
+                    return $next($command, $request);
+                };
+            };
+            if (DocumentRows::call($handlers, 'hasMiddleware', ['validation'])) {
+                DocumentRows::call($handlers, 'before', ['validation','polymorfa_numeric_maps',$nativeValidation]);
+                DocumentRows::call($handlers, 'remove', ['validation']);
+            } else {
+                DocumentRows::call($handlers, 'appendValidate', [$nativeValidation,'polymorfa_numeric_maps']);
+            }
+            DocumentRows::call($handlers, 'appendBuild', [static function (callable $next): \Closure {
+                return static function (object $command, ?\Psr\Http\Message\RequestInterface $request = null) use ($next): mixed {
+                    if ($request === null) {
+                        Schema::invalid();
+                    }
+                    $body = json_encode(self::wireMaps(json_decode((string)$request->getBody(), false, 512, JSON_THROW_ON_ERROR)), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                    return $next($command, $request->withBody(\GuzzleHttp\Psr7\Utils::streamFor($body))->withHeader('Content-Length', (string)strlen($body)));
+                };
+            },'polymorfa_numeric_map_json']);
+            $result = DocumentRows::object(DocumentRows::call($this->client, 'execute', [$command]));
+        } else {
+            $result = DocumentRows::object(DocumentRows::call($this->client, $method, [$parameters]));
+        }
         return DocumentRows::map(DocumentRows::call($result, 'toArray'));
+    }
+    private static function numericMaps(mixed $value): bool
+    {
+        if (!is_array($value)) {
+            return false;
+        }
+        foreach ($value as $key => $item) {
+            if ($key === 'M' && is_array($item) && $item !== [] && array_is_list($item)) {
+                return true;
+            } if (self::numericMaps($item)) {
+                return true;
+            }
+        } return false;
+    }
+    private static function validationView(mixed $value): mixed
+    {
+        if (!is_array($value)) {
+            return $value;
+        } $out = [];
+        foreach ($value as $key => $item) {
+            if ($key === 'M' && is_array($item) && $item !== [] && array_is_list($item)) {
+                $map = [];
+                foreach ($item as $k => $v) {
+                    $map['numeric_key_'.$k] = self::validationView($v);
+                } $out[$key] = $map;
+            } else {
+                $out[$key] = self::validationView($item);
+            }
+        } return $out;
+    }
+    private static function wireMaps(mixed $value, ?string $field = null): mixed
+    {
+        if ($field === 'M' && is_array($value)) {
+            $value = (object)$value;
+        }
+        if ($value instanceof \stdClass) {
+            foreach ((array)$value as $key => $item) {
+                $value->{(string)$key} = self::wireMaps($item, (string)$key);
+            }
+        } elseif (is_array($value)) {
+            foreach ($value as $key => $item) {
+                $value[$key] = self::wireMaps($item);
+            }
+        }
+        return $value;
     }
     /** @return array{atomicCommit:bool,maxCommitSize:int} */ public function capabilities(): array
     {

@@ -15,25 +15,36 @@ if (!class_exists(Aws\DynamoDb\DynamoDbClient::class)) {
 }
 
 /** @param list<array{int,array<string,mixed>}> $responses */
-function dynamoNegative(array $responses, Closure $operation, string $error, int $expectedRequests): void
+function dynamoNegative(array $responses, Closure $operation, string $error, int $expectedRequests, ?Closure $configure = null): void
 {
     $table = 'php_native_negative';
     $requests = [];
+    $rawBodies = [];
     $setup = [[200,['Table' => ['TableStatus' => 'ACTIVE','KeySchema' => [['AttributeName' => 'pk','KeyType' => 'HASH'],['AttributeName' => 'sk','KeyType' => 'RANGE']],'AttributeDefinitions' => [['AttributeName' => 'pk','AttributeType' => 'S'],['AttributeName' => 'sk','AttributeType' => 'S']]]]],[200,['Item' => ['pk' => ['S' => 'negative:storage_schema'],'sk' => ['S' => 'storage'],'version' => ['N' => '2']]]]];
     $queue = [...$setup,...$responses];
-    $client = new Aws\DynamoDb\DynamoDbClient(['version' => 'latest','region' => 'us-east-1','endpoint' => 'http://dynamodb-native.invalid','credentials' => ['key' => 'synthetic','secret' => 'synthetic'],'retries' => 0,'http_handler' => static function ($request) use (&$queue, &$requests) {
+    $client = new Aws\DynamoDb\DynamoDbClient(['version' => 'latest','region' => 'us-east-1','endpoint' => 'http://dynamodb-native.invalid','credentials' => ['key' => 'synthetic','secret' => 'synthetic'],'retries' => 0,'http_handler' => static function ($request) use (&$queue, &$requests, &$rawBodies) {
+        $rawBodies[] = (string)$request->getBody();
         $requests[] = json_decode((string)$request->getBody(), true, flags:JSON_THROW_ON_ERROR);
         storageCheck($queue !== [], 'no unexpected extra native HTTP request');
         [$status,$data] = array_shift($queue);
         $response = new GuzzleHttp\Psr7\Response($status, ['Content-Type' => 'application/x-amz-json-1.0'], json_encode($data, JSON_THROW_ON_ERROR));
         return $status < 400 ? GuzzleHttp\Promise\Create::promiseFor($response) : GuzzleHttp\Promise\Create::rejectionFor(['exception' => new RuntimeException('Synthetic HTTP error'),'response' => $response]);
     }]);
+    $configure?->__invoke($client);
+    $handlerBefore = (string)$client->getHandlerList();
     $adapter = new DynamodbAdapter($client, 'negative', $table);
     $adapter->setup();
     if ($error === 'conflict') {
         storageCheck($operation($adapter)['ok'] === false, 'conditional cancellation is a conflict');
+    } elseif ($error === 'success') {
+        storageCheck($operation($adapter)['ok'], 'numeric-map native request success');
     } else {
         storageRaises(fn () => $operation($adapter), $error);
+    }
+    storageCheck((string)$client->getHandlerList() === $handlerBefore, 'borrowed native client middleware unchanged');
+    if ($error === 'success') {
+        $wire = json_decode($rawBodies[2], false, flags:JSON_THROW_ON_ERROR);
+        storageCheck($wire->TransactItems[0]->Put->Item->row->M->extra->M instanceof stdClass && $wire->TransactItems[0]->Put->Item->row->M->extra->M->{'0'}->S === 'only', 'native numeric map is JSON object before SigV4');
     }
     storageCheck(count($requests) === 2 + $expectedRequests, 'native malformed response stops at expected request');
     foreach (array_slice($requests, 2) as $request) {
@@ -76,6 +87,25 @@ dynamoNegative([[200,['Items' => [$item],'LastEvaluatedKey' => $foreignKey]]], $
 dynamoNegative([[200,['Items' => [$item],'LastEvaluatedKey' => $key]],[200,['Items' => [$item],'LastEvaluatedKey' => $key]]], $query, 'invalid_storage_data', 2);
 $write = [['kind' => 'put','entity' => 'messages','row' => $row,'expectedRev' => null]];
 foreach (['ConditionalCheckFailed' => 'conflict','ValidationError' => 'storage_dynamodb_failed','AccessDenied' => 'storage_dynamodb_failed'] as $code => $expected) {
-    dynamoNegative([[400,['__type' => 'com.amazonaws.dynamodb.v20120810#TransactionCanceledException','message' => 'synthetic private diagnostic','CancellationReasons' => [['Code' => $code]]]]],fn ($adapter) => $adapter->commit($write),$expected,1);
+    dynamoNegative([[400,['__type' => 'com.amazonaws.dynamodb.v20120810#TransactionCanceledException','message' => 'synthetic private diagnostic','CancellationReasons' => [['Code' => $code]]]]], fn ($adapter) => $adapter->commit($write), $expected, 1);
 }
 echo "PHP official AWS HTTP decoder: foreign/duplicate/unrequested/malformed rows,unprocessed keys,bounded retries,consistent reads,nonprogress cursors and cancellation classification passed.\n";
+
+$numeric = $row;
+$numeric['extra'] = (object)['0' => 'only'];
+$numeric['_v'] = ['extra' => 0];
+$numericWrite = [['kind' => 'put','entity' => 'messages','row' => $numeric,'expectedRev' => null]];
+dynamoNegative([[200,[]]], fn ($adapter) => $adapter->commit($numericWrite), 'success', 1);
+dynamoNegative([], fn ($adapter) => $adapter->commit($numericWrite), 'storage_dynamodb_failed', 0, static function ($client): void {
+    $client->getHandlerList()->appendInit(static function (callable $next): Closure {
+        return static function ($command, $request = null) use ($next) {
+            if ($command->getName() === 'TransactWriteItems') {
+                $items = $command['TransactItems'];
+                $items[0]['Put']['Item']['row']['M']['extra']['M'][0]['S'] = [];
+                $command['TransactItems'] = $items;
+            }
+            return $next($command, $request);
+        };
+    }, 'synthetic_invalid_native_value');
+});
+echo "PHP official AWS numeric-map command: exact object wire,all native value validation and borrowed middleware ownership passed.\n";
