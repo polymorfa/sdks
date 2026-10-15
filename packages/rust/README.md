@@ -36,6 +36,15 @@ Retries apply to safe methods and mutations with an idempotency key, and stop on
 a final replay response. Message sending and reactions generate an idempotency
 key when omitted. Reuse a caller supplied key across application retries.
 
+Writes that generate a key prefer `RequestOptions.idempotency_key`, then one
+case-insensitive `Idempotency-Key` header. Equal header aliases collapse;
+conflicting aliases are rejected unless the explicit option supplies the key.
+The SDK serializes one key and preserves a caller's identity across separate
+method calls and network retries. Without a caller key, each method call gets a
+new key. Keys contain 1–255 UTF-8 bytes and valid header characters. A raw header
+alone does not enable automatic retries for an unsafe method, and endpoint retry
+limits and replay behavior remain unchanged.
+
 `ClientOptions::proxy` configures a proxy. `configure_http` customizes the
 build-owned HTTP client; the SDK enforces disabled automatic redirects after
 the callback. Media storage redirects use a separate credential-free client.

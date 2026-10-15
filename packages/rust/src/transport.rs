@@ -120,10 +120,44 @@ pub struct RequestOptions {
 impl RequestOptions {
     pub(crate) fn idempotent(mut self) -> Self {
         if self.idempotency_key.is_none() {
-            self.idempotency_key = Some(uuid::Uuid::new_v4().to_string());
+            // Invalid or ambiguous headers remain intact for the Result-returning
+            // transport to reject before I/O, without changing this helper's API.
+            if let Ok(key) = selected_idempotency_key(&self) {
+                self.idempotency_key =
+                    Some(key.unwrap_or_else(|| uuid::Uuid::new_v4().to_string()));
+            }
         }
         self
     }
+}
+
+fn selected_idempotency_key(options: &RequestOptions) -> Result<Option<String>> {
+    let mut key = options.idempotency_key.as_deref();
+    if key.is_none() {
+        for (_, value) in options
+            .headers
+            .iter()
+            .filter(|(name, _)| name.eq_ignore_ascii_case("idempotency-key"))
+        {
+            if key.is_some_and(|selected| selected != value) {
+                return Err(configuration("Supply one unambiguous idempotency key"));
+            }
+            key = Some(value);
+        }
+    }
+    if let Some(key) = key {
+        if key.trim().is_empty()
+            || key.len() > 255
+            || key
+                .bytes()
+                .any(|byte| (byte < 32 && byte != b'\t') || byte == 127)
+        {
+            return Err(configuration(
+                "The idempotency key must contain 1 to 255 bytes and valid header characters",
+            ));
+        }
+    }
+    Ok(key.map(str::to_owned))
 }
 #[derive(Clone, Debug)]
 pub struct ResponseMetadata {
@@ -447,6 +481,7 @@ impl HttpTransport {
         allow_redirect: bool,
         content_type: &str,
     ) -> Result<(reqwest::Response, ResponseMetadata)> {
+        let idempotency_key = selected_idempotency_key(options)?;
         validate_path(path)?;
         let retries = options
             .max_network_retries
@@ -480,6 +515,9 @@ impl HttpTransport {
                 .header("accept", accept)
                 .header("user-agent", format!("polymorfa-rust/{SDK_VERSION}"));
             for (key, value) in &options.headers {
+                if key.eq_ignore_ascii_case("idempotency-key") {
+                    continue;
+                }
                 if matches!(
                     key.to_ascii_lowercase().as_str(),
                     "authorization" | "host" | "cookie"
@@ -498,7 +536,7 @@ impl HttpTransport {
                     .as_deref()
                     .unwrap_or(&self.options.api_version),
             );
-            if let Some(key) = &options.idempotency_key {
+            if let Some(key) = &idempotency_key {
                 request = request.header("idempotency-key", key);
             }
             let payload = if attempt == 1 {
