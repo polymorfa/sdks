@@ -39,7 +39,9 @@ Every response has `data` and `metadata` (status, request ID, API version,
 headers and attempts). Messaging methods retain API envelopes. Developer
 Platform resources unwrap the envelope. Unknown response fields remain
 available. HTTP failures raise semantic exception classes with code, request
-metadata and API links. Non-JSON proxy errors become a safe HTTP error.
+metadata and API links. Non-JSON proxy errors become a safe HTTP error. JSON API requests reject 3xx
+responses without following or retrying them; media downloads use their separate
+validated storage redirect path.
 
 `RequestOptions` changes timeout, version, retry count, headers and idempotency
 for one request. Cancelling an asyncio task interrupts the request or stream.

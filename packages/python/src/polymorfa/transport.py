@@ -350,6 +350,15 @@ class Transport:
                     "Could not reach Polymorfa.", code="connection_error"
                 ) from None
             meta = ResponseMetadata.from_response(response, attempt)
+            if 300 <= response.status_code < 400 and accept == "application/json":
+                await response.aclose()
+                raise ServerError(
+                    "Unexpected API redirect.",
+                    code="invalid_redirect",
+                    status=meta.status,
+                    request_id=meta.request_id,
+                    metadata=meta,
+                )
             if accept == "application/json" or buffer_body:
                 try:
                     await self._read_body(response, meta)

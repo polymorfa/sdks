@@ -496,3 +496,52 @@ async def test_stream_checkpoint_resume() -> None:
             assert item.webhook is None
             stream.close()
     assert len(requests) == 2
+
+
+@pytest.mark.parametrize("status", [300, 301, 302, 303, 304, 305, 307, 308])
+@pytest.mark.parametrize("method", ["GET", "POST"])
+@pytest.mark.parametrize("payload", [b"", b'{"success":true}'])
+async def test_json_api_redirects_fail_before_body_read_without_following_or_retry(
+    status: int, method: str, payload: bytes
+) -> None:
+    requests: list[httpx.Request] = []
+
+    class RedirectBody(httpx.AsyncByteStream):
+        closed = False
+
+        async def __aiter__(self):
+            raise AssertionError("Rejected redirect body must never be consumed")
+            yield payload
+
+        async def aclose(self) -> None:
+            self.closed = True
+
+    stream = RedirectBody()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(
+            status,
+            headers={
+                "Location": "https://foreign.invalid/login?secret=redacted",
+                "Content-Type": "application/json",
+                "X-Request-Id": "redirect-request",
+                "X-Polymorfa-Operation-Id": "redirect-operation",
+            },
+            stream=stream,
+        )
+
+    async with AsyncClient(KEY, http_transport=transport(handler)) as client:
+        with pytest.raises(ServerError) as caught:
+            await client.raw.request(
+                method,
+                "/platform/projects",
+                options=RequestOptions(idempotency_key="synthetic-write", max_network_retries=3),
+            )
+    error = caught.value
+    assert error.code == "invalid_redirect" and error.status == status
+    assert error.request_id == "redirect-request"
+    assert error.metadata.operation_id == "redirect-operation"
+    assert len(requests) == 1 and requests[0].url.host == "api.polymorfa.com"
+    assert stream.closed and error.__cause__ is None
+    assert "foreign.invalid" not in str(error) and "secret=" not in str(error)
