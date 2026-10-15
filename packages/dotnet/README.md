@@ -523,3 +523,57 @@ sanitized errors and borrowed connection lifetime. Independent native connection
 race on one revision and verify exactly one winner; a native lock admission
 failure remains explicit. Removing the prepared-input snapshot makes the
 mutation test fail.
+
+### Entity Framework Core models
+
+The separate, unpublished `Polymorfa.Storage.EntityFrameworkCore` package exports
+schema-2 models for all 17 customer-owned SQL entities. It uses EF Core 8.0.32
+and the SQL package's existing drivers. This configures models only; it does
+not connect to a database, install tables or change access policies.
+
+Use `PolymorfaStorageDbContext` with application-owned provider options and the
+same `StorageSqlDialect` and `SqlStorageOptions` as the native SQL adapter.
+Each entity is an EF shared-type property bag. Property names follow the
+portable schema (`sessionId`, `messageId`, `timestamp`); physical column names
+match the native adapter (`session_id`, `message_id`, `timestamp`). JSON
+properties use `JsonElement?`, `_v` uses `JsonElement`, and `_rev` is a `long`
+concurrency token. Optional scalar properties are nullable.
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using Polymorfa.Sdk.Storage;
+using Polymorfa.Storage.EntityFrameworkCore;
+using Polymorfa.Storage.Sql;
+
+await using var context = new PolymorfaStorageDbContext(
+    customerEfOptions, StorageSqlDialect.Postgres,
+    new SqlStorageOptions { TablePrefix = "app_" });
+var recent = await context.StorageRows(StorageEntity.Messages).AsNoTracking()
+    .Where(row => EF.Property<string>(row, "sessionId") == sessionId)
+    .OrderByDescending(row => EF.Property<double?>(row, "timestamp"))
+    .Take(50).ToListAsync();
+```
+
+The supplied context includes dialect, schema and table prefix in its model
+cache key. Existing application contexts can call
+`modelBuilder.ConfigurePolymorfaStorage(dialect, options)` and use
+`context.StorageRows(entity)`; configure one storage prefix per model and
+include naming options in the application's model cache key if they vary.
+Identifiers and derived index names receive the native SQL schema validation.
+PostgreSQL schema selection and binary key collations match the SQL adapter.
+The customer owns migrations, provider configuration, database credentials and
+live access policies. A table prefix does not grant tenant authority.
+
+Use `CustomerStorage` for event/history writes: EF's revision concurrency token
+does not apply the storage engine's field-version merges, replay markers,
+checkpoint CAS or lease fences. Direct application writes must respect those
+rules. Model JSON converters preserve ordinary JSON, including literal
+`$date`/`$binary` objects, and snapshot parsed values independently of a
+`JsonDocument` lifetime.
+
+This follows source `3bacf46f9c4213426314001586f5bae43aaa77de`. Actual SQLite,
+PostgreSQL and MySQL checks prove all 17 native-table mappings, nullable values,
+JSON replacement, stale EF revisions and model-cache separation. An EF-created
+SQLite schema also passes the native engine's complete conformance suite,
+including 2,000 history rows and fenced writes. Hosted database access and
+application migrations remain customer acceptance gates.
