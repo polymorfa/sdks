@@ -88,6 +88,7 @@ if (language === "go") {
   ]) {
     run("cargo", [
       "check",
+      "--locked",
       "--manifest-path",
       resolve(root, manifest),
       ...(target ? ["--target", target] : []),
@@ -95,6 +96,7 @@ if (language === "go") {
   }
   run("cargo", [
     "test",
+    "--locked",
     "--manifest-path",
     resolve(root, "examples/rust/yew/server/Cargo.toml"),
   ]);
