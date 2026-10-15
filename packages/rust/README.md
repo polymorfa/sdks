@@ -298,13 +298,30 @@ schema-defined scope and cursor indexes. Invalid or oversized derived identifier
 are refused before connecting, preventing PostgreSQL name truncation. Driver
 errors omit connection strings, SQL and customer row values. These adapters are
 server clients; hosted Supabase/Neon/PlanetScale authority and deployment acceptance
-require the customer's own configuration and verification. Cosmos, Convex and browser adapters remain separate work. A Supabase
+require the customer's own configuration and verification. Cosmos and Convex adapters remain separate work. A Supabase
 RLS preset is exported below.
 
 Chat clears and row planning renew a live lease conditionally between reads once half
 the configured lease duration remains. An expired or replaced lease still
 fails closed. Configure customer operation deadlines and lease duration so one
 individual query or commit can finish before expiry.
+
+### Portable storage core and browser IndexedDB
+
+Existing server paths under `polymorfa_sdk::storage`, including `Storage`,
+`StorageOptions`, `StorageAdapter`, `schema`, `merge`, `memory` and `engine`,
+re-export the canonical `polymorfa-storage-core` crate. Server adapters use the
+same types and retain native thread-safety bounds and Tokio timers. The server
+SDK retains its WASM compilation prohibition. The separate
+`polymorfa-storage-indexeddb` WASM crate uses that exact core with browser clocks,
+timers and local futures, without importing the server HTTP clients.
+
+IndexedDB commits at most 1,000 writes in one native transaction, including the
+session fence. Its crate README describes namespace ownership, bounded queries,
+cancellation and browser persistence. This adds no Signal acknowledgement, API
+browser credential or remote grant. The core must be published and verified
+before either dependent package can be installed from a registry. All three
+packages remain unpublished.
 
 ### Customer-owned libSQL and Turso
 

@@ -1,4 +1,4 @@
-use polymorfa_sdk::storage::{
+use polymorfa_storage_core::{
     merge::empty_row,
     schema::{encode_key, FieldType, ALL_ENTITIES},
     *,
@@ -336,14 +336,23 @@ async fn fences(adapter: Arc<dyn StorageAdapter>) {
         }],
     };
     let old_batch = batch("old-only");
-    let task = tokio::spawn(async move { old.apply(&old_batch).await });
-    tokio::time::timeout(Duration::from_secs(2), paused.started.notified())
-        .await
-        .unwrap();
-    clock.store(111, Ordering::SeqCst);
-    new.apply(&batch("new-only")).await.unwrap();
-    paused.release.notify_one();
-    assert!(matches!(task.await.unwrap(), Err(StorageError::LeaseLost)));
+    let old_work = old.apply(&old_batch);
+    let replacement = async {
+        paused.started.notified().await;
+        clock.store(111, Ordering::SeqCst);
+        new.apply(&batch("new-only")).await.unwrap();
+        paused.release.notify_one();
+    };
+    #[cfg(not(target_arch = "wasm32"))]
+    let (result, ()) = tokio::time::timeout(
+        Duration::from_secs(2),
+        futures_util::future::join(old_work, replacement),
+    )
+    .await
+    .unwrap();
+    #[cfg(target_arch = "wasm32")]
+    let (result, ()) = futures_util::future::join(old_work, replacement).await;
+    assert!(matches!(result, Err(StorageError::LeaseLost)));
     assert!(!new.has_event(&session, "old-only").await.unwrap());
     assert!(new
         .get(

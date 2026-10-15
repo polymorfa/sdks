@@ -1,0 +1,23 @@
+[package]
+name = "polymorfa-storage-core"
+version = "0.1.0-dev.0"
+edition = "2021"
+rust-version = "1.85"
+description = "Portable customer-owned storage schema and fenced merge engine for Polymorfa"
+license = "MIT"
+repository = "https://github.com/polymorfa/sdks"
+readme = "README.md"
+include = ["Cargo.toml", "Cargo.lock", "README.md", "src/**", "tests/**"]
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "=1.26.1", features = ["v4"] }
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1", features = ["time"] }
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+gloo-timers = { version = "=0.3.0", features = ["futures"] }
+js-sys = "=0.3.105"
+web-time = "=1.1.0"
+uuid = { version = "=1.26.1", features = ["js"] }
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt", "time"] }
