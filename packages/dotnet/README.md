@@ -493,3 +493,92 @@ sanitized errors and borrowed connection lifetime. Independent remote connection
 race on one revision and verify exactly one winner; an unclassified admission
 failure remains explicit. Removing the prepared-input snapshot makes the
 mutation test fail.
+
+### Blazor WebAssembly IndexedDB storage
+
+The separate, unpublished `Polymorfa.Storage.IndexedDb` package adds
+`IndexedDbStorageAdapter` for browser-local schema-2 storage. It uses the
+application's `IJSRuntime` and a packaged JavaScript module with native
+IndexedDB transactions. The source contract is
+`3bacf46f9c4213426314001586f5bae43aaa77de`. The base SDK gains no browser runtime
+or database dependency.
+
+Call it after Blazor's JavaScript runtime is available, such as from a
+component's first `OnAfterRenderAsync` callback:
+
+```csharp
+using Polymorfa.Storage.IndexedDb;
+using Polymorfa.Sdk.Storage;
+
+await using var adapter = await IndexedDbStorageAdapter.ConnectAsync(JS,
+    new IndexedDbStorageOptions("user_42")
+    {
+        DatabaseName = "customer_app_user_42",
+        MaxQueryRows = 100000
+    });
+var storage = new CustomerStorage(adapter);
+```
+
+The adapter borrows the runtime and owns its module reference and database
+connection. Dispose it when the component or application owner ends. Disposal
+closes the connection and retains the stored data. No Polymorfa API client,
+credential, hosted retention setting or network storage service is involved.
+The SDK's browser prohibition on organization and project credentials remains
+in force; browser API calls still require an authorized client principal.
+
+Choose a stable, separate namespace and database for each application owner.
+The namespace must start with an ASCII letter and contain at most 64 letters,
+digits, underscores or hyphens. A database is bound to one namespace, including
+when callers choose its name explicitly. This prevents accidental rebinding;
+it is not authentication, encryption or isolation from other scripts on the
+same origin. The application owns login/logout handling, account changes,
+retention and deletion of its device data. Browser storage can be denied,
+limited or evicted; do not treat it as a guaranteed permanent archive.
+
+All 17 entity stores use schema version 2. Setup upgrades an existing version-1
+database without discarding its existing rows. An upgrade blocked by an older
+open connection returns a safe provider error; close that connection and retry.
+Native version changes close the old connection. Unsupported newer database
+versions fail to open. Index names and scopes come from the SDK's closed schema.
+Queries scan the selected entity within `MaxQueryRows` (1-100000, default
+100000); exceeding that count fails before loading its rows. This adapter does
+not create native secondary indexes or claim unbounded query performance.
+
+Each commit supports at most 1000 writes, including the engine's session fence.
+The module reads every expected revision and queues every write in one native
+read/write transaction. It returns success only after the transaction's
+`complete` event. A conflict or confirmed abort leaves the entire commit
+unapplied. Large history batches use the existing engine's fenced commits and
+write their replay marker last.
+
+Cancellation before admission starts no operation. Cancellation during an
+active transaction requests a native abort and waits for its final receipt.
+If completion wins the race, the committed operation returns success. A canceled
+.NET wait alone never establishes rollback. Runtime interruption can leave a
+commit outcome unknown; inspect its saved checkpoint before resuming. Native
+errors returned by adapter operations omit raw browser exceptions, customer rows
+and inner exceptions.
+
+The committed Blazor fixture runs the real C# engine and IndexedDB in Chromium.
+It covers all 17 entities, JSON/scalars, 2000-message history, pagination,
+conditional rollback, replay, stale checkpoints, lease fences, namespace binding,
+query bounds, caller mutation, active-transaction cancellation, cancellation
+after commit, schema upgrades, blocked-upgrade recovery and browser credential
+guards. A sandbox with an opaque origin exercises native storage denial.
+Safari, Firefox, browser crash recovery, device storage persistence permissions
+and production application integration remain acceptance work. This package
+has not been published and introduces no hosted feature release or entitlement.
+
+Build the fixture outside the repository and serve its static files on loopback:
+
+```bash
+dotnet publish packages/dotnet/tests/Polymorfa.Storage.IndexedDb.BrowserTests \
+  -c Release -p:PublishTrimmed=false \
+  -o "$HOME/.polymorfa-agent-work/dotnet-indexeddb/browser"
+python3 packages/dotnet/tests/Polymorfa.Storage.IndexedDb.BrowserTests/serve.py \
+  --root "$HOME/.polymorfa-agent-work/dotnet-indexeddb/browser/wwwroot"
+```
+
+Open `http://127.0.0.1:54865/?id=unique-test-run`. Each run needs a fresh `id`;
+append `&reopen=1` to the same URL to verify durable reads after a page reload.
+The fixture uses synthetic data and does not access an operator browser profile.

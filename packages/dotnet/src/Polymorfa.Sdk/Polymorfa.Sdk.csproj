@@ -13,4 +13,5 @@
   </PropertyGroup>
   <ItemGroup><None Include="../../README.md" Pack="true" PackagePath="/" /></ItemGroup>
   <ItemGroup Condition="Exists('../../release-contract.json')"><None Include="../../release-contract.json" Pack="true" PackagePath="/" /></ItemGroup>
+<ItemGroup><InternalsVisibleTo Include="Polymorfa.Storage.IndexedDb" /></ItemGroup>
 </Project>
