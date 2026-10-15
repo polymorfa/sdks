@@ -37,7 +37,7 @@ internal sealed class HttpTransport : IDisposable
     }
     internal async Task<ApiResponse<T>> RequestAsync<T>(HttpMethod method, string path, object? body, RequestOptions? requestOptions, IReadOnlyList<KeyValuePair<string, string>>? query = null)
     {
-        var options = requestOptions ?? new RequestOptions();
+        var options = IdempotencyHeaders.Prepare(requestOptions ?? new RequestOptions());
         var bytes = body is null ? null : JsonSerializer.SerializeToUtf8Bytes(body, body.GetType(), Json);
         var previousAttempts = 0;
         var maximumRetries = options.MaxNetworkRetries ?? Options.MaxNetworkRetries;
@@ -80,6 +80,7 @@ internal sealed class HttpTransport : IDisposable
     }
     internal async Task<OpenedResponse> OpenAsync(HttpMethod method, string path, byte[]? body, RequestOptions options, string accept, IReadOnlyList<KeyValuePair<string, string>>? query = null, bool allowMediaRedirect = false, HttpContent? binaryContent = null)
     {
+        options = IdempotencyHeaders.Prepare(options);
         ValidatePath(path);
         var timeout = options.Timeout ?? Options.Timeout;
         var retries = options.MaxNetworkRetries ?? Options.MaxNetworkRetries;

@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.Json;
 using Polymorfa.Sdk;
 
+if (args.Contains("--idempotency-only")) { await IdempotencyHeaderTests.RunAsync(); return; }
+
 var directory = new DirectoryInfo(AppContext.BaseDirectory);
 while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "contracts/fixtures/behavior.json"))) directory = directory.Parent;
 var root = directory?.FullName ?? throw new Exception("SDK repository root not found.");
@@ -119,6 +121,7 @@ try
     await OnboardingTests.RunAsync();
     await AudienceSettingsTests.RunAsync();
     await CampaignTests.RunAsync();
+    await IdempotencyHeaderTests.RunAsync();
     await ProjectPairingTests.RunAsync();
     await CallAnalyticsTests.RunAsync();
     await GraphTests.RunAsync();

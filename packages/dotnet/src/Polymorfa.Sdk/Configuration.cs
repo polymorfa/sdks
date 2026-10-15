@@ -52,7 +52,7 @@ public sealed record RequestOptions
     public int? MaxNetworkRetries { get; init; }
     public TimeSpan? Timeout { get; init; }
     public CancellationToken CancellationToken { get; init; }
-    internal RequestOptions WithIdempotency() => IdempotencyKey is null ? this with { IdempotencyKey = Guid.NewGuid().ToString() } : this;
+    internal RequestOptions WithIdempotency() => IdempotencyHeaders.Prepare(this, generate: true);
 }
 public static class SdkVersion
 {

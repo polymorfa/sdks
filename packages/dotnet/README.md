@@ -21,6 +21,16 @@ Organization and project clients provide immutable project views. A project toke
 
 Every response includes status, API version, request ID, attempt count, and safe response headers. Request options support cancellation, timeout, API version, custom headers, and an explicit idempotency key. Safe reads and keyed writes retry transient failures; ordinary writes do not. Message sends use a stable key throughout retries. Call links and transient call reactions never retry automatically.
 
+Writes that generate an idempotency key prefer `RequestOptions.IdempotencyKey`,
+then a caller's case-insensitive `Idempotency-Key` header. Matching header aliases
+collapse to one value; conflicting aliases are rejected unless the explicit
+option supplies the key. Reusing the same caller key preserves the identity
+across separate method calls and their retries. Without a caller key, each method
+call receives a new key. Keys contain 1–255 UTF-8 bytes and valid header characters.
+The SDK copies request headers without changing the caller's dictionary. A raw
+header alone does not enable automatic retries for an unsafe request; endpoint
+retry limits and replay behavior still apply.
+
 `Webhooks.ConstructEvent` verifies native HMAC signatures against the exact raw request bytes before parsing. `ConstructLocalEvent` separately verifies timestamped CLI forwarding signatures. Unknown event names retain their envelope and payload. Deduplicate processed event IDs in your application. `Webhooks.CreateFixture` signs exact JSON bytes for application tests.
 
 Typed resources include sessions, all 20 message content kinds, QuickLinks, webhooks, Business, Channels, contacts, groups, hosted history, profile, presence, labels, privacy, identities, client token rules, organization metadata, billing, customer management, project settings, BanSafe, Flows, Functions, Voice, usage, SIP, and call controls. Native HTTP tests check the methods recorded in `coverage.json`.

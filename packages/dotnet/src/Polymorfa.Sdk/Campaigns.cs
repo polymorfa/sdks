@@ -103,7 +103,7 @@ public sealed record CampaignConversionCounts(long Total, long Attributed, long 
 public sealed record CampaignConversionReport(string CampaignId, CampaignConversionModel Model, long SentCount, CampaignConversionCounts Conversions, long ConvertedRecipients, decimal ConversionRate, IReadOnlyList<CampaignConversionCurrencyTotal> Values);
 internal static class CampaignOptions
 {
-    internal static RequestOptions Idempotent(RequestOptions? options) => (options ?? new()) with { IdempotencyKey = options?.IdempotencyKey ?? Guid.NewGuid().ToString() };
+    internal static RequestOptions Idempotent(RequestOptions? options) => (options ?? new()).WithIdempotency();
     internal static RequestOptions Append(RequestOptions? options) => options is { MaxNetworkRetries: not null, IdempotencyKey: not null } ? options : (options ?? new()) with { MaxNetworkRetries = 0 };
 }
 public sealed class MessagingCampaigns : Resource
