@@ -130,7 +130,7 @@ async fn actual_worker_binding_atomicity_history_replay_checkpoint_and_clear() {
     assert!(!store.apply(&first).await.unwrap().applied);
     let id = encode_key(Entity::Messages, &key(&s, "first")).unwrap();
     let current = adapter
-        .get(Entity::Messages, &[id.clone()])
+        .get(Entity::Messages, std::slice::from_ref(&id))
         .await
         .unwrap()
         .remove(&id)

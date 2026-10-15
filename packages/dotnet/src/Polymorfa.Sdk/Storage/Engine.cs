@@ -108,12 +108,15 @@ public sealed class CustomerStorage
             await RenewIfNeeded(lease, cancellation).ConfigureAwait(false);
             var messages = await Adapter.QueryAsync(StorageEntity.Messages, new("by_chat", Key(("sessionId", operation.SessionId), ("chatId", operation.ChatId)), options.ClearPageSize, new(Lte: operation.UpTo), "asc"), cancellation).ConfigureAwait(false); if (messages.Count == 0) return removed; var deletes = new List<StorageOperation>(); foreach (var message in messages)
             {
-                var id = Text(message, "messageId") ?? throw new StorageValidationException("Invalid stored message ID."); var key = Key(("sessionId", operation.SessionId), ("messageId", id)); deletes.Add(new StorageDelete(StorageEntity.Media, key)); foreach (var entity in new[] { StorageEntity.Reactions, StorageEntity.Receipts, StorageEntity.PollVotes }) while (true)
+                var id = Text(message, "messageId") ?? throw new StorageValidationException("Invalid stored message ID."); var key = Key(("sessionId", operation.SessionId), ("messageId", id)); deletes.Add(new StorageDelete(StorageEntity.Media, key)); foreach (var entity in new[] { StorageEntity.Reactions, StorageEntity.Receipts, StorageEntity.PollVotes })
+                {
+                    while (true)
                     {
                         await RenewIfNeeded(lease, cancellation).ConfigureAwait(false);
                         var children = await Adapter.QueryAsync(entity, new("by_message", key, 500, Order: "asc"), cancellation).ConfigureAwait(false); if (children.Count == 0) break; var writes = children.Select(row => (StorageWrite)new StorageRowDelete(entity, row.Id)).ToArray(); foreach (var group in writes.Chunk(commitSize)) { var result = await FencedCommit(lease, group, cancellation).ConfigureAwait(false); if (!result.Ok) throw new StorageConflictException(result.Conflicts!); }
                         removed += children.Count; if (children.Count < 500) break;
                     }
+                }
                 deletes.Add(new StorageDelete(StorageEntity.Messages, key));
             }
             removed += await ApplyRows(deletes, Array.Empty<StorageWrite>(), lease, cancellation).ConfigureAwait(false);

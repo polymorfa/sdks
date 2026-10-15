@@ -51,7 +51,7 @@ ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = json.loads((ROOT / "packages/storage/conformance-fixtures.json").read_text())
 BRIDGE = json.loads((Path(__file__).parent / "fixtures/d1-bridge.json").read_text())
 ARTIFACTS = Path.home() / ".polymorfa-agent-work/zk-program-20261014/python-storage-tests"
-ARTIFACTS.mkdir(exist_ok=True)
+ARTIFACTS.mkdir(parents=True, exist_ok=True)
 
 
 @pytest.mark.skipif(

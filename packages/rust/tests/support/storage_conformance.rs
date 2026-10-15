@@ -55,7 +55,7 @@ pub async fn conformance(adapter: Arc<dyn StorageAdapter>) {
                 .ok
         );
         let fetched = adapter
-            .get(entity, &[row.id.clone()])
+            .get(entity, std::slice::from_ref(&row.id))
             .await
             .unwrap()
             .remove(&row.id)
@@ -96,7 +96,7 @@ pub async fn conformance(adapter: Arc<dyn StorageAdapter>) {
                 .ok
         );
         let fetched = adapter
-            .get(Entity::Messages, &[scalar.id.clone()])
+            .get(Entity::Messages, std::slice::from_ref(&scalar.id))
             .await
             .unwrap()
             .remove(&scalar.id)
@@ -169,7 +169,7 @@ pub async fn conformance(adapter: Arc<dyn StorageAdapter>) {
     )
     .unwrap();
     let existing = adapter
-        .get(Entity::Messages, &[id.clone()])
+        .get(Entity::Messages, std::slice::from_ref(&id))
         .await
         .unwrap()
         .remove(&id)

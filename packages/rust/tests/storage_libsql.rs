@@ -84,7 +84,7 @@ async fn native_remote_libsql_schema2_conformance_and_rollback() {
         .unwrap();
     assert!(!result.ok);
     assert!(adapter
-        .get(Entity::Messages, &[first.id.clone()])
+        .get(Entity::Messages, std::slice::from_ref(&first.id))
         .await
         .unwrap()
         .is_empty());

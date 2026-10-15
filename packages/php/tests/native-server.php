@@ -12,7 +12,7 @@ if ($path === '/__case') {
 }
 $fixture = json_decode(file_get_contents($state), true, flags: JSON_THROW_ON_ERROR);
 $actual = json_decode(file_get_contents('php://input'), true);
-$failure = $_SERVER['REQUEST_METHOD'] !== $fixture['method'] || $_SERVER['REQUEST_URI'] !== $fixture['path'] || $actual !== $fixture['body'];
+$failure = $_SERVER['REQUEST_METHOD'] !== $fixture['method'] || !in_array($_SERVER['REQUEST_URI'], $fixture['allowedPaths'] ?? [$fixture['path']], true) || $actual !== $fixture['body'];
 $headers = array_change_key_case(getallheaders(), CASE_LOWER);
 $failure = $failure || ($headers['authorization'] ?? '') !== $fixture['authorization'] || ($headers['polymorfa-version'] ?? '') !== '2026-09-22';
 foreach ($fixture['requestHeaders'] ?? [] as $name => $value) {
@@ -34,6 +34,9 @@ $wire = is_string($fixture['response']) ? $fixture['response'] : json_encode($fi
 if (isset($fixture['bodyDelaySeconds'])) {
     $fixture['wireAttempt'] = ($fixture['wireAttempt'] ?? 0) + 1;
     file_put_contents($state, json_encode($fixture, JSON_THROW_ON_ERROR));
+    if ($fixture['wireAttempt'] === 1 && isset($fixture['firstResponseDelaySeconds'])) {
+        usleep((int) ($fixture['firstResponseDelaySeconds'] * 1000000));
+    }
     if ($fixture['wireAttempt'] >= ($fixture['delayOnAttempt'] ?? 1)) {
         echo substr($wire, 0, 1);
         ob_flush();

@@ -190,10 +190,13 @@ public static partial class StorageReducers
     private static IReadOnlyList<StorageOperation> Participants(string session, JsonElement p, double at)
     {
         if (NonEmpty(Prop(p, "id")) is not { } id) return []; var operations = new List<StorageOperation> { Upsert(StorageEntity.Groups, Key(session, ("groupId", id)), Fields()) };
-        foreach (var kind in new[] { "joined", "left", "promoted", "demoted" }) foreach (var person in Items(Prop(p, kind)))
+        foreach (var kind in new[] { "joined", "left", "promoted", "demoted" })
+        {
+            foreach (var person in Items(Prop(p, kind)))
             {
                 if (NonEmpty(Prop(person, "id")) is not { } participant) continue; var fields = Fields(); if (kind == "joined") { PutValue(fields, "active", true, at); PutValue(fields, "role", "member", at); PutValue<string?>(fields, "leaveReason", null, at); } else if (kind == "left") { PutValue(fields, "active", false, at); PutValue(fields, "leaveReason", NonEmpty(Prop(p, "reason")) ?? "left", at); } else PutValue(fields, "role", kind == "promoted" ? "admin" : "member", at); PutText(fields, "phoneNumber", NonEmpty(Prop(person, "phoneNumber")), at); PutValue(fields, "changedAt", at, at); operations.Add(Upsert(StorageEntity.GroupParticipants, Key(session, ("groupId", id), ("participantId", participant)), fields));
             }
+        }
         return operations;
     }
     private static IReadOnlyList<StorageOperation> Labels(string session, JsonElement p, double at)

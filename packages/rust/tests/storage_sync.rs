@@ -108,11 +108,12 @@ async fn native_manual_ack_observes_durable_content_marker_and_saved_cursor() {
             &RowKey::from([("sessionId".into(), "wire-session".into())]),
         )
         .unwrap();
-        assert!(
-            adapter.get(Entity::Sessions, &[id.clone()]).await.unwrap()[&id]
-                .fields
-                .contains_key("connected")
-        );
+        assert!(adapter
+            .get(Entity::Sessions, std::slice::from_ref(&id))
+            .await
+            .unwrap()[&id]
+            .fields
+            .contains_key("connected"));
         let body=json!({"data":{"streamId":"stream/one","acknowledgedCursor":"cursor-new","sequence":7,"replayed":false}}).to_string();
         ack.write_all(format!("HTTP/1.1 200 OK\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{body}",body.len()).as_bytes()).await.unwrap();
         let mut byte = [0];

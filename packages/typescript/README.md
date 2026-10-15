@@ -3169,7 +3169,6 @@ the event ID as the deduplication key. Eligibility is checked before publication
 and delivery; withdrawn events wait for re-enablement and expire after seven days.
 These additions require an API and SDK release containing this contract.
 
-
 ### Customer-owned media and history (development contract)
 
 The media upload helpers and `@polymorfa/sdk/history` require the 2026-10-14 API

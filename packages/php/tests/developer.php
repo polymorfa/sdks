@@ -106,5 +106,5 @@ nativeCases([
      $result = $client->operations->wait('op', 1.1, options:new Polymorfa\RequestOptions(maxNetworkRetries:3));
      check($result->data === $operation && microtime(true) - $started < 1.5, 'Actual HTTP operation budget bounds delayed body and retries and returns latest receipt');
      return $result;
- },$operation,['bodyDelaySeconds' => 1.4,'delayOnAttempt' => 2]],
+ },$operation,['bodyDelaySeconds' => 1.4,'delayOnAttempt' => 2,'firstResponseDelaySeconds' => 0.2,'allowedPaths' => ['/platform/operations/op?wait=1','/platform/operations/op?wait=0']]],
 ], fn ($credential, $url) => new Polymorfa\Client($credential, baseUrl:$url));
