@@ -13,6 +13,11 @@ by the matching `wasm-bindgen` CLI. Create `IndexedDbStorageAdapter` with
 `IndexedDbOptions::new("customer_archive")`, call `setup().await`, then pass the
 adapter in an `Arc` to `core::Storage::new`. Apply explicit operation batches,
 persist the checkpoint, then acknowledge the application event separately.
+The re-exported `core::reducer` and `core::sync` modules also support all 24 stored
+events and typed decoded history. Supply verified events and an explicit
+full-schema history decoder; no opaque descriptor decoding or browser API
+credential is supplied. A browser application can implement the portable
+`StorageEventSource` trait for its existing authorized event source.
 
 Namespaces start with a letter and contain 1 to 64 letters, digits, underscores
 or hyphens. The default database name is `polymorfa_<namespace>`; set
@@ -41,6 +46,10 @@ Actual Chromium acceptance covers all 17 entities, JSON, 2,000-message paginatio
 atomic CAS and provider-error rollback, independent-client CAS, lease replacement,
 replay, checkpoints, chat clear, bounded scans, namespace refusal, dropped futures,
 opaque-origin storage denial and reopening in a fresh page. The `tests/browser`
+fixture also runs the exact native reducer/sync oracle, a decoded 2,000-message
+chunk and ACK/checkpoint/replay/decoder/source/callback/cancellation negatives.
+Stop finishes an admitted event; dropping a future can leave an uncertain
+provider result and must be reconciled from markers and checkpoints. The `tests/browser`
 fixture invokes the real Rust core and adapter through WASM and native IndexedDB.
 Build its Cargo manifest for `wasm32-unknown-unknown`, generate web bindings using
 `wasm-bindgen`, then run `tests/browser/run.mjs` with Playwright installed and the

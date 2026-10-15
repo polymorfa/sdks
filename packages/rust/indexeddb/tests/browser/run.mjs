@@ -36,6 +36,7 @@ try {
   const result = await page.evaluate(async ({name,moduleName}) => {
     const module = await import('./'+moduleName); await module.default();
     const passed = await module.run_conformance(name);
+    const reducers = await module.run_reducers_and_sync(name + "_reducers");
     const rollbackName = name + '_provider_rollback';
     const entities = JSON.parse(module.entity_names());
     const database = await new Promise((resolve,reject) => {
@@ -57,9 +58,9 @@ try {
         }
       }); document.body.append(iframe);
     });
-    return {passed,rollback,denied};
+    return {passed,rollback,denied,reducers};
   }, {name,moduleName});
-  assert.equal(result.rollback,true); assert.equal(result.denied,true); assert.match(result.passed,/all17.*2000.*lease.*cancel/);
+  assert.equal(result.reducers,true); assert.equal(result.rollback,true); assert.equal(result.denied,true); assert.match(result.passed,/all17.*2000.*lease.*cancel/);
   await page.close();
   const reopened = await context.newPage(); await reopened.goto(base);
   const revision = await reopened.evaluate(async ({name,moduleName}) => {
