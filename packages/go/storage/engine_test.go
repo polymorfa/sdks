@@ -347,3 +347,31 @@ func TestMemoryAtomicRollbackAndCopyIsolation(t *testing.T) {
 		t.Fatal("cancel", err)
 	}
 }
+
+func TestNilJSONContainersRemainNullAndIdempotent(t *testing.T) {
+	for _, value := range []any{map[string]any(nil), []any(nil), Row(nil)} {
+		got, err := CanonicalJSON(value)
+		if err != nil || got != "null" {
+			t.Fatal("nil JSON semantics", got, err)
+		}
+		cmp, err := CompareValues(value, nil)
+		if err != nil || cmp != 0 {
+			t.Fatal("nil JSON tie ordering", err)
+		}
+		row, _ := EmptyRow("messages", map[string]any{"sessionId": "nil", "messageId": "m"})
+		row, _, err = MergeFields("messages", row, Fields{"extra": {Value: nil, Version: 1}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, changed, err := MergeFields("messages", row, Fields{"extra": {Value: value, Version: 1}})
+		if err != nil || changed {
+			t.Fatal("replay of JSON null changed row", err)
+		}
+	}
+	for _, value := range []any{map[string]any{}, []any{}} {
+		got, err := CanonicalJSON(value)
+		if err != nil || got == "null" {
+			t.Fatal("empty JSON object/array lost", got, err)
+		}
+	}
+}

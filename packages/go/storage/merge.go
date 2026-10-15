@@ -52,6 +52,10 @@ func CanonicalJSON(value any) (string, error) {
 		case Row:
 			return emit(map[string]any(v))
 		case map[string]any:
+			if v == nil {
+				b.WriteString("null")
+				return nil
+			}
 			keys := make([]string, 0, len(v))
 			for k := range v {
 				if !utf8.ValidString(k) {
@@ -75,6 +79,10 @@ func CanonicalJSON(value any) (string, error) {
 			}
 			b.WriteByte('}')
 		case []any:
+			if v == nil {
+				b.WriteString("null")
+				return nil
+			}
 			b.WriteByte('[')
 			for i, x := range v {
 				if i > 0 {
@@ -130,7 +138,7 @@ func compareText(a, b string) int {
 }
 func CompareValues(a, b any) (int, error) {
 	rank := func(v any) int {
-		if v == nil {
+		if nullJSON(v) {
 			return -1
 		}
 		switch v.(type) {
@@ -234,6 +242,9 @@ func MergeFields(entity string, row Row, fields Fields) (Row, bool, error) {
 	}
 	changed := false
 	for f, w := range fields {
+		if nullJSON(w.Value) {
+			w.Value = nil
+		}
 		kind, ok := d.Fields[f]
 		if !ok || math.IsNaN(w.Version) || math.IsInf(w.Version, 0) {
 			return nil, false, invalid()
@@ -289,4 +300,19 @@ func PublicRow(entity string, row Row) (Row, error) {
 		out[f] = row[f]
 	}
 	return cloneRow(out), nil
+}
+
+func nullJSON(value any) bool {
+	if value == nil {
+		return true
+	}
+	switch v := value.(type) {
+	case Row:
+		return v == nil
+	case map[string]any:
+		return v == nil
+	case []any:
+		return v == nil
+	}
+	return false
 }
