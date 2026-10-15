@@ -14,6 +14,11 @@ public sealed class LibSqlStorageAdapter : IStorageAdapter, IAsyncDisposable
     public LibSqlStorageAdapter(SqliteConnection connection, SqlStorageOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(connection);
+        var configuration = new SqliteConnectionStringBuilder(connection.ConnectionString);
+        if (!connection.IsDirectRemote || !Uri.TryCreate(configuration.DataSource, UriKind.Absolute, out var endpoint))
+            throw new StorageValidationException("Customer libSQL storage requires a direct remote connection; use SqlStorageAdapter for local SQLite.");
+        var secure = endpoint.Scheme is "https" or "wss" || endpoint.Scheme is "libsql" or "turso" && configuration.Tls != false;
+        if (!secure && !endpoint.IsLoopback) throw new StorageValidationException("Customer libSQL storage requires TLS except on loopback development endpoints.");
         core = SqlStorageAdapter.BorrowSqlite(connection, options, "libsql", Conflict);
     }
 
