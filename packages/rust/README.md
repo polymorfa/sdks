@@ -267,7 +267,7 @@ never enables hosted history or acknowledges Signal events automatically.
 
 The schema/merge baseline is storage source
 `3bacf46f9c4213426314001586f5bae43aaa77de`; the native engine additionally
-stops immediately after a failed CAS chunk to preserve marker ordering. Full event/history reducers and the remaining provider adapters are in progress.
+stops immediately after a failed CAS chunk to preserve marker ordering. Event/history reducers share the portable core described below; provider availability is listed separately.
 This package remains unpublished.
 
 
@@ -322,6 +322,40 @@ cancellation and browser persistence. This adds no Signal acknowledgement, API
 browser credential or remote grant. The core must be published and verified
 before either dependent package can be installed from a registry. All three
 packages remain unpublished.
+
+### Event/history persistence and manual stream ACK
+
+`storage::reducer::events::reduce_event` handles all 24 stored event types from
+storage source `3bacf46f9c4213426314001586f5bae43aaa77de`.
+`storage::reducer::history` exposes full typed inputs for the fields read by the
+owning decoded-history reducer, including PN/LID identity mapping. An explicit
+`storage::sync::HistoryChunkDecoder` supplies a complete decoded chunk. The
+existing common protobuf history decoder is not a complete storage projection;
+no raw-protobuf mapping or opaque media descriptor decoding is inferred here.
+
+Use `storage_sync::apply_verified_event` only after `webhooks::construct_event`
+verifies the exact received bytes. Send a successful webhook response after
+persistence succeeds. `storage_sync::NativeStorageEventSource::new` wraps an
+existing project/organization Events resource with its existing credential and
+request authority. Pass it to `storage::sync::sync_to_storage` explicitly;
+SDK construction never enables retention or starts a consumer.
+
+The consumer forces manual ACK and resumes from its saved checkpoint. It writes
+content and the event marker, conditionally saves the cursor, then acknowledges
+the stream item. Missing payloads, retention gaps, decoder/provider failures and
+checkpoint conflicts stop progress. Metadata-only consumption requires explicit
+`require_payload = false`. Stop prevents new admission while an admitted event
+finishes its checkpoint and ACK. Dropping the future may leave an uncertain
+provider result; reconcile saved markers/checkpoints before resuming. The
+applied callback runs after ACK and may observe a replay with `applied = false`.
+
+Native wire tests inspect content, event marker and checkpoint when the actual
+HTTP ACK arrives and reject a gap preceding an event in the same SSE packet.
+SQLite and actual Chromium IndexedDB run identical reducer/sync fixtures,
+including decoded 2,000-message history and crash/replay failure boundaries.
+These packages remain unpublished; storage-core must be published and verified
+before dependent packages. Local exact-artifact package verification does not
+establish registry or deployed customer availability.
 
 ### Customer-owned libSQL and Turso
 

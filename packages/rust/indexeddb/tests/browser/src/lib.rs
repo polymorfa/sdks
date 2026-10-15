@@ -167,3 +167,14 @@ pub async fn persisted_revision(name: String) -> Result<u32, JsValue> {
     adapter.close();
     Ok(result as u32)
 }
+
+#[path = "../../../../storage-core/tests/support/reducers_sync.rs"]
+mod reducers_sync;
+#[wasm_bindgen]
+pub async fn run_reducers_and_sync(name: String) -> Result<bool, JsValue> {
+    let store = Arc::new(adapter("reducers_sync", &name));
+    reducers_sync::reducers(store.clone()).await;
+    reducers_sync::synchronization(store.clone()).await;
+    store.close();
+    Ok(true)
+}

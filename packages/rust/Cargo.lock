@@ -2859,6 +2859,10 @@ dependencies = [
 name = "polymorfa-storage-core"
 version = "0.1.0-dev.0"
 dependencies = [
+ "base64 0.22.1",
+ "chrono",
+ "event-listener",
+ "futures-util",
  "gloo-timers",
  "js-sys",
  "serde",
