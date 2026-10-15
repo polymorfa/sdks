@@ -1,0 +1,41 @@
+@namespace Polymorfa.Storage.IndexedDb.BrowserTests
+@using System.Text.Json
+@using Microsoft.JSInterop
+@using Polymorfa.Sdk
+@using Polymorfa.Sdk.Storage
+@using Polymorfa.Storage.IndexedDb
+@inject Microsoft.JSInterop.IJSRuntime JS
+@inject Microsoft.AspNetCore.Components.NavigationManager Navigation
+<main><h1>C# IndexedDB native acceptance</h1><pre id="result">@result</pre></main>
+@code {
+    private string result = "RUNNING";
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        try
+        {
+            var uri = new Uri(Navigation.Uri);
+            var id = uri.Query.Split('&').FirstOrDefault(p => p.StartsWith("?id=", StringComparison.Ordinal))?[4..] ?? "manual";
+            var reopen = uri.Query.Contains("reopen=1", StringComparison.Ordinal);
+            await using var harness = await JS.InvokeAsync<IJSObjectReference>("import", "./harness.js");
+            if (uri.Query.Contains("denied=1", StringComparison.Ordinal))
+            {
+                if (!await harness.InvokeAsync<bool>("assertDenied")) throw new Exception("Native origin storage was not denied");
+                try { await using var denied = await IndexedDbStorageAdapter.ConnectAsync(JS, new("browser-tests") { DatabaseName = "polymorfa_denied_" + id }); throw new Exception("Denied IndexedDB was accepted"); }
+                catch (StorageProviderException error) { if (error.InnerException is not null) throw new Exception("Denied storage retained raw error"); }
+                result = "PASS C# WASM native opaque-origin storage denial returns safe provider error";
+                await harness.InvokeVoidAsync("report", result); StateHasChanged(); return;
+            }
+            await using var adapter = await IndexedDbStorageAdapter.ConnectAsync(JS, new("browser-tests") { DatabaseName = "polymorfa_cs_browser_" + id });
+            var key = new Dictionary<string,string> { { "sessionId", "durable" }, { "messageId", "native-wasm" } };
+            var row = StorageMerge.EmptyRow(StorageEntity.Messages, key) with { Revision = 1 };
+            if (!reopen) { await adapter.SetupAsync(); if (!(await adapter.CommitAsync(new[] { new StoragePut(StorageEntity.Messages, row, null) })).Ok) throw new Exception("Native write rejected"); }
+            if ((await adapter.GetAsync(StorageEntity.Messages, new[] { row.Id })).Count != 1) throw new Exception("Durable native read failed");
+            if (!reopen) { result = "RUNNING shared 17-entity conformance"; StateHasChanged(); await StorageConformanceTests.Conformance(adapter); result = "RUNNING native browser failure and cancellation cases"; StateHasChanged(); await BrowserCases.Run(JS, adapter, "polymorfa_cs_browser_" + id, harness); }
+            result = reopen ? "PASS C# WASM IndexedDB page reload retained row" : "PASS C# WASM IndexedDB: all 17 entities, JSON/scalars, 2000 history, CAS rollback, replay, stale checkpoints, lease fences, scopes/bounds, cancellation receipts, input mutation, upgrade/blocked recovery, native opaque-origin storage denial and browser credential guards";
+            await harness.InvokeVoidAsync("report", result);
+        }
+        catch (Exception error) { result = "FAIL " + error.GetType().Name + ": " + error.Message; try { await JS.InvokeVoidAsync("parent.postMessage", new { polymorfaIndexedDbFixture = true, result }, "*"); } catch { } }
+        StateHasChanged();
+    }
+}
