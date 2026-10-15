@@ -243,7 +243,7 @@ impl BanSafe<'_> {
     ) -> Result<ApiResponse<T>> {
         // All callers supply closed parameter structs containing only scalar query values.
         let object = serde_json::to_value(parameters).expect("scalar BanSafe query serialization");
-        let pairs: Vec<(&str, String)> = object
+        let mut pairs: Vec<(&str, String)> = object
             .as_object()
             .expect("query object")
             .iter()
@@ -256,6 +256,7 @@ impl BanSafe<'_> {
                 )
             })
             .collect();
+        pairs.sort_by_key(|(key, _)| *key);
         self.0
             .request::<T, ()>(Method::GET, path, &pairs, None, options)
             .await

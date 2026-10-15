@@ -75,6 +75,8 @@ pub async fn conformance(adapter: Arc<dyn StorageAdapter>) {
         json!(12.5),
         json!([1, null]),
         json!({"unknown":true}),
+        json!({"$date":"literal", "$binary":{"base64":"literal","subType":"zz"}, "$numberLong":"not a number"}),
+        json!("replaced literal tags"),
     ]
     .into_iter()
     .enumerate()

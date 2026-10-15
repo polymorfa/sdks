@@ -224,7 +224,7 @@ impl Analytics<'_> {
         if self.project_id.is_some() {
             value.as_object_mut().unwrap().remove("projectId");
         }
-        value
+        let mut pairs: Vec<_> = value
             .as_object()
             .unwrap()
             .iter()
@@ -236,7 +236,11 @@ impl Analytics<'_> {
                         .unwrap_or_else(|| v.to_string()),
                 )
             })
-            .collect()
+            .collect();
+        // Optional database drivers can enable serde_json's preserve_order feature.
+        // Keep the API's query wire representation independent of feature unification.
+        pairs.sort_by(|left, right| left.0.cmp(&right.0));
+        pairs
     }
     pub async fn get(
         &self,

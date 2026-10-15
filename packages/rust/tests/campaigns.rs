@@ -546,11 +546,15 @@ fn follow_up_contract_models_and_sparse_timing() {
         .as_object()
         .unwrap()
         .keys()
-        .collect::<Vec<_>>();
+        .collect::<std::collections::BTreeSet<_>>();
     let report_json = follow_up_report();
     assert_eq!(
         schema_keys,
-        report_json.as_object().unwrap().keys().collect::<Vec<_>>()
+        report_json
+            .as_object()
+            .unwrap()
+            .keys()
+            .collect::<std::collections::BTreeSet<_>>()
     );
     assert!(serde_json::from_value::<CampaignFollowUp>(
         json!({"message":{"type":"image","text":"invalid"}})
@@ -704,12 +708,16 @@ async fn follow_up_reports_and_recipient_receipts_native_wire() {
     let contract: serde_json::Value =
         serde_json::from_str(include_str!("../../../contracts/campaign-follow-ups.json")).unwrap();
     assert_eq!(
-        summary.as_object().unwrap().keys().collect::<Vec<_>>(),
+        summary
+            .as_object()
+            .unwrap()
+            .keys()
+            .collect::<std::collections::BTreeSet<_>>(),
         contract["sources"]["platform"]["schemas"]["CampaignFollowUpSummary"]["properties"]
             .as_object()
             .unwrap()
             .keys()
-            .collect::<Vec<_>>()
+            .collect::<std::collections::BTreeSet<_>>()
     );
     let mut null_summary = summary;
     null_summary["anchorKind"] = json!(null);
