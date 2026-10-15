@@ -16,7 +16,9 @@ static async Task Run(string connectionString, string label)
         Check(adapter.Name == "libsql" && adapter.Capabilities.MaxCommitSize == 500, "libSQL capabilities");
         await StorageConformanceTests.Conformance(adapter);
         await MutationTests.Run(connection, adapter);
-        await IndependentClients(connectionString, options);
+        var iterations = int.TryParse(Environment.GetEnvironmentVariable("POLYMORFA_STORAGE_LIBSQL_RACE_ITERATIONS"), out var count) ? count : 20;
+        if (iterations is < 1 or > 1000) throw new Exception("Invalid race iteration count");
+        for (var iteration = 0; iteration < iterations; iteration++) await IndependentClients(connectionString, options);
         var key = new Dictionary<string, string> { { "sessionId", "negative" }, { "messageId", "duplicate" } };
         var row = StorageMerge.EmptyRow(StorageEntity.Messages, key) with { Revision = 1 };
         Check((await adapter.CommitAsync(new[] { new StoragePut(StorageEntity.Messages, row, null) })).Ok, "initial insert");
@@ -49,7 +51,7 @@ static async Task IndependentClients(string connectionString, SqlStorageOptions 
     await using var second = new PausedNativeConnection(connectionString); await second.OpenAsync();
     await using var left = new LibSqlStorageAdapter(first, options with { CreateTables = false });
     await using var right = new LibSqlStorageAdapter(second, options with { CreateTables = false });
-    var row = StorageMerge.EmptyRow(StorageEntity.Messages, new Dictionary<string, string> { { "sessionId", "independent" }, { "messageId", "cas" } }) with { Revision = 1 };
+    var row = StorageMerge.EmptyRow(StorageEntity.Messages, new Dictionary<string, string> { { "sessionId", "independent" }, { "messageId", Guid.NewGuid().ToString("N") } }) with { Revision = 1 };
     Check((await left.CommitAsync(new[] { new StoragePut(StorageEntity.Messages, row, null) })).Ok, "Independent initial insert");
     var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     async Task<StorageCommitResult?> Race(LibSqlStorageAdapter client, PausedNativeConnection native)
@@ -62,15 +64,20 @@ static async Task IndependentClients(string connectionString, SqlStorageOptions 
     var results = await Task.WhenAll(a, b); Check(results.Count(r => r?.Ok == true) == 1, "Independent clients did not enforce CAS");
     Check((await right.GetAsync(StorageEntity.Messages, new[] { row.Id }))[row.Id].Revision == 2, "Independent client cannot observe committed revision");
     Check(!(await left.CommitAsync(new[] { new StoragePut(StorageEntity.Messages, row with { Revision = 3 }, 1) })).Ok, "Fresh retry bypassed stale revision");
-    Console.WriteLine("PASS libsql: independent native connections allow one CAS winner, safe admission failures=" + results.Count(r => r is null) + ", fresh stale-revision retry rejected");
+    Console.WriteLine("PASS libsql: independent remote connections allow one CAS winner, safe admission failures=" + results.Count(r => r is null) + ", fresh stale-revision retry rejected");
 }
 
-await using (var closed = new SqliteConnection("Data Source=:memory:"))
+foreach (var unsupported in new[] { "Data Source=:memory:", "Data Source=unsupported.db;Pooling=True", "Data Source=unsupported.db;Pooling=False", "Data Source=libsql://customer.invalid;Replica Path=unsupported-replica.db", "Data Source=http://customer.invalid" })
 {
-    try { _ = new LibSqlStorageAdapter(closed); throw new Exception("closed connection accepted"); } catch (StorageValidationException) { }
+    await using var connection = new SqliteConnection(unsupported);
+    try { _ = new LibSqlStorageAdapter(connection); throw new Exception("Unsupported local, replica or insecure libSQL mode accepted"); }
+    catch (StorageValidationException error) { Check(!error.Message.Contains("customer.invalid", StringComparison.Ordinal) && !error.Message.Contains("unsupported.db", StringComparison.Ordinal), "Mode validation leaked customer configuration"); }
+    Check(connection.State == ConnectionState.Closed, "Rejected mode changed caller connection state");
 }
-var file = Path.Combine(Environment.GetEnvironmentVariable("POLYMORFA_STORAGE_TEST_DIRECTORY") ?? Environment.CurrentDirectory, "libsql-" + Guid.NewGuid().ToString("N") + ".db");
-try { await Run(new SqliteConnectionStringBuilder { DataSource = file, Pooling = false }.ToString(), "native file"); }
-finally { foreach (var suffix in new[] { "", "-wal", "-shm" }) if (File.Exists(file + suffix)) File.Delete(file + suffix); }
-if (Environment.GetEnvironmentVariable("POLYMORFA_STORAGE_LIBSQL_CONNECTION") is { } remote) await Run(remote, "remote Hrana");
-else Console.WriteLine("SKIP libsql remote: POLYMORFA_STORAGE_LIBSQL_CONNECTION unset");
+Console.WriteLine("PASS libsql: file, memory, replica and insecure remote modes rejected before adapter commands");
+await using (var closed = new SqliteConnection("Data Source=libsql://127.0.0.1:54848;Tls=False"))
+{
+    try { _ = new LibSqlStorageAdapter(closed); throw new Exception("Closed remote connection accepted"); } catch (StorageValidationException) { }
+}
+if (Environment.GetEnvironmentVariable("POLYMORFA_STORAGE_LIBSQL_CONNECTION") is { } remote) await Run(remote, "direct remote Hrana");
+else Console.WriteLine("SKIP libsql remote: POLYMORFA_STORAGE_LIBSQL_CONNECTION unset; no native-file support is claimed");
