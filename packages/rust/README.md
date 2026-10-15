@@ -359,3 +359,46 @@ official native driver and cover all 17 entities, nested/scalar JSON, atomic
 rollback, 2,000 messages, replay, cursor paging, checkpoint conflicts and expired
 writer fencing. Hosted AWS credentials, IAM and deployment acceptance remain
 separate gates. This SDK remains unpublished.
+
+
+### Customer-owned MongoDB
+
+Enable `storage-mongodb` for `storage::mongodb::MongoStorageAdapter` using the
+native official MongoDB driver. Pass a customer-owned `mongodb::Database` and
+`MongoStorageOptions::new(namespace)`. Configure TLS, credentials, server
+selection, connection and operation timeouts on that independent client. The
+adapter derives transaction sessions from the database's client and never reads
+Polymorfa API credentials.
+
+```rust,ignore
+use polymorfa_sdk::storage::mongodb::{MongoStorageAdapter, MongoStorageOptions};
+let adapter = MongoStorageAdapter::new(customer_database,
+    MongoStorageOptions::new("my_app"))?;
+```
+
+Use a replica set or sharded deployment with transaction support. Setup checks
+topology and refuses standalone servers before creating indexes. It creates
+schema-2 indexes by default; set `create_indexes = false` when the operator owns
+index creation. Each collection is `polymorfa_{namespace}_{entity}`. Namespace
+isolation complements customer database permissions; it does not replace them.
+
+Commits use native snapshot/majority transactions, conditional row revisions,
+and at most 500 writes including the engine fence. Driver transaction retries
+retain the same prepared values. MongoDB transaction lifetime and BSON document
+limits still apply. A transport failure or timeout can leave a commit outcome
+unknown; recover using saved event/checkpoint state and conditional revisions.
+
+Queries send only the declared index scope fields. They read at most
+`max_query_rows + 1` matching rows before applying cursor/range ordering;
+`max_query_rows` defaults to 100,000. Bound retention or configure this limit for
+the customer workload. Stored values remain JSON, including literal objects
+with `$date`, `$binary` or `$numberLong` keys; BSON-specific stored types are
+refused.
+
+The schema source is `3bacf46f9c4213426314001586f5bae43aaa77de`.
+Actual local replica-set tests cover all 17 entities, JSON scalars, conditional
+replacement, atomic rollback, 2,000-message history, checkpoints, expired-writer
+fencing, namespaces and read bounds. Standalone-server tests prove refusal
+without partial writes. Hosted MongoDB authorization, TLS, sharded deployment
+and operational failover remain customer acceptance gates. This SDK is
+unpublished.

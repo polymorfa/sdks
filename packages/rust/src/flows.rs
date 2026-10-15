@@ -192,7 +192,7 @@ impl Flows<'_> {
         }
         let response: ApiResponse<DataEnvelope<T>> =
             if method == Method::GET || method == Method::DELETE {
-                let pairs: Vec<(&str, String)> = value
+                let mut pairs: Vec<(&str, String)> = value
                     .as_object()
                     .unwrap()
                     .iter()
@@ -205,6 +205,7 @@ impl Flows<'_> {
                         )
                     })
                     .collect();
+                pairs.sort_by_key(|(key, _)| *key);
                 self.http
                     .request::<_, ()>(method, path, &pairs, None, options)
                     .await?

@@ -300,3 +300,44 @@ Local tests use the official driver and cover all 17 entities, JSON scalars,
 atomic rollback, 2,000-message history, replay, cursor paging, checkpoints,
 expired-writer fences and caller-mutation capture. Hosted AWS credentials, IAM
 and deployment acceptance remain separate gates.
+
+
+The separate, unpublished `Polymorfa.Storage.MongoDb` package adds
+`Polymorfa.Storage.MongoDb.MongoDbStorageAdapter` through the official native
+MongoDB driver. Pass a customer-owned `IMongoDatabase` and
+`new MongoDbStorageOptions(namespace)`. The caller configures credentials, TLS,
+server selection, connection and operation timeouts and owns client lifetime.
+The adapter derives sessions from that database's client, never reads Polymorfa
+API credentials and requires a server app.
+
+```csharp
+using Polymorfa.Storage.MongoDb;
+var adapter = new MongoDbStorageAdapter(customerDatabase,
+    new MongoDbStorageOptions("my_app"));
+```
+
+Use a replica set or sharded deployment with transaction support. Setup refuses
+standalone servers before index changes and creates schema-2 indexes by
+default. Set `CreateIndexes = false` for operator-managed indexes. Collections
+are named `polymorfa_{namespace}_{entity}`; configure database permissions
+separately from the namespace.
+
+Commits use native snapshot/majority transactions and at most 500 writes,
+including the session fence. Conditional revisions and the native driver's
+transaction retries preserve atomicity. MongoDB document and transaction
+lifetime limits still apply. A transport failure or timeout may leave a commit
+outcome unknown; recover using saved event/checkpoint state and conditional
+revisions.
+
+Queries forward only declared index scope fields. `MaxQueryRows` defaults to
+100,000 for the complete matching scope before cursor/range sorting. Bound
+retention or configure the limit for the workload. JSON remains JSON, including
+literal `$date`, `$binary` and `$numberLong` objects; BSON-specific stored types
+are refused. Caller row and query values are captured before asynchronous work.
+
+The storage source is `3bacf46f9c4213426314001586f5bae43aaa77de`.
+Actual local replica-set tests cover all 17 entities, literal/scalar JSON,
+2,000-message history, atomic rollback, replay, checkpoints, expired-writer
+fences, namespaces, read bounds and mutation during a request. Actual standalone
+tests prove refusal without partial writes. Hosted MongoDB authorization, TLS,
+sharded deployment and operational failover remain customer acceptance gates.

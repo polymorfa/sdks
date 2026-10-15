@@ -210,3 +210,6 @@ pub mod sql;
 
 #[cfg(feature = "storage-dynamodb")]
 pub mod dynamodb;
+
+#[cfg(feature = "storage-mongodb")]
+pub mod mongodb;
