@@ -235,7 +235,8 @@ follow schema 2. Invalid or oversized derived identifiers fail before connecting
 preventing PostgreSQL name truncation. Driver errors omit connection strings, SQL
 and customer values. SQL adapters require a server application. Hosted
 Supabase/Neon/PlanetScale authority and deployment acceptance remain customer
-configuration and verification gates. Cosmos and document-store adapters have separate customer configuration; browser adapters remain separate work. A
+configuration and verification gates. Browser adapters remain separate work; a
+Supabase RLS preset is exported below.
 
 
 The separate, unpublished `Polymorfa.Storage.S3` package adds
