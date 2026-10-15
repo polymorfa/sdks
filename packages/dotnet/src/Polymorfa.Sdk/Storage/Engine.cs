@@ -47,7 +47,7 @@ public sealed class CustomerStorage
         else if (result.Conflicts!.Contains(lease.Row.Id)) { var rows = await Adapter.GetAsync(StorageEntity.Leases, new[] { lease.Row.Id }, cancellation).ConfigureAwait(false); if (!rows.TryGetValue(lease.Row.Id, out var current) || current.Revision != lease.Row.Revision || Text(current, "owner") != Text(lease.Row, "owner")) { lease.Lost = true; throw new StorageLeaseLostException(); } }
         return result;
     }
-    private async Task RenewForScan(Lease lease, CancellationToken cancellation)
+    private async Task RenewIfNeeded(Lease lease, CancellationToken cancellation)
     {
         if (Number(lease.Row, "expiresAt") - Now() > options.LeaseDuration.TotalMilliseconds / 2) return;
         var result = await FencedCommit(lease, Array.Empty<StorageWrite>(), cancellation).ConfigureAwait(false);
@@ -61,16 +61,17 @@ public sealed class CustomerStorage
     {
         var ids = writes.Select(w => w switch { StoragePut p => p.Row.Id, StorageRowDelete d => d.Id, _ => "" }).ToHashSet(StringComparer.Ordinal); if (result.Ok ? result.Conflicts?.Count > 0 : result.Conflicts is null || result.Conflicts.Count == 0 || result.Conflicts.Any(id => !ids.Contains(id))) throw new StorageProviderException("Adapter returned an invalid conditional commit receipt.");
     }
-    private async Task<IReadOnlyDictionary<string, StorageRow>> ReadMany(StorageEntity entity, IReadOnlyList<string> ids, CancellationToken cancellation)
+    private async Task<IReadOnlyDictionary<string, StorageRow>> ReadMany(StorageEntity entity, IReadOnlyList<string> ids, Lease lease, CancellationToken cancellation)
     {
-        var result = new Dictionary<string, StorageRow>(StringComparer.Ordinal); foreach (var group in ids.Chunk(500)) foreach (var pair in await Adapter.GetAsync(entity, group, cancellation).ConfigureAwait(false)) result[pair.Key] = pair.Value; return result;
+        var result = new Dictionary<string, StorageRow>(StringComparer.Ordinal); foreach (var group in ids.Chunk(500)) { await RenewIfNeeded(lease, cancellation).ConfigureAwait(false); foreach (var pair in await Adapter.GetAsync(entity, group, cancellation).ConfigureAwait(false)) result[pair.Key] = pair.Value; }
+        return result;
     }
     private static (StorageEntity Entity, string Id) Slot(StorageOperation operation) => operation switch { StorageUpsert o => (o.Entity, StorageSchema.EncodeKey(o.Entity, o.Key)), StoragePatch o => (o.Entity, StorageSchema.EncodeKey(o.Entity, o.Key)), StorageDelete o => (o.Entity, StorageSchema.EncodeKey(o.Entity, o.Key)), StorageCheckpoint o => (StorageEntity.Checkpoints, StorageSchema.EncodeKey(StorageEntity.Checkpoints, Key(("sessionId", o.SessionId), ("stream", o.Stream)))), _ => throw new StorageValidationException("Unexpected clear operation.") };
     private static StorageGuard? Guard(StorageOperation operation) => operation switch { StorageUpsert o => o.Guard, StoragePatch o => o.Guard, _ => null };
     private static bool SameRow(StorageEntity entity, StorageRow a, StorageRow b) => a.Versions.Count == b.Versions.Count && a.Versions.All(p => b.Versions.TryGetValue(p.Key, out var v) && v == p.Value) && StorageSchema.Definition(entity).Fields.Keys.All(name => StorageMerge.CanonicalJson(a.Fields.TryGetValue(name, out var av) ? av : StorageMerge.Null) == StorageMerge.CanonicalJson(b.Fields.TryGetValue(name, out var bv) ? bv : StorageMerge.Null));
-    private async Task<IReadOnlyList<StorageWrite>> Plan(IReadOnlyList<StorageOperation> operations, CancellationToken cancellation)
+    private async Task<IReadOnlyList<StorageWrite>> Plan(IReadOnlyList<StorageOperation> operations, Lease lease, CancellationToken cancellation)
     {
-        var wanted = operations.Select(Slot).Distinct().GroupBy(s => s.Entity); var original = new Dictionary<(StorageEntity, string), StorageRow?>(); foreach (var entity in wanted) { var ids = entity.Select(s => s.Id).ToArray(); var rows = await ReadMany(entity.Key, ids, cancellation).ConfigureAwait(false); foreach (var id in ids) original[(entity.Key, id)] = rows.TryGetValue(id, out var row) ? row : null; }
+        var wanted = operations.Select(Slot).Distinct().GroupBy(s => s.Entity); var original = new Dictionary<(StorageEntity, string), StorageRow?>(); foreach (var entity in wanted) { var ids = entity.Select(s => s.Id).ToArray(); var rows = await ReadMany(entity.Key, ids, lease, cancellation).ConfigureAwait(false); foreach (var id in ids) original[(entity.Key, id)] = rows.TryGetValue(id, out var row) ? row : null; }
         var stored = new Dictionary<(StorageEntity, string), StorageRow?>(original); var deleted = new HashSet<(StorageEntity, string)>(); foreach (var operation in operations)
         {
             var slot = Slot(operation); stored.TryGetValue(slot, out var current); switch (operation)
@@ -91,7 +92,7 @@ public sealed class CustomerStorage
     {
         IReadOnlyList<string> conflicts = Array.Empty<string>(); for (var attempt = 0; attempt <= options.MaxRetries; attempt++)
         {
-            var writes = (await Plan(operations, cancellation).ConfigureAwait(false)).Concat(extra).ToArray(); if (writes.Length == 0) return 0; var failed = new List<string>(); foreach (var group in writes.Chunk(commitSize)) { var result = await FencedCommit(lease, group, cancellation).ConfigureAwait(false); if (!result.Ok) { failed.AddRange(result.Conflicts!); break; } }
+            var writes = (await Plan(operations, lease, cancellation).ConfigureAwait(false)).Concat(extra).ToArray(); if (writes.Length == 0) return 0; var failed = new List<string>(); foreach (var group in writes.Chunk(commitSize)) { var result = await FencedCommit(lease, group, cancellation).ConfigureAwait(false); if (!result.Ok) { failed.AddRange(result.Conflicts!); break; } }
             if (failed.Count == 0) return writes.Length; conflicts = failed; await Task.Delay((int)Math.Min(200, 5 * Math.Pow(2, attempt)), cancellation).ConfigureAwait(false);
         }
         throw new StorageConflictException(conflicts);
@@ -104,12 +105,12 @@ public sealed class CustomerStorage
     {
         var removed = 0; while (true)
         {
-            await RenewForScan(lease, cancellation).ConfigureAwait(false);
+            await RenewIfNeeded(lease, cancellation).ConfigureAwait(false);
             var messages = await Adapter.QueryAsync(StorageEntity.Messages, new("by_chat", Key(("sessionId", operation.SessionId), ("chatId", operation.ChatId)), options.ClearPageSize, new(Lte: operation.UpTo), "asc"), cancellation).ConfigureAwait(false); if (messages.Count == 0) return removed; var deletes = new List<StorageOperation>(); foreach (var message in messages)
             {
                 var id = Text(message, "messageId") ?? throw new StorageValidationException("Invalid stored message ID."); var key = Key(("sessionId", operation.SessionId), ("messageId", id)); deletes.Add(new StorageDelete(StorageEntity.Media, key)); foreach (var entity in new[] { StorageEntity.Reactions, StorageEntity.Receipts, StorageEntity.PollVotes }) while (true)
                     {
-                        await RenewForScan(lease, cancellation).ConfigureAwait(false);
+                        await RenewIfNeeded(lease, cancellation).ConfigureAwait(false);
                         var children = await Adapter.QueryAsync(entity, new("by_message", key, 500, Order: "asc"), cancellation).ConfigureAwait(false); if (children.Count == 0) break; var writes = children.Select(row => (StorageWrite)new StorageRowDelete(entity, row.Id)).ToArray(); foreach (var group in writes.Chunk(commitSize)) { var result = await FencedCommit(lease, group, cancellation).ConfigureAwait(false); if (!result.Ok) throw new StorageConflictException(result.Conflicts!); }
                         removed += children.Count; if (children.Count < 500) break;
                     }
@@ -118,9 +119,9 @@ public sealed class CustomerStorage
             removed += await ApplyRows(deletes, Array.Empty<StorageWrite>(), lease, cancellation).ConfigureAwait(false);
         }
     }
-    private async Task<IReadOnlyList<StorageOperation>> Watermarks(IReadOnlyList<StorageOperation> operations, CancellationToken cancellation)
+    private async Task<IReadOnlyList<StorageOperation>> Watermarks(IReadOnlyList<StorageOperation> operations, Lease lease, CancellationToken cancellation)
     {
-        var ids = operations.Select(Guard).Where(g => g is not null).Select(g => StorageSchema.EncodeKey(StorageEntity.Chats, Key(("sessionId", g!.SessionId), ("chatId", g.ChatId)))).Distinct().ToArray(); if (ids.Length == 0) return operations; var chats = await ReadMany(StorageEntity.Chats, ids, cancellation).ConfigureAwait(false); return operations.Where(op => { var guard = Guard(op); if (guard is null) return true; var id = StorageSchema.EncodeKey(StorageEntity.Chats, Key(("sessionId", guard.SessionId), ("chatId", guard.ChatId))); return !chats.TryGetValue(id, out var chat) || guard.Timestamp > Math.Max(Number(chat, "clearedAt", double.NegativeInfinity), Number(chat, "deletedAt", double.NegativeInfinity)); }).ToArray();
+        var ids = operations.Select(Guard).Where(g => g is not null).Select(g => StorageSchema.EncodeKey(StorageEntity.Chats, Key(("sessionId", g!.SessionId), ("chatId", g.ChatId)))).Distinct().ToArray(); if (ids.Length == 0) return operations; var chats = await ReadMany(StorageEntity.Chats, ids, lease, cancellation).ConfigureAwait(false); return operations.Where(op => { var guard = Guard(op); if (guard is null) return true; var id = StorageSchema.EncodeKey(StorageEntity.Chats, Key(("sessionId", guard.SessionId), ("chatId", guard.ChatId))); return !chats.TryGetValue(id, out var chat) || guard.Timestamp > Math.Max(Number(chat, "clearedAt", double.NegativeInfinity), Number(chat, "deletedAt", double.NegativeInfinity)); }).ToArray();
     }
     public async Task<StorageApplyResult> ApplyAsync(StorageBatch batch, CancellationToken cancellation = default)
     {
@@ -152,8 +153,8 @@ public sealed class CustomerStorage
     }
     private async Task<StorageApplyResult> ApplyLeased(StorageBatch batch, Lease lease, CancellationToken cancellation)
     {
-        var marker = new List<StorageWrite>(); if (batch.EventId is { } id) { var row = StorageMerge.EmptyRow(StorageEntity.Events, Key(("sessionId", batch.SessionId), ("eventId", id))); if ((await Adapter.GetAsync(StorageEntity.Events, new[] { row.Id }, cancellation).ConfigureAwait(false)).ContainsKey(row.Id)) return new(false, 0); var fields = Fields(row); fields["type"] = Value(batch.EventType); marker.Add(new StoragePut(StorageEntity.Events, row with { Revision = 1, Fields = fields }, null)); }
-        var plain = batch.Operations.Where(op => op is not StorageClearChat && Guard(op) is null).ToArray(); var clears = batch.Operations.OfType<StorageClearChat>().ToArray(); var guarded = batch.Operations.Where(op => Guard(op) is not null).ToArray(); var writes = await ApplyRows(plain, Array.Empty<StorageWrite>(), lease, cancellation).ConfigureAwait(false); foreach (var clear in clears) writes += await ClearChat(clear, lease, cancellation).ConfigureAwait(false); var kept = await Watermarks(guarded, cancellation).ConfigureAwait(false); try { writes += await ApplyRows(kept, marker, lease, cancellation).ConfigureAwait(false); } catch (StorageConflictException error) when (marker.Count == 1 && error.Ids.Count == 1 && error.Ids[0] == ((StoragePut)marker[0]).Row.Id) { return new(false, writes); }
+        var marker = new List<StorageWrite>(); if (batch.EventId is { } id) { await RenewIfNeeded(lease, cancellation).ConfigureAwait(false); var row = StorageMerge.EmptyRow(StorageEntity.Events, Key(("sessionId", batch.SessionId), ("eventId", id))); if ((await Adapter.GetAsync(StorageEntity.Events, new[] { row.Id }, cancellation).ConfigureAwait(false)).ContainsKey(row.Id)) return new(false, 0); var fields = Fields(row); fields["type"] = Value(batch.EventType); marker.Add(new StoragePut(StorageEntity.Events, row with { Revision = 1, Fields = fields }, null)); }
+        var plain = batch.Operations.Where(op => op is not StorageClearChat && Guard(op) is null).ToArray(); var clears = batch.Operations.OfType<StorageClearChat>().ToArray(); var guarded = batch.Operations.Where(op => Guard(op) is not null).ToArray(); var writes = await ApplyRows(plain, Array.Empty<StorageWrite>(), lease, cancellation).ConfigureAwait(false); foreach (var clear in clears) writes += await ClearChat(clear, lease, cancellation).ConfigureAwait(false); var kept = await Watermarks(guarded, lease, cancellation).ConfigureAwait(false); try { writes += await ApplyRows(kept, marker, lease, cancellation).ConfigureAwait(false); } catch (StorageConflictException error) when (marker.Count == 1 && error.Ids.Count == 1 && error.Ids[0] == ((StoragePut)marker[0]).Row.Id) { return new(false, writes); }
         return new(true, writes);
     }
     public async Task<IReadOnlyDictionary<string, JsonElement>?> GetAsync(StorageEntity entity, IReadOnlyDictionary<string, string> key, CancellationToken cancellation = default) { var id = StorageSchema.EncodeKey(entity, key); var rows = await Adapter.GetAsync(entity, new[] { id }, cancellation).ConfigureAwait(false); return rows.TryGetValue(id, out var row) ? StorageMerge.PublicRow(entity, row) : null; }
