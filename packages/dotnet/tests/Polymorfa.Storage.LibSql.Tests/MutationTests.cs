@@ -9,6 +9,12 @@ using Turso.Data.Sqlite;
 internal sealed class PausedNativeConnection(string connectionString) : SqliteConnection(connectionString)
 {
     private int armed;
+    internal bool AdmissionFailed { get; private set; }
+    protected override async ValueTask<DbTransaction> BeginDbTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellation)
+    {
+        try { return await base.BeginDbTransactionAsync(isolationLevel, cancellation); }
+        catch (SqliteException) { AdmissionFailed = true; throw; }
+    }
     internal TaskCompletionSource Started { get; private set; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     internal TaskCompletionSource Release { get; private set; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
     internal void Arm() { Started = new(TaskCreationOptions.RunContinuationsAsynchronously); Release = new(TaskCreationOptions.RunContinuationsAsynchronously); Interlocked.Exchange(ref armed, 1); }
