@@ -405,7 +405,7 @@ type cancelBody struct {
 func (b *cancelBody) Close() error { err := b.ReadCloser.Close(); b.cancel(); return err }
 func metadata(r *http.Response, attempts int) Metadata {
 	h := http.Header{}
-	for _, name := range []string{"content-type", "x-polymorfa-transport", "x-polymorfa-routing-reason", "x-polymorfa-operation-id", "x-request-id", "polymorfa-version", "retry-after", "polymorfa-data-region", "x-ratelimit-limit", "x-ratelimit-remaining", "x-ratelimit-reset", "polymorfa-ratelimit-reason", "polymorfa-next-cursor"} {
+	for _, name := range []string{"content-type", "x-polymorfa-transport", "x-polymorfa-routing-reason", "x-polymorfa-operation-id", "x-request-id", "polymorfa-version", "retry-after", "polymorfa-data-region", "x-ratelimit-limit", "x-ratelimit-remaining", "x-ratelimit-reset", "polymorfa-ratelimit-reason", "polymorfa-next-cursor", "content-disposition", "x-trace-id", "idempotent-replayed"} {
 		if value := r.Header.Get(name); value != "" {
 			h.Set(name, value)
 		}
@@ -485,6 +485,7 @@ func decodeError(r *http.Response, md Metadata) error {
 		Docs  string `json:"docs"`
 		Error struct {
 			Code          string          `json:"code"`
+			Param         string          `json:"param"`
 			Message       string          `json:"message"`
 			RequestID     string          `json:"request_id"`
 			RequestLogURL string          `json:"request_log_url"`
@@ -494,6 +495,7 @@ func decodeError(r *http.Response, md Metadata) error {
 	}
 	if strings.Contains(strings.ToLower(r.Header.Get("Content-Type")), "json") && json.NewDecoder(io.LimitReader(r.Body, 1<<20)).Decode(&v) == nil {
 		e.Code = v.Error.Code
+		e.Field = v.Error.Param
 		if v.Error.Message != "" {
 			e.Message = v.Error.Message
 		}

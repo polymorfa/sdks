@@ -487,3 +487,102 @@ wrapped relay/direct uploads, changed-source refusal, incomplete consumption,
 blocked-source cancellation, error redaction and refusal to reopen a completed body.
 A customer transport owns its external endpoint and must finalize the destination
 only after its encrypted-body read succeeds.
+
+## Additional campaign and custody contracts (development source)
+
+This checkout adds 30 handwritten operations from API source
+`f97ad78b172e80788c33bdc0fcf28f75db9283ec`, using TypeScript reference
+`44d5426f90bf376940a5198edac5da4cd893cbe9`. The additive contract remains
+unpublished. The primary coverage snapshots and global API default stay at their
+existing revisions. These methods select `2026-10-14` per request when
+`RequestOptions.APIVersion` is empty; an explicit request version takes precedence.
+An SDK method does not establish deployed beta access or package availability.
+
+`MessagingClient.Campaigns()` adds `GetReplyFlow`, `CreateReplyFlow`,
+`SetReplyFlow`, `TestSend`, `Links` and `ExportRecipients`, using a project slug.
+All six require an organization API key or project token; client tokens fail
+before HTTP. The API still checks live scopes, project ownership, feature access,
+funding and sender eligibility. Test sends require both campaign read and manage
+scopes and send real messages.
+
+`org.Campaigns()` exposes the corresponding Platform methods plus
+`ListLaunchApprovals` and organization-only `GetSettings`. Its project selection
+belongs in the typed query or request body. `org.Project(projectID).Campaigns()`
+and a project-token client's `Campaigns()` expose only the seven confined
+operations. They retain their project privately and accept no caller project
+selector. Creating another project view does not retarget an existing resource.
+
+Reply flows use `CampaignReplyFlowDefinition`, named nodes and edges, and sealed
+message variants `CampaignReplyText`, `CampaignReplyButtons`, `CampaignReplyList`
+and `CampaignReplyFlowForm`. Match variants are `CampaignReplyChoice`,
+`CampaignReplyKeyword` and `CampaignReplySubmission`. Each variant supplies its
+own discriminator. The SDK checks structural and byte limits; the API owns graph
+semantics, compliance and campaign state. `SetCampaignReplyFlowRequest{}` sends
+required `replyFlowId:null` to detach; a non-null `Nullable[string].Value` attaches.
+
+`org.AudienceProfiles()` adds `List`, `Retrieve`, `Put`, `Delete` and `ListConsent`;
+its `Imports()` resource adds `Create`, `Retrieve` and `Cancel`. These team-wide
+resources are absent from project clients. Profiles are customer-supplied campaign
+data, independent of WhatsApp-synchronized contacts. `Put` replaces tags and
+attributes: provide non-nil collections, including `[]string{}` and an empty map.
+A nil `ExpectedRevision` omits it when creating; replacement uses the observed
+positive revision. `AudienceProfileAttribute{}` is explicit null; a non-null
+`Value` uses exactly one string, finite-number or boolean `CampaignVariable`
+variant. Consent `Allowed:false` and `AssertedAt:0` remain explicit values;
+consent assertions never override an opt-out or grant permission to send.
+
+Imports send JSON containing `ReplayKey`, canonical padded standard-base64 UTF-8
+CSV and optional named column mapping. They accept at most 10 MiB of decoded CSV;
+invalid rows and revision conflicts remain visible in the returned job report.
+Aborting an HTTP waiter does not cancel a job; call `Imports().Cancel` explicitly.
+Committed rows remain after cancellation. `Audiences().CreateFromCampaign` creates
+a team audience from an explicit outcome and optional source-project selector.
+
+`OptOuts()` adds `GetConfirmationSettings`, `UpdateConfirmationSettings` and
+`GetConfirmationSummary`. These confirmation settings are separate from keyword
+capture. The update requires the exact team and revision; false, zero and a null
+locale remain explicit. Enabling requires a supported non-null locale.
+
+`project.SignalCustody()` adds `Retrieve`, `Update`, `RetrieveCustomer` and
+`UpdateCustomer`. Organization aliases live on `Projects()` and `Customers()`.
+These defaults apply to future Number reservations and never convert existing
+Numbers. Project mode cannot be null. Customer null restores inheritance:
+
+```go
+project, err := org.Project(projectID)
+if err != nil {
+    return err
+}
+observed, err := project.SignalCustody().RetrieveCustomer(ctx, customerID)
+if err != nil {
+    return err
+}
+_, err = project.SignalCustody().UpdateCustomer(ctx, customerID,
+    polymorfa.CustomerSignalCustodyUpdate{
+        ExpectedRevision: observed.Data.Data.Revision,
+        SignalModeDefault: polymorfa.Nullable[polymorfa.SignalCustodyMode]{},
+    })
+```
+
+Keep revision conflicts visible: reload and reconcile rather than silently retry
+with a new revision. Required nullable values use a `Nullable[T]` value; optional
+nullable fields elsewhere use a pointer to it. A zero revision is valid for
+custody defaults and stays in JSON. New typed success models check required
+fields and scalar shapes while tolerating response extensions.
+
+New writes default to no automatic retry, except `TestSend`, which captures one
+idempotency key and body for its retries. Preserve an explicit caller key across
+an uncertain result. A completed replay returns the API's conflict; an unknown
+outcome does not prove no message was sent. An explicit retry override on other
+writes has no declared replay guarantee. A profile-import body replay key is
+separate from an HTTP idempotency key.
+
+`ExportRecipients` returns one finite `CampaignRecipientExportPage`, preserving
+server CSV quoting, CRLF, optional next cursor and sanitized filename. It requires
+HTTP 200 with `text/csv` and rejects redirects. With a status or reason filter,
+omit cursor and use limit 1000 or omit it. Unfiltered pages are separate reads,
+not a global snapshot. Cancellation closes the response; no next page is fetched
+automatically. Request metadata retains the request ID, trace ID, replay header,
+retry advice and content disposition. Native fixtures exercise these contracts;
+live campaign sends, import processing, custody availability and publication
+remain separate acceptance gates.
