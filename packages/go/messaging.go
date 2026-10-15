@@ -263,6 +263,10 @@ type ClientTokenValue struct {
 	Token     string `json:"token"`
 	ExpiresAt string `json:"expiresAt"`
 }
+
+func (v ClientTokenValue) String() string   { return "ClientTokenValue[redacted]" }
+func (v ClientTokenValue) GoString() string { return v.String() }
+
 type ClientRules struct {
 	RecipientMode          string `json:"recipientMode"`
 	AllowedActions         string `json:"allowedActions"`

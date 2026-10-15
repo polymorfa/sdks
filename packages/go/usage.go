@@ -162,10 +162,13 @@ func (r *Usage) ListGates(ctx context.Context, p UsageGateParams, o ...RequestOp
 }
 func (r *Usage) IterateRecords(ctx context.Context, p UsageRecordParams, o ...RequestOptions) iter.Seq2[UsageRecord, error] {
 	return func(yield func(UsageRecord, error) bool) {
-		p.Cursor = ""
+		params := p
 		seen := map[string]bool{}
+		if params.Cursor != "" {
+			seen[params.Cursor] = true
+		}
 		for {
-			page, err := r.ListRecords(ctx, p, o...)
+			page, err := r.ListRecords(ctx, params, o...)
 			if err != nil {
 				yield(UsageRecord{}, err)
 				return
@@ -184,7 +187,7 @@ func (r *Usage) IterateRecords(ctx context.Context, p UsageRecordParams, o ...Re
 				return
 			}
 			seen[*next] = true
-			p.Cursor = *next
+			params.Cursor = *next
 		}
 	}
 }

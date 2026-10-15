@@ -40,7 +40,7 @@ func (r *MessagingCampaigns) List(ctx context.Context, project string, o ...Requ
 	return request[Envelope[[]Campaign]](ctx, r.t, "GET", messagingCampaignsPath(project), nil, nil, options(o))
 }
 func (r *MessagingCampaigns) Create(ctx context.Context, project string, b CreateCampaignRequest, o ...RequestOptions) (Response[Envelope[Campaign]], error) {
-	return request[Envelope[Campaign]](ctx, r.t, "POST", messagingCampaignsPath(project), nil, b, options(o))
+	return campaignIdentity[Envelope[Campaign]](ctx, r.t, messagingCampaignsPath(project), b, o)
 }
 func (r *MessagingCampaigns) Retrieve(ctx context.Context, project, id string, o ...RequestOptions) (Response[Envelope[Campaign]], error) {
 	return request[Envelope[Campaign]](ctx, r.t, "GET", messagingCampaignPath(project, id), nil, nil, options(o))
