@@ -92,3 +92,5 @@ pub mod storage;
 
 #[cfg(feature = "storage-s3")]
 pub mod s3;
+
+pub mod storage_sync;

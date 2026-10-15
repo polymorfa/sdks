@@ -7,8 +7,12 @@ description = "Portable customer-owned storage schema and fenced merge engine fo
 license = "MIT"
 repository = "https://github.com/polymorfa/sdks"
 readme = "README.md"
-include = ["Cargo.toml", "Cargo.lock", "README.md", "src/**", "tests/**"]
+include = ["Cargo.toml", "Cargo.lock", "README.md", "src/**", "tests/*.rs", "tests/support/**", "fixtures/**"]
 [dependencies]
+event-listener = "=5.4.2"
+base64 = "0.22"
+chrono = { version = "0.4", default-features = false, features = ["std"] }
+futures-util = "0.3"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 uuid = { version = "=1.26.1", features = ["v4"] }
