@@ -582,3 +582,28 @@ python3 packages/dotnet/tests/Polymorfa.Storage.IndexedDb.BrowserTests/serve.py 
 Open `http://127.0.0.1:54865/?id=unique-test-run`. Each run needs a fresh `id`;
 append `&reopen=1` to the same URL to verify durable reads after a page reload.
 The fixture uses synthetic data and does not access an operator browser profile.
+
+### Store events and decoded history
+
+`StorageReducers.ReduceEvent` maps the 24 stored webhook event types to schema-2 operations. `ReduceHistoryChunk` accepts `StorageHistoryInput` and typed `StorageHistoryChunk` objects from a full WhatsApp protobuf decoder. It maps messages, media references, receipts, reactions, group membership, push names, PN/LID mappings and history progress. An explicit `StorageHistoryIdentityIndex` joins native identifiers to Polymorfa IDs; unmatched identifiers use stable `wa:` keys. Revokes and deletes permanently clear the contract's content and media secret fields. Other event types produce empty batches.
+
+The HTTP history reader preserves raw protobuf bytes and decodes its documented subset. Supply a full-schema decoder to populate the storage history models. The storage reducer does not infer missing protobuf fields or download media bytes.
+
+```csharp
+using Polymorfa.Sdk.Storage;
+
+var storage = new CustomerStorage(customerOwnedAdapter);
+var result = await storage.ApplyEventAsync(verifiedWebhook);
+// Return a successful webhook response after this task completes.
+
+await using var sync = platform.Project(projectId).Events.SyncToStorage(storage);
+await sync.Completion;
+```
+
+`ApplyEventAsync` also accepts `StorageApplyEventOptions.DecodeHistory` for linked `history.sync` notifications. The callback receives the typed notification and verified event, and returns a fully decoded `StorageHistoryChunk` or `null` for progress only. Replay checks the stored event ID before invoking the callback. Cloud inline history notifications do not invoke it. `storage.WebhookHandler(options)` returns the corresponding async webhook handler; verify the original body signature before calling it.
+
+`SyncToStorage` requests manual acknowledgement and resumes the saved cursor. It stores the reduced event and deduplication marker, saves the cursor with a compare-and-set guard, then acknowledges the stream. The default checkpoint is session `*`, stream `events`. Missing event bodies and retention gaps stop consumption without advancing the checkpoint or acknowledgement. Set `RequirePayload = false` only for intentional metadata-only consumption. `OnApplied` runs after acknowledgement; a failure there leaves the event and cursor stored.
+
+`Stop()`, disposal and cancellation stop admission of the next event. An event already admitted finishes storage, checkpoint and acknowledgement with independent operation lifetimes. Await `Completion` or `DisposeAsync` to observe its outcome. Adapter, decoder, checkpoint and acknowledgement failures propagate; an unacknowledged event can replay and deduplicate. `IStorageEventStreamSource` allows an application-owned stream with the same persistence ordering. These helpers acknowledge the Platform event stream; they do not change any local Signal service acknowledgement.
+
+This source is unpublished. The SDK's existing server browser-credential restriction and the API's permissions and availability checks still apply.
