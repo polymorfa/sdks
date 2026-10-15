@@ -568,11 +568,16 @@ Keep revision conflicts visible: reload and reconcile rather than silently retry
 with a new revision. Required nullable values use a `Nullable[T]` value; optional
 nullable fields elsewhere use a pointer to it. A zero revision is valid for
 custody defaults and stays in JSON. New typed success models check required
-fields and scalar shapes while tolerating response extensions.
+fields and scalar shapes while tolerating response extensions. Optional nonnullable
+fields accept omission and reject explicit JSON null. Reply keyword requests retain
+the 64-byte UTF-8 bound; returned keywords preserve the API's lowercase form,
+including Unicode expansions within its 64 UTF-16-unit response bound.
 
 New writes default to no automatic retry, except `TestSend`, which captures one
 idempotency key and body for its retries. Preserve an explicit caller key across
-an uncertain result. A completed replay returns the API's conflict; an unknown
+an uncertain result. `IdempotencyKey` takes precedence over `Headers`; a single
+`Idempotency-Key` header is recognized regardless of casing. Conflicting or
+multivalued caller keys are rejected before HTTP. A completed replay returns the API's conflict; an unknown
 outcome does not prove no message was sent. An explicit retry override on other
 writes has no declared replay guarantee. A profile-import body replay key is
 separate from an HTTP idempotency key.

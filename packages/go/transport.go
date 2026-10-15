@@ -212,8 +212,36 @@ func options(opts []RequestOptions) RequestOptions {
 	}
 	return RequestOptions{}
 }
+
+// Capture a single caller identity independent of http.Header map-key casing.
+// The explicit option wins over headers, as it does when building the request.
+func requestIdempotencyKey(o RequestOptions) (string, error) {
+	if o.IdempotencyKey != "" {
+		return o.IdempotencyKey, nil
+	}
+	key := ""
+	found := false
+	for name, values := range o.Headers {
+		if !strings.EqualFold(name, "Idempotency-Key") {
+			continue
+		}
+		if len(values) != 1 || found && key != values[0] {
+			return "", configuration("idempotencyKey", "Exactly one unambiguous idempotency key is required.")
+		}
+		key, found = values[0], true
+	}
+	if found && key == "" {
+		return "", configuration("idempotencyKey", "A caller idempotency key must not be empty.")
+	}
+	return key, nil
+}
 func idempotent(o RequestOptions) (RequestOptions, error) {
-	if o.IdempotencyKey != "" || o.Headers.Get("Idempotency-Key") != "" {
+	key, err := requestIdempotencyKey(o)
+	if err != nil {
+		return o, err
+	}
+	if key != "" {
+		o.IdempotencyKey = key
 		return o, nil
 	}
 	var b [16]byte
@@ -277,9 +305,9 @@ func (t *transport) open(ctx context.Context, method, path string, q url.Values,
 	if retries < 0 {
 		return nil, Metadata{}, configuration("maxNetworkRetries", "maxNetworkRetries must be non-negative.")
 	}
-	key := o.IdempotencyKey
-	if key == "" {
-		key = o.Headers.Get("Idempotency-Key")
+	key, err := requestIdempotencyKey(o)
+	if err != nil {
+		return nil, Metadata{}, err
 	}
 	safe := method == "GET" || method == "HEAD" || method == "OPTIONS" || key != ""
 	for attempt := 1; ; attempt++ {

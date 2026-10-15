@@ -100,13 +100,24 @@ func campaignOptions(o RequestOptions, write, replay bool) (RequestOptions, erro
 	if err := contractText(o.APIVersion, "apiVersion", 1, int(^uint(0)>>1)); err != nil {
 		return o, err
 	}
-	key := o.IdempotencyKey
-	if key == "" {
-		key = o.Headers.Get("Idempotency-Key")
+	key, err := requestIdempotencyKey(o)
+	if err != nil {
+		return o, err
 	}
+	o.IdempotencyKey = key
 	if key != "" {
 		if err := contractBytes(key, "idempotencyKey", 1, 255); err != nil {
 			return o, err
+		}
+		if campaignTrimSpace(key) == "" {
+			return o, configuration("idempotencyKey", "A caller idempotency key must not be blank.")
+		}
+		// HTTP field values permit horizontal tabs, but never other ASCII
+		// controls. Refuse malformed headers before handing them to HTTP.
+		for _, r := range key {
+			if r < 32 && r != '\t' || r == 127 {
+				return o, configuration("idempotencyKey", "The idempotency key contains invalid header characters.")
+			}
 		}
 	}
 	if write && !replay && o.MaxNetworkRetries == nil {
@@ -350,7 +361,35 @@ func validateReplyMatch(v CampaignReplyFlowMatch) error {
 	}
 	return nil
 }
+
+// Stored keywords are normalized after the API validates the request byte bound.
+// Unicode lowercasing can increase UTF-8 bytes while retaining the public
+// response limit of 64 UTF-16 code units.
+func validateReplyResponseMatch(v CampaignReplyFlowMatch) error {
+	var keyword *CampaignReplyKeyword
+	switch x := v.(type) {
+	case CampaignReplyKeyword:
+		keyword = &x
+	case *CampaignReplyKeyword:
+		keyword = x
+	default:
+		return validateReplyMatch(v)
+	}
+	if keyword == nil {
+		return validation("A reply match is required.")
+	}
+	if err := contractText(keyword.Value, "match.value", 1, 64); err != nil {
+		return err
+	}
+	if hasControl(keyword.Value) {
+		return validation("Reply keyword contains control characters.")
+	}
+	return nil
+}
 func validateReplyCreate(v CreateCampaignReplyFlowRequest) error {
+	return validateReplyGraph(v, validateReplyMatch)
+}
+func validateReplyGraph(v CreateCampaignReplyFlowRequest, checkMatch func(CampaignReplyFlowMatch) error) error {
 	if err := contractBytes(v.Name, "name", 1, 128); err != nil {
 		return err
 	}
@@ -383,7 +422,7 @@ func validateReplyCreate(v CreateCampaignReplyFlowRequest) error {
 			if !campaignNodeID.MatchString(e.To) {
 				return validation("Invalid edge target.")
 			}
-			if err := validateReplyMatch(e.Match); err != nil {
+			if err := checkMatch(e.Match); err != nil {
 				return err
 			}
 		}
@@ -690,6 +729,12 @@ func campaignModelShape(data json.RawMessage, t reflect.Type) error {
 	}
 	return nil
 }
+func campaignNullableType(t reflect.Type) bool {
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+	return strings.HasPrefix(t.Name(), "Nullable[") || t == reflect.TypeFor[AudienceProfileAttribute]()
+}
 func campaignStructFields(obj map[string]json.RawMessage, t reflect.Type) error {
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
@@ -711,6 +756,11 @@ func campaignStructFields(obj map[string]json.RawMessage, t reflect.Type) error 
 				continue
 			}
 			return validation("A required model field is missing.")
+		}
+		// omitempty represents omission, not a nullable JSON field. Required
+		// pointer fields model explicit null and are checked separately below.
+		if optional && !campaignNullableType(f.Type) && bytes.Equal(bytes.TrimSpace(raw), []byte("null")) {
+			return validation("An optional model field must be omitted or non-null.")
 		}
 		if err := campaignModelShape(raw, f.Type); err != nil {
 			return err
@@ -842,7 +892,7 @@ func decodeReplyMatch(data []byte) (CampaignReplyFlowMatch, error) {
 	if err := campaignDecode(data, v); err != nil {
 		return nil, err
 	}
-	if err := validateReplyMatch(v); err != nil {
+	if err := validateReplyResponseMatch(v); err != nil {
 		return nil, err
 	}
 	return v, nil
@@ -859,7 +909,7 @@ func validateCampaignResponse(v any) error {
 		if err := contractUUID(x.ID, "id"); err != nil {
 			return err
 		}
-		return validateReplyCreate(CreateCampaignReplyFlowRequest{Name: x.Name, Definition: x.Definition, FlowKey: &x.FlowKey, Revision: &x.Revision})
+		return validateReplyGraph(CreateCampaignReplyFlowRequest{Name: x.Name, Definition: x.Definition, FlowKey: &x.FlowKey, Revision: &x.Revision}, validateReplyResponseMatch)
 	case CampaignReplyFlowAssignment:
 		if err := contractUUID(x.CampaignID, "campaignId"); err != nil {
 			return err
