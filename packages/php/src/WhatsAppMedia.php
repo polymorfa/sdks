@@ -12,6 +12,13 @@ use GuzzleHttp\Exception\TransferException;
 final class WhatsAppMedia
 {
     public const MAX_BYTES = 268435456;
+    /** @internal Media contract defaults when descriptor MIME is absent. */
+    public static function defaultMimeType(string $kind): string
+    {
+        return match ($kind) {
+            'image' => 'image/jpeg', 'video' => 'video/mp4', 'audio','ptt' => 'audio/ogg', 'sticker' => 'image/webp', default => 'application/octet-stream'
+        };
+    }
     /** @var array<string,array<int,string>> */
     private const FIELDS = [
         'image' => [1 => 'url',2 => 'mimetype',4 => 'fileSha256',5 => 'fileLength',8 => 'mediaKey',9 => 'fileEncSha256',11 => 'directPath'],

@@ -15,7 +15,7 @@ final readonly class WhatsAppDownload
     public function __construct(public StreamInterface $body, MediaDescriptor $descriptor)
     {
         $this->mediaKind = $descriptor->mediaKind;
-        $this->mimetype = $descriptor->mimetype ?? 'application/octet-stream';
+        $this->mimetype = $descriptor->mimetype ?? WhatsAppMedia::defaultMimeType($descriptor->mediaKind);
         $this->fileName = $descriptor->fileName;
         $this->fileLength = $descriptor->fileLength;
     }

@@ -104,7 +104,7 @@ final class S3MediaStore implements \JsonSerializable
             });
         };
         $request = $options->requestOptions ?? new RequestOptions();
-        $bounded = new UploadWhatsAppMediaOptions($options->mediaType, $mime, $options->mediaKey, $options->egress, $options->maxBytes, new RequestOptions(self::check($token, $deadline), $request->maxNetworkRetries, $request->apiVersion, $request->idempotencyKey, $request->headers, $token), $options->http, $options->maxAttempts, $options->documentPartSize);
+        $bounded = new UploadWhatsAppMediaOptions($options->mediaType, $mime, $options->mediaKey, $options->egress, $options->maxBytes, new RequestOptions(self::check($token, $deadline), $request->maxNetworkRetries, $request->apiVersion, $request->idempotencyKey, $request->headers, $token), $options->http, $options->maxAttempts, $options->documentPartSize, $options->uploadTransport);
         try {
             return $media->upload($session, $source, $bounded);
         } catch (\Throwable $error) {
@@ -135,7 +135,7 @@ final class S3MediaStore implements \JsonSerializable
         if ($descriptor->fileSha256 !== null) {
             $out['wa-file-sha256'] = bin2hex($descriptor->fileSha256);
         } if ($descriptor->fileName !== null) {
-            $out['wa-file-name'] = rawurlencode($descriptor->fileName);
+            $out['wa-file-name'] = str_replace(['%21','%27','%28','%29','%2A'], ["!","'","(",")","*"], rawurlencode($descriptor->fileName));
         }
         $size = 0;
         foreach ($out as $key => $value) {
@@ -153,7 +153,7 @@ final class S3MediaStore implements \JsonSerializable
         $key = $this->key($options->key);
         $descriptor = $input instanceof MediaDescriptor ? $input : WhatsAppMedia::descriptor($input);
         $metadata = self::metadata($options->metadata, $descriptor);
-        $mime = $descriptor->mimetype ?? 'application/octet-stream';
+        $mime = $descriptor->mimetype ?? WhatsAppMedia::defaultMimeType($descriptor->mediaKind);
         if (strlen($mime) > 255 || strpbrk($mime, "\r\n") !== false) {
             throw new ConfigurationException('mimeType');
         }

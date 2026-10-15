@@ -14,6 +14,7 @@ final class EncryptedUploadStream implements StreamInterface
     private StreamInterface $stream;
     private bool $verified = false;
     private bool $closed = false;
+    private int $deliveredAtClose = 0;
     private ?PolymorfaException $failure = null;
 
     public function __construct(#[\SensitiveParameter] private readonly StreamInterface $source, private readonly EncryptedMediaInfo $info, int $maxBytes, ?CancellationToken $cancellation = null)
@@ -55,7 +56,7 @@ final class EncryptedUploadStream implements StreamInterface
         if ($this->failure !== null) {
             throw $this->failure;
         }
-        if (!$this->verified) {
+        if (!$this->verified || ($this->closed ? $this->deliveredAtClose : $this->stream->tell()) !== $this->info->encryptedLength) {
             throw new MediaIntegrityException('The encrypted source was not fully verified.', 'media_source_failed');
         }
     }
@@ -66,6 +67,7 @@ final class EncryptedUploadStream implements StreamInterface
     public function close(): void
     {
         if (!$this->closed) {
+            $this->deliveredAtClose = $this->stream->tell();
             $this->closed = true;
             $this->source->close();
             $this->stream->close();
