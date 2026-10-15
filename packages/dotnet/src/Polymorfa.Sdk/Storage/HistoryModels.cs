@@ -22,7 +22,7 @@ public readonly record struct StorageHistoryNumber
         {
             var radix = source[1] is 'x' or 'X' ? 16 : source[1] is 'b' or 'B' ? 2 : 8; var integer = BigInteger.Zero;
             foreach (var character in source.AsSpan(2)) { var digit = character is >= '0' and <= '9' ? character - '0' : character is >= 'a' and <= 'f' ? character - 'a' + 10 : character is >= 'A' and <= 'F' ? character - 'A' + 10 : -1; if (digit < 0 || digit >= radix) return null; integer = integer * radix + digit; }
-            var converted = (double)integer; return double.IsFinite(converted) ? converted : null;
+            return double.TryParse(integer.ToString(CultureInfo.InvariantCulture), NumberStyles.Float, CultureInfo.InvariantCulture, out var converted) && double.IsFinite(converted) ? converted : null;
         }
         return double.TryParse(source, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed) && double.IsFinite(parsed) ? parsed : null;
     }

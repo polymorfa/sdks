@@ -82,6 +82,7 @@ internal static class Checks
     }
     private static void NumericAndTypes()
     {
+        Equal(new StorageHistoryNumber("0x20000000000003").ToNumber(), 9007199254740996d, "Wide radix integer uses nearest-even JavaScript Number rounding");
         StorageHistoryNumber? literal = 1; Equal(literal?.ToNumber(), 1d, "Nullable integer literal conversion"); StorageHistoryNumber? unsigned = 1u; Equal(unsigned?.ToNumber(), 1d, "Nullable unsigned conversion");
         StorageHistoryNumber integer = new System.Numerics.BigInteger(1790856000); Equal(integer.ToNumber(), 1790856000d, "BigInteger conversion"); Equal(new StorageHistoryNumber("0").ToNumber(), 0d, "Zero"); Assert(new StorageHistoryNumber(double.PositiveInfinity).ToNumber() is null, "Nonfinite number"); Equal(StorageReducers.NormalizeJid("USER_3:4@LID"), "user@lid", "Native JID normalization"); var bytes = new byte[] { 1, 2, 3 }; StorageHistoryBytes saved = bytes; bytes[0] = 9; Equal(saved.Base64, "AQID", "Byte input snapshot");
         Equal(StorageReducers.AcknowledgementStatus("PLAYED-SELF"), "played", "Receipt aliases"); Assert(StorageReducers.AcknowledgementStatus("unknown") is null, "Unknown receipt");
