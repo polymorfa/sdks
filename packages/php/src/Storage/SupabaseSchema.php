@@ -45,6 +45,6 @@ final class SupabaseSchema
                 'CREATE POLICY '.$q($tablePrefix.$entity.'_writer')." ON $table TO ".$q($serverRole).' USING(true) WITH CHECK(true)'
             );
         }
-        return implode(";\n",$out).";\n";
+        return implode(";\n", $out).";\n";
     }
 }

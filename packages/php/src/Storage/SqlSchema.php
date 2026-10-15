@@ -78,7 +78,7 @@ final class SqlSchema
             $out[] = 'CREATE TABLE IF NOT EXISTS '.self::table($dialect, $entity, $prefix, $schema).' ('.implode(',', $columns).')'.($dialect === 'mysql' ? ' ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin' : '');
             array_push($out, ...$indexes);
         }
-        $out[] = 'CREATE TABLE IF NOT EXISTS '.self::table($dialect, 'storage_schema', $prefix, $schema).' ('.$q('id').' '.self::type($dialect,'key').' PRIMARY KEY,'.$q('version').' integer NOT NULL)'.($dialect === 'mysql' ? ' ENGINE=InnoDB' : '');
+        $out[] = 'CREATE TABLE IF NOT EXISTS '.self::table($dialect, 'storage_schema', $prefix, $schema).' ('.$q('id').' '.self::type($dialect, 'key').' PRIMARY KEY,'.$q('version').' integer NOT NULL)'.($dialect === 'mysql' ? ' ENGINE=InnoDB' : '');
         return $out;
     }
 }

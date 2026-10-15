@@ -10,3 +10,6 @@ parameters:
         - tests/storage_types.php
         - tests/signal_types.php
         - tests/storage_engine_types.php
+        - tests/storage_provider_types.php
+        - tests/s3_media_types.php
+        - tests/media_upload_transport_types.php

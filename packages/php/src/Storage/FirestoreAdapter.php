@@ -308,9 +308,9 @@ final class FirestoreAdapter implements Adapter
                     }
                 } $rows[] = $row;
             }
-            return DocumentRows::filter($entity,$rows,$query);
+            return DocumentRows::filter($entity, $rows, $query);
         } catch (\Throwable $error) {
-            DocumentRows::safe($error,'firestore');
+            DocumentRows::safe($error, 'firestore');
         }
     }
     public function close(): void

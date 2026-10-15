@@ -253,7 +253,7 @@ This uses the customer Worker bridge pinned at
 Administrative D1 REST is not an atomic adapter. Native tests exercised the
 actual bundled Worker/Miniflare binding with all-entity fixtures, 2,000-row
 pagination, rollback, fenced deletion and checkpoint CAS. Set
-`POLYMORFA_D1_BRIDGE_FIXTURE_URL` to repeat that opt-in proof. The adapter persists rows only; the shared engine below owns reducers and merge/replay policy. The complete provider matrix remains an integration boundary.
+`POLYMORFA_D1_BRIDGE_FIXTURE_URL` to repeat that opt-in proof. The adapter persists rows only; the shared engine below owns reducers and merge/replay policy. Provider adapters and their native proofs are listed below.
 
 
 ## Customer-owned Signal service client
@@ -456,7 +456,8 @@ An object changed between reads fails instead of finalizing mismatched media.
 `Archive(ctx, descriptor, S3ArchiveOptions{Key: key, ScratchDirectory: privateDir})`
 snapshots the descriptor, downloads and verifies into a private file, checks its
 known plaintext length, then starts the object PUT. Corruption, wrong length or
-cancellation cannot start an overwrite. Each private spool is removed after
+pre-PUT cancellation cannot start an overwrite. Cancellation during an admitted
+PUT cannot guarantee rollback. Each private spool is removed after
 success or failure. Optional metadata is bounded ASCII; the SDK adds media kind,
 plaintext hash and encoded filename, and never writes the media key. Caller
 metadata must not contain secrets.

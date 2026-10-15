@@ -424,8 +424,8 @@ D1 binding with all-entity fixtures, 2,000-row paging, rollback, lease-fenced
 deletion and checkpoint CAS. Repeat the opt-in proof using
 `POLYMORFA_D1_BRIDGE_FIXTURE_URL`; the Docker test transport can use
 `POLYMORFA_D1_BRIDGE_FIXTURE_HOST` to reach the host fixture. The adapter persists
-rows only; the shared engine below owns reducers and merge/replay policy. The
-full provider matrix remains separate integration work.
+rows only; the shared engine below owns reducers and merge/replay policy. Provider adapters
+and their native proofs are listed below.
 
 
 ## Customer-owned Signal service client
@@ -476,7 +476,9 @@ own database access, namespace isolation, retention and row contents.
 Each field merges by version and a deterministic value tie-breaker. Revoked
 content and media references use a final version so older history cannot restore
 them. Every payload chunk reserves a slot for the same-transaction lease CAS;
-release advances its durable revision. The first failed chunk stops later data
+release advances its durable revision. Between bounded planning reads and clear-query
+pages, the engine conditionally renews at half its lease TTL. Expired or replaced
+leases remain rejected before data or the event marker can commit. The first failed chunk stops later data
 and the final event marker, including failures without conflict IDs. Large events
 can partially commit and recover through replay before the marker is saved.
 Clear-chat deletes media, reactions, receipts and votes with messages, while a
@@ -503,3 +505,134 @@ history, replay, permanent revocation, child deletion, lease expiry/replacement,
 first-failed-chunk refusal and explicit-null checkpoint CAS. A native HTTP/SSE
 fixture proves event persistence and checkpoint-before-manual-ACK order. The
 opt-in signed Worker/D1 proof runs the same engine with actual atomic commits.
+
+
+## SQL, document databases and ORM exports
+
+Storage adapters use application-owned connections and trusted namespace/table
+prefixes. Call `setup()` before constructing `Engine`; capabilities remain
+unavailable until the adapter verifies its storage contract. Setup refuses an
+incompatible version marker. Closing an adapter preserves borrowed client and
+connection ownership. Database errors omit URLs, credentials and provider bodies.
+
+`SqlAdapter::pdo($pdo, tablePrefix: 'polymorfa_')` supports PDO PostgreSQL, MySQL
+and SQLite. Enable PDO exception mode and install the matching PDO extension.
+Do not pass a connection with an active application transaction. All conditional
+writes execute in one native transaction; MySQL additionally verifies strict SQL
+mode and InnoDB for every storage table. `SqlSchema::statements()` exports the
+same schema2 columns and indexes. Actual PostgreSQL 16, MySQL 8.4 and SQLite
+proofs covered the portable fixtures, 2,000 messages, rollback, checkpoint CAS,
+stale-lease refusal and borrowed-transaction preservation on PHP 8.2 and 8.4.
+Customer Supabase/Neon PostgreSQL and compatible PlanetScale MySQL connections
+use these drivers; their hosted services were not exercised by local tests.
+
+`SupabaseSchema::sql()` exports customer-installed PostgreSQL schema and FORCE RLS
+policies. A distinct server writer receives data writes and version reads;
+browser readers receive SELECT only for sessions with live `auth.uid()`
+membership. Restricted native PostgreSQL roles verified membership revocation
+and browser write refusal. The SDK never installs this preset automatically or
+gives a browser the writer credential.
+
+Optional document adapters use the official packages installed by the customer:
+
+| Adapter | Official client | Atomic commit limit |
+| --- | --- | --- |
+| `MongodbAdapter($client, $database, $namespace)` | `mongodb/mongodb` with the MongoDB extension and a replica set | 500 |
+| `DynamodbAdapter($client, $namespace, $table, createTable: false)` | `aws/aws-sdk-php` | 100 |
+| `FirestoreAdapter($rpc, $namespace, $projectId, $databaseId = '(default)')` | `google/cloud-firestore` 1.55.0 typed V1 RPC client with gRPC 1.84 | 250 |
+
+MongoDB uses snapshot/majority transactions. DynamoDB requires an active table
+with string `pk` and `sk` keys. Firestore uses the official
+`Google\Cloud\Firestore\V1\Client\FirestoreClient` typed RPC boundary, with
+explicit project and database IDs. It reads conditional rows before an atomic
+Commit RPC and preserves raw protobuf map values, including numeric object keys.
+The engine reserves one commit slot for its lease. High-level snapshot and
+BulkWriter APIs are not interchangeable with this verified boundary.
+
+MongoDB and Firestore persist raw schema2 rows with exact encoded document IDs.
+DynamoDB stores `{pk: namespace+":"+entity, sk: encodedKey, row}`. These physical
+layouts match the shared storage contract; JSON null, booleans, numbers, empty
+objects and empty lists retain their distinctions. Native replica-set, DynamoDB
+Local and Firestore emulator tests verify portable fixtures, 2,000-message
+history, replay, rollback, checkpoint CAS, stale lease fencing and client ownership.
+The accepted PHP matrix excludes Convex, Cosmos DB and IndexedDB.
+
+`EloquentSchema::models()` exports application-owned Eloquent query-model source
+for all schema2 entities. `EloquentSchema::adapter($connection)` borrows the
+connection's PDO boundary and rejects an active transaction. Install
+`illuminate/database` separately. Use read-only database credentials for ORM
+queries and write synchronized state through the engine; generated model guards
+do not constrain arbitrary query-builder SQL. Illuminate 12 with actual SQLite
+verified model casts and engine/model interoperability.
+
+The optional technical-preview `LibsqlDriver($connection)` accepts an official
+`turso/libsql` connection, pinned at
+`4f6c5669ee844074865a1ea4935d5440ebd28571`. It requires PHP 8.3 or newer and FFI;
+install it separately so its eager FFI autoload does not affect PHP 8.2 core
+applications. Pass it to `new SqlAdapter($driver)`. Actual file and HTTP libSQL
+proofs verified full fixtures, 2,000 messages, rollback, checkpoints and preserved
+borrowed transactions. The boundary executes checked transaction statements;
+it does not infer atomicity from an HTTP batch response. Other libSQL PHP
+packages are not interchangeable with this verified driver.
+
+Optional proof inputs are `POLYMORFA_STORAGE_SQL_FIXTURE` (and Docker host override
+`POLYMORFA_STORAGE_SQL_HOST`), `POLYMORFA_SUPABASE_NATIVE_FIXTURE`,
+`POLYMORFA_STORAGE_PROVIDER_AUTOLOAD` with
+`POLYMORFA_MONGODB_NATIVE_FIXTURE`, `POLYMORFA_DYNAMODB_NATIVE_FIXTURE` or
+`POLYMORFA_FIRESTORE_NATIVE_ENDPOINT`,
+and `POLYMORFA_LIBSQL_NATIVE_AUTOLOAD` with optional
+`POLYMORFA_LIBSQL_NATIVE_URL`. Without those task-owned clients and endpoints,
+the suite reports the corresponding native proof as skipped. Local server and
+emulator checks do not establish cloud permissions, hosting or deployed access.
+
+
+## S3-compatible media storage
+
+`new S3MediaStore($s3Client, $bucket, $prefix)` borrows an optional official
+`Aws\S3\S3Client` configured for the customer's AWS, R2 or MinIO bucket.
+`uploadToWhatsApp($client->whatsappMedia, $session, $key, $uploadOptions)` uses the
+existing encrypted upload options. It requires an ETag and known bounded length,
+then makes two `IfMatch` reads of that object. Changed sources fail before an
+upload POST or multipart finalization. Media encryption and upload retain their
+local final-hash barrier.
+
+`archive($descriptor, new S3ArchiveOptions(key: $key, scratchDirectory: $directory))`
+also accepts a decoded `{type, media}` input. It verifies and decrypts into a
+private file before any S3 PUT, checks the known plaintext length, then writes
+that verified file. Integrity, length and pre-PUT cancellation failures leave
+existing objects unchanged. Cancellation during an admitted PUT cannot guarantee
+rollback.
+The SDK removes its own spool and preserves other files in the scratch directory.
+Optional metadata uses bounded ASCII; media kind, plaintext hash and encoded
+filename are added automatically. Media keys and credentials must not be metadata.
+The store redacts debug/JSON output, and `close()` preserves the borrowed AWS client.
+
+`S3ArchiveOptions::requestOptions` and the upload options' `RequestOptions` bound
+operation time and cancellation. Native S3 requests disable redirects and redact
+upstream diagnostics. Actual PHP 8.2/8.4 MinIO tests cover relay, direct and
+multipart uploads, same-ETag reads, real 412 refusal without finalization,
+verified archives, corruption/known-length/cancellation/deadline refusal, private
+spool permissions and cleanup, metadata and borrowed-client behavior. Repeat with
+`POLYMORFA_S3_NATIVE_FIXTURE` and `POLYMORFA_S3_NATIVE_SCRATCH`, plus the optional
+provider autoload path. These tests do not establish AWS/R2 account permissions,
+cloud hosting availability or live WhatsApp delivery.
+
+
+`UploadWhatsAppMediaOptions::uploadTransport` accepts a customer implementation
+of `WhatsAppMediaUploadTransport` with `name()` and `upload($session, $body)`.
+The `WhatsAppEncryptedUploadBody` exposes readonly `mediaType`, `fileEncSha256`
+and `encryptedLength`, plus `open(offset: 0, cancellation: $token)`. It exposes
+no plaintext, media key or API credential. Each opening retains the final
+EOF/hash barrier, and a later integrity failure remains fatal even if the
+callback ignores it. The SDK requires complete verified encrypted consumption,
+closes abandoned streams and refuses to reopen a finished body. Callback errors
+become safe SDK exceptions without their raw cause.
+
+`$client->whatsappMedia->uploadTransport('relay', $options)` and its `'direct'`
+variant return reusable built-ins for a custom transport to wrap. Pass fresh
+builtin options without an `uploadTransport` value. These wrappers retain the
+existing grant, credential isolation, retry/resume and finalization policy.
+The custom callback owns its endpoint and must finalize only after its encrypted
+read succeeds. Native TLS tests cover custom bytes and offsets, wrapped
+relay/direct uploads, incomplete consumption, ignored failure, blocked-source
+deadlines, cancellation, redaction and extension forwarding through S3 uploads.
