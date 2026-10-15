@@ -457,7 +457,13 @@ and inserts. A revision or duplicate-key conflict rolls back the entire commit.
 The 500-write limit includes the engine's session fence. A provider batch alone
 does not establish atomicity. Driver failures surfaced by adapter operations
 omit raw errors, inner exceptions, URLs, SQL and stored values. Cancellation
-retains `OperationCanceledException`.
+retains a sanitized `OperationCanceledException`. Network failures during commit
+can leave its outcome uncertain; inspect the saved checkpoint before resuming.
+The driver can report native lock admission failures with a generic error code.
+Those return a sanitized provider failure rather than an assumed revision
+conflict. A fresh retry still checks the original expected revision. Independent
+connections share database locks; the adapter does not bypass those locks or
+silently retry an uncertain commit.
 
 `CreateTables = false` supports customer-managed schema installation. Export
 SQLite schema-2 statements with `StorageSqlSchema.Statements` and
@@ -478,4 +484,7 @@ string to include direct remote conformance. The tests use unique table
 prefixes and retain remote test tables. They cover all 17 entities, JSON/scalar
 round trips, 2,000-message history, paging, replay, lease fencing, stale
 checkpoints, revision and duplicate-key rollback, validation, cancellation,
-sanitized errors and borrowed connection lifetime.
+sanitized errors and borrowed connection lifetime. Independent native connections
+race on one revision and verify exactly one winner; a native lock admission
+failure remains explicit. Removing the prepared-input snapshot makes the
+mutation test fail.
