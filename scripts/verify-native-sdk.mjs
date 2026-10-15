@@ -108,7 +108,59 @@ if (language === "go") {
     "warnings",
   ]);
   run("cargo", ["test", "--all-features"]);
-  run("cargo", ["package", "--allow-dirty"]);
+  const coreManifest = resolve(cwd, "storage-core/Cargo.toml");
+  run("cargo", ["fmt", "--manifest-path", coreManifest, "--check"]);
+  run("cargo", [
+    "clippy",
+    "--manifest-path",
+    coreManifest,
+    "--all-targets",
+    "--",
+    "-D",
+    "warnings",
+  ]);
+  run("cargo", ["test", "--manifest-path", coreManifest, "--locked"]);
+  const metadata = JSON.parse(
+    run(
+      "cargo",
+      [
+        "metadata",
+        "--manifest-path",
+        coreManifest,
+        "--format-version",
+        "1",
+        "--no-deps",
+        "--locked",
+      ],
+      { capture: true },
+    ),
+  );
+  const core = metadata.packages.find(
+    (pkg) => pkg.name === "polymorfa-storage-core",
+  );
+  if (!core) throw new Error("Missing portable Rust storage package");
+  const target = resolve(cwd, "target");
+  run("cargo", [
+    "package",
+    "--manifest-path",
+    coreManifest,
+    "--target-dir",
+    target,
+    "--allow-dirty",
+  ]);
+  // Cargo 1.85 cannot stage unpublished interdependent crates itself. Verify
+  // against the extracted, verified core archive, never the workspace source.
+  // Release preparation must repeat unpatched registry verification after the
+  // core is published under the release's separate authority.
+  const packedCore = resolve(target, "package", `${core.name}-${core.version}`);
+  run("cargo", [
+    "package",
+    "--target-dir",
+    target,
+    "--allow-dirty",
+    "--config",
+    `patch.crates-io.polymorfa-storage-core.path=${JSON.stringify(packedCore)}`,
+  ]);
 } else {
   const project = "src/Polymorfa.Sdk/Polymorfa.Sdk.csproj";
   if (!existsSync(resolve(cwd, project)))

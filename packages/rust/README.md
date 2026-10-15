@@ -83,8 +83,16 @@ From this directory:
 cargo fmt --check
 cargo clippy --all-targets -- -D warnings
 cargo test
-cargo package --allow-dirty
 ```
+
+From the repository root, `node scripts/verify-native-sdk.mjs rust` also checks
+the portable storage crate and builds both verified package archives. Before
+that crate is published, the SDK archive builds against the extracted core
+archive through a command-line Cargo patch. This supports Cargo 1.85 without
+skipping package verification. It proves the paired archives build together;
+registry installation remains a separate release gate. Authorized release
+preparation must publish and verify the core first, then repeat normal SDK
+packaging without the local patch.
 
 The shared behavior tests spawn Node.js using the repository fixture server.
 Other tests exercise actual native HTTP sockets, independent media vectors,
