@@ -39,6 +39,11 @@
   "suggest": {
     "symfony/http-foundation": "Use the Symfony raw-body webhook adapter.",
     "illuminate/http": "Use the Laravel raw-body webhook adapter.",
-    "phrity/websocket": "Use native server Calls WebSocket transport."
+    "phrity/websocket": "Use native server Calls WebSocket transport.",
+    "mongodb/mongodb": "Use the optional official MongoDB replica-set storage adapter.",
+    "aws/aws-sdk-php": "Use the optional official DynamoDB storage and S3-compatible media adapters.",
+    "google/cloud-firestore": "Use the optional official typed V1 RPC Firestore storage adapter; verified with package 1.55.0 and gRPC 1.84.",
+    "illuminate/database": "Use Eloquent schema2 query-model exports and borrowed PDO storage.",
+    "turso/libsql": "Optional technical-preview storage driver: PHP >=8.3 and FFI; install separately from the PHP 8.2 core."
   }
 }

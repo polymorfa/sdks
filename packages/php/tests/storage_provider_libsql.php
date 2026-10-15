@@ -68,6 +68,6 @@ foreach ($databases as $mode => $database) {
         $connection->execute('DROP TABLE '.SqlSchema::quote('sqlite', $prefix.$entity));
     }
     $adapter->close();
-    storageCheck($connection->query('SELECT 1 AS n')->fetchArray()[0]['n'] === 1,'closing adapter preserves borrowed official libSQL connection');
+    storageCheck($connection->query('SELECT 1 AS n')->fetchArray()[0]['n'] === 1, 'closing adapter preserves borrowed official libSQL connection');
     echo 'PHP official turso/libsql '.$mode." driver: native full fixtures,2000 history,actual rollback/checkpoint and borrowed transaction/connection proof passed.\n";
 }

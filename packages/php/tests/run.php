@@ -197,21 +197,58 @@ require __DIR__.'/graph.php';
 
 require __DIR__.'/webhook_models.php';
 
-require __DIR__.'/whatsapp_stream.php';
+// Media and streaming fixtures are independent. Keep their temporary bodies and
+// HTTP-client closures local rather than retaining them for later native suites.
+foreach ([
+    'whatsapp_stream.php',
+    'media_redirect_review.php',
+    'media_encryption.php',
+    'media_upload.php',
+    'media_upload_transport.php',
+    'media_send.php',
+    'history_local.php',
+    'storage_d1.php',
+    'signal_sidecar.php',
+] as $mediaSuite) {
+    (static function (string $suite): void {
+        global $mediaVectors, $credential;
+        require __DIR__.'/'.$suite;
+    })($mediaSuite);
+    gc_collect_cycles();
+}
 
-require __DIR__.'/media_redirect_review.php';
-require __DIR__.'/media_encryption.php';
+// Portable fixture data is shared explicitly by the storage proof functions.
+require_once __DIR__.'/storage_engine.php';
 
-require __DIR__.'/media_upload.php';
+// Release optional native client/fixture graphs after each complete suite. The
+// shared portable fixtures remain explicit globals for their proof functions.
+foreach ([
+    'storage_engine_sync.php',
+    'storage_engine_http.php',
+    'storage_engine_d1.php',
+    'storage_provider_sql.php',
+    'storage_provider_supabase.php',
+    'storage_provider_libsql.php',
+    'storage_provider_documents.php',
+    'storage_provider_dynamodb_negative.php',
+    'storage_provider_eloquent.php',
+    'storage_engine_renewal.php',
+] as $storageSuite) {
+    (static function (string $suite): void {
+        global $fixture, $large;
+        require_once __DIR__.'/'.$suite;
+    })($storageSuite);
+    gc_collect_cycles();
+}
 
-require __DIR__.'/media_send.php';
-
-require __DIR__.'/history_local.php';
-
-require __DIR__.'/storage_d1.php';
-
-require __DIR__.'/signal_sidecar.php';
-
-require_once __DIR__.'/storage_engine_sync.php';
-require_once __DIR__.'/storage_engine_http.php';
-require_once __DIR__.'/storage_engine_d1.php';
+// S3 has independent native fixtures and a separate optional client graph.
+// Preserve the configured per-process memory budget without retaining every
+// storage provider's loaded runtime for its HTTP body assertions.
+$s3Process = proc_open([
+    PHP_BINARY,
+    '-d', 'memory_limit='.ini_get('memory_limit'),
+    '-d', 'error_reporting='.(string)error_reporting(),
+    __DIR__.'/s3_media.php',
+], [0 => STDIN, 1 => STDOUT, 2 => STDERR], $s3Pipes);
+check(is_resource($s3Process), 'S3 suite process starts');
+check(proc_close($s3Process) === 0, 'S3 suite process passes');
