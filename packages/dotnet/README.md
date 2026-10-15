@@ -235,8 +235,7 @@ follow schema 2. Invalid or oversized derived identifiers fail before connecting
 preventing PostgreSQL name truncation. Driver errors omit connection strings, SQL
 and customer values. SQL adapters require a server application. Hosted
 Supabase/Neon/PlanetScale authority and deployment acceptance remain customer
-configuration and verification gates. The libSQL and browser adapters remain separate work; a
-Supabase RLS preset is exported below.
+configuration and verification gates. Cosmos and document-store adapters have separate customer configuration; browser adapters remain separate work. A
 
 
 The separate, unpublished `Polymorfa.Storage.S3` package adds
@@ -449,3 +448,68 @@ use the official driver for all 17 schema entities, JSON values, 2,000 history
 rows, rollback, replay, checkpoint CAS, lease fencing, namespace separation,
 closed query scopes and scan bounds. Hosted Google IAM, TLS, indexes and
 production availability remain separate verification gates.
+
+### libSQL and Turso storage
+
+The separate, unpublished `Polymorfa.Storage.LibSql` package adds
+`LibSqlStorageAdapter` using Turso's maintained
+`Turso.Data.Sqlite.Provider` 0.8.3. It reuses `Polymorfa.Storage.Sql` and its
+schema-2 DDL, typed rows and revision checks. Install the optional package only
+in server applications; the base SDK gains no database dependency. This package
+also includes the existing SQL package's SQLite, PostgreSQL and MySQL drivers.
+The storage source is `3bacf46f9c4213426314001586f5bae43aaa77de`.
+
+```csharp
+using Polymorfa.Storage.LibSql;
+using Polymorfa.Storage.Sql;
+using Turso.Data.Sqlite;
+
+await using var connection = new SqliteConnection(
+    Environment.GetEnvironmentVariable("CUSTOMER_LIBSQL_CONNECTION")!);
+await connection.OpenAsync();
+await using var adapter = new LibSqlStorageAdapter(connection,
+    new SqlStorageOptions { TablePrefix = "app_" });
+await adapter.SetupAsync();
+var storage = new Polymorfa.Sdk.Storage.CustomerStorage(adapter);
+```
+
+The caller opens and owns the connection and configures its database URL, auth
+token, TLS and timeouts. Use a server-held customer database token with the
+required database permissions. Pass no Polymorfa API credential to this driver.
+Keep connection strings out of browser bundles, logs and exception reports from
+application-owned connection setup. Use the provider's connection-string
+builder when composing values. Direct remote connections use Hrana over HTTPS;
+`libsql://` uses HTTPS by default. Loopback development can use `Tls=False`.
+A table prefix provides naming, not tenant authorization. A customer database
+and its access policy remain the customer's responsibility.
+
+The adapter borrows the open connection, serializes its operations and leaves
+it open when disposed. Give each adapter an exclusive connection; application
+commands and another adapter must not share that connection while it is in use.
+Each commit uses an explicit database transaction, including conditional deletes
+and inserts. A revision or duplicate-key conflict rolls back the entire commit.
+The 500-write limit includes the engine's session fence. A provider batch alone
+does not establish atomicity. Driver failures surfaced by adapter operations
+omit raw errors, inner exceptions, URLs, SQL and stored values. Cancellation
+retains `OperationCanceledException`.
+
+`CreateTables = false` supports customer-managed schema installation. Export
+SQLite schema-2 statements with `StorageSqlSchema.Statements` and
+`StorageSqlDialect.Sqlite`. Local native files and direct remote Hrana
+connections are exercised by the adapter tests. Embedded replicas, replica
+sync, failover and production Turso credentials are not acceptance-tested;
+configure and verify those separately before use. This source package is not
+published and does not establish hosted service availability or a feature release.
+
+Run its native conformance executable with:
+
+```bash
+dotnet run --project packages/dotnet/tests/Polymorfa.Storage.LibSql.Tests
+```
+
+Set `POLYMORFA_STORAGE_LIBSQL_CONNECTION` to a customer-owned test connection
+string to include direct remote conformance. The tests use unique table
+prefixes and retain remote test tables. They cover all 17 entities, JSON/scalar
+round trips, 2,000-message history, paging, replay, lease fencing, stale
+checkpoints, revision and duplicate-key rollback, validation, cancellation,
+sanitized errors and borrowed connection lifetime.
