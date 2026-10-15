@@ -48,22 +48,24 @@ public sealed class StorageSynchronization : IAsyncDisposable, IDisposable
                 CancellationToken = stop.Token,
                 OnGap = value => { gap = true; stop.Cancel(); options.StreamOptions.OnGap?.Invoke(value); }
             };
-            try
+            if (stop.IsCancellationRequested) return;
+            await using var stream = source.Stream(parameters).GetAsyncEnumerator(stop.Token);
+            while (!stop.IsCancellationRequested)
             {
-                await foreach (var item in source.Stream(parameters).WithCancellation(stop.Token).ConfigureAwait(false))
-                {
-                    if (stop.IsCancellationRequested) break;
-                    if (item.Webhook is null && options.RequirePayload) throw new StorageValidationException("The event body is unavailable. The storage checkpoint and acknowledgement were not advanced.");
-                    // Stream cancellation stops admission. An admitted event completes persistence and ACK using independent operation lifetimes.
-                    var result = item.Webhook is { } webhook ? await StorageSynchronizationExtensions.ApplyEventAsync(storage, webhook, options).ConfigureAwait(false) : new StorageApplyResult(false, 0);
-                    await storage.ApplyAsync(new(options.CheckpointSessionId, [new StorageCheckpoint(options.CheckpointSessionId, options.CheckpointStream, item.Cursor, PatchValue<string>.Set(expected), UpdatedAt: options.Now())])).ConfigureAwait(false);
-                    expected = item.Cursor;
-                    await source.AcknowledgeAsync(item.StreamId, new(item.Cursor, item.Sequence)).ConfigureAwait(false);
-                    options.OnApplied?.Invoke(item, result);
-                }
+                bool available;
+                try { available = await stream.MoveNextAsync().ConfigureAwait(false); }
+                catch (OperationCanceledException) when (stop.IsCancellationRequested) { break; }
+                catch (PolymorfaCancelledException) when (stop.IsCancellationRequested) { break; }
+                if (!available || stop.IsCancellationRequested) break;
+                var item = stream.Current;
+                if (item.Webhook is null && options.RequirePayload) throw new StorageValidationException("The event body is unavailable. The storage checkpoint and acknowledgement were not advanced.");
+                // Stream cancellation stops admission. An admitted event completes persistence and ACK using independent operation lifetimes.
+                var result = item.Webhook is { } webhook ? await StorageSynchronizationExtensions.ApplyEventAsync(storage, webhook, options).ConfigureAwait(false) : new StorageApplyResult(false, 0);
+                await storage.ApplyAsync(new(options.CheckpointSessionId, [new StorageCheckpoint(options.CheckpointSessionId, options.CheckpointStream, item.Cursor, PatchValue<string>.Set(expected), UpdatedAt: options.Now())])).ConfigureAwait(false);
+                expected = item.Cursor;
+                await source.AcknowledgeAsync(item.StreamId, new(item.Cursor, item.Sequence)).ConfigureAwait(false);
+                options.OnApplied?.Invoke(item, result);
             }
-            catch (OperationCanceledException) when (stop.IsCancellationRequested) { }
-            catch (PolymorfaCancelledException) when (stop.IsCancellationRequested) { }
             if (gap) throw new StorageStreamGapException();
         }
         finally { lock (gate) { finished = true; stop.Dispose(); } }
