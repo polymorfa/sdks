@@ -91,7 +91,7 @@ type mediaDeadlineBody struct {
 
 func (body *mediaDeadlineBody) Read(buffer []byte) (int, error) {
 	n, err := body.ReadCloser.Read(buffer)
-	if err != nil && err != io.EOF {
+	if body.caller.Err() != nil || body.deadline.Err() != nil || (err != nil && err != io.EOF) {
 		body.cancel()
 		kind, message := ConnectionError, "Media body could not be read."
 		var cause error
