@@ -298,7 +298,7 @@ schema-defined scope and cursor indexes. Invalid or oversized derived identifier
 are refused before connecting, preventing PostgreSQL name truncation. Driver
 errors omit connection strings, SQL and customer row values. These adapters are
 server clients; hosted Supabase/Neon/PlanetScale authority and deployment acceptance
-require the customer's own configuration and verification. The libSQL, document-store and browser adapters remain separate work. A Supabase
+require the customer's own configuration and verification. The libSQL, Cosmos, Convex and browser adapters remain separate work. A Supabase
 RLS preset is exported below.
 
 Chat clears and row planning renew a live lease conditionally between reads once half
@@ -443,3 +443,40 @@ fencing, namespaces and read bounds. Standalone-server tests prove refusal
 without partial writes. Hosted MongoDB authorization, TLS, sharded deployment
 and operational failover remain customer acceptance gates. This SDK is
 unpublished.
+
+### Customer-owned Firestore
+
+Enable `storage-firestore` for
+`storage::firestore::FirestoreStorageAdapter`. Pass a customer-owned
+`firestore::FirestoreDb` and `FirestoreStorageOptions::new(namespace)`.
+The community driver is pinned to `firestore` 0.50.0 and `gcloud-sdk` 0.30.2;
+authentication dependencies are constrained for Rust 1.85, with the JWT
+`rust_crypto` backend enabled. If the application enables another JWT crypto
+backend too, install the application's chosen provider explicitly before
+creating its client. The caller configures Google project/database,
+authentication, TLS, deadlines and client lifetime. Keep customer database
+credentials separate from Polymorfa API credentials.
+
+```rust,ignore
+use polymorfa_sdk::storage::firestore::{FirestoreStorageAdapter, FirestoreStorageOptions};
+let adapter = FirestoreStorageAdapter::new(customer_database,
+    FirestoreStorageOptions::new("my_app"))?;
+```
+
+The adapter uses `polymorfa_{namespace}_{entity}` collections and native
+read-before-write transactions. Its atomic commit limit is 250 writes, including
+the engine's lease fence. Each transaction reads all touched documents before
+queuing writes, checks row revisions and refuses a stale batch atomically.
+Queries apply only declared equality fields, bound the complete matching scan
+with `max_query_rows` (default 100,000), then apply portable range, cursor and
+ordering rules. `setup()` does not provision collections or indexes. Configure
+required composite indexes and retention in the customer's Google project.
+Firestore document, nesting, field-name and transaction limits still apply.
+
+The source contract is `3bacf46f9c4213426314001586f5bae43aaa77de`. JSON mapping
+preserves literal tag-shaped objects and refuses Firestore timestamps,
+references, blobs and other non-JSON native values in stored rows. Local emulator
+checks use the native driver for the shared 17-entity conformance suite, 2,000
+history rows, rollback, replay, checkpoint CAS and expired-writer fencing.
+Hosted Google IAM, TLS, index provisioning and production availability require
+separate customer verification. This optional crate feature is unpublished.
