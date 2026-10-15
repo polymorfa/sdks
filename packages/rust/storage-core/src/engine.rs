@@ -4,10 +4,11 @@ use super::{
     schema::encode_key,
     *,
 };
+use crate::runtime::{self, Instant};
 use std::{
     collections::{BTreeMap, BTreeSet},
     sync::Arc,
-    time::{Duration, Instant},
+    time::Duration,
 };
 #[derive(Clone)]
 pub struct StorageOptions {
@@ -24,12 +25,7 @@ impl Default for StorageOptions {
             clear_page_size: 200,
             lease_duration: Duration::from_secs(30),
             lease_wait: Duration::from_secs(30),
-            now: Arc::new(|| {
-                std::time::SystemTime::now()
-                    .duration_since(std::time::UNIX_EPOCH)
-                    .map(|d| d.as_millis() as f64)
-                    .unwrap_or(0.)
-            }),
+            now: Arc::new(runtime::epoch_millis),
         }
     }
 }
@@ -165,7 +161,7 @@ impl Storage {
             if start.elapsed() >= self.options.lease_wait {
                 return Err(StorageError::LeaseLost);
             }
-            tokio::time::sleep(Duration::from_millis(5)).await;
+            runtime::sleep(Duration::from_millis(5)).await;
         }
     }
     async fn fenced_commit(
@@ -403,7 +399,7 @@ impl Storage {
                 return Ok(writes.len());
             }
             conflicts = failed;
-            tokio::time::sleep(Duration::from_millis(
+            runtime::sleep(Duration::from_millis(
                 (5u64.saturating_mul(1u64.checked_shl(attempt as u32).unwrap_or(u64::MAX)))
                     .min(200),
             ))

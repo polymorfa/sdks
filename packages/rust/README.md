@@ -306,6 +306,23 @@ the configured lease duration remains. An expired or replaced lease still
 fails closed. Configure customer operation deadlines and lease duration so one
 individual query or commit can finish before expiry.
 
+### Portable storage core and browser IndexedDB
+
+Existing server paths under `polymorfa_sdk::storage`, including `Storage`,
+`StorageOptions`, `StorageAdapter`, `schema`, `merge`, `memory` and `engine`,
+re-export the canonical `polymorfa-storage-core` crate. Server adapters use the
+same types and retain native thread-safety bounds and Tokio timers. The server
+SDK retains its WASM compilation prohibition. The separate
+`polymorfa-storage-indexeddb` WASM crate uses that exact core with browser clocks,
+timers and local futures, without importing the server HTTP clients.
+
+IndexedDB commits at most 1,000 writes in one native transaction, including the
+session fence. Its crate README describes namespace ownership, bounded queries,
+cancellation and browser persistence. This adds no Signal acknowledgement, API
+browser credential or remote grant. The core must be published and verified
+before either dependent package can be installed from a registry. All three
+packages remain unpublished.
+
 ### Customer-owned libSQL and Turso
 
 Enable `storage-libsql` for `storage::libsql::LibsqlStorageAdapter`. The adapter
