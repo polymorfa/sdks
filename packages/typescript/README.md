@@ -99,6 +99,63 @@ capabilities as server API keys. `Client.events.stream()` exposes an
 `AsyncIterable` for the separate [server event stream](#stream-events-in-real-time),
 subject to scope and beta access. Live forwarding belongs to `polymorfa listen`.
 
+## Campaign and custody contract additions in source
+
+The development source adds helpers for the `2026-10-14` contract. These
+additions are unpublished until the matching package release passes its API
+acceptance gate. A helper does not grant beta enrollment, permissions, funding,
+or a supported connection type.
+
+| Resource                               | Added methods                                                                                                      |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `MessagingClient.campaigns`            | `getReplyFlow`, `createReplyFlow`, `setReplyFlow`, `testSend`, `links`, `exportRecipients`                         |
+| Organization `Client.campaigns`        | The same six methods, plus `listLaunchApprovals` and `getSettings`                                                 |
+| Project `Client.campaigns`             | The seven project-confined methods; organization settings and approval writes are unavailable                      |
+| Organization `Client.audienceProfiles` | `list`, `retrieve`, `put`, `delete`, `listConsent`, and `imports.create`, `imports.retrieve`, `imports.cancel`     |
+| Organization `Client.audiences`        | `createFromCampaign`                                                                                               |
+| Organization `Client.optOuts`          | `getConfirmationSettings`, `updateConfirmationSettings`, `getConfirmationSummary`                                  |
+| Project `Client.signalCustody`         | `retrieve`, `update`, `retrieveCustomer`, `updateCustomer`; organization aliases are on `projects` and `customers` |
+
+These helpers send `Polymorfa-Version: 2026-10-14` when their request options
+omit `apiVersion`. An explicit request option takes precedence. Unrelated
+methods retain the existing global `2026-09-22` default. Project campaign
+methods derive their project selector from the client; organization campaign
+aliases require an explicit project selector. Messaging methods take a project
+slug, not a Platform project UUID.
+
+```ts
+const project = platform.project("018f0000-0000-7000-8000-000000000001");
+await project.campaigns.setReplyFlow(
+  "018f0000-0000-7000-8000-000000000002",
+  { replyFlowId: null }, // Explicitly detach; omission is invalid.
+);
+const customerId = "018f0000-0000-7000-8000-000000000003";
+const defaults = await project.signalCustody.retrieveCustomer(customerId);
+await project.signalCustody.updateCustomer(customerId, {
+  expectedRevision: defaults.data.revision,
+  signalModeDefault: null,
+});
+```
+
+Read the Customer's own custody revision with `retrieveCustomer(customerId)`
+before updating it. Customer `null` restores inheritance; Project updates
+require an explicit mode. Defaults apply to future reservations and never
+convert existing Numbers or move Signal keys.
+
+`testSend` captures an idempotency key and body for retries. Other new writes
+default to no automatic retries, even if a header key is supplied. An import's
+body `replayKey` is a separate server identity. Explicit retry overrides do not
+create a replay guarantee; reconcile ambiguous writes and revision conflicts
+before submitting another change. HTTP cancellation stops the waiter, not an
+admitted send or import. Cancel an import through `imports.cancel(jobId)`.
+
+`exportRecipients` returns one buffered `{ csv, nextCursor, filename }` page
+with the original response metadata. It preserves server CSV quoting and never
+fetches the next page automatically. A filtered export cannot include a cursor
+or a limit below 1,000. Profiles and imports contain customer-supplied campaign
+data; they do not synchronize WhatsApp contacts. Consent assertions never
+override opt-outs. Error objects expose the server's `param` when supplied.
+
 ## System and Bridge clients
 
 `SystemClient` is credential-free. Its four methods preserve the normal

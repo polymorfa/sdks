@@ -1,4 +1,13 @@
 import { HttpTransport } from "../transport/http.js";
+import {
+  campaignContractBody,
+  campaignContractOptions,
+  validateRetarget,
+} from "../campaign-contract-validation.js";
+import type {
+  AudienceFromCampaignResult,
+  CreateAudienceFromCampaignRequest,
+} from "../campaign-contracts.js";
 import { withoutAutomaticRetry } from "../transport/idempotency.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
@@ -17,6 +26,19 @@ type AudienceResponse = Promise<ApiResponse<DataEnvelope<PlatformPayload>>>;
 
 export class AudiencesResource {
   constructor(private readonly transport: HttpTransport) {}
+
+  createFromCampaign(
+    body: CreateAudienceFromCampaignRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<AudienceFromCampaignResult>>> {
+    validateRetarget(body);
+    return this.transport.request({
+      ...campaignContractOptions(options, true),
+      method: "POST",
+      path: "/platform/audiences/from-campaign",
+      body: campaignContractBody(body),
+    });
+  }
 
   list(options: RequestOptions = {}): AudienceResponse {
     return this.transport.request({

@@ -28,6 +28,9 @@ import {
 import { PlatformCallsResource } from "./platform/calls.js";
 import { CallRetentionResource } from "./platform/call-retention.js";
 import { CampaignsResource } from "./platform/campaigns.js";
+import { ProjectCampaignsResource } from "./platform/project-campaigns.js";
+import { AudienceProfilesResource } from "./platform/audience-profiles.js";
+import { SignalCustodyResource } from "./platform/signal-custody.js";
 import { CustomersResource } from "./platform/customers.js";
 import {
   EventsResource,
@@ -83,6 +86,7 @@ export interface ClientBase<O extends ClientOwner> {
 }
 
 export interface OrganizationControlPlaneResources {
+  readonly audienceProfiles: AudienceProfilesResource;
   readonly apiKeys: ApiKeysResource;
   readonly audiences: AudiencesResource;
   readonly auditLogs: AuditLogsResource;
@@ -106,6 +110,8 @@ export interface OrganizationControlPlaneResources {
 }
 
 export interface ProjectControlPlaneResources {
+  readonly campaigns: ProjectCampaignsResource;
+  readonly signalCustody: SignalCustodyResource;
   readonly flows: FlowsResource;
   readonly functions: FunctionsResource;
 }
@@ -124,6 +130,8 @@ class ClientImplementation implements ClientBase<ClientOwner> {
   /** Installed only for project instances; the public conditional type reflects that. */
   declare readonly functions: FunctionsResource;
   declare readonly flows: FlowsResource;
+  declare readonly campaigns: CampaignsResource | ProjectCampaignsResource;
+  declare readonly signalCustody: SignalCustodyResource;
   readonly owner: ClientOwner;
   readonly projectId: string | null;
   readonly events: EventsResource<ClientOwner>;
@@ -214,12 +222,15 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       Object.assign(this, {
         functions: new FunctionsResource(this.#transport, projectId),
         flows: new FlowsResource(this.#transport, projectId),
+        campaigns: new ProjectCampaignsResource(this.#transport, projectId),
+        signalCustody: new SignalCustodyResource(this.#transport, projectId),
       });
 
     if (this.owner === "organization") {
       Object.assign(this, {
         apiKeys: new ApiKeysResource(this.#transport),
         audiences: new AudiencesResource(this.#transport),
+        audienceProfiles: new AudienceProfilesResource(this.#transport),
         auditLogs: new AuditLogsResource(this.#transport),
         billing: new BillingResource(this.#transport),
         banSafe: new BanSafeResource(this.#transport),

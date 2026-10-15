@@ -1,5 +1,19 @@
 # Contract coverage
 
+## Campaign and custody additions
+
+`campaign-custody-20261014.json` pins thirty machine-accessible operations and
+their referenced components to API source
+`f97ad78b172e80788c33bdc0fcf28f75db9283ec`. TypeScript's new typed helpers select
+`2026-10-14` when request options omit a version. The global API default and
+579-operation baseline snapshots remain unchanged.
+
+The supplement is held with `published: false`, and the release gate checks
+both source audiences. The five native ports, remaining 625-operation contract
+reconciliation, accepted staging/production API evidence, and publication are
+separate unfinished gates. `campaign-20261014-contract.test.ts` checks all thirty
+wire operations; it does not establish provider delivery or deployed access.
+
 ## Request log supplement
 
 `request-logs.json` pins `GET /platform/projects/{projectId}/request-logs` and

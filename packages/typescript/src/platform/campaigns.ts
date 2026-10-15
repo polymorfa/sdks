@@ -1,4 +1,27 @@
 import { HttpTransport } from "../transport/http.js";
+import { ProjectCampaignsResource } from "./project-campaigns.js";
+import {
+  campaignContractOptions,
+  validateCampaignSelection,
+  validateCampaignTestSend,
+  validateReplyFlowAssignment,
+  validateReplyFlowCreate,
+  validateRecipientExport,
+} from "../campaign-contract-validation.js";
+import type {
+  CampaignProjectParams,
+  CampaignReplyFlow,
+  CampaignReplyFlowAssignment,
+  CampaignTestSend,
+  CampaignTrackedLinkReport,
+  CampaignLaunchApproval,
+  CampaignSettings,
+  CampaignRecipientExportPage,
+  CampaignRecipientExportParams,
+  CreatePlatformCampaignReplyFlowRequest,
+  PlatformCampaignTestSendRequest,
+  SetPlatformCampaignReplyFlowRequest,
+} from "../campaign-contracts.js";
 import {
   withIdempotencyKey,
   withoutAutomaticRetry,
@@ -35,6 +58,100 @@ type CampaignRead = "analytics" | "events";
 
 export class CampaignsResource {
   constructor(private readonly transport: HttpTransport) {}
+
+  getReplyFlow(
+    replyFlowId: string,
+    params: CampaignProjectParams,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignReplyFlow> {
+    return new ProjectCampaignsResource(
+      this.transport,
+      validateCampaignSelection(params),
+    ).getReplyFlow(replyFlowId, options);
+  }
+
+  createReplyFlow(
+    body: CreatePlatformCampaignReplyFlowRequest,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignReplyFlow> {
+    validateReplyFlowCreate(body, true);
+    const { projectId, ...input } = body;
+    return new ProjectCampaignsResource(
+      this.transport,
+      projectId,
+    ).createReplyFlow(input, options);
+  }
+
+  setReplyFlow(
+    campaignId: string,
+    body: SetPlatformCampaignReplyFlowRequest,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignReplyFlowAssignment> {
+    validateReplyFlowAssignment(body, true);
+    const { projectId, ...input } = body;
+    return new ProjectCampaignsResource(this.transport, projectId).setReplyFlow(
+      campaignId,
+      input,
+      options,
+    );
+  }
+
+  testSend(
+    campaignId: string,
+    body: PlatformCampaignTestSendRequest,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignTestSend> {
+    validateCampaignTestSend(body, true);
+    const { projectId, ...input } = body;
+    return new ProjectCampaignsResource(this.transport, projectId).testSend(
+      campaignId,
+      input,
+      options,
+    );
+  }
+
+  listLaunchApprovals(
+    campaignId: string,
+    params: CampaignProjectParams,
+    options: RequestOptions = {},
+  ): CampaignResult<readonly CampaignLaunchApproval[]> {
+    return new ProjectCampaignsResource(
+      this.transport,
+      validateCampaignSelection(params),
+    ).listLaunchApprovals(campaignId, options);
+  }
+
+  links(
+    campaignId: string,
+    params: CampaignProjectParams,
+    options: RequestOptions = {},
+  ): CampaignResult<readonly CampaignTrackedLinkReport[]> {
+    return new ProjectCampaignsResource(
+      this.transport,
+      validateCampaignSelection(params),
+    ).links(campaignId, options);
+  }
+
+  exportRecipients(
+    campaignId: string,
+    params: CampaignRecipientExportParams & CampaignProjectParams,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CampaignRecipientExportPage>> {
+    validateRecipientExport(params, true);
+    const { projectId, ...input } = params;
+    return new ProjectCampaignsResource(
+      this.transport,
+      projectId,
+    ).exportRecipients(campaignId, input, options);
+  }
+
+  getSettings(options: RequestOptions = {}): CampaignResult<CampaignSettings> {
+    return this.transport.request({
+      ...campaignContractOptions(options),
+      method: "GET",
+      path: "/platform/campaign-settings",
+    });
+  }
 
   list(
     params: ListCampaignsParams,

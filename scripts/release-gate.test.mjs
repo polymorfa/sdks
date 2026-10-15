@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   validateAcceptance,
   releaseVersion,
@@ -67,6 +68,29 @@ test("campaign supplements bind both audiences to the accepted full contract", (
       ...supplement,
       sources: { messaging: supplement.sources.messaging },
     }),
+  );
+});
+test("unpublished campaign and custody additions block publication even after source reconciliation", () => {
+  const supplement = JSON.parse(
+    readFileSync(
+      new URL("../contracts/campaign-custody-20261014.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const source = {
+    repository: supplement.repository,
+    commit: supplement.commit,
+    contracts: Object.fromEntries(
+      Object.entries(supplement.sources).map(([family, snapshot]) => [
+        family,
+        { sourcePath: snapshot.sourcePath, sha256: snapshot.sourceSha256 },
+      ]),
+    ),
+  };
+  assert.throws(
+    () =>
+      validateFeatureContractPins(source, campaignSupplementPins(supplement)),
+    /held from publication/,
   );
 });
 test("nightly requires exact staging acceptance; stable requires production", () => {

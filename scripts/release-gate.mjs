@@ -93,6 +93,7 @@ export function expectedContract() {
       "campaign-ab-tests.json",
       "campaign-message-variations.json",
       "campaign-follow-ups.json",
+      "campaign-custody-20261014.json",
     ].flatMap((name) =>
       campaignSupplementPins(
         JSON.parse(readFileSync(join(root, "contracts", name))),

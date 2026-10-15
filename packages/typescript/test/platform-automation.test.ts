@@ -355,14 +355,15 @@ describe("Client campaigns", () => {
   });
 });
 
-it("requires project scope on organization campaigns and omits campaigns from project views", async () => {
+it("requires organization campaign scope and confines project campaign views", async () => {
   const { client } = await platformServer();
   const project = client.project("project/a");
-  expect(project).not.toHaveProperty("campaigns");
+  expect(project.campaigns).toHaveProperty("getReplyFlow");
+  expect(project.campaigns).not.toHaveProperty("retrieve");
   // These calls are compile-time assertions and must never reach transport.
   const invalidCalls = () => {
-    // @ts-expect-error project views do not expose Platform campaigns
-    void project.campaigns;
+    // @ts-expect-error project views do not expose unconfined organization campaigns
+    void project.campaigns.retrieve;
     // @ts-expect-error an organization client must supply project parameters
     client.campaigns.retrieve("campaign/a");
     // @ts-expect-error a project ID is required within the parameters

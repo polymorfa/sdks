@@ -127,6 +127,7 @@ export function isKnownPolymorfaErrorCode(
 }
 
 export interface PolymorfaErrorOptions {
+  readonly param?: string;
   readonly code?: PolymorfaErrorCode;
   readonly status?: number;
   readonly requestId?: string;
@@ -139,6 +140,7 @@ export interface PolymorfaErrorOptions {
 }
 
 export class PolymorfaError extends Error {
+  readonly param: string | undefined;
   readonly code: PolymorfaErrorCode | undefined;
   readonly status: number | undefined;
   /** `error.request_id` from the body, else the `X-Request-Id` header. */
@@ -159,6 +161,7 @@ export class PolymorfaError extends Error {
     );
     this.name = new.target.name;
     this.code = options.code;
+    this.param = options.param;
     this.status = options.status;
     this.requestId = options.requestId;
     this.requestLogUrl = options.requestLogUrl;

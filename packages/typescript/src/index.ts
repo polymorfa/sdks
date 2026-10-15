@@ -23,6 +23,13 @@ export {
   type Client as ClientInstance,
 } from "./client.js";
 export type * from "./platform/developer-types.js";
+export type * from "./campaign-contracts.js";
+export { ProjectCampaignsResource } from "./platform/project-campaigns.js";
+export {
+  AudienceProfilesResource,
+  AudienceProfileImportsResource,
+} from "./platform/audience-profiles.js";
+export { SignalCustodyResource } from "./platform/signal-custody.js";
 export {
   EventStream,
   eventStreamSource,

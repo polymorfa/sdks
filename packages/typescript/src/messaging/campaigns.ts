@@ -1,4 +1,26 @@
 import { HttpTransport } from "../transport/http.js";
+import type {
+  CampaignRecipientExportPage,
+  CampaignRecipientExportParams,
+  CampaignReplyFlow,
+  CampaignReplyFlowAssignment,
+  CampaignTestSend,
+  CampaignTestSendRequest,
+  CampaignTrackedLinkReport,
+  CreateCampaignReplyFlowRequest,
+  SetCampaignReplyFlowRequest,
+} from "../campaign-contracts.js";
+import {
+  campaignContractBody,
+  campaignContractOptions,
+  contractString,
+  contractUuid,
+  validateCampaignTestSend,
+  validateRecipientExport,
+  validateReplyFlowAssignment,
+  validateReplyFlowCreate,
+} from "../campaign-contract-validation.js";
+import { requestCampaignExport } from "../campaign-export.js";
 import {
   withIdempotencyKey,
   withoutAutomaticRetry,
@@ -28,6 +50,104 @@ import type {
 /** Exact project-slug campaign workflow exposed by the Messaging API. */
 export class MessagingCampaignsResource {
   constructor(private readonly transport: HttpTransport) {}
+
+  getReplyFlow(
+    projectSlug: string,
+    replyFlowId: string,
+    options: RequestOptions = {},
+  ): Promise<
+    ApiResponse<{ readonly success: true; readonly data: CampaignReplyFlow }>
+  > {
+    return this.transport.request({
+      ...campaignContractOptions(options),
+      method: "GET",
+      path: `${replyFlowsPath(projectSlug)}/${contractUuid(replyFlowId, "replyFlowId")}`,
+    });
+  }
+
+  createReplyFlow(
+    projectSlug: string,
+    body: CreateCampaignReplyFlowRequest,
+    options: RequestOptions = {},
+  ): Promise<
+    ApiResponse<{ readonly success: true; readonly data: CampaignReplyFlow }>
+  > {
+    validateReplyFlowCreate(body);
+    return this.transport.request({
+      ...campaignContractOptions(options, true),
+      method: "POST",
+      path: replyFlowsPath(projectSlug),
+      body: campaignContractBody(body),
+    });
+  }
+
+  setReplyFlow(
+    projectSlug: string,
+    campaignId: string,
+    body: SetCampaignReplyFlowRequest,
+    options: RequestOptions = {},
+  ): Promise<
+    ApiResponse<{
+      readonly success: true;
+      readonly data: CampaignReplyFlowAssignment;
+    }>
+  > {
+    validateReplyFlowAssignment(body);
+    return this.transport.request({
+      ...campaignContractOptions(options, true),
+      method: "PUT",
+      path: `${contractCampaignPath(projectSlug, campaignId)}/reply-flow`,
+      body: campaignContractBody(body),
+    });
+  }
+
+  testSend(
+    projectSlug: string,
+    campaignId: string,
+    body: CampaignTestSendRequest,
+    options: RequestOptions = {},
+  ): Promise<
+    ApiResponse<{ readonly success: true; readonly data: CampaignTestSend }>
+  > {
+    validateCampaignTestSend(body);
+    return this.transport.request({
+      ...campaignContractOptions(options, true, true),
+      method: "POST",
+      path: `${contractCampaignPath(projectSlug, campaignId)}/test-send`,
+      body: campaignContractBody(body),
+    });
+  }
+
+  links(
+    projectSlug: string,
+    campaignId: string,
+    options: RequestOptions = {},
+  ): Promise<
+    ApiResponse<{
+      readonly success: true;
+      readonly data: readonly CampaignTrackedLinkReport[];
+    }>
+  > {
+    return this.transport.request({
+      ...campaignContractOptions(options),
+      method: "GET",
+      path: `${contractCampaignPath(projectSlug, campaignId)}/links`,
+    });
+  }
+
+  exportRecipients(
+    projectSlug: string,
+    campaignId: string,
+    params: CampaignRecipientExportParams = {},
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CampaignRecipientExportPage>> {
+    return requestCampaignExport(
+      this.transport,
+      `${contractCampaignPath(projectSlug, campaignId)}/recipients/export`,
+      validateRecipientExport(params),
+      options,
+    );
+  }
 
   list(
     projectSlug: string,
@@ -232,4 +352,15 @@ function campaignPath(projectSlug: string, campaignId: string): string {
 
 function recipientsPath(projectSlug: string, campaignId: string): string {
   return `${campaignPath(projectSlug, campaignId)}/recipients`;
+}
+
+function replyFlowsPath(projectSlug: string): string {
+  return `/messaging/projects/${encodeURIComponent(contractString(projectSlug, "projectSlug"))}/campaign-reply-flows`;
+}
+
+function contractCampaignPath(projectSlug: string, campaignId: string): string {
+  return campaignPath(
+    contractString(projectSlug, "projectSlug"),
+    contractUuid(campaignId, "campaignId"),
+  );
 }
