@@ -87,9 +87,13 @@ type mediaDeadlineBody struct {
 	caller, deadline context.Context
 	cancel           context.CancelFunc
 	metadata         Metadata
+	eof              bool
 }
 
 func (body *mediaDeadlineBody) Read(buffer []byte) (int, error) {
+	if body.eof {
+		return 0, io.EOF
+	}
 	n, err := body.ReadCloser.Read(buffer)
 	if body.caller.Err() != nil || body.deadline.Err() != nil || (err != nil && err != io.EOF) {
 		body.cancel()
@@ -106,6 +110,7 @@ func (body *mediaDeadlineBody) Read(buffer []byte) (int, error) {
 		return n, &Error{Kind: kind, Message: message, Metadata: body.metadata, Cause: cause}
 	}
 	if err == io.EOF {
+		body.eof = true
 		body.cancel()
 	}
 	return n, err

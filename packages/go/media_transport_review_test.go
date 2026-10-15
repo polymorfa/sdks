@@ -151,6 +151,18 @@ func TestMediaEOFCannotHideCancellationOrDeadline(t *testing.T) {
 						defer download.Body.Close()
 						metadata = download.Metadata
 						data, err = io.ReadAll(download.Body)
+						if mode == "complete" && err == nil {
+							// Cleanup after success must not turn later EOF reads into
+							// cancellation, including after caller cancellation.
+							for repeat := 0; repeat < 2; repeat++ {
+								if repeat == 1 {
+									cancel()
+								}
+								if n, nextErr := download.Body.Read(make([]byte, 1)); n != 0 || nextErr != io.EOF {
+									t.Fatalf("read after completed EOF: %d %v", n, nextErr)
+								}
+							}
+						}
 					} else {
 						response, readErr := client.Media().Download(ctx, "fixture", opts)
 						data, metadata, err = response.Data, response.Metadata, readErr
