@@ -259,13 +259,17 @@ class HistorySync:
         if (
             set(body) - {"directPath", "fileEncSha256", "encHandle", "companionMetaNonce"}
             or not isinstance(path, str)
-            or re.fullmatch(r"/(?!/)[!-~]{1,2047}", path) is None
+            or len(path) > 1024
+            or re.fullmatch(r"/[A-Za-z0-9._~%/=&?+-]+", path) is None
         ):
             raise ConfigurationError("directPath")
-        if not isinstance(digest, str) or re.fullmatch(r"[A-Za-z0-9_-]{43}", digest) is None:
+        if not isinstance(digest, str) or re.fullmatch(r"[A-Za-z0-9+/]{43}=", digest) is None:
             raise ConfigurationError("fileEncSha256")
         for key in ("encHandle", "companionMetaNonce"):
-            if key in body and (not isinstance(body[key], str) or not 1 <= len(body[key]) <= 4096):
+            if key in body and (
+                not isinstance(body[key], str)
+                or re.fullmatch(r"[A-Za-z0-9._~%/=+-]{1,512}", body[key]) is None
+            ):
                 raise ConfigurationError(key)
         await self._transport.request_json(
             "POST",

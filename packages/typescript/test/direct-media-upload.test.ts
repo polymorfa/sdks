@@ -361,11 +361,24 @@ describe("customer-owned media upload over native HTTP", () => {
   });
 
   it("uses the versioned history command paths and exact runner fields", async () => {
-    const api = await server((request) => ({
-      value: request.url.pathname.endsWith("/retry")
-        ? { success: true, data: { requestId: "retry-1", status: "requested" } }
-        : { success: true, data: { status: "deleted" } },
-    }));
+    const encryptedHash = Buffer.from(
+      Array.from({ length: 32 }, (_, i) => (i % 2 ? 255 : 251)),
+    );
+    const api = await server((request) => {
+      if (request.url.pathname.endsWith("/delete")) {
+        const digest = json(request).fileEncSha256;
+        expect(digest).toMatch(/^[A-Za-z0-9+/]{43}=$/);
+        expect(Buffer.from(digest as string, "base64")).toEqual(encryptedHash);
+      }
+      return {
+        value: request.url.pathname.endsWith("/retry")
+          ? {
+              success: true,
+              data: { requestId: "retry-1", status: "requested" },
+            }
+          : { success: true, data: { status: "deleted" } },
+      };
+    });
     const sdk = client(api.url);
     const retry = {
       syncType: "RECENT" as const,
@@ -378,7 +391,7 @@ describe("customer-owned media upload over native HTTP", () => {
     });
     const deletion = {
       directPath: "/v/history.enc",
-      fileEncSha256: base64UrlUnpadded(new Uint8Array(32)),
+      fileEncSha256: encryptedHash.toString("base64"),
       encHandle: "fixture-handle",
       companionMetaNonce: "fixture-nonce",
     };

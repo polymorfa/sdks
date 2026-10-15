@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import hashlib
 import json
 from dataclasses import replace
@@ -350,10 +351,14 @@ async def test_descriptor_send_selects_revision_and_sticker_is_distinct():
 
 async def test_history_recovery_commands_wire_and_client_token_refusal():
     requests = []
+    encrypted_hash = base64.b64encode(bytes([251, 255]) * 16).decode("ascii")
 
     def handler(request):
         requests.append(request)
         assert request.headers["polymorfa-version"] == "2026-10-14"
+        if request.url.path.endswith("/delete"):
+            assert json.loads(request.content)["fileEncSha256"] == encrypted_hash
+            return httpx.Response(200, json={"success": True, "data": {"status": "deleted"}})
         return httpx.Response(
             200, json={"success": True, "data": {"requestId": "retry-id", "status": "requested"}}
         )
@@ -368,7 +373,7 @@ async def test_history_recovery_commands_wire_and_client_token_refusal():
             "support",
             {
                 "directPath": "/history/a",
-                "fileEncSha256": "a" * 43,
+                "fileEncSha256": encrypted_hash,
                 "encHandle": "handle",
                 "companionMetaNonce": "nonce",
             },
@@ -389,6 +394,53 @@ async def test_history_recovery_commands_wire_and_client_token_refusal():
                 "support", {"syncType": "FULL", "chunkOrder": 0}
             )
     assert len(requests) == 2
+
+
+@pytest.mark.parametrize(
+    "invalid",
+    [
+        {"fileEncSha256": base64.urlsafe_b64encode(bytes([251, 255]) * 16).decode("ascii")},
+        {"fileEncSha256": base64.b64encode(bytes(32)).decode("ascii").rstrip("=")},
+        {"fileEncSha256": base64.b64encode(bytes(31)).decode("ascii")},
+        {"fileEncSha256": base64.b64encode(bytes(33)).decode("ascii")},
+        {"directPath": "/" + "a" * 1024},
+        {"directPath": "/history/a:b"},
+        {"directPath": "/history/a b"},
+        {"directPath": "/history/\u00e9"},
+        {"encHandle": "a" * 513},
+        {"encHandle": "handle?query"},
+        {"companionMetaNonce": "a" * 513},
+        {"companionMetaNonce": "nonce&value"},
+        {"companionMetaNonce": ""},
+    ],
+)
+async def test_history_deletion_refuses_invalid_contract_fields_before_io(invalid):
+    def handler(request):
+        pytest.fail("Invalid history deletion must be rejected before HTTP")
+
+    body = {
+        "directPath": "/history/a",
+        "fileEncSha256": base64.b64encode(bytes(32)).decode("ascii"),
+    }
+    async with AsyncMessagingClient(KEY, http_transport=httpx.MockTransport(handler)) as client:
+        with pytest.raises(ConfigurationError):
+            await client.history_sync.delete_chunk("support", body | invalid)
+
+
+async def test_history_deletion_accepts_api_path_and_handle_boundaries():
+    body = {
+        "directPath": "/" + "a" * 1023,
+        "fileEncSha256": base64.b64encode(bytes([251, 255]) * 16).decode("ascii"),
+        "encHandle": "A._~%/=+-" + "a" * 503,
+        "companionMetaNonce": "A._~%/=+-" + "b" * 503,
+    }
+
+    def handler(request):
+        assert json.loads(request.content) == body
+        return httpx.Response(200, json={"success": True, "data": {"status": "deleted"}})
+
+    async with AsyncMessagingClient(KEY, http_transport=httpx.MockTransport(handler)) as client:
+        await client.history_sync.delete_chunk("support", body)
 
 
 def test_descriptor_and_sticker_static_source_contracts():

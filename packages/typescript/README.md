@@ -3186,6 +3186,14 @@ inline notifications skip the download. Set `maxBytes` and `maxInflatedBytes`
 for application limits. Protobuf integer values and unknown fields survive
 processing. The helper does not download a notification automatically.
 
+After verifying and storing a chunk, `messaging.historySync.deleteChunk()` asks
+the linked device to delete its CDN blob. Its `fileEncSha256` is the encrypted
+chunk's 32-byte SHA-256 encoded as standard base64, including the trailing `=`.
+In Node.js, use `Buffer.from(digest).toString("base64")`. The upload grant's
+base64url hash representation does not apply to this deletion request. Deletion
+does not remove your local copy and is never performed automatically by the
+download helper.
+
 The Node-only `@polymorfa/sdk/s3` entry point provides `S3MediaStore`. Its
 `archive()` verifies a private local spool before it writes the plaintext to
 S3-compatible storage, then removes the spool on every outcome. Use

@@ -344,8 +344,11 @@ and thumbnails. Descriptor sends select `2026-10-14` unless explicitly overridde
 
 `client.history_sync.request_chunk_retry(session, {"syncType": "FULL",
 "chunkOrder": 0})` requests another history chunk. After storing a chunk,
-`history_sync.delete_chunk` accepts its `directPath`, unpadded base64url
-`fileEncSha256`, and optional `encHandle` and `companionMetaNonce`. Both commands
+`history_sync.delete_chunk` accepts its `directPath`, standard base64
+`fileEncSha256` with its trailing `=` padding, and optional `encHandle` and
+`companionMetaNonce`. Encode the encrypted chunk's 32-byte SHA-256 with
+`base64.b64encode(digest).decode("ascii")`. The path is limited to 1,024
+characters; each optional handle is limited to 512 characters. Both commands
 require a server credential and remain subject to API scopes and Number support.
 
 Install the `history` extra for `polymorfa.history`. Its

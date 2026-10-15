@@ -89,7 +89,7 @@ export interface HistorySyncChunkRetryResponse {
  */
 export interface HistorySyncChunkDeleteRequest {
   readonly directPath: string;
-  /** Base64url SHA-256 of the encrypted chunk, unpadded. */
+  /** Standard base64 SHA-256 of the encrypted chunk, including `=` padding. */
   readonly fileEncSha256: string;
   readonly encHandle?: string;
   readonly companionMetaNonce?: string;
