@@ -67,17 +67,28 @@ static async Task IndependentClients(string connectionString, SqlStorageOptions 
     Console.WriteLine("PASS libsql: independent remote connections allow one CAS winner, safe admission failures=" + results.Count(r => r is null) + ", fresh stale-revision retry rejected");
 }
 
-foreach (var unsupported in new[] { "Data Source=:memory:", "Data Source=unsupported.db;Pooling=True", "Data Source=unsupported.db;Pooling=False", "Data Source=libsql://customer.invalid;Replica Path=unsupported-replica.db", "Data Source=http://customer.invalid" })
+foreach (var unsupported in new[] { "Data Source=:memory:", "Data Source=unsupported.db;Pooling=True", "Data Source=unsupported.db;Pooling=False", "Data Source=libsql://customer.invalid;Replica Path=unsupported-replica.db", "Data Source=http://customer.invalid", "Data Source=https://synthetic.invalid;Tls=False", "Data Source=wss://synthetic.invalid;Tls=False", "Data Source=turso://synthetic.invalid;Tls=False", "Data Source=libsql://synthetic.invalid;Tls=False", "Data Source=http://localhost;Tls=True" })
 {
     await using var connection = new SqliteConnection(unsupported);
     try { _ = new LibSqlStorageAdapter(connection); throw new Exception("Unsupported local, replica or insecure libSQL mode accepted"); }
     catch (StorageValidationException error) { Check(!error.Message.Contains("customer.invalid", StringComparison.Ordinal) && !error.Message.Contains("unsupported.db", StringComparison.Ordinal), "Mode validation leaked customer configuration"); }
     Check(connection.State == ConnectionState.Closed, "Rejected mode changed caller connection state");
 }
-Console.WriteLine("PASS libsql: file, memory, replica and insecure remote modes rejected before adapter commands");
+await using (var broken = new BrokenConfigurationConnection())
+{
+    try { _ = new LibSqlStorageAdapter(broken); throw new Exception("Driver configuration failure escaped validation"); }
+    catch (StorageValidationException error) { Check(error.InnerException is null && !error.ToString().Contains("synthetic-configuration-canary", StringComparison.Ordinal), "Raw configuration error escaped"); }
+}
+Console.WriteLine("PASS libsql: file, memory, replica, insecure/conflicting TLS modes and raw configuration failures rejected before adapter commands");
 await using (var closed = new SqliteConnection("Data Source=libsql://127.0.0.1:54848;Tls=False"))
 {
     try { _ = new LibSqlStorageAdapter(closed); throw new Exception("Closed remote connection accepted"); } catch (StorageValidationException) { }
 }
 if (Environment.GetEnvironmentVariable("POLYMORFA_STORAGE_LIBSQL_CONNECTION") is { } remote) await Run(remote, "direct remote Hrana");
 else Console.WriteLine("SKIP libsql remote: POLYMORFA_STORAGE_LIBSQL_CONNECTION unset; no native-file support is claimed");
+
+internal sealed class BrokenConfigurationConnection : SqliteConnection
+{
+    [System.Diagnostics.CodeAnalysis.AllowNull]
+    public override string ConnectionString { get => throw new InvalidOperationException("synthetic-configuration-canary"); set => base.ConnectionString = value; }
+}

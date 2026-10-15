@@ -14,12 +14,27 @@ public sealed class LibSqlStorageAdapter : IStorageAdapter, IAsyncDisposable
     public LibSqlStorageAdapter(SqliteConnection connection, SqlStorageOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(connection);
-        var configuration = new SqliteConnectionStringBuilder(connection.ConnectionString);
-        if (!connection.IsDirectRemote || !Uri.TryCreate(configuration.DataSource, UriKind.Absolute, out var endpoint))
-            throw new StorageValidationException("Customer libSQL storage requires a direct remote connection; use SqlStorageAdapter for local SQLite.");
-        var secure = endpoint.Scheme is "https" or "wss" || endpoint.Scheme is "libsql" or "turso" && configuration.Tls != false;
-        if (!secure && !endpoint.IsLoopback) throw new StorageValidationException("Customer libSQL storage requires TLS except on loopback development endpoints.");
+        ValidateConnection(connection);
         core = SqlStorageAdapter.BorrowSqlite(connection, options, "libsql", Conflict);
+    }
+
+    private static void ValidateConnection(SqliteConnection connection)
+    {
+        try
+        {
+            var configuration = new SqliteConnectionStringBuilder(connection.ConnectionString);
+            if (!connection.IsDirectRemote || !Uri.TryCreate(configuration.DataSource, UriKind.Absolute, out var endpoint))
+                throw new StorageValidationException("Customer libSQL storage requires a direct remote connection; use SqlStorageAdapter for local SQLite.");
+            var explicitSecure = endpoint.Scheme is "https" or "wss" or "turso";
+            var explicitPlain = endpoint.Scheme is "http" or "ws";
+            if (endpoint.UserInfo.Length != 0 || endpoint.Query.Length != 0 || endpoint.Fragment.Length != 0 ||
+                explicitSecure && configuration.Tls == false || explicitPlain && configuration.Tls == true)
+                throw new StorageValidationException("Invalid customer libSQL connection configuration.");
+            var secure = explicitSecure || endpoint.Scheme == "libsql" && configuration.Tls != false;
+            if (!secure && !endpoint.IsLoopback) throw new StorageValidationException("Customer libSQL storage requires TLS except on loopback development endpoints.");
+        }
+        catch (StorageValidationException) { throw; }
+        catch (Exception) { throw new StorageValidationException("Invalid customer libSQL connection configuration."); }
     }
 
     public string Name => core.Name;
