@@ -34,12 +34,12 @@ final class Audiences extends Resource
     /** @param CreateInput $body
      * @return ApiResponse<array{data:ImportResult}> */
     public function create(array $body, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{data:ImportResult}> */ return $this->request('POST', '/platform/audiences', $body, options:$options);
+    { /** @var ApiResponse<array{data:ImportResult}> */ return $this->request('POST', '/platform/audiences', \Polymorfa\ExistingContract::body($body), options:\Polymorfa\ExistingContract::options($options));
     }
     /** @param array{members:list<RecipientInput>} $body
      * @return ApiResponse<array{data:Added}> */
     public function addMembers(string $id, array $body, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{data:Added}> */ return $this->request('POST', $this->path($id).'/members', $body, options:($options ?? new RequestOptions())->withoutAutomaticRetry());
+    { /** @var ApiResponse<array{data:Added}> */ return $this->request('POST', $this->path($id).'/members', \Polymorfa\ExistingContract::body($body), options:\Polymorfa\ExistingContract::options($options)->withoutAutomaticRetry());
     }
     /** @param array{cursor?:string,limit?:int} $params
      * @return ApiResponse<array{data:list<Member>,page:array{nextCursor:?string,hasMore:bool}}> */

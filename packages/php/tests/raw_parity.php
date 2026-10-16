@@ -19,7 +19,7 @@ foreach ([['text/html','<html>bad</html>'],['application/json','{broken']] as [$
     $client = new Polymorfa\Client($credential, http:mocked([new GuzzleHttp\Psr7\Response(200, ['content-type' => $contentType], $wire)], $history));
     raises(fn () => $client->raw->request('GET', '/raw'), Polymorfa\ServerException::class);
 }
-$scratch = getenv('HOME').'/.polymorfa-agent-work/raw-parity';
+$scratch = (getenv('POLYMORFA_TEST_WORK_DIR') ?: getenv('HOME').'/.polymorfa-agent-work').'/raw-parity';
 if (!is_dir($scratch)) {
     mkdir($scratch, 0700, true);
 }

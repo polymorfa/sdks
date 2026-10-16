@@ -11,6 +11,8 @@ if ($path === '/__case') {
     return;
 }
 $fixture = json_decode(file_get_contents($state), true, flags: JSON_THROW_ON_ERROR);
+// Preserve producer object/list kinds instead of re-encoding empty objects as lists.
+$fixture['response'] = json_decode(file_get_contents($state), false, flags: JSON_THROW_ON_ERROR)->response;
 $actual = json_decode(file_get_contents('php://input'), true);
 $failure = $_SERVER['REQUEST_METHOD'] !== $fixture['method'] || !in_array($_SERVER['REQUEST_URI'], $fixture['allowedPaths'] ?? [$fixture['path']], true) || $actual !== $fixture['body'];
 $headers = array_change_key_case(getallheaders(), CASE_LOWER);

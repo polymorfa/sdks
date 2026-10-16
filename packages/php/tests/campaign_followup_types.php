@@ -29,9 +29,7 @@ final class CampaignFollowUpTypes
             self::config($b->data['data']['followUp']);
         }
         $messagingReport = $messaging->campaigns->analytics('project', 'campaign')->data['data'];
-        if (isset($messagingReport['followUps'])) {
-            self::report($messagingReport['followUps']);
-        }
+        self::report($messagingReport['followUps']);
         self::report($platform->campaigns->analytics('campaign', ['projectId' => 'project'])->data['data']['followUps']);
         foreach ($messaging->campaigns->listRecipients('project', 'campaign')->data['data'] as $recipient) {
             if (isset($recipient['followUp'])) {

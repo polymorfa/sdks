@@ -21,7 +21,7 @@ nativeCases([
  ['POST','/messaging/testing/project/events',['session' => 'session','event' => 'message.received','fromSession' => 'sender','overrides' => ['text' => 'Fixture']],$trigger,fn ($c) => $c->testing->triggerEvent('project', ['session' => 'session','event' => 'message.received','fromSession' => 'sender','overrides' => ['text' => 'Fixture']])],
  ['GET','/messaging/testing/project/events/fixtures',null,$fixtures,fn ($c) => $c->testing->listEventFixtures('project')],
  ['GET','/messaging/testing/project/numbers/session/phone',null,['session' => 'session','phone' => '+15555555555','online' => false,'devices' => [['deviceId' => 1]]],fn ($c) => $c->testing->getPhone('project', 'session')],
- ['POST','/messaging/testing/project/numbers/session/phone/messages',['to' => '+15555555555','text' => 'Fixture'],['session' => 'session','to' => '+15555555555','messageId' => null],fn ($c) => $c->testing->sendPhoneMessage('project', 'session', ['to' => '+15555555555','text' => 'Fixture'])],
+ ['POST','/messaging/testing/project/numbers/session/phone/messages',['to' => '+15555555555','text' => 'Fixture'],['session' => 'session','to' => '+15555555555','messageId' => null],fn ($c) => $c->testing->sendPhoneMessage('project', 'session', ['to' => '+15555555555','text' => 'Fixture']),null,['status' => 202]],
  ['POST','/messaging/testing/project/numbers/session/phone/devices/1/unlink',null,['session' => 'session','deviceId' => 1,'unlinked' => true],fn ($c) => $c->testing->unlinkPhoneDevice('project', 'session', 1)],
 ], fn ($credential, $url) => new Polymorfa\MessagingClient($credential, baseUrl:$url));
 raises(fn () => (new Polymorfa\MessagingClient($credential))->testing->unlinkPhoneDevice('project', 'session', 0), Polymorfa\ValidationException::class);

@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-$directory = getenv('HOME').'/.polymorfa-agent-work/php-voice-fixture-'.getmypid();
+$directory = (getenv('POLYMORFA_TEST_WORK_DIR') ?: getenv('HOME').'/.polymorfa-agent-work').'/php-voice-fixture-'.getmypid();
 mkdir($directory, 0700, true);
 try {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);

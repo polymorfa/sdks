@@ -32,12 +32,23 @@ final class Messages extends Resource
         $response = $this->request(
             'POST',
             '/messaging/' . self::segment($session) . '/messages/send',
-            $body,
+            self::hasDescriptor($body) ? \Polymorfa\ExistingContract::body($body) : $body,
             options: $settings->withIdempotencyKey()
         );
         $data = self::decodeDescriptors($response->data);
         /** @var array{success:true,data:MessageResponse} $data */
         return new ApiResponse($data, $response->metadata);
+    }
+
+    /** @param array<string,mixed> $body */
+    private static function hasDescriptor(array $body): bool
+    {
+        foreach ($body['content'] as $media) {
+            if (is_array($media) && array_key_exists('descriptor', $media)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** @param array<string,mixed> $response
@@ -74,7 +85,15 @@ final class Messages extends Resource
         if (!isset($body['content']) || !is_array($body['content']) || count($body['content']) !== 1) {
             throw new \Polymorfa\ConfigurationException('content');
         }
+        $copy = [];
+        foreach ($body as $key => $value) {
+            $copy[$key] = self::copyValue($value);
+        }
+        $body = $copy;
         foreach ($body['content'] as $kind => $media) {
+            if ($kind === 'sticker' && (!is_array($media) || !array_key_exists('descriptor', $media))) {
+                throw new \Polymorfa\ConfigurationException('descriptor');
+            }
             if (!is_array($media) || !array_key_exists('descriptor', $media)) {
                 continue;
             }
@@ -94,6 +113,18 @@ final class Messages extends Resource
             }
         }
         return [$body, $settings];
+    }
+
+    private static function copyValue(mixed $value): mixed
+    {
+        if (!is_array($value)) {
+            return $value;
+        }
+        $copy = [];
+        foreach ($value as $key => $child) {
+            $copy[$key] = self::copyValue($child);
+        }
+        return $copy;
     }
 
     /**

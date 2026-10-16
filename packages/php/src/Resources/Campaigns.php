@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Polymorfa\Resources;
 
-use Polymorfa\{ApiResponse,RequestOptions,CampaignModels};
+use Polymorfa\{ApiResponse,RequestOptions,CampaignModels,ExistingContract,ExistingCampaignValidation};
 
 /**
+ * @phpstan-import-type PlatformLaunch from CampaignModels
+ * @phpstan-import-type PlatformOperation from CampaignModels
+ * @phpstan-import-type PlatformRecipientParams from CampaignModels
  * @phpstan-import-type PlatformCampaign from CampaignModels
  * @phpstan-import-type PlatformCreate from CampaignModels
  * @phpstan-import-type PlatformUpdate from CampaignModels
@@ -112,37 +115,43 @@ final class Campaigns extends Resource
     /** @param array{projectId:string,projectSlug?:string} $params
      * @return ApiResponse<array{data:list<PlatformCampaign>}> */
     public function list(array $params, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{data:list<PlatformCampaign>}> */ return $this->request('GET', '/platform/campaigns', query:$params, options:$options);
+    { /** @var ApiResponse<array{data:list<PlatformCampaign>}> */ return ExistingContract::request($this->transport, 'GET', '/platform/campaigns', query:$params, options:$options, model:'campaigns');
     }
     /** @param PlatformCreate $body
      * @return ApiResponse<array{data:PlatformCampaign}> */
     public function create(array $body, ?RequestOptions $options = null): ApiResponse
     {
+        ExistingCampaignValidation::input($body, true);
         $options ??= new RequestOptions();
         $one = new RequestOptions($options->timeout, 0, $options->apiVersion, null, $options->headers, $options->cancellation);
-        /** @var ApiResponse<array{data:PlatformCampaign}> */ return $this->request('POST', '/platform/campaigns', $body, options:$one);
+        /** @var ApiResponse<array{data:PlatformCampaign}> */ return ExistingContract::request($this->transport, 'POST', '/platform/campaigns', $body, options:$one, model:'campaign');
     }
     /** @param array{projectId:string} $params
      * @return ApiResponse<array{data:PlatformCampaign|null}> */
     public function retrieve(string $id, array $params, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{data:PlatformCampaign|null}> */ return $this->request('GET', $this->path($id), query:$params, options:$options);
+    { /** @var ApiResponse<array{data:PlatformCampaign|null}> */ return ExistingContract::request($this->transport, 'GET', $this->path($id), query:$params, options:$options, model:'nullableCampaign');
     }
     /** @param PlatformUpdate|null $body
      * @param array{projectId:string} $params
      * @return ApiResponse<array{data:PlatformCampaign}> */
     public function update(string $id, ?array $body, array $params, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{data:PlatformCampaign}> */ return $this->request('PATCH', $this->path($id), $body === [] ? new \stdClass() : $body, query:$params, options:$options);
+    {
+        if ($body !== null) {
+            ExistingCampaignValidation::input($body, true, true);
+        } /** @var ApiResponse<array{data:PlatformCampaign}> */ return ExistingContract::request($this->transport, 'PATCH', $this->path($id), $body === [] ? new \stdClass() : $body, query:$params, options:$options, model:'campaign');
     }
     /** @param array{projectId:string} $params
      * @return ApiResponse<array{data:array<string,mixed>}> */
     public function delete(string $id, array $params, ?RequestOptions $options = null): ApiResponse
     { /** @var ApiResponse<array{data:array<string,mixed>}> */ return $this->request('DELETE', $this->path($id), query:$params, options:$options);
     }
-    /** @param array<string,mixed>|null $body
-     * @return ApiResponse<array{data:array<string,mixed>}> */
-    public function launch(string $id, ?array $body = null, ?RequestOptions $options = null): ApiResponse
+    /** @param PlatformLaunch $body
+     * @return ApiResponse<array{data:PlatformOperation}> */
+    public function launch(string $id, array $body, ?RequestOptions $options = null): ApiResponse
     {
-        return $this->action($id, 'launch', $body, ($options ?? new RequestOptions())->withIdempotencyKey());
+        ExistingCampaignValidation::launch($body, true);
+        /** @var ApiResponse<array{data:PlatformOperation}> */
+        return ExistingContract::request($this->transport, 'POST', $this->path($id).'/launch', $body, options:($options ?? new RequestOptions())->withIdempotencyKey(), model:'platformOperation');
     }
     /** @param array{projectId:string,scheduledAt:int|float|null} $body
      * @return ApiResponse<array{data:array<string,mixed>}> */
@@ -189,22 +198,24 @@ final class Campaigns extends Resource
     /** @param array{projectId:string} $params
      * @return ApiResponse<array{data:PlatformAnalytics}> */
     public function analytics(string $id, array $params, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{data:PlatformAnalytics}> */ return $this->request('GET', $this->path($id).'/analytics', query:$params, options:$options);
+    { /** @var ApiResponse<array{data:PlatformAnalytics}> */ return ExistingContract::request($this->transport, 'GET', $this->path($id).'/analytics', query:$params, options:$options, model:'campaignAnalytics');
     }
     /** @param array{projectId:string} $params
      * @return ApiResponse<array{data:array<string,mixed>}> */
     public function events(string $id, array $params, ?RequestOptions $options = null): ApiResponse
     { /** @var ApiResponse<array{data:array<string,mixed>}> */ return $this->request('GET', $this->path($id).'/events', query:$params, options:$options);
     }
-    /** @param array{projectId:string,status?:Status,cursor?:string,limit?:int} $params
+    /** @param PlatformRecipientParams $params
      * @return ApiResponse<array{data:list<Recipient>,page:array{nextCursor:?string,hasMore:bool}}> */
     public function recipients(string $id, array $params, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{data:list<Recipient>,page:array{nextCursor:?string,hasMore:bool}}> */ return $this->request('GET', $this->path($id).'/recipients', query:$params, options:$options);
+    {
+        ExistingCampaignValidation::recipients($params, true);
+        /** @var ApiResponse<array{data:list<Recipient>,page:array{nextCursor:?string,hasMore:bool}}> */ return ExistingContract::request($this->transport, 'GET', $this->path($id).'/recipients', query:$params, options:$options, model:'platformRecipients');
     }
     /** @param array{projectId:string,recipients:list<RecipientInput>} $body
      * @return ApiResponse<array{data:AddedRecipients}> */
     public function addRecipients(string $id, array $body, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{data:AddedRecipients}> */ return $this->request('POST', $this->path($id).'/recipients', $body, options:($options ?? new RequestOptions())->withoutAutomaticRetry());
+    { /** @var ApiResponse<array{data:AddedRecipients}> */ return ExistingContract::request($this->transport, 'POST', $this->path($id).'/recipients', $body, options:($options ?? new RequestOptions())->withoutAutomaticRetry(), model:'addedRecipients');
     }
     /** @param ConversionInput $body
      * @return ApiResponse<array{data:Conversion}> */

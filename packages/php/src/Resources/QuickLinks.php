@@ -26,12 +26,10 @@ final class QuickLinks extends Resource
     public function create(array $body = [], ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        if (($body['purpose'] ?? 'initial') === 'add_connection' && empty($body['session'])) {
-            throw new ValidationException('An add_connection QuickLink requires session.');
-        }
+        $options = \Polymorfa\ExistingContract::options($options, \Polymorfa\SessionDeliveryValidation::quickLink($body));
         $this->validateBilling($body);
         /** @var ApiResponse<array{success:bool,data:Link}> */
-        return $this->request('POST', '/messaging/quicklinks', $body === [] ? new \stdClass() : $body, options: $options);
+        return $this->request('POST', '/messaging/quicklinks', \Polymorfa\ExistingContract::body($body), options: $options);
     }
     /**
  *

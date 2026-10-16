@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Polymorfa\Resources;
 
-use Polymorfa\{ApiResponse,RequestOptions,CampaignModels,ValidationException};
+use Polymorfa\{ApiResponse,RequestOptions,CampaignModels,ValidationException,ExistingContract,ExistingCampaignValidation};
 
 /**
+ * @phpstan-import-type MessagingLaunch from CampaignModels
+ * @phpstan-import-type RecipientParams from CampaignModels
  * @phpstan-import-type Campaign from CampaignModels
  * @phpstan-import-type CreateInput from CampaignModels
  * @phpstan-import-type UpdateInput from CampaignModels
@@ -99,60 +101,67 @@ final class MessagingCampaigns extends Resource
 
     /** @return ApiResponse<array{success:true,data:list<Campaign>}> */
     public function list(string $projectSlug, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{success:true,data:list<Campaign>}> */ return $this->request('GET', $this->path($projectSlug), options:$options);
+    { /** @var ApiResponse<array{success:true,data:list<Campaign>}> */ return ExistingContract::request($this->transport, 'GET', $this->path($projectSlug), options:$options, model:'campaigns', messaging:true);
     }
     /** @param CreateInput $body
      * @return ApiResponse<array{success:true,data:Campaign}> */
     public function create(string $projectSlug, array $body, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{success:true,data:Campaign}> */ return $this->request('POST', $this->path($projectSlug), $body, options:($options ?? new RequestOptions())->withIdempotencyKey());
+    {
+        ExistingCampaignValidation::input($body, false, false);
+        /** @var ApiResponse<array{success:true,data:Campaign}> */ return ExistingContract::request($this->transport, 'POST', $this->path($projectSlug), $body, options:($options ?? new RequestOptions())->withIdempotencyKey(), model:'campaign', messaging:true);
     }
     /** @return ApiResponse<array{success:true,data:Campaign}> */
     public function retrieve(string $projectSlug, string $id, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{success:true,data:Campaign}> */ return $this->request('GET', $this->path($projectSlug, $id), options:$options);
+    { /** @var ApiResponse<array{success:true,data:Campaign}> */ return ExistingContract::request($this->transport, 'GET', $this->path($projectSlug, $id), options:$options, model:'campaign', messaging:true);
     }
     /** @param UpdateInput $body
      * @return ApiResponse<array{success:true,data:Campaign}> */
     public function update(string $projectSlug, string $id, array $body, ?RequestOptions $options = null): ApiResponse
     {
+        ExistingCampaignValidation::input($body, false, true);
         if ($body === []) {
             throw new ValidationException('Supply at least one draft field.');
-        } /** @var ApiResponse<array{success:true,data:Campaign}> */ return $this->request('PATCH', $this->path($projectSlug, $id), $body, options:($options ?? new RequestOptions())->withoutAutomaticRetry());
+        } /** @var ApiResponse<array{success:true,data:Campaign}> */ return ExistingContract::request($this->transport, 'PATCH', $this->path($projectSlug, $id), $body, options:($options ?? new RequestOptions())->withoutAutomaticRetry(), model:'campaign', messaging:true);
     }
     /** @return ApiResponse<array{success:true,data:Analytics}> */
     public function analytics(string $projectSlug, string $id, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{success:true,data:Analytics}> */ return $this->request('GET', $this->path($projectSlug, $id).'/analytics', options:$options);
+    { /** @var ApiResponse<array{success:true,data:Analytics}> */ return ExistingContract::request($this->transport, 'GET', $this->path($projectSlug, $id).'/analytics', options:$options, model:'campaignAnalytics', messaging:true);
     }
-    /** @param array{scheduledAt?:int|float} $body
+    /** @param MessagingLaunch $body
      * @return ApiResponse<array{success:true,data:CampaignOperation}> */
     public function launch(string $projectSlug, string $id, array $body = [], ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{success:true,data:CampaignOperation}> */ return $this->request('POST', $this->path($projectSlug, $id).'/launch', $body === [] ? new \stdClass() : $body, options:($options ?? new RequestOptions())->withIdempotencyKey());
+    {
+        ExistingCampaignValidation::launch($body, false);
+        /** @var ApiResponse<array{success:true,data:CampaignOperation}> */ return ExistingContract::request($this->transport, 'POST', $this->path($projectSlug, $id).'/launch', $body === [] ? new \stdClass() : $body, options:($options ?? new RequestOptions())->withIdempotencyKey(), model:'campaignOperation', messaging:true);
     }
     /** @param array{scheduledAt:int|float|null} $body
      * @return ApiResponse<array{success:true,data:CampaignOperation}> */
     public function reschedule(string $projectSlug, string $id, array $body, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{success:true,data:CampaignOperation}> */ return $this->request('POST', $this->path($projectSlug, $id).'/reschedule', $body, options:($options ?? new RequestOptions())->withIdempotencyKey());
+    { /** @var ApiResponse<array{success:true,data:CampaignOperation}> */ return ExistingContract::request($this->transport, 'POST', $this->path($projectSlug, $id).'/reschedule', $body, options:($options ?? new RequestOptions())->withIdempotencyKey(), model:'campaignOperation', messaging:true);
     }
     /** @return ApiResponse<array{success:true,data:CampaignOperation}> */
     public function pause(string $projectSlug, string $id, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{success:true,data:CampaignOperation}> */ return $this->request('POST', $this->path($projectSlug, $id).'/pause', options:($options ?? new RequestOptions())->withIdempotencyKey());
+    { /** @var ApiResponse<array{success:true,data:CampaignOperation}> */ return ExistingContract::request($this->transport, 'POST', $this->path($projectSlug, $id).'/pause', options:($options ?? new RequestOptions())->withIdempotencyKey(), model:'campaignOperation', messaging:true);
     }
     /** @return ApiResponse<array{success:true,data:CampaignOperation}> */
     public function resume(string $projectSlug, string $id, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{success:true,data:CampaignOperation}> */ return $this->request('POST', $this->path($projectSlug, $id).'/resume', options:($options ?? new RequestOptions())->withIdempotencyKey());
+    { /** @var ApiResponse<array{success:true,data:CampaignOperation}> */ return ExistingContract::request($this->transport, 'POST', $this->path($projectSlug, $id).'/resume', options:($options ?? new RequestOptions())->withIdempotencyKey(), model:'campaignOperation', messaging:true);
     }
     /** @return ApiResponse<array{success:true,data:CampaignStop}> */
     public function stop(string $projectSlug, string $id, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{success:true,data:CampaignStop}> */ return $this->request('POST', $this->path($projectSlug, $id).'/stop', options:($options ?? new RequestOptions())->withIdempotencyKey());
+    { /** @var ApiResponse<array{success:true,data:CampaignStop}> */ return ExistingContract::request($this->transport, 'POST', $this->path($projectSlug, $id).'/stop', options:($options ?? new RequestOptions())->withIdempotencyKey(), model:'campaignStop', messaging:true);
     }
-    /** @param array{status?:Status,cursor?:string,limit?:int} $params
+    /** @param RecipientParams $params
      * @return ApiResponse<array{success:true,data:list<Recipient>,page:array{nextCursor:?string,hasMore:bool}}> */
     public function listRecipients(string $projectSlug, string $id, array $params = [], ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{success:true,data:list<Recipient>,page:array{nextCursor:?string,hasMore:bool}}> */ return $this->request('GET', $this->path($projectSlug, $id).'/recipients', query:$params, options:$options);
+    {
+        ExistingCampaignValidation::recipients($params, false);
+        /** @var ApiResponse<array{success:true,data:list<Recipient>,page:array{nextCursor:?string,hasMore:bool}}> */ return ExistingContract::request($this->transport, 'GET', $this->path($projectSlug, $id).'/recipients', query:$params, options:$options, model:'recipients', messaging:true);
     }
     /** @param array{recipients:list<RecipientInput>} $body
      * @return ApiResponse<array{success:true,data:AddedRecipients}> */
     public function addRecipients(string $projectSlug, string $id, array $body, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{success:true,data:AddedRecipients}> */ return $this->request('POST', $this->path($projectSlug, $id).'/recipients', $body, options:($options ?? new RequestOptions())->withoutAutomaticRetry());
+    { /** @var ApiResponse<array{success:true,data:AddedRecipients}> */ return ExistingContract::request($this->transport, 'POST', $this->path($projectSlug, $id).'/recipients', $body, options:($options ?? new RequestOptions())->withoutAutomaticRetry(), model:'addedRecipients', messaging:true);
     }
     /** @param array{includeSkippedError?:bool} $body
      * @return ApiResponse<array{success:true,data:array{requeued:int}}> */

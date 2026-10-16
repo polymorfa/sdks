@@ -3,7 +3,7 @@
 declare(strict_types=1);
 $mode = $argv[1] ?? 'direct';
 $kind = $argv[2] ?? 'image';
-$directory = getenv('HOME').'/.polymorfa-agent-work/php-media-upload-'.getmypid().'-'.bin2hex(random_bytes(8));
+$directory = (getenv('POLYMORFA_TEST_WORK_DIR') ?: getenv('HOME').'/.polymorfa-agent-work').'/php-media-upload-'.getmypid().'-'.bin2hex(random_bytes(8));
 mkdir($directory, 0700, true);
 $valid = true;
 $grants = $posts = $probes = $finals = 0;

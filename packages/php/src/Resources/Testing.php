@@ -39,14 +39,14 @@ final class Testing extends Resource
     public function getPhone(string $projectId, string $session, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        /** @var ApiResponse<Phone> */ return $this->request('GET', $this->phone($projectId, $session), options:$options);
+        /** @var ApiResponse<Phone> */ return \Polymorfa\ExistingContract::bare($this->transport, 'GET', $this->phone($projectId, $session), null, $options, 'testingPhone');
     }
     /** @param array{to:string,text:string} $input
      * @return ApiResponse<array{session:string,to:string,messageId:?string}> */
     public function sendPhoneMessage(string $projectId, string $session, array $input, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        /** @var ApiResponse<array{session:string,to:string,messageId:?string}> */ return $this->request('POST', $this->phone($projectId, $session).'/messages', $input, options:$options);
+        /** @var ApiResponse<array{session:string,to:string,messageId:?string}> */ return \Polymorfa\ExistingContract::bare($this->transport, 'POST', $this->phone($projectId, $session).'/messages', $input, $options, 'testingSend', 202);
     }
     /** @return ApiResponse<array{session:string,deviceId:int,unlinked:true}> */
     public function unlinkPhoneDevice(string $projectId, string $session, int $deviceId, ?RequestOptions $options = null): ApiResponse
@@ -54,7 +54,7 @@ final class Testing extends Resource
         $this->server();
         if ($deviceId < 1 || $deviceId > 99) {
             throw new ValidationException('deviceId must be a companion device ID from 1 to 99.');
-        } /** @var ApiResponse<array{session:string,deviceId:int,unlinked:true}> */ return $this->request('POST', $this->phone($projectId, $session).'/devices/'.$deviceId.'/unlink', options:$options);
+        } /** @var ApiResponse<array{session:string,deviceId:int,unlinked:true}> */ return \Polymorfa\ExistingContract::bare($this->transport, 'POST', $this->phone($projectId, $session).'/devices/'.$deviceId.'/unlink', null, $options, 'testingUnlink');
     }
     private function base(string $projectId): string
     {

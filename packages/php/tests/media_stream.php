@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-$directory = getenv('HOME').'/.polymorfa-agent-work/multi-language-sdks-20261011/php-media-file';
+$directory = (getenv('POLYMORFA_TEST_WORK_DIR') ?: getenv('HOME').'/.polymorfa-agent-work').'/multi-language-sdks-20261011/php-media-file';
 if (!is_dir($directory)) {
     mkdir($directory, 0700, true);
 }

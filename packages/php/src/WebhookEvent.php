@@ -20,7 +20,8 @@ final readonly class WebhookEvent
         public ?string $externalId = null
     ) {
     }
-    /** Typed discriminated union for known events; unknown event payloads remain available through raw and payload.
+    /** Typed view of known event names, not a general payload schema validator.
+     * Signed/verified parsing narrowly validates projected descriptor history. Raw forward fields remain available.
      * @return KnownEvent|null */
     public function knownEvent(): ?array
     {

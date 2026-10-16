@@ -67,12 +67,11 @@ final class WhatsAppMedia extends Resource
     /** @param \Closure(?CancellationToken):StreamInterface $open */
     public function relayUpload(string $session, EncryptedMediaInfo $info, #[\SensitiveParameter] \Closure $open, ?RequestOptions $options = null): WhatsAppUploadLocation
     {
-        $this->server();
         $query = self::uploadRequest($info->mediaType, $info->fileEncSha256);
         if (isset($query['ptt'])) {
             $query['ptt'] = $query['ptt'] ? 'true' : 'false';
         }
-        $response = $this->request('POST', '/messaging/'.self::segment($session).'/media/uploads', new BinaryRequestBody($open, $info->encryptedLength), $query, self::options($options));
+        $response = $this->request('POST', '/messaging/'.self::segment($session).'/media/uploads', new BinaryRequestBody($open, $info->encryptedLength), $query, \Polymorfa\ExistingContract::options($options, true)->withoutAutomaticRetry());
         $data = self::unwrap($response->data);
         return self::location($data, false);
     }
@@ -94,7 +93,12 @@ final class WhatsAppMedia extends Resource
     /** @param \Closure(?CancellationToken):StreamInterface $source Fresh immutable plaintext; SDK closes returned streams. */
     public function upload(string $session, #[\SensitiveParameter] \Closure $source, UploadWhatsAppMediaOptions $options): WhatsAppMediaUploadResult
     {
-        $this->server();
+        if ($options->uploadTransport === null && $options->egress === 'direct') {
+            $this->server();
+        }
+        if ($options->uploadTransport instanceof BuiltinWhatsAppMediaUploadTransport) {
+            $options->uploadTransport->assertAllowed();
+        }
         self::segment($session);
         $cancellation = $options->requestOptions?->cancellation;
         $first = self::openSource($source, $cancellation);
@@ -132,6 +136,7 @@ final class WhatsAppMedia extends Resource
                 $request = new RequestOptions($request->timeout, $request->maxNetworkRetries, $request->apiVersion, $request->idempotencyKey, $request->headers, CancellationToken::linked(...array_values(array_filter([$request->cancellation, $token]))));
                 $policy = new UploadWhatsAppMediaOptions($info->mediaType, $info->mimeType, $info->mediaKey, $mode, $options->maxBytes, $request, $builtin->http, $builtin->maxAttempts, $builtin->documentPartSize);
                 if ($mode === 'direct') {
+                    $resource->assertDirectAllowed();
                     return $resource->directUpload($targetSession, $source, $info, $policy);
                 }
                 if ($mode !== 'relay') {
@@ -164,9 +169,17 @@ final class WhatsAppMedia extends Resource
         }
         return new WhatsAppMediaUploadResult($info, $location, $egress);
     }
-    public function uploadTransport(string $mode, UploadWhatsAppMediaOptions $options): WhatsAppMediaUploadTransport
+    /** @internal Used by built-in transports, including wrapped transports. */
+    public function assertDirectAllowed(): void
     {
         $this->server();
+    }
+
+    public function uploadTransport(string $mode, UploadWhatsAppMediaOptions $options): WhatsAppMediaUploadTransport
+    {
+        if ($mode === 'direct') {
+            $this->server();
+        }
         if (!in_array($mode, ['relay','direct'], true) || $options->uploadTransport !== null) {
             throw new ConfigurationException('uploadTransport');
         }
@@ -315,6 +328,7 @@ final class WhatsAppMedia extends Resource
     /** @param \Closure(?CancellationToken):StreamInterface $source */
     private function directUpload(string $session, #[\SensitiveParameter] \Closure $source, EncryptedMediaInfo $info, UploadWhatsAppMediaOptions $options): WhatsAppUploadLocation
     {
+        $this->server();
         $http = $options->http ?? new Client(['allow_redirects' => false]);
         $requestOptions = $options->requestOptions ?? new RequestOptions();
         $token = $requestOptions->cancellation;

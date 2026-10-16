@@ -51,7 +51,7 @@ final class Groups extends Resource
     public function getCapabilities(string $session, string $groupId, ?RequestOptions $options = null): ApiResponse
     {
         /** @var ApiResponse<array{success:bool,data:Capabilities}> */
-        return $this->request('GET', $this->path($session, $groupId).'/capabilities', options:$options);
+        return \Polymorfa\ExistingContract::request($this->transport, 'GET', $this->path($session, $groupId).'/capabilities', options:$options, model:'groupCapabilities', messaging:true);
     }
     /** @return ApiResponse<Success> */
     public function delete(string $session, string $groupId, ?RequestOptions $options = null): ApiResponse

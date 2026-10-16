@@ -45,14 +45,15 @@ final class PlatformSessions extends Resource
     public function retrieve(string $session, ?RequestOptions $options = null): ApiResponse
     {
         /** @var ApiResponse<array{success:bool,data:Session}> */
-        return $this->request('GET', self::path($session), options:$options);
+        return \Polymorfa\ExistingContract::request($this->transport, 'GET', self::path($session), options:$options, model:'session', messaging:true);
     }
     /** @param array{configuration:ConfigurationPatch,revision:int} $body
      * @return ApiResponse<array{success:bool,data:Session}> */
     public function update(string $session, array $body, ?RequestOptions $options = null): ApiResponse
     {
+        $options = \Polymorfa\ExistingContract::options($options, \Polymorfa\SessionDeliveryValidation::configuration($body));
         /** @var ApiResponse<array{success:bool,data:Session}> */
-        return $this->request('PUT', self::path($session), $body, options:$options);
+        return \Polymorfa\ExistingContract::request($this->transport, 'PUT', self::path($session), $body, options:$options, model:'session', messaging:true);
     }
     /** @param SessionContext $body
      * @return ApiResponse<array{data:array{starting:true,sessionId:string}}> */

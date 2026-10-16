@@ -38,7 +38,7 @@ final class Sessions extends Resource
     {
         $this->server();
         /** @var ApiResponse<array{success:bool,data:Session}> */
-        return $this->request('GET', '/platform/sessions/' . self::segment($session), options: $options);
+        return \Polymorfa\ExistingContract::request($this->transport, 'GET', '/platform/sessions/' . self::segment($session), options: $options, model:'session', messaging:true);
     }
     /**
  * @param array{configuration:ConfigurationPatch,revision:int} $body
@@ -47,8 +47,9 @@ final class Sessions extends Resource
     public function update(string $session, array $body, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
+        $options = \Polymorfa\ExistingContract::options($options, \Polymorfa\SessionDeliveryValidation::configuration($body));
         /** @var ApiResponse<array{success:bool,data:Session}> */
-        return $this->request('PUT', '/platform/sessions/' . self::segment($session), $body, options: $options);
+        return \Polymorfa\ExistingContract::request($this->transport, 'PUT', '/platform/sessions/' . self::segment($session), $body, options: $options, model:'session', messaging:true);
     }
     /**
  *

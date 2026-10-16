@@ -86,6 +86,10 @@ final class Webhooks
                 throw new ValidationException('Invalid webhook envelope.', 'invalid_webhook_event');
             }
         }
+        if ($value['event'] === 'history.sync' && is_array($value['payload']) && ($value['payload']['delivery'] ?? null) === 'descriptor') {
+            $tree = json_decode($rawBody, false, 512, JSON_THROW_ON_ERROR);
+            ProjectedHistory::validate($tree->payload);
+        }
         /** @var array<string,mixed> $value */
         return new WebhookEvent($value['id'], $value['session'], $value['timestamp'], $value['event'], $value['payload'], $value, in_array($value['event'], self::KNOWN_TYPES, true), is_string($value['externalId'] ?? null) ? $value['externalId'] : null);
     }

@@ -60,7 +60,7 @@ $http = new GuzzleHttp\Client(['headers' => ['Authorization' => 'Bearer syntheti
 }]);
 $download = Polymorfa\WhatsAppMedia::downloadStream(['type' => 'image','media' => $vector['descriptor']], http:$http);
 check(count($history) === 2 && $download->bytes() === hex2bin($vector['plaintext']), 'Incremental CDN directPath fallback and metadata');
-$directory = getenv('HOME').'/.polymorfa-agent-work/multi-language-sdks-20261011/php-native';
+$directory = (getenv('POLYMORFA_TEST_WORK_DIR') ?: getenv('HOME').'/.polymorfa-agent-work').'/multi-language-sdks-20261011/php-native';
 $destination = $directory.'/wa-integrity-'.getmypid();
 file_put_contents($destination, 'previous');
 try {

@@ -145,6 +145,6 @@ final class RequestLogs extends PlatformResource
             throw new ConfigurationException('projectId');
         }
         $path = '/platform/projects/'.self::segment($project).'/request-logs';
-        return new RequestLogPage($this->transport->request('GET', $path, $query, options:$options));
+        return new RequestLogPage(\Polymorfa\ExistingContract::request($this->transport, 'GET', $path, query:$query, options:$options, model:'logs'));
     }
 }

@@ -14,11 +14,7 @@ final class HistorySync extends Resource
     {
         $this->server();
         self::validateRetry($body);
-        $response = $this->request('POST', '/messaging/'.self::segment($session).'/history/chunks/retry', $body, options:WhatsAppMedia::options($options));
-        $data = $response->data['data'] ?? null;
-        if (!is_array($data) || !isset($data['requestId']) || !is_string($data['requestId']) || $data['requestId'] === '' || ($data['status'] ?? null) !== 'requested') {
-            throw new ServerException('The API returned an invalid history retry result.', 'invalid_response');
-        }
+        $response = \Polymorfa\ExistingContract::request($this->transport, 'POST', '/messaging/'.self::segment($session).'/history/chunks/retry', $body, options:WhatsAppMedia::options($options), model:'historyRetry', messaging:true);
         /** @var ApiResponse<array{success:true,data:array{requestId:string,status:'requested'}}> */
         return $response;
     }
@@ -50,11 +46,7 @@ final class HistorySync extends Resource
         if ($companionMetaNonce !== null) {
             $body['companionMetaNonce'] = $companionMetaNonce;
         }
-        $response = $this->request('POST', '/messaging/'.self::segment($session).'/history/media/delete', $body, options:WhatsAppMedia::options($options));
-        $data = $response->data['data'] ?? null;
-        if (!is_array($data) || ($data['status'] ?? null) !== 'deleted') {
-            throw new ServerException('The API returned an invalid history deletion result.', 'invalid_response');
-        }
+        $response = \Polymorfa\ExistingContract::request($this->transport, 'POST', '/messaging/'.self::segment($session).'/history/media/delete', $body, options:WhatsAppMedia::options($options), model:'historyDelete', messaging:true);
         /** @var ApiResponse<array{success:true,data:array{status:'deleted'}}> */
         return $response;
     }

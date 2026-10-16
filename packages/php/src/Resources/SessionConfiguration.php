@@ -18,15 +18,21 @@ final class SessionConfiguration extends PlatformResource
     }
     /** @return ApiResponse<Configuration> */
     public function retrieve(?RequestOptions $options = null): ApiResponse
-    {/** @var ApiResponse<Configuration> */return $this->unwrapped('GET', '/platform/session-configuration', query:$this->projectId === null ? [] : ['projectId' => $this->projectId], options:$options);
+    {
+        $response = \Polymorfa\ExistingContract::request($this->transport, 'GET', '/platform/session-configuration', query:$this->projectId === null ? [] : ['projectId' => $this->projectId], options:$options, model:'configuration');
+        /** @var Configuration $data */ $data = $response->data['data'];
+        return new ApiResponse($data, $response->metadata);
     }
     /** @param array{configuration:ConfigurationPatch,revision:int} $input
      * @return ApiResponse<Configuration> */
     public function update(array $input, ?RequestOptions $options = null): ApiResponse
     {
+        $options = \Polymorfa\ExistingContract::options($options, \Polymorfa\SessionDeliveryValidation::configuration($input));
         if ($this->projectId !== null) {
             $input['projectId'] = $this->projectId;
         }
-        /** @var ApiResponse<Configuration> */return $this->unwrapped('PUT', '/platform/session-configuration', $input, options:$options);
+        $response = \Polymorfa\ExistingContract::request($this->transport, 'PUT', '/platform/session-configuration', $input, options:$options, model:'configuration');
+        /** @var Configuration $data */ $data = $response->data['data'];
+        return new ApiResponse($data, $response->metadata);
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 /** Runs public typed methods through a native HTTP socket and verifies route, JSON, auth, version and response. */
 function nativeCases(array $cases, callable $makeClient, ?Polymorfa\Credential $providedCredential = null, bool $authenticated = true): void
 {
-    $scratch = getenv('HOME').'/.polymorfa-agent-work/multi-language-sdks-20261011/php-native';
+    $scratch = (getenv('POLYMORFA_TEST_WORK_DIR') ?: getenv('HOME').'/.polymorfa-agent-work').'/multi-language-sdks-20261011/php-native';
     if (!is_dir($scratch)) {
         mkdir($scratch, 0700, true);
     }

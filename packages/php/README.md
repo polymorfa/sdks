@@ -712,3 +712,55 @@ trace ID, replay disposition and content disposition, without arbitrary headers.
 These methods preserve API authentication, membership, enrollment, funding,
 consent and feature gates. They add no QuickLink invitation authority, browser
 tunnel transport or customer Signal-core implementation.
+
+### Changed campaign, session and history contracts
+
+Campaigns expose `trackedLinks`, required nullable `experimentOutcome` and
+`followUp`, and optional nullable `variableMapping`. Create accepts a mapping;
+PATCH also accepts `templateId: null`, `variableMapping: null` and
+`trackedLinks: null`. PHP uses associative arrays for maps. Numeric keys such as
+`'0'` and empty bindings `[]` are encoded as JSON objects. Lists stay arrays.
+Platform `messagesArray` accepts open composed message shapes, including an
+empty draft object. Platform PATCH remains open. Launch takes a closed request
+with `projectId`, optional `scheduledAt` and `skipMissingVariables`.
+
+Recipient lists accept `reason`, `status`, `cursor` and `limit` together. Their
+required nullable timing and failure fields retain null; `messagesSent` retains
+zero. Analytics retain null timing measurements and required follow-up reports.
+Request limits do not apply to normalized campaign responses.
+
+Existing methods keep the default `2026-09-22` API version. A new QuickLink
+`signalMode`, descriptor delivery setting or exact `historySync.delivery` reset
+selects `2026-10-14` only when `RequestOptions::apiVersion` is absent. An explicit
+version is preserved. A whole `historySync` reset stays on the legacy version.
+Read delivery can be `archive` or `descriptor`; writes accept `descriptor`.
+Session `signalMode` is an optional immutable response fact. Supplementary
+QuickLinks require `session` and `addConnection` and cannot change initial
+Customer, external ID, billing controls or custody. Consent and API admission
+remain separate from requested delivery.
+
+Use `RequestOptions::idempotencyKey`, never a custom `Idempotency-Key` header.
+Recipient and audience-member appends run once by default, including when a key
+is supplied. Select `maxNetworkRetries` explicitly to authorize retries. Those
+retries reuse the captured body and caller key. Audience create retains its
+ordinary keyed retry policy; lifecycle operations retain their existing keys.
+
+Scoped Client credentials support relay uploads and custom encrypted transports.
+Direct uploads and public `createUploadGrant` require server credentials. History
+retry/delete also require server credentials and canonical success responses.
+`deleteChunk` accepts a binary 32-byte hash and returns its typed `ApiResponse`.
+Sticker sends require a WebP descriptor; returned message IDs remain strings.
+
+`WebhookModels::KnownEvent` includes projected descriptor history with exactly
+one of `media` or `inline`, alongside archive and Cloud payloads. Signed/verified
+parsing narrowly validates descriptor history; `knownEvent()` is a typed view,
+not a general event schema validator. Raw forward fields remain available. Use
+`whatsapp_ids` for chunk correlation. Never log key-bearing descriptors.
+PHPStan uses structural array shapes and can accept excess keys that runtime
+validators reject. Runtime guards also protect owner selection and closed inputs.
+
+These SDK contracts do not grant hosted invitation, Console setup, feature
+evaluation/enrollment, Signal custody, browser-tunnel, billing or approval
+authority. Package installation does not establish feature or API availability.
+Generic JSON redirect policy, framework raw-body bounds, compressed-history
+validation, storage dispatch and numeric-reducer parity are separate work.

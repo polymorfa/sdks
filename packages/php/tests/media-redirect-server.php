@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 $mode = $argv[1] ?? 'safe';
-$directory = getenv('HOME').'/.polymorfa-agent-work/php-media-redirect-'.getmypid();
+$directory = (getenv('POLYMORFA_TEST_WORK_DIR') ?: getenv('HOME').'/.polymorfa-agent-work').'/php-media-redirect-'.getmypid();
 mkdir($directory, 0700, true);
 try {
     $key = openssl_pkey_new(['private_key_bits' => 2048]);

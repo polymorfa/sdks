@@ -14,3 +14,5 @@ parameters:
         - tests/s3_media_types.php
         - tests/media_upload_transport_types.php
         - tests/campaign_contract_types.php
+        - tests/existing_contract_types.php
+        - tests/existing_contract_static_limits.php
