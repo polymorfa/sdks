@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Receipt-timed campaign follow-ups (beta). Messaging and Platform campaign
+  create and update accept `followUp` (`CampaignFollowUp`): one text or
+  template message sent from the first message's number, timed from its first
+  delivery or read. Campaigns return the stored follow-up, recipients return
+  `followUp` (`CampaignFollowUpSummary`), and campaign analytics return
+  `followUps` (`CampaignFollowUpReport`). `null` removes the follow-up on an
+  unlaunched draft. A team that is not enrolled receives
+  `403 feature_unavailable`. API contract: polymorfa/polymorfa#503.
 - Campaign A/B tests (beta). Messaging and Platform campaign create and
   update accept `variants` (`CampaignVariant`, two to four) and
   `variantStrategy` (`CampaignVariantStrategy`); campaigns return them with
