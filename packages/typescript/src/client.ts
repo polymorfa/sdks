@@ -18,6 +18,7 @@ import {
 import { HttpTransport } from "./transport/http.js";
 import { ApiKeysResource } from "./platform/api-keys.js";
 import { AudiencesResource } from "./platform/audiences.js";
+import { AudienceProfilesResource } from "./platform/audience-profiles.js";
 import { AuditLogsResource } from "./platform/audit-logs.js";
 import { BillingResource } from "./platform/billing.js";
 import { BanSafeResource } from "./platform/bansafe.js";
@@ -85,6 +86,8 @@ export interface ClientBase<O extends ClientOwner> {
 export interface OrganizationControlPlaneResources {
   readonly apiKeys: ApiKeysResource;
   readonly audiences: AudiencesResource;
+  /** Customer-supplied campaign audience profiles (beta). */
+  readonly audienceProfiles: AudienceProfilesResource;
   readonly auditLogs: AuditLogsResource;
   readonly billing: BillingResource;
   readonly banSafe: BanSafeResource;
@@ -220,6 +223,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       Object.assign(this, {
         apiKeys: new ApiKeysResource(this.#transport),
         audiences: new AudiencesResource(this.#transport),
+        audienceProfiles: new AudienceProfilesResource(this.#transport),
         auditLogs: new AuditLogsResource(this.#transport),
         billing: new BillingResource(this.#transport),
         banSafe: new BanSafeResource(this.#transport),

@@ -884,3 +884,11 @@
 - Aligned call signaling and media behavior with the `voip-v2` implementation.
 
 This is a Git development channel. No npm package has been published.
+
+## Unreleased: audience profiles beta
+
+Organization clients gain `audienceProfiles` methods and types for list filters,
+profile reads/replacements/deletion, consent history, CSV imports, import polling
+and cancellation. Upgrade to a release containing these additions before using
+them. `tag` and `phonePrefix` require the matching API filter deployment; beta
+write enrollment and existing scopes remain enforced by the API.

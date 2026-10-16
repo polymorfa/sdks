@@ -678,6 +678,28 @@ export { WebhooksResource as MessagingWebhooksResource } from "./messaging/webho
 export { CursorPage, type PageDecoder, type PageResult } from "./pagination.js";
 export { FollowableIndexedEventPage } from "./platform/indexed-event-page.js";
 export { AudiencesResource } from "./platform/audiences.js";
+export { AudienceProfilesResource } from "./platform/audience-profiles.js";
+export type {
+  AudienceProfile,
+  AudienceProfileAttributeValue,
+  AudienceProfileConsent,
+  AudienceProfileConsentEnvelope,
+  AudienceProfileConsentInput,
+  AudienceProfileImport,
+  AudienceProfileImportConflictSample,
+  AudienceProfileImportField,
+  AudienceProfileImportMapping,
+  AudienceProfileImportRowSample,
+  AudienceProfileImportState,
+  AudienceProfileProvenance,
+  AudienceProfileSource,
+  AudienceProfilesEnvelope,
+  CreateAudienceProfileImportRequest,
+  DeleteAudienceProfileResult,
+  ListAudienceProfileConsentParams,
+  ListAudienceProfilesParams,
+  PutAudienceProfileRequest,
+} from "./platform/audience-profiles.js";
 export { ApiKeysResource } from "./platform/api-keys.js";
 export { AuditLogsResource } from "./platform/audit-logs.js";
 export { BillingResource } from "./platform/billing.js";

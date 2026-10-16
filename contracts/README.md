@@ -619,3 +619,13 @@ create, update, recipient and analytics schemas from API `dev` merge commit
 `87b25fd9e2494d90f01f7511fb47be6a28845fa1` (polymorfa/polymorfa#503), with both source paths and file
 hashes. `campaign-follow-ups-contract.test.ts` checks the SDK types against it.
 The full snapshots stay pinned to `contracts/source.json` until the next repin.
+
+## Audience profile supplement
+
+`audience-profiles.json` pins the eight team-scoped Platform profile, consent
+and CSV import operations to API PR #567 at source commit
+`53203bff2f9b93f1c836287b0fa64efc6b6d0ec8`, including exact tag and phone-prefix
+filters. This revision is unmerged. The supplement records its source hash;
+`audience-profiles.test.ts` verifies wire paths, pagination, encoding, revisions,
+import replay payloads and the filter schema. It does not claim deployment or
+publication. The full snapshots remain unchanged.

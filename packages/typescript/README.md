@@ -3168,3 +3168,42 @@ configuration changes that do not change capabilities produce no event. Treat
 the event ID as the deduplication key. Eligibility is checked before publication
 and delivery; withdrawn events wait for re-enablement and expire after seven days.
 These additions require an API and SDK release containing this contract.
+
+## Audience profiles (beta)
+
+The source client exposes `client.audienceProfiles` on organization clients only.
+These additions require a package release containing them; they are not in the
+published `0.1.0-dev.20261004024706` prerelease. The API controls beta enrollment.
+Profile reads need `campaigns:read`; writes and deletion need `campaigns:manage`.
+Creating/replacing profiles and starting imports also require beta enrollment.
+
+```ts
+const page = await client.audienceProfiles.list({
+  tag: "vip",
+  phonePrefix: "+44",
+  limit: 50,
+});
+const profile = await client.audienceProfiles.retrieve("+14155550123");
+await client.audienceProfiles.put("+14155550123", {
+  expectedRevision: profile.data.data.revision,
+  tags: ["vip"],
+  attributes: { first_name: "Ada" },
+});
+await client.audienceProfiles.listConsent("+14155550123", { limit: 25 });
+const job = await client.audienceProfiles.createImport({
+  replayKey: "contacts-1",
+  csv: csvText,
+});
+await client.audienceProfiles.retrieveImport(job.data.data.id);
+await client.audienceProfiles.cancelImport(job.data.data.id);
+await client.audienceProfiles.delete("+14155550123", 3); // use the latest revision
+```
+
+`ListAudienceProfilesParams` accepts `cursor`, `limit`, `tag` and `phonePrefix`.
+Both filters apply before pagination; keep them on subsequent pages. Tags match
+exactly (1-48 UTF-8 bytes, no ASCII control characters); prefixes contain `+` and
+1-15 digits. `PutAudienceProfileRequest` replaces tags and attributes; a stale
+revision returns 409. An import accepts `csv` (UTF-8 text or bytes) or `csvBase64`,
+plus optional explicit column `mapping`. Reports contain aggregate counts and
+bounded row/reason samples. Cancellation leaves completed rows intact. Deletion
+preserves opt-outs and returns the revision needed to recreate a retained tombstone.
