@@ -17,7 +17,7 @@ import (
 func TestCampaignFollowUpNativeWrites(t *testing.T) {
 	delay, expiry := 60, 86400
 	minimal := CampaignFollowUp{Message: CampaignFollowUpTextMessage{Text: "Hi {{first_name}}"}}
-	explicit := CampaignFollowUp{DelaySeconds: &delay, ExpirySeconds: &expiry, Message: CampaignFollowUpTemplateMessage{TemplateID: "template"}}
+	explicit := CampaignFollowUp{DelaySeconds: &delay, ExpirySeconds: &expiry, Message: CampaignFollowUpTemplateMessage{TemplateID: "11111111-1111-4111-8111-111111111111"}}
 	for _, surface := range []string{"messaging", "platform"} {
 		for _, action := range []string{"create", "update", "clear", "omitted"} {
 			t.Run(surface+"/"+action, func(t *testing.T) {
@@ -25,7 +25,7 @@ func TestCampaignFollowUpNativeWrites(t *testing.T) {
 				wire := `{"message":{"type":"text","text":"Hi {{first_name}}"}}`
 				if action == "update" {
 					follow = &Nullable[CampaignFollowUp]{Value: &explicit}
-					wire = `{"delaySeconds":60,"expirySeconds":86400,"message":{"type":"template","templateId":"template"}}`
+					wire = `{"delaySeconds":60,"expirySeconds":86400,"message":{"type":"template","templateId":"11111111-1111-4111-8111-111111111111"}}`
 				}
 				if action == "clear" {
 					follow = &Nullable[CampaignFollowUp]{}
@@ -144,14 +144,14 @@ func TestCampaignFollowUpNativeReports(t *testing.T) {
 	}
 	var expected CampaignFollowUpReport
 	_ = json.Unmarshal([]byte(report), &expected)
-	if a.Data.Data.FollowUps == nil || !reflect.DeepEqual(*a.Data.Data.FollowUps, expected) || !reflect.DeepEqual(b.Data.Data.FollowUps, expected) || a.Data.Data.SentCount != 99 {
+	if !reflect.DeepEqual(a.Data.Data.FollowUps, expected) || !reflect.DeepEqual(b.Data.Data.FollowUps, expected) || a.Data.Data.SentCount != 99 {
 		t.Fatal("follow-up counts lost or first-message counts changed")
 	}
 	r, e := m.Campaigns().ListRecipients(ctx, "project", "campaign", ListCampaignRecipientsParams{})
 	if e != nil {
 		t.Fatal(e)
 	}
-	p, e := o.Campaigns().Recipients(ctx, "campaign", ListPlatformCampaignRecipientsParams{ProjectID: "p"})
+	p, e := o.Campaigns().Recipients(ctx, "campaign", ListPlatformCampaignRecipientsParams{ProjectID: "11111111-1111-4111-8111-111111111111"})
 	if e != nil {
 		t.Fatal(e)
 	}

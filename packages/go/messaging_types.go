@@ -296,6 +296,7 @@ type StatusResult struct {
 	Status string `json:"status"`
 }
 type Session struct {
+	SignalMode     *SignalCustodyMode        `json:"signalMode,omitempty"`
 	SessionID      string                    `json:"sessionId"`
 	Name           string                    `json:"name"`
 	ExternalID     string                    `json:"externalId,omitempty"`
@@ -339,8 +340,9 @@ type OperationAccepted struct {
 	OperationID string `json:"operationId"`
 }
 type HistorySyncPolicy struct {
-	Mode        string `json:"mode,omitempty"`
-	RequestFull *bool  `json:"requestFull,omitempty"`
+	Delivery    *HistorySyncDelivery `json:"delivery,omitempty"`
+	Mode        string               `json:"mode,omitempty"`
+	RequestFull *bool                `json:"requestFull,omitempty"`
 }
 type HMSConfiguration struct {
 	Enabled       bool   `json:"enabled"`
@@ -358,7 +360,7 @@ type ObservationConfiguration struct {
 }
 type SessionConfigurationOverrides struct {
 	Observation *ObservationConfiguration `json:"observation,omitempty"`
-	HistorySync *HistorySyncPolicy        `json:"historySync,omitempty"`
+	HistorySync *HistorySyncPolicyPatch   `json:"historySync,omitempty"`
 	HMS         *HMSConfiguration         `json:"hms,omitempty"`
 }
 type SessionConfigurationPatch struct {
@@ -366,9 +368,9 @@ type SessionConfigurationPatch struct {
 	Reset []string                       `json:"reset,omitempty"`
 }
 type SessionConfigurationView struct {
-	Effective        SessionConfigurationOverrides `json:"effective"`
+	Effective        EffectiveSessionConfiguration `json:"effective"`
 	Overrides        SessionConfigurationOverrides `json:"overrides"`
-	Sources          map[string]string             `json:"sources"`
+	Sources          SessionConfigurationSources   `json:"sources"`
 	RequestedHistory HistorySyncPolicy             `json:"requestedHistory"`
 	HistoryConsent   string                        `json:"historyConsent,omitempty"`
 	Revisions        struct {

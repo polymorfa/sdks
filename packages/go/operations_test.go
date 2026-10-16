@@ -159,6 +159,9 @@ func TestOperationWireFixtures(t *testing.T) {
 				}
 				w.Header().Set("Content-Type", "application/json")
 				w.Header().Set("X-Request-Id", "fixture")
+				if f.SDKMethod == "MessagingClient.Testing.SendPhoneMessage" {
+					w.WriteHeader(202)
+				}
 				io.WriteString(w, f.Response)
 			}))
 			defer s.Close()

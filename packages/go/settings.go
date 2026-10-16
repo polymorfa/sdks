@@ -107,11 +107,15 @@ func (r *SessionConfigurationResource) Retrieve(ctx context.Context, o ...Reques
 	return unwrapped[SessionConfigurationView](ctx, r.t, "GET", "/platform/session-configuration", q, nil, options(o))
 }
 func (r *SessionConfigurationResource) Update(ctx context.Context, b UpdateSessionRequest, o ...RequestOptions) (Response[SessionConfigurationView], error) {
+	intent, err := configurationIntent(b)
+	if err != nil {
+		return Response[SessionConfigurationView]{}, err
+	}
 	body := struct {
 		UpdateSessionRequest
 		ProjectID string `json:"projectId,omitempty"`
 	}{b, r.projectID}
-	return unwrapped[SessionConfigurationView](ctx, r.t, "PUT", "/platform/session-configuration", nil, body, options(o))
+	return unwrapped[SessionConfigurationView](ctx, r.t, "PUT", "/platform/session-configuration", nil, body, deliveryOptions(options(o), intent))
 }
 
 // PlatformPayload is intentionally open in the pinned TypeScript contract.

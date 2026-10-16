@@ -200,11 +200,11 @@ func (r *RequestLogs) read(ctx context.Context, projectID string, q url.Values, 
 	invalid := func() (*RequestLogPage, error) {
 		return nil, &Error{Kind: ServerError, Code: "invalid_response", Message: "The Polymorfa API returned an invalid request log page.", Status: response.Metadata.Status, RequestID: response.Metadata.RequestID, Metadata: response.Metadata, Details: response.Data}
 	}
-	if json.Unmarshal(response.Data, &wire) != nil || wire.Page == nil || wire.Page.HasMore == nil || wire.Page.FollowCursor == nil || len(wire.Page.NextCursor) == 0 || len(wire.Data) == 0 || wire.Data[0] != '[' {
+	if !jsonResult(response.Metadata, 200) || json.Unmarshal(response.Data, &wire) != nil || wire.Page == nil || wire.Page.HasMore == nil || wire.Page.FollowCursor == nil || len(wire.Page.NextCursor) == 0 || len(wire.Data) == 0 || wire.Data[0] != '[' {
 		return invalid()
 	}
 	var items []RequestLog
-	if json.Unmarshal(wire.Data, &items) != nil {
+	if campaignDecode(wire.Data, &items) != nil {
 		return invalid()
 	}
 	var next *string

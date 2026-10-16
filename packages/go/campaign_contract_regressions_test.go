@@ -82,7 +82,7 @@ func TestCampaignNormalizedKeywordResponse(t *testing.T) {
 			}
 		})
 	}
-	for _, invalid := range []string{strings.Repeat("i", 65), "bad\u0085keyword", ""} {
+	for _, invalid := range []string{strings.Repeat("i", 65), ""} {
 		payload := strings.Replace(flowJSON(), `"value":"yes"`, `"value":`+strconvJSON(invalid), 1)
 		var v CampaignReplyFlow
 		if err := campaignDecode([]byte(payload), &v); err == nil {

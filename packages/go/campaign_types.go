@@ -147,8 +147,15 @@ func (v *CampaignFollowUp) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(wire.Message["type"], &kind); err != nil {
 		return validation("A follow-up message discriminator is required.")
 	}
-	if len(wire.Message) != 2 {
-		return validation("A follow-up message must contain its discriminator and variant field.")
+	if kind == "text" {
+		if _, ok := wire.Message["templateId"]; ok {
+			return validation("A text follow-up cannot contain templateId.")
+		}
+	}
+	if kind == "template" {
+		if _, ok := wire.Message["text"]; ok {
+			return validation("A template follow-up cannot contain text.")
+		}
 	}
 	var message CampaignFollowUpMessage
 	switch kind {
@@ -238,6 +245,8 @@ type CampaignSendWindow struct {
 	TimeZoneVariable  string                    `json:"timeZoneVariable"`
 }
 type Campaign struct {
+	VariableMapping   *CampaignVariableMapping   `json:"variableMapping,omitempty"`
+	TrackedLinks      CampaignTrackedLinks       `json:"trackedLinks"`
 	ID                string                     `json:"id"`
 	Name              string                     `json:"name"`
 	Status            string                     `json:"status"`
@@ -262,9 +271,9 @@ type Campaign struct {
 	ComplianceConfig  json.RawMessage            `json:"complianceConfig,omitempty"`
 	Variants          []CampaignVariant          `json:"variants,omitempty"`
 	VariantStrategy   *CampaignVariantStrategy   `json:"variantStrategy,omitempty"`
-	ExperimentOutcome *CampaignExperimentOutcome `json:"experimentOutcome,omitempty"`
+	ExperimentOutcome *CampaignExperimentOutcome `json:"experimentOutcome"`
 	MessageVariations []CampaignMessageVariation `json:"messageVariations,omitempty"`
-	FollowUp          *CampaignFollowUp          `json:"followUp,omitempty"`
+	FollowUp          *CampaignFollowUp          `json:"followUp"`
 }
 type PlatformCampaign struct {
 	Campaign
@@ -292,7 +301,7 @@ func (v *PlatformCampaign) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &all); err != nil {
 		return err
 	}
-	for _, k := range []string{"id", "name", "status", "templateId", "recipientListId", "recipientCount", "sentCount", "deliveredCount", "readCount", "failedCount", "skippedCount", "scheduledAt", "launchedAt", "completedAt", "createdAt", "updatedAt", "sendWindow", "composerBlueprint", "messages", "audienceRef", "senderConfig", "complianceConfig", "variants", "variantStrategy", "experimentOutcome", "messageVariations", "followUp"} {
+	for _, k := range []string{"id", "name", "status", "templateId", "recipientListId", "recipientCount", "sentCount", "deliveredCount", "readCount", "failedCount", "skippedCount", "scheduledAt", "launchedAt", "completedAt", "createdAt", "updatedAt", "sendWindow", "composerBlueprint", "messages", "audienceRef", "senderConfig", "complianceConfig", "variants", "variantStrategy", "experimentOutcome", "messageVariations", "followUp", "variableMapping", "trackedLinks"} {
 		delete(all, k)
 	}
 	v.Extra = all
@@ -300,26 +309,27 @@ func (v *PlatformCampaign) UnmarshalJSON(b []byte) error {
 }
 
 type CampaignAnalytics struct {
-	CampaignID     string                     `json:"campaignId"`
-	RecipientCount int                        `json:"recipientCount"`
-	SentCount      int                        `json:"sentCount"`
-	DeliveredCount int                        `json:"deliveredCount"`
-	ReadCount      int                        `json:"readCount"`
-	FailedCount    int                        `json:"failedCount"`
-	SkippedCount   int                        `json:"skippedCount"`
-	RespondedCount int                        `json:"respondedCount"`
-	ResponseRate   float64                    `json:"responseRate"`
-	Experiment     *CampaignExperimentResults `json:"experiment,omitempty"`
-	FollowUps      *CampaignFollowUpReport    `json:"followUps,omitempty"`
+	AverageResponseTimeMS *float64                   `json:"averageResponseTimeMs"`
+	MinResponseTimeMS     *float64                   `json:"minResponseTimeMs"`
+	MaxResponseTimeMS     *float64                   `json:"maxResponseTimeMs"`
+	CampaignID            string                     `json:"campaignId"`
+	RecipientCount        int                        `json:"recipientCount"`
+	SentCount             int                        `json:"sentCount"`
+	DeliveredCount        int                        `json:"deliveredCount"`
+	ReadCount             int                        `json:"readCount"`
+	FailedCount           int                        `json:"failedCount"`
+	SkippedCount          int                        `json:"skippedCount"`
+	RespondedCount        int                        `json:"respondedCount"`
+	ResponseRate          float64                    `json:"responseRate"`
+	Experiment            *CampaignExperimentResults `json:"experiment"`
+	FollowUps             CampaignFollowUpReport     `json:"followUps"`
 }
 type PlatformCampaignAnalytics struct {
 	CampaignAnalytics
-	FollowUps             CampaignFollowUpReport `json:"followUps"`
-	AverageResponseTimeMS *float64               `json:"averageResponseTimeMs"`
-	MinResponseTimeMS     *float64               `json:"minResponseTimeMs"`
-	MaxResponseTimeMS     *float64               `json:"maxResponseTimeMs"`
 }
 type CreateCampaignRequest struct {
+	VariableMapping   *CampaignVariableMapping              `json:"variableMapping,omitempty"`
+	TrackedLinks      *Nullable[CampaignTrackedLinks]       `json:"trackedLinks,omitempty"`
 	Name              string                                `json:"name"`
 	TemplateID        string                                `json:"templateId,omitempty"`
 	RecipientListID   string                                `json:"recipientListId,omitempty"`
@@ -333,6 +343,8 @@ type CreateCampaignRequest struct {
 	FollowUp          *Nullable[CampaignFollowUp]           `json:"followUp,omitempty"`
 }
 type CreatePlatformCampaignRequest struct {
+	VariableMapping   *CampaignVariableMapping             `json:"variableMapping,omitempty"`
+	TrackedLinks      *Nullable[CampaignTrackedLinks]      `json:"trackedLinks,omitempty"`
 	ProjectID         string                               `json:"projectId"`
 	Name              string                               `json:"name"`
 	TemplateID        string                               `json:"templateId,omitempty"`
@@ -343,7 +355,7 @@ type CreatePlatformCampaignRequest struct {
 	Recipients        []CampaignRecipientInput             `json:"recipients,omitempty"`
 	RecipientCount    *int                                 `json:"recipientCount,omitempty"`
 	ComposerBlueprint json.RawMessage                      `json:"composerBlueprint,omitempty"`
-	MessagesArray     json.RawMessage                      `json:"messagesArray,omitempty"`
+	MessagesArray     *[]CampaignComposedMessage           `json:"messagesArray,omitempty"`
 	AudienceRef       json.RawMessage                      `json:"audienceRef,omitempty"`
 	ComplianceConfig  json.RawMessage                      `json:"complianceConfig,omitempty"`
 	Variants          []CampaignVariant                    `json:"variants,omitempty"`
@@ -352,6 +364,9 @@ type CreatePlatformCampaignRequest struct {
 	FollowUp          *Nullable[CampaignFollowUp]          `json:"followUp,omitempty"`
 }
 type UpdateCampaignRequest struct {
+	TemplateID        *Nullable[string]                     `json:"templateId,omitempty"`
+	VariableMapping   *Nullable[CampaignVariableMapping]    `json:"variableMapping,omitempty"`
+	TrackedLinks      *Nullable[CampaignTrackedLinks]       `json:"trackedLinks,omitempty"`
 	Name              *string                               `json:"name,omitempty"`
 	RecipientListID   *Nullable[string]                     `json:"recipientListId,omitempty"`
 	SenderConfig      PlatformPayload                       `json:"senderConfig,omitempty"`
@@ -364,11 +379,15 @@ type UpdateCampaignRequest struct {
 }
 type UpdatePlatformCampaignRequest struct {
 	UpdateCampaignRequest
-	Extra PlatformPayload `json:"-"`
+	MessagesArray *[]CampaignComposedMessage `json:"messagesArray,omitempty"`
+	Extra         PlatformPayload            `json:"-"`
 }
 
 func (v UpdatePlatformCampaignRequest) MarshalJSON() ([]byte, error) {
 	m := clonePayload(v.Extra)
+	if v.MessagesArray != nil {
+		m["messagesArray"], _ = json.Marshal(v.MessagesArray)
+	}
 	b, err := json.Marshal(v.UpdateCampaignRequest)
 	if err != nil {
 		return nil, err
@@ -382,23 +401,28 @@ func (v UpdatePlatformCampaignRequest) MarshalJSON() ([]byte, error) {
 }
 
 type CampaignRecipient struct {
-	ID                string                   `json:"id"`
-	Phone             string                   `json:"phone"`
-	Variables         PlatformPayload          `json:"variables"`
-	VariantKey        *string                  `json:"variantKey"`
-	Status            string                   `json:"status"`
-	Attempts          int                      `json:"attempts"`
-	LastError         *string                  `json:"lastError"`
-	ExternalMessageID *string                  `json:"externalMessageId"`
-	QueuedAt          int64                    `json:"queuedAt"`
-	SentAt            *int64                   `json:"sentAt"`
-	DeliveredAt       *int64                   `json:"deliveredAt"`
-	ReadAt            *int64                   `json:"readAt"`
-	FailedAt          *int64                   `json:"failedAt"`
-	RespondedAt       *int64                   `json:"respondedAt"`
-	FollowUp          *CampaignFollowUpSummary `json:"followUp,omitempty"`
+	FailureReason     *CampaignRecipientFailureReason `json:"failureReason"`
+	MessagesSent      int                             `json:"messagesSent"`
+	NextMessageAt     *float64                        `json:"nextMessageAt"`
+	SequenceError     *string                         `json:"sequenceError"`
+	ID                string                          `json:"id"`
+	Phone             string                          `json:"phone"`
+	Variables         PlatformPayload                 `json:"variables"`
+	VariantKey        *string                         `json:"variantKey"`
+	Status            string                          `json:"status"`
+	Attempts          int                             `json:"attempts"`
+	LastError         *string                         `json:"lastError"`
+	ExternalMessageID *string                         `json:"externalMessageId"`
+	QueuedAt          int64                           `json:"queuedAt"`
+	SentAt            *int64                          `json:"sentAt"`
+	DeliveredAt       *int64                          `json:"deliveredAt"`
+	ReadAt            *int64                          `json:"readAt"`
+	FailedAt          *int64                          `json:"failedAt"`
+	RespondedAt       *int64                          `json:"respondedAt"`
+	FollowUp          *CampaignFollowUpSummary        `json:"followUp"`
 }
 type ListCampaignRecipientsParams struct {
+	Reason CampaignRecipientFailureReason
 	ListParams
 	Status string
 }
@@ -430,7 +454,8 @@ type CampaignStopOperation struct {
 	OperationID *string `json:"operationId"`
 }
 type LaunchCampaignRequest struct {
-	ScheduledAt *int64 `json:"scheduledAt,omitempty"`
+	SkipMissingVariables *bool    `json:"skipMissingVariables,omitempty"`
+	ScheduledAt          *float64 `json:"scheduledAt,omitempty"`
 }
 type RescheduleCampaignRequest struct {
 	ScheduledAt *int64 `json:"scheduledAt"`
@@ -504,4 +529,39 @@ type CampaignConversionReport struct {
 	ConvertedRecipients int                               `json:"convertedRecipients"`
 	ConversionRate      float64                           `json:"conversionRate"`
 	Values              []CampaignConversionCurrencyTotal `json:"values"`
+}
+
+// LaunchPlatformCampaignRequest selects an explicit project and retains false/zero.
+type LaunchPlatformCampaignRequest struct {
+	ProjectID string `json:"projectId"`
+	LaunchCampaignRequest
+}
+type PlatformCampaignOperation struct {
+	PlatformCampaign
+	OperationID string `json:"operationId"`
+}
+
+func (v *PlatformCampaignOperation) UnmarshalJSON(b []byte) error {
+	if err := json.Unmarshal(b, &v.PlatformCampaign); err != nil {
+		return err
+	}
+	var w struct {
+		OperationID string `json:"operationId"`
+	}
+	if err := json.Unmarshal(b, &w); err != nil {
+		return err
+	}
+	v.OperationID = w.OperationID
+	delete(v.Extra, "operationId")
+	return nil
+}
+func (v PlatformCampaignOperation) MarshalJSON() ([]byte, error) {
+	b, err := json.Marshal(v.PlatformCampaign)
+	if err != nil {
+		return nil, err
+	}
+	var m PlatformPayload
+	json.Unmarshal(b, &m)
+	m["operationId"], _ = json.Marshal(v.OperationID)
+	return json.Marshal(m)
 }

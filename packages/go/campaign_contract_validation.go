@@ -787,7 +787,7 @@ func campaignRequest[T any](ctx context.Context, t *transport, method, path stri
 		Data    json.RawMessage `json:"data"`
 		Success *bool           `json:"success"`
 	}
-	if raw.Metadata.Status != 200 || json.Unmarshal(raw.Data, &env) != nil || len(env.Data) == 0 || env.Success != nil && !*env.Success {
+	if !jsonResult(raw.Metadata, 200) || json.Unmarshal(raw.Data, &env) != nil || len(env.Data) == 0 {
 		return result, campaignResponseError(raw.Metadata)
 	}
 	if strings.HasPrefix(path, "/messaging/") && (env.Success == nil || !*env.Success) {
@@ -866,9 +866,6 @@ func decodeReplySend(data []byte) (CampaignReplyFlowSend, error) {
 	if err := campaignDecode(data, v); err != nil {
 		return nil, err
 	}
-	if err := validateReplySend(v); err != nil {
-		return nil, err
-	}
 	return v, nil
 }
 func decodeReplyMatch(data []byte) (CampaignReplyFlowMatch, error) {
@@ -892,95 +889,90 @@ func decodeReplyMatch(data []byte) (CampaignReplyFlowMatch, error) {
 	if err := campaignDecode(data, v); err != nil {
 		return nil, err
 	}
-	if err := validateReplyResponseMatch(v); err != nil {
+	if err := validateReplyResponseShape(v); err != nil {
 		return nil, err
 	}
 	return v, nil
 }
 
+// Success models use declared response shapes, not outbound byte/count quotas.
+func validateReplyResponseShape(v CampaignReplyFlowMatch) error {
+	switch x := v.(type) {
+	case *CampaignReplyKeyword:
+		if e := contractText(x.Value, "match.value", 1, 64); e != nil {
+			return e
+		}
+	case *CampaignReplyChoice:
+		return contractOne(x.ReplyKind, "match.replyKind", "button", "list")
+	}
+	return nil
+}
 func validateCampaignResponse(v any) error {
+	rv := reflect.ValueOf(v)
+	if rv.IsValid() && rv.Kind() == reflect.Slice {
+		for i := 0; i < rv.Len(); i++ {
+			if e := validateCampaignResponse(rv.Index(i).Interface()); e != nil {
+				return e
+			}
+		}
+		return nil
+	}
 	switch x := v.(type) {
 	case SignalCustodyDefault:
-		if err := validateCustody(x.Revision, x.SignalModeDefault, true); err != nil {
-			return err
+		if x.SignalModeDefault != nil {
+			if e := contractOne(string(*x.SignalModeDefault), "signalModeDefault", "standard", "zero_knowledge"); e != nil {
+				return e
+			}
 		}
 		return contractOne(string(x.EffectiveSignalMode), "effectiveSignalMode", "standard", "zero_knowledge")
-	case CampaignReplyFlow:
-		if err := contractUUID(x.ID, "id"); err != nil {
-			return err
-		}
-		return validateReplyGraph(CreateCampaignReplyFlowRequest{Name: x.Name, Definition: x.Definition, FlowKey: &x.FlowKey, Revision: &x.Revision}, validateReplyResponseMatch)
-	case CampaignReplyFlowAssignment:
-		if err := contractUUID(x.CampaignID, "campaignId"); err != nil {
-			return err
-		}
-		if x.ReplyFlowID != nil {
-			return contractUUID(*x.ReplyFlowID, "replyFlowId")
-		}
 	case CampaignTestSend:
 		return contractOne(x.Status, "status", "sent")
 	case AudienceProfile:
-		if err := contractInt(x.Revision, 1, campaignSafeInteger, "revision"); err != nil {
-			return err
+		if x.Provenance != nil {
+			return contractOne(string(x.Provenance.Source), "source", "api", "csv", "form")
 		}
-		if err := validateProfilePhone(x.Phone); err != nil {
-			return err
-		}
-		return validateProfilePut(PutAudienceProfileRequest{Tags: x.Tags, Attributes: x.Attributes, Provenance: x.Provenance})
 	case AudienceConsentAssertion:
-		if err := contractInt(x.ProfileRevision, 1, campaignSafeInteger, "profileRevision"); err != nil {
-			return err
+		if e := contractOne(string(x.Source), "source", "api", "csv", "form"); e != nil {
+			return e
 		}
-		if err := validateProvenance(x.AudienceProfileProvenance); err != nil {
-			return err
-		}
-		if x.Purpose != "campaigns" {
-			return validation("Invalid consent purpose.")
-		}
-		return contractInt(x.AssertedAt, 0, 8640000000000000, "assertedAt")
+		return contractOne(x.Purpose, "purpose", "campaigns")
 	case AudienceProfileImportJob:
-		if err := contractOne(x.State, "state", "queued", "completed", "cancelled"); err != nil {
-			return err
+		if e := contractOne(x.State, "state", "queued", "completed", "cancelled"); e != nil {
+			return e
 		}
-		if len(x.InvalidSamples) > 20 || len(x.ConflictSamples) > 20 {
-			return validation("Import samples exceed twenty rows.")
-		}
-		for _, n := range []int64{x.TotalValid, x.InvalidCount, x.ProcessedValid, x.CreatedCount, x.UpdatedCount, x.ConflictCount} {
-			if err := contractInt(n, 0, campaignSafeInteger, "count"); err != nil {
-				return err
-			}
-		}
-		for _, s := range x.InvalidSamples {
-			if s.Row < 2 {
-				return validation("Invalid import sample row.")
-			}
-		}
-		for _, s := range x.ConflictSamples {
-			if s.Row < 2 {
-				return validation("Invalid import sample row.")
-			}
-			if err := contractOne(s.Reason, "reason", "quota", "revision_conflict"); err != nil {
-				return err
+		for _, c := range x.ConflictSamples {
+			if e := contractOne(c.Reason, "reason", "quota", "revision_conflict"); e != nil {
+				return e
 			}
 		}
 	case DeleteAudienceProfileResult:
 		if !x.Deleted {
 			return validation("Deletion was not confirmed.")
 		}
-		return contractInt(x.Revision, 2, campaignSafeInteger, "revision")
 	case StopConfirmationSettings:
 		if x.TextRevision != 1 {
-			return validation("Unknown confirmation text revision.")
+			return validation("Unknown text revision.")
 		}
-		if err := contractInt(x.Revision, 0, 2147483647, "revision"); err != nil {
-			return err
+		if x.Locale != nil {
+			return contractOne(string(*x.Locale), "locale", "en", "pt-BR", "es")
 		}
-		return validateConfirmation(UpdateStopConfirmationSettingsRequest{TeamID: x.TeamID, Enabled: x.Enabled, Locale: Nullable[StopConfirmationLocale]{Value: x.Locale}})
 	case AudienceFromCampaignResult:
 		if x.Source != "campaign" {
 			return validation("Invalid audience source.")
 		}
 		return contractOne(string(x.Outcome), "outcome", "delivered", "not_delivered", "read", "not_read", "replied", "not_replied", "failed")
+	case CampaignLaunchApproval:
+		if e := contractOne(x.Action, "action", "launch", "resume", "reschedule"); e != nil {
+			return e
+		}
+		if e := contractOne(x.Status, "status", "pending", "approved", "rejected", "superseded", "expired"); e != nil {
+			return e
+		}
+		for _, r := range x.Reasons {
+			if e := contractOne(r, "reasons", "audience_threshold", "agent_request"); e != nil {
+				return e
+			}
+		}
 	}
 	return nil
 }

@@ -188,7 +188,11 @@ func (r *PlatformSessions) Retrieve(ctx context.Context, id string, o ...Request
 	return request[Envelope[Session]](ctx, r.t, "GET", sessionPath(id), nil, nil, options(o))
 }
 func (r *PlatformSessions) Update(ctx context.Context, id string, b UpdateSessionRequest, o ...RequestOptions) (Response[Envelope[Session]], error) {
-	return request[Envelope[Session]](ctx, r.t, "PUT", sessionPath(id), nil, b, options(o))
+	intent, err := configurationIntent(b)
+	if err != nil {
+		return Response[Envelope[Session]]{}, err
+	}
+	return request[Envelope[Session]](ctx, r.t, "PUT", sessionPath(id), nil, b, deliveryOptions(options(o), intent))
 }
 func (r *PlatformSessions) Start(ctx context.Context, id string, b SessionProjectContext, o ...RequestOptions) (Response[Envelope[SessionStartResult]], error) {
 	return request[Envelope[SessionStartResult]](ctx, r.t, "POST", sessionPath(id)+"/start", nil, b, options(o))

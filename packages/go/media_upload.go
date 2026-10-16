@@ -116,9 +116,6 @@ func (r *WhatsAppMediaResource) UploadBytes(ctx context.Context, session string,
 	return r.Upload(ctx, session, func(context.Context) (io.ReadCloser, error) { return io.NopCloser(bytes.NewReader(owned)), nil }, options)
 }
 func (r *WhatsAppMediaResource) Upload(ctx context.Context, session string, source WhatsAppMediaSource, options UploadWhatsAppMediaOptions) (WhatsAppMediaUploadResult, error) {
-	if err := serverOnly(r.t); err != nil {
-		return WhatsAppMediaUploadResult{}, err
-	}
 	if source == nil || session == "" {
 		return WhatsAppMediaUploadResult{}, configuration("source", "An immutable media source and session are required.")
 	}
@@ -138,6 +135,16 @@ func (r *WhatsAppMediaResource) Upload(ctx context.Context, session string, sour
 	}
 	if options.UploadTransport == nil && mode == "direct" && (options.MaxAttempts < 0 || options.MaxAttempts > 100 || options.DocumentPartSize < 0 || options.DocumentPartSize > 64*1024*1024) {
 		return WhatsAppMediaUploadResult{}, configuration("upload", "Direct attempts must be 1–100 and document part size 1–67108864 bytes.")
+	}
+	if mode == "direct" && options.UploadTransport == nil {
+		if err := serverOnly(r.t); err != nil {
+			return WhatsAppMediaUploadResult{}, err
+		}
+	}
+	if builtin, ok := options.UploadTransport.(builtinMediaUploadTransport); ok && builtin.mode == "direct" {
+		if err := serverOnly(builtin.resource.t); err != nil {
+			return WhatsAppMediaUploadResult{}, err
+		}
 	}
 	settings, err := encryptionOptions(options.EncryptMediaOptions)
 	if err != nil {
@@ -229,6 +236,9 @@ func (r *WhatsAppMediaResource) directPost(ctx context.Context, target string, b
 	return value, nil
 }
 func (r *WhatsAppMediaResource) directUpload(ctx context.Context, session string, source WhatsAppMediaSource, info EncryptedMediaInfo, max int64, options UploadWhatsAppMediaOptions) (WhatsAppUploadLocation, error) {
+	if err := serverOnly(r.t); err != nil {
+		return WhatsAppUploadLocation{}, err
+	}
 	attempts := options.MaxAttempts
 	if attempts == 0 {
 		attempts = 3

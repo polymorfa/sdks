@@ -123,13 +123,13 @@ func (r *Testing) GetPhone(ctx context.Context, project, session string, o ...Re
 	if err := serverOnly(r.t); err != nil {
 		return Response[TestingPhone]{}, err
 	}
-	return request[TestingPhone](ctx, r.t, "GET", phonePath(project, session), nil, nil, options(o))
+	return endpointBare[TestingPhone](ctx, r.t, "GET", phonePath(project, session), nil, nil, options(o), 200)
 }
 func (r *Testing) SendPhoneMessage(ctx context.Context, project, session string, b SendTestingPhoneMessageRequest, o ...RequestOptions) (Response[SendTestingPhoneMessageResult], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[SendTestingPhoneMessageResult]{}, err
 	}
-	return request[SendTestingPhoneMessageResult](ctx, r.t, "POST", phonePath(project, session)+"/messages", nil, b, options(o))
+	return endpointBare[SendTestingPhoneMessageResult](ctx, r.t, "POST", phonePath(project, session)+"/messages", nil, b, appendOnce(options(o)), 202)
 }
 func (r *Testing) UnlinkPhoneDevice(ctx context.Context, project, session string, id int, o ...RequestOptions) (Response[UnlinkTestingPhoneDeviceResult], error) {
 	if err := serverOnly(r.t); err != nil {
@@ -138,7 +138,7 @@ func (r *Testing) UnlinkPhoneDevice(ctx context.Context, project, session string
 	if id < 1 || id > 99 {
 		return Response[UnlinkTestingPhoneDeviceResult]{}, validation("deviceId must be between 1 and 99.")
 	}
-	return request[UnlinkTestingPhoneDeviceResult](ctx, r.t, "POST", phonePath(project, session)+"/devices/"+strconv.Itoa(id)+"/unlink", nil, nil, options(o))
+	return endpointBare[UnlinkTestingPhoneDeviceResult](ctx, r.t, "POST", phonePath(project, session)+"/devices/"+strconv.Itoa(id)+"/unlink", nil, nil, options(o), 200)
 }
 
 type EmbeddedSignupResult struct {

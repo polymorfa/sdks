@@ -99,7 +99,7 @@ func (r *WhatsAppMediaResource) CreateUploadGrant(ctx context.Context, session s
 		FileEncSHA256 string `json:"fileEncSha256"`
 		PTT           *bool  `json:"ptt,omitempty"`
 	}{mediaType, hash, ptt}
-	result, err := request[json.RawMessage](ctx, r.t, "POST", "/messaging/"+escaped(session)+"/media/upload-grants", nil, body, customerOwnedOptions(optionsOrDefault(options)))
+	result, err := request[json.RawMessage](ctx, r.t, "POST", "/messaging/"+escaped(session)+"/media/upload-grants", nil, body, appendOnce(deliveryOptions(optionsOrDefault(options), true)))
 	if err != nil {
 		return WhatsAppUploadGrant{}, err
 	}
@@ -121,9 +121,6 @@ func (r *WhatsAppMediaResource) CreateUploadGrant(ctx context.Context, session s
 }
 func optionsOrDefault(values []RequestOptions) RequestOptions { return options(values) }
 func (r *WhatsAppMediaResource) RelayUpload(ctx context.Context, session string, info EncryptedMediaInfo, open func(context.Context) (io.ReadCloser, error), opts ...RequestOptions) (WhatsAppUploadLocation, error) {
-	if err := serverOnly(r.t); err != nil {
-		return WhatsAppUploadLocation{}, err
-	}
 	kind, ptt, err := uploadKind(info.MediaType)
 	if err != nil {
 		return WhatsAppUploadLocation{}, err
@@ -139,7 +136,7 @@ func (r *WhatsAppMediaResource) RelayUpload(ctx context.Context, session string,
 	if ptt != nil {
 		query.Set("ptt", strconv.FormatBool(*ptt))
 	}
-	resp, err := request[json.RawMessage](ctx, r.t, "POST", "/messaging/"+escaped(session)+"/media/uploads", query, &binaryRequest{open, info.EncryptedLength}, customerOwnedOptions(optionsOrDefault(opts)))
+	resp, err := request[json.RawMessage](ctx, r.t, "POST", "/messaging/"+escaped(session)+"/media/uploads", query, &binaryRequest{open, info.EncryptedLength}, appendOnce(deliveryOptions(optionsOrDefault(opts), true)))
 	if err != nil {
 		return WhatsAppUploadLocation{}, err
 	}

@@ -80,7 +80,11 @@ func (r *MessagingSessions) Update(ctx context.Context, s string, b UpdateSessio
 	if err := serverOnly(r.t); err != nil {
 		return Response[Envelope[Session]]{}, err
 	}
-	return request[Envelope[Session]](ctx, r.t, "PUT", sessionPath(s), nil, b, options(o))
+	intent, err := configurationIntent(b)
+	if err != nil {
+		return Response[Envelope[Session]]{}, err
+	}
+	return request[Envelope[Session]](ctx, r.t, "PUT", sessionPath(s), nil, b, deliveryOptions(options(o), intent))
 }
 func (r *MessagingSessions) Delete(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[SessionLifecycleResult]], error) {
 	if err := serverOnly(r.t); err != nil {
@@ -142,15 +146,17 @@ type QuickLinkTesting struct {
 	Editable      []string              `json:"editable,omitempty"`
 }
 type QuickLinkHistorySync struct {
-	Consent     string `json:"consent,omitempty"`
-	Mode        string `json:"mode,omitempty"`
-	RequestFull *bool  `json:"requestFull,omitempty"`
+	Delivery    *HistorySyncDeliveryPatch `json:"delivery,omitempty"`
+	Consent     string                    `json:"consent,omitempty"`
+	Mode        string                    `json:"mode,omitempty"`
+	RequestFull *bool                     `json:"requestFull,omitempty"`
 }
 type BillingControls struct {
 	LimitCredits *float64 `json:"limitCredits"`
 	Priority     int      `json:"priority"`
 }
 type CreateQuickLinkRequest struct {
+	SignalMode      *SignalCustodyMode      `json:"signalMode,omitempty"`
 	BillingControls *BillingControls        `json:"billingControls,omitempty"`
 	Purpose         string                  `json:"purpose,omitempty"`
 	Session         string                  `json:"session,omitempty"`
@@ -220,8 +226,9 @@ func (r *QuickLinks) Create(ctx context.Context, b CreateQuickLinkRequest, o ...
 	if err := serverOnly(r.t); err != nil {
 		return Response[Envelope[QuickLink]]{}, err
 	}
-	if b.Purpose == "add_connection" && b.Session == "" {
-		return Response[Envelope[QuickLink]]{}, validation("add_connection requires a session.")
+	intent, err := quickLinkIntent(b)
+	if err != nil {
+		return Response[Envelope[QuickLink]]{}, err
 	}
 	if b.BillingControls != nil {
 		if b.BillingControls.Priority < 0 || b.BillingControls.Priority > 1000000 || b.BillingControls.LimitCredits != nil && *b.BillingControls.LimitCredits < 0 {
@@ -231,7 +238,7 @@ func (r *QuickLinks) Create(ctx context.Context, b CreateQuickLinkRequest, o ...
 			return Response[Envelope[QuickLink]]{}, configuration("billingControls", "Initial billing controls require a real new number.")
 		}
 	}
-	return request[Envelope[QuickLink]](ctx, r.t, "POST", "/messaging/quicklinks", nil, b, options(o))
+	return request[Envelope[QuickLink]](ctx, r.t, "POST", "/messaging/quicklinks", nil, b, deliveryOptions(options(o), intent))
 }
 func (r *QuickLinks) Availability(ctx context.Context, projectID, session string, o ...RequestOptions) (Response[Envelope[QuickLinkAvailability]], error) {
 	if err := serverOnly(r.t); err != nil {

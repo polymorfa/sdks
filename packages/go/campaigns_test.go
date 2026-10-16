@@ -65,8 +65,8 @@ var campaignFixtures = []operationFixture{
 	{"OrganizationClient.Campaigns.Delete", "DELETE", "/platform/campaigns/campaign", "projectId=p", "", `{"data":{"deleted":true}}`, "data.deleted", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(o.Campaigns().Delete(ctx, "campaign", PlatformCampaignParams{ProjectID: "p"}))
 	}},
-	{"OrganizationClient.Campaigns.Launch", "POST", "/platform/campaigns/campaign/launch", "", `{"projectId":"p"}`, `{"data":{"operationId":"operation"}}`, "data.operationId", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
-		return wireData(o.Campaigns().Launch(ctx, "campaign", PlatformPayload{"projectId": json.RawMessage(`"p"`)}))
+	{"OrganizationClient.Campaigns.Launch", "POST", "/platform/campaigns/campaign/launch", "", `{"projectId":"11111111-1111-4111-8111-111111111111"}`, `{"data":{"operationId":"operation"}}`, "data.operationId", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+		return wireData(o.Campaigns().Launch(ctx, "campaign", LaunchPlatformCampaignRequest{ProjectID: "11111111-1111-4111-8111-111111111111"}))
 	}},
 	{"OrganizationClient.Campaigns.Pause", "POST", "/platform/campaigns/campaign/pause", "", "", `{"data":{"operationId":"operation"}}`, "data.operationId", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(o.Campaigns().Pause(ctx, "campaign", nil))
@@ -92,8 +92,8 @@ var campaignFixtures = []operationFixture{
 	{"OrganizationClient.Campaigns.Events", "GET", "/platform/campaigns/campaign/events", "projectId=p", "", `{"data":{"events":[{"type":"started"}]}}`, "data.events.0.type", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(o.Campaigns().Events(ctx, "campaign", PlatformCampaignParams{ProjectID: "p"}))
 	}},
-	{"OrganizationClient.Campaigns.Recipients", "GET", "/platform/campaigns/campaign/recipients", "limit=2&projectId=p&status=delivered", "", campaignRecipientsFixture, "data.0.variantKey", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
-		return wireData(o.Campaigns().Recipients(ctx, "campaign", ListPlatformCampaignRecipientsParams{ListCampaignRecipientsParams: ListCampaignRecipientsParams{ListParams: ListParams{Limit: 2}, Status: "delivered"}, ProjectID: "p"}))
+	{"OrganizationClient.Campaigns.Recipients", "GET", "/platform/campaigns/campaign/recipients", "limit=2&projectId=11111111-1111-4111-8111-111111111111&status=delivered", "", campaignRecipientsFixture, "data.0.variantKey", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+		return wireData(o.Campaigns().Recipients(ctx, "campaign", ListPlatformCampaignRecipientsParams{ListCampaignRecipientsParams: ListCampaignRecipientsParams{ListParams: ListParams{Limit: 2}, Status: "delivered"}, ProjectID: "11111111-1111-4111-8111-111111111111"}))
 	}},
 	{"OrganizationClient.Campaigns.AddRecipients", "POST", "/platform/campaigns/campaign/recipients", "", `{"projectId":"p","recipients":[{"phone":"+15551234567"}]}`, campaignAppendFixture, "data.added", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(o.Campaigns().AddRecipients(ctx, "campaign", AddPlatformCampaignRecipientsRequest{ProjectID: "p", Recipients: []CampaignRecipientInput{{Phone: "+15551234567"}}}))

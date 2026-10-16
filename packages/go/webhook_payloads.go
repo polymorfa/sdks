@@ -957,10 +957,15 @@ func (e WebhookEvent) TypedPayload() (KnownWebhookPayload, bool, error) {
 		}
 	case "history.sync":
 		var s struct {
-			Kind string `json:"kind"`
+			Kind     string `json:"kind"`
+			Delivery string `json:"delivery"`
 		}
 		if err := json.Unmarshal(e.Payload, &s); err != nil {
 			return nil, true, err
+		}
+		if s.Delivery == "descriptor" {
+			v, err := decodeDirectHistoryPayload(e.Payload)
+			return v, true, err
 		}
 		if s.Kind == "history" {
 			v = &CloudHistorySyncPayload{}

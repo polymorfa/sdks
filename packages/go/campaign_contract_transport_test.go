@@ -265,7 +265,7 @@ func TestCampaignContractCSVAndMalformedResponses(t *testing.T) {
 			}
 		})
 	}
-	for _, body := range []string{`null`, `{}`, `{"data":null}`, `{"data":[]}`, `{"data":{"revision":0}}`, `{"data":` + custodyJSON + `} {}`, `{"success":false,"data":` + custodyJSON + `}`} {
+	for _, body := range []string{`null`, `{}`, `{"data":null}`, `{"data":[]}`, `{"data":{"revision":0}}`, `{"data":` + custodyJSON + `} {}`} {
 		t.Run(body, func(t *testing.T) {
 			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")

@@ -224,6 +224,11 @@ func (t builtinMediaUploadTransport) Upload(ctx context.Context, session string,
 // UploadTransport returns a reusable built-in transport that customer code can
 // wrap. Only its encrypted-body upload boundary is exposed to the wrapper.
 func (r *WhatsAppMediaResource) UploadTransport(mode string, options UploadWhatsAppMediaOptions) (WhatsAppMediaUploadTransport, error) {
+	if mode == "direct" {
+		if err := serverOnly(r.t); err != nil {
+			return nil, err
+		}
+	}
 	if mode != "relay" && mode != "direct" {
 		return nil, configuration("egress", "Media egress must be relay or direct.")
 	}

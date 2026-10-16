@@ -73,7 +73,7 @@ func (r *Groups) Retrieve(ctx context.Context, s, id string, o ...RequestOptions
 	return request[Envelope[Group]](ctx, r.t, "GET", groupPath(s, id), nil, nil, options(o))
 }
 func (r *Groups) GetCapabilities(ctx context.Context, s, id string, o ...RequestOptions) (Response[Envelope[GroupCapabilities]], error) {
-	return request[Envelope[GroupCapabilities]](ctx, r.t, "GET", groupPath(s, id)+"/capabilities", nil, nil, options(o))
+	return endpointEnvelope[GroupCapabilities](ctx, r.t, "GET", groupPath(s, id)+"/capabilities", nil, nil, options(o))
 }
 func (r *Groups) Delete(ctx context.Context, s, id string, o ...RequestOptions) (Response[Success], error) {
 	return request[Success](ctx, r.t, "DELETE", groupPath(s, id), nil, nil, options(o))

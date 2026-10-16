@@ -88,8 +88,7 @@ links. The API enforces beta enrollment and returns `403 feature_unavailable`
 when the team is not enrolled.
 
 `CampaignRecipient.FollowUp` retains typed status, receipt anchor, due/expiry times
-and reason. `CampaignAnalytics.FollowUps` is optional; the Platform report is
-required. `CampaignFollowUpReport` counts these outcomes separately from the first
+and reason. `CampaignAnalytics.FollowUps` is required on both surfaces. `CampaignFollowUpReport` counts these outcomes separately from the first
 message. Follow-up timestamps are Unix milliseconds. Native fixture verification
 covers the merged contract; no live follow-up campaign or publication was exercised.
 
@@ -591,3 +590,59 @@ automatically. Request metadata retains the request ID, trace ID, replay header,
 retry advice and content disposition. Native fixtures exercise these contracts;
 live campaign sends, import processing, custody availability and publication
 remain separate acceptance gates.
+
+## Campaign and descriptor delivery contracts
+
+Campaign requests use `CampaignVariableMapping` and `CampaignTrackedLinks`.
+A nil create mapping omits it. PATCH uses `*Nullable[CampaignVariableMapping]`
+and `*Nullable[string]` for mapping and template resets. A nil field omits the
+change; an empty `Nullable` sends null. Empty mappings encode `{}`, and an empty
+`CampaignTrackedLinks` value encodes `[]`. Numeric and `__proto__` mapping keys
+are valid. Bounds count UTF-16 units. Follow-up defaults participate in the
+expiry-greater-than-delay check before HTTP.
+
+Platform `MessagesArray` uses open `CampaignComposedMessage`, media and button
+models. `Extra` retains extension fields. Empty composed messages are valid.
+Platform PATCH remains open and accepts empty updates. Messaging PATCH requires
+at least one change. `LaunchPlatformCampaignRequest` requires an explicit project;
+`SkipMissingVariables` and `ScheduledAt` pointers preserve false and zero.
+Approval, consent, funding, sender and enrollment remain API decisions.
+
+Campaign analytics preserve null timing metrics separately from zero.
+Recipient `FailureReason`, `MessagesSent`, `NextMessageAt`, `SequenceError` and
+`FollowUp` reflect the returned report. `NextMessageAt` is `*float64` so Messaging
+fractional values survive. Recipient-list reason/status/cursor/limit can coexist.
+CSV export keeps its separate filtering rules.
+
+`HistorySyncPolicy` reads archive or descriptor delivery. Writes use
+`HistorySyncPolicyPatch` and `HistoryDeliverySetDescriptor`. Setting delivery or
+resetting `SessionResetHistoryDelivery` selects `2026-10-14` only when the request
+version is absent. A whole-history reset and ordinary GET keep `2026-09-22`.
+Explicit versions are preserved. Go treats an empty `RequestOptions.APIVersion`
+as absent. Initial QuickLinks also accept `SignalMode`; supplementary links
+cannot change custody. `Session.SignalMode` is an optional immutable read fact.
+Configuration cannot change custody or grant browser tunnel access.
+
+`WebhookEvent.TypedPayload` distinguishes `DirectHistorySyncMediaPayload` and
+`DirectHistorySyncInlinePayload` before archive and Cloud history. They use
+projected `whatsapp_ids`, `original_whatsapp_ids` and `oldestMessageAt`. Media
+uses `type: md-msg-hist`; inline uses `zlib-base64-protobuf`. Exactly one branch
+is required. Retry correlation uses a Linked Devices chunk ID, never an event
+UUID. Treat media keys and inline history as private; formatted descriptors are
+redacted. Public event parsing does not decrypt, download, store or acknowledge
+history.
+
+Scoped Client tokens may use relay media upload and pure custom encrypted-byte
+transports. Direct upload grants and history commands require a server principal.
+Selected built-in direct upload is refused before plaintext is read. No-key
+unsafe writes retain conservative retry behavior; a caller key and explicit
+retry count authorize replay where supported. Request body, recipient and owner
+bytes are captured once. Safe response headers include trace/replay metadata;
+request ID and trace ID remain distinct. Unknown error codes remain available.
+
+These source and local package contracts do not establish registry publication,
+deployed API availability, provider acceptance or feature enrollment. Hosted
+QuickLink invitation controls, Console configuration/enrollment and the host
+feature evaluator remain excluded. Signal core/service work, strict compressed
+history, history-storage dispatch, numeric coercion, general cursor and stream
+repairs have separate checkpoints.

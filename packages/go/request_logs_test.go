@@ -114,7 +114,7 @@ func TestRequestLogsNativeTailBackfillRetryAndFollow(t *testing.T) {
 			if r.URL.Query().Get("limit") != "2" || r.URL.Query().Get("status") != "5xx" {
 				t.Error(r.URL.RawQuery)
 			}
-			io.WriteString(w, `{"data":[{"id":"two"},{"id":"one"}],"page":{"hasMore":false,"nextCursor":null,"followCursor":"after1"}}`)
+			io.WriteString(w, `{"data":[{"id":"two","projectId":"project","createdAt":"2026-10-16T00:00:00Z","method":"GET","route":"/health","status":200,"durationMs":0,"result":"success","source":"api","requestId":null,"traceId":null,"errorCode":null,"mcpTool":null,"credential":null},{"id":"one","projectId":"project","createdAt":"2026-10-16T00:00:00Z","method":"GET","route":"/health","status":200,"durationMs":0,"result":"success","source":"api","requestId":null,"traceId":null,"errorCode":null,"mcpTool":null,"credential":null}],"page":{"hasMore":false,"nextCursor":null,"followCursor":"after1"}}`)
 		case 2:
 			w.Header().Set("Retry-After", "0")
 			w.WriteHeader(429)
@@ -123,12 +123,12 @@ func TestRequestLogsNativeTailBackfillRetryAndFollow(t *testing.T) {
 			if r.URL.Query().Get("after") != "after1" || r.URL.Query().Get("status") != "" {
 				t.Error(r.URL.RawQuery)
 			}
-			io.WriteString(w, `{"data":[{"id":"three"}],"page":{"hasMore":true,"nextCursor":null,"followCursor":"after2"}}`)
+			io.WriteString(w, `{"data":[{"id":"three","projectId":"project","createdAt":"2026-10-16T00:00:00Z","method":"GET","route":"/health","status":200,"durationMs":0,"result":"success","source":"api","requestId":null,"traceId":null,"errorCode":null,"mcpTool":null,"credential":null}],"page":{"hasMore":true,"nextCursor":null,"followCursor":"after2"}}`)
 		case 4:
 			if r.URL.Query().Get("after") != "after2" {
 				t.Error(r.URL.RawQuery)
 			}
-			io.WriteString(w, `{"data":[{"id":"four"}],"page":{"hasMore":false,"nextCursor":null,"followCursor":"after3"}}`)
+			io.WriteString(w, `{"data":[{"id":"four","projectId":"project","createdAt":"2026-10-16T00:00:00Z","method":"GET","route":"/health","status":200,"durationMs":0,"result":"success","source":"api","requestId":null,"traceId":null,"errorCode":null,"mcpTool":null,"credential":null}],"page":{"hasMore":false,"nextCursor":null,"followCursor":"after3"}}`)
 		default:
 			t.Error("Extra request")
 			w.WriteHeader(500)

@@ -75,7 +75,7 @@ func (resource *HistorySyncResource) RequestChunkRetry(ctx context.Context, sess
 	if body.ChunkMessageID != "" && !historyMessageID.MatchString(body.ChunkMessageID) {
 		return zero, configuration("chunkMessageId", "Invalid history chunk message identifier.")
 	}
-	response, err := request[Envelope[HistorySyncChunkRetryResult]](ctx, resource.t, "POST", "/messaging/"+escaped(session)+"/history/chunks/retry", nil, body, customerOwnedOptions(options(opts)))
+	response, err := endpointEnvelope[HistorySyncChunkRetryResult](ctx, resource.t, "POST", "/messaging/"+escaped(session)+"/history/chunks/retry", nil, body, customerOwnedOptions(options(opts)))
 	if err == nil && (response.Data.Data.RequestID == "" || response.Data.Data.Status != "requested") {
 		return zero, uploadResponseError("The API returned an invalid history retry result.")
 	}
@@ -99,7 +99,7 @@ func (resource *HistorySyncResource) DeleteChunk(ctx context.Context, session st
 	if body.CompanionMetaNonce != "" {
 		wire["companionMetaNonce"] = body.CompanionMetaNonce
 	}
-	response, err := request[Envelope[HistorySyncChunkDeleteResult]](ctx, resource.t, "POST", "/messaging/"+escaped(session)+"/history/media/delete", nil, wire, customerOwnedOptions(options(opts)))
+	response, err := endpointEnvelope[HistorySyncChunkDeleteResult](ctx, resource.t, "POST", "/messaging/"+escaped(session)+"/history/media/delete", nil, wire, customerOwnedOptions(options(opts)))
 	if err == nil && response.Data.Data.Status != "deleted" {
 		return zero, uploadResponseError("The API returned an invalid history deletion result.")
 	}
