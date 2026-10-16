@@ -22,9 +22,29 @@ use Polymorfa\{ApiResponse, AccountModels, BanSafeModels, RequestOptions};
  * @phpstan-import-type UpdateProjectInsuranceEvidence from BanSafeModels
  * @phpstan-import-type ProjectHealthPolicy from BanSafeModels
  * @phpstan-import-type UpdateProjectHealthPolicy from BanSafeModels
+ * @phpstan-import-type DefaultSettings from \Polymorfa\SignalCustodyModels as CustodyDefault
+ * @phpstan-import-type ProjectUpdate from \Polymorfa\SignalCustodyModels as CustodyProjectUpdate
  */
 final class Projects extends Resource
 {
+    /** @param CustodyProjectUpdate $body
+     * @return \Polymorfa\ApiResponse<array{data:CustodyDefault}> */
+    public function updateSignalCustody(string $projectId, array $body, ?\Polymorfa\RequestOptions $options = null): \Polymorfa\ApiResponse
+    {
+        \Polymorfa\CampaignContractValidation::uuid($projectId, 'projectId');
+        \Polymorfa\CampaignContractValidation::custody($body, false);
+        /** @var \Polymorfa\ApiResponse<array{data:CustodyDefault}> */
+        return \Polymorfa\CampaignContract::request($this->transport, 'PUT', '/platform/projects/'.self::segment($projectId).'/signal-custody', [], \Polymorfa\CampaignContract::body($body), $options, 'custody', false, false, false);
+    }
+
+
+    /** @return \Polymorfa\ApiResponse<array{data:CustodyDefault}> */
+    public function getSignalCustody(string $projectId, ?\Polymorfa\RequestOptions $options = null): \Polymorfa\ApiResponse
+    {
+        \Polymorfa\CampaignContractValidation::uuid($projectId, 'projectId');
+        /** @var \Polymorfa\ApiResponse<array{data:CustodyDefault}> */
+        return \Polymorfa\CampaignContract::request($this->transport, 'GET', '/platform/projects/'.self::segment($projectId).'/signal-custody', [], null, $options, 'custody');
+    }
     /** @return ApiResponse<array{data:ProjectSafeMode}> */
     public function getSafeMode(string $projectId, ?RequestOptions $options = null): ApiResponse
     {

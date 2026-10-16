@@ -11,6 +11,8 @@ use Polymorfa\Resources\PlatformWebhooks;
 final readonly class ProjectClient
 {
     public Events $events;
+    public Resources\ProjectCampaigns $campaigns;
+    public Resources\ProjectSignalCustody $signalCustody;
     public Resources\Flows $flows;
     public Resources\Voice $voice;
     public Resources\CallRecords $calls;
@@ -43,6 +45,8 @@ final readonly class ProjectClient
         }
         $transport ??= new HttpTransport($credential, $baseUrl, $apiVersion, $timeout, $maxNetworkRetries, $proxy, $http);
         $this->projectId = $projectId;
+        $this->campaigns = new Resources\ProjectCampaigns($transport, $projectId);
+        $this->signalCustody = new Resources\ProjectSignalCustody($transport, $projectId);
         $this->flows = new Resources\Flows($transport, $projectId);
         $this->calls = new Resources\CallRecords($transport, $projectId);
         $this->callRetention = new Resources\CallRetention($transport);

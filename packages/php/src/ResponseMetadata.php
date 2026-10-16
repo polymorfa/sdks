@@ -30,7 +30,7 @@ final readonly class ResponseMetadata
             if (in_array($name, ['content-type', 'x-polymorfa-transport', 'x-polymorfa-routing-reason',
                 'x-polymorfa-operation-id', 'x-request-id', 'polymorfa-version', 'retry-after',
                 'polymorfa-data-region', 'x-ratelimit-limit', 'x-ratelimit-remaining', 'x-ratelimit-reset',
-                'polymorfa-ratelimit-reason', 'polymorfa-next-cursor'], true)) {
+                'polymorfa-ratelimit-reason', 'polymorfa-next-cursor', 'content-disposition', 'x-trace-id', 'idempotent-replayed'], true)) {
                 $headers[$name] = implode(', ', $values);
             }
         }

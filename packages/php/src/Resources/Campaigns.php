@@ -18,9 +18,97 @@ use Polymorfa\{ApiResponse,RequestOptions,CampaignModels};
  * @phpstan-import-type ConversionInput from CampaignModels
  * @phpstan-import-type Conversion from CampaignModels
  * @phpstan-import-type ConversionReport from CampaignModels
+ * @phpstan-import-type ReplyFlow from \Polymorfa\CampaignContractModels
+ * @phpstan-import-type PlatformReplyCreate from \Polymorfa\CampaignContractModels
+ * @phpstan-import-type PlatformAssignmentInput from \Polymorfa\CampaignContractModels
+ * @phpstan-import-type Assignment from \Polymorfa\CampaignContractModels
+ * @phpstan-import-type PlatformTestSendInput from \Polymorfa\CampaignContractModels
+ * @phpstan-import-type TestSend from \Polymorfa\CampaignContractModels
+ * @phpstan-import-type LinkReport from \Polymorfa\CampaignContractModels
+ * @phpstan-import-type ProjectParams from \Polymorfa\CampaignContractModels
+ * @phpstan-import-type Approval from \Polymorfa\CampaignContractModels
+ * @phpstan-import-type Settings from \Polymorfa\CampaignContractModels
+ * @phpstan-import-type PlatformExportParams from \Polymorfa\CampaignContractModels
  */
 final class Campaigns extends Resource
 {
+    /** @param PlatformTestSendInput $body
+     * @return \Polymorfa\ApiResponse<array{data:TestSend}> */
+    public function testSend(string $id, array $body, ?\Polymorfa\RequestOptions $options = null): \Polymorfa\ApiResponse
+    {
+        \Polymorfa\CampaignContractValidation::uuid($id, 'id');
+        \Polymorfa\CampaignContractValidation::testSend($body, true);
+        /** @var \Polymorfa\ApiResponse<array{data:TestSend}> */
+        return \Polymorfa\CampaignContract::request($this->transport, 'POST', $this->path($id).'/test-send', [], \Polymorfa\CampaignContract::body($body), $options, 'testSend', false, true, false);
+    }
+
+    /** @param PlatformReplyCreate $body
+     * @return \Polymorfa\ApiResponse<array{data:ReplyFlow}> */
+    public function createReplyFlow(array $body, ?\Polymorfa\RequestOptions $options = null): \Polymorfa\ApiResponse
+    {
+        \Polymorfa\CampaignContractValidation::replyCreate($body, true);
+        /** @var \Polymorfa\ApiResponse<array{data:ReplyFlow}> */
+        return \Polymorfa\CampaignContract::request($this->transport, 'POST', '/platform/campaign-reply-flows', [], \Polymorfa\CampaignContract::body($body), $options, 'replyFlow', false, false, false);
+    }
+
+    /** @param ProjectParams $params
+     * @return \Polymorfa\ApiResponse<array{data:ReplyFlow}> */
+    public function getReplyFlow(string $id, array $params, ?\Polymorfa\RequestOptions $options = null): \Polymorfa\ApiResponse
+    {
+        \Polymorfa\CampaignContractValidation::uuid($id, 'id');
+        \Polymorfa\CampaignContractValidation::selection($params);
+        /** @var \Polymorfa\ApiResponse<array{data:ReplyFlow}> */
+        return \Polymorfa\CampaignContract::request($this->transport, 'GET', '/platform/campaign-reply-flows/'.self::segment($id), $params, null, $options, 'replyFlow', false, false, false);
+    }
+
+    /** @param PlatformAssignmentInput $body
+     * @return \Polymorfa\ApiResponse<array{data:Assignment}> */
+    public function setReplyFlow(string $id, array $body, ?\Polymorfa\RequestOptions $options = null): \Polymorfa\ApiResponse
+    {
+        \Polymorfa\CampaignContractValidation::uuid($id, 'id');
+        \Polymorfa\CampaignContractValidation::assignment($body, true);
+        /** @var \Polymorfa\ApiResponse<array{data:Assignment}> */
+        return \Polymorfa\CampaignContract::request($this->transport, 'PUT', $this->path($id).'/reply-flow', [], \Polymorfa\CampaignContract::body($body), $options, 'assignment', false, false, false);
+    }
+
+    /** @param ProjectParams $params
+     * @return \Polymorfa\ApiResponse<array{data:list<LinkReport>}> */
+    public function links(string $id, array $params, ?\Polymorfa\RequestOptions $options = null): \Polymorfa\ApiResponse
+    {
+        \Polymorfa\CampaignContractValidation::uuid($id, 'id');
+        \Polymorfa\CampaignContractValidation::selection($params);
+        /** @var \Polymorfa\ApiResponse<array{data:list<LinkReport>}> */
+        return \Polymorfa\CampaignContract::request($this->transport, 'GET', $this->path($id).'/links', $params, null, $options, 'links', false, false, false);
+    }
+
+    /** @param ProjectParams $params
+     * @return \Polymorfa\ApiResponse<array{data:list<Approval>}> */
+    public function listLaunchApprovals(string $id, array $params, ?\Polymorfa\RequestOptions $options = null): \Polymorfa\ApiResponse
+    {
+        \Polymorfa\CampaignContractValidation::uuid($id, 'id');
+        \Polymorfa\CampaignContractValidation::selection($params);
+        /** @var \Polymorfa\ApiResponse<array{data:list<Approval>}> */
+        return \Polymorfa\CampaignContract::request($this->transport, 'GET', $this->path($id).'/approvals', $params, null, $options, 'approvals', false, false, false);
+    }
+
+    /**
+     * @return \Polymorfa\ApiResponse<array{data:Settings}> */
+    public function getSettings(?\Polymorfa\RequestOptions $options = null): \Polymorfa\ApiResponse
+    {
+        /** @var \Polymorfa\ApiResponse<array{data:Settings}> */
+        return \Polymorfa\CampaignContract::request($this->transport, 'GET', '/platform/campaign-settings', [], null, $options, 'settings', false, false, true);
+    }
+
+    /** @param PlatformExportParams $params
+     * @return \Polymorfa\ApiResponse<\Polymorfa\CampaignRecipientExportPage> */
+    public function exportRecipients(string $id, array $params, ?\Polymorfa\RequestOptions $options = null): \Polymorfa\ApiResponse
+    {
+        \Polymorfa\CampaignContractValidation::uuid($id, 'campaignId');
+        \Polymorfa\CampaignContractValidation::export($params, true);
+        return \Polymorfa\CampaignContract::export($this->transport, $this->path($id).'/recipients/export', $params, $options);
+    }
+
+
     /** @param array{projectId:string,projectSlug?:string} $params
      * @return ApiResponse<array{data:list<PlatformCampaign>}> */
     public function list(array $params, ?RequestOptions $options = null): ApiResponse

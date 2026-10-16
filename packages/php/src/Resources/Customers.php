@@ -21,9 +21,33 @@ use Polymorfa\{ApiResponse,CustomerModels,RequestOptions};
  * @phpstan-import-type CreatePairingLink from CustomerModels
  * @phpstan-import-type EventParams from CustomerModels
  * @phpstan-import-type Transfer from CustomerModels
+ * @phpstan-import-type DefaultSettings from \Polymorfa\SignalCustodyModels as CustodyDefault
+ * @phpstan-import-type CustomerUpdate from \Polymorfa\SignalCustodyModels as CustodyCustomerUpdate
  */
 final class Customers extends Resource
 {
+    /**
+     * @return \Polymorfa\ApiResponse<array{data:CustodyDefault}> */
+    public function getSignalCustody(string $projectId, string $customerId, ?\Polymorfa\RequestOptions $options = null): \Polymorfa\ApiResponse
+    {
+        \Polymorfa\CampaignContractValidation::uuid($projectId, 'projectId');
+        \Polymorfa\CampaignContractValidation::uuid($customerId, 'customerId');
+        /** @var \Polymorfa\ApiResponse<array{data:CustodyDefault}> */
+        return \Polymorfa\CampaignContract::request($this->transport, 'GET', '/platform/projects/'.self::segment($projectId).'/customers/'.self::segment($customerId).'/signal-custody', [], null, $options, 'custody', false, false, false);
+    }
+
+    /** @param CustodyCustomerUpdate $body
+     * @return \Polymorfa\ApiResponse<array{data:CustodyDefault}> */
+    public function updateSignalCustody(string $projectId, string $customerId, array $body, ?\Polymorfa\RequestOptions $options = null): \Polymorfa\ApiResponse
+    {
+        \Polymorfa\CampaignContractValidation::uuid($projectId, 'projectId');
+        \Polymorfa\CampaignContractValidation::uuid($customerId, 'customerId');
+        \Polymorfa\CampaignContractValidation::custody($body, true);
+        /** @var \Polymorfa\ApiResponse<array{data:CustodyDefault}> */
+        return \Polymorfa\CampaignContract::request($this->transport, 'PUT', '/platform/projects/'.self::segment($projectId).'/customers/'.self::segment($customerId).'/signal-custody', [], \Polymorfa\CampaignContract::body($body), $options, 'custody', false, false, false);
+    }
+
+
     /** @return ApiResponse<array{data:CustomersStatus}> */
     public function status(string $projectId, ?RequestOptions $options = null): ApiResponse
     {/** @var ApiResponse<array{data:CustomersStatus}> */return $this->request('GET', '/platform/projects/'.self::segment($projectId).'/customers/status', options:$options);

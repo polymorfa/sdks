@@ -12,9 +12,21 @@ use Polymorfa\{ApiResponse,RequestOptions,AudienceModels,CampaignModels};
  * @phpstan-import-type Member from AudienceModels
  * @phpstan-import-type Added from AudienceModels
  * @phpstan-import-type RecipientInput from CampaignModels
+ * @phpstan-import-type RetargetInput from \Polymorfa\CampaignContractModels
+ * @phpstan-import-type RetargetResult from \Polymorfa\CampaignContractModels
  */
 final class Audiences extends Resource
 {
+    /** @param RetargetInput $body
+     * @return \Polymorfa\ApiResponse<array{data:RetargetResult}> */
+    public function createFromCampaign(array $body, ?\Polymorfa\RequestOptions $options = null): \Polymorfa\ApiResponse
+    {
+        \Polymorfa\CampaignContractValidation::retarget($body);
+        /** @var \Polymorfa\ApiResponse<array{data:RetargetResult}> */
+        return \Polymorfa\CampaignContract::request($this->transport, 'POST', '/platform/audiences/from-campaign', [], \Polymorfa\CampaignContract::body($body), $options, 'retarget', false, false, true);
+    }
+
+
     /** @return ApiResponse<array{data:array<string,mixed>}> */
     public function list(?RequestOptions $options = null): ApiResponse
     { /** @var ApiResponse<array{data:array<string,mixed>}> */ return $this->request('GET', '/platform/audiences', options:$options);

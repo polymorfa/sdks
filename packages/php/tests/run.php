@@ -200,6 +200,7 @@ require __DIR__.'/webhook_models.php';
 // Media and streaming fixtures are independent. Keep their temporary bodies and
 // HTTP-client closures local rather than retaining them for later native suites.
 foreach ([
+    'campaign_contracts.php',
     'whatsapp_stream.php',
     'media_redirect_review.php',
     'media_encryption.php',

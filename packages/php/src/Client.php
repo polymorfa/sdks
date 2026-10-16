@@ -24,6 +24,7 @@ final readonly class Client
     public Resources\CallOptOuts $callOptOuts;
     public Resources\AnalyticsResource $analytics;
     public Resources\Audiences $audiences;
+    public Resources\AudienceProfiles $audienceProfiles;
     public Resources\Campaigns $campaigns;
     public Resources\RequestLogs $requestLogs;
     public Resources\Operations $operations;
@@ -67,6 +68,7 @@ final readonly class Client
         $this->callOptOuts = new Resources\CallOptOuts($this->transport);
         $this->analytics = new Resources\AnalyticsResource($this->transport);
         $this->audiences = new Resources\Audiences($this->transport);
+        $this->audienceProfiles = new Resources\AudienceProfiles($this->transport);
         $this->campaigns = new Resources\Campaigns($this->transport);
         $this->requestLogs = new Resources\RequestLogs($this->transport);
         $this->quickLinkSettings = new Resources\QuickLinkSettings($this->transport);

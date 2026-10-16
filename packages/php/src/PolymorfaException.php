@@ -17,6 +17,7 @@ class PolymorfaException extends \RuntimeException
         public readonly ?string $docUrl = null,
         public readonly ?string $rateLimitReason = null,
         public readonly mixed $details = null,
+        public readonly ?string $param = null,
     ) {
         parent::__construct($message);
         $this->errorCode = $code;

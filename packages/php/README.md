@@ -636,3 +636,79 @@ The custom callback owns its endpoint and must finalize only after its encrypted
 read succeeds. Native TLS tests cover custom bytes and offsets, wrapped
 relay/direct uploads, incomplete consumption, ignored failure, blocked-source
 deadlines, cancellation, redaction and extension forwarding through S3 uploads.
+
+### Campaign, profile and future custody helpers
+
+This development source adds typed helpers for the `2026-10-14` contract.
+They select that version when `RequestOptions::apiVersion` is omitted and
+preserve explicit overrides. The package-wide default remains `2026-09-22`.
+These additions are unpublished and do not establish feature availability.
+
+Messaging campaign helpers include `links`, `testSend`, `createReplyFlow`,
+`getReplyFlow`, `setReplyFlow` and `exportRecipients`. They require an
+organization API key or Project token. Platform `campaigns` exposes the
+matching helpers plus `listLaunchApprovals` and organization-only `getSettings`.
+A Project view exposes exactly the seven Project campaign helpers, with the
+Project captured by its readonly resource. It rejects caller-supplied Project
+selection fields.
+
+```php
+use Polymorfa\{Client, Credential, RequestOptions};
+
+$platform = new Client(Credential::organizationApiKey(getenv('POLYMORFA_API_KEY')));
+$project = $platform->project($projectId);
+$sent = $project->campaigns->testSend($campaignId, [
+    'sessionId' => $sessionId,
+    'to' => '+15555555555',
+    'variables' => ['first_name' => 'Ada'],
+], new RequestOptions(idempotencyKey: $logicalTestSendId));
+
+$page = $project->campaigns->exportRecipients($campaignId, ['limit' => 1000]);
+$csvBytes = $page->data->csv;
+$nextCursor = $page->data->nextCursor; // Fetch another finite page explicitly.
+```
+
+CSV pages preserve server bytes, quoting and line endings. A filtered export
+cannot use a cursor or a limit below 1000. Exports require a `text/csv` HTTP200
+response and never follow redirects. Cancellation is checked before and after
+body consumption and at reads; an underlying blocking read remains bounded by
+the configured read timeout. Cancelling an HTTP waiter does not undo an
+admitted operation.
+
+Organization clients also expose `audiences->createFromCampaign`,
+`audienceProfiles->{list,retrieve,put,delete,listConsent}` and
+`audienceProfiles->imports->{create,retrieve,cancel}`. Profiles contain
+customer-supplied campaign data. They do not synchronize WhatsApp contacts.
+Profile and consent lists return one finite page. Imports accept canonical
+standard base64 containing at most 10MiB of UTF-8 CSV, with a 14MiB compact JSON
+request limit. An import replay key is distinct from the HTTP idempotency key.
+`optOuts->{getConfirmationSettings,updateConfirmationSettings,getConfirmationSummary}`
+preserves explicit `false`, nullable locale and revision guards. A consent
+assertion never overrides an opt-out or authorizes a send.
+
+`projects->{getSignalCustody,updateSignalCustody}` and
+`customers->{getSignalCustody,updateSignalCustody}` select future reservation
+defaults. A Project view provides `signalCustody->{retrieve,update,retrieveCustomer,updateCustomer}`.
+Customer `signalModeDefault:null` restores inheritance; Project updates require
+`standard` or `zero_knowledge`. These settings do not convert an existing
+Number's custody or move Signal keys.
+
+New request models reject unknown fields, invalid nulls and incompatible
+variants before HTTP. Empty dictionary fields encode as `{}`; lists encode as
+`[]`. Successful responses validate JSON object/list identity and required
+nullable fields before becoming the package's PHP array shapes. Unknown
+response extensions survive. The public aliases live in
+`CampaignContractModels`, `AudienceProfileModels` and `SignalCustodyModels`.
+
+Test-send creates one idempotency key per logical call when omitted. Other new
+writes default to one attempt; explicit retry choices remain available. Captured
+request bytes and selected query/header values remain stable across retries.
+For manual retry of one logical effect, retain the original explicit key.
+`Idempotency-Key` remains a reserved custom header; use the
+`RequestOptions::idempotencyKey` property. Exceptions expose remote `param`
+separately from local `ConfigurationException::field`. Safe metadata includes
+trace ID, replay disposition and content disposition, without arbitrary headers.
+
+These methods preserve API authentication, membership, enrollment, funding,
+consent and feature gates. They add no QuickLink invitation authority, browser
+tunnel transport or customer Signal-core implementation.

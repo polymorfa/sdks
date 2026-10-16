@@ -106,6 +106,15 @@ final class HttpTransport
                 $request['body'] = $binaryStream;
                 $request['headers']['Content-Type'] = 'application/octet-stream';
                 $request['headers']['Content-Length'] = (string) $body->length;
+            } elseif ($body instanceof ContractJsonBody) {
+                $request['body'] = $body->json;
+                $hasContentType = false;
+                foreach (array_keys($request['headers']) as $name) {
+                    $hasContentType = $hasContentType || strtolower($name) === 'content-type';
+                }
+                if (!$hasContentType) {
+                    $request['headers']['Content-Type'] = 'application/json';
+                }
             } elseif ($body !== null) {
                 $request['json'] = $body;
             }
@@ -194,9 +203,17 @@ final class HttpTransport
         return $this->decodeJsonResponse($method, $path, $query, $body, $options, false);
     }
 
+    /** @internal
+     * @param array<string,mixed> $query
+     * @return ApiResponse<mixed> */
+    public function requestJsonTree(string $method, string $path, array $query = [], mixed $body = null, ?RequestOptions $options = null): ApiResponse
+    {
+        return $this->decodeJsonResponse($method, $path, $query, $body, $options, false, false);
+    }
+
     /** @param array<string,mixed> $query
      * @return ApiResponse<mixed> */
-    private function decodeJsonResponse(string $method, string $path, array $query, mixed $body, ?RequestOptions $options, bool $objectOnly): ApiResponse
+    private function decodeJsonResponse(string $method, string $path, array $query, mixed $body, ?RequestOptions $options, bool $objectOnly, bool $associative = true): ApiResponse
     {
         [$response, $metadata] = $this->openStream($method, $path, $query, $body, $options);
         try {
@@ -208,7 +225,7 @@ final class HttpTransport
                 throw new ServerException('Unexpected response content type.', 'invalid_response', metadata: $metadata);
             }
             try {
-                $value = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+                $value = json_decode($raw, $associative, 512, JSON_THROW_ON_ERROR);
             } catch (\JsonException) {
                 throw new ServerException('Invalid JSON response.', 'invalid_response', metadata: $metadata);
             }
@@ -341,7 +358,7 @@ final class HttpTransport
         }
         $metadata = new ResponseMetadata($m->status, $attempt, $m->headers, $m->requestId, $m->apiVersion, $m->operationId, $m->transport, $m->routingReason);
         $type = $error::class;
-        return new $type($error->getMessage(), $error->errorCode, $error->status, $error->requestId, $metadata, $error->requestLogUrl, $error->docUrl, $error->rateLimitReason, $error->details);
+        return new $type($error->getMessage(), $error->errorCode, $error->status, $error->requestId, $metadata, $error->requestLogUrl, $error->docUrl, $error->rateLimitReason, $error->details, $error->param);
     }
     private function mediaLocation(string $location, ResponseMetadata $metadata, string $path, ?string $currentUrl = null): string
     {
@@ -389,7 +406,8 @@ final class HttpTransport
             $text('request_log_url'),
             $text('docs'),
             $metadata->headers['polymorfa-ratelimit-reason'] ?? null,
-            $error['details'] ?? null
+            $error['details'] ?? null,
+            $text('param')
         );
     }
 
