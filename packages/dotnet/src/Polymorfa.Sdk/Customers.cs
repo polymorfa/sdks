@@ -24,7 +24,7 @@ public sealed record CreateCustomerPairingLinkRequest(string? ProjectId = null, 
 public sealed record ListCustomerEventsParameters(string ProjectId, int? Limit = null);
 public sealed record TransferCustomerNumberRequest(string ProjectId, string SourceCustomerId, bool Confirm);
 
-public sealed class Customers : Resource
+public sealed partial class Customers : Resource
 {
     internal Customers(HttpTransport http) : base(http) { }
     private static string Path(string customer) => "/platform/customers/" + E(customer);

@@ -38,7 +38,7 @@ internal sealed class HttpTransport : IDisposable
     internal async Task<ApiResponse<T>> RequestAsync<T>(HttpMethod method, string path, object? body, RequestOptions? requestOptions, IReadOnlyList<KeyValuePair<string, string>>? query = null)
     {
         var options = IdempotencyHeaders.Prepare(requestOptions ?? new RequestOptions());
-        var bytes = body is null ? null : JsonSerializer.SerializeToUtf8Bytes(body, body.GetType(), Json);
+        var bytes = body is CampaignCapturedBody captured ? captured.Bytes : body is null ? null : JsonSerializer.SerializeToUtf8Bytes(body, body.GetType(), Json);
         var previousAttempts = 0;
         var maximumRetries = options.MaxNetworkRetries ?? Options.MaxNetworkRetries;
         var safe = method == HttpMethod.Get || method == HttpMethod.Head || method == HttpMethod.Options || !string.IsNullOrEmpty(options.IdempotencyKey);
@@ -170,7 +170,7 @@ internal sealed class HttpTransport : IDisposable
         }
     }
     internal static string? Header(HttpResponseMessage response, string name) => response.Headers.TryGetValues(name, out var values) || response.Content.Headers.TryGetValues(name, out values) ? string.Join(",", values) : null;
-    private static readonly string[] SafeHeaders = ["content-type", "x-request-id", "request-id", "polymorfa-version", "retry-after", "x-polymorfa-transport", "x-polymorfa-routing-reason", "x-polymorfa-operation-id", "polymorfa-data-region", "x-ratelimit-limit", "x-ratelimit-remaining", "x-ratelimit-reset", "polymorfa-ratelimit-reason", "polymorfa-next-cursor"];
+    private static readonly string[] SafeHeaders = ["content-disposition", "x-trace-id", "idempotent-replayed", "content-type", "x-request-id", "request-id", "polymorfa-version", "retry-after", "x-polymorfa-transport", "x-polymorfa-routing-reason", "x-polymorfa-operation-id", "polymorfa-data-region", "x-ratelimit-limit", "x-ratelimit-remaining", "x-ratelimit-reset", "polymorfa-ratelimit-reason", "polymorfa-next-cursor"];
     internal static ResponseMetadata Metadata(HttpResponseMessage response, int attempts)
     {
         var headers = SafeHeaders.Select(name => (name, value: Header(response, name))).Where(p => p.value is not null).ToDictionary(p => p.name, p => p.value!);

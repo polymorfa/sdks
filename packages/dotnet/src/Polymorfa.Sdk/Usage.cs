@@ -45,7 +45,7 @@ public sealed class Usage : Resource
 }
 public sealed record OptOutSettings(bool Enabled, IReadOnlyList<string> OptOutKeywords, IReadOnlyList<string> OptInKeywords, long? UpdatedAt);
 public sealed record UpdateOptOutSettingsRequest(bool Enabled, IReadOnlyList<string> OptOutKeywords, IReadOnlyList<string> OptInKeywords);
-public sealed class OptOuts : Resource
+public sealed partial class OptOuts : Resource
 {
     internal OptOuts(HttpTransport http) : base(http) { }
     public Task<ApiResponse<DataEnvelope<JsonElement>>> ListAsync(RequestOptions? options = null) => Get<DataEnvelope<JsonElement>>("/platform/optouts", options);

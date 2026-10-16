@@ -5,6 +5,7 @@ namespace Polymorfa.Sdk;
 public class PolymorfaException : Exception
 {
     public string? Code { get; }
+    public string? Param { get; }
     public int? Status { get; }
     public string? RequestId { get; }
     public string? RequestLogUrl { get; }
@@ -14,7 +15,7 @@ public class PolymorfaException : Exception
     public ResponseMetadata? Metadata { get; internal set; }
     public PolymorfaException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? error = null) : base(message)
     {
-        Code = code; Metadata = metadata; Status = metadata?.Status;
+        Code = code; Param = String(error, "param"); Metadata = metadata; Status = metadata?.Status;
         RequestId = String(error, "request_id") ?? metadata?.RequestId;
         RequestLogUrl = String(error, "request_log_url"); DocUrl = String(error, "docs");
         RateLimitReason = metadata?.Headers.GetValueOrDefault("polymorfa-ratelimit-reason");

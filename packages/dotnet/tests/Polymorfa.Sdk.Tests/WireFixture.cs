@@ -9,6 +9,8 @@ internal sealed class WireFixture : IDisposable
 {
     private readonly TcpListener listener = new(IPAddress.Loopback, 0);
     public Uri Url { get; }
+    internal IReadOnlyDictionary<string,string> CapturedHeaders { get; private set; } = new Dictionary<string,string>();
+    internal byte[] CapturedBody { get; private set; } = [];
     internal bool Pending => listener.Pending();
     private readonly X509Certificate2? certificate;
     public string? Authorization { get; init; }
@@ -34,6 +36,7 @@ internal sealed class WireFixture : IDisposable
         var lines = Encoding.ASCII.GetString(bytes.ToArray()).Split("\r\n");
         if (lines[0] != $"{method} {path} HTTP/1.1") throw new Exception($"Unexpected native request line: {lines[0]}");
         var headers = lines.Skip(1).Where(line => line.Contains(':')).Select(line => line.Split(':', 2)).ToDictionary(row => row[0], row => row[1].Trim(), StringComparer.OrdinalIgnoreCase);
+        CapturedHeaders = headers;
         if (Authorization is not null && (!headers.TryGetValue("authorization", out var credential) || credential != Authorization)) throw new Exception("Native authorization header differs.");
         if (absentHeader is not null && headers.ContainsKey(absentHeader)) throw new Exception("Sensitive header reached storage.");
         foreach (var expectedHeader in expectedHeaders ?? ExpectedHeaders ?? new Dictionary<string, string>())
@@ -42,6 +45,7 @@ internal sealed class WireFixture : IDisposable
         foreach (var required in RequiredHeaders) if (!headers.TryGetValue(required, out var requiredValue) || string.IsNullOrEmpty(requiredValue)) throw new Exception("Missing native header: " + required);
         var length = headers.TryGetValue("content-length", out var rawLength) ? int.Parse(rawLength) : 0;
         var input = new byte[length]; await stream.ReadExactlyAsync(input, timeout.Token);
+        CapturedBody = input;
         if (body is null) { if (length != 0) throw new Exception("Unexpected native body."); }
         else
         {

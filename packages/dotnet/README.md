@@ -39,7 +39,7 @@ Known webhooks have typed payloads for all 84 names in the pinned TypeScript con
 
 `Events.LiveSource` and `EventStreamSource` feed decoded webhook bodies to an application-owned store. Each subscription resumes from its saved cursor and skips events whose body was not retained. Dispose the subscription to stop delivery; await `DisposeAsync` or `Completion` to wait for stream cleanup. `OnError` receives terminal stream or listener failures.
 
-All 439 REST operations covered by the pinned TypeScript server SDK have handwritten C# methods and native HTTP fixtures. Campaign supplements add three more operations; Graph and testing-phone supplements have separate fixtures. This is source-level contract coverage, not a registry release or hosted acceptance result.
+The existing coverage ledger records 442 covered operations. The separate campaign/custody supplement adds 30 source implementations with TCP fixtures; its ledger adoption is pending. Graph and testing-phone supplements retain their separate fixtures. This is source-level contract coverage, not a registry release or hosted acceptance result.
 
 `CallsClient` tracks incoming and outgoing calls. `Call` provides answer, join, reject, leave, end, participant controls and typed media frames. Connections authenticate in the first WebSocket frame, refresh expiring credentials, detect missed heartbeats and reconnect within a bounded attempt budget. Media reconnect preserves connection identity and acknowledged preferences. `CallsTokenSource` shares concurrent provider requests while preserving each caller's cancellation. PCM uses the rate announced in `Call.SampleRate`; H.264 frames retain timestamps. Outgoing H.264 uses the protocol's reserved source zero; received source ownership is exposed separately.
 
@@ -50,6 +50,71 @@ Use `Call.MediaFramesAsync` for PCM, H.264, source ownership and keyframe reques
 The [examples](examples/README.md) include an ASP.NET Core authenticated token/webhook server, Blazor WebAssembly and MAUI Blazor Hybrid hosts, and a programmatic Calls agent. Native builds verify the examples; ASP.NET and Blazor WebAssembly run in a browser against local API fixtures. The MAUI Mac Catalyst app completes sign-in, component mounting, token minting, inbox loading and logout against the same fixtures. Other MAUI platforms remain unexercised.
 
 Signal cryptography and key custody remain in the customer-operated Signal service; the SDK connects to its local application API.
+
+### Campaign, audience profiles and custody defaults
+
+The 30-operation campaign/custody supplement follows API source
+`f97ad78b172e80788c33bdc0fcf28f75db9283ec`. These helpers use
+`Polymorfa-Version: 2026-10-14` when `RequestOptions.ApiVersion` is absent.
+An explicit override is preserved. Existing helpers retain their `2026-09-22`
+default. This is unpublished source; the supplement remains held for release.
+
+`OrganizationClient.AudienceProfiles` provides `ListAsync`, `RetrieveAsync`,
+`PutAsync`, `DeleteAsync` and `ListConsentAsync`. Its `Imports` resource provides
+`CreateAsync`, `RetrieveAsync` and `CancelAsync`. Profiles contain customer-supplied
+campaign data. They do not import WhatsApp contacts, and consent assertions do
+not authorize a send. Attribute values use `AudienceProfileAttributeValue`,
+including its explicit `Null`; campaign test variables use
+`CampaignVariableValue` and admit string, finite number or boolean values.
+
+`OrganizationClient.Campaigns` provides `GetReplyFlowAsync`,
+`CreateReplyFlowAsync`, `SetReplyFlowAsync`, `TestSendAsync`,
+`ListLaunchApprovalsAsync`, `LinksAsync`, `ExportRecipientsAsync` and
+`GetSettingsAsync`. `Audiences.CreateFromCampaignAsync` creates an outcome-based
+audience. `OptOuts` provides `GetConfirmationSettingsAsync`,
+`UpdateConfirmationSettingsAsync` and `GetConfirmationSummaryAsync`.
+
+A retained `platform.Project(projectId).Campaigns` view exposes the same seven
+campaign methods with its captured project. Settings and organization profile,
+import, retarget and STOP resources remain on the organization client. The six
+Messaging campaign methods use a project slug and keep `SuccessEnvelope<T>`;
+all require a server principal. Platform campaign responses retain
+`DataEnvelope<T>`. Reply flows use the closed `CampaignReplyText`,
+`CampaignReplyButtons`, `CampaignReplyList`, `CampaignReplyForm` send variants
+and `CampaignReplyKeyword`, `CampaignReplyChoice`, `CampaignReplySubmission`
+matches. Unpaired UTF-16 surrogates are refused before HTTP because the .NET serializer
+would replace them. Well-formed Unicode retains the contract UTF-8 and UTF-16
+bounds. Responses preserve required nulls and reject malformed successful
+responses, unknown variants and missing fields.
+
+```csharp
+using var platform = new OrganizationClient(Credential.OrganizationApiKey(apiKey));
+using var project = platform.Project(projectId);
+await project.Campaigns.SetReplyFlowAsync(campaignId, new(null));
+await project.SignalCustody.UpdateCustomerAsync(customerId, new(0, null));
+var defaults = await project.SignalCustody.RetrieveAsync();
+Console.WriteLine(defaults.Data.EffectiveSignalMode);
+```
+
+A null reply-flow ID detaches the flow. Customer custody null restores Project
+inheritance. Project updates require a concrete `SignalCustodyMode`; these
+settings affect future defaults and do not move existing Number keys. The four
+bound `SignalCustody` methods unwrap the data envelope once and retain metadata.
+The equivalent organization `Projects` and `Customers` aliases retain
+`DataEnvelope<SignalCustodyDefault>`. Disposing a borrowed Project view does not
+close its owner's transport. Project tokens cannot rebind to another project;
+organization credentials retain their existing rebind behavior.
+
+Profile and consent lists return one `AudienceProfilePage<T>` with
+`Page.NextCursor` and `Page.HasMore`. Exports return one
+`CampaignRecipientExportPage` with the exact CSV, next cursor and display
+filename. The SDK does not fetch subsequent pages, create files, poll imports
+or follow export redirects. STOP updates retain disabled `false` and required
+null locale. Import replay keys remain body identity, and ordinary new writes
+have no automatic replay by default even when given an HTTP key. Explicit retry
+limits remain caller choices. Test sends capture one caller or generated key,
+request headers and body for their retries. Cancellation stops the HTTP wait;
+it does not cancel an operation already admitted by the API.
 
 Run the native checks from the repository root:
 

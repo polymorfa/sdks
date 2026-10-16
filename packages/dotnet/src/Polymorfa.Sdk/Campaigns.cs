@@ -106,7 +106,7 @@ internal static class CampaignOptions
     internal static RequestOptions Idempotent(RequestOptions? options) => (options ?? new()).WithIdempotency();
     internal static RequestOptions Append(RequestOptions? options) => options is { MaxNetworkRetries: not null, IdempotencyKey: not null } ? options : (options ?? new()) with { MaxNetworkRetries = 0 };
 }
-public sealed class MessagingCampaigns : Resource
+public sealed partial class MessagingCampaigns : Resource
 {
     internal MessagingCampaigns(HttpTransport http) : base(http) { }
     private static string Path(string slug) => "/messaging/projects/" + E(slug) + "/campaigns";
@@ -125,7 +125,7 @@ public sealed class MessagingCampaigns : Resource
     public Task<ApiResponse<SuccessEnvelope<AddCampaignRecipientsResult>>> AddRecipientsAsync(string slug, string id, AddCampaignRecipientsRequest input, RequestOptions? options = null) => Post<SuccessEnvelope<AddCampaignRecipientsResult>>(Path(slug, id) + "/recipients", input, CampaignOptions.Append(options));
     public Task<ApiResponse<SuccessEnvelope<CampaignRequeueResult>>> RequeueAsync(string slug, string id, RequeueCampaignRequest? input = null, RequestOptions? options = null) => Post<SuccessEnvelope<CampaignRequeueResult>>(Path(slug, id) + "/requeue", input ?? new(), options);
 }
-public sealed class PlatformCampaigns : Resource
+public sealed partial class PlatformCampaigns : Resource
 {
     internal PlatformCampaigns(HttpTransport http) : base(http) { }
     private static string Path(string id) => "/platform/campaigns/" + E(id);

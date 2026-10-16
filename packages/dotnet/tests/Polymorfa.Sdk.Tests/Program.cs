@@ -3,6 +3,10 @@ using System.Text;
 using System.Text.Json;
 using Polymorfa.Sdk;
 
+if (args.Contains("--campaign-types-only")) { await CampaignContractTypeTests.RunAsync(); return; }
+if (args.Contains("--campaign-import-only")) { await CampaignContractTests.LargeImportAsync(); return; }
+if (args.Contains("--campaign-contract-only")) { await CampaignContractTests.RunAsync(); return; }
+
 if (args.Contains("--idempotency-only")) { await IdempotencyHeaderTests.RunAsync(); return; }
 
 var directory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -122,6 +126,8 @@ try
     await AudienceSettingsTests.RunAsync();
     await CampaignTests.RunAsync();
     await IdempotencyHeaderTests.RunAsync();
+    await CampaignContractTests.RunAsync();
+    await CampaignContractTypeTests.RunAsync();
     await ProjectPairingTests.RunAsync();
     await CallAnalyticsTests.RunAsync();
     await GraphTests.RunAsync();

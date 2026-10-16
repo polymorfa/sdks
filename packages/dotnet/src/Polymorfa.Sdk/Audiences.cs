@@ -22,7 +22,7 @@ public sealed record ListAudienceMembersParameters(string? Cursor = null, int? L
 public sealed record AddAudienceMembersRequest(IReadOnlyList<CampaignRecipientInput> Members);
 public sealed record AddAudienceMembersResult(string ListId, long Added, long RecipientCount, long DuplicateCount, long InvalidCount, IReadOnlyList<InvalidRecipientRow> InvalidRows);
 public sealed record DeleteAudienceMemberResult(bool Removed, string ListId, string Phone, long RecipientCount);
-public sealed class Audiences : Resource
+public sealed partial class Audiences : Resource
 {
     internal Audiences(HttpTransport http) : base(http) { }
     private static string Path(string id) => "/platform/audiences/" + E(id);
