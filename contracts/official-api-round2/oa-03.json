@@ -1,0 +1,816 @@
+{
+  "paths": {
+    "/messaging/quicklinks/{id}": {
+      "get": {
+        "operationId": "getQuickLink",
+        "tags": ["QuickLink"],
+        "summary": "Read QuickLink status",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "quicklink:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current QuickLink status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuickLinkStatusResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">quicklink:manage</Badge>"
+        },
+        "description": "**Required scope:** `quicklink:manage`"
+      },
+      "delete": {
+        "operationId": "cancelQuickLink",
+        "tags": ["QuickLink"],
+        "summary": "Cancel a QuickLink",
+        "description": "**Required scope:** `quicklink:manage`\n\nCancels pending onboarding. Initial Number cleanup is accepted asynchronously and completes only after runtime teardown. Supplementary and reauthorization links cancel only their pending attempts; the existing Number remains. Accepted provider work must finish before cancellation.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "quicklink:manage",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "202": {
+            "description": "QuickLink invalidated; Number cleanup pending",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "enum": [true]
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["success", "message"]
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">quicklink:manage</Badge>"
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "QuickLinkStatus": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": ["initial", "add_connection", "reauthorization"]
+          },
+          "connectionGoal": {
+            "type": "string",
+            "enum": ["single", "hybrid"]
+          },
+          "addConnection": {
+            "type": "string",
+            "enum": ["linked_devices", "official_api"]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "opened",
+              "linked",
+              "connected",
+              "failed",
+              "cancelled"
+            ],
+            "description": "`linked`: for Linked Devices, the device is linked and the recipient has not confirmed; for Meta Cloud API, the number is connected to Meta and is still being made ready to send. For Meta Cloud API, `connected` requires every readiness check to pass, a successful runtime connection, and the recipient's confirmation. `failed` carries the reason in `errorCode`."
+          },
+          "session": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "openedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "connectedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true,
+            "description": "Connected phone in E.164 once the link is connected."
+          },
+          "errorCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "hybridPhase": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "cloud_setup",
+              "linked_pairing",
+              "repair_linked",
+              "ready",
+              null
+            ]
+          },
+          "onboarding": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "stage": {
+                "type": "string"
+              },
+              "connection": {
+                "type": "string",
+                "nullable": true
+              },
+              "coexistence": {
+                "type": "boolean",
+                "nullable": true
+              },
+              "contactsSync": {
+                "type": "string"
+              },
+              "historySync": {
+                "type": "string"
+              },
+              "historyProgress": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "errorCode": {
+                "type": "string",
+                "nullable": true
+              },
+              "sync": {
+                "$ref": "#/components/schemas/CloudSyncStatus"
+              }
+            },
+            "required": [
+              "stage",
+              "connection",
+              "coexistence",
+              "contactsSync",
+              "historySync",
+              "historyProgress",
+              "errorCode",
+              "sync"
+            ],
+            "description": "Durable connection and sync progress; omitted when the onboarding service is unavailable, null when no record exists. Sync request and delivery evidence are independent of the connection stage."
+          }
+        },
+        "required": [
+          "id",
+          "purpose",
+          "connectionGoal",
+          "status",
+          "session",
+          "expiresAt",
+          "openedAt",
+          "connectedAt",
+          "phone",
+          "errorCode",
+          "hybridPhase"
+        ]
+      },
+      "CloudSyncStatus": {
+        "type": "object",
+        "properties": {
+          "contacts": {
+            "type": "object",
+            "properties": {
+              "request": {
+                "type": "string",
+                "enum": [
+                  "not_applicable",
+                  "not_requested",
+                  "pending",
+                  "requesting",
+                  "accepted",
+                  "declined",
+                  "unknown"
+                ],
+                "description": "Accepted means Meta returned a request receipt; it does not prove all contacts were delivered. Unknown means a one-time request may have been accepted without a saved receipt."
+              },
+              "receiptRecorded": {
+                "type": "boolean"
+              }
+            },
+            "required": ["request", "receiptRecorded"]
+          },
+          "history": {
+            "type": "object",
+            "properties": {
+              "request": {
+                "type": "string",
+                "enum": [
+                  "not_applicable",
+                  "not_requested",
+                  "pending",
+                  "requesting",
+                  "accepted",
+                  "declined",
+                  "unknown"
+                ]
+              },
+              "receiptRecorded": {
+                "type": "boolean"
+              },
+              "delivery": {
+                "type": "string",
+                "enum": [
+                  "not_applicable",
+                  "not_requested",
+                  "unconfirmed",
+                  "partial",
+                  "complete",
+                  "declined"
+                ],
+                "description": "Partial and complete describe the latest history progress reported by Meta. Unconfirmed does not mean that no history exists."
+              }
+            },
+            "required": ["request", "receiptRecorded", "delivery"]
+          }
+        },
+        "required": ["contacts", "history"]
+      },
+      "PublicError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request_error",
+                  "authentication_error",
+                  "permission_error",
+                  "conflict_error",
+                  "rate_limit_error",
+                  "api_error",
+                  "upstream_error"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_parameter",
+                  "invalid_credential",
+                  "entitlement_required",
+                  "cloud_template_authority_restricted",
+                  "gate_limit_reached",
+                  "method_not_allowed",
+                  "permission_denied",
+                  "missing_scope",
+                  "resource_not_found",
+                  "hms_not_enabled",
+                  "media_fetch_failed",
+                  "resource_gone",
+                  "feature_unavailable",
+                  "stream_cursor_invalid",
+                  "stream_cursor_expired",
+                  "stream_connection_limit_reached",
+                  "state_conflict",
+                  "team_deletion_scheduled",
+                  "hybrid_routing_paused",
+                  "hybrid_choice_required",
+                  "hybrid_transition_ineligible",
+                  "hybrid_automation_unavailable",
+                  "hybrid_transport_unavailable",
+                  "hybrid_target_reference_unavailable",
+                  "send_outcome_unknown",
+                  "idempotency_conflict",
+                  "idempotency_in_progress",
+                  "idempotency_completed",
+                  "idempotency_outcome_unknown",
+                  "call_claimed",
+                  "call_not_ringing",
+                  "connection_limit",
+                  "unsupported_for_connection",
+                  "call_permission_required",
+                  "invalid_sip_trunk",
+                  "calls_disabled",
+                  "call_recipient_opted_out",
+                  "call_destination_blocked",
+                  "call_permission_request_limited",
+                  "call_permission_granted",
+                  "order_status_transition_invalid",
+                  "order_cancellation_failed",
+                  "call_opt_out_limit",
+                  "number_restricted",
+                  "sip_trunk_in_use",
+                  "sip_trunk_revision_conflict",
+                  "sip_trunk_limit",
+                  "sip_unavailable",
+                  "voice_not_enabled",
+                  "provider_credential_invalid",
+                  "provider_unavailable",
+                  "asset_not_ready",
+                  "voice_asset_in_use",
+                  "voice_asset_revision_conflict",
+                  "voice_unavailable",
+                  "rate_limit_exceeded",
+                  "internal_error",
+                  "operation_not_supported",
+                  "upstream_failure",
+                  "service_unavailable",
+                  "credential_verification_unavailable",
+                  "session_not_ready",
+                  "command_dispatch_failed",
+                  "result_unknown",
+                  "parent_bsuid_not_supported",
+                  "recipient_not_on_whatsapp",
+                  "conversation_window_closed",
+                  "template_not_approved",
+                  "media_too_large",
+                  "whatsapp_rate_limited",
+                  "new_chat_limit_reached",
+                  "whatsapp_account_restricted",
+                  "whatsapp_authorization_required",
+                  "whatsapp_payment_method_required",
+                  "whatsapp_number_not_registered",
+                  "whatsapp_groups_ineligible",
+                  "whatsapp_group_creation_paused",
+                  "whatsapp_group_limit_reached",
+                  "whatsapp_group_full",
+                  "whatsapp_group_suspended",
+                  "whatsapp_group_has_no_participants",
+                  "bansafe_suspended",
+                  "bansafe_org_suspended",
+                  "bansafe_cold_blocked",
+                  "bansafe_cold_held",
+                  "bansafe_throttled",
+                  "bansafe_daily_allowance_reached",
+                  "bansafe_accounting_unavailable",
+                  "bansafe_send_outcome_unknown",
+                  "campaigns_not_entitled",
+                  "campaign_throughput_capped",
+                  "campaign_approval_required",
+                  "campaign_approval_stale",
+                  "campaign_variables_missing"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "param": {
+                "type": "string",
+                "nullable": true
+              },
+              "request_id": {
+                "type": "string",
+                "description": "Matches the X-Request-Id response header. Include it when you contact support."
+              },
+              "request_log_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+              }
+            },
+            "required": ["type", "code", "message", "param", "request_id"]
+          },
+          "data": {
+            "type": "string",
+            "nullable": true,
+            "enum": [null],
+            "description": "Always null for a failed request."
+          },
+          "docs": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": ["error", "data", "docs"]
+      },
+      "QuickLinkStatusResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [true]
+          },
+          "data": {
+            "$ref": "#/components/schemas/QuickLinkStatus"
+          }
+        },
+        "required": ["success", "data"]
+      }
+    }
+  }
+}

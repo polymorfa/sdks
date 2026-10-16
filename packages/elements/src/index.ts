@@ -6,6 +6,7 @@ export {
 } from "./base.js";
 export {
   PolymorfaChatDrawerElement,
+  PolymorfaChatWindowElement,
   PolymorfaComposeBoxElement,
   PolymorfaMessageListElement,
   defineChatElements,
@@ -20,6 +21,7 @@ export { PolymorfaCallElement, defineCallElements } from "./calls.js";
 export {
   PolymorfaConnectWhatsAppElement,
   PolymorfaInboxElement,
+  PolymorfaQuickLinkButtonElement,
   PolymorfaSessionStatusElement,
   defineDropInElements,
   definePolymorfa,

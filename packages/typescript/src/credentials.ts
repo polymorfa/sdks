@@ -1,7 +1,6 @@
 import { PolymorfaConfigurationError } from "./errors.js";
 
-const ORGANIZATION_API_KEY_V1 = /^pmfa_[A-Za-z0-9_-]{72}$/;
-const PROJECT_TOKEN_V1 = /^pmfa_pt_[A-Za-z0-9_-]{93}[AQgw]$/;
+import { isOpaqueCredential, isClientCredential } from "./credential-shape.js";
 
 export type MessagingCredential =
   | { readonly type: "apiKey"; readonly value: string }
@@ -47,17 +46,14 @@ export function validateMessagingCredential(
   if (credential.type === "projectToken") {
     if (!isProjectToken(credential.value)) {
       throw new PolymorfaConfigurationError(
-        "Messaging project tokens must use the canonical pmfa_pt_ v1 format.",
+        "Messaging project tokens must use the canonical pmfa_pt_ opaque format.",
         "credential",
       );
     }
     return credential;
   }
   if (credential.type === "clientToken") {
-    if (
-      !credential.value.startsWith("pmfa_ct_") ||
-      credential.value.length <= "pmfa_ct_".length
-    ) {
+    if (!isClientCredential(credential.value)) {
       throw new PolymorfaConfigurationError(
         "Messaging client token must use the pmfa_ct_ prefix.",
         "credential",
@@ -77,7 +73,7 @@ export function validateClientCredential(
   if (credential.type === "projectToken") {
     if (!isProjectToken(credential.value)) {
       throw new PolymorfaConfigurationError(
-        "Project tokens must use the canonical pmfa_pt_ v1 format.",
+        "Project tokens must use the canonical pmfa_pt_ opaque format.",
         "credential",
       );
     }
@@ -92,7 +88,7 @@ export function validateOrganizationApiKey(value: string): string {
   rejectNonOrganizationCredential(value);
   if (!isServerApiKey(value)) {
     throw new PolymorfaConfigurationError(
-      "Organization server API keys must use the canonical pmfa_ v1 format.",
+      "Team keys must use the canonical pmfa_ opaque format.",
       "credential",
     );
   }
@@ -111,7 +107,7 @@ function rejectListenerCredential(value: string): void {
 function rejectNonOrganizationCredential(value: string): void {
   if (value.startsWith("pmfa_ct_") || value.startsWith("pmfa_pt_")) {
     throw new PolymorfaConfigurationError(
-      "Client and project tokens cannot be used as organization server API keys.",
+      "Client and project tokens cannot be used as team keys.",
       "credential",
     );
   }
@@ -121,7 +117,7 @@ function rejectNonOrganizationCredential(value: string): void {
     value.startsWith("pmfa_sd_")
   ) {
     throw new PolymorfaConfigurationError(
-      "Special-purpose tickets and capabilities cannot be used as organization server API keys.",
+      "Special-purpose tickets and capabilities cannot be used as team keys.",
       "credential",
     );
   }
@@ -166,9 +162,9 @@ export function assertServerRuntime(
 }
 
 function isServerApiKey(value: string): boolean {
-  return ORGANIZATION_API_KEY_V1.test(value);
+  return isOpaqueCredential(value, "pmfa_");
 }
 
 function isProjectToken(value: string): boolean {
-  return PROJECT_TOKEN_V1.test(value);
+  return isOpaqueCredential(value, "pmfa_pt_");
 }

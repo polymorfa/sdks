@@ -16,7 +16,10 @@
       "@polymorfa/react": ["./packages/react/src/index.ts"],
       "@polymorfa/store": ["./packages/store/src/index.ts"],
       "@polymorfa/store/react": ["./packages/store/src/react.ts"],
-      "@polymorfa/ui": ["./packages/ui/src/index.ts"]
+      "@polymorfa/ui": ["./packages/ui/src/index.ts"],
+      "@polymorfa/storage": ["./packages/storage/src/index.ts"],
+      "@polymorfa/storage/d1": ["./packages/storage/src/adapters/d1.ts"],
+      "@polymorfa/storage/d1-bridge": ["./packages/storage/src/d1-bridge.ts"]
     },
     "strict": true,
     "exactOptionalPropertyTypes": true,
@@ -32,6 +35,7 @@
     "packages/*/test/**/*.ts",
     "packages/*/test/**/*.tsx",
     "examples/**/*.ts",
+    "packages/dotnet/examples/**/*.ts",
     "examples/**/*.tsx",
     "vitest.config.ts"
   ]

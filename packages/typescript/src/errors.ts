@@ -1,3 +1,23 @@
+function redactCredentialText(value: string): string {
+  return value.replace(/pmfa_[A-Za-z0-9_-]+/g, "[REDACTED]");
+}
+function redactErrorDetails(value: unknown): unknown {
+  if (typeof value === "string") return redactCredentialText(value);
+  if (Array.isArray(value)) return value.map(redactErrorDetails);
+  if (value && typeof value === "object")
+    return Object.fromEntries(
+      Object.entries(value).map(([key, child]) => [
+        key,
+        /^(authorization|apikey|projecttoken|clienttoken|credential|token|secret)$/i.test(
+          key.replace(/[^a-z0-9]/gi, ""),
+        )
+          ? "[REDACTED]"
+          : redactErrorDetails(child),
+      ]),
+    );
+  return value;
+}
+
 import type { ResponseMetadata } from "./transport/types.js";
 
 /**
@@ -6,6 +26,10 @@ import type { ResponseMetadata } from "./transport/types.js";
  * existing values are never renamed or reused.
  */
 export const POLYMORFA_ERROR_CODES = [
+  "campaign_approval_required",
+  "campaign_approval_stale",
+  "campaign_variables_missing",
+  "zero_knowledge_session",
   "invalid_parameter",
   "invalid_credential",
   "entitlement_required",
@@ -67,6 +91,14 @@ export const POLYMORFA_ERROR_CODES = [
   "idempotency_in_progress",
   "idempotency_outcome_unknown",
   "feature_unavailable",
+  "whatsapp_authorization_required",
+  "whatsapp_payment_method_required",
+  "whatsapp_number_not_registered",
+  "marketing_disabled_on_cloud_api",
+  "parent_bsuid_not_supported",
+  "hybrid_group_linked_devices_unavailable",
+  "catalog_cache_full",
+  "catalog_sync_cooldown",
   "stream_connection_limit_reached",
   "stream_cursor_expired",
   "stream_cursor_invalid",
@@ -127,6 +159,7 @@ export function isKnownPolymorfaErrorCode(
 }
 
 export interface PolymorfaErrorOptions {
+  readonly param?: string;
   readonly code?: PolymorfaErrorCode;
   readonly status?: number;
   readonly requestId?: string;
@@ -139,6 +172,7 @@ export interface PolymorfaErrorOptions {
 }
 
 export class PolymorfaError extends Error {
+  readonly param: string | undefined;
   readonly code: PolymorfaErrorCode | undefined;
   readonly status: number | undefined;
   /** `error.request_id` from the body, else the `X-Request-Id` header. */
@@ -154,17 +188,18 @@ export class PolymorfaError extends Error {
 
   constructor(message: string, options: PolymorfaErrorOptions = {}) {
     super(
-      message,
+      redactCredentialText(message),
       options.cause === undefined ? undefined : { cause: options.cause },
     );
     this.name = new.target.name;
     this.code = options.code;
+    this.param = options.param;
     this.status = options.status;
     this.requestId = options.requestId;
     this.requestLogUrl = options.requestLogUrl;
     this.docUrl = options.docUrl;
     this.rateLimitReason = options.rateLimitReason;
-    this.details = options.details;
+    this.details = redactErrorDetails(options.details);
     this.metadata = options.metadata;
   }
 }

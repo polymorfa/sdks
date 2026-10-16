@@ -9,6 +9,7 @@ import {
 import {
   PolymorfaConnectWhatsAppElement,
   PolymorfaInboxElement,
+  PolymorfaQuickLinkButtonElement,
   PolymorfaSessionStatusElement,
   definePolymorfa,
 } from "../src/index.js";
@@ -25,7 +26,7 @@ function tokenFetch(allow: readonly PolymorfaPermission[]) {
         },
       });
     return Response.json({
-      value: "pmfa_ct_fixture",
+      value: "pmfa_ct_Zml4dHVyZQ",
       audience: "browser",
       expiresAt: Date.now() + 600_000,
       grant: { session: "support", conversations: "all", allow },
@@ -120,7 +121,137 @@ describe("definePolymorfa", () => {
   });
 });
 
+describe("<pmfa-quicklink-button>", () => {
+  it("links to a supplied QuickLink without a token or handler call", async () => {
+    const fetch = tokenFetch([]);
+    definePolymorfa({
+      client: new PolymorfaClient({ fetch }),
+      appearance: { elements: { connectButton: { className: "host-link" } } },
+    });
+    const element = document.createElement(
+      "pmfa-quicklink-button",
+    ) as PolymorfaQuickLinkButtonElement;
+    element.setAttribute("url", "https://link.polymorfa.com/ql_1");
+    element.setAttribute("target", "popup");
+    const opened = vi.fn();
+    element.addEventListener("pmfa-open", opened);
+    document.body.append(element);
+    const link = element.shadowRoot!.querySelector("a")!;
+    expect(link.getAttribute("href")).toBe("https://link.polymorfa.com/ql_1");
+    expect(link.target).toBe("_blank");
+    expect(link.rel).toBe("noopener noreferrer");
+    expect(link.classList.contains("pmfa-btn-primary")).toBe(true);
+    expect(link.classList.contains("host-link")).toBe(true);
+    expect(link.getAttribute("part")).toBe("connect-button");
+    expect(link.textContent).toBe("Connect WhatsApp");
+    link.addEventListener("click", (event) => event.preventDefault());
+    link.click();
+    expect(opened).toHaveBeenCalledTimes(1);
+    element.setAttribute("label", "Link your phone");
+    expect(element.shadowRoot!.querySelector("a")!.textContent).toBe(
+      "Link your phone",
+    );
+    expect(
+      fetch.mock.calls.some(([input]) => String(input).endsWith("/connect")),
+    ).toBe(false);
+  });
+
+  it("renders nothing without a warning until the URL arrives", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    definePolymorfa({ client: new PolymorfaClient({ fetch: tokenFetch([]) }) });
+    const element = document.createElement("pmfa-quicklink-button");
+    document.body.append(element);
+    expect(element.shadowRoot!.querySelector("a")).toBeNull();
+    element.setAttribute("url", "");
+    expect(element.shadowRoot!.querySelector("a")).toBeNull();
+    element.setAttribute("url", "https://link.polymorfa.com/ql_1");
+    expect(element.shadowRoot!.querySelector("a")?.getAttribute("href")).toBe(
+      "https://link.polymorfa.com/ql_1",
+    );
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it("renders nothing for a non-https URL and never logs the URL", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    definePolymorfa({ client: new PolymorfaClient({ fetch: tokenFetch([]) }) });
+    const element = document.createElement("pmfa-quicklink-button");
+    element.setAttribute("url", "http://example.com/ql_secret");
+    document.body.append(element);
+    expect(element.shadowRoot!.querySelector("a")).toBeNull();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0]?.[0])).not.toContain("ql_secret");
+  });
+});
+
 describe("<pmfa-inbox>", () => {
+  it("filters observed unread rows and preserves search focus while typing", async () => {
+    const client = definePolymorfa({
+      client: new PolymorfaClient({ fetch: tokenFetch(["read_messages"]) }),
+    });
+    await client.refresh();
+    const inbox = document.createElement("pmfa-inbox") as PolymorfaInboxElement;
+    inbox.source = source;
+    document.body.append(inbox);
+    await vi.waitFor(() =>
+      expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(2),
+    );
+    const search = inbox.shadowRoot!.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    )!;
+    search.focus();
+    search.value = "Ada";
+    search.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(1);
+    expect(
+      inbox.shadowRoot!.activeElement?.getAttribute("data-inbox-search"),
+    ).not.toBeNull();
+    const input = inbox.shadowRoot!.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    )!;
+    input.value = "";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    const unread = inbox.shadowRoot!.querySelector<HTMLButtonElement>(
+      '[data-inbox-filter="unread"]',
+    )!;
+    unread.click();
+    expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(1);
+    expect(
+      inbox.shadowRoot!.querySelector(".pmfa-conv-name")?.textContent,
+    ).toBe("Ada Lovelace");
+  });
+
+  it("keeps the search input during an IME composition", async () => {
+    const client = definePolymorfa({
+      client: new PolymorfaClient({ fetch: tokenFetch(["read_messages"]) }),
+    });
+    await client.refresh();
+    const inbox = document.createElement("pmfa-inbox") as PolymorfaInboxElement;
+    inbox.source = source;
+    document.body.append(inbox);
+    await vi.waitFor(() =>
+      expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(2),
+    );
+    const search = inbox.shadowRoot!.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    )!;
+    search.focus();
+    search.value = "Ada";
+    search.dispatchEvent(
+      new InputEvent("input", { bubbles: true, isComposing: true }),
+    );
+    // Replacing the focused input would cancel the composition.
+    expect(inbox.shadowRoot!.querySelector('input[type="search"]')).toBe(
+      search,
+    );
+    expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(2);
+    search.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", isComposing: true }),
+    );
+    expect(search.value).toBe("Ada");
+    search.dispatchEvent(new CompositionEvent("compositionend"));
+    expect(inbox.shadowRoot!.querySelectorAll(".pmfa-conv")).toHaveLength(1);
+  });
+
   it("renders the list and opens a read-only thread without send_message", async () => {
     vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const client = definePolymorfa({

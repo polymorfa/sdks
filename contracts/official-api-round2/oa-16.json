@@ -1,0 +1,2003 @@
+{
+  "paths": {
+    "/messaging/{session}/catalogs": {
+      "get": {
+        "operationId": "listCloudCatalogs",
+        "tags": ["Catalogs"],
+        "summary": "List synced catalogs for an Official API Number",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `business:read`\n\nReturns the catalogs this project has synced for the WhatsApp Business Account of the Number's active Official connection, with each sync's state. It does not call Meta.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "business:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Synced catalogs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListCloudCatalogsResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "503": {
+            "description": "Catalog access or the Number's WhatsApp Business Account is unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">business:read</Badge>"
+        },
+        "x-protocols": ["Meta Cloud API"]
+      }
+    },
+    "/messaging/{session}/catalogs/{catalogId}": {
+      "get": {
+        "operationId": "getCloudCatalog",
+        "tags": ["Catalogs"],
+        "summary": "Get a catalog's sync state",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "business:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{1,32}$",
+              "description": "Meta catalog ID"
+            },
+            "required": true,
+            "name": "catalogId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sync state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetCloudCatalogResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "503": {
+            "description": "Catalog access or the Number's WhatsApp Business Account is unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">business:read</Badge>"
+        },
+        "x-protocols": ["Meta Cloud API"],
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `business:read`"
+      }
+    },
+    "/messaging/{session}/catalogs/{catalogId}/sync": {
+      "post": {
+        "operationId": "syncCloudCatalog",
+        "tags": ["Catalogs"],
+        "summary": "Sync a linked catalog from Meta",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `business:read`\n\nReads every product of a catalog linked to the Number's WhatsApp Business Account, up to 5,000, and replaces the stored copy only when the read is complete. A failed or incomplete read leaves the stored products unchanged. One sync per catalog can start every 2 minutes.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "business:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{1,32}$",
+              "description": "Meta catalog ID"
+            },
+            "required": true,
+            "name": "catalogId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The stored products were replaced",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncCloudCatalogResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "404": {
+            "description": "The Number was not found, or Meta does not list the catalog for this WhatsApp Business Account (`catalog_not_linked`). Stored products for it are removed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "409": {
+            "description": "A newer sync replaced this one (`catalog_sync_superseded`)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "422": {
+            "description": "The catalog exceeds 5,000 products (`catalog_too_large`), or the project already caches 100 catalogs (`catalog_cache_full`). Stored products are unchanged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "429": {
+            "description": "A sync for this catalog started less than 2 minutes ago (`catalog_sync_cooldown`). Retry after `retryAfter` seconds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "rate_limit_error",
+                    "code": "rate_limit_exceeded",
+                    "message": "The request limit was reached. Follow Retry-After when supplied.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#rate-limit-exceeded"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "502": {
+            "description": "Meta refused or did not complete the read (`catalog_sync_incomplete`). Stored products are unchanged.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "503": {
+            "description": "Catalog access or the Number's WhatsApp Business Account is unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">business:read</Badge>"
+        },
+        "x-protocols": ["Meta Cloud API"]
+      }
+    },
+    "/messaging/{session}/catalogs/{catalogId}/products": {
+      "get": {
+        "operationId": "listCloudCatalogProducts",
+        "tags": ["Catalogs"],
+        "summary": "List stored products of a synced catalog",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `business:read`\n\nPages through the products stored by the last complete sync, in product ID order. Check `catalog.stale` and sync again when you need current data. It does not call Meta.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "business:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]{1,32}$",
+              "description": "Meta catalog ID"
+            },
+            "required": true,
+            "name": "catalogId",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Page size, 1-100 (default 50)"
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,256}$",
+              "description": "`nextCursor` from the previous page"
+            },
+            "required": false,
+            "name": "cursor",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of stored products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListCloudCatalogProductsResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request — request body or params failed validation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid authentication token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "authentication_error",
+                    "code": "invalid_credential",
+                    "message": "Supply a valid credential.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated but not permitted (missing scope or rule violation)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "409": {
+            "description": "The catalog changed after the previous page (`catalog_snapshot_changed`). Restart without a cursor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "internal_error",
+                    "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "503": {
+            "description": "Catalog access or the Number's WhatsApp Business Account is unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "api_error",
+                    "code": "service_unavailable",
+                    "message": "A required service is unavailable. Check completion before repeating a write.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">business:read</Badge>"
+        },
+        "x-protocols": ["Meta Cloud API"]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CloudMessagePayload": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "whatsapp_ids": {
+            "$ref": "#/components/schemas/WhatsAppMessageIds"
+          },
+          "whatsapp_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+            "deprecated": true
+          },
+          "conversation": {
+            "$ref": "#/components/schemas/ConversationRef"
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "senderName": {
+            "type": "string"
+          },
+          "nativeFlowResponse": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "paramsJson": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 262144
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": ["name", "paramsJson"]
+          },
+          "replyChoice": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": ["button", "list"],
+                "description": "Reply control the contact used: a reply or quick-reply button, or a list row."
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "description": "ID you assigned to the selected button or list row. It is never the visible label, except for a template quick-reply button sent without a payload, where WhatsApp returns the button text."
+              }
+            },
+            "required": ["kind", "id"],
+            "description": "Present when the contact selects a reply button or list row."
+          },
+          "parentMessageId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "WhatsApp ID of the message this one quotes, when WhatsApp supplies one. It is not necessarily a message you sent."
+          },
+          "interactive": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "order": {
+            "$ref": "#/components/schemas/CloudOrder"
+          },
+          "referral": {
+            "type": "object",
+            "properties": {
+              "source_type": {
+                "type": "string"
+              },
+              "source_id": {
+                "type": "string"
+              },
+              "source_url": {
+                "type": "string"
+              },
+              "ctwa_clid": {
+                "type": "string"
+              }
+            },
+            "description": "Meta-supplied Click-to-WhatsApp entry point. Does not establish a conversion or payment."
+          }
+        },
+        "required": ["id", "whatsapp_ids", "conversation", "timestamp", "type"]
+      },
+      "HistoryMessage": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "whatsapp_ids": {
+            "$ref": "#/components/schemas/WhatsAppMessageIds"
+          },
+          "whatsapp_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+            "deprecated": true
+          },
+          "conversation": {
+            "$ref": "#/components/schemas/HistoryConversation"
+          },
+          "direction": {
+            "type": "string",
+            "enum": ["inbound", "outbound"]
+          },
+          "fromMe": {
+            "type": "boolean",
+            "description": "True when the Number sent the message, including from another linked device."
+          },
+          "type": {
+            "type": "string",
+            "description": "Message type as delivered in `message.received`, for example `text` or `image`."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When WhatsApp reported the message."
+          },
+          "pushName": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "caption": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "ptt": {
+            "type": "boolean"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "reaction": {
+            "type": "string"
+          },
+          "reactionTo": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "edited": {
+            "type": "boolean"
+          },
+          "unavailable": {
+            "type": "boolean"
+          },
+          "unavailableReason": {
+            "type": "string"
+          },
+          "pollOptions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "hash": {
+                  "type": "string"
+                }
+              },
+              "required": ["name", "hash"]
+            }
+          },
+          "order": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CloudOrder"
+              },
+              {
+                "description": "Official API `order` messages: the cart as Meta reported it, when every line is readable."
+              }
+            ]
+          },
+          "media": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HistoryMedia"
+            },
+            "description": "Downloadable media for image, video, audio, document, and sticker messages. Empty when no copy is available."
+          },
+          "mediaRetrieval": {
+            "$ref": "#/components/schemas/HistoryMediaRetrieval"
+          }
+        },
+        "required": [
+          "id",
+          "whatsapp_ids",
+          "conversation",
+          "direction",
+          "fromMe",
+          "type",
+          "timestamp"
+        ]
+      },
+      "HistoryMediaRetrieval": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "stored",
+              "unavailable",
+              "expired",
+              "too_large",
+              "unsupported_type",
+              "failed",
+              "cancelled"
+            ],
+            "description": "`pending`: the copy is not stored yet. `stored`: `media` lists the copy. Every other state is final and no copy will be stored."
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why a final state other than `stored` was reached, for example `provider_media_not_found` or `media_too_large`.",
+            "example": "provider_media_expired"
+          }
+        },
+        "required": ["state"],
+        "description": "Official API media only: whether a copy of the media was stored with this message."
+      },
+      "HistoryMedia": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Media ID. Download the bytes from `url` with a credential that has `media:read`."
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "fileLength": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "url": {
+            "type": "string",
+            "description": "Path of the media download method.",
+            "example": "/messaging/media/0e6f1c3a-5a55-4f3c-9d4f-0b1f8f2a9c11"
+          }
+        },
+        "required": ["id", "mimeType", "fileLength", "url"]
+      },
+      "CloudOrder": {
+        "type": "object",
+        "properties": {
+          "catalogId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,32}$",
+            "description": "Meta catalog ID the cart was built from."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "description": "Text the contact sent with the order."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CloudOrderItem"
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          }
+        },
+        "required": ["catalogId", "items"],
+        "description": "Present on `type: \"order\"` messages when every cart line is readable. There is no order total: multiply `quantity` by `itemPrice` per item if you need one. Prices and availability can differ from your catalog; confirm them before you fulfil the order."
+      },
+      "CloudOrderItem": {
+        "type": "object",
+        "properties": {
+          "productRetailerId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "description": "Your retailer ID (SKU), at most 256 UTF-8 bytes with no control characters."
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "description": "Units ordered."
+          },
+          "itemPrice": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Unit price as Meta reported it. Polymorfa does not convert or recompute it."
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "ISO 4217 currency code Meta reported for the item."
+          }
+        },
+        "required": ["productRetailerId", "quantity", "itemPrice", "currency"]
+      },
+      "HistoryConversation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ConversationIdentity"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "sender": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ConversationIdentity"
+                  },
+                  {
+                    "description": "Author of an inbound group message."
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "ConversationIdentity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{1,14}$"
+          },
+          "bsuid": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}\\.[A-Za-z0-9]{1,128}$"
+          },
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": ["id"],
+        "additionalProperties": false
+      },
+      "WhatsAppMessageIds": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "linked_devices": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "official_api": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            },
+            "required": ["linked_devices"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "linked_devices": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "official_api": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            },
+            "required": ["official_api"],
+            "additionalProperties": false
+          }
+        ],
+        "description": "Exact message references observed through Linked Devices, the Official API, or both. Use the Polymorfa message id for actions and replies. Unknown provider references are omitted."
+      },
+      "ConversationRef": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "bsuid": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "parentBsuid": {
+            "type": "string",
+            "description": "Parent business-scoped user ID (`CC.ENT.…`), present only when WhatsApp reports one for this person. It identifies the person across the business portfolios enrolled in one parent account. It cannot be used to send messages or block people; use `id` or `bsuid`.",
+            "example": "US.ENT.11815799212886844830"
+          },
+          "sender": {
+            "$ref": "#/components/schemas/IdentityRef"
+          }
+        },
+        "required": ["id"]
+      },
+      "IdentityRef": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "bsuid": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "parentBsuid": {
+            "type": "string",
+            "description": "Parent business-scoped user ID (`CC.ENT.…`), present only when WhatsApp reports one for this person. It identifies the person across the business portfolios enrolled in one parent account. It cannot be used to send messages or block people; use `id` or `bsuid`.",
+            "example": "US.ENT.11815799212886844830"
+          }
+        },
+        "required": ["id"]
+      },
+      "PublicError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request_error",
+                  "authentication_error",
+                  "permission_error",
+                  "conflict_error",
+                  "rate_limit_error",
+                  "api_error",
+                  "upstream_error"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_parameter",
+                  "invalid_credential",
+                  "entitlement_required",
+                  "cloud_template_authority_restricted",
+                  "gate_limit_reached",
+                  "method_not_allowed",
+                  "permission_denied",
+                  "missing_scope",
+                  "resource_not_found",
+                  "hms_not_enabled",
+                  "media_fetch_failed",
+                  "resource_gone",
+                  "feature_unavailable",
+                  "stream_cursor_invalid",
+                  "stream_cursor_expired",
+                  "stream_connection_limit_reached",
+                  "state_conflict",
+                  "team_deletion_scheduled",
+                  "hybrid_routing_paused",
+                  "hybrid_choice_required",
+                  "hybrid_transition_ineligible",
+                  "hybrid_automation_unavailable",
+                  "hybrid_transport_unavailable",
+                  "hybrid_target_reference_unavailable",
+                  "send_outcome_unknown",
+                  "idempotency_conflict",
+                  "idempotency_in_progress",
+                  "idempotency_completed",
+                  "idempotency_outcome_unknown",
+                  "call_claimed",
+                  "call_not_ringing",
+                  "connection_limit",
+                  "unsupported_for_connection",
+                  "call_permission_required",
+                  "invalid_sip_trunk",
+                  "calls_disabled",
+                  "call_recipient_opted_out",
+                  "call_destination_blocked",
+                  "call_permission_request_limited",
+                  "call_permission_granted",
+                  "order_status_transition_invalid",
+                  "order_cancellation_failed",
+                  "call_opt_out_limit",
+                  "number_restricted",
+                  "sip_trunk_in_use",
+                  "sip_trunk_revision_conflict",
+                  "sip_trunk_limit",
+                  "sip_unavailable",
+                  "voice_not_enabled",
+                  "provider_credential_invalid",
+                  "provider_unavailable",
+                  "asset_not_ready",
+                  "voice_asset_in_use",
+                  "voice_asset_revision_conflict",
+                  "voice_unavailable",
+                  "rate_limit_exceeded",
+                  "internal_error",
+                  "operation_not_supported",
+                  "upstream_failure",
+                  "service_unavailable",
+                  "credential_verification_unavailable",
+                  "session_not_ready",
+                  "command_dispatch_failed",
+                  "result_unknown",
+                  "parent_bsuid_not_supported",
+                  "recipient_not_on_whatsapp",
+                  "conversation_window_closed",
+                  "template_not_approved",
+                  "media_too_large",
+                  "whatsapp_rate_limited",
+                  "new_chat_limit_reached",
+                  "whatsapp_account_restricted",
+                  "whatsapp_authorization_required",
+                  "whatsapp_payment_method_required",
+                  "whatsapp_number_not_registered",
+                  "whatsapp_groups_ineligible",
+                  "whatsapp_group_creation_paused",
+                  "whatsapp_group_limit_reached",
+                  "whatsapp_group_full",
+                  "whatsapp_group_suspended",
+                  "whatsapp_group_has_no_participants",
+                  "bansafe_suspended",
+                  "bansafe_org_suspended",
+                  "bansafe_cold_blocked",
+                  "bansafe_cold_held",
+                  "bansafe_throttled",
+                  "bansafe_daily_allowance_reached",
+                  "bansafe_accounting_unavailable",
+                  "bansafe_send_outcome_unknown",
+                  "campaigns_not_entitled",
+                  "campaign_throughput_capped",
+                  "campaign_approval_required",
+                  "campaign_approval_stale",
+                  "campaign_variables_missing"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "param": {
+                "type": "string",
+                "nullable": true
+              },
+              "request_id": {
+                "type": "string",
+                "description": "Matches the X-Request-Id response header. Include it when you contact support."
+              },
+              "request_log_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+              }
+            },
+            "required": ["type", "code", "message", "param", "request_id"]
+          },
+          "data": {
+            "type": "string",
+            "nullable": true,
+            "enum": [null],
+            "description": "Always null for a failed request."
+          },
+          "docs": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": ["error", "data", "docs"]
+      },
+      "ListCloudCatalogProductsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [true]
+          },
+          "data": {
+            "$ref": "#/components/schemas/CloudCatalogProductPage"
+          }
+        },
+        "required": ["success", "data"]
+      },
+      "CloudCatalogProductPage": {
+        "type": "object",
+        "properties": {
+          "catalog": {
+            "$ref": "#/components/schemas/CloudCatalogSync"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CloudCatalogProduct"
+            }
+          },
+          "nextCursor": {
+            "type": "string",
+            "description": "Pass as `cursor` for the next page. Absent on the last page."
+          }
+        },
+        "required": ["catalog", "products"]
+      },
+      "CloudCatalogProduct": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Meta product item ID"
+          },
+          "retailerId": {
+            "type": "string",
+            "description": "Your retailer ID (SKU). Use it in product and product list messages."
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "price": {
+            "type": "string",
+            "description": "Price exactly as Meta returned it."
+          },
+          "currency": {
+            "type": "string"
+          },
+          "availability": {
+            "type": "string"
+          },
+          "reviewStatus": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": ["id"]
+      },
+      "CloudCatalogSync": {
+        "type": "object",
+        "properties": {
+          "catalogId": {
+            "type": "string"
+          },
+          "syncedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time",
+            "description": "When the stored products were last read completely from Meta. Null before the first complete read."
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "True when there is no complete read or the last one is more than 24 hours old. Polymorfa does not refresh the copy on its own."
+          },
+          "productCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lastAttempt": {
+            "type": "object",
+            "properties": {
+              "startedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "finishedAt": {
+                "type": "string",
+                "nullable": true,
+                "format": "date-time"
+              },
+              "outcome": {
+                "type": "string",
+                "enum": [
+                  "in_progress",
+                  "complete",
+                  "provider_error",
+                  "unavailable",
+                  "too_large",
+                  "not_linked"
+                ],
+                "description": "`complete` replaced the stored products. `provider_error`, `unavailable` and `too_large` left them unchanged. `not_linked` removed them because Meta no longer lists the catalog for this account."
+              },
+              "metaErrorCode": {
+                "type": "integer",
+                "description": "Meta's error code for `provider_error`."
+              }
+            },
+            "required": ["startedAt", "finishedAt", "outcome"]
+          }
+        },
+        "required": [
+          "catalogId",
+          "syncedAt",
+          "stale",
+          "productCount",
+          "lastAttempt"
+        ]
+      },
+      "SyncCloudCatalogResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [true]
+          },
+          "data": {
+            "$ref": "#/components/schemas/CloudCatalogSync"
+          }
+        },
+        "required": ["success", "data"]
+      },
+      "GetCloudCatalogResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [true]
+          },
+          "data": {
+            "$ref": "#/components/schemas/CloudCatalogSync"
+          }
+        },
+        "required": ["success", "data"]
+      },
+      "ListCloudCatalogsResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [true]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "catalogs": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/CloudCatalogSync"
+                }
+              }
+            },
+            "required": ["catalogs"]
+          }
+        },
+        "required": ["success", "data"]
+      }
+    }
+  }
+}

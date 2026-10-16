@@ -16,7 +16,7 @@ describe("BrowserTransport", () => {
     const diagnostics: BrowserDiagnosticEvent[] = [];
     let receivedAuthorization = "";
     const transport = new BrowserTransport({
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch: async (_url, init) => {
         receivedAuthorization =
           new Headers(init?.headers).get("authorization") ?? "";
@@ -37,13 +37,13 @@ describe("BrowserTransport", () => {
       headers: { authorization: "Bearer attacker", "x-trace": "fixture" },
     });
 
-    expect(receivedAuthorization).toBe("Bearer pmfa_ct_fixture");
+    expect(receivedAuthorization).toBe("Bearer pmfa_ct_Zml4dHVyZQ");
     expect(response.metadata).toMatchObject({
       status: 200,
       requestId: "req_browser",
       attempts: 1,
     });
-    expect(JSON.stringify(diagnostics)).not.toContain("pmfa_ct_fixture");
+    expect(JSON.stringify(diagnostics)).not.toContain("pmfa_ct_Zml4dHVyZQ");
     expect(diagnostics.map(({ type }) => type)).toEqual([
       "request.started",
       "request.completed",
@@ -64,7 +64,7 @@ describe("BrowserTransport", () => {
     );
     const client = new BrowserMessagingClient({
       session: "number/1",
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch,
     });
     const response = await client.messages.send({
@@ -76,7 +76,7 @@ describe("BrowserTransport", () => {
     );
     const headers = new Headers(fetch.mock.calls[0]?.[1]?.headers);
     expect(headers.get("polymorfa-version")).toBe("2026-09-22");
-    expect(headers.get("authorization")).toBe("Bearer pmfa_ct_fixture");
+    expect(headers.get("authorization")).toBe("Bearer pmfa_ct_Zml4dHVyZQ");
     expect(response.data.data).toMatchObject({
       whatsapp_ids: { linked_devices: "provider-1" },
       whatsapp_id: "provider-1",
@@ -90,7 +90,7 @@ describe("BrowserTransport", () => {
           error: {
             code: "invalid_parameter",
             message:
-              "API version 2026-03-19 is no longer supported. Minimum: 2026-03-20",
+              "API version 2026-03-20 is no longer supported. Minimum: 2026-09-22",
             param: "Polymorfa-Version",
           },
         },
@@ -99,7 +99,7 @@ describe("BrowserTransport", () => {
     );
     const client = new BrowserMessagingClient({
       session: "number",
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch,
       maxNetworkRetries: 2,
     });
@@ -109,19 +109,19 @@ describe("BrowserTransport", () => {
           conversation: { phoneNumber: "+15551234567" },
           content: { text: "Hello" },
         },
-        { headers: { "Polymorfa-Version": "2026-03-19" } },
+        { headers: { "Polymorfa-Version": "2026-03-20" } },
       ),
     ).rejects.toMatchObject({ code: "invalid_parameter", status: 400 });
     expect(fetch).toHaveBeenCalledOnce();
     expect(
       new Headers(fetch.mock.calls[0]?.[1]?.headers).get("polymorfa-version"),
-    ).toBe("2026-03-19");
+    ).toBe("2026-03-20");
   });
 
   it("excludes raw Graph and application routes from the native default", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () => Response.json({}));
     const transport = new BrowserTransport({
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch,
     });
     await transport.request({
@@ -163,7 +163,7 @@ describe("BrowserTransport", () => {
       .mockResolvedValueOnce(new Response('{"error":"busy"}', { status: 503 }))
       .mockResolvedValueOnce(new Response('{"ok":true}', { status: 200 }));
     const getTransport = new BrowserTransport({
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch: getFetch,
       maxNetworkRetries: 1,
       sleep: async () => undefined,
@@ -178,7 +178,7 @@ describe("BrowserTransport", () => {
       .fn<typeof fetch>()
       .mockResolvedValue(new Response('{"error":"busy"}', { status: 503 }));
     const postTransport = new BrowserTransport({
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch: postFetch,
       maxNetworkRetries: 2,
       sleep: async () => undefined,
@@ -204,7 +204,7 @@ describe("BrowserTransport", () => {
         ),
     );
     const transport = new BrowserTransport({
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch: fetcher,
       maxNetworkRetries: 2,
       sleep: async () => undefined,
@@ -231,7 +231,7 @@ describe("BrowserTransport", () => {
       ),
     );
     const transport = new BrowserTransport({
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch: fetcher,
       maxNetworkRetries: 2,
       sleep: async () => undefined,
@@ -272,7 +272,7 @@ describe("BrowserTransport", () => {
         ),
     );
     const transport = new BrowserTransport({
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch: fetcher,
       maxNetworkRetries: 2,
       sleep: async () => undefined,
@@ -324,7 +324,7 @@ describe("BrowserTransport", () => {
         ),
     );
     const transport = new BrowserTransport({
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch: fetcher,
       maxNetworkRetries: 2,
       sleep: async () => undefined,
@@ -354,7 +354,7 @@ describe("BrowserTransport", () => {
         ),
       );
     const transport = new BrowserTransport({
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch: pendingFetch,
     });
     const controller = new AbortController();
@@ -378,7 +378,7 @@ describe("BrowserTransport", () => {
   it("rejects absolute and backslash network paths before fetching", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     const transport = new BrowserTransport({
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch,
     });
     for (const path of [
@@ -394,7 +394,7 @@ describe("BrowserTransport", () => {
   });
 
   it("does not retry invalid local request options", async () => {
-    const getClientToken = vi.fn(async () => "pmfa_ct_fixture");
+    const getClientToken = vi.fn(async () => "pmfa_ct_Zml4dHVyZQ");
     const fetch = vi.fn<typeof globalThis.fetch>();
     const transport = new BrowserTransport({
       getClientToken,
@@ -410,7 +410,7 @@ describe("BrowserTransport", () => {
 
   it("reads the code, request ID, and doc link from an error body without the header", async () => {
     const transport = new BrowserTransport({
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch: async () =>
         new Response(
           JSON.stringify({
@@ -464,7 +464,7 @@ describe("BrowserTransport fetch receiver", () => {
   ])("sends mutations through %s", async (_name, options) => {
     vi.stubGlobal("fetch", receiverCheckingFetch());
     const transport = new BrowserTransport({
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       maxNetworkRetries: 0,
       ...options(),
     });

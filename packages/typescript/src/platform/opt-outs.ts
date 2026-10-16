@@ -1,4 +1,15 @@
+import { requestContract } from "../campaign-contract-response.js";
 import { HttpTransport } from "../transport/http.js";
+import {
+  campaignContractBody,
+  campaignContractOptions,
+  validateStopConfirmation,
+} from "../campaign-contract-validation.js";
+import type {
+  StopConfirmationSettings,
+  StopConfirmationSummary,
+  UpdateStopConfirmationSettingsInput,
+} from "../campaign-contracts.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   DataEnvelope,
@@ -13,6 +24,51 @@ const SETTINGS_PATH = "/platform/optouts/settings";
 
 export class OptOutsResource {
   constructor(private readonly transport: HttpTransport) {}
+
+  getConfirmationSettings(
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<StopConfirmationSettings>>> {
+    return requestContract(
+      this.transport,
+      {
+        ...campaignContractOptions(options),
+        method: "GET",
+        path: "/platform/optouts/confirmation-settings",
+      },
+      "stopSettings",
+    );
+  }
+
+  updateConfirmationSettings(
+    body: UpdateStopConfirmationSettingsInput,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<StopConfirmationSettings>>> {
+    validateStopConfirmation(body);
+    return requestContract(
+      this.transport,
+      {
+        ...campaignContractOptions(options, true),
+        method: "PUT",
+        path: "/platform/optouts/confirmation-settings",
+        body: campaignContractBody(body),
+      },
+      "stopSettings",
+    );
+  }
+
+  getConfirmationSummary(
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<StopConfirmationSummary>>> {
+    return requestContract(
+      this.transport,
+      {
+        ...campaignContractOptions(options),
+        method: "GET",
+        path: "/platform/optouts/confirmation-summary",
+      },
+      "stopSummary",
+    );
+  }
 
   list(options: RequestOptions = {}): OptOutResponse {
     return this.transport.request({

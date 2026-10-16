@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "c1a43a1eb409ad57c2b9677c606a3d42d7b5598c",
+  "pin": "contracts/calls-simultaneous-calls.json",
+  "baselineUnchanged": true,
+  "published": false,
+  "claim": "Scoped source attribution and synthetic native wire fixtures. Execution, physical package qualification and publication are separate gates.",
+  "operations": [
+    {
+      "operationId": "getCallSettings",
+      "method": "GET",
+      "path": "/platform/sessions/{session}/call-settings",
+      "languages": {
+        "typescript": {
+          "method": "MessagingClient.voip.retrieveCallSettings",
+          "test": "test/voip.test.ts"
+        },
+        "go": {
+          "method": "MessagingClient.VoIP.RetrieveCallSettings",
+          "test": "voip_test.go"
+        },
+        "python": {
+          "method": "AsyncMessagingClient.voip.retrieve_call_settings",
+          "test": "tests/test_voip.py"
+        },
+        "php": {
+          "method": "MessagingClient.voip.retrieveCallSettings",
+          "test": "tests/voip.php"
+        },
+        "rust": {
+          "method": "MessagingClient.voip.retrieve_call_settings",
+          "test": "tests/voip.rs"
+        },
+        "dotnet": {
+          "method": "MessagingClient.Calls.RetrieveCallSettingsAsync",
+          "test": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+        }
+      }
+    },
+    {
+      "operationId": "updateCallSettings",
+      "method": "PUT",
+      "path": "/platform/sessions/{session}/call-settings",
+      "languages": {
+        "typescript": {
+          "method": "MessagingClient.voip.updateCallSettings",
+          "test": "test/voip.test.ts"
+        },
+        "go": {
+          "method": "MessagingClient.VoIP.UpdateCallSettings",
+          "test": "voip_test.go"
+        },
+        "python": {
+          "method": "AsyncMessagingClient.voip.update_call_settings",
+          "test": "tests/test_voip.py"
+        },
+        "php": {
+          "method": "MessagingClient.voip.updateCallSettings",
+          "test": "tests/voip.php"
+        },
+        "rust": {
+          "method": "MessagingClient.voip.update_call_settings",
+          "test": "tests/voip.rs"
+        },
+        "dotnet": {
+          "method": "MessagingClient.Calls.UpdateCallSettingsAsync",
+          "test": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+        }
+      }
+    }
+  ]
+}
