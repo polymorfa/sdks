@@ -622,6 +622,7 @@ unchanged at API `dev` `8d248b578a7c76034b30a5a97349adcd15ce5c55`.
 snapshot, and `campaign-paused-reasons-contract.test.ts` checks the SDK types
 against them. The full snapshots stay pinned to `contracts/source.json` until
 the next repin.
+
 ## Campaign follow-up supplement
 
 `campaign-follow-ups.json` records the receipt-timed follow-up schemas
