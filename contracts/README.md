@@ -619,6 +619,13 @@ source paths and file hashes. `scripts/sync-feature-evaluation-contract.mjs`
 extracts it without changing the operation objects. Run it with a monorepo
 checkout and an exact commit to refresh the supplement.
 
+The October 16 reconciliation retains this pin. All four stored operation
+objects are unchanged at API dev `1c26b4a888`, while both full spec hashes have
+changed. A full repin would also require reviewing unrelated contract changes.
+SDK PR #349 already owns the campaign follow-up supplement, and the open Calls,
+interactive-message, campaign pause and native SDK PRs own their respective
+changes. This supplement adds no runtime consumer and leaves those pins intact.
+
 PR #561 changes two fingerprints. `evaluateFeatures` and
 `evaluateAccountFeatures` accept an optional `locale` (`en` or `pt-BR`), and
 each returned feature adds `state` (`off`, `opt_in` or `on`), `terms` and
