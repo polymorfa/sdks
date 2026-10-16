@@ -147,7 +147,9 @@ internal static class CampaignContractValidation
             }
             else if (value.ValueKind is not (JsonValueKind.True or JsonValueKind.False or JsonValueKind.Null)) Invalid("attributes");
         }
-        foreach (var name in new[] { "provenance", "consent" }) if (Has(body, name))
+        foreach (var name in new[] { "provenance", "consent" })
+        {
+            if (Has(body, name))
             {
                 var item = body.GetProperty(name);
                 var names = name == "consent" ? new[] { "source", "reference", "purpose", "allowed", "assertedAt" } : new[] { "source", "reference" };
@@ -161,6 +163,7 @@ internal static class CampaignContractValidation
                     Integer(item.GetProperty("assertedAt"), name, 0, 8640000000000000);
                 }
             }
+        }
         return body;
     }
     internal static IReadOnlyList<KeyValuePair<string, string>> Page(ListAudienceProfilesParameters? input)
