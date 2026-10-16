@@ -733,7 +733,7 @@ impl HttpTransport {
         }
     }
 }
-fn filename(value: &str) -> Option<String> {
+pub(crate) fn filename(value: &str) -> Option<String> {
     let mut fallback = None;
     for segment in value.split(';').skip(1) {
         let (name, value) = segment.trim().split_once('=')?;
@@ -888,6 +888,10 @@ async fn sleep(duration: Duration, cancellation: &CancellationToken) -> Result<(
 fn metadata(response: &reqwest::Response, attempts: u32) -> ResponseMetadata {
     let allowed = [
         "x-request-id",
+        "x-trace-id",
+        "x-ratelimit-limit",
+        "x-ratelimit-remaining",
+        "x-ratelimit-reset",
         "request-id",
         "polymorfa-version",
         "retry-after",

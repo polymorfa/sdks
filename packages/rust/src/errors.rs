@@ -38,6 +38,7 @@ pub struct ErrorInfo {
     pub doc_url: Option<String>,
     pub rate_limit_reason: Option<String>,
     pub details: Option<serde_json::Value>,
+    pub param: Option<String>,
     pub metadata: Option<ResponseMetadata>,
 }
 
@@ -59,6 +60,7 @@ impl Error {
                 doc_url: None,
                 rate_limit_reason: None,
                 details: None,
+                param: None,
                 metadata: None,
             }),
         }
@@ -91,6 +93,7 @@ impl Error {
                 doc_url: text("docs"),
                 rate_limit_reason: metadata.headers.get("polymorfa-ratelimit-reason").cloned(),
                 details: object.get("details").cloned(),
+                param: text("param"),
                 metadata: Some(metadata),
             }),
         }
@@ -218,7 +221,7 @@ pub const POLYMORFA_ERROR_CODES: &[&str] = &[
 ];
 
 pub fn is_known_error_code(code: &str) -> bool {
-    POLYMORFA_ERROR_CODES.contains(&code)
+    POLYMORFA_ERROR_CODES.contains(&code) || CAMPAIGN_CONTRACT_ERROR_CODES.contains(&code)
 }
 
 impl From<std::io::Error> for Error {
@@ -230,3 +233,11 @@ impl From<std::io::Error> for Error {
         )
     }
 }
+
+/// Source-only 2026-10-14 additions; the baseline catalog remains pinned.
+pub const CAMPAIGN_CONTRACT_ERROR_CODES: &[&str] = &[
+    "campaign_approval_required",
+    "campaign_approval_stale",
+    "campaign_variables_missing",
+    "zero_knowledge_session",
+];

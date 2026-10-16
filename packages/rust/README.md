@@ -86,6 +86,60 @@ tokens. The raw escape hatch is not typed coverage. No feature access or
 release availability changes: the API continues enforcing permission, funding,
 enrollment and feature eligibility.
 
+The source also includes 30 campaign, customer-supplied audience profile and
+custody-default operations from API source `f97ad78b172e80788c33bdc0fcf28f75db9283ec`.
+These additions use `2026-10-14` when a call omits its API version; an explicit
+`RequestOptions::api_version` wins. Existing methods keep their baseline version.
+The supplement remains unpublished and does not establish deployed availability.
+
+Use `campaign_contracts` for the named requests, results and reply-flow variants.
+`MessagingClient::campaigns()` provides six server-only methods: reply-flow read,
+create and assignment, test-send, tracked links and recipient CSV export. An
+organization's `campaigns()` provides the corresponding Platform methods plus
+launch approvals and team settings. `organization.project(id).campaigns()` retains
+its project and exposes seven campaign methods without a selector argument.
+Organization-only profile/import, STOP-confirmation, audience retarget and team
+settings operations are absent from project views.
+
+```rust,no_run
+use polymorfa_sdk::{OrganizationClient, RequestOptions};
+use polymorfa_sdk::campaign_contracts::CustomerSignalCustodyUpdate;
+# async fn defaults(organization: &OrganizationClient, project_id: &str, customer_id: &str) -> polymorfa_sdk::Result<()> {
+let project = organization.project(project_id)?;
+let custody = project.signal_custody();
+let current = custody.retrieve_customer(customer_id, RequestOptions::default()).await?;
+custody.update_customer(customer_id, &CustomerSignalCustodyUpdate {
+    expected_revision: current.data.data.revision,
+    signal_mode_default: None,
+}, RequestOptions::default()).await?;
+# Ok(())
+# }
+```
+
+A Customer mode of `None` emits explicit JSON null to restore inheritance. A
+Project update requires a non-null `SignalCustodyMode`. These defaults affect
+future reservations; they do not convert existing Numbers, create keys, or prove
+Signal, ZK session, QuickLink or browser tunnel readiness. API authorization,
+revision guards and custody restrictions remain authoritative.
+
+`audience_profiles().list()` and `list_consent()` return one finite page; imports
+use `audience_profiles().imports()`. Caller-supplied profiles stay separate from
+WhatsApp-synchronized data. Recipient exports return `CampaignRecipientExportPage`
+with exact CSV text, an optional cursor and filename. Fetch a later page explicitly.
+Required nullable fields must be present when decoding; optional non-null fields
+may be omitted. Requests preserve revision zero, false, empty collections and
+explicit resets. Unknown response extension fields are tolerated.
+
+Only test-send generates a replay key among these additions. Other new unsafe
+writes default to zero network retries unless a call explicitly overrides the
+limit. Existing key selection, replay and operation-admission safeguards apply.
+Errors expose `param` and retain only safe response headers. Quotas use API byte
+or UTF-16 units as appropriate, and imports also check the actual serialized
+14 MiB request ceiling. Floating-point semantic quota spelling uses Rust's
+shortest decimal digits with ECMAScript exponent thresholds and negative-zero
+normalization. Equivalence is not exhaustively verified; this 30-operation
+checkpoint observed no numeric spelling counterexample.
+
 From this directory:
 
 ```sh
