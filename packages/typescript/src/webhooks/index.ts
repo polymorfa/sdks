@@ -81,6 +81,8 @@ export {
   type LinkedDeviceMessagePayload,
   type LinkedDeviceMessageType,
   type LinkedHistorySyncPayload,
+  type DirectHistorySyncPayload,
+  type DirectHistorySyncCommon,
   type MessageAckPayload,
   type MetaPricingReport,
   type MessageDeletePayload,

@@ -5,6 +5,7 @@ import {
   type HistorySyncChunkRetryResponse,
 } from "../media/direct-api.js";
 import type { HttpTransport } from "../transport/http.js";
+import type { MessagingCredential } from "../credentials.js";
 import type { RequestOptions } from "../transport/types.js";
 
 /**
@@ -15,8 +16,11 @@ import type { RequestOptions } from "../transport/types.js";
 export class HistorySyncResource {
   readonly #api: DirectMediaApi;
 
-  constructor(transport: HttpTransport) {
-    this.#api = new DirectMediaApi(transport);
+  constructor(
+    transport: HttpTransport,
+    credentialType: MessagingCredential["type"] = "apiKey",
+  ) {
+    this.#api = new DirectMediaApi(transport, credentialType);
   }
 
   /**

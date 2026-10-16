@@ -1,3 +1,4 @@
+import { requestContract } from "../campaign-contract-response.js";
 import type { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import { type DataEnvelope, unwrapResponse } from "./response.js";
@@ -74,11 +75,15 @@ export function getProjectSignalCustody(
   projectId: string,
   options: RequestOptions,
 ): Promise<ApiResponse<DataEnvelope<SignalCustodyDefault>>> {
-  return transport.request({
-    ...campaignContractOptions(options),
-    method: "GET",
-    path: custodyPath(projectId),
-  });
+  return requestContract(
+    transport,
+    {
+      ...campaignContractOptions(options),
+      method: "GET",
+      path: custodyPath(projectId),
+    },
+    "custody",
+  );
 }
 export function updateProjectSignalCustody(
   transport: HttpTransport,
@@ -87,12 +92,16 @@ export function updateProjectSignalCustody(
   options: RequestOptions,
 ): Promise<ApiResponse<DataEnvelope<SignalCustodyDefault>>> {
   validateCustodyUpdate(body, false);
-  return transport.request({
-    ...campaignContractOptions(options, true),
-    method: "PUT",
-    path: custodyPath(projectId),
-    body: campaignContractBody(body),
-  });
+  return requestContract(
+    transport,
+    {
+      ...campaignContractOptions(options, true),
+      method: "PUT",
+      path: custodyPath(projectId),
+      body: campaignContractBody(body),
+    },
+    "custody",
+  );
 }
 export function getCustomerSignalCustody(
   transport: HttpTransport,
@@ -100,11 +109,15 @@ export function getCustomerSignalCustody(
   customerId: string,
   options: RequestOptions,
 ): Promise<ApiResponse<DataEnvelope<SignalCustodyDefault>>> {
-  return transport.request({
-    ...campaignContractOptions(options),
-    method: "GET",
-    path: custodyPath(projectId, customerId),
-  });
+  return requestContract(
+    transport,
+    {
+      ...campaignContractOptions(options),
+      method: "GET",
+      path: custodyPath(projectId, contractUuid(customerId, "customerId")),
+    },
+    "custody",
+  );
 }
 export function updateCustomerSignalCustody(
   transport: HttpTransport,
@@ -114,12 +127,16 @@ export function updateCustomerSignalCustody(
   options: RequestOptions,
 ): Promise<ApiResponse<DataEnvelope<SignalCustodyDefault>>> {
   validateCustodyUpdate(body, true);
-  return transport.request({
-    ...campaignContractOptions(options, true),
-    method: "PUT",
-    path: custodyPath(projectId, customerId),
-    body: campaignContractBody(body),
-  });
+  return requestContract(
+    transport,
+    {
+      ...campaignContractOptions(options, true),
+      method: "PUT",
+      path: custodyPath(projectId, contractUuid(customerId, "customerId")),
+      body: campaignContractBody(body),
+    },
+    "custody",
+  );
 }
 function custodyPath(projectId: string, customerId?: string): string {
   const project = `/platform/projects/${encodeURIComponent(contractUuid(projectId, "projectId"))}`;

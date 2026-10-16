@@ -352,3 +352,16 @@ export interface CustomerSignalCustodyUpdate {
   /** Null restores inheritance from the Project. */
   readonly signalModeDefault: SignalCustodyMode | null;
 }
+
+/** Campaign-authored substitutions. Empty bindings are valid draft values. */
+export interface CampaignVariableBinding {
+  readonly source?: string;
+  readonly fallback?: string;
+}
+export type CampaignVariableMapping = Readonly<
+  Record<string, CampaignVariableBinding>
+>;
+export interface CampaignTrackedLink {
+  readonly key: string;
+  readonly url: string;
+}

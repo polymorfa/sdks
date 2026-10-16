@@ -1,3 +1,5 @@
+import { requestContract } from "../campaign-contract-response.js";
+import { existingOptions } from "../campaign-existing-validation.js";
 import { HttpTransport } from "../transport/http.js";
 import {
   campaignContractBody,
@@ -32,12 +34,16 @@ export class AudiencesResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<AudienceFromCampaignResult>>> {
     validateRetarget(body);
-    return this.transport.request({
-      ...campaignContractOptions(options, true),
-      method: "POST",
-      path: "/platform/audiences/from-campaign",
-      body: campaignContractBody(body),
-    });
+    return requestContract(
+      this.transport,
+      {
+        ...campaignContractOptions(options, true),
+        method: "POST",
+        path: "/platform/audiences/from-campaign",
+        body: campaignContractBody(body),
+      },
+      "retarget",
+    );
   }
 
   list(options: RequestOptions = {}): AudienceResponse {
@@ -60,19 +66,17 @@ export class AudiencesResource {
     return this.transport.request({
       method: "POST",
       path: "/platform/audiences",
-      body,
-      ...options,
+      body: campaignContractBody(body),
+      ...existingOptions(options),
     });
   }
 
   /**
    * Append up to 1,000 members to an existing audience.
    *
-   * The API declares no idempotent replay for this append, so by default the
-   * SDK sends it once and does not retry it. Setting both `maxNetworkRetries`
-   * and `idempotencyKey` on the request re-enables retries, and a retry can be
-   * processed as a new append. After a lost response, list the members before
-   * appending again.
+   * The SDK sends this unsafe append once by default. A caller key supports
+   * replay; select maxNetworkRetries explicitly to authorize automatic retries.
+   * Without a key, inspect members after an uncertain result before appending.
    */
   addMembers(
     listId: string,
@@ -82,8 +86,8 @@ export class AudiencesResource {
     return this.transport.request({
       method: "POST",
       path: membersPath(listId),
-      body,
-      ...withoutAutomaticRetry(options),
+      body: campaignContractBody(body),
+      ...withoutAutomaticRetry(existingOptions(options)),
     });
   }
 

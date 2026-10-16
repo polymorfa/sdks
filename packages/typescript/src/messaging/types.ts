@@ -1,3 +1,9 @@
+import type {
+  CampaignTrackedLink,
+  CampaignVariableMapping,
+  CampaignRecipientFailureReason,
+  SignalCustodyMode,
+} from "../campaign-contracts.js";
 /** Exact observed provider references; at least one provider is known. */
 export type WhatsAppMessageIds =
   | { readonly linked_devices: string; readonly official_api?: string }
@@ -16,12 +22,10 @@ export interface CloudApiCredentials {
   readonly webhookVerifyToken: string;
 }
 
-export interface HistorySyncPolicy {
-  readonly mode?: "metadata_only" | "deliver";
-  readonly requestFull?: boolean;
-}
+export type { HistorySyncPolicy } from "./session-configuration.js";
 
 export interface Session {
+  readonly signalMode?: SignalCustodyMode;
   readonly sessionId: string;
   readonly name: string;
   readonly externalId?: string;
@@ -310,14 +314,16 @@ export interface Campaign {
   readonly variants?: readonly CampaignVariant[] | null;
   readonly variantStrategy?: CampaignVariantStrategy | null;
   /** The saved A/B result, or null before a decision and for other campaigns. */
-  readonly experimentOutcome?: CampaignExperimentOutcome | null;
+  readonly experimentOutcome: CampaignExperimentOutcome | null;
+  readonly trackedLinks: readonly CampaignTrackedLink[];
+  readonly variableMapping?: CampaignVariableMapping | null;
   /** Weighted message alternatives, or null when the campaign sends one message. */
   readonly messageVariations?: readonly CampaignMessageVariation[] | null;
   /**
    * Receipt-timed follow-up (beta), or null when the campaign has none. The
    * API stores defaults, but the contract requires only `message`.
    */
-  readonly followUp?: CampaignFollowUp | null;
+  readonly followUp: CampaignFollowUp | null;
 }
 
 export type CampaignSendWindowDay =
@@ -379,13 +385,18 @@ export interface CampaignAnalytics {
   readonly respondedCount: number;
   readonly responseRate: number;
   /** A/B results (beta); null for a campaign that is not an A/B test. */
-  readonly experiment?: CampaignExperimentResults | null;
+  readonly experiment: CampaignExperimentResults | null;
+  readonly averageResponseTimeMs: number | null;
+  readonly minResponseTimeMs: number | null;
+  readonly maxResponseTimeMs: number | null;
   /** Follow-up outcomes (beta); all zero when the campaign has no follow-up. */
-  readonly followUps?: CampaignFollowUpReport;
+  readonly followUps: CampaignFollowUpReport;
 }
 
 export interface CreateCampaignRequest {
   readonly name: string;
+  readonly variableMapping?: CampaignVariableMapping;
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
   readonly templateId?: string;
   readonly recipientListId?: string;
   readonly senderConfig?: Readonly<Record<string, unknown>>;
@@ -445,7 +456,11 @@ export interface CampaignRecipient {
   readonly variantKey: string | null;
   readonly status: CampaignRecipientStatus;
   readonly attempts: number;
-  /** `opted_out` means the phone is on the organization's opt-out list. */
+  readonly failureReason: CampaignRecipientFailureReason | null;
+  readonly messagesSent: number;
+  readonly nextMessageAt: number | null;
+  readonly sequenceError: string | null;
+  /** Normalized PII-free failure code; never raw provider error text. */
   readonly lastError: string | null;
   readonly externalMessageId: string | null;
   /** Epoch milliseconds, or null while the transition has not happened. */
@@ -456,7 +471,7 @@ export interface CampaignRecipient {
   readonly failedAt: number | null;
   readonly respondedAt: number | null;
   /** This recipient's follow-up (beta), or null when none was created. */
-  readonly followUp?: CampaignFollowUpSummary | null;
+  readonly followUp: CampaignFollowUpSummary | null;
 }
 
 export interface CampaignRecipientPage {
@@ -465,6 +480,7 @@ export interface CampaignRecipientPage {
 }
 
 export interface ListCampaignRecipientsParams {
+  readonly reason?: CampaignRecipientFailureReason;
   readonly status?: CampaignRecipientStatus;
   readonly cursor?: string;
   /** 1 to 100; the API defaults to 25. */
@@ -496,11 +512,15 @@ export interface CampaignStopOperation extends Campaign {
 }
 
 export interface LaunchCampaignRequest {
+  readonly skipMissingVariables?: boolean;
   /** Epoch milliseconds. */
   readonly scheduledAt?: number;
 }
 
 interface UpdateCampaignChanges {
+  readonly templateId?: string | null;
+  readonly variableMapping?: CampaignVariableMapping | null;
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
   readonly name?: string;
   readonly recipientListId?: string | null;
   readonly senderConfig?: Readonly<Record<string, unknown>>;
@@ -522,6 +542,13 @@ interface UpdateCampaignChanges {
 
 /** At least one draft field must be supplied. */
 export type UpdateCampaignRequest =
+  | (UpdateCampaignChanges & { readonly templateId: string | null })
+  | (UpdateCampaignChanges & {
+      readonly variableMapping: CampaignVariableMapping | null;
+    })
+  | (UpdateCampaignChanges & {
+      readonly trackedLinks: readonly CampaignTrackedLink[] | null;
+    })
   | (UpdateCampaignChanges & { readonly name: string })
   | (UpdateCampaignChanges & { readonly recipientListId: string | null })
   | (UpdateCampaignChanges & {

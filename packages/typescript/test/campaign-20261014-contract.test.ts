@@ -532,6 +532,195 @@ const cases: readonly WireCase[] = [
 ];
 
 describe("2026-10-14 typed campaign and custody consumers", () => {
+  it.each(cases.filter((row) => !row.name.startsWith("export")))(
+    "$name refuses malformed successful JSON without retries or body leakage",
+    async (row) => {
+      const server = await startTestServer(() => ({
+        headers: {
+          "content-type": "application/json",
+          "x-request-id": "malformed-id",
+          "idempotent-replayed": "true",
+        },
+        body: '{"success":true,"data":null,"private":"secret"}',
+      }));
+      servers.push(server);
+      const error = await row
+        .call(clients(server.url), {
+          idempotencyKey: "explicit",
+          maxNetworkRetries: 2,
+        })
+        .catch((value: unknown) => value);
+      expect(error).toBeInstanceOf(PolymorfaServerError);
+      expect(error).toMatchObject({
+        code: "invalid_response",
+        requestId: "malformed-id",
+        metadata: { attempts: 1, headers: { "idempotent-replayed": "true" } },
+      });
+      expect(error).toHaveProperty("details", undefined);
+      expect(server.requests).toHaveLength(1);
+    },
+  );
+  it("keeps normalized keyword responses, empty objects, scalar false/zero/null and open extensions", async () => {
+    const returned = {
+      ...savedFlow,
+      extension: false,
+      definition: {
+        entryNodeId: "x",
+        nodes: [
+          {
+            id: "x",
+            edges: [
+              { match: { kind: "keyword", value: "é".repeat(48) }, to: "x" },
+            ],
+          },
+        ],
+      },
+    };
+    const server = await startTestServer((_request, index) => ({
+      body: JSON.stringify(
+        index === 0
+          ? { data: returned }
+          : {
+              data: {
+                ...savedProfile,
+                attributes: JSON.parse('{"0":0,"__proto__":false,"null":null}'),
+                extra: {},
+              },
+            },
+      ),
+    }));
+    servers.push(server);
+    const c = clients(server.url);
+    expect((await c.project.campaigns.getReplyFlow(flowId)).data.data).toEqual(
+      returned,
+    );
+    expect(
+      (await c.organization.audienceProfiles.retrieve(phone)).data.data,
+    ).toMatchObject({ attributes: { "0": 0, null: null }, extra: {} });
+  });
+  it.each([
+    "toString",
+    "constructor",
+    "__proto__",
+    { toString: "private" },
+    null,
+    1,
+  ])("rejects unknown remote discriminators safely: %j", async (kind) => {
+    const malformed = {
+      ...savedFlow,
+      definition: {
+        entryNodeId: "x",
+        nodes: [{ id: "x", edges: [], send: { kind } }],
+      },
+    };
+    const server = await startTestServer(() => ({
+      headers: {
+        "content-type": "application/json",
+        "x-request-id": "safe-id",
+      },
+      body: JSON.stringify({ data: malformed }),
+    }));
+    servers.push(server);
+    const error = await clients(server.url)
+      .project.campaigns.getReplyFlow(flowId)
+      .catch((value: unknown) => value);
+    expect(error).toBeInstanceOf(PolymorfaServerError);
+    expect(error).toMatchObject({
+      code: "invalid_response",
+      requestId: "safe-id",
+      metadata: { status: 200 },
+    });
+    expect(error).not.toHaveProperty("details", malformed);
+    expect(String(error)).not.toContain("private");
+  });
+  it.each([
+    [
+      "false Messaging success",
+      { success: false, data: [] },
+      "application/json",
+      (c: Clients) => c.messaging.campaigns.links("launch", campaignId),
+    ],
+    [
+      "incomplete profile",
+      { data: {} },
+      "application/json",
+      (c: Clients) => c.organization.audienceProfiles.retrieve(phone),
+    ],
+    [
+      "incomplete custody",
+      { data: { revision: 0 } },
+      "application/json",
+      (c: Clients) => c.project.signalCustody.retrieve(),
+    ],
+    [
+      "missing nullable cursor",
+      { data: [], page: { hasMore: false } },
+      "application/json",
+      (c: Clients) => c.organization.audienceProfiles.list(),
+    ],
+    [
+      "HTML success",
+      "private response body",
+      "text/html",
+      (c: Clients) => c.organization.campaigns.getSettings(),
+    ],
+  ] as const)(
+    "rejects %s through public HTTP with safe metadata",
+    async (_name, body, contentType, call) => {
+      const server = await startTestServer(() => ({
+        headers: {
+          "content-type": contentType,
+          "x-request-id": "fixture-request",
+          "x-trace-id": "a".repeat(32),
+        },
+        body: typeof body === "string" ? body : JSON.stringify(body),
+      }));
+      servers.push(server);
+      const error = await call(clients(server.url)).catch(
+        (value: unknown) => value,
+      );
+      expect(error).toBeInstanceOf(PolymorfaServerError);
+      expect(error).toMatchObject({
+        code: "invalid_response",
+        status: 200,
+        requestId: "fixture-request",
+        metadata: { attempts: 1, headers: { "x-trace-id": "a".repeat(32) } },
+      });
+      expect(String(error)).not.toContain("private response body");
+      expect(server.requests).toHaveLength(1);
+    },
+  );
+
+  it("never resolves an absent Customer selector to Project defaults", async () => {
+    const server = await startTestServer(() => ({
+      body: JSON.stringify({ data: custody }),
+    }));
+    servers.push(server);
+    const c = clients(server.url);
+    for (const id of [undefined, null, "", "bad"] as unknown as string[]) {
+      for (const call of [
+        () => c.project.signalCustody.retrieveCustomer(id),
+        () =>
+          c.project.signalCustody.updateCustomer(id, {
+            expectedRevision: 0,
+            signalModeDefault: "standard",
+          }),
+        () => c.organization.customers.getSignalCustody(projectId, id),
+        () =>
+          c.organization.customers.updateSignalCustody(projectId, id, {
+            expectedRevision: 0,
+            signalModeDefault: null,
+          }),
+      ]) {
+        const error = await Promise.resolve()
+          .then((): Promise<unknown> => call())
+          .catch((value: unknown) => value);
+        expect(error).toBeInstanceOf(PolymorfaConfigurationError);
+      }
+    }
+    expect(server.requests).toHaveLength(0);
+  });
+
   it("refuses client tokens on all six new Messaging methods before fetch", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     const base = clients("http://127.0.0.1:1");
@@ -742,7 +931,19 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
   });
 
   it("confines every bound campaign selector for both supported credential kinds", async () => {
-    const server = await startTestServer(() => ({ body: '{"data":[]}' }));
+    const operations = [
+      "getPlatformCampaignReplyFlow",
+      "createPlatformCampaignReplyFlow",
+      "setPlatformCampaignReplyFlow",
+      "testSendPlatformCampaign",
+      "listCampaignLaunchApprovals",
+      "getCampaignLinks",
+    ];
+    const server = await startTestServer((_request, index) => ({
+      body: JSON.stringify(
+        successFixture(operations[index % operations.length]!),
+      ),
+    }));
     servers.push(server);
     const organization = clients(server.url).organization;
     const direct = new Client({
@@ -1149,4 +1350,38 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
       signalModeDefault: null,
     });
   });
+});
+
+it("captures finite CSV queries and safe caller headers before retry", async () => {
+  const params = { cursor: "original", limit: 1 };
+  const headers = { "x-trace-id": "original" };
+  const server = await startTestServer((_request, index) => {
+    if (index === 0) {
+      params.cursor = "changed";
+      params.limit = 99;
+      headers["x-trace-id"] = "changed";
+      return { status: 503, body: '{"error":{"code":"service_unavailable"}}' };
+    }
+    return {
+      headers: {
+        "content-type": "text/csv",
+        "content-disposition": 'attachment; filename="fixture.csv"',
+      },
+      body: "phone\r\n+15551234567\r\n",
+    };
+  });
+  servers.push(server);
+  const result = await clients(server.url).project.campaigns.exportRecipients(
+    campaignId,
+    params,
+    { headers, maxNetworkRetries: 1 },
+  );
+  expect(result.data.csv).toBe("phone\r\n+15551234567\r\n");
+  expect(server.requests).toHaveLength(2);
+  expect(server.requests[0]!.path).toBe(server.requests[1]!.path);
+  expect(server.requests[1]!.path).toContain("cursor=original");
+  expect(server.requests.map((r) => r.headers["x-trace-id"])).toEqual([
+    "original",
+    "original",
+  ]);
 });

@@ -132,6 +132,9 @@ export function campaignContractOptions(
     bytes(options.idempotencyKey, "options.idempotencyKey", 1, 255);
   const selected = {
     ...options,
+    ...(options.headers === undefined
+      ? {}
+      : { headers: { ...options.headers } }),
     apiVersion: options.apiVersion ?? "2026-10-14",
     ...(write && !replay && options.maxNetworkRetries === undefined
       ? { maxNetworkRetries: 0 }

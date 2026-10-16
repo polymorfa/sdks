@@ -6,6 +6,7 @@ import {
   PolymorfaMediaIntegrityError,
 } from "../errors.js";
 import type { HttpTransport } from "../transport/http.js";
+import type { MessagingCredential } from "../credentials.js";
 import type { RequestOptions } from "../transport/types.js";
 import { DirectMediaApi, type WhatsAppUploadGrant } from "./direct-api.js";
 import {
@@ -765,8 +766,11 @@ export function createDirectUploadTransport(
 export class WhatsAppMediaResource {
   readonly #api: DirectMediaApi;
 
-  constructor(transport: HttpTransport) {
-    this.#api = new DirectMediaApi(transport);
+  constructor(
+    transport: HttpTransport,
+    credentialType: MessagingCredential["type"] = "apiKey",
+  ) {
+    this.#api = new DirectMediaApi(transport, credentialType);
   }
 
   async upload(
@@ -781,6 +785,7 @@ export class WhatsAppMediaResource {
       );
     }
     const egress = options.egress ?? "relay";
+    if (egress === "direct") this.#api.assertServerCredential();
     const transport =
       egress === "relay"
         ? createRelayUploadTransport(this.#api)
@@ -811,6 +816,12 @@ export class WhatsAppMediaResource {
     egress: WhatsAppMediaEgress,
     options: DirectUploadTransportOptions = {},
   ): WhatsAppMediaUploadTransport {
+    if (egress !== "relay" && egress !== "direct")
+      throw new PolymorfaConfigurationError(
+        "Choose relay or direct.",
+        "egress",
+      );
+    if (egress === "direct") this.#api.assertServerCredential();
     return egress === "relay"
       ? createRelayUploadTransport(this.#api)
       : createDirectUploadTransport(this.#api, options);

@@ -5,9 +5,20 @@
  * bytes and hashes; upload requests never carry a media key or plaintext.
  * Standard descriptor sending is a separate API and includes the media key.
  */
-import { PolymorfaError } from "../errors.js";
+import {
+  PolymorfaError,
+  PolymorfaConfigurationError,
+  PolymorfaServerError,
+} from "../errors.js";
+import {
+  contractFields,
+  contractInteger,
+  contractString,
+} from "../campaign-contract-validation.js";
+import { existingOptions } from "../campaign-existing-validation.js";
+import type { MessagingCredential } from "../credentials.js";
 import type { HttpTransport } from "../transport/http.js";
-import type { RequestOptions } from "../transport/types.js";
+import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type { WhatsAppUploadMediaType } from "./encrypt.js";
 import { isWhatsAppMediaUrl } from "./whatsapp.js";
 
@@ -78,8 +89,8 @@ export interface HistorySyncChunkRetryRequest {
 
 /** @experimental Requires the 2026-10-14 API contract. */
 export interface HistorySyncChunkRetryResponse {
-  /** Identifier of the peer data request, when the API returns one. */
-  readonly requestId?: string;
+  readonly requestId: string;
+  readonly status: "requested";
 }
 
 /**
@@ -148,13 +159,27 @@ function nonEmptyString(value: unknown): value is string {
  * @internal
  */
 export class DirectMediaApi {
-  constructor(private readonly transport: HttpTransport) {}
+  constructor(
+    private readonly transport: HttpTransport,
+    private readonly credentialType: MessagingCredential["type"] = "apiKey",
+  ) {}
+
+  assertServerCredential(): void {
+    if (this.credentialType === "clientToken")
+      throw new PolymorfaConfigurationError(
+        "This operation requires an organization API key or project token.",
+        "credential",
+      );
+  }
 
   async createUploadGrant(
     session: string,
     request: WhatsAppUploadGrantRequest,
     options: RequestOptions = {},
   ): Promise<WhatsAppUploadGrant> {
+    this.assertServerCredential();
+    options = existingOptions(options);
+    contractString(session, "session");
     const response = await this.transport.request<unknown>({
       method: "POST",
       path: DIRECT_MEDIA_PATHS.uploadGrants(session),
@@ -200,6 +225,7 @@ export class DirectMediaApi {
     },
     options: RequestOptions = {},
   ): Promise<WhatsAppRelayUploadResponse> {
+    options = existingOptions(options);
     const { body } = request;
     const grant = uploadRequest(request.mediaType, request.fileEncSha256);
     const query = {
@@ -235,17 +261,59 @@ export class DirectMediaApi {
     request: HistorySyncChunkRetryRequest,
     options: RequestOptions = {},
   ): Promise<HistorySyncChunkRetryResponse> {
+    this.assertServerCredential();
+    contractString(session, "session");
+    const value = contractFields(
+      request,
+      ["syncType", "chunkOrder", "chunkMessageId", "regenerate"],
+      ["syncType", "chunkOrder"],
+      "body",
+    );
+    if (
+      ![
+        "INITIAL_BOOTSTRAP",
+        "INITIAL_STATUS_V3",
+        "FULL",
+        "RECENT",
+        "PUSH_NAME",
+        "NON_BLOCKING_DATA",
+        "ON_DEMAND",
+      ].includes(value.syncType as string)
+    )
+      throw new PolymorfaConfigurationError(
+        "Invalid history sync type.",
+        "syncType",
+      );
+    contractInteger(value.chunkOrder, "chunkOrder", 0, 0xffffffff);
+    if (
+      Object.hasOwn(value, "chunkMessageId") &&
+      (typeof value.chunkMessageId !== "string" ||
+        !/^[A-Za-z0-9._:-]{1,128}$/.test(value.chunkMessageId))
+    )
+      throw new PolymorfaConfigurationError(
+        "Invalid history chunk message ID.",
+        "chunkMessageId",
+      );
+    if (
+      Object.hasOwn(value, "regenerate") &&
+      typeof value.regenerate !== "boolean"
+    )
+      throw new PolymorfaConfigurationError(
+        "Invalid regenerate flag.",
+        "regenerate",
+      );
+    options = existingOptions(options);
     const response = await this.transport.request<unknown>({
       method: "POST",
       path: DIRECT_MEDIA_PATHS.historyChunkRetries(session),
-      body: request,
+      body: { ...request },
       ...options,
       apiVersion: options.apiVersion ?? CUSTOMER_OWNED_API_VERSION,
     });
-    const data = unwrap(response.data);
-    return Object.freeze(
-      nonEmptyString(data["requestId"]) ? { requestId: data["requestId"] } : {},
-    );
+    const data = historyData(response);
+    if (!nonEmptyString(data.requestId) || data.status !== "requested")
+      throw historyError(response);
+    return Object.freeze({ requestId: data.requestId, status: "requested" });
   }
 
   async deleteHistoryChunk(
@@ -253,12 +321,80 @@ export class DirectMediaApi {
     request: HistorySyncChunkDeleteRequest,
     options: RequestOptions = {},
   ): Promise<void> {
-    await this.transport.request<unknown>({
+    this.assertServerCredential();
+    contractString(session, "session");
+    const value = contractFields(
+      request,
+      ["directPath", "fileEncSha256", "encHandle", "companionMetaNonce"],
+      ["directPath", "fileEncSha256"],
+      "body",
+    );
+    if (
+      typeof value.directPath !== "string" ||
+      value.directPath.length > 1024 ||
+      !/^\/[A-Za-z0-9._~%/=&?+-]+$/.test(value.directPath) ||
+      typeof value.fileEncSha256 !== "string" ||
+      !/^[A-Za-z0-9+/]{43}=$/.test(value.fileEncSha256) ||
+      atob(value.fileEncSha256).length !== 32
+    )
+      throw new PolymorfaConfigurationError(
+        "Invalid history deletion descriptor.",
+        "history",
+      );
+    for (const key of ["encHandle", "companionMetaNonce"])
+      if (
+        Object.hasOwn(value, key) &&
+        (typeof value[key] !== "string" ||
+          !/^[A-Za-z0-9._~%/=+-]{1,512}$/.test(value[key]))
+      )
+        throw new PolymorfaConfigurationError(
+          "Invalid history deletion token.",
+          "history",
+        );
+    options = existingOptions(options);
+    const response = await this.transport.request<unknown>({
       method: "POST",
       path: DIRECT_MEDIA_PATHS.historyChunkDeletions(session),
-      body: request,
+      body: { ...request },
       ...options,
       apiVersion: options.apiVersion ?? CUSTOMER_OWNED_API_VERSION,
     });
+    if (historyData(response).status !== "deleted")
+      throw historyError(response);
   }
+}
+
+function historyError(response: ApiResponse<unknown>): PolymorfaServerError {
+  return new PolymorfaServerError(
+    "The API returned an invalid history result.",
+    {
+      code: "invalid_response",
+      status: response.metadata.status,
+      ...(response.metadata.requestId === undefined
+        ? {}
+        : { requestId: response.metadata.requestId }),
+      metadata: response.metadata,
+    },
+  );
+}
+function historyData(response: ApiResponse<unknown>): Record<string, unknown> {
+  const body = response.data;
+  if (
+    response.metadata.status !== 200 ||
+    response.metadata.headers["content-type"]
+      ?.split(";", 1)[0]
+      ?.trim()
+      .toLowerCase() !== "application/json" ||
+    typeof body !== "object" ||
+    body === null ||
+    Array.isArray(body) ||
+    !("success" in body) ||
+    body.success !== true ||
+    !("data" in body) ||
+    typeof body.data !== "object" ||
+    body.data === null ||
+    Array.isArray(body.data)
+  )
+    throw historyError(response);
+  return body.data as Record<string, unknown>;
 }

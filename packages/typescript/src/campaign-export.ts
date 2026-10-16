@@ -17,7 +17,7 @@ export async function requestCampaignExport(
       ...campaignContractOptions(options),
       method: "GET",
       path,
-      query,
+      query: { ...query },
     },
     "text/csv",
   );

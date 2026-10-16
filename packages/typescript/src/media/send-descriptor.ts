@@ -1,6 +1,7 @@
 import { PolymorfaConfigurationError } from "../errors.js";
 import type { EncryptedWhatsAppMediaInfo } from "./encrypt.js";
 import type { WhatsAppUploadLocation } from "./upload.js";
+import { contractFields } from "../campaign-contract-validation.js";
 
 /**
  * A pre-uploaded attachment for a message send. Binary fields are standard
@@ -38,6 +39,82 @@ export interface WhatsAppMediaSendMetadata {
   readonly waveform?: Uint8Array;
   readonly mediaKeyTimestamp?: number;
   readonly isAnimated?: boolean;
+}
+
+/** @internal Hand-authored sticker descriptors use the same checks as builders. */
+export function validateStickerContent(value: unknown): void {
+  const media = contractFields(
+    value,
+    ["descriptor"],
+    ["descriptor"],
+    "sticker",
+  );
+  const d = contractFields(
+    media.descriptor,
+    [
+      "directPath",
+      "mediaKey",
+      "fileSha256",
+      "fileEncSha256",
+      "fileLength",
+      "mimeType",
+      "url",
+      "width",
+      "height",
+      "mediaKeyTimestamp",
+      "isAnimated",
+    ],
+    [
+      "directPath",
+      "mediaKey",
+      "fileSha256",
+      "fileEncSha256",
+      "fileLength",
+      "mimeType",
+      "url",
+    ],
+    "sticker.descriptor",
+  );
+  const bytes = (key: string): Uint8Array => {
+    const value = d[key];
+    if (typeof value !== "string" || !/^[A-Za-z0-9+/]{43}=$/.test(value))
+      throw new PolymorfaConfigurationError(
+        "Invalid sticker cryptographic field.",
+        key,
+      );
+    return Uint8Array.from(atob(value), (c) => c.charCodeAt(0));
+  };
+  for (const key of ["width", "height", "mediaKeyTimestamp"])
+    if (Object.hasOwn(d, key) && typeof d[key] !== "number")
+      throw new PolymorfaConfigurationError("Invalid sticker metadata.", key);
+  if (Object.hasOwn(d, "isAnimated") && typeof d.isAnimated !== "boolean")
+    throw new PolymorfaConfigurationError(
+      "Invalid sticker animation flag.",
+      "isAnimated",
+    );
+  toWhatsAppMediaSendDescriptor(
+    {
+      mediaType: "sticker",
+      mediaKey: bytes("mediaKey"),
+      fileSha256: bytes("fileSha256"),
+      fileEncSha256: bytes("fileEncSha256"),
+      fileLength: d.fileLength as number,
+      encryptedLength: 0,
+      directPath: d.directPath as string,
+      url: d.url as string,
+      mimetype: d.mimeType as string,
+    },
+    {
+      ...(Object.hasOwn(d, "width") ? { width: d.width as number } : {}),
+      ...(Object.hasOwn(d, "height") ? { height: d.height as number } : {}),
+      ...(Object.hasOwn(d, "mediaKeyTimestamp")
+        ? { mediaKeyTimestamp: d.mediaKeyTimestamp as number }
+        : {}),
+      ...(Object.hasOwn(d, "isAnimated")
+        ? { isAnimated: d.isAnimated as boolean }
+        : {}),
+    },
+  );
 }
 
 function base64(bytes: Uint8Array): string {

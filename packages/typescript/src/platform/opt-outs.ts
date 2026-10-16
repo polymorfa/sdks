@@ -1,3 +1,4 @@
+import { requestContract } from "../campaign-contract-response.js";
 import { HttpTransport } from "../transport/http.js";
 import {
   campaignContractBody,
@@ -27,11 +28,15 @@ export class OptOutsResource {
   getConfirmationSettings(
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<StopConfirmationSettings>>> {
-    return this.transport.request({
-      ...campaignContractOptions(options),
-      method: "GET",
-      path: "/platform/optouts/confirmation-settings",
-    });
+    return requestContract(
+      this.transport,
+      {
+        ...campaignContractOptions(options),
+        method: "GET",
+        path: "/platform/optouts/confirmation-settings",
+      },
+      "stopSettings",
+    );
   }
 
   updateConfirmationSettings(
@@ -39,22 +44,30 @@ export class OptOutsResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<StopConfirmationSettings>>> {
     validateStopConfirmation(body);
-    return this.transport.request({
-      ...campaignContractOptions(options, true),
-      method: "PUT",
-      path: "/platform/optouts/confirmation-settings",
-      body: campaignContractBody(body),
-    });
+    return requestContract(
+      this.transport,
+      {
+        ...campaignContractOptions(options, true),
+        method: "PUT",
+        path: "/platform/optouts/confirmation-settings",
+        body: campaignContractBody(body),
+      },
+      "stopSettings",
+    );
   }
 
   getConfirmationSummary(
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<StopConfirmationSummary>>> {
-    return this.transport.request({
-      ...campaignContractOptions(options),
-      method: "GET",
-      path: "/platform/optouts/confirmation-summary",
-    });
+    return requestContract(
+      this.transport,
+      {
+        ...campaignContractOptions(options),
+        method: "GET",
+        path: "/platform/optouts/confirmation-summary",
+      },
+      "stopSummary",
+    );
   }
 
   list(options: RequestOptions = {}): OptOutResponse {

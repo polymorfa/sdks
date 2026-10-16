@@ -104,8 +104,8 @@ export class MessagingClient {
     this.labels = new LabelsResource(transport);
     this.identities = new IdentitiesResource(transport);
     this.media = new MessagingMediaResource(transport);
-    this.whatsappMedia = new WhatsAppMediaResource(transport);
-    this.historySync = new HistorySyncResource(transport);
+    this.whatsappMedia = new WhatsAppMediaResource(transport, credential.type);
+    this.historySync = new HistorySyncResource(transport, credential.type);
     this.observationPolicies = new ObservationPoliciesResource(transport);
     this.sessions = new SessionsResource(transport, credential.type);
     this.hybridLink = new HybridLinkResource(transport, credential.type);

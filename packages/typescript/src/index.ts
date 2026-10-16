@@ -1201,6 +1201,8 @@ export {
   type LinkedDeviceMessagePayload,
   type LinkedDeviceMessageType,
   type LinkedHistorySyncPayload,
+  type DirectHistorySyncPayload,
+  type DirectHistorySyncCommon,
   type MessageAckPayload,
   type MetaPricingReport,
   type MessageDeletePayload,
@@ -1374,3 +1376,14 @@ export type {
   BillingPriorities,
   ReorderBillingPrioritiesInput,
 } from "./platform/billing-controls.js";
+
+export type {
+  CampaignMessage,
+  LaunchPlatformCampaignRequest,
+  PlatformCampaignLaunchResult,
+} from "./platform/types.js";
+
+export type {
+  HistorySyncDelivery,
+  HistorySyncPolicyPatch,
+} from "./messaging/session-configuration.js";

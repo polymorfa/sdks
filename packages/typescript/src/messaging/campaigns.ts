@@ -1,3 +1,10 @@
+import {
+  existingOptions,
+  validateExistingCampaign,
+  validateRecipientList,
+  validateCampaignLaunch,
+} from "../campaign-existing-validation.js";
+import { requestContract } from "../campaign-contract-response.js";
 import type { MessagingCredential } from "../credentials.js";
 import { PolymorfaConfigurationError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
@@ -73,11 +80,16 @@ export class MessagingCampaignsResource {
     ApiResponse<{ readonly success: true; readonly data: CampaignReplyFlow }>
   > {
     this.requireServerCredential();
-    return this.transport.request({
-      ...campaignContractOptions(options),
-      method: "GET",
-      path: `${replyFlowsPath(projectSlug)}/${contractUuid(replyFlowId, "replyFlowId")}`,
-    });
+    return requestContract(
+      this.transport,
+      {
+        ...campaignContractOptions(options),
+        method: "GET",
+        path: `${replyFlowsPath(projectSlug)}/${contractUuid(replyFlowId, "replyFlowId")}`,
+      },
+      "replyFlow",
+      true,
+    );
   }
 
   createReplyFlow(
@@ -89,12 +101,17 @@ export class MessagingCampaignsResource {
   > {
     this.requireServerCredential();
     validateReplyFlowCreate(body);
-    return this.transport.request({
-      ...campaignContractOptions(options, true),
-      method: "POST",
-      path: replyFlowsPath(projectSlug),
-      body: campaignContractBody(body),
-    });
+    return requestContract(
+      this.transport,
+      {
+        ...campaignContractOptions(options, true),
+        method: "POST",
+        path: replyFlowsPath(projectSlug),
+        body: campaignContractBody(body),
+      },
+      "replyFlow",
+      true,
+    );
   }
 
   setReplyFlow(
@@ -110,12 +127,17 @@ export class MessagingCampaignsResource {
   > {
     this.requireServerCredential();
     validateReplyFlowAssignment(body);
-    return this.transport.request({
-      ...campaignContractOptions(options, true),
-      method: "PUT",
-      path: `${contractCampaignPath(projectSlug, campaignId)}/reply-flow`,
-      body: campaignContractBody(body),
-    });
+    return requestContract(
+      this.transport,
+      {
+        ...campaignContractOptions(options, true),
+        method: "PUT",
+        path: `${contractCampaignPath(projectSlug, campaignId)}/reply-flow`,
+        body: campaignContractBody(body),
+      },
+      "assignment",
+      true,
+    );
   }
 
   testSend(
@@ -128,12 +150,17 @@ export class MessagingCampaignsResource {
   > {
     this.requireServerCredential();
     validateCampaignTestSend(body);
-    return this.transport.request({
-      ...campaignContractOptions(options, true, true),
-      method: "POST",
-      path: `${contractCampaignPath(projectSlug, campaignId)}/test-send`,
-      body: campaignContractBody(body),
-    });
+    return requestContract(
+      this.transport,
+      {
+        ...campaignContractOptions(options, true, true),
+        method: "POST",
+        path: `${contractCampaignPath(projectSlug, campaignId)}/test-send`,
+        body: campaignContractBody(body),
+      },
+      "testSend",
+      true,
+    );
   }
 
   links(
@@ -147,11 +174,16 @@ export class MessagingCampaignsResource {
     }>
   > {
     this.requireServerCredential();
-    return this.transport.request({
-      ...campaignContractOptions(options),
-      method: "GET",
-      path: `${contractCampaignPath(projectSlug, campaignId)}/links`,
-    });
+    return requestContract(
+      this.transport,
+      {
+        ...campaignContractOptions(options),
+        method: "GET",
+        path: `${contractCampaignPath(projectSlug, campaignId)}/links`,
+      },
+      "links",
+      true,
+    );
   }
 
   exportRecipients(
@@ -176,7 +208,7 @@ export class MessagingCampaignsResource {
     return this.transport.request({
       method: "GET",
       path: campaignsPath(projectSlug),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -185,11 +217,13 @@ export class MessagingCampaignsResource {
     body: CreateCampaignRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<CreateCampaignResponse>> {
+    validateExistingCampaign(body, false, false);
+    options = existingOptions(options);
     return this.transport.request({
       method: "POST",
       path: campaignsPath(projectSlug),
-      body,
-      ...withIdempotencyKey(options),
+      body: campaignContractBody(body),
+      ...withIdempotencyKey(existingOptions(options)),
     });
   }
 
@@ -201,7 +235,7 @@ export class MessagingCampaignsResource {
     return this.transport.request({
       method: "GET",
       path: campaignPath(projectSlug, campaignId),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -211,11 +245,13 @@ export class MessagingCampaignsResource {
     body: UpdateCampaignRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UpdateCampaignResponse>> {
+    validateExistingCampaign(body, false, true);
+    options = existingOptions(options);
     return this.transport.request({
       method: "PATCH",
       path: campaignPath(projectSlug, campaignId),
-      body,
-      ...withoutAutomaticRetry(options),
+      body: campaignContractBody(body),
+      ...withoutAutomaticRetry(existingOptions(options)),
     });
   }
 
@@ -227,7 +263,7 @@ export class MessagingCampaignsResource {
     return this.transport.request({
       method: "GET",
       path: `${campaignPath(projectSlug, campaignId)}/analytics`,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -237,11 +273,13 @@ export class MessagingCampaignsResource {
     body: LaunchCampaignRequest = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<CampaignOperationResponse>> {
+    validateCampaignLaunch(body, false);
+    options = existingOptions(options);
     return this.transport.request({
       method: "POST",
       path: `${campaignPath(projectSlug, campaignId)}/launch`,
-      body,
-      ...withIdempotencyKey(options),
+      body: campaignContractBody(body),
+      ...withIdempotencyKey(existingOptions(options)),
     });
   }
 
@@ -255,7 +293,7 @@ export class MessagingCampaignsResource {
       method: "POST",
       path: `${campaignPath(projectSlug, campaignId)}/reschedule`,
       body,
-      ...withIdempotencyKey(options),
+      ...withIdempotencyKey(existingOptions(options)),
     });
   }
 
@@ -287,7 +325,7 @@ export class MessagingCampaignsResource {
     return this.transport.request({
       method: "POST",
       path: `${campaignPath(projectSlug, campaignId)}/stop`,
-      ...withIdempotencyKey(options),
+      ...withIdempotencyKey(existingOptions(options)),
     });
   }
 
@@ -298,15 +336,18 @@ export class MessagingCampaignsResource {
     params: ListCampaignRecipientsParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<ListCampaignRecipientsResponse>> {
+    validateRecipientList(params, false);
+    options = existingOptions(options);
     return this.transport.request({
       method: "GET",
       path: recipientsPath(projectSlug, campaignId),
       query: {
         ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.reason === undefined ? {} : { reason: params.reason }),
         ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
         ...(params.limit === undefined ? {} : { limit: params.limit }),
       },
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -314,11 +355,9 @@ export class MessagingCampaignsResource {
    * Add up to 1,000 recipients to a campaign that has not started sending.
    * Repeated phones are skipped and invalid entries are reported, not added.
    *
-   * The API declares no idempotent replay for this append, so by default the
-   * SDK sends it once and does not retry it. Setting both `maxNetworkRetries`
-   * and `idempotencyKey` on the request re-enables retries, and a retry can be
-   * processed as a new append. After a lost response, list the recipients before
-   * appending again.
+   * The SDK sends this unsafe append once by default. A caller key supports
+   * replay; select maxNetworkRetries explicitly to authorize automatic retries.
+   * Without a key, inspect recipients after an uncertain result before appending.
    */
   addRecipients(
     projectSlug: string,
@@ -329,8 +368,8 @@ export class MessagingCampaignsResource {
     return this.transport.request({
       method: "POST",
       path: recipientsPath(projectSlug, campaignId),
-      body,
-      ...withoutAutomaticRetry(options),
+      body: campaignContractBody(body),
+      ...withoutAutomaticRetry(existingOptions(options)),
     });
   }
 
@@ -344,7 +383,7 @@ export class MessagingCampaignsResource {
       method: "POST",
       path: `${campaignPath(projectSlug, campaignId)}/requeue`,
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -357,7 +396,7 @@ export class MessagingCampaignsResource {
     return this.transport.request({
       method: "POST",
       path: `${campaignPath(projectSlug, campaignId)}/${action}`,
-      ...withIdempotencyKey(options),
+      ...withIdempotencyKey(existingOptions(options)),
     });
   }
 }

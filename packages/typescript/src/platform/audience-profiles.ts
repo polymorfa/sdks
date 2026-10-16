@@ -1,3 +1,4 @@
+import { requestContract } from "../campaign-contract-response.js";
 import type { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type { DataEnvelope } from "./response.js";
@@ -38,23 +39,33 @@ export class AudienceProfilesResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<AudienceProfilePage<AudienceProfile>>> {
     const query = validateProfilePage(params);
-    return this.#transport.request({
-      ...campaignContractOptions(options),
-      method: "GET",
-      path: "/platform/audience-profiles",
-      query,
-    });
+    return requestContract(
+      this.#transport,
+      {
+        ...campaignContractOptions(options),
+        method: "GET",
+        path: "/platform/audience-profiles",
+        query,
+      },
+      "profiles",
+      false,
+      true,
+    );
   }
 
   retrieve(
     phone: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<AudienceProfile>>> {
-    return this.#transport.request({
-      ...campaignContractOptions(options),
-      method: "GET",
-      path: profilePath(phone),
-    });
+    return requestContract(
+      this.#transport,
+      {
+        ...campaignContractOptions(options),
+        method: "GET",
+        path: profilePath(phone),
+      },
+      "profile",
+    );
   }
 
   put(
@@ -63,12 +74,16 @@ export class AudienceProfilesResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<AudienceProfile>>> {
     validateProfilePut(body);
-    return this.#transport.request({
-      ...campaignContractOptions(options, true),
-      method: "PUT",
-      path: profilePath(phone),
-      body: campaignContractBody(body),
-    });
+    return requestContract(
+      this.#transport,
+      {
+        ...campaignContractOptions(options, true),
+        method: "PUT",
+        path: profilePath(phone),
+        body: campaignContractBody(body),
+      },
+      "profile",
+    );
   }
 
   delete(
@@ -77,12 +92,16 @@ export class AudienceProfilesResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<DeleteAudienceProfileResult>>> {
     contractInteger(expectedRevision, "expectedRevision", 1);
-    return this.#transport.request({
-      ...campaignContractOptions(options, true),
-      method: "DELETE",
-      path: profilePath(phone),
-      query: { expectedRevision: String(expectedRevision) },
-    });
+    return requestContract(
+      this.#transport,
+      {
+        ...campaignContractOptions(options, true),
+        method: "DELETE",
+        path: profilePath(phone),
+        query: { expectedRevision: String(expectedRevision) },
+      },
+      "profileDelete",
+    );
   }
 
   listConsent(
@@ -91,12 +110,18 @@ export class AudienceProfilesResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<AudienceProfilePage<AudienceConsentAssertion>>> {
     const query = validateProfilePage(params);
-    return this.#transport.request({
-      ...campaignContractOptions(options),
-      method: "GET",
-      path: `${profilePath(phone)}/consent`,
-      query,
-    });
+    return requestContract(
+      this.#transport,
+      {
+        ...campaignContractOptions(options),
+        method: "GET",
+        path: `${profilePath(phone)}/consent`,
+        query,
+      },
+      "consents",
+      false,
+      true,
+    );
   }
 }
 
@@ -112,23 +137,31 @@ export class AudienceProfileImportsResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<AudienceProfileImportJob>>> {
     validateProfileImport(body);
-    return this.#transport.request({
-      ...campaignContractOptions(options, true),
-      method: "POST",
-      path: "/platform/audience-profile-imports",
-      body: campaignContractBody(body),
-    });
+    return requestContract(
+      this.#transport,
+      {
+        ...campaignContractOptions(options, true),
+        method: "POST",
+        path: "/platform/audience-profile-imports",
+        body: campaignContractBody(body),
+      },
+      "import",
+    );
   }
 
   retrieve(
     jobId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<AudienceProfileImportJob>>> {
-    return this.#transport.request({
-      ...campaignContractOptions(options),
-      method: "GET",
-      path: importPath(jobId),
-    });
+    return requestContract(
+      this.#transport,
+      {
+        ...campaignContractOptions(options),
+        method: "GET",
+        path: importPath(jobId),
+      },
+      "import",
+    );
   }
 
   /** Cancel the durable job. Aborting an HTTP waiter does not cancel it. */
@@ -136,11 +169,15 @@ export class AudienceProfileImportsResource {
     jobId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<AudienceProfileImportJob>>> {
-    return this.#transport.request({
-      ...campaignContractOptions(options, true),
-      method: "DELETE",
-      path: importPath(jobId),
-    });
+    return requestContract(
+      this.#transport,
+      {
+        ...campaignContractOptions(options, true),
+        method: "DELETE",
+        path: importPath(jobId),
+      },
+      "import",
+    );
   }
 }
 

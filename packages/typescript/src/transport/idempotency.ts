@@ -52,13 +52,11 @@ export function withIdempotencyKey(options: RequestOptions): RequestOptions {
 }
 
 /**
- * Send a write whose contract declares no Idempotency-Key replay at most once.
+ * Send an unsafe write at most once unless the caller selects retries.
  *
- * No key is generated, and automatic retries are off unless the caller sets
- * `maxNetworkRetries` for this request. Like any unsafe method, the append is
- * then retried only if the caller also supplies `idempotencyKey`. The API would
- * process a resent append as a new append, so a retry after a lost response
- * would report the rows the first attempt added as duplicates.
+ * No key is generated. Automatic retries require both an explicit
+ * maxNetworkRetries value and a caller-supplied idempotency key. The endpoint's
+ * contract determines whether a repeated request replays the original result.
  */
 export function withoutAutomaticRetry(options: RequestOptions): RequestOptions {
   if (options.maxNetworkRetries !== undefined) return options;

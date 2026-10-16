@@ -6,6 +6,10 @@ import type { ResponseMetadata } from "./transport/types.js";
  * existing values are never renamed or reused.
  */
 export const POLYMORFA_ERROR_CODES = [
+  "campaign_approval_required",
+  "campaign_approval_stale",
+  "campaign_variables_missing",
+  "zero_knowledge_session",
   "invalid_parameter",
   "invalid_credential",
   "entitlement_required",

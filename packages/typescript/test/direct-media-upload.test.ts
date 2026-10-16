@@ -388,6 +388,7 @@ describe("customer-owned media upload over native HTTP", () => {
     };
     expect(await sdk.historySync.requestChunkRetry("s", retry)).toEqual({
       requestId: "retry-1",
+      status: "requested",
     });
     const deletion = {
       directPath: "/v/history.enc",

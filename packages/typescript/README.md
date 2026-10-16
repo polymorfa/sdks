@@ -161,6 +161,63 @@ or a limit below 1,000. Profiles and imports contain customer-supplied campaign
 data; they do not synchronize WhatsApp contacts. Consent assertions never
 override opt-outs. Error objects expose the server's `param` when supplied.
 
+The supplement's JSON helpers check status 200, `application/json`, envelopes,
+required fields and nullable values before returning typed data. Malformed
+successes raise `invalid_response` with safe response metadata, without the
+response body. Compatible extension fields remain available. A malformed result
+does not cause an admitted write to be replayed. Customer custody methods always
+require a Customer UUID; omission never selects Project defaults.
+
+### Existing methods with 2026-10-14 fields
+
+Campaign returns include `trackedLinks`, nullable `experimentOutcome` and
+`followUp`, and optional nullable `variableMapping`. Create accepts a non-null
+mapping; PATCH accepts `variableMapping: null` or `templateId: null` as a reset.
+Mapping keys and sources use the same variable-name rules, including valid
+numeric keys. Tracked-link keys are unique; different keys may share a URL.
+Recipient pages accept `reason` together with status, cursor and limit, and
+preserve nullable failure/timing fields and `messagesSent: 0`. These are ordinary
+JSON pages; CSV export has its separate filter rules.
+
+Organization `campaigns.launch` requires `{ projectId, scheduledAt?,
+skipMissingVariables? }`. The selected project is explicit and the request is
+closed. Project campaign resources retain only their seven confined supplement
+methods; they do not expose old CRUD or lifecycle methods. Approval, funding,
+consent and feature admission remain API decisions.
+
+```ts
+await messaging.quickLinks.create({
+  signalMode: "zero_knowledge",
+  configuration: {
+    historySync: { consent: "ask", delivery: "descriptor" },
+  },
+});
+await project.sessionConfiguration.update({
+  revision: 0,
+  configuration: { set: { historySync: { delivery: "descriptor" } } },
+});
+```
+
+QuickLink `signalMode` belongs only to initial invitations. Supplementary
+`add_connection` invitations require an existing session and `addConnection`;
+they cannot change custody or Customer ownership. Never put custody aliases in
+generic configuration. New mode or descriptor intent selects 2026-10-14 only
+when request `apiVersion` is absent. Explicit versions are preserved. Ordinary
+retrieves remain on the existing version unless you request 2026-10-14. Read
+delivery is `archive | descriptor`; writes accept only `descriptor`.
+`historySync.delivery` is an explicit reset key. A whole `historySync` reset on
+an older version retains the producer's legacy reset behavior and saved delivery.
+Requested history and consent-limited effective history remain separate.
+
+History retry returns required `{ requestId, status: "requested" }`; deletion
+validates `status: "deleted"` before resolving. Both commands require server
+credentials and preserve safe failure metadata. Direct media upload grants also
+require server credentials; selecting direct refuses a Client token before
+reading the source. Client tokens can use authorized relay upload or a customer
+transport. None of these methods grants scopes, beta enrollment, browser tunnel
+authority, real-device admission or deployed availability. The additions remain
+subject to the unpublished source acceptance gate above.
+
 ## System and Bridge clients
 
 `SystemClient` is credential-free. Its four methods preserve the normal
@@ -1917,10 +1974,16 @@ progress.
 
 ## Channels
 
-`history.sync` payloads distinguish linked-device indexes and their preserved
-WhatsApp archive from Cloud history's `{ kind: "history", value }` envelope.
-Narrow `HistorySyncPayload` with `"kind" in payload` before reading provider-specific
-fields; `LinkedHistorySyncPayload` and `CloudHistorySyncPayload` are exported.
+`history.sync` payloads distinguish linked-device archives, Cloud history's
+`{ kind: "history", value }` envelope and projected descriptor notifications.
+Check `"delivery" in payload` for `DirectHistorySyncPayload`, then narrow its
+exclusive `media` or `inline` branch. Other payloads narrow by `"kind" in payload`
+for Cloud versus `LinkedHistorySyncPayload`. All types are root exports.
+Descriptor identity is `whatsapp_ids`, with optional `original_whatsapp_ids`;
+`oldestMessageAt` is ISO text and media has type `md-msg-hist`. Raw runner
+message IDs and timestamp fields are not the public webhook shape. Never log
+key-bearing media descriptors. Describing a notification does not verify or
+persist its compressed history content.
 
 `MessagingClient.channels` exposes the complete 13-operation Channels tag for
 connected Linked Device sessions. Channels are WhatsApp newsletters in the
