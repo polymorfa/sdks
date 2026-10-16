@@ -2088,6 +2088,36 @@ await messaging.campaigns.update(projectSlug, campaignId, {
 });
 ```
 
+#### Receipt-timed follow-ups (beta)
+
+Set `followUp` (`CampaignFollowUp`) on create or update, on both surfaces, to
+send each recipient one more message from the number that sent the first one.
+The wait (`delaySeconds`, 60 to 604,800, default one day) starts at the first
+delivery, and the first read restarts it until sending starts. A follow-up
+that is not sent before `expirySeconds` (counted from the first send, 86,400 to
+2,592,000, default seven days) never sends. Replies and opt-outs cancel it. The
+campaign must send a single first message, and follow-up text cannot contain
+tracked links. `null` removes it on an unlaunched draft. A team that is not
+enrolled receives `403 feature_unavailable`.
+
+```ts
+await messaging.campaigns.update(projectSlug, campaignId, {
+  followUp: {
+    delaySeconds: 86_400,
+    message: { type: "text", text: "Hi {{first_name}}, still interested?" },
+  },
+});
+
+const analytics = await messaging.campaigns.analytics(projectSlug, campaignId);
+const { followUps } = analytics.data.data;
+console.log(followUps?.sent, followUps?.replied);
+```
+
+Each `CampaignRecipient` carries `followUp` (`CampaignFollowUpSummary`, or
+null): its `status`, which receipt timed it (`anchorKind`), the due and expiry
+times and a stable `reason`. Follow-up counts never change the first-message
+counts.
+
 #### Campaign conversions (beta)
 
 Campaign conversion reporting is a beta: the team must be enrolled, or both

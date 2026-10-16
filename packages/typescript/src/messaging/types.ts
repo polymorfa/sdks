@@ -199,6 +199,85 @@ export interface CampaignMessageVariation {
   readonly blueprint: CampaignMessageVariationBlueprint;
 }
 
+/** Message a campaign follow-up sends: text, or a message template by ID. */
+export type CampaignFollowUpMessage =
+  | {
+      readonly type: "text";
+      /**
+       * 1 to 16,384 characters, with the campaign's `{{variable}}`
+       * placeholders. Tracked links (`{{link:key}}`) are refused.
+       */
+      readonly text: string;
+    }
+  | { readonly type: "template"; readonly templateId: string };
+
+/**
+ * One receipt-timed follow-up (beta), sent from the number that sent the first
+ * message. The first delivery starts the wait and the first read, before
+ * sending starts, restarts it. Replies and opt-outs cancel it, and an expired
+ * wait never sends. Requires a single first message. A team that is not
+ * enrolled receives `403 feature_unavailable`.
+ */
+export interface CampaignFollowUp {
+  /** Seconds after the first delivery or read; 60 to 604,800. Defaults to 86,400. */
+  readonly delaySeconds?: number;
+  /**
+   * Seconds after the first message was sent; 86,400 to 2,592,000 and longer
+   * than the delay. Defaults to 604,800.
+   */
+  readonly expirySeconds?: number;
+  readonly message: CampaignFollowUpMessage;
+}
+
+export type CampaignFollowUpStatus =
+  | "waiting_receipt"
+  | "scheduled"
+  | "sending"
+  | "sent"
+  | "cancelled"
+  | "expired"
+  | "failed"
+  | "outcome_unknown";
+
+/** One recipient's follow-up. Times are Unix milliseconds. */
+export interface CampaignFollowUpSummary {
+  readonly id: string;
+  /** The number that sent the first message and sends the follow-up. */
+  readonly numberId: string;
+  readonly status: CampaignFollowUpStatus;
+  /** Which receipt timed the follow-up; null before the first receipt. */
+  readonly anchorKind: "delivered" | "read" | null;
+  readonly firstDeliveredAt: number | null;
+  readonly firstReadAt: number | null;
+  readonly dueAt: number | null;
+  readonly expiresAt: number;
+  readonly sentAt: number | null;
+  readonly deliveredAt: number | null;
+  readonly readAt: number | null;
+  readonly repliedAt: number | null;
+  /** Stable reason code, for example `reply`, `opt_out` or `wait_expired`. */
+  readonly reason: string | null;
+  readonly commandId: string | null;
+}
+
+/** Follow-up outcomes, counted apart from the first message. */
+export interface CampaignFollowUpReport {
+  readonly total: number;
+  readonly waiting: number;
+  readonly scheduled: number;
+  readonly sending: number;
+  readonly sent: number;
+  readonly delivered: number;
+  readonly read: number;
+  readonly replied: number;
+  readonly cancelled: number;
+  readonly expired: number;
+  readonly failed: number;
+  readonly unknown: number;
+  /** Earliest scheduled send in Unix milliseconds, or null. */
+  readonly nextDueAt: number | null;
+}
+
 /** Project-scoped campaign summary returned by the Messaging API. */
 export interface Campaign {
   readonly id: string;
@@ -234,6 +313,11 @@ export interface Campaign {
   readonly experimentOutcome?: CampaignExperimentOutcome | null;
   /** Weighted message alternatives, or null when the campaign sends one message. */
   readonly messageVariations?: readonly CampaignMessageVariation[] | null;
+  /**
+   * Receipt-timed follow-up (beta), or null when the campaign has none. The
+   * API stores defaults, but the contract requires only `message`.
+   */
+  readonly followUp?: CampaignFollowUp | null;
 }
 
 export type CampaignSendWindowDay =
@@ -296,6 +380,8 @@ export interface CampaignAnalytics {
   readonly responseRate: number;
   /** A/B results (beta); null for a campaign that is not an A/B test. */
   readonly experiment?: CampaignExperimentResults | null;
+  /** Follow-up outcomes (beta); all zero when the campaign has no follow-up. */
+  readonly followUps?: CampaignFollowUpReport;
 }
 
 export interface CreateCampaignRequest {
@@ -323,6 +409,8 @@ export interface CreateCampaignRequest {
    */
   readonly variants?: readonly CampaignVariant[] | null;
   readonly variantStrategy?: CampaignVariantStrategy | null;
+  /** One receipt-timed follow-up (beta). */
+  readonly followUp?: CampaignFollowUp | null;
 }
 
 export type CampaignRecipientStatus =
@@ -367,6 +455,8 @@ export interface CampaignRecipient {
   readonly readAt: number | null;
   readonly failedAt: number | null;
   readonly respondedAt: number | null;
+  /** This recipient's follow-up (beta), or null when none was created. */
+  readonly followUp?: CampaignFollowUpSummary | null;
 }
 
 export interface CampaignRecipientPage {
@@ -426,6 +516,8 @@ interface UpdateCampaignChanges {
   /** Replaces the A/B variants; null with a null strategy makes a broadcast. Only an unlaunched draft. */
   readonly variants?: readonly CampaignVariant[] | null;
   readonly variantStrategy?: CampaignVariantStrategy | null;
+  /** Replaces the follow-up (beta); null removes it. Only an unlaunched draft. */
+  readonly followUp?: CampaignFollowUp | null;
 }
 
 /** At least one draft field must be supplied. */
@@ -447,6 +539,9 @@ export type UpdateCampaignRequest =
     })
   | (UpdateCampaignChanges & {
       readonly variantStrategy: CampaignVariantStrategy | null;
+    })
+  | (UpdateCampaignChanges & {
+      readonly followUp: CampaignFollowUp | null;
     });
 
 export interface RescheduleCampaignRequest {
