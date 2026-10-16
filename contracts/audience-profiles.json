@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "f97fb511cf3cd7bf14fbccf21a679c0f7a6ebbf3",
+  "commit": "53203bff2f9b93f1c836287b0fa64efc6b6d0ec8",
   "sourcePath": "apps/api/docs/openapi.management.json",
-  "sourceSha256": "4fcbc7c71829c75163a60dc21e864ca438eb9903b0741f1c2d8052abd6cbd485",
-  "note": "Campaign audience profiles beta (polymorfa/polymorfa#408; last contract change at this dev merge commit, polymorfa/polymorfa#549, which added X-Trace-Id). Eight Platform operations for profiles, consent history and CSV imports. The full snapshots stay pinned to contracts/source.json until the next repin. The tag and phonePrefix list filters (polymorfa/polymorfa#567) are not in this revision.",
+  "sourceSha256": "b1971cfeac3278735569f6765caf673d53deaa5c39dfa8ae858bfb637de4da9a",
+  "note": "Audience profiles beta, including tag and phonePrefix filters from polymorfa/polymorfa#567. Exact unmerged source revision; filter availability requires API merge, deployment and staging acceptance. Full snapshots remain pinned by contracts/source.json.",
   "paths": {
     "/platform/audience-profiles": {
       "get": {
@@ -41,6 +41,29 @@
               "minimum": 1,
               "maximum": 100,
               "default": 25
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "description": "Only profiles that carry this exact tag.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+              "x-polymorfa-max-utf8-bytes": 48,
+              "description": "Exact tag, 1-48 UTF-8 bytes, without control characters."
+            }
+          },
+          {
+            "name": "phonePrefix",
+            "in": "query",
+            "required": false,
+            "description": "Only profiles whose E.164 phone number starts with this prefix, such as `+4479`.",
+            "schema": {
+              "type": "string",
+              "pattern": "^\\+[0-9]{1,15}$"
             }
           }
         ],

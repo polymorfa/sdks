@@ -7,7 +7,8 @@ import type { CursorEnvelope, DataEnvelope } from "./types.js";
  * Customer-supplied campaign audience profiles (`campaigns.audience-profiles`
  * beta). Profiles belong to the team and are keyed by E.164 phone number.
  * Reads, import polling, import cancellation and deletion need
- * `campaigns:read` or `campaigns:manage`; creating, updating and starting an
+ * `campaigns:read` for reads, or `campaigns:manage` for cancellation and deletion;
+ * creating, updating and starting an
  * import also need the team to be enrolled in the beta. Project tokens cannot
  * access team profiles.
  */
@@ -85,6 +86,10 @@ export interface DeleteAudienceProfileResult {
 export interface ListAudienceProfilesParams {
   /** `page.nextCursor` from the previous page. */
   readonly cursor?: string;
+  /** Exact, case-sensitive tag. 1-48 UTF-8 bytes without control characters. */
+  readonly tag?: string;
+  /** `+` followed by 1-15 digits. Combined with tag before pagination. */
+  readonly phonePrefix?: string;
   /** Profiles per page, 1 to 100. Defaults to 25. */
   readonly limit?: number;
 }
@@ -128,19 +133,20 @@ interface CreateAudienceProfileImportBase {
 }
 
 /** A UTF-8 CSV of at most 10 MiB and 10,000 data rows. */
-export type CreateAudienceProfileImportRequest = CreateAudienceProfileImportBase &
-  (
-    | {
-        /** CSV text or bytes; the SDK encodes it as padded base64. */
-        readonly csv: string | Uint8Array;
-        readonly csvBase64?: never;
-      }
-    | {
-        /** The CSV already encoded as standard padded base64. */
-        readonly csvBase64: string;
-        readonly csv?: never;
-      }
-  );
+export type CreateAudienceProfileImportRequest =
+  CreateAudienceProfileImportBase &
+    (
+      | {
+          /** CSV text or bytes; the SDK encodes it as padded base64. */
+          readonly csv: string | Uint8Array;
+          readonly csvBase64?: never;
+        }
+      | {
+          /** The CSV already encoded as standard padded base64. */
+          readonly csvBase64: string;
+          readonly csv?: never;
+        }
+    );
 
 export type AudienceProfileImportState = "queued" | "completed" | "cancelled";
 
@@ -198,6 +204,10 @@ export class AudienceProfilesResource {
       query: {
         ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
         ...(params.limit === undefined ? {} : { limit: params.limit }),
+        ...(params.tag === undefined ? {} : { tag: params.tag }),
+        ...(params.phonePrefix === undefined
+          ? {}
+          : { phonePrefix: params.phonePrefix }),
       },
       ...options,
     });
