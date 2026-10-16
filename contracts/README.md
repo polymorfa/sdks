@@ -639,3 +639,13 @@ At the next repin, these four rows change as recorded here, together with
 unrelated shared changes such as the public error enum. No SDK method or type
 depends on this supplement, so `scripts/release-gate.mjs` does not hold
 publication for it.
+
+## Campaign follow-up supplement
+
+`campaign-follow-ups.json` records the receipt-timed follow-up schemas
+(`CampaignFollowUp`, `CampaignFollowUpSummary`, `CampaignFollowUpReport`) and
+the `followUp`/`followUps` fields of the Messaging and Platform campaign,
+create, update, recipient and analytics schemas from API `dev` merge commit
+`87b25fd9e2494d90f01f7511fb47be6a28845fa1` (polymorfa/polymorfa#503), with both source paths and file
+hashes. `campaign-follow-ups-contract.test.ts` checks the SDK types against it.
+The full snapshots stay pinned to `contracts/source.json` until the next repin.
