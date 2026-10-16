@@ -62,12 +62,25 @@ internal static class CampaignContractTests
     {
         checks = 0;
         await RoutesAsync();
+        await ProfileFiltersAsync();
         await BoundViewsAsync();
         await ValidationAsync();
         await ResponsesAsync();
         await RetryAsync();
         await LargeImportAsync();
         Console.WriteLine($"PASS campaign contract {checks} TCP and pre-I/O checks");
+    }
+    internal static async Task ProfileFiltersAsync()
+    {
+        const string empty = "{\"data\":[],\"page\":{\"nextCursor\":null,\"hasMore\":false}}";
+        await Wire("GET", "/platform/audience-profiles?cursor=" + B + "&limit=1&tag=%C3%A9%20vip&phonePrefix=%2B44", null, empty, (o, _) => o.AudienceProfiles.ListAsync(new(B, 1) { Tag = "é vip", PhonePrefix = "+44" }), r => Check(r.Data.Count == 0 && !r.Page.HasMore, "Filter page differs."));
+        foreach (var tag in new[] { new string('a', 48), new string('é', 24), " VIP ", "null" })
+            await Wire("GET", "/platform/audience-profiles?tag=" + Uri.EscapeDataString(tag), null, empty, (o, _) => o.AudienceProfiles.ListAsync(new() { Tag = tag }), r => Check(!r.Page.HasMore, "Tag boundary differs."));
+        foreach (var tag in new[] { "", new string('a', 49), new string('é', 25), "vip\n", "\u007f" })
+            await Invalid((o, _) => o.AudienceProfiles.ListAsync(new() { Tag = tag }));
+        foreach (var prefix in new[] { "+", "44", "%2B44", "+44%", "+44_", "+9999999999999999", " +44", "+1\n" })
+            await Invalid((o, _) => o.AudienceProfiles.ListAsync(new() { PhonePrefix = prefix }));
+        await Invalid((o, _) => o.AudienceProfiles.ListConsentAsync(Phone, new() { Tag = "vip" }));
     }
     internal static async Task RoutesAsync()
     {

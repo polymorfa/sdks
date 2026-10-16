@@ -176,6 +176,20 @@ def page(value: object) -> dict[str, object]:
     return dict(result)
 
 
+def profile_list(value: object) -> dict[str, object]:
+    result = fields(value, ["cursor", "limit", "tag", "phonePrefix"], [], "params")
+    page({k: v for k, v in result.items() if k in ("cursor", "limit")})
+    if "tag" in result:
+        tag = text(result["tag"], "params.tag", 1, 48, byte=True)
+        if any(ord(c) < 32 or ord(c) == 127 for c in tag):
+            invalid("params.tag")
+    if "phonePrefix" in result:
+        prefix = text(result["phonePrefix"], "params.phonePrefix")
+        if re.fullmatch(r"\+[0-9]{1,15}", prefix) is None:
+            invalid("params.phonePrefix")
+    return dict(result)
+
+
 def profile(value: object) -> None:
     data = fields(
         value,

@@ -928,3 +928,34 @@ These are verified-event handling fragments, not complete receivers. Preserve
 whole-body signature verification before decoding and deduplicate batch members.
 See [the scoped source contract and compatibility notes](../../docs/campaign-webhook-metadata.md).
 Package publication and matching API environment acceptance remain separate gates.
+
+## Audience profile list filters (source preparation)
+
+This source implements the list-only tag and phonePrefix filters from merged
+API #567 (561c9ebcefdf05784870e8ad5a88652f721da82a). SDK review, package
+publication and matching environment acceptance remain separate gates.
+See [the source record](../../contracts/releases/2026-10-28-audience-profile-filters.md).
+
+Tags match exactly, including case and spaces, and contain 1-48 UTF-8 bytes
+without ASCII control characters. A phone prefix is a literal `+` and 1-15
+digits. Both filters apply before pagination. Omit the cursor initially; pass
+the UUID `nextCursor` with identical filters on later pages. A null next cursor
+and `hasMore: false` end pagination. Limit defaults to 25 and ranges from 1 to
+100. Omit optional values instead of serializing null or empty strings.
+The literal tag `"null"` remains a tag. Consent-history paging has no filters.
+
+The API's validation response is HTTP400 with an `error` string; no stable
+server error code is promised. SDK preflight errors keep their existing native
+exception types. The nested import resource and canonical `csvBase64` payload
+are unchanged. No import aliases or new CSV encoder are introduced.
+
+`ListAudienceProfilesParameters` adds public optional fields. Update exhaustive
+struct literals, or use `..Default::default()`. `None` means omission.
+
+Source-only usage fragment with an already constructed team client:
+
+```rust
+let page = client.audience_profiles().list(&ListAudienceProfilesParameters {
+    tag: Some("vip".into()), phone_prefix: Some("+44".into()), ..Default::default()
+}, RequestOptions::default()).await?;
+```

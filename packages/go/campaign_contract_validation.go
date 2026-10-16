@@ -613,7 +613,40 @@ func validateProfileImport(v CreateAudienceProfileImportRequest) error {
 	}
 	return nil
 }
+func profileListQuery(v ListAudienceProfilesParams) (url.Values, error) {
+	base := v
+	base.Tag, base.PhonePrefix = nil, nil
+	q, err := profilePageQuery(base)
+	if err != nil {
+		return nil, err
+	}
+	if v.Tag != nil {
+		if err := contractBytes(*v.Tag, "tag", 1, 48); err != nil {
+			return nil, err
+		}
+		if hasASCIIControl(*v.Tag) {
+			return nil, configuration("tag", "Control characters are not allowed.")
+		}
+		q.Set("tag", *v.Tag)
+	}
+	if v.PhonePrefix != nil {
+		s := *v.PhonePrefix
+		if len(s) < 2 || len(s) > 16 || s[0] != '+' {
+			return nil, configuration("phonePrefix", "Must be + followed by 1-15 digits.")
+		}
+		for _, c := range s[1:] {
+			if c < '0' || c > '9' {
+				return nil, configuration("phonePrefix", "Must be + followed by 1-15 digits.")
+			}
+		}
+		q.Set("phonePrefix", s)
+	}
+	return q, nil
+}
 func profilePageQuery(v ListAudienceProfilesParams) (url.Values, error) {
+	if v.Tag != nil || v.PhonePrefix != nil {
+		return nil, configuration("params", "Profile filters do not apply to consent history.")
+	}
 	q := url.Values{}
 	if v.Cursor != nil {
 		if err := contractUUID(*v.Cursor, "cursor"); err != nil {

@@ -10,6 +10,7 @@ import type {
   CreateAudienceProfileImportRequest,
   DeleteAudienceProfileResult,
   ListAudienceProfilesParams,
+  ListAudienceProfileConsentParams,
   PutAudienceProfileRequest,
 } from "../campaign-contracts.js";
 import {
@@ -19,6 +20,7 @@ import {
   contractUuid,
   validateProfileImport,
   validateProfilePage,
+  validateProfileList,
   validateProfilePhone,
   validateProfilePut,
 } from "../campaign-contract-validation.js";
@@ -38,7 +40,7 @@ export class AudienceProfilesResource {
     params: ListAudienceProfilesParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<AudienceProfilePage<AudienceProfile>>> {
-    const query = validateProfilePage(params);
+    const query = validateProfileList(params);
     return requestContract(
       this.#transport,
       {
@@ -106,7 +108,7 @@ export class AudienceProfilesResource {
 
   listConsent(
     phone: string,
-    params: ListAudienceProfilesParams = {},
+    params: ListAudienceProfileConsentParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<AudienceProfilePage<AudienceConsentAssertion>>> {
     const query = validateProfilePage(params);

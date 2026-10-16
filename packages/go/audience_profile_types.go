@@ -70,8 +70,10 @@ type AudienceConsentAssertion struct {
 	CreatedAt       int64  `json:"createdAt"`
 }
 type ListAudienceProfilesParams struct {
-	Cursor *string
-	Limit  *int
+	Cursor      *string
+	Limit       *int
+	Tag         *string
+	PhonePrefix *string
 }
 type DeleteAudienceProfileResult struct {
 	Deleted  bool   `json:"deleted"`

@@ -139,6 +139,8 @@ pub struct CampaignRecipientExportParameters {
     pub reason: Option<CampaignRecipientFailureReason>,
     pub cursor: Option<String>,
     pub limit: Option<u32>,
+    pub tag: Option<String>,
+    pub phone_prefix: Option<String>,
 }
 #[derive(Clone, Debug)]
 pub struct PlatformCampaignRecipientExportParameters {

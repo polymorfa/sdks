@@ -145,3 +145,15 @@ $ccConfigure(['method' => 'GET', 'path' => '/platform/campaign-settings', 'respo
 $ccTimeout = ccThrows(fn () => $ccOrg->campaigns->getSettings(new Polymorfa\RequestOptions(timeout: 0.04, maxNetworkRetries: 0)), Polymorfa\TimeoutException::class);
 ccCheck($ccTimeout->metadata->operationId === 'json-admitted' && count($ccObservations()) === 1, 'JSON stalled response retains admitted metadata');
 echo "30 malformed result guards, normalized responses, CSV redirects and native deadlines passed.\n";
+
+// List-only filters use the shared candidate fixture; the consent pager remains closed.
+$profileFilterFixture = json_decode(file_get_contents(dirname(__DIR__, 3).'/contracts/fixtures/audience-profile-list.v1.json'), true, flags: JSON_THROW_ON_ERROR);
+foreach ($profileFilterFixture['validFilters'] as $params) {
+    \Polymorfa\CampaignContractValidation::profileList($params);
+}
+foreach (array_merge($profileFilterFixture['invalidFilters'], [['tag' => null], ['phonePrefix' => null], ['phonePrefix' => "+1\n"]]) as $params) {
+    $rejected = false;
+    try { \Polymorfa\CampaignContractValidation::profileList($params); } catch (\Polymorfa\ConfigurationException) { $rejected = true; }
+    ccCheck($rejected, 'Invalid profile filter is rejected before sending');
+}
+\Polymorfa\CampaignContractValidation::profileList(['tag' => 'null']);
