@@ -525,3 +525,79 @@ tests do not establish WhatsApp acceptance, registry publication or deployed
 availability. Provider receive time
 and alternate sender depend on the owning relay producer supplying those values;
 a parsed zero timestamp is not proof of provider time.
+
+## Campaigns, customer-supplied profiles and custody defaults
+
+The additive helpers below select `2026-10-14` only when a request does not
+provide `RequestOptions(api_version=...)`. Other methods keep the package's
+`2026-09-22` default. These source additions are not published and do not establish
+availability in a deployed environment. The API enforces scopes, feature access,
+enrollment, opt-outs and funding.
+
+`client.campaigns` adds `get_reply_flow`, `create_reply_flow`, `set_reply_flow`,
+`test_send`, `list_launch_approvals`, `links`, `export_recipients` and
+`get_settings`. Organization calls select a `projectId` explicitly. The first
+seven methods are also available on `client.project(project_id).campaigns`,
+which captures its project and rejects a `projectId` supplied inside an input.
+It exposes no campaign settings, audience import, retargeting or STOP settings.
+The six matching Messaging methods take a project slug; they reject Client
+tokens locally before sending a request. Platform methods retain the `data`
+envelope, and Messaging methods retain the `success` and `data` envelope.
+
+```python
+async with AsyncClient(credential) as client:
+    project = client.project(project_id)
+    await project.campaigns.set_reply_flow(campaign_id, {"replyFlowId": None})
+    sent = await project.campaigns.test_send(
+        campaign_id,
+        {"sessionId": session_id, "to": "+15551234567", "variables": {"count": 0}},
+        options=RequestOptions(idempotency_key="reviewed-test-1"),
+    )
+    page = await project.campaigns.export_recipients(campaign_id, {"limit": 1000})
+    csv = page.data["csv"]
+    cursor = page.data["nextCursor"]
+```
+
+A test send captures one idempotency key and request body across retries. Other
+new writes default to zero network retries, including writes with a caller key.
+An explicit retry override retains its existing transport meaning. An import's
+`replayKey` is a body field, separate from HTTP idempotency. After an uncertain
+write, inspect the existing resource or job rather than creating a replacement.
+
+`export_recipients` returns one CSV page without parsing, requoting, redirects or
+automatic pagination. It preserves BOMs, CRLFs, quoting, the next cursor, the
+parsed display filename and safe response metadata. Filters cannot be combined
+with a cursor or a limit smaller than 1000. Request the next unfiltered page
+explicitly when the API supplies a cursor.
+
+`client.audience_profiles` provides `list`, `retrieve`, `put`, `delete` and
+`list_consent`. `list` and `list_consent` return finite `{data, page}` envelopes.
+`client.audience_profiles.imports` provides `create`, `retrieve` and `cancel`.
+CSV imports accept canonical padded base64 of UTF-8 CSV, at most 10 MiB decoded,
+and an optional distinct-header mapping. These profiles contain customer-supplied
+campaign information; do not populate them from synchronized WhatsApp contacts.
+Cancelling a Python task cancels its HTTP waiter. Cancel the durable import
+explicitly with `imports.cancel(job_id)`.
+
+`client.audiences.create_from_campaign` creates a retargeted audience.
+`client.opt_outs` adds `get_confirmation_settings`,
+`update_confirmation_settings` and `get_confirmation_summary`. Enabling STOP
+confirmation requires an explicit supported locale. A consent assertion never
+overrides an opt-out or grants permission to send.
+
+Custody defaults are available through `client.projects.get_signal_custody` /
+`update_signal_custody`, `client.customers.get_signal_custody` /
+`update_signal_custody`, and the four bound `project.signal_custody` methods
+`retrieve`, `update`, `retrieve_customer`, `update_customer`. Bound custody
+methods unwrap the `data` envelope. Updates require `expectedRevision`; only a
+Customer default accepts `None` to restore Project inheritance. Defaults apply
+to future reservations and never convert existing Numbers or export keys.
+QuickLink and browser tunnel grants, Origins and consent remain server authority.
+
+Named request and result `TypedDict` models are exported from `polymorfa` and
+`polymorfa.campaign_contract_models`. Required nullable response fields remain
+present, optional fields remain omitted, and unknown response extensions remain
+available. Malformed success shapes raise `ServerError(code="invalid_response")`.
+Server-normalized response values are not revalidated as outbound inputs. API
+errors preserve `param`, open error codes and safe request/routing metadata;
+`content-disposition`, `x-trace-id` and `idempotent-replayed` are safe headers.

@@ -14,6 +14,8 @@ from .billing import Billing
 from .business import Business
 from .call_policy import CallOptOuts, CallPolicies, CallRetentions
 from .call_records import CallRecords
+from .campaign_contract_resources import ProjectCampaigns, SignalCustody
+from .campaign_profiles import AudienceProfiles
 from .campaigns import Audiences, Campaigns, MessagingCampaigns
 from .channels import Channels
 from .client_tokens import ClientTokens
@@ -160,6 +162,8 @@ class AsyncProjectClient:
     webhooks: platform.PlatformWebhooks
     webhook_deliveries: platform.WebhookDeliveries
     operations: platform.Operations
+    campaigns: ProjectCampaigns
+    signal_custody: SignalCustody
     raw: platform.Raw
 
     def __init__(
@@ -184,6 +188,8 @@ class AsyncProjectClient:
         object.__setattr__(self, "voice", Voice(transport, project_id))
         object.__setattr__(self, "functions", Functions(transport, project_id))
         object.__setattr__(self, "flows", Flows(transport, project_id))
+        object.__setattr__(self, "campaigns", ProjectCampaigns(transport, project_id))
+        object.__setattr__(self, "signal_custody", SignalCustody(transport, project_id))
         prefix = f"/platform/projects/{messaging.segment(project_id)}"
         for name, resource in (
             ("events", platform.Events),
@@ -241,6 +247,7 @@ class AsyncClient:
     usage: Usage
     voice: Voice
     campaigns: Campaigns
+    audience_profiles: AudienceProfiles
     audiences: Audiences
     billing: Billing
     projects: platform.Projects
@@ -274,6 +281,7 @@ class AsyncClient:
             ("security_incidents", SecurityIncidents),
             ("media", PlatformMedia),
             ("campaigns", Campaigns),
+            ("audience_profiles", AudienceProfiles),
             ("billing", Billing),
             ("projects", platform.Projects),
             ("sessions", platform.PlatformSessions),

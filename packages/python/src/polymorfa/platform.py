@@ -10,6 +10,8 @@ from dataclasses import replace
 from typing import TypeVar, cast
 from urllib.parse import unquote
 
+from . import campaign_contract_models as M
+from . import campaign_contract_validation as V
 from . import developer_models as D
 from .bansafe import (
     ProjectHealthPolicy,
@@ -23,6 +25,8 @@ from .bansafe import (
     UpdateProjectWarmupPlan,
     UpdateSessionSafeMode,
 )
+from .campaign_contract_resources import custody_request
+from .campaign_contract_response import checked
 from .errors import ConfigurationError, ServerError, TimeoutError, ValidationError
 from .events import EventStream, StreamGap
 from .indexed_events import IndexedEventPage, validate_after_offset
@@ -175,6 +179,19 @@ class PlatformResource(Resource):
 
 
 class Projects(Resource):
+    @checked
+    async def get_signal_custody(
+        self, project_id: str, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[M.SignalCustodyDefault]]:
+        return await custody_request(self._transport, project_id, None, None, options)
+
+    @checked
+    async def update_signal_custody(
+        self, project_id: str, body: M.ProjectSignalCustodyUpdate, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[M.SignalCustodyDefault]]:
+        V.custody(body, False)
+        return await custody_request(self._transport, project_id, None, body, options)
+
     async def list(
         self, *, options: RequestOptions = O
     ) -> ApiResponse[DataEnvelope[builtins.list[ProjectWithStats]]]:

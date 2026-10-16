@@ -7,6 +7,9 @@ from urllib.parse import unquote
 
 from typing_extensions import TypedDict
 
+from . import campaign_contract_models as M
+from . import campaign_contract_validation as V
+from .campaign_contract_response import checked
 from .messaging import O, Resource, segment
 from .models import DataEnvelope
 from .platform import PlatformResource
@@ -113,6 +116,34 @@ class UpdateOptOutSettings(TypedDict):
 
 
 class OptOuts(Resource):
+    @checked
+    async def get_confirmation_settings(
+        self, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[M.StopConfirmationSettings]]:
+        return await self._request(
+            "GET", "/platform/optouts/confirmation-settings", options=V.options(options)
+        )
+
+    @checked
+    async def update_confirmation_settings(
+        self, body: M.UpdateStopConfirmationSettingsInput, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[M.StopConfirmationSettings]]:
+        V.stop(body)
+        return await self._request(
+            "PUT",
+            "/platform/optouts/confirmation-settings",
+            body=V.capture(body),
+            options=V.options(options, write=True),
+        )
+
+    @checked
+    async def get_confirmation_summary(
+        self, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[M.StopConfirmationSummary]]:
+        return await self._request(
+            "GET", "/platform/optouts/confirmation-summary", options=V.options(options)
+        )
+
     async def list(self, *, options: RequestOptions = O) -> ApiResponse[DataEnvelope[JsonObject]]:
         return await self._request("GET", "/platform/optouts", options=options)
 

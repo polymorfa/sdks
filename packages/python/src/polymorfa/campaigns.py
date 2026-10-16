@@ -7,7 +7,11 @@ from collections.abc import Mapping
 from dataclasses import replace
 from typing import cast
 
+from . import campaign_contract_models as M
+from . import campaign_contract_validation as V
 from . import campaign_models as C
+from .campaign_contract_resources import ProjectCampaigns, export_page
+from .campaign_contract_response import checked
 from .errors import ServerError, ValidationError
 from .messaging import O, Resource, segment
 from .models import DataEnvelope, Envelope
@@ -31,6 +35,99 @@ def campaign_path(project_slug: str, campaign_id: str | None = None) -> str:
 
 
 class MessagingCampaigns(Resource):
+    @checked
+    async def get_reply_flow(
+        self, project_slug: str, reply_flow_id: str, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[M.CampaignReplyFlow]]:
+        self._server()
+        return await self._request(
+            "GET",
+            f"/messaging/projects/{segment(project_slug)}/campaign-reply-flows/"
+            + V.uuid(reply_flow_id, "replyFlowId"),
+            options=V.options(options),
+        )
+
+    @checked
+    async def create_reply_flow(
+        self,
+        project_slug: str,
+        body: M.CreateCampaignReplyFlowRequest,
+        *,
+        options: RequestOptions = O,
+    ) -> ApiResponse[Envelope[M.CampaignReplyFlow]]:
+        self._server()
+        V.reply_create(body)
+        return await self._request(
+            "POST",
+            f"/messaging/projects/{segment(project_slug)}/campaign-reply-flows",
+            body=V.capture(body),
+            options=V.options(options, write=True),
+        )
+
+    @checked
+    async def set_reply_flow(
+        self,
+        project_slug: str,
+        campaign_id: str,
+        body: M.SetCampaignReplyFlowRequest,
+        *,
+        options: RequestOptions = O,
+    ) -> ApiResponse[Envelope[M.CampaignReplyFlowAssignment]]:
+        self._server()
+        V.assignment(body)
+        return await self._request(
+            "PUT",
+            campaign_path(project_slug, V.uuid(campaign_id, "campaignId")) + "/reply-flow",
+            body=V.capture(body),
+            options=V.options(options, write=True),
+        )
+
+    @checked
+    async def test_send(
+        self,
+        project_slug: str,
+        campaign_id: str,
+        body: M.CampaignTestSendRequest,
+        *,
+        options: RequestOptions = O,
+    ) -> ApiResponse[Envelope[M.CampaignTestSend]]:
+        self._server()
+        V.test_send(body)
+        return await self._request(
+            "POST",
+            campaign_path(project_slug, V.uuid(campaign_id, "campaignId")) + "/test-send",
+            body=V.capture(body),
+            options=V.options(options, write=True, replay=True),
+        )
+
+    @checked
+    async def links(
+        self, project_slug: str, campaign_id: str, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[builtins.list[M.CampaignTrackedLinkReport]]]:
+        self._server()
+        return await self._request(
+            "GET",
+            campaign_path(project_slug, V.uuid(campaign_id, "campaignId")) + "/links",
+            options=V.options(options),
+        )
+
+    @checked
+    async def export_recipients(
+        self,
+        project_slug: str,
+        campaign_id: str,
+        params: M.CampaignRecipientExportParams | None = None,
+        *,
+        options: RequestOptions = O,
+    ) -> ApiResponse[M.CampaignRecipientExportPage]:
+        self._server()
+        return await export_page(
+            self._transport,
+            campaign_path(project_slug, V.uuid(campaign_id, "campaignId")) + "/recipients/export",
+            V.export({} if params is None else params),
+            options,
+        )
+
     async def list(
         self, project_slug: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[builtins.list[C.Campaign]]]:
@@ -200,6 +297,97 @@ def platform_campaign_response(
 
 
 class Campaigns(Resource):
+    @checked
+    async def get_reply_flow(
+        self, reply_flow_id: str, params: M.CampaignProjectParams, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[M.CampaignReplyFlow]]:
+        return await ProjectCampaigns(self._transport, V.selection(params)).get_reply_flow(
+            reply_flow_id, options=options
+        )
+
+    @checked
+    async def create_reply_flow(
+        self, body: M.CreatePlatformCampaignReplyFlowRequest, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[M.CampaignReplyFlow]]:
+        V.reply_create(body, True)
+        project = body["projectId"]
+        data = cast(
+            M.CreateCampaignReplyFlowRequest,
+            {key: value for key, value in body.items() if key != "projectId"},
+        )
+        return await ProjectCampaigns(self._transport, project).create_reply_flow(
+            data, options=options
+        )
+
+    @checked
+    async def set_reply_flow(
+        self,
+        campaign_id: str,
+        body: M.SetPlatformCampaignReplyFlowRequest,
+        *,
+        options: RequestOptions = O,
+    ) -> ApiResponse[DataEnvelope[M.CampaignReplyFlowAssignment]]:
+        V.assignment(body, True)
+        return await ProjectCampaigns(self._transport, body["projectId"]).set_reply_flow(
+            campaign_id, {"replyFlowId": body["replyFlowId"]}, options=options
+        )
+
+    @checked
+    async def test_send(
+        self,
+        campaign_id: str,
+        body: M.PlatformCampaignTestSendRequest,
+        *,
+        options: RequestOptions = O,
+    ) -> ApiResponse[DataEnvelope[M.CampaignTestSend]]:
+        V.test_send(body, True)
+        data = cast(
+            M.CampaignTestSendRequest,
+            {key: value for key, value in body.items() if key != "projectId"},
+        )
+        return await ProjectCampaigns(self._transport, body["projectId"]).test_send(
+            campaign_id, data, options=options
+        )
+
+    @checked
+    async def list_launch_approvals(
+        self, campaign_id: str, params: M.CampaignProjectParams, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[builtins.list[M.CampaignLaunchApproval]]]:
+        return await ProjectCampaigns(self._transport, V.selection(params)).list_launch_approvals(
+            campaign_id, options=options
+        )
+
+    @checked
+    async def links(
+        self, campaign_id: str, params: M.CampaignProjectParams, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[builtins.list[M.CampaignTrackedLinkReport]]]:
+        return await ProjectCampaigns(self._transport, V.selection(params)).links(
+            campaign_id, options=options
+        )
+
+    @checked
+    async def export_recipients(
+        self,
+        campaign_id: str,
+        params: M.PlatformCampaignRecipientExportParams,
+        *,
+        options: RequestOptions = O,
+    ) -> ApiResponse[M.CampaignRecipientExportPage]:
+        V.export(params, True)
+        data = cast(
+            M.CampaignRecipientExportParams,
+            {key: value for key, value in params.items() if key != "projectId"},
+        )
+        return await ProjectCampaigns(self._transport, params["projectId"]).export_recipients(
+            campaign_id, data, options=options
+        )
+
+    @checked
+    async def get_settings(
+        self, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[M.CampaignSettings]]:
+        return await self._request("GET", "/platform/campaign-settings", options=V.options(options))
+
     async def list(
         self, params: C.ListCampaigns, *, options: RequestOptions = O
     ) -> ApiResponse[DataEnvelope[builtins.list[C.PlatformCampaign]]]:
@@ -422,6 +610,18 @@ class Campaigns(Resource):
 
 
 class Audiences(PlatformResource):
+    @checked
+    async def create_from_campaign(
+        self, body: M.CreateAudienceFromCampaignRequest, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[M.AudienceFromCampaignResult]]:
+        V.retarget(body)
+        return await self._request(
+            "POST",
+            "/platform/audiences/from-campaign",
+            body=V.capture(body),
+            options=V.options(options, write=True),
+        )
+
     # TS deliberately keeps list/retrieve/delete/upload payloads opaque.
     async def list(self, *, options: RequestOptions = O) -> ApiResponse[DataEnvelope[JsonObject]]:
         return await self._request("GET", "/platform/audiences", options=options)

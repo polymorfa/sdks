@@ -7,6 +7,10 @@ from typing import Literal
 
 from typing_extensions import NotRequired, TypedDict
 
+from . import campaign_contract_models as M
+from . import campaign_contract_validation as V
+from .campaign_contract_resources import custody_request
+from .campaign_contract_response import checked
 from .messaging import O, segment
 from .models import DataEnvelope
 from .platform import PlatformResource
@@ -141,6 +145,28 @@ class TransferNumber(TypedDict):
 
 
 class Customers(PlatformResource):
+    @checked
+    async def get_signal_custody(
+        self, customer_id: str, project_id: str, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[M.SignalCustodyDefault]]:
+        return await custody_request(
+            self._transport, project_id, V.uuid(customer_id, "customerId"), None, options
+        )
+
+    @checked
+    async def update_signal_custody(
+        self,
+        customer_id: str,
+        project_id: str,
+        body: M.CustomerSignalCustodyUpdate,
+        *,
+        options: RequestOptions = O,
+    ) -> ApiResponse[DataEnvelope[M.SignalCustodyDefault]]:
+        V.custody(body, True)
+        return await custody_request(
+            self._transport, project_id, V.uuid(customer_id, "customerId"), body, options
+        )
+
     async def status(
         self, project_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[DataEnvelope[CustomersStatus]]:

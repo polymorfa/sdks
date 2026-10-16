@@ -20,6 +20,7 @@ class PolymorfaError(Exception):
         doc_url: str | None = None,
         rate_limit_reason: str | None = None,
         details: object = None,
+        param: str | None = None,
         metadata: ResponseMetadata | None = None,
     ) -> None:
         super().__init__(message)
@@ -30,6 +31,7 @@ class PolymorfaError(Exception):
         self.doc_url = doc_url
         self.rate_limit_reason = rate_limit_reason
         self.details = details
+        self.param = param
         self.metadata = metadata
 
 

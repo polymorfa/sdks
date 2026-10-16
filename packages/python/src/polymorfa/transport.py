@@ -118,6 +118,9 @@ class ResponseMetadata:
     def from_response(cls, response: httpx.Response, attempts: int) -> ResponseMetadata:
         safe = {
             "content-type",
+            "content-disposition",
+            "x-trace-id",
+            "idempotent-replayed",
             "x-polymorfa-transport",
             "x-polymorfa-routing-reason",
             "x-polymorfa-operation-id",
@@ -447,6 +450,7 @@ class Transport:
             doc_url=text("docs"),
             rate_limit_reason=meta.headers.get("polymorfa-ratelimit-reason"),
             details=data.get("details"),
+            param=text("param"),
             metadata=meta,
         )
 
