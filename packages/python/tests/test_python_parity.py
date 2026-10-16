@@ -201,7 +201,7 @@ async def test_platform_campaign_open_fields_and_known_fields():
         )
 
     async with native_server(handler) as url, AsyncClient(CREDENTIAL, base_url=url) as client:
-        params = {"projectId": "project_1"}
+        params = {"projectId": "11111111-1111-4111-8111-111111111111"}
         listed = await client.campaigns.list(params)
         created = await client.campaigns.create({**params, "name": "Offer"})
         retrieved = await client.campaigns.retrieve("campaign_1", params)
@@ -243,9 +243,16 @@ async def test_platform_campaign_nullable_retrieval_and_extra_only_update():
         )
 
     async with native_server(handler) as url, AsyncClient(CREDENTIAL, base_url=url) as client:
-        assert (await client.campaigns.retrieve("c", {"projectId": "p"})).data["data"] is None
+        assert (
+            await client.campaigns.retrieve(
+                "c", {"projectId": "11111111-1111-4111-8111-111111111111"}
+            )
+        ).data["data"] is None
         result = await client.campaigns.update(
-            "c", None, {"projectId": "p"}, extra_fields={"future": 3}
+            "c",
+            None,
+            {"projectId": "11111111-1111-4111-8111-111111111111"},
+            extra_fields={"future": 3},
         )
         assert result.data["data"]["future"] == 3 and calls[-1] == {"future": 3}
 
@@ -330,7 +337,7 @@ update: UpdateCampaign = {"followUp": None}
 async def examples(client: AsyncClient) -> None:
     page = await client.raw.paginate("GET", "/rows", decode, cursor_parameter="after")
     assert_type(page, RawCursorPage[str])
-    response = await client.campaigns.update("c", {"name": "Offer"}, {"projectId": "p"}, extra_fields={"future": 3})
+    response = await client.campaigns.update("c", {"name": "Offer"}, {"projectId": "11111111-1111-4111-8111-111111111111"}, extra_fields={"future": 3})
     assert_type(response.data["data"].known["id"], str)
 """)
     assert result.returncode == 0, result.stdout + result.stderr

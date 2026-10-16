@@ -6,6 +6,8 @@ from typing import Literal
 
 from typing_extensions import NotRequired, TypedDict
 
+from . import campaign_contract_validation as V
+from .campaign_contract_response import acknowledged
 from .errors import ValidationError
 from .messaging import O, Resource, segment
 from .models import Envelope
@@ -225,6 +227,7 @@ class Testing(Resource):
             "GET", f"/messaging/testing/{segment(project_id)}/events/fixtures", options=options
         )
 
+    @acknowledged()
     async def get_phone(
         self, project_id: str, session: str, *, options: RequestOptions = O
     ) -> ApiResponse[TestingPhone]:
@@ -235,17 +238,22 @@ class Testing(Resource):
             options=options,
         )
 
+    @acknowledged(202)
     async def send_phone_message(
         self, project_id: str, session: str, body: PhoneMessage, *, options: RequestOptions = O
     ) -> ApiResponse[PhoneMessageResult]:
         self._server()
+        data = V.fields(body, ["to", "text"], ["to", "text"])
+        V.text(data["to"], "to")
+        V.text(data["text"], "text")
         return await self._request(
             "POST",
             f"/messaging/testing/{segment(project_id)}/numbers/{segment(session)}/phone/messages",
-            body=body,
+            body=V.capture(body),
             options=options,
         )
 
+    @acknowledged()
     async def unlink_phone_device(
         self, project_id: str, session: str, device_id: int, *, options: RequestOptions = O
     ) -> ApiResponse[UnlinkedDevice]:

@@ -131,7 +131,7 @@ from .direct_media import (
     to_whatsapp_media_send_descriptor,
 )
 from .downloads import signed_url_expiry
-from .error_codes import POLYMORFA_ERROR_CODES, is_known_error_code
+from .error_codes import POLYMORFA_ERROR_CODES, KnownPolymorfaErrorCode, is_known_error_code
 from .errors import (
     AuthenticationError,
     AuthorizationError,
@@ -472,3 +472,59 @@ __all__ = [
     "whatsapp_media_urls",
     "write_stream_to_file",
 ]
+
+from .campaign_models import (
+    CampaignMessage,
+    CampaignMessageButton,
+    CampaignMessageButtonFields,
+    CampaignMessageFields,
+    CampaignMessageMedia,
+    CampaignMessageMediaFields,
+    CampaignTrackedLink,
+    CampaignVariableBinding,
+    CampaignVariableMapping,
+    LaunchPlatformCampaign,
+    PlatformCampaignLaunchFields,
+    PlatformCampaignLaunchResult,
+    PlatformRecipient,
+    UpdatePlatformCampaign,
+)
+from .configuration import HistorySyncDelivery, HistorySyncPolicy, HistorySyncPolicyPatch
+from .direct_media import HistorySyncChunkRetryResult
+from .webhook_models import (
+    DirectHistoryCommon,
+    DirectHistoryInline,
+    DirectHistoryInlinePayload,
+    DirectHistoryMedia,
+    DirectHistoryMediaPayload,
+    DirectHistorySyncPayload,
+)
+
+__all__ += [
+    "CampaignMessage",
+    "CampaignMessageButton",
+    "CampaignMessageButtonFields",
+    "CampaignMessageFields",
+    "CampaignMessageMedia",
+    "CampaignMessageMediaFields",
+    "CampaignTrackedLink",
+    "CampaignVariableBinding",
+    "CampaignVariableMapping",
+    "DirectHistoryCommon",
+    "DirectHistoryInline",
+    "DirectHistoryInlinePayload",
+    "DirectHistoryMedia",
+    "DirectHistoryMediaPayload",
+    "DirectHistorySyncPayload",
+    "HistorySyncChunkRetryResult",
+    "HistorySyncDelivery",
+    "HistorySyncPolicy",
+    "HistorySyncPolicyPatch",
+    "LaunchPlatformCampaign",
+    "PlatformCampaignLaunchFields",
+    "PlatformCampaignLaunchResult",
+    "PlatformRecipient",
+    "UpdatePlatformCampaign",
+]
+
+__all__ += ["KnownPolymorfaErrorCode"]

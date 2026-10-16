@@ -1,9 +1,11 @@
 """Handwritten campaign and customer-supplied audience wire contracts."""
 
+from collections.abc import Mapping
 from typing import Literal, cast
 
 from typing_extensions import NotRequired, TypedDict
 
+from .campaign_contract_models import CampaignRecipientFailureReason
 from .transport import Json, JsonObject
 
 Criterion = Literal["delivery", "read", "reply"]
@@ -170,6 +172,98 @@ class SendWindow(TypedDict):
     timeZoneVariable: str
 
 
+class CampaignTrackedLink(TypedDict):
+    key: str
+    url: str
+
+
+class CampaignVariableBinding(TypedDict, total=False):
+    source: str
+    fallback: str
+
+
+CampaignVariableMapping = dict[str, CampaignVariableBinding]
+
+
+class CampaignMessageMediaFields(TypedDict):
+    kind: Literal["image", "video", "audio", "document"]
+    url: str
+    filename: NotRequired[str]
+    caption: NotRequired[str]
+
+
+class CampaignMessageButtonFields(TypedDict):
+    kind: Literal["reply", "link", "call"]
+    label: str
+    url: NotRequired[str]
+    phone: NotRequired[str]
+
+
+def _open_fields(fields: object, extra: Mapping[str, Json] | None, known: set[str]) -> JsonObject:
+    from .errors import ValidationError
+
+    if extra is not None and set(extra) & known:
+        raise ValidationError("Use the typed fields for named composed-message fields.")
+    return {**cast(JsonObject, fields), **(extra or {})}
+
+
+class CampaignMessageMedia(dict[str, Json]):
+    """Open media input with typed known fields and explicit extensions."""
+
+    def __init__(
+        self, fields: CampaignMessageMediaFields, *, extra_fields: Mapping[str, Json] | None = None
+    ) -> None:
+        super().__init__(
+            _open_fields(fields, extra_fields, set(CampaignMessageMediaFields.__annotations__))
+        )
+
+    @property
+    def known(self) -> CampaignMessageMediaFields:
+        return cast(CampaignMessageMediaFields, self)
+
+
+class CampaignMessageButton(dict[str, Json]):
+    def __init__(
+        self, fields: CampaignMessageButtonFields, *, extra_fields: Mapping[str, Json] | None = None
+    ) -> None:
+        super().__init__(
+            _open_fields(fields, extra_fields, set(CampaignMessageButtonFields.__annotations__))
+        )
+
+    @property
+    def known(self) -> CampaignMessageButtonFields:
+        return cast(CampaignMessageButtonFields, self)
+
+
+class CampaignMessageFields(TypedDict, total=False):
+    version: Literal[2]
+    source: str
+    media: CampaignMessageMediaFields | CampaignMessageMedia
+    buttons: list[CampaignMessageButtonFields | CampaignMessageButton]
+    footer: str
+    delayAfterSec: int
+
+
+class CampaignMessage(dict[str, Json]):
+    def __init__(
+        self,
+        fields: CampaignMessageFields | None = None,
+        *,
+        extra_fields: Mapping[str, Json] | None = None,
+    ) -> None:
+        super().__init__(
+            _open_fields(
+                {} if fields is None else fields,
+                extra_fields,
+                set(CampaignMessageFields.__annotations__),
+            )
+        )
+
+    @property
+    def known(self) -> CampaignMessageFields:
+        return cast(CampaignMessageFields, self)
+
+
 class Campaign(TypedDict):
     id: str
     name: str
@@ -195,9 +289,11 @@ class Campaign(TypedDict):
     complianceConfig: NotRequired[Json]
     variants: NotRequired[list[Variant] | None]
     variantStrategy: NotRequired[VariantStrategy | None]
-    experimentOutcome: NotRequired[ExperimentOutcome | None]
+    experimentOutcome: ExperimentOutcome | None
     messageVariations: NotRequired[list[MessageVariation] | None]
-    followUp: NotRequired[FollowUp | None]
+    followUp: FollowUp | None
+    trackedLinks: list[CampaignTrackedLink]
+    variableMapping: NotRequired[CampaignVariableMapping | None]
 
 
 class PlatformCampaign(dict[str, Json]):
@@ -229,8 +325,11 @@ class AnalyticsCounts(TypedDict):
 
 
 class Analytics(AnalyticsCounts):
-    experiment: NotRequired[ExperimentResults | None]
-    followUps: NotRequired[FollowUpReport]
+    experiment: ExperimentResults | None
+    followUps: FollowUpReport
+    averageResponseTimeMs: float | None
+    minResponseTimeMs: float | None
+    maxResponseTimeMs: float | None
 
 
 class PlatformAnalytics(AnalyticsCounts):
@@ -258,6 +357,8 @@ class CreateCampaign(TypedDict):
     variants: NotRequired[list[Variant] | None]
     variantStrategy: NotRequired[VariantStrategy | None]
     followUp: NotRequired[FollowUp | None]
+    variableMapping: NotRequired[CampaignVariableMapping]
+    trackedLinks: NotRequired[list[CampaignTrackedLink] | None]
 
 
 class CreatePlatformCampaign(TypedDict):
@@ -271,16 +372,21 @@ class CreatePlatformCampaign(TypedDict):
     recipients: NotRequired[list[RecipientInput]]
     recipientCount: NotRequired[int]
     composerBlueprint: NotRequired[Json]
-    messagesArray: NotRequired[Json]
+    messagesArray: NotRequired[list[CampaignMessageFields | CampaignMessage]]
     audienceRef: NotRequired[Json]
     complianceConfig: NotRequired[Json]
     variants: NotRequired[list[Variant]]
     variantStrategy: NotRequired[VariantStrategy]
     messageVariations: NotRequired[list[MessageVariation]]
     followUp: NotRequired[FollowUp | None]
+    variableMapping: NotRequired[CampaignVariableMapping]
+    trackedLinks: NotRequired[list[CampaignTrackedLink] | None]
 
 
 class UpdateCampaign(TypedDict, total=False):
+    templateId: str | None
+    variableMapping: CampaignVariableMapping | None
+    trackedLinks: list[CampaignTrackedLink] | None
     name: str
     recipientListId: str | None
     senderConfig: JsonObject
@@ -292,8 +398,32 @@ class UpdateCampaign(TypedDict, total=False):
     followUp: FollowUp | None
 
 
+class UpdatePlatformCampaign(UpdateCampaign, total=False):
+    messagesArray: list[CampaignMessageFields | CampaignMessage]
+    composerBlueprint: Json
+    audienceRef: Json
+    complianceConfig: Json
+
+
 class LaunchCampaign(TypedDict, total=False):
     scheduledAt: int
+    skipMissingVariables: bool
+
+
+class LaunchPlatformCampaign(TypedDict):
+    projectId: str
+    scheduledAt: NotRequired[float]
+    skipMissingVariables: NotRequired[bool]
+
+
+class PlatformCampaignLaunchFields(CampaignOperation):
+    pass
+
+
+class PlatformCampaignLaunchResult(dict[str, Json]):
+    @property
+    def known(self) -> PlatformCampaignLaunchFields:
+        return cast(PlatformCampaignLaunchFields, self)
 
 
 class Reschedule(TypedDict):
@@ -327,7 +457,33 @@ class Recipient(TypedDict):
     readAt: int | None
     failedAt: int | None
     respondedAt: int | None
-    followUp: NotRequired[FollowUpSummary | None]
+    followUp: FollowUpSummary | None
+    failureReason: CampaignRecipientFailureReason | None
+    messagesSent: int
+    nextMessageAt: float | None
+    sequenceError: str | None
+
+
+class PlatformRecipient(TypedDict):
+    id: str
+    phone: str
+    variables: JsonObject
+    variantKey: str | None
+    status: RecipientStatus
+    attempts: int
+    lastError: str | None
+    externalMessageId: str | None
+    queuedAt: int
+    sentAt: int | None
+    deliveredAt: int | None
+    readAt: int | None
+    failedAt: int | None
+    respondedAt: int | None
+    followUp: FollowUpSummary | None
+    failureReason: CampaignRecipientFailureReason | None
+    messagesSent: int
+    nextMessageAt: int | None
+    sequenceError: str | None
 
 
 class InvalidRow(TypedDict):
@@ -353,6 +509,7 @@ class AddedRecipients(TypedDict):
 
 
 class RecipientsParams(TypedDict, total=False):
+    reason: CampaignRecipientFailureReason
     status: RecipientStatus
     cursor: str
     limit: int

@@ -153,7 +153,11 @@ async def test_typed_onboarding_methods(method, path, body, fixture, invoke):
         assert request.method == method and request.url.path == path
         assert not request.url.query
         assert (json.loads(request.content) if request.content else None) == body
-        return httpx.Response(200, json=fixture, headers={"x-request-id": "req_onboarding"})
+        return httpx.Response(
+            202 if path.endswith("/phone/messages") else 200,
+            json=fixture,
+            headers={"x-request-id": "req_onboarding"},
+        )
 
     async with AsyncMessagingClient(
         Credential("project_token", "pmfa_pt_" + "a" * 93 + "A"),
@@ -161,7 +165,7 @@ async def test_typed_onboarding_methods(method, path, body, fixture, invoke):
     ) as client:
         result = await invoke(client)
         assert result.data == fixture and result.metadata.request_id == "req_onboarding"
-        assert result.metadata.status == 200
+        assert result.metadata.status == (202 if path.endswith("/phone/messages") else 200)
     async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_local")) as client:
         with pytest.raises(ConfigurationError):
             await invoke(client)

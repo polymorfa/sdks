@@ -3,6 +3,7 @@ import gzip
 import hashlib
 import hmac
 import io
+import os
 import zlib
 from dataclasses import replace
 from pathlib import Path
@@ -218,7 +219,10 @@ async def test_s3_two_pass_reads_are_etag_pinned_and_closed():
         assert request.content != native.content
         return httpx.Response(
             200,
-            json={"data": {"directPath": "/media/a", "url": "https://mmg.whatsapp.net/media/a"}},
+            json={
+                "success": True,
+                "data": {"directPath": "/media/a", "url": "https://mmg.whatsapp.net/media/a"},
+            },
         )
 
     async with AsyncMessagingClient(KEY, http_transport=httpx.MockTransport(handler)) as client:
@@ -251,8 +255,14 @@ async def test_s3_archive_verifies_before_put_and_cleans_private_spool(corrupt):
         raw = raw[:-1] + bytes([raw[-1] ^ 1])
     native = S3Fixture()
     store = S3MediaStore(native, "customer-bucket", prefix="owned/")
-    scratch = Path.home() / ".polymorfa-agent-work/zk-program-20261014/python-s3-spools"
-    scratch.mkdir(exist_ok=True)
+    scratch = Path(
+        os.environ.get(
+            "SDK_TEST_ARTIFACT_DIR",
+            str(Path.home() / ".polymorfa-agent-work/zk-program-20261014/python-s3-spools"),
+        )
+    )
+    scratch = scratch / "s3-spools"
+    scratch.mkdir(parents=True, exist_ok=True)
     if corrupt:
         with pytest.raises(MediaIntegrityError):
             await store.archive(

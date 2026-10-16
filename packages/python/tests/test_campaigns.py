@@ -118,10 +118,10 @@ CREATE = {
     "name": "Offer",
     "recipients": ADD["recipients"],
     "sendWindow": WINDOW,
-    "variants": [VARIANT],
+    "variants": [VARIANT, {**VARIANT, "key": "b"}],
     "variantStrategy": STRATEGY,
 }
-PROJECT = {"projectId": "project_1"}
+PROJECT = {"projectId": "11111111-1111-4111-8111-111111111111"}
 PADD = {**PROJECT, **ADD}
 CONVERSION = {
     "id": "conversion_1",
@@ -323,7 +323,7 @@ PLATFORM = [
         PBASE + ID + "/launch",
         PROJECT,
         {},
-        {"operationId": "op_1"},
+        {**CAMPAIGN, "operationId": "op_1"},
         lambda r, o: r.launch("campaign_1", PROJECT, options=o),
     ),
     (

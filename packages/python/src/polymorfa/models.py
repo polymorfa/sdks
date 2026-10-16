@@ -6,6 +6,7 @@ from typing import Generic, Literal, TypeVar
 
 from typing_extensions import NotRequired, TypedDict
 
+from .campaign_contract_models import SignalCustodyMode
 from .configuration import ConfigurationPatch, ConfigurationView
 from .developer_models import Event as Event  # noqa: PLC0414
 from .developer_models import Operation as Operation  # noqa: PLC0414
@@ -126,6 +127,7 @@ class MessageOperation(TypedDict):
 
 
 class Session(TypedDict):
+    signalMode: NotRequired[SignalCustodyMode]
     sessionId: str
     name: str
     tenantId: str

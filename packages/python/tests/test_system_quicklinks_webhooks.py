@@ -94,7 +94,6 @@ async def test_bridge_route_project_token_only():
 
 QINPUT = {
     "purpose": "initial",
-    "session": "support",
     "projectId": "project_1",
     "customerId": "customer_1",
     "externalId": "external_1",

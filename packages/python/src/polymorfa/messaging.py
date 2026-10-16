@@ -12,6 +12,8 @@ from urllib.parse import quote
 
 import httpx
 
+from . import campaign_contract_validation as V
+from . import session_delivery_validation as D
 from .cloud import (
     CloudCredentialHealth,
     CloudReauthorization,
@@ -142,12 +144,17 @@ class Messages(Resource):
         self, session: str, body: SendMessage, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[MessageResponse]]:
         content = body.get("content")
+        if isinstance(content, dict) and "sticker" in content:
+            from .direct_media import validate_sticker_content
+
+            validate_sticker_content(cast(Mapping[str, object], content)["sticker"])
         if isinstance(content, dict) and any(
             isinstance(part, dict) and "descriptor" in part for part in content.values()
         ):
             from .direct_media import owned_options
 
             options = owned_options(options)
+            body = V.capture(body)
         return await self._request(
             "POST",
             f"/messaging/{segment(session)}/messages/send",
@@ -215,7 +222,10 @@ class Sessions(Resource):
     ) -> ApiResponse[Envelope[Session]]:
         self._server()
         return await self._request(
-            "PUT", f"/platform/sessions/{segment(session)}", body=body, options=options
+            "PUT",
+            f"/platform/sessions/{segment(session)}",
+            body=V.capture(body),
+            options=D.options(options, D.configuration_intent(body)),
         )
 
     async def delete(
@@ -322,7 +332,8 @@ class QuickLinks(Resource):
         self, body: QuickLinkInput | None = None, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[QuickLink]]:
         self._server()
-        value = body or {}
+        value = {} if body is None else body
+        options = D.options(options, D.quicklink_intent(value))
         if value.get("purpose") == "add_connection" and not value.get("session"):
             raise ValidationError("An add_connection QuickLink requires session.")
         billing = value.get("billingControls")
@@ -347,7 +358,9 @@ class QuickLinks(Resource):
                 or not 0 <= priority <= 1_000_000
             ):
                 raise ValidationError("Invalid initial billing controls.")
-        return await self._request("POST", "/messaging/quicklinks", body=value, options=options)
+        return await self._request(
+            "POST", "/messaging/quicklinks", body=V.capture(value), options=options
+        )
 
     async def availability(
         self, project_id: str, session: str, *, options: RequestOptions = O

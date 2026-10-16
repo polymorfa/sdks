@@ -2,8 +2,9 @@
 
 from typing import Literal
 
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import Never, NotRequired, TypedDict
 
+from .campaign_contract_models import SignalCustodyMode
 from .configuration import Hms, ObservationPatch
 
 Purpose = Literal["initial", "add_connection", "reauthorization"]
@@ -44,7 +45,7 @@ class HistorySync(TypedDict, total=False):
     consent: Literal["ask", "force_on", "force_off"]
     mode: Literal["metadata_only", "deliver"]
     requestFull: bool
-    delivery: Literal["archive", "descriptor"]
+    delivery: Literal["descriptor"]
 
 
 class Configuration(TypedDict, total=False):
@@ -66,23 +67,30 @@ class BillingControls(TypedDict):
 
 
 class CreateBase(TypedDict, total=False):
-    billingControls: BillingControls
-    connectionGoal: Goal
-    addConnection: Connection
     projectId: str
-    customerId: str
-    externalId: str
     configuration: Configuration
 
 
 class Initial(CreateBase, total=False):
     purpose: Literal["initial"]
-    session: str
+    signalMode: SignalCustodyMode
+    billingControls: BillingControls
+    customerId: str
+    externalId: str
+    connectionGoal: Goal
+    session: Never
+    addConnection: Never
 
 
 class AddConnection(CreateBase):
     purpose: Literal["add_connection"]
     session: str
+    addConnection: Connection
+    connectionGoal: NotRequired[Literal["hybrid"]]
+    signalMode: NotRequired[Never]
+    billingControls: NotRequired[Never]
+    customerId: NotRequired[Never]
+    externalId: NotRequired[Never]
 
 
 Create = Initial | AddConnection

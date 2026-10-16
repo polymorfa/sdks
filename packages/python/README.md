@@ -601,3 +601,51 @@ available. Malformed success shapes raise `ServerError(code="invalid_response")`
 Server-normalized response values are not revalidated as outbound inputs. API
 errors preserve `param`, open error codes and safe request/routing metadata;
 `content-disposition`, `x-trace-id` and `idempotent-replayed` are safe headers.
+
+The existing campaign APIs also expose named `CampaignVariableMapping`,
+`CampaignVariableBinding` and `CampaignTrackedLink` inputs. Empty bindings are
+valid. Create mapping fields are optional and nonnull; PATCH accepts `None` to
+reset `templateId`, `variableMapping` or `trackedLinks`. Returned campaigns
+require `trackedLinks`, nullable `experimentOutcome` and nullable `followUp`.
+Returned follow-up timing can be omitted. Recipient filters accept `reason`
+together with `status`, `cursor` and `limit`; sequence fields preserve zero,
+null and fractional Messaging `nextMessageAt` values.
+
+Platform draft `messagesArray` accepts typed `CampaignMessageFields` or
+`CampaignMessage` objects. Use `CampaignMessage`, `CampaignMessageMedia` and
+`CampaignMessageButton` with typed fields plus `extra_fields` for open nested
+extensions. Extensions cannot overwrite named fields. Platform PATCH supports
+an empty or omitted body; Messaging PATCH requires at least one field.
+`LaunchPlatformCampaign` requires the organization's `projectId` and accepts
+`scheduledAt` and `skipMissingVariables`, including zero and false. Launch
+approval, funding and campaign state remain API decisions.
+
+History delivery reads accept `archive` or `descriptor`; writes accept only
+`descriptor`. Delivery edits and the exact `historySync.delivery` reset select
+`2026-10-14` only when `RequestOptions.api_version` is absent. Whole-history
+resets and ordinary GETs retain `2026-09-22`; pass an explicit version to read
+new delivery fields. An explicit caller version always wins. `Session.signalMode`
+is an optional immutable fact and is not a generic configuration write.
+
+Initial QuickLinks accept top-level `signalMode`. Supplementary QuickLinks
+require `session` and `addConnection`, exclude initial billing/customer/custody
+fields, and can only request the hybrid connection goal. Mode or descriptor
+intent selects the newer version only when absent. Recipient history consent,
+requested/effective settings, funding, beta access and tunnel grants remain
+separate server decisions.
+
+`history_sync.request_chunk_retry` returns required `requestId` and literal
+`status="requested"`. `delete_chunk` checks a `status="deleted"` acknowledgement
+before returning `None`. Neither acknowledges delivered history or local storage.
+Direct grants and direct upload reject Client credentials before source reading;
+scoped Client relay and pure custom ciphertext transports remain available.
+Hand-authored sticker sends receive descriptor checks and capture their request
+before caller-keyed retries. Unsafe append routes still send once by default.
+
+Descriptor-history webhook types use public `whatsapp_ids`, optional original
+IDs, ISO `oldestMessageAt` and `media.type="md-msg-hist"`. Media and inline
+branches are mutually exclusive in static typing, including typed variables.
+Archive and Cloud payloads remain available. `is_event` narrows by event name;
+HMAC parsing verifies the signature and envelope and preserves the parsed payload. Neither performs
+full payload schema or cryptographic validation. Never log media-key descriptors.
+These source additions do not establish registry or deployed availability.

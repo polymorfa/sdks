@@ -61,7 +61,10 @@ def matches(value: object, model: object, variables: dict[object, object] | None
                 return False
         return True
     if model is int:
-        return type(value) is int and -(2**53 - 1) <= value <= 2**53 - 1
+        try:
+            return type(value) is int and math.isfinite(value)
+        except OverflowError:
+            return False
     if model is float:
         try:
             return type(value) in (int, float) and math.isfinite(cast(float, value))
@@ -89,3 +92,34 @@ def checked(
         return result
 
     return run
+
+
+def acknowledged(
+    status: int = 200,
+) -> Callable[[Callable[P, Awaitable[ApiResponse[T]]]], Callable[P, Awaitable[ApiResponse[T]]]]:
+    """Validate one route's JSON status and required shape, retaining extensions."""
+
+    def decorate(
+        function: Callable[P, Awaitable[ApiResponse[T]]],
+    ) -> Callable[P, Awaitable[ApiResponse[T]]]:
+        structural = checked(function)
+
+        @wraps(function)
+        async def run(*args: P.args, **kwargs: P.kwargs) -> ApiResponse[T]:
+            result = await structural(*args, **kwargs)
+            if (
+                result.metadata.status != status
+                or result.metadata.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+                != "application/json"
+            ):
+                raise ServerError(
+                    "Invalid API acknowledgement.",
+                    code="invalid_response",
+                    status=result.metadata.status,
+                    metadata=result.metadata,
+                )
+            return result
+
+        return run
+
+    return decorate

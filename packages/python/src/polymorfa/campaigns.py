@@ -9,6 +9,7 @@ from typing import cast
 
 from . import campaign_contract_models as M
 from . import campaign_contract_validation as V
+from . import campaign_existing_validation as E
 from . import campaign_models as C
 from .campaign_contract_resources import ProjectCampaigns, export_page
 from .campaign_contract_response import checked
@@ -136,8 +137,12 @@ class MessagingCampaigns(Resource):
     async def create(
         self, project_slug: str, body: C.CreateCampaign, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[C.Campaign]]:
+        E.campaign(body)
         return await self._request(
-            "POST", campaign_path(project_slug), body=body, options=options.with_idempotency_key()
+            "POST",
+            campaign_path(project_slug),
+            body=V.capture(body),
+            options=options.with_idempotency_key(),
         )
 
     async def retrieve(
@@ -153,12 +158,11 @@ class MessagingCampaigns(Resource):
         *,
         options: RequestOptions = O,
     ) -> ApiResponse[Envelope[C.Campaign]]:
-        if not body:
-            raise ValidationError("Supply at least one campaign field.")
+        E.campaign(body, patch=True)
         return await self._request(
             "PATCH",
             campaign_path(project_slug, campaign_id),
-            body=body,
+            body=V.capture(body),
             options=append_options(options),
         )
 
@@ -177,10 +181,11 @@ class MessagingCampaigns(Resource):
         *,
         options: RequestOptions = O,
     ) -> ApiResponse[Envelope[C.CampaignOperation]]:
+        E.launch({} if body is None else body)
         return await self._request(
             "POST",
             campaign_path(project_slug, campaign_id) + "/launch",
-            body={} if body is None else body,
+            body=V.capture({} if body is None else body),
             options=options.with_idempotency_key(),
         )
 
@@ -195,7 +200,7 @@ class MessagingCampaigns(Resource):
         return await self._request(
             "POST",
             campaign_path(project_slug, campaign_id) + "/reschedule",
-            body=body,
+            body=V.capture(body),
             options=options.with_idempotency_key(),
         )
 
@@ -234,6 +239,7 @@ class MessagingCampaigns(Resource):
         *,
         options: RequestOptions = O,
     ) -> CursorPage[C.Recipient]:
+        E.recipients({} if params is None else params)
         path = campaign_path(project_slug, campaign_id) + "/recipients"
         query: dict[str, QueryValue] = _query(params or {})
         response = await self._transport.request("GET", path, query=query, options=options)
@@ -250,7 +256,7 @@ class MessagingCampaigns(Resource):
         return await self._request(
             "POST",
             campaign_path(project_slug, campaign_id) + "/recipients",
-            body=body,
+            body=V.capture(body),
             options=append_options(options),
         )
 
@@ -391,6 +397,7 @@ class Campaigns(Resource):
     async def list(
         self, params: C.ListCampaigns, *, options: RequestOptions = O
     ) -> ApiResponse[DataEnvelope[builtins.list[C.PlatformCampaign]]]:
+        E.selection(params, slug=True)
         response: ApiResponse[
             DataEnvelope[C.Campaign | list[C.Campaign] | None]
         ] = await self._request("GET", "/platform/campaigns", query=_query(params), options=options)
@@ -402,6 +409,8 @@ class Campaigns(Resource):
     async def create(
         self, body: C.CreatePlatformCampaign, *, options: RequestOptions = O
     ) -> ApiResponse[DataEnvelope[C.PlatformCampaign]]:
+        E.campaign(body, platform=True)
+        V.uuid(body.get("projectId"), "projectId")
         # Platform draft creation declares neither request-key replay nor automatic retry.
         if options.idempotency_key is not None or options.max_network_retries is not None:
             raise ValidationError(
@@ -412,7 +421,7 @@ class Campaigns(Resource):
         ] = await self._request(
             "POST",
             "/platform/campaigns",
-            body=body,
+            body=V.capture(body),
             options=replace(options, max_network_retries=0),
         )
         return cast(
@@ -422,6 +431,7 @@ class Campaigns(Resource):
     async def retrieve(
         self, campaign_id: str, params: C.CampaignParams, *, options: RequestOptions = O
     ) -> ApiResponse[DataEnvelope[C.PlatformCampaign | None]]:
+        E.selection(params)
         response: ApiResponse[
             DataEnvelope[C.Campaign | list[C.Campaign] | None]
         ] = await self._request(
@@ -438,21 +448,35 @@ class Campaigns(Resource):
     async def update(
         self,
         campaign_id: str,
-        body: C.UpdateCampaign | None,
+        body: C.UpdateCampaign | C.UpdatePlatformCampaign | None,
         params: C.CampaignParams,
         *,
         options: RequestOptions = O,
         extra_fields: Mapping[str, Json] | None = None,
     ) -> ApiResponse[DataEnvelope[C.PlatformCampaign]]:
-        if extra_fields and set(extra_fields) & C.UpdateCampaign.__optional_keys__:
-            raise ValidationError("Use the typed body for named campaign fields.")
-        merged = {**(body or {}), **(extra_fields or {})} if extra_fields else body
+        E.selection(params)
+        E.protected_extra(extra_fields, set(C.UpdatePlatformCampaign.__annotations__))
+        if body is not None:
+            E.protected_extra(
+                {
+                    key: value
+                    for key, value in body.items()
+                    if key not in C.UpdatePlatformCampaign.__annotations__
+                },
+                set(),
+            )
+            E.campaign(body, platform=True, patch=True)
+        merged = (
+            V.capture({**(body or {}), **extra_fields})
+            if extra_fields is not None
+            else V.capture(body)
+        )
         response: ApiResponse[
             DataEnvelope[C.Campaign | list[C.Campaign] | None]
         ] = await self._request(
             "PATCH",
             f"/platform/campaigns/{segment(campaign_id)}",
-            body=merged,
+            body=V.capture(merged),
             query=_query(params),
             options=options,
         )
@@ -471,13 +495,34 @@ class Campaigns(Resource):
         )
 
     async def launch(
-        self, campaign_id: str, body: JsonObject | None = None, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[JsonObject]]:
-        return await self._request(
+        self, campaign_id: str, body: C.LaunchPlatformCampaign, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[C.PlatformCampaignLaunchResult]]:
+        E.launch(body, True)
+        response: ApiResponse[DataEnvelope[JsonObject]] = await self._request(
             "POST",
             f"/platform/campaigns/{segment(campaign_id)}/launch",
-            body=body,
+            body=V.capture(body),
             options=options.with_idempotency_key(),
+        )
+        if not isinstance(response.data, dict) or not isinstance(response.data.get("data"), dict):
+            raise ServerError(
+                "Invalid campaign launch response.",
+                code="invalid_response",
+                metadata=response.metadata,
+            )
+        result = response.data["data"]
+        if not all(isinstance(result.get(key), str) for key in ("id", "status", "operationId")):
+            raise ServerError(
+                "Invalid campaign launch response.",
+                code="invalid_response",
+                metadata=response.metadata,
+            )
+        return ApiResponse(
+            cast(
+                DataEnvelope[C.PlatformCampaignLaunchResult],
+                {**response.data, "data": C.PlatformCampaignLaunchResult(result)},
+            ),
+            response.metadata,
         )
 
     async def reschedule(
@@ -553,6 +598,7 @@ class Campaigns(Resource):
     async def analytics(
         self, campaign_id: str, params: C.CampaignParams, *, options: RequestOptions = O
     ) -> ApiResponse[DataEnvelope[C.PlatformAnalytics]]:
+        E.selection(params)
         return await self._request(
             "GET",
             f"/platform/campaigns/{segment(campaign_id)}/analytics",
@@ -572,7 +618,8 @@ class Campaigns(Resource):
 
     async def recipients(
         self, campaign_id: str, params: C.PlatformRecipientsParams, *, options: RequestOptions = O
-    ) -> CursorPage[C.Recipient]:
+    ) -> CursorPage[C.PlatformRecipient]:
+        E.recipients(params, True)
         path = f"/platform/campaigns/{segment(campaign_id)}/recipients"
         query: dict[str, QueryValue] = _query(params)
         response = await self._transport.request("GET", path, query=query, options=options)
@@ -584,7 +631,7 @@ class Campaigns(Resource):
         return await self._request(
             "POST",
             f"/platform/campaigns/{segment(campaign_id)}/recipients",
-            body=body,
+            body=V.capture(body),
             options=append_options(options),
         )
 
@@ -635,7 +682,9 @@ class Audiences(PlatformResource):
             )
         if "mapping" in body and "fileId" not in body:
             raise ValidationError("File import requires fileId.")
-        return await self._request("POST", "/platform/audiences", body=body, options=options)
+        return await self._request(
+            "POST", "/platform/audiences", body=V.capture(body), options=options
+        )
 
     async def retrieve(
         self, list_id: str, *, options: RequestOptions = O
@@ -664,7 +713,7 @@ class Audiences(PlatformResource):
         return await self._request(
             "POST",
             f"/platform/audiences/{segment(list_id)}/members",
-            body=body,
+            body=V.capture(body),
             options=append_options(options),
         )
 

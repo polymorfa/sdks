@@ -92,7 +92,16 @@ class NativeCdnTransport(httpx.AsyncBaseTransport):
 
 @asynccontextmanager
 async def native_cdn(handler):
-    directory = Path.home() / ".polymorfa-agent-work/sdk-tests/python-media" / uuid.uuid4().hex
+    directory = (
+        Path(
+            os.environ.get(
+                "SDK_TEST_ARTIFACT_DIR",
+                str(Path.home() / ".polymorfa-agent-work/sdk-tests/python-media"),
+            )
+        )
+        / "media"
+        / uuid.uuid4().hex
+    )
     directory.mkdir(parents=True)
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "SDK native media fixture")])
@@ -271,7 +280,16 @@ async def test_api_media_to_file_retains_metadata_and_bounds_bytes():
             },
         )
 
-    directory = Path.home() / ".polymorfa-agent-work/sdk-tests/python-media" / uuid.uuid4().hex
+    directory = (
+        Path(
+            os.environ.get(
+                "SDK_TEST_ARTIFACT_DIR",
+                str(Path.home() / ".polymorfa-agent-work/sdk-tests/python-media"),
+            )
+        )
+        / "media"
+        / uuid.uuid4().hex
+    )
     directory.mkdir(parents=True)
     app = web.Application()
     app.router.add_route("*", "/{path:.*}", handler)

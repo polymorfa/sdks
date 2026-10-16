@@ -5,6 +5,8 @@ from urllib.parse import unquote
 
 from typing_extensions import NotRequired, TypedDict
 
+from . import campaign_contract_validation as V
+from . import session_delivery_validation as D
 from .configuration import ConfigurationView
 from .messaging import O, Resource, segment
 from .models import Envelope, SessionUpdate
@@ -176,6 +178,7 @@ class SessionConfigurations(PlatformResource):
     async def update(
         self, body: SessionUpdate, *, options: RequestOptions = O
     ) -> ApiResponse[ConfigurationView]:
+        options = D.options(options, D.configuration_intent(body))
         wire: dict[str, object] = {
             "configuration": body["configuration"],
             "revision": body["revision"],
@@ -183,7 +186,7 @@ class SessionConfigurations(PlatformResource):
         if self._project_id is not None:
             wire["projectId"] = self._project_id
         return await self._unwrapped(
-            "PUT", "/platform/session-configuration", body=wire, options=options
+            "PUT", "/platform/session-configuration", body=V.capture(wire), options=options
         )
 
 

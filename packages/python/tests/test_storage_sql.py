@@ -30,7 +30,13 @@ from polymorfa.webhooks import WebhookEvent
 
 ROOT = Path(__file__).resolve().parents[3]
 FIXTURE = json.loads((ROOT / "packages/storage/conformance-fixtures.json").read_text())
-ARTIFACTS = Path.home() / ".polymorfa-agent-work/zk-program-20261014/python-storage-tests"
+ARTIFACTS = Path(
+    os.environ.get(
+        "SDK_TEST_ARTIFACT_DIR",
+        str(Path.home() / ".polymorfa-agent-work/zk-program-20261014/python-storage-tests"),
+    )
+)
+ARTIFACTS = ARTIFACTS / "storage-sql"
 
 
 @pytest.fixture(params=["postgres", "mysql", "libsql"])

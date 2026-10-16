@@ -221,6 +221,11 @@ class Transport:
             event_hooks={"response": [self._validate_media_redirect]},
         )
 
+    @property
+    def credential_kind(self) -> str | None:
+        """The authenticated principal supplied when this transport was constructed."""
+        return self._credential.kind if self._credential is not None else None
+
     async def _validate_media_redirect(self, response: httpx.Response) -> None:
         if (
             not response.is_redirect

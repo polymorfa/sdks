@@ -8,18 +8,19 @@ ObservationMode = Literal["off", "events", "cache"]
 LabelMode = Literal["off", "events", "cache", "project"]
 Source = Literal["platform", "team", "project", "session"]
 ValueSource = Source | Literal["consent"]
+HistorySyncDelivery = Literal["archive", "descriptor"]
 
 
 class HistorySync(TypedDict):
     mode: Literal["metadata_only", "deliver"]
     requestFull: bool
-    delivery: NotRequired[Literal["archive", "descriptor"]]
+    delivery: NotRequired[HistorySyncDelivery]
 
 
 class HistorySyncPatch(TypedDict, total=False):
     mode: Literal["metadata_only", "deliver"]
     requestFull: bool
-    delivery: Literal["archive", "descriptor"]
+    delivery: Literal["descriptor"]
 
 
 class HmsDisabled(TypedDict):
@@ -69,7 +70,7 @@ ConfigurationSources = TypedDict(
     {
         "historySync.mode": ValueSource,
         "historySync.requestFull": ValueSource,
-        "historySync.delivery": NotRequired[ValueSource],
+        "historySync.delivery": NotRequired[Source],
         "hms": Source,
         "observation.presenceMode": Source,
         "observation.typingMode": Source,
@@ -117,3 +118,7 @@ class ConfigurationPatch(TypedDict, total=False):
             "observation.quickReplyMode",
         ]
     ]
+
+
+HistorySyncPolicy = HistorySync
+HistorySyncPolicyPatch = HistorySyncPatch

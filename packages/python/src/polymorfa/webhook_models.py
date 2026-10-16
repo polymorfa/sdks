@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Generic, Literal, TypeVar
 
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import Never, NotRequired, TypedDict
 
 from .models import WhatsAppMessageIds
 from .platform_core import SessionCapabilities
@@ -523,10 +523,12 @@ class DirectHistoryInline(TypedDict):
 
 class DirectHistoryMediaPayload(DirectHistoryCommon):
     media: DirectHistoryMedia
+    inline: NotRequired[Never]
 
 
 class DirectHistoryInlinePayload(DirectHistoryCommon):
     inline: DirectHistoryInline
+    media: NotRequired[Never]
 
 
 DirectHistorySyncPayload = DirectHistoryMediaPayload | DirectHistoryInlinePayload

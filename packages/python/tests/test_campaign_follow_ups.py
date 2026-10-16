@@ -79,9 +79,9 @@ def test_follow_up_types_match_pinned_audience_contracts():
     assert (
         platform["schemas"]["CampaignFollowUpSummary"]["properties"]["status"]["enum"] == STATUSES
     )
-    assert "followUp" in C.Campaign.__optional_keys__
-    assert "followUp" in C.Recipient.__optional_keys__
-    assert "followUps" in C.Analytics.__optional_keys__
+    assert "followUp" in C.Campaign.__required_keys__
+    assert "followUp" in C.Recipient.__required_keys__
+    assert "followUps" in C.Analytics.__required_keys__
     assert "followUps" in C.PlatformAnalytics.__required_keys__
     assert messaging["fields"]["Campaign.followUp"]["required"] == ["message"]
     for model in (C.CreateCampaign, C.CreatePlatformCampaign, C.UpdateCampaign):
@@ -93,7 +93,7 @@ def test_follow_up_types_match_pinned_audience_contracts():
     "configuration",
     [
         {"message": {"type": "text", "text": "Still interested, {{name}}?"}},
-        {"message": {"type": "template", "templateId": "template_1"}},
+        {"message": {"type": "template", "templateId": "22222222-2222-4222-8222-222222222222"}},
         {
             "delaySeconds": 60,
             "expirySeconds": 86400,
@@ -156,9 +156,13 @@ async def test_native_follow_up_requests_responses_and_removal(surface, configur
                 analytics = await campaigns.analytics("support", "campaign_1")
                 recipients = await campaigns.recipients("support", "campaign_1")
             else:
-                params = {"projectId": "project_1"}
+                params = {"projectId": "11111111-1111-4111-8111-111111111111"}
                 created = await campaigns.create(
-                    {"projectId": "project_1", "name": "Offer", "followUp": configuration}
+                    {
+                        "projectId": "11111111-1111-4111-8111-111111111111",
+                        "name": "Offer",
+                        "followUp": configuration,
+                    }
                 )
                 retrieved = await campaigns.retrieve("campaign_1", params)
                 updated = await campaigns.update("campaign_1", {"followUp": configuration}, params)
@@ -180,7 +184,11 @@ async def test_native_follow_up_requests_responses_and_removal(surface, configur
             assert all(row[1].startswith(prefix) for row in seen)
             assert all(
                 row[2]
-                == ({} if surface == "messaging" or index == 0 else {"projectId": "project_1"})
+                == (
+                    {}
+                    if surface == "messaging" or index == 0
+                    else {"projectId": "11111111-1111-4111-8111-111111111111"}
+                )
                 for index, row in enumerate(seen)
             )
     finally:
@@ -215,7 +223,7 @@ async def test_follow_up_enrollment_refusal_preserves_api_error(surface):
             else:
                 await client.campaigns.create(
                     {
-                        "projectId": "project_1",
+                        "projectId": "11111111-1111-4111-8111-111111111111",
                         "name": "Offer",
                         "followUp": {"message": {"type": "text", "text": "Hi"}},
                     }

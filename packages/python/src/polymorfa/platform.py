@@ -13,6 +13,7 @@ from urllib.parse import unquote
 from . import campaign_contract_models as M
 from . import campaign_contract_validation as V
 from . import developer_models as D
+from . import session_delivery_validation as SD
 from .bansafe import (
     ProjectHealthPolicy,
     ProjectInsuranceEvidence,
@@ -321,7 +322,10 @@ class PlatformSessions(Resource):
         self, session_id: str, body: SessionUpdate, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[Session]]:
         return await self._request(
-            "PUT", f"/platform/sessions/{segment(session_id)}", body=body, options=options
+            "PUT",
+            f"/platform/sessions/{segment(session_id)}",
+            body=V.capture(body),
+            options=SD.options(options, SD.configuration_intent(body)),
         )
 
     async def start(

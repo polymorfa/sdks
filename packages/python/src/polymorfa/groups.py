@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import builtins
 
+from .campaign_contract_response import acknowledged
 from .messaging import O, Resource, segment
 from .models import (
     AdminOnly,
@@ -63,6 +64,7 @@ class Groups(Resource):
     ) -> ApiResponse[Envelope[Group]]:
         return await self._request("GET", group_path(session, group_id), options=options)
 
+    @acknowledged()
     async def get_capabilities(
         self, session: str, group_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[GroupCapabilities]]:

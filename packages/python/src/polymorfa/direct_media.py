@@ -13,6 +13,7 @@ from urllib.parse import parse_qsl, quote, urlencode, urlsplit, urlunsplit
 import httpx
 from typing_extensions import NotRequired, TypedDict
 
+from . import campaign_contract_validation as V
 from .errors import (
     ConfigurationError,
     ConnectionError,
@@ -30,7 +31,7 @@ from .media_encrypt import (
     positive_integer,
     prepare_whatsapp_upload,
 )
-from .transport import DEFAULT_OPTIONS, Json, RequestOptions, Transport
+from .transport import DEFAULT_OPTIONS, ApiResponse, Json, RequestOptions, Transport
 
 CUSTOMER_OWNED_API_VERSION = "2026-10-14"
 HistorySyncType = Literal[
@@ -66,6 +67,11 @@ class HistoryChunkRetry(TypedDict):
     regenerate: NotRequired[bool]
 
 
+class HistorySyncChunkRetryResult(TypedDict):
+    requestId: str
+    status: Literal["requested"]
+
+
 class HistoryChunkDelete(TypedDict):
     directPath: str
     fileEncSha256: str
@@ -91,7 +97,12 @@ class MediaSendDescriptor(TypedDict):
 
 
 def owned_options(options: RequestOptions) -> RequestOptions:
-    return replace(options, api_version=options.api_version or CUSTOMER_OWNED_API_VERSION)
+    return replace(
+        options,
+        api_version=options.api_version
+        if options.api_version is not None
+        else CUSTOMER_OWNED_API_VERSION,
+    )
 
 
 def base64url_unpadded(value: bytes) -> str:
@@ -109,6 +120,29 @@ def _unwrap(value: Json) -> dict[str, Json]:
     if not isinstance(data, dict):
         raise _invalid("media")
     return data
+
+
+def _invalid_ack(response: ApiResponse[Json]) -> ServerError:
+    return ServerError(
+        "Invalid API acknowledgement.",
+        code="invalid_response",
+        status=response.metadata.status,
+        metadata=response.metadata,
+    )
+
+
+def _acknowledgement(response: ApiResponse[Json]) -> dict[str, Json]:
+    value = response.data
+    if (
+        response.metadata.status != 200
+        or response.metadata.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+        != "application/json"
+        or not isinstance(value, dict)
+        or value.get("success") is not True
+        or not isinstance(value.get("data"), dict)
+    ):
+        raise _invalid_ack(response)
+    return cast(dict[str, Json], value["data"])
 
 
 def _upload_fields(info: EncryptedMediaInfo) -> dict[str, Json]:
@@ -168,16 +202,21 @@ class DirectMediaApi:
     def __init__(self, transport: Transport) -> None:
         self._transport = transport
 
+    def require_direct(self) -> None:
+        if self._transport.credential_kind not in ("organization_api_key", "project_token"):
+            raise ConfigurationError("credential")
+
     async def create_upload_grant(
         self, session: str, info: EncryptedMediaInfo, *, options: RequestOptions = DEFAULT_OPTIONS
     ) -> UploadGrant:
+        self.require_direct()
         response = await self._transport.request_json(
             "POST",
             f"/messaging/{segment(session)}/media/upload-grants",
             body=_upload_fields(info),
             options=owned_options(options),
         )
-        data = _unwrap(response.data)
+        data = _acknowledgement(response)
         host, url, expiry = data.get("host"), data.get("uploadUrl"), data.get("expiresAt")
         if (
             not isinstance(url, str)
@@ -189,7 +228,12 @@ class DirectMediaApi:
             or not isinstance(expiry, int)
             or not 0 < expiry <= 8_640_000_000_000
         ):
-            raise _invalid("upload grant")
+            raise ServerError(
+                "Invalid upload grant response.",
+                code="invalid_response",
+                status=response.metadata.status,
+                metadata=response.metadata,
+            )
         return UploadGrant(host, expiry, url)
 
     async def relay_upload(
@@ -210,22 +254,26 @@ class DirectMediaApi:
                 query=query,
                 options=owned_options(options),
             )
-            return _location(response.data)
+            data = _acknowledgement(response)
+            try:
+                return _location(data)
+            except ServerError:
+                raise _invalid_ack(response) from None
         finally:
             await source.aclose()
 
 
 class HistorySync:
     def __init__(self, transport: Transport, credential: str = "organization_api_key") -> None:
-        self._transport, self._credential = transport, credential
+        self._transport, self._credential = transport, transport.credential_kind
 
     def _server(self) -> None:
-        if self._credential == "client_token":
+        if self._credential not in ("organization_api_key", "project_token"):
             raise ConfigurationError("credential")
 
     async def request_chunk_retry(
         self, session: str, body: HistoryChunkRetry, *, options: RequestOptions = DEFAULT_OPTIONS
-    ) -> dict[str, Json]:
+    ) -> HistorySyncChunkRetryResult:
         self._server()
         if (
             set(body) - {"syncType", "chunkOrder", "chunkMessageId", "regenerate"}
@@ -236,7 +284,7 @@ class HistorySync:
         if isinstance(order, bool) or not isinstance(order, int) or not 0 <= order <= 2**32 - 1:
             raise ConfigurationError("chunkOrder")
         message_id = body.get("chunkMessageId")
-        if message_id is not None and (
+        if "chunkMessageId" in body and (
             not isinstance(message_id, str)
             or re.fullmatch(r"[A-Za-z0-9._:-]{1,128}", message_id) is None
         ):
@@ -246,10 +294,17 @@ class HistorySync:
         response = await self._transport.request_json(
             "POST",
             f"/messaging/{segment(session)}/history/chunks/retry",
-            body=body,
+            body=V.capture(body),
             options=owned_options(options),
         )
-        return _unwrap(response.data)
+        data = _acknowledgement(response)
+        if (
+            not isinstance(data.get("requestId"), str)
+            or not data["requestId"]
+            or data.get("status") != "requested"
+        ):
+            raise _invalid_ack(response)
+        return cast(HistorySyncChunkRetryResult, data)
 
     async def delete_chunk(
         self, session: str, body: HistoryChunkDelete, *, options: RequestOptions = DEFAULT_OPTIONS
@@ -271,12 +326,16 @@ class HistorySync:
                 or re.fullmatch(r"[A-Za-z0-9._~%/=+-]{1,512}", body[key]) is None
             ):
                 raise ConfigurationError(key)
-        await self._transport.request_json(
+        response = await self._transport.request_json(
             "POST",
             f"/messaging/{segment(session)}/history/media/delete",
-            body=body,
+            body=V.capture(body),
             options=owned_options(options),
         )
+
+        data = _acknowledgement(response)
+        if data.get("status") != "deleted":
+            raise _invalid_ack(response)
 
 
 class MediaUploadTransport(Protocol):
@@ -332,10 +391,14 @@ class DirectUploadTransport:
         max_attempts: int = 3,
         document_part_size: int = 50 * 1024 * 1024,
     ) -> None:
+        api.require_direct()
         positive_integer(max_attempts, "max_attempts")
         positive_integer(document_part_size, "document_part_size")
         self._api, self._http_transport = api, http_transport
         self._attempts, self._part_size = max_attempts, document_part_size
+
+    def require_direct(self) -> None:
+        self._api.require_direct()
 
     def _url(self, grant: UploadGrant, body: EncryptedUploadBody, query: Mapping[str, str]) -> str:
         parsed = urlsplit(grant.upload_url)
@@ -357,6 +420,8 @@ class DirectUploadTransport:
     async def upload(
         self, session: str, body: EncryptedUploadBody, *, options: RequestOptions = DEFAULT_OPTIONS
     ) -> UploadLocation:
+        self.require_direct()
+
         async def run() -> UploadLocation:
             async with httpx.AsyncClient(
                 transport=self._http_transport,
@@ -614,6 +679,9 @@ class WhatsAppMedia:
         selected = self.transport(egress) if isinstance(egress, str) else egress
         if not callable(getattr(selected, "upload", None)):
             raise ConfigurationError("egress")
+        if isinstance(selected, DirectUploadTransport):
+            self._api.require_direct()
+            selected.require_direct()
         body = await prepare_whatsapp_upload(
             source, media_type=media_type, mimetype=mimetype, max_bytes=max_bytes
         )
@@ -710,3 +778,57 @@ def to_whatsapp_media_send_descriptor(
     if waveform is not None:
         result["waveform"] = base64.b64encode(waveform).decode()
     return result
+
+
+def validate_sticker_content(value: object) -> None:
+    """Apply descriptor-builder checks to hand-authored sticker mappings."""
+    v = V.fields(value, ["descriptor"], ["descriptor"], "sticker")
+    required = [
+        "directPath",
+        "mediaKey",
+        "fileSha256",
+        "fileEncSha256",
+        "fileLength",
+        "mimeType",
+        "url",
+    ]
+    d = V.fields(
+        v["descriptor"],
+        required + ["width", "height", "mediaKeyTimestamp", "isAnimated"],
+        required,
+        "sticker.descriptor",
+    )
+
+    def binary(key: str) -> bytes:
+        text = d[key]
+        if not isinstance(text, str) or re.fullmatch(r"[A-Za-z0-9+/]{43}=", text) is None:
+            raise ConfigurationError(key)
+        return base64.b64decode(text, validate=True)
+
+    # Membership checks retain explicit null refusal, false and zero.
+    for key, low, high in (
+        ("width", 1, 65536),
+        ("height", 1, 65536),
+        ("mediaKeyTimestamp", 1, 2**40),
+    ):
+        if key in d:
+            V.integer(d[key], key, low, high)
+    if "isAnimated" in d and type(d["isAnimated"]) is not bool:
+        raise ConfigurationError("isAnimated")
+    to_whatsapp_media_send_descriptor(
+        MediaUploadResult(
+            "sticker",
+            binary("mediaKey"),
+            binary("fileSha256"),
+            binary("fileEncSha256"),
+            V.integer(d["fileLength"], "fileLength", 1, 2**31),
+            0,
+            V.text(d["mimeType"], "mimeType"),
+            V.text(d["directPath"], "directPath"),
+            V.text(d["url"], "url"),
+        ),
+        width=cast(int | None, d.get("width")),
+        height=cast(int | None, d.get("height")),
+        media_key_timestamp=cast(int | None, d.get("mediaKeyTimestamp")),
+        is_animated=cast(bool | None, d.get("isAnimated")),
+    )
