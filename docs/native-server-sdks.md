@@ -68,7 +68,9 @@ eligibility and paid capabilities. An SDK method does not grant access.
 ## Release preparation
 
 Prepare PyPI wheels/sdists, crates.io crates, NuGet packages, Composer archives
-and Go module source tags through native tools. Before publication, verify
+and Go module source tags through native tools. The publication jobs, the
+package graph and the operator prerequisites are described in
+[`native-release.md`](native-release.md). Before publication, verify
 full claimed coverage, package contents, baseline runtimes and the same API
 acceptance receipt used by the npm release gate. Nightlies require staging
 acceptance; stable releases require production acceptance. Registry ownership

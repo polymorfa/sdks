@@ -94,6 +94,10 @@ export function expectedContract() {
       "campaign-message-variations.json",
       "campaign-follow-ups.json",
       "campaign-custody-20261014.json",
+      // Integrated main supplements: released only after their source is
+      // reconciled with the accepted release contract.
+      "campaign-frequency-cap.json",
+      "campaign-segments-drip.json",
     ].flatMap((name) =>
       campaignSupplementPins(
         JSON.parse(readFileSync(join(root, "contracts", name))),

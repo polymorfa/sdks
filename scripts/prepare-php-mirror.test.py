@@ -39,6 +39,8 @@ class MirrorPreparation(unittest.TestCase):
                 }
             ).encode(),
             "src/HttpTransport.php": f"<?php const SDK_VERSION = '{version}';\n".encode(),
+            # The real archive carries the schema-2 resource the storage engine loads.
+            "src/Storage/schema2.json": b'{"schemaVersion":2}\n',
             "README.md": b"SDK development source\n",
             "LICENSE": b"MIT\n",
             "release-contract.json": json.dumps(inner).encode(),
@@ -100,6 +102,7 @@ class MirrorPreparation(unittest.TestCase):
         for name, kind in [
             ("../escape", None),
             ("vendor/unexpected.php", None),
+            ("src/Storage/other.json", None),
             ("src/link.php", tarfile.SYMTYPE),
             ("src/HttpTransport.php", None),
         ]:

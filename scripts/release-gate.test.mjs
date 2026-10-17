@@ -6,6 +6,7 @@ import {
   releaseVersion,
   validateFeatureContractPins,
   campaignSupplementPins,
+  expectedContract,
 } from "./release-gate.mjs";
 const expected = {
   sourceSha: "a".repeat(40),
@@ -202,4 +203,41 @@ test("Messaging feature pins cannot borrow Platform acceptance or bypass a publi
     assert.throws(() =>
       validateFeatureContractPins(source, [{ ...pin, ...delta }]),
     );
+});
+test("integrated frequency-cap and segment/drip supplements are gate pins that block until reconciled", () => {
+  const source = JSON.parse(
+    readFileSync(new URL("../contracts/source.json", import.meta.url), "utf8"),
+  );
+  for (const name of [
+    "campaign-frequency-cap.json",
+    "campaign-segments-drip.json",
+  ]) {
+    const supplement = JSON.parse(
+      readFileSync(new URL(`../contracts/${name}`, import.meta.url), "utf8"),
+    );
+    const pins = campaignSupplementPins(supplement);
+    assert.deepEqual(pins.map((pin) => pin.family).sort(), [
+      "messaging",
+      "platform",
+    ]);
+    assert.notEqual(supplement.commit, source.commit);
+    assert.throws(
+      () => validateFeatureContractPins(source, pins),
+      /not been reconciled/,
+    );
+    // Reconciled to its own source, the supplement passes; nothing flips a hold.
+    const reconciled = {
+      repository: supplement.repository,
+      commit: supplement.commit,
+      contracts: Object.fromEntries(
+        Object.entries(supplement.sources).map(([family, snapshot]) => [
+          family,
+          { sourcePath: snapshot.sourcePath, sha256: snapshot.sourceSha256 },
+        ]),
+      ),
+    };
+    validateFeatureContractPins(reconciled, pins);
+  }
+  // The current release contract therefore fails closed.
+  assert.throws(() => expectedContract(), /reconciled|held from publication/);
 });

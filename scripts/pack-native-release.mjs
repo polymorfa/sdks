@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { copyFileSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { dotnetPackages, rustCrates } from "./native-packages.mjs";
 const language = process.argv[2];
 assert.ok(["go", "python", "php", "rust", "dotnet"].includes(language));
 const root = resolve(import.meta.dirname, "..");
@@ -58,20 +59,46 @@ if (language === "go") {
 } else if (language === "php") {
   run("composer", ["build"], { ...process.env, POLYMORFA_BUILD_DIR: output });
 } else if (language === "rust") {
-  run("cargo", ["package", "--allow-dirty"]);
-  copyFileSync(
-    join(pkg, "target/package", `polymorfa-sdk-${version}.crate`),
-    join(output, `polymorfa-sdk-${version}.crate`),
-  );
-} else {
-  run("dotnet", [
-    "pack",
-    "src/Polymorfa.Sdk/Polymorfa.Sdk.csproj",
-    "--configuration",
-    "Release",
-    `-p:PackageOutputPath=${output}`,
-    "-p:TreatWarningsAsErrors=true",
+  // The SDK and IndexedDB crates verify against the packaged core crate, the
+  // same bytes crates.io receives first. Registry publication re-verifies each
+  // dependent against the published core.
+  const target = join(pkg, "target");
+  const core = rustCrates[0];
+  run("cargo", [
+    "package",
+    "--manifest-path",
+    join(core.dir, "Cargo.toml"),
+    "--target-dir",
+    target,
+    "--allow-dirty",
   ]);
+  const packedCore = join(target, "package", `${core.name}-${version}`);
+  for (const crate of rustCrates.slice(1))
+    run("cargo", [
+      "package",
+      "--manifest-path",
+      join(crate.dir, "Cargo.toml"),
+      "--target-dir",
+      target,
+      "--allow-dirty",
+      "--config",
+      `patch.crates-io.${core.name}.path=${JSON.stringify(packedCore)}`,
+    ]);
+  for (const crate of rustCrates)
+    copyFileSync(
+      join(target, "package", `${crate.name}-${version}.crate`),
+      join(output, `${crate.name}-${version}.crate`),
+    );
+} else {
+  for (const { name } of dotnetPackages)
+    run("dotnet", [
+      "pack",
+      `src/${name}/${name}.csproj`,
+      "--configuration",
+      "Release",
+      `-p:PackageOutputPath=${output}`,
+      "-p:TreatWarningsAsErrors=true",
+    ]);
 }
 run("python3", [
   join(root, "scripts/inspect-native-artifacts.py"),

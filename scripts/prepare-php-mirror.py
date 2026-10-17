@@ -49,6 +49,8 @@ def prepare(packs: Path, receipt_path: Path, output: Path) -> dict:
         "LICENSE",
         "release-contract.json",
     }
+    # Exact runtime resources the source loads; no other non-PHP file is mirrored.
+    allowed_resources = {"src/Storage/schema2.json"}
     files = {}
     with tarfile.open(archive_path) as archive:
         members = archive.getmembers()
@@ -59,7 +61,7 @@ def prepare(packs: Path, receipt_path: Path, output: Path) -> dict:
             assert not relative.is_absolute() and ".." not in relative.parts
             assert str(relative) == member.name and "\\" not in member.name
             assert member.isfile(), "Mirror accepts regular files only"
-            assert member.name in allowed_root or (
+            assert member.name in allowed_root or member.name in allowed_resources or (
                 relative.parts[0] == "src" and relative.suffix == ".php"
             ), "Unexpected mirror file"
             assert member.name not in files, "Duplicate archive path"

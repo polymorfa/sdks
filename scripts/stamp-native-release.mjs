@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync, copyFileSync } from "node:fs";
 import { join, resolve } from "node:path";
+import { dotnetPackages } from "./native-packages.mjs";
 const root = resolve(import.meta.dirname, "..");
 const language = process.argv[2];
 assert.ok(["go", "python", "php", "dotnet", "rust"].includes(language));
@@ -56,13 +57,41 @@ if (language === "go") {
     `SDK_VERSION = '${version}'`,
   );
 } else if (language === "rust") {
-  replace("Cargo.toml", /^version = "[^"]+"/m, `version = "${version}"`);
+  // Three crates publish in dependency order: storage-core, then the SDK and
+  // IndexedDB adapter. Internal requirements are exact accepted versions.
+  for (const manifest of [
+    "Cargo.toml",
+    "storage-core/Cargo.toml",
+    "indexeddb/Cargo.toml",
+  ]) {
+    replace(manifest, /^version = "[^"]+"/m, `version = "${version}"`);
+    if (manifest !== "storage-core/Cargo.toml")
+      replace(
+        manifest,
+        /(polymorfa-storage-core = \{ version = )"=[^"]+"/,
+        `$1"=${version}"`,
+      );
+    if (manifest !== "Cargo.toml") {
+      replace(
+        manifest,
+        /^include = \[(.*)\]$/m,
+        `include = [$1, "release-contract.json"]`,
+      );
+      copyFileSync(
+        receiptPath,
+        join(pkg, manifest.replace("Cargo.toml", "release-contract.json")),
+      );
+    }
+  }
 } else {
-  replace(
-    "src/Polymorfa.Sdk/Polymorfa.Sdk.csproj",
-    /<Version>[^<]+<\/Version>/,
-    `<Version>${version}</Version>`,
-  );
+  // Polymorfa.Sdk and nine storage packages share one accepted version; their
+  // project references become package dependencies on that exact version.
+  for (const { name: project } of dotnetPackages)
+    replace(
+      `src/${project}/${project}.csproj`,
+      /<Version>[^<]+<\/Version>/,
+      `<Version>${version}</Version>`,
+    );
   replace(
     "src/Polymorfa.Sdk/Configuration.cs",
     /const string Version = "[^"]+"/,
