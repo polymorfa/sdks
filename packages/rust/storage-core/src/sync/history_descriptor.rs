@@ -16,6 +16,9 @@ fn integer(v: &Value) -> bool {
     v.as_f64()
         .is_some_and(|n| n.is_finite() && n >= 0.0 && n.fract() == 0.0)
 }
+fn fields(m: &serde_json::Map<String, Value>, allowed: &[&str]) -> bool {
+    m.keys().all(|key| allowed.contains(&key.as_str()))
+}
 fn datetime(v: &Value) -> bool {
     let Some(s) = v.as_str() else { return false };
     if !s.is_ascii() || !s.ends_with('Z') || s.len() < 17 || s.as_bytes()[10] != b'T' {
@@ -61,11 +64,28 @@ fn datetime(v: &Value) -> bool {
     }
     true
 }
-/// Known fields match the producer projection; unrelated forward fields stay raw.
+/// Descriptor bodies match the strict producer projection. Other events stay raw.
 pub(super) fn validate(p: &Value) -> StorageResult<()> {
     let valid = || -> Option<()> {
         let m = p.as_object()?;
-        if p["delivery"] != "descriptor"
+        if !fields(
+            m,
+            &[
+                "delivery",
+                "whatsapp_ids",
+                "original_whatsapp_ids",
+                "whatsapp_id",
+                "original_whatsapp_id",
+                "syncType",
+                "fileLength",
+                "chunkOrder",
+                "progress",
+                "oldestMessageAt",
+                "peerDataRequestSessionId",
+                "media",
+                "inline",
+            ],
+        ) || p["delivery"] != "descriptor"
             || !ids(&p["whatsapp_ids"])
             || !text(&p["syncType"], 1, usize::MAX)
             || !integer(&p["fileLength"])
@@ -98,7 +118,17 @@ pub(super) fn validate(p: &Value) -> StorageResult<()> {
         }
         if let Some(d) = m.get("media") {
             let d = d.as_object()?;
-            if d.get("type")? != "md-msg-hist"
+            if !fields(
+                d,
+                &[
+                    "type",
+                    "directPath",
+                    "mediaKey",
+                    "fileSha256",
+                    "fileEncSha256",
+                    "encHandle",
+                ],
+            ) || d.get("type")? != "md-msg-hist"
                 || ["directPath", "mediaKey", "fileSha256", "fileEncSha256"]
                     .iter()
                     .any(|k| !text(d.get(*k).unwrap_or(&Value::Null), 1, usize::MAX))
@@ -108,7 +138,9 @@ pub(super) fn validate(p: &Value) -> StorageResult<()> {
             }
         } else {
             let d = p["inline"].as_object()?;
-            if d.get("encoding")? != "zlib-base64-protobuf" || !text(d.get("data")?, 1, usize::MAX)
+            if !fields(d, &["encoding", "data"])
+                || d.get("encoding")? != "zlib-base64-protobuf"
+                || !text(d.get("data")?, 1, usize::MAX)
             {
                 return None;
             }

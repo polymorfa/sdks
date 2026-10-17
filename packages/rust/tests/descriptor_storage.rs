@@ -270,6 +270,8 @@ impl Drop for Peer {
 struct Observed<'a> {
     native: NativeStorageEventSource<'a>,
     storage: &'a Storage,
+    adapter: Arc<MemoryAdapter>,
+    content: bool,
 }
 impl StorageEventSource for Observed<'_> {
     fn stream(&self, p: StorageStreamParams) -> StorageResult<StorageEventStream<'_>> {
@@ -289,6 +291,11 @@ impl StorageEventSource for Observed<'_> {
                     .unwrap()
                     .cursor,
                 "descriptor-cursor"
+            );
+            assert!(!self.adapter.rows(Entity::HistoryProgress).is_empty());
+            assert_eq!(
+                self.adapter.rows(Entity::Messages).len(),
+                usize::from(self.content)
             );
             self.native.acknowledge(item).await
         })
@@ -348,6 +355,8 @@ async fn actual_native_http_sse_manual_ack_resume_and_failure_order() {
                     RequestOptions::default(),
                 ),
                 storage: &s,
+                adapter: a.clone(),
+                content: matches!(mode, "full" | "conflict" | "ack-error"),
             };
             let mut d = decoder(mode);
             if mode == "conflict" {
@@ -423,6 +432,7 @@ async fn actual_native_http_sse_manual_ack_resume_and_failure_order() {
                 a.rows(Entity::Messages).len(),
                 usize::from(matches!(mode, "full" | "conflict" | "ack-error"))
             );
+            assert_eq!(!a.rows(Entity::HistoryProgress).is_empty(), !failed);
             let saved = s.checkpoint("*", "events").await.unwrap().map(|v| v.cursor);
             assert_eq!(
                 saved.as_deref(),
@@ -467,5 +477,43 @@ async fn actual_native_http_sse_manual_ack_resume_and_failure_order() {
                 assert_eq!(state["acks"], 2);
             }
         }
+    }
+}
+
+#[tokio::test]
+async fn raw_unprojected_descriptor_fields_fail_before_writes() {
+    let f = fixture();
+    for branch in ["top", "inline", "media"] {
+        let a = Arc::new(MemoryAdapter::new());
+        let s = Storage::new(a.clone(), Default::default()).unwrap();
+        let mut payload = f[if branch == "media" { "media" } else { "inline" }].clone();
+        if branch == "top" {
+            payload["unprojected"] = json!(true);
+        } else {
+            payload[branch]["unprojected"] = json!(true);
+        }
+        let e = StorageEvent {
+            id: "event".into(),
+            session: "session".into(),
+            timestamp: "2026-10-17T00:00:00Z".into(),
+            event: "history.sync".into(),
+            payload,
+        };
+        assert!(
+            apply_event(
+                &s,
+                &e,
+                ApplyEventOptions {
+                    history_descriptor_mode: HistoryDescriptorMode::MetadataOnly,
+                    ..Default::default()
+                }
+            )
+            .await
+            .is_err(),
+            "unprojected {branch} consumed"
+        );
+        assert!(!s.has_event("session", "event").await.unwrap());
+        assert!(a.rows(Entity::HistoryProgress).is_empty());
+        assert!(a.rows(Entity::Messages).is_empty());
     }
 }
