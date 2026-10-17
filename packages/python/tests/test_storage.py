@@ -541,6 +541,71 @@ def test_d1_rejects_wrong_principal_or_short_secret(secret):
         D1BridgeAdapter("https://customer.example", secret, authority="customer")
 
 
+@pytest.mark.parametrize(
+    "secret",
+    [
+        prefix + "synthetic-fixture-value-0123456789"
+        for prefix in [
+            "pmfa_",
+            "pmfa_pt_",
+            "pmfa_ct_",
+            "pmfa_ls_",
+            "pmfa_at_",
+            "pmfa_wst_",
+            "pmfa_sd_",
+        ]
+    ]
+    + ["pmfa_" + "x" * 251, "x" * 31, "x" * 257],
+)
+async def test_d1_reserved_or_out_of_range_secret_sends_no_request(secret):
+    calls = []
+    transport = httpx.MockTransport(lambda request: calls.append(request) or httpx.Response(500))
+    with pytest.raises(ConfigurationError):
+        await d1_bridge_adapter(
+            "https://customer.example",
+            secret,
+            authority="customer",
+            http_transport=transport,
+        )
+    assert calls == []
+
+
+@pytest.mark.parametrize(
+    "secret",
+    [
+        "x" * 32,
+        "x" * 256,
+        "PMFA_uppercase-is-not-reserved-0123456789",
+        "xpmfa_not-a-prefix-fixture-0123456789",
+    ],
+)
+async def test_d1_independent_secret_completes_signed_handshake(secret):
+    def handler(request):
+        nonce = request.headers["Polymorfa-Storage-Nonce"]
+        assert request.headers["Authorization"] == "Bearer " + secret
+        data = json.loads(BRIDGE["response"]["rawBody"])
+        raw = json.dumps(data, separators=(",", ":")).encode()
+        signature = hmac.new(secret.encode(), nonce.encode() + b".200." + raw, hashlib.sha256)
+        return httpx.Response(
+            200,
+            content=raw,
+            headers={
+                "Polymorfa-Storage-Nonce": nonce,
+                "Polymorfa-Storage-Signature": "v1=" + signature.hexdigest(),
+            },
+        )
+
+    native = await d1_bridge_adapter(
+        "https://customer.example",
+        secret,
+        authority=BRIDGE["authority"],
+        table_prefix=BRIDGE["tablePrefix"],
+        http_transport=httpx.MockTransport(handler),
+    )
+    assert native.capabilities.atomic_commit
+    await native.close()
+
+
 def test_canonical_numbers_and_utf16_order_match_ecmascript():
     assert (
         canonical_json([1e-7, 1e-6, 1e20, 1e21, 1.0000000000000001e18, -0.0])
