@@ -15,6 +15,8 @@ pub struct D1BridgeOptions {
     pub base_url: String,
     pub authority: String,
     pub table_prefix: String,
+    /// Independent 32-256 visible ASCII application secret, never a Polymorfa
+    /// credential; the reserved `pmfa_` prefix is rejected before any request.
     pub application_secret: String,
     pub timeout: Duration,
     pub configure_http:
@@ -64,6 +66,7 @@ impl D1BridgeAdapter {
             || !valid_name(&options.authority, false)
             || !valid_name(&options.table_prefix, true)
             || !(32..=256).contains(&options.application_secret.len())
+            || options.application_secret.starts_with("pmfa_")
             || !options
                 .application_secret
                 .bytes()

@@ -359,3 +359,88 @@ async fn authenticated_but_wrong_identity_capabilities_nonce_and_body_are_reject
         server.await.unwrap();
     }
 }
+/// Serves signed handshakes keyed by the bearer the client sent, counting every connection.
+async fn handshake_server() -> (
+    String,
+    Arc<std::sync::atomic::AtomicUsize>,
+    tokio::task::JoinHandle<()>,
+) {
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let url = format!("http://{}/", listener.local_addr().unwrap());
+    let calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+    let counted = calls.clone();
+    let server = tokio::spawn(async move {
+        loop {
+            let Ok((mut socket, _)) = listener.accept().await else {
+                return;
+            };
+            counted.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+            let mut raw = Vec::new();
+            loop {
+                let mut b = [0];
+                if socket.read(&mut b).await.unwrap() == 0 {
+                    break;
+                }
+                raw.push(b[0]);
+                if raw.ends_with(b"\r\n\r\n") {
+                    break;
+                }
+            }
+            let text = String::from_utf8(raw).unwrap();
+            let header = |name: &str| {
+                text.lines()
+                    .find_map(|l| l.strip_prefix(name))
+                    .unwrap()
+                    .to_owned()
+            };
+            let nonce = header("polymorfa-storage-nonce: ");
+            let secret = header("authorization: Bearer ");
+            let body = json!({"contract":"polymorfa-d1-storage-v1","schemaVersion":2,"authority":"fixture-customer-a","tablePrefix":"bridge_a_","data":{"atomicCommit":true,"maxCommitSize":50,"maxGetSize":1000,"maxQuerySize":1000,"maxBodyBytes":8388608,"conditionalDeletes":true,"setupAllowed":false}}).to_string();
+            let mut mac = Hmac::<Sha256>::new_from_slice(secret.as_bytes()).unwrap();
+            mac.update(format!("{nonce}.200.{body}").as_bytes());
+            let signature = format!("v1={}", hex::encode(mac.finalize().into_bytes()));
+            let response=format!("HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nPolymorfa-Storage-Nonce: {nonce}\r\nPolymorfa-Storage-Signature: {signature}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",body.len());
+            socket.write_all(response.as_bytes()).await.unwrap();
+        }
+    });
+    (url, calls, server)
+}
+#[tokio::test]
+async fn reserved_or_out_of_range_application_secrets_send_no_request() {
+    let (url, calls, server) = handshake_server().await;
+    let with = |secret: String| {
+        D1BridgeOptions::new(url.as_str(), "fixture-customer-a", "bridge_a_", secret)
+    };
+    let mut rejected: Vec<String> = [
+        "pmfa_",
+        "pmfa_pt_",
+        "pmfa_ct_",
+        "pmfa_ls_",
+        "pmfa_at_",
+        "pmfa_wst_",
+        "pmfa_sd_",
+    ]
+    .iter()
+    .map(|p| format!("{p}synthetic-fixture-value-0123456789"))
+    .collect();
+    rejected.extend([
+        format!("pmfa_{}", "x".repeat(251)),
+        "x".repeat(31),
+        "x".repeat(257),
+    ]);
+    for secret in rejected {
+        assert!(D1BridgeAdapter::connect(with(secret)).await.is_err());
+    }
+    assert_eq!(calls.load(std::sync::atomic::Ordering::SeqCst), 0);
+    for secret in [
+        "x".repeat(32),
+        "x".repeat(256),
+        "PMFA_uppercase-is-not-reserved-0123456789".into(),
+        "xpmfa_not-a-prefix-fixture-0123456789".into(),
+    ] {
+        let adapter = D1BridgeAdapter::connect(with(secret)).await.unwrap();
+        assert!(adapter.capabilities().atomic_commit);
+    }
+    assert_eq!(calls.load(std::sync::atomic::Ordering::SeqCst), 4);
+    server.abort();
+}
