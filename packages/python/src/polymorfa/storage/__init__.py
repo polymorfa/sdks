@@ -44,6 +44,7 @@ from .engine import (
     create_storage,
 )
 from .firestore import FirestoreAdapter, firestore_adapter
+from .history_descriptor import HistoryDescriptorMode
 from .memory import MemoryAdapter, memory_adapter
 from .mongodb import MongodbAdapter, mongodb_adapter
 from .reduce_events import STORED_EVENT_TYPES, ack_status, reduce_event
@@ -71,6 +72,7 @@ from .sql import (
 from .sqlite import SqliteAdapter, schema_statements, sqlite_adapter
 from .supabase import supabase_preset
 from .sync import (
+    HistoryDescriptorDecoder,
     StoragePayloadUnavailableError,
     StorageStreamGapError,
     StorageSync,
@@ -99,6 +101,8 @@ __all__ = [
     "EntityName",
     "FieldWrite",
     "FirestoreAdapter",
+    "HistoryDescriptorDecoder",
+    "HistoryDescriptorMode",
     "HistoryIdentityIndex",
     "HistoryKeys",
     "HistoryMessageIdentity",

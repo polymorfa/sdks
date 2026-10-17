@@ -671,3 +671,37 @@ by an asyncio task during those calls. Authentication still completes before
 compressed/protobuf parsing. Signed archive storage controls use an application
 projection; descriptor dispatch and generic full-schema storage remain separate.
 Local package tests do not establish registry publication or live availability.
+
+### Descriptor history storage
+
+`decode_history` remains archive-only, with the same event argument and nullable
+progress-only result. Use the separate `decode_history_descriptor` callback for
+projected media/inline descriptors. It receives the validated public descriptor
+and original event and returns a non-null mapping or generated `HistorySync`.
+
+```python
+async def decode_descriptor(descriptor, event):
+    if "inline" in descriptor:
+        return await download_history_chunk(HistoryInlinePayload(descriptor["inline"]["data"]))
+    return await download_decode_and_project_authorized_media(descriptor, event)
+
+
+handle = storage_webhook_handler(storage, decode_history_descriptor=decode_descriptor)
+```
+
+Import the history helpers from `polymorfa.history` and the handler from
+`polymorfa.storage`. The application defines the media callback and owns authorized
+access, full-schema projection and key custody. Storage never downloads media
+implicitly. Default `history_descriptor_mode="decode"` refuses missing, null,
+failed or invalid decoding before content, progress, marker, checkpoint or ACK.
+A legitimate empty mapping is allowed. Descriptor callback errors are sanitized.
+
+Explicit `history_descriptor_mode="metadata-only"` validates and consumes progress
+and the event marker, skips every decoder, then permits cursor/ACK advancement.
+It deduplicates the event; adding a decoder later cannot import it through ordinary
+replay. No automatic backfill or marker deletion is provided. Valid duplicates
+skip decoders even when their configuration changes. Notification IDs never map
+individual messages; existing native `wa:` fallback keys retain their joining
+limits. Content/marker commit precedes checkpoint CAS and manual ACK. ACK failure
+leaves committed data intact. Archive and Cloud behavior remain unchanged. This
+change establishes local package behavior, not registry or deployed availability.
