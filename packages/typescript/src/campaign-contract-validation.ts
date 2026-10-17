@@ -418,6 +418,7 @@ export function validateRecipientExport(
         "blocked_by_safety",
         "send_failed",
         "missing_variable",
+        "frequency_cap",
         "other",
       ],
       "params.reason",

@@ -884,3 +884,24 @@
 - Aligned call signaling and media behavior with the `voip-v2` implementation.
 
 This is a Git development channel. No npm package has been published.
+
+## Campaign contact frequency caps (beta)
+
+`client.campaigns.getFrequencyCap()` reads team limits and their revision.
+`client.campaigns.updateFrequencyCap({ maxPer24Hours: 2, maxPer7Days: 5, revision })`
+replaces both windows. Send both limits as null to remove them. A stale revision
+raises `PolymorfaConflictError`; read and reconcile before trying again. A new
+limit requires beta access and can return `403 feature_unavailable`.
+Campaign create/update accepts `frequencyCap`; null removes a campaign cap.
+Recipient reads expose `failureReason` and accept `reason: "frequency_cap"`.
+Analytics adds `frequencyCap.skippedRecipientCount`. Raising limits never retries
+settled skips. `contracts/campaign-frequency-cap.json` pins the merged API source;
+package publication and API availability remain separate release gates.
+
+## Unreleased: audience segments and drip sequences
+
+- Add organization-only audience segment CRUD, observed revisions and count previews.
+- Add segment campaign selection and frozen snapshot reads.
+- Add partial drip settings, enrollment, pause/enrollment reads and step analytics types.
+- Bind focused contracts to merged API `f46ebd5162453e812dafa76ce02b420ddabe6921`.
+  Package publication and matching environment acceptance remain pending.

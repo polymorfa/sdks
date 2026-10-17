@@ -4,6 +4,13 @@ import type {
   CampaignRecipientFailureReason,
   SignalCustodyMode,
 } from "../campaign-contracts.js";
+import type {
+  CampaignDrip,
+  CampaignDripInput,
+  CampaignDripPatch,
+  CampaignDripStats,
+  CampaignSegmentSnapshot,
+} from "./campaign-drip.js";
 /** Exact observed provider references; at least one provider is known. */
 export type WhatsAppMessageIds =
   | { readonly linked_devices: string; readonly official_api?: string }
@@ -284,6 +291,11 @@ export interface CampaignFollowUpReport {
 
 /** Project-scoped campaign summary returned by the Messaging API. */
 export interface Campaign {
+  readonly drip?: CampaignDrip | null;
+  readonly enrollmentOpen?: boolean | null;
+  readonly pauseReason?: string | null;
+  readonly segmentId?: string | null;
+  readonly segmentSnapshot?: CampaignSegmentSnapshot | null;
   readonly id: string;
   readonly name: string;
   /** The pinned contract deliberately leaves campaign states forward-compatible. */
@@ -304,6 +316,7 @@ export interface Campaign {
   readonly updatedAt: number;
   /** Local hours the campaign may send in, or null when sending is unrestricted. */
   readonly sendWindow: CampaignSendWindow | null;
+  readonly frequencyCap?: CampaignFrequencyCap | null;
   /** Additional live repository fields omitted from the pinned OpenAPI schema. */
   readonly composerBlueprint?: unknown;
   readonly messages?: unknown;
@@ -374,7 +387,19 @@ export interface CampaignSendWindow {
 // Both names were exported on the integration branches.
 export type CampaignWeekday = CampaignSendWindowDay;
 
+/** Rolling per-contact limits. Null means no additional limit for that window. */
+export interface CampaignFrequencyCap {
+  /** 1..50; cannot exceed the weekly limit when both are set. */
+  readonly maxPer24Hours: number | null;
+  /** 1..200. */
+  readonly maxPer7Days: number | null;
+}
+
+export type { CampaignRecipientFailureReason } from "../campaign-contracts.js";
+
 export interface CampaignAnalytics {
+  readonly drip?: CampaignDripStats | null;
+  readonly frequencyCap?: { readonly skippedRecipientCount: number };
   readonly campaignId: string;
   readonly recipientCount: number;
   readonly sentCount: number;
@@ -394,6 +419,7 @@ export interface CampaignAnalytics {
 }
 
 export interface CreateCampaignRequest {
+  readonly drip?: CampaignDripInput | null;
   readonly name: string;
   readonly variableMapping?: CampaignVariableMapping;
   readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
@@ -404,6 +430,8 @@ export interface CreateCampaignRequest {
   readonly scheduledAt?: number;
   /** When the campaign may send; null or omitted sends at any time. */
   readonly sendWindow?: CampaignSendWindowRequest | null;
+  /** Beta. A stricter limit than the team cap; null removes the campaign cap. */
+  readonly frequencyCap?: CampaignFrequencyCap | null;
   /**
    * Up to 1,000 recipients to queue with the draft. Invalid entries reject the
    * whole request; use `campaigns.addRecipients` for partial acceptance.
@@ -456,11 +484,13 @@ export interface CampaignRecipient {
   readonly variantKey: string | null;
   readonly status: CampaignRecipientStatus;
   readonly attempts: number;
+  /** Normalized PII-free failure code; never raw provider error text. */
   readonly failureReason: CampaignRecipientFailureReason | null;
+  /** Number of accepted sequence messages; delivery timestamps below describe step 0. */
   readonly messagesSent: number;
   readonly nextMessageAt: number | null;
+  /** Includes replied, link_clicked, opted_out and open-ended send failures. */
   readonly sequenceError: string | null;
-  /** Normalized PII-free failure code; never raw provider error text. */
   readonly lastError: string | null;
   readonly externalMessageId: string | null;
   /** Epoch milliseconds, or null while the transition has not happened. */
@@ -521,6 +551,8 @@ interface UpdateCampaignChanges {
   readonly templateId?: string | null;
   readonly variableMapping?: CampaignVariableMapping | null;
   readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
+
+  readonly drip?: CampaignDripPatch | null;
   readonly name?: string;
   readonly recipientListId?: string | null;
   readonly senderConfig?: Readonly<Record<string, unknown>>;
@@ -531,6 +563,8 @@ interface UpdateCampaignChanges {
    * paused edit requires in-flight sends to have settled.
    */
   readonly sendWindow?: CampaignSendWindowRequest | null;
+  /** Beta. A stricter limit than the team cap; null removes the campaign cap. */
+  readonly frequencyCap?: CampaignFrequencyCap | null;
   /** Replaces the weighted alternatives; null clears them. Only an unlaunched draft. */
   readonly messageVariations?: readonly CampaignMessageVariation[] | null;
   /** Replaces the A/B variants; null with a null strategy makes a broadcast. Only an unlaunched draft. */
@@ -548,6 +582,10 @@ export type UpdateCampaignRequest =
     })
   | (UpdateCampaignChanges & {
       readonly trackedLinks: readonly CampaignTrackedLink[] | null;
+    })
+  | (UpdateCampaignChanges & { readonly drip: CampaignDripPatch | null })
+  | (UpdateCampaignChanges & {
+      readonly frequencyCap: CampaignFrequencyCap | null;
     })
   | (UpdateCampaignChanges & { readonly name: string })
   | (UpdateCampaignChanges & { readonly recipientListId: string | null })

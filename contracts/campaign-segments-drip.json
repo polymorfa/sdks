@@ -1,0 +1,2708 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "f46ebd5162453e812dafa76ce02b420ddabe6921",
+  "sources": {
+    "messaging": {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sourceSha256": "a1e4538d57a47169539d4a3254585df473d23da46fd67e89dfbf8aacaeff8a6b",
+      "schemas": {
+        "CampaignDrip": {
+          "type": "object",
+          "nullable": true,
+          "properties": {
+            "enrollment": {
+              "type": "string",
+              "enum": ["audience", "continuous"],
+              "description": "Select `audience` for contacts present at launch. Select `continuous` to also accept contacts through the enrollment endpoint while the campaign is running or paused. Setting a continuous drip back to `audience` closes enrollment; the campaign completes after all enrolled contacts finish."
+            },
+            "exitOnReply": {
+              "type": "boolean",
+              "description": "When true, a contact who replies to the sending number gets no further steps."
+            },
+            "exitOnLinkClick": {
+              "type": "boolean",
+              "description": "When true, a GET request to one of the campaign's tracked links stops the contact's remaining steps. HEAD requests do not count. GET requests from link previews and security scanners also count and do not prove that a person clicked."
+            }
+          },
+          "required": ["enrollment", "exitOnReply", "exitOnLinkClick"],
+          "description": "Beta drip settings; null for a campaign that is not a drip."
+        },
+        "CampaignDripInput": {
+          "type": "object",
+          "nullable": true,
+          "properties": {
+            "enrollment": {
+              "type": "string",
+              "enum": ["audience", "continuous"],
+              "default": "audience",
+              "description": "Select `audience` for contacts present at launch. Select `continuous` to also accept contacts through the enrollment endpoint while the campaign is running or paused. Setting a continuous drip back to `audience` closes enrollment; the campaign completes after all enrolled contacts finish."
+            },
+            "exitOnReply": {
+              "type": "boolean",
+              "default": true,
+              "description": "When true, a contact who replies to the sending number gets no further steps."
+            },
+            "exitOnLinkClick": {
+              "type": "boolean",
+              "default": false,
+              "description": "When true, a GET request to one of the campaign's tracked links stops the contact's remaining steps. HEAD requests do not count. GET requests from link previews and security scanners also count and do not prove that a person clicked."
+            }
+          },
+          "additionalProperties": false,
+          "description": "Beta access is required. Defaults to audience enrollment, exit on reply true and exit on link open false. Null creates an ordinary campaign."
+        },
+        "CampaignDripPatch": {
+          "type": "object",
+          "nullable": true,
+          "properties": {
+            "enrollment": {
+              "type": "string",
+              "enum": ["audience", "continuous"],
+              "description": "Select `audience` for contacts present at launch. Select `continuous` to also accept contacts through the enrollment endpoint while the campaign is running or paused. Setting a continuous drip back to `audience` closes enrollment; the campaign completes after all enrolled contacts finish."
+            },
+            "exitOnReply": {
+              "type": "boolean",
+              "description": "When true, a contact who replies to the sending number gets no further steps."
+            },
+            "exitOnLinkClick": {
+              "type": "boolean",
+              "description": "When true, a GET request to one of the campaign's tracked links stops the contact's remaining steps. HEAD requests do not count. GET requests from link previews and security scanners also count and do not prove that a person clicked."
+            }
+          },
+          "additionalProperties": false,
+          "description": "Beta. Omitted fields preserve stored settings; new drip settings default to audience enrollment, exit on reply true and exit on link open false. Null makes the draft an ordinary campaign. Only an unlaunched draft can change settings, except closing continuous enrollment with unchanged exit flags. A PATCH containing only that close is allowed without beta access."
+        },
+        "CampaignDripStats": {
+          "type": "object",
+          "nullable": true,
+          "properties": {
+            "enrollment": {
+              "type": "string",
+              "enum": ["audience", "continuous"]
+            },
+            "enrolled": {
+              "type": "integer",
+              "description": "Contacts in the drip, from the audience and the enrollment endpoint."
+            },
+            "enrolledByApi": {
+              "type": "integer",
+              "description": "Contacts added through the enrollment endpoint."
+            },
+            "active": {
+              "type": "integer",
+              "description": "Contacts still owed a step."
+            },
+            "completed": {
+              "type": "integer",
+              "description": "Contacts sent every step."
+            },
+            "exited": {
+              "type": "integer",
+              "description": "Contacts who left early: a reply, an opt-out or an opened tracked link."
+            },
+            "steps": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/CampaignDripStepStats"
+              }
+            }
+          },
+          "required": [
+            "enrollment",
+            "enrolled",
+            "enrolledByApi",
+            "active",
+            "completed",
+            "exited",
+            "steps"
+          ],
+          "description": "Drip results by step; null for a campaign that is not a drip."
+        },
+        "CampaignDripStepStats": {
+          "type": "object",
+          "properties": {
+            "step": {
+              "type": "integer",
+              "description": "Step position, from 0."
+            },
+            "entered": {
+              "type": "integer",
+              "description": "Contacts who reached this step: its delay started. Every contact enters step 0."
+            },
+            "waiting": {
+              "type": "integer",
+              "description": "Contacts waiting for this step or being sent it now."
+            },
+            "sent": {
+              "type": "integer"
+            },
+            "delivered": {
+              "type": "integer"
+            },
+            "read": {
+              "type": "integer"
+            },
+            "replied": {
+              "type": "integer",
+              "description": "Contacts whose first reply after this step came within 7 days of it, before the next step."
+            },
+            "exited": {
+              "type": "integer",
+              "description": "Contacts who left the drip while waiting for this step: they replied, opted out or opened a tracked link."
+            },
+            "failed": {
+              "type": "integer",
+              "description": "Contacts whose step could not be sent. Their remaining steps stop."
+            }
+          },
+          "required": [
+            "step",
+            "entered",
+            "waiting",
+            "sent",
+            "delivered",
+            "read",
+            "replied",
+            "exited",
+            "failed"
+          ]
+        },
+        "CampaignEnrollment": {
+          "type": "object",
+          "properties": {
+            "campaignId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "recipientId": {
+              "type": "string",
+              "format": "uuid",
+              "description": "The contact's recipient ID in this campaign."
+            },
+            "phone": {
+              "type": "string",
+              "description": "The contact, in E.164 format."
+            },
+            "created": {
+              "type": "boolean",
+              "description": "False when the phone was already in this drip. Nothing changed, and a contact who finished or left is not enrolled again."
+            },
+            "status": {
+              "type": "string",
+              "description": "Recipient status of the first step: `queued` until sent, or `skipped` for an opted-out phone, which is never sent."
+            },
+            "enrolledAt": {
+              "type": "number",
+              "description": "When the contact joined the drip, in Unix milliseconds."
+            }
+          },
+          "required": [
+            "campaignId",
+            "recipientId",
+            "phone",
+            "created",
+            "status",
+            "enrolledAt"
+          ]
+        },
+        "EnrollCampaignContactRequest": {
+          "type": "object",
+          "properties": {
+            "phone": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "description": "The contact in international format. A phone already in the drip returns its existing enrollment with `created: false`.",
+              "example": "+5511999990000"
+            },
+            "variables": {
+              "type": "object",
+              "additionalProperties": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 1024
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "description": "The contact's variables, at most 50, used to fill the steps.",
+              "maxProperties": 50
+            }
+          },
+          "required": ["phone"],
+          "additionalProperties": false
+        },
+        "EnrollCampaignContactResponse": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "boolean",
+              "enum": [true]
+            },
+            "data": {
+              "$ref": "#/components/schemas/CampaignEnrollment"
+            }
+          },
+          "required": ["success", "data"]
+        }
+      },
+      "fields": {
+        "Campaign.drip": {
+          "$ref": "#/components/schemas/CampaignDrip"
+        },
+        "Campaign.enrollmentOpen": {
+          "type": "boolean",
+          "nullable": true,
+          "description": "Whether the drip is configured for continuous enrollment. Null for a non-drip. Enrollment also requires running or paused status."
+        },
+        "Campaign.pauseReason": {
+          "type": "string",
+          "nullable": true,
+          "description": "Current stored pause reason while paused; null when unavailable, for a manual pause without a reason, or for any other status."
+        },
+        "Campaign.segmentId": {
+          "type": "string",
+          "nullable": true,
+          "description": "Saved audience segment the campaign evaluates at launch, or null. Segments are chosen with a team API key through the Platform API; this field is read-only here."
+        },
+        "Campaign.segmentSnapshot": {
+          "type": "object",
+          "nullable": true,
+          "properties": {
+            "revision": {
+              "type": "integer",
+              "description": "Segment revision that launch evaluated."
+            },
+            "evaluatedAt": {
+              "type": "integer",
+              "description": "Time launch evaluated the segment, in Unix milliseconds."
+            },
+            "matchedCount": {
+              "type": "integer",
+              "description": "Profiles that matched at launch, before opt-outs and withheld consent were removed."
+            }
+          },
+          "required": ["revision", "evaluatedAt", "matchedCount"],
+          "additionalProperties": false,
+          "description": "The segment revision, evaluation time (Unix milliseconds) and matching profile count launch froze; null before a segment launch."
+        },
+        "CampaignAnalytics.drip": {
+          "$ref": "#/components/schemas/CampaignDripStats"
+        },
+        "CreateCampaignRequest.drip": {
+          "$ref": "#/components/schemas/CampaignDripInput"
+        },
+        "UpdateCampaignRequest.drip": {
+          "$ref": "#/components/schemas/CampaignDripPatch"
+        }
+      },
+      "paths": {
+        "/messaging/projects/{projectSlug}/campaigns/{id}/enrollments": {
+          "post": {
+            "operationId": "enrollProjectCampaignContact",
+            "tags": ["Campaigns"],
+            "summary": "Enroll a contact in a drip",
+            "description": "**Required scope:** `campaigns:manage`\n\nBeta. Adds one contact to a running or paused drip whose `drip.enrollment` is `continuous`. The contact starts at the first step, subject to the drip's send window, pacing and caps. Idempotent per phone: a phone already in the drip, including one that finished or left, returns its existing enrollment with `created: false`. An opted-out phone is enrolled as `skipped` and never sent. A team without the drip sequences beta gets `403 feature_unavailable`; a campaign that is not a drip, or a drip that is not accepting enrollments, answers `409 state_conflict`.",
+            "security": [
+              {
+                "BearerAuth": []
+              }
+            ],
+            "x-required-scope": "campaigns:manage",
+            "parameters": [
+              {
+                "schema": {
+                  "type": "string"
+                },
+                "required": true,
+                "name": "projectSlug",
+                "in": "path"
+              },
+              {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "required": true,
+                "name": "id",
+                "in": "path"
+              }
+            ],
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/EnrollCampaignContactRequest"
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "OK",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/EnrollCampaignContactResponse"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "400": {
+                "description": "Bad request \u2014 request body or params failed validation",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "invalid_request_error",
+                        "code": "invalid_parameter",
+                        "message": "Correct the invalid request field.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "401": {
+                "description": "Missing or invalid authentication token",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "authentication_error",
+                        "code": "invalid_credential",
+                        "message": "Supply a valid credential.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "403": {
+                "description": "Authenticated but not permitted (missing scope or rule violation)",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "permission_error",
+                        "code": "permission_denied",
+                        "message": "The credential does not have access to this resource.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "404": {
+                "description": "Resource not found",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "invalid_request_error",
+                        "code": "resource_not_found",
+                        "message": "The resource is unavailable to this caller.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "409": {
+                "description": "`state_conflict`: the campaign is not a drip, or the drip does not use continuous enrollment, has not started, or has ended",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "conflict_error",
+                        "code": "state_conflict",
+                        "message": "The request conflicts with the resource state.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "500": {
+                "description": "Internal server error",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "api_error",
+                        "code": "internal_error",
+                        "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              }
+            },
+            "x-mint": {
+              "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
+            }
+          }
+        },
+        "/messaging/projects/{projectSlug}/campaigns/{id}/launch": {
+          "post": {
+            "operationId": "launchCampaign",
+            "tags": ["Campaigns"],
+            "summary": "Launch a campaign",
+            "description": "**Required scope:** `campaigns:manage`\n\nStarts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks the saved sender selection against live plans: `402 campaigns_not_entitled` when a selected number is missing or its plan does not include Campaigns, or when an unselected campaign's project has no such number; `400 invalid_parameter` on `senderConfig.sessionIds` when a selected number is not connected or the selection mixes sending types; `400 campaign_throughput_capped` when a requested throughput is above its ceiling. Segment campaigns require a team API key; project tokens answer `403 permission_denied`, and unavailable audience betas answer `403 feature_unavailable`. An audience change during launch answers `409 state_conflict`. Segment evaluation that exceeds its time limit also answers `409 state_conflict`; simplify the rules and retry. A launched campaign whose segment was deleted remains launched and cannot be launched again (`409 state_conflict`). A message that references a `{{link:<key>}}` the campaign does not define, or tracked links on a campaign that would send from Official API numbers, answers `400 invalid_parameter` on `trackedLinks`; tracked links without the campaign link tracking beta answer `403 feature_unavailable`. A drip without a sendable composed message answers `400 invalid_parameter` on `messagesArray`. Saving a draft does not apply this check. The template must be complete and approved on every Cloud API number; every recipient needs a value or fallback for each variable unless `skipMissingVariables` is true. When the team requires approval above a recipient threshold and the launch would send to more recipients, it answers `409 campaign_approval_required`, sends nothing, and records a pending approval request for a team owner or admin. Launching again with the campaign unchanged returns the same request. A launch requested by an AI agent through the hosted MCP server is held the same way, whatever the threshold. The response returns the campaign as it was when the launch was accepted.",
+            "security": [
+              {
+                "BearerAuth": []
+              }
+            ],
+            "x-required-scope": "campaigns:manage",
+            "parameters": [
+              {
+                "schema": {
+                  "type": "string"
+                },
+                "required": true,
+                "name": "projectSlug",
+                "in": "path"
+              },
+              {
+                "schema": {
+                  "type": "string"
+                },
+                "required": true,
+                "name": "id",
+                "in": "path"
+              },
+              {
+                "name": "Idempotency-Key",
+                "in": "header",
+                "required": false,
+                "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again: it returns `409 idempotency_completed` when the original succeeded, or the original server error, with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 255
+                }
+              }
+            ],
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/LaunchCampaignRequest"
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "OK",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/LaunchCampaignResponse"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "400": {
+                "description": "`invalid_parameter` naming the field: an unconnected or mixed sender selection (`senderConfig.sessionIds`), an incomplete or authentication template (`templateId`), a composed attachment without a public URL, or a `{{link:<key>}}` the campaign does not define or tracked links on Official API numbers (`trackedLinks`). `campaign_throughput_capped` when a requested throughput is above its ceiling; `template_not_approved` when a Cloud API number has not approved the template.",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "invalid_request_error",
+                        "code": "invalid_parameter",
+                        "message": "Correct the invalid request field.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "401": {
+                "description": "Missing or invalid authentication token",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "authentication_error",
+                        "code": "invalid_credential",
+                        "message": "Supply a valid credential.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "402": {
+                "description": "`campaigns_not_entitled`: a selected number is missing or its plan does not include Campaigns, or the project has no number on such a plan. Drafts are saved on every plan.",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "permission_error",
+                        "code": "campaigns_not_entitled",
+                        "message": "This number\u2019s plan does not include Campaigns.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#campaigns-not-entitled"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "403": {
+                "description": "`permission_denied`: a project token attempted to launch a segment campaign; use a team API key or signed-in dashboard session. `feature_unavailable`: either audience beta is unavailable for a segment campaign, or the campaign has tracked links and its link tracking beta is unavailable. `bansafe_org_suspended` while the team is suspended.",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "permission_error",
+                        "code": "permission_denied",
+                        "message": "The credential does not have access to this resource.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "404": {
+                "description": "Resource not found",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "invalid_request_error",
+                        "code": "resource_not_found",
+                        "message": "The resource is unavailable to this caller.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "409": {
+                "description": "`campaign_approval_required`: the launch is held for a team owner or admin and nothing was sent; the message names the approval request. `state_conflict`: the campaign is not a draft, is already launched and waiting for its start time, its sending numbers or audience changed during launch, or segment evaluation exceeded its time limit (simplify the rules and retry). A launched campaign whose segment was deleted cannot be launched again.. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "conflict_error",
+                        "code": "campaign_approval_required",
+                        "message": "This request needs approval from a team owner or admin. Nothing was sent.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#campaign-approval-required"
+                    }
+                  }
+                },
+                "headers": {
+                  "Retry-After": {
+                    "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                    "schema": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "Idempotent-Replayed": {
+                    "description": "`true` when this response reports the recorded outcome of an earlier request with the same Idempotency-Key.",
+                    "schema": {
+                      "type": "string",
+                      "enum": ["true"]
+                    }
+                  },
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "422": {
+                "description": "`campaign_variables_missing`: some recipients have no value and no fallback for a variable. The message names the variables and counts the recipients.",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "invalid_request_error",
+                        "code": "campaign_variables_missing",
+                        "message": "A recipient has no value and no fallback for a variable in the campaign content.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#campaign-variables-missing"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "500": {
+                "description": "Internal server error",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "api_error",
+                        "code": "internal_error",
+                        "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "503": {
+                "description": "`service_unavailable`: the selected numbers' plans could not be checked; retry",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/PublicError"
+                    },
+                    "example": {
+                      "error": {
+                        "type": "api_error",
+                        "code": "service_unavailable",
+                        "message": "A required service is unavailable. Check completion before repeating a write.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#service-unavailable"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              }
+            },
+            "x-mint": {
+              "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
+            }
+          }
+        }
+      }
+    },
+    "platform": {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "sourceSha256": "ccb468d7e0540f5f1b0b1e881b8965c54cf51cfbc85ad03606a690af0d3b6096",
+      "schemas": {
+        "AudienceSegment": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "rules": {
+              "$ref": "#/components/schemas/AudienceSegmentRules"
+            },
+            "createdAt": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "updatedAt": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "revision",
+            "rules",
+            "createdAt",
+            "updatedAt"
+          ]
+        },
+        "AudienceSegmentCondition": {
+          "description": "One condition. A condition on a missing or null attribute, or a value of another type, is false.",
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "The profile has this tag.",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": ["tag"]
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": ["contains"]
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1,
+                  "x-max-utf8-bytes": 48,
+                  "description": "1-48 UTF-8 bytes without control characters. The byte limit can be reached before 48 Unicode characters."
+                }
+              },
+              "required": ["field", "operator", "value"]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "The profile has at least one of these tags.",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": ["tag"]
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": ["in"]
+                },
+                "values": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 50,
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "x-max-utf8-bytes": 48,
+                    "description": "1-48 UTF-8 bytes without control characters. The byte limit can be reached before 48 Unicode characters."
+                  }
+                }
+              },
+              "required": ["field", "operator", "values"]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "The profile has at least one tag.",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": ["tag"]
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": ["exists"]
+                }
+              },
+              "required": ["field", "operator"]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "The attribute equals this value, with the same type.",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": ["attribute"]
+                },
+                "name": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,47}$"
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": ["equals"]
+                },
+                "value": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "x-max-utf8-bytes": 256,
+                      "description": "1-256 UTF-8 bytes. The byte limit can be reached before 256 Unicode characters."
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                }
+              },
+              "required": ["field", "name", "operator", "value"]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "The text attribute contains this text, ignoring case.",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": ["attribute"]
+                },
+                "name": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,47}$"
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": ["contains"]
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1,
+                  "x-max-utf8-bytes": 256,
+                  "description": "1-256 UTF-8 bytes. The byte limit can be reached before 256 Unicode characters."
+                }
+              },
+              "required": ["field", "name", "operator", "value"]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "The attribute equals one of these values.",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": ["attribute"]
+                },
+                "name": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,47}$"
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": ["in"]
+                },
+                "values": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 50,
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1,
+                        "x-max-utf8-bytes": 256,
+                        "description": "1-256 UTF-8 bytes. The byte limit can be reached before 256 Unicode characters."
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                }
+              },
+              "required": ["field", "name", "operator", "values"]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "The number attribute is greater or less than this number.",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": ["attribute"]
+                },
+                "name": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,47}$"
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": ["greater_than", "less_than"]
+                },
+                "value": {
+                  "type": "number"
+                }
+              },
+              "required": ["field", "name", "operator", "value"]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "The date attribute is before or after this instant. Both bounds are exclusive.",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": ["attribute"]
+                },
+                "name": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,47}$"
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": ["before", "after"]
+                },
+                "value": {
+                  "type": "string",
+                  "maxLength": 40,
+                  "description": "ISO 8601 date (`YYYY-MM-DD`, read as midnight UTC) or date-time with `Z` or an offset."
+                }
+              },
+              "required": ["field", "name", "operator", "value"]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "The attribute is set and not null.",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": ["attribute"]
+                },
+                "name": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,47}$"
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": ["exists"]
+                }
+              },
+              "required": ["field", "name", "operator"]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "The profile's latest campaign consent assertion has this `allowed` value.",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": ["consent"]
+                },
+                "operator": {
+                  "type": "string",
+                  "enum": ["equals"]
+                },
+                "value": {
+                  "type": "boolean"
+                }
+              },
+              "required": ["field", "operator", "value"]
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "The phone was a recipient of this team campaign with this outcome, with the same meaning as a retargeting audience.",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": ["campaign"]
+                },
+                "campaignId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "outcome": {
+                  "type": "string",
+                  "enum": [
+                    "delivered",
+                    "not_delivered",
+                    "read",
+                    "not_read",
+                    "replied",
+                    "not_replied",
+                    "failed"
+                  ]
+                }
+              },
+              "required": ["field", "campaignId", "outcome"]
+            }
+          ]
+        },
+        "AudienceSegmentPreview": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "matchedCount": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Profiles that match the rules."
+            },
+            "optedOutCount": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Matched profiles whose number is on the team's opt-out list."
+            },
+            "consentWithheldCount": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Matched profiles, not opted out, whose latest consent assertion is `allowed: false`. Launch leaves them out."
+            },
+            "eligibleCount": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Matched profiles a launch now would send to."
+            },
+            "sample": {
+              "type": "array",
+              "maxItems": 5,
+              "description": "Up to five eligible profiles with the phone masked.",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "phone": {
+                    "type": "string",
+                    "description": "Masked phone, for example `+49*******12`."
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": ["phone", "tags"]
+              }
+            },
+            "evaluatedAt": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Evaluation time in Unix milliseconds."
+            }
+          },
+          "required": [
+            "matchedCount",
+            "optedOutCount",
+            "consentWithheldCount",
+            "eligibleCount",
+            "sample",
+            "evaluatedAt"
+          ]
+        },
+        "AudienceSegmentRules": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Groups combined with `all` or `any`. At most 10 groups, 20 conditions per group, 40 conditions, 5 campaign conditions and 16 KiB.",
+          "properties": {
+            "match": {
+              "type": "string",
+              "enum": ["all", "any"]
+            },
+            "groups": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 10,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "match": {
+                    "type": "string",
+                    "enum": ["all", "any"]
+                  },
+                  "negate": {
+                    "type": "boolean",
+                    "description": "Inverts the group's result. Defaults to false."
+                  },
+                  "conditions": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                      "$ref": "#/components/schemas/AudienceSegmentCondition"
+                    }
+                  }
+                },
+                "required": ["match", "conditions"]
+              }
+            }
+          },
+          "required": ["match", "groups"]
+        },
+        "CampaignDrip": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["enrollment", "exitOnReply", "exitOnLinkClick"],
+          "description": "Beta drip settings. Defaults: audience enrollment, exit on reply true, exit on link open false. Opt-outs always stop remaining steps. Cannot combine with a template, A/B variants, weighted alternatives or receipt-timed followUp. Linked-device and test numbers only.",
+          "properties": {
+            "enrollment": {
+              "type": "string",
+              "enum": ["audience", "continuous"],
+              "default": "audience",
+              "description": "Select `audience` for contacts present at launch. Select `continuous` to also accept contacts through the enrollment endpoint while the campaign is running or paused. Setting a continuous drip back to `audience` closes enrollment; the campaign completes after all enrolled contacts finish."
+            },
+            "exitOnReply": {
+              "type": "boolean",
+              "default": true,
+              "description": "When true, a contact who replies to the sending number gets no further steps."
+            },
+            "exitOnLinkClick": {
+              "type": "boolean",
+              "default": false,
+              "description": "When true, a GET request to one of the campaign's tracked links stops the contact's remaining steps. HEAD requests do not count. GET requests from link previews and security scanners also count and do not prove that a person clicked."
+            }
+          }
+        },
+        "CampaignDripInput": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Beta drip settings. Defaults: audience enrollment, exit on reply true, exit on link open false. Opt-outs always stop remaining steps. Cannot combine with a template, A/B variants, weighted alternatives or receipt-timed followUp. Linked-device and test numbers only.",
+          "properties": {
+            "enrollment": {
+              "type": "string",
+              "enum": ["audience", "continuous"],
+              "default": "audience",
+              "description": "Select `audience` for contacts present at launch. Select `continuous` to also accept contacts through the enrollment endpoint while the campaign is running or paused. Setting a continuous drip back to `audience` closes enrollment; the campaign completes after all enrolled contacts finish."
+            },
+            "exitOnReply": {
+              "type": "boolean",
+              "default": true,
+              "description": "When true, a contact who replies to the sending number gets no further steps."
+            },
+            "exitOnLinkClick": {
+              "type": "boolean",
+              "default": false,
+              "description": "When true, a GET request to one of the campaign's tracked links stops the contact's remaining steps. HEAD requests do not count. GET requests from link previews and security scanners also count and do not prove that a person clicked."
+            }
+          }
+        },
+        "CampaignDripPatch": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Partial drip settings. Omitted fields preserve stored settings. When adding drip to an ordinary draft, omitted fields use the create defaults.",
+          "properties": {
+            "enrollment": {
+              "type": "string",
+              "enum": ["audience", "continuous"],
+              "description": "Select `audience` for contacts present at launch. Select `continuous` to also accept contacts through the enrollment endpoint while the campaign is running or paused. Setting a continuous drip back to `audience` closes enrollment; the campaign completes after all enrolled contacts finish."
+            },
+            "exitOnReply": {
+              "type": "boolean",
+              "description": "When true, a contact who replies to the sending number gets no further steps."
+            },
+            "exitOnLinkClick": {
+              "type": "boolean",
+              "description": "When true, a GET request to one of the campaign's tracked links stops the contact's remaining steps. HEAD requests do not count. GET requests from link previews and security scanners also count and do not prove that a person clicked."
+            }
+          }
+        },
+        "CampaignDripStats": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enrollment": {
+              "type": "string",
+              "enum": ["audience", "continuous"]
+            },
+            "enrolled": {
+              "type": "integer"
+            },
+            "enrolledByApi": {
+              "type": "integer"
+            },
+            "active": {
+              "type": "integer"
+            },
+            "completed": {
+              "type": "integer"
+            },
+            "exited": {
+              "type": "integer"
+            },
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "step": {
+                    "type": "integer"
+                  },
+                  "entered": {
+                    "type": "integer"
+                  },
+                  "waiting": {
+                    "type": "integer"
+                  },
+                  "sent": {
+                    "type": "integer"
+                  },
+                  "delivered": {
+                    "type": "integer"
+                  },
+                  "read": {
+                    "type": "integer"
+                  },
+                  "replied": {
+                    "type": "integer"
+                  },
+                  "exited": {
+                    "type": "integer"
+                  },
+                  "failed": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "step",
+                  "entered",
+                  "waiting",
+                  "sent",
+                  "delivered",
+                  "read",
+                  "replied",
+                  "exited",
+                  "failed"
+                ]
+              }
+            }
+          },
+          "required": [
+            "enrollment",
+            "enrolled",
+            "enrolledByApi",
+            "active",
+            "completed",
+            "exited",
+            "steps"
+          ]
+        },
+        "CampaignEnrollment": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "campaignId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "recipientId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "phone": {
+              "type": "string"
+            },
+            "created": {
+              "type": "boolean"
+            },
+            "status": {
+              "type": "string"
+            },
+            "enrolledAt": {
+              "type": "number",
+              "description": "Unix milliseconds."
+            }
+          },
+          "required": [
+            "campaignId",
+            "recipientId",
+            "phone",
+            "created",
+            "status",
+            "enrolledAt"
+          ]
+        },
+        "CampaignSendWindowRange": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "start": {
+              "type": "string",
+              "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$",
+              "description": "Local start time, `HH:MM` in 24-hour time, inclusive.",
+              "example": "09:00"
+            },
+            "end": {
+              "type": "string",
+              "pattern": "^(([01][0-9]|2[0-3]):[0-5][0-9]|24:00)$",
+              "description": "Local end time, `HH:MM` in 24-hour time or `24:00`, exclusive. Must be later than `start`.",
+              "example": "18:00"
+            }
+          },
+          "required": ["start", "end"]
+        },
+        "EnrollCampaignContactRequest": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["phone"],
+          "properties": {
+            "projectId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "phone": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "description": "International phone number."
+            },
+            "variables": {
+              "type": "object",
+              "maxProperties": 50,
+              "additionalProperties": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 1024
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "fields": {
+        "CreatePlatformCampaignRequest.segmentId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Beta. Saved audience segment evaluated once when the campaign launches; the matching profiles become its recipients. Cannot be combined with `recipientListId`. Requires a team API key or the dashboard and the audience segments beta."
+        },
+        "CreatePlatformCampaignRequest.drip": {
+          "nullable": true,
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/CampaignDripInput"
+            }
+          ],
+          "description": "Beta access is required. Defaults to audience enrollment, exit on reply true and exit on link open false. Null creates an ordinary campaign."
+        },
+        "CampaignMessage.delayUnit": {
+          "type": "string",
+          "enum": ["minutes", "hours", "days"],
+          "description": "Display unit. delayAfterSec must be a whole multiple of this unit."
+        },
+        "CampaignMessage.sendWindow": {
+          "type": "object",
+          "nullable": true,
+          "additionalProperties": false,
+          "required": ["days", "hours"],
+          "description": "Drip steps after the first only. Replaces the campaign weekdays and hours for this step, retaining its time zone settings. Without a campaign window, uses the team time zone saved when the drip was configured.",
+          "properties": {
+            "days": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "enum": [
+                  "monday",
+                  "tuesday",
+                  "wednesday",
+                  "thursday",
+                  "friday",
+                  "saturday",
+                  "sunday"
+                ]
+              }
+            },
+            "hours": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 4,
+              "items": {
+                "$ref": "#/components/schemas/CampaignSendWindowRange"
+              }
+            }
+          }
+        },
+        "CampaignMessage.delayAfterSec": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2592000,
+          "description": "A drip allows up to 30 days; other campaigns allow up to 86400 seconds. Minimum seconds between the previous message being accepted by WhatsApp and this message being sent. Ignored on the first message. Pacing, caps and a paused campaign can make the wait longer."
+        },
+        "PlatformCampaignAnalytics.drip": {
+          "nullable": true,
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/CampaignDripStats"
+            }
+          ]
+        },
+        "UpdatePlatformCampaignRequest.drip": {
+          "nullable": true,
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/CampaignDripPatch"
+            }
+          ],
+          "description": "Omitted fields preserve stored settings. Null makes the draft an ordinary campaign. Closing continuous enrollment with unchanged exit flags is allowed without beta access when it is the only change."
+        },
+        "UpdatePlatformCampaignRequest.segmentId": {
+          "type": "string",
+          "format": "uuid",
+          "nullable": true,
+          "description": "Beta. Saved audience segment to evaluate at launch, or null to clear it. Only while the campaign is an unlaunched draft. Setting a segment clears `recipientListId`; sending both answers `400`. Requires a team API key or the dashboard and the audience segments beta."
+        },
+        "PlatformCampaign.drip": {
+          "nullable": true,
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/CampaignDrip"
+            }
+          ]
+        },
+        "PlatformCampaign.enrollmentOpen": {
+          "type": "boolean",
+          "nullable": true,
+          "description": "Whether the drip is configured for continuous enrollment. Null for a non-drip. Enrollment also requires running or paused status."
+        },
+        "PlatformCampaign.pauseReason": {
+          "type": "string",
+          "nullable": true,
+          "description": "Current stored pause reason while paused; null when unavailable, for a manual pause without a reason, or for any other status."
+        },
+        "PlatformCampaign.segmentId": {
+          "type": "string",
+          "format": "uuid",
+          "nullable": true,
+          "description": "Saved audience segment the campaign evaluates at launch, or null."
+        },
+        "PlatformCampaign.segmentSnapshot": {
+          "type": "object",
+          "nullable": true,
+          "additionalProperties": false,
+          "description": "What launch froze from the segment: its revision, the evaluation time in Unix milliseconds and the matching profile count. Null before a segment launch.",
+          "properties": {
+            "revision": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Segment revision that launch evaluated."
+            },
+            "evaluatedAt": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Time launch evaluated the segment, in Unix milliseconds."
+            },
+            "matchedCount": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Profiles that matched at launch, before opt-outs and withheld consent were removed."
+            }
+          },
+          "required": ["revision", "evaluatedAt", "matchedCount"]
+        }
+      },
+      "paths": {
+        "/platform/campaigns/{campaignId}/launch": {
+          "post": {
+            "operationId": "launchPlatformCampaign",
+            "tags": ["campaigns"],
+            "summary": "Launch campaign",
+            "description": "Starts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks the stored sender selection against live plans: `402 campaigns_not_entitled` when a selected number is missing or its plan does not include Campaigns, or when an unselected campaign's project has no such number; `400 invalid_parameter` on `senderConfig.sessionIds` when a selected number is not connected or the selection mixes sending types; `400 campaign_throughput_capped` when a requested throughput is above its ceiling. A segment campaign requires a team API key or signed-in dashboard session; project tokens answer `403 permission_denied`. Both audience betas must be available, otherwise launch answers `403 feature_unavailable`. An audience change while launch is being authorized answers `409 state_conflict`. Segment evaluation that exceeds its time limit also answers `409 state_conflict`; simplify the rules and retry. A launched campaign whose segment was deleted remains launched and cannot be launched again (`409 state_conflict`). A drip without a sendable composed message answers `400 invalid_parameter` on `messagesArray`. Saving a draft does not apply this check. A composed attachment requires a public `media.url` (`400 invalid_parameter`). The template must be complete (`400 invalid_parameter`) and approved on every Cloud API number (`400 template_not_approved`). Every recipient needs a value or fallback for each variable (`422 campaign_variables_missing`); `skipMissingVariables: true` skips those recipients before the first send. A message that references a `{{link:<key>}}` the campaign does not define, or tracked links on a campaign that would send from Official API numbers, answers `400 invalid_parameter` on `trackedLinks`; tracked links without the campaign link tracking beta answer `403 feature_unavailable`. `409` means the campaign is not a draft, is already launched and waiting for its start time, or its sending numbers changed during the launch. When the team requires approval above a recipient threshold and the launch would send to more recipients, a launch by anyone other than a team owner or admin signed in to the console answers `409 campaign_approval_required`, sends nothing, and records a pending approval request that `GET /platform/campaigns/{campaignId}/approvals` lists. Launching again with the campaign unchanged returns the same request. A launch requested by an AI agent through the hosted MCP server is held the same way, whatever the threshold.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+            "x-audience": "public",
+            "x-polymorfa-resource-boundary": "project",
+            "x-excluded-from-public": false,
+            "x-required-scope": "campaigns:manage",
+            "security": [
+              {
+                "ApiKeyAuth": []
+              },
+              {
+                "ConsoleSession": []
+              }
+            ],
+            "parameters": [
+              {
+                "name": "campaignId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              },
+              {
+                "name": "Idempotency-Key",
+                "in": "header",
+                "required": false,
+                "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again: it returns `409 idempotency_completed` when the original succeeded, or the original server error. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 255
+                }
+              }
+            ],
+            "requestBody": {
+              "required": false,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/LaunchPlatformCampaignRequest"
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "Success",
+                "headers": {
+                  "X-Request-Id": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "Stable request correlation identifier."
+                  },
+                  "X-Trace-Id": {
+                    "schema": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{32}$"
+                    },
+                    "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+                  },
+                  "Polymorfa-Version": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "API version applied to this response."
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": true,
+                          "required": ["id", "status", "operationId"],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "draft",
+                                "running",
+                                "paused",
+                                "cancelling",
+                                "cancelled",
+                                "completed",
+                                "failed",
+                                "archived"
+                              ]
+                            },
+                            "operationId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "description": "The operation that carries this lifecycle action."
+                            }
+                          }
+                        }
+                      },
+                      "required": ["data"]
+                    }
+                  }
+                }
+              },
+              "400": {
+                "$ref": "#/components/responses/BadRequest"
+              },
+              "401": {
+                "$ref": "#/components/responses/Unauthorized"
+              },
+              "402": {
+                "$ref": "#/components/responses/PaymentRequired"
+              },
+              "403": {
+                "$ref": "#/components/responses/CampaignLaunchForbidden"
+              },
+              "404": {
+                "$ref": "#/components/responses/NotFound"
+              },
+              "409": {
+                "$ref": "#/components/responses/CampaignLaunchConflict"
+              },
+              "422": {
+                "$ref": "#/components/responses/CampaignVariablesMissing"
+              },
+              "503": {
+                "$ref": "#/components/responses/CampaignEligibilityUnavailable"
+              }
+            }
+          }
+        },
+        "/platform/campaigns/{campaignId}/enrollments": {
+          "post": {
+            "operationId": "enrollCampaignContact",
+            "tags": ["campaigns"],
+            "summary": "Enroll a contact in a drip",
+            "description": "Beta. Adds one contact to a running or paused continuous drip. Requires campaigns:manage and the drip beta; otherwise 403 feature_unavailable. Idempotent per phone, including contacts who completed or exited: returns created=false without changing variables. Opted-out contacts are skipped. A campaign not accepting enrollment answers 409 state_conflict.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+            "x-audience": "public",
+            "x-polymorfa-resource-boundary": "project",
+            "x-excluded-from-public": false,
+            "x-required-scope": "campaigns:manage",
+            "security": [
+              {
+                "ApiKeyAuth": []
+              },
+              {
+                "ConsoleSession": []
+              }
+            ],
+            "parameters": [
+              {
+                "name": "campaignId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/EnrollCampaignContactRequest"
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "Success",
+                "headers": {
+                  "X-Request-Id": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "Stable request correlation identifier."
+                  },
+                  "X-Trace-Id": {
+                    "schema": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{32}$"
+                    },
+                    "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+                  },
+                  "Polymorfa-Version": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "API version applied to this response."
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CampaignEnrollment"
+                        }
+                      },
+                      "required": ["data"]
+                    }
+                  }
+                }
+              },
+              "400": {
+                "$ref": "#/components/responses/BadRequest"
+              },
+              "401": {
+                "$ref": "#/components/responses/Unauthorized"
+              },
+              "403": {
+                "$ref": "#/components/responses/Forbidden"
+              },
+              "404": {
+                "$ref": "#/components/responses/NotFound"
+              },
+              "409": {
+                "$ref": "#/components/responses/Conflict"
+              }
+            }
+          }
+        },
+        "/platform/audience-segments": {
+          "get": {
+            "operationId": "listAudienceSegments",
+            "tags": ["audience-segments"],
+            "summary": "List audience segments",
+            "description": "Lists the team's saved segments with cursor pagination. Reads stay available after beta withdrawal.\n\nAPI keys require `campaigns:read`. Project tokens are not accepted.",
+            "x-audience": "public",
+            "x-polymorfa-resource-boundary": "organization",
+            "x-excluded-from-public": false,
+            "x-required-scope": "campaigns:read",
+            "security": [
+              {
+                "ApiKeyAuth": []
+              },
+              {
+                "ConsoleSession": []
+              }
+            ],
+            "parameters": [
+              {
+                "name": "cursor",
+                "in": "query",
+                "required": false,
+                "schema": {
+                  "type": "string"
+                }
+              },
+              {
+                "name": "limit",
+                "in": "query",
+                "required": false,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "default": 25
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Success",
+                "headers": {
+                  "X-Request-Id": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "Stable request correlation identifier."
+                  },
+                  "X-Trace-Id": {
+                    "schema": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{32}$"
+                    },
+                    "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+                  },
+                  "Polymorfa-Version": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "API version applied to this response."
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/AudienceSegment"
+                          }
+                        },
+                        "page": {
+                          "$ref": "#/components/schemas/CursorPageMetadata"
+                        }
+                      },
+                      "required": ["data", "page"]
+                    }
+                  }
+                }
+              },
+              "400": {
+                "$ref": "#/components/responses/BadRequest"
+              },
+              "401": {
+                "$ref": "#/components/responses/Unauthorized"
+              },
+              "403": {
+                "$ref": "#/components/responses/Forbidden"
+              }
+            }
+          },
+          "post": {
+            "operationId": "createAudienceSegment",
+            "tags": ["audience-segments"],
+            "summary": "Create an audience segment",
+            "description": "Saves a named rule set over the team's audience profiles. A team holds at most 100 segments. Every campaign a rule names must belong to the team. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nAPI keys require `campaigns:manage`. Project tokens are not accepted.",
+            "x-audience": "public",
+            "x-polymorfa-resource-boundary": "organization",
+            "x-excluded-from-public": false,
+            "x-required-scope": "campaigns:manage",
+            "security": [
+              {
+                "ApiKeyAuth": []
+              },
+              {
+                "ConsoleSession": []
+              }
+            ],
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "rules": {
+                        "$ref": "#/components/schemas/AudienceSegmentRules"
+                      }
+                    },
+                    "required": ["name", "rules"]
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "Success",
+                "headers": {
+                  "X-Request-Id": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "Stable request correlation identifier."
+                  },
+                  "X-Trace-Id": {
+                    "schema": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{32}$"
+                    },
+                    "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+                  },
+                  "Polymorfa-Version": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "API version applied to this response."
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/AudienceSegment"
+                        }
+                      },
+                      "required": ["data"]
+                    }
+                  }
+                }
+              },
+              "400": {
+                "$ref": "#/components/responses/BadRequest"
+              },
+              "401": {
+                "$ref": "#/components/responses/Unauthorized"
+              },
+              "403": {
+                "$ref": "#/components/responses/Forbidden"
+              },
+              "409": {
+                "$ref": "#/components/responses/Conflict"
+              }
+            }
+          }
+        },
+        "/platform/audience-segments/preview": {
+          "post": {
+            "operationId": "previewAudienceSegmentRules",
+            "tags": ["audience-segments"],
+            "summary": "Preview audience segment rules",
+            "description": "Evaluates unsaved rules now and returns counts and up to five masked matching profiles. Nothing is saved. A campaign evaluates its segment again when it launches, so counts can change. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nAPI keys require `campaigns:manage`. Project tokens are not accepted.",
+            "x-audience": "public",
+            "x-polymorfa-resource-boundary": "organization",
+            "x-excluded-from-public": false,
+            "x-required-scope": "campaigns:manage",
+            "security": [
+              {
+                "ApiKeyAuth": []
+              },
+              {
+                "ConsoleSession": []
+              }
+            ],
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "rules": {
+                        "$ref": "#/components/schemas/AudienceSegmentRules"
+                      }
+                    },
+                    "required": ["rules"]
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "Success",
+                "headers": {
+                  "X-Request-Id": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "Stable request correlation identifier."
+                  },
+                  "X-Trace-Id": {
+                    "schema": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{32}$"
+                    },
+                    "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+                  },
+                  "Polymorfa-Version": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "API version applied to this response."
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/AudienceSegmentPreview"
+                        }
+                      },
+                      "required": ["data"]
+                    }
+                  }
+                }
+              },
+              "400": {
+                "$ref": "#/components/responses/BadRequest"
+              },
+              "401": {
+                "$ref": "#/components/responses/Unauthorized"
+              },
+              "403": {
+                "$ref": "#/components/responses/Forbidden"
+              },
+              "409": {
+                "$ref": "#/components/responses/Conflict"
+              }
+            }
+          }
+        },
+        "/platform/audience-segments/{segmentId}": {
+          "get": {
+            "operationId": "getAudienceSegment",
+            "tags": ["audience-segments"],
+            "summary": "Get an audience segment",
+            "description": "Returns one saved segment.\n\nAPI keys require `campaigns:read`. Project tokens are not accepted.",
+            "x-audience": "public",
+            "x-polymorfa-resource-boundary": "organization",
+            "x-excluded-from-public": false,
+            "x-required-scope": "campaigns:read",
+            "security": [
+              {
+                "ApiKeyAuth": []
+              },
+              {
+                "ConsoleSession": []
+              }
+            ],
+            "parameters": [
+              {
+                "name": "segmentId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Success",
+                "headers": {
+                  "X-Request-Id": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "Stable request correlation identifier."
+                  },
+                  "X-Trace-Id": {
+                    "schema": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{32}$"
+                    },
+                    "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+                  },
+                  "Polymorfa-Version": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "API version applied to this response."
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/AudienceSegment"
+                        }
+                      },
+                      "required": ["data"]
+                    }
+                  }
+                }
+              },
+              "400": {
+                "$ref": "#/components/responses/BadRequest"
+              },
+              "401": {
+                "$ref": "#/components/responses/Unauthorized"
+              },
+              "403": {
+                "$ref": "#/components/responses/Forbidden"
+              },
+              "404": {
+                "$ref": "#/components/responses/NotFound"
+              }
+            }
+          },
+          "patch": {
+            "operationId": "updateAudienceSegment",
+            "tags": ["audience-segments"],
+            "summary": "Update an audience segment",
+            "description": "Replaces the name, the rules or both at the observed revision; a stale revision answers `409`. A draft campaign that uses the segment evaluates the new rules when it launches. Campaigns already launched keep their recipients. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nAPI keys require `campaigns:manage`. Project tokens are not accepted.",
+            "x-audience": "public",
+            "x-polymorfa-resource-boundary": "organization",
+            "x-excluded-from-public": false,
+            "x-required-scope": "campaigns:manage",
+            "security": [
+              {
+                "ApiKeyAuth": []
+              },
+              {
+                "ConsoleSession": []
+              }
+            ],
+            "parameters": [
+              {
+                "name": "segmentId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "expectedRevision": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                      },
+                      "rules": {
+                        "$ref": "#/components/schemas/AudienceSegmentRules"
+                      }
+                    },
+                    "required": ["expectedRevision"]
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "Success",
+                "headers": {
+                  "X-Request-Id": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "Stable request correlation identifier."
+                  },
+                  "X-Trace-Id": {
+                    "schema": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{32}$"
+                    },
+                    "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+                  },
+                  "Polymorfa-Version": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "API version applied to this response."
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/AudienceSegment"
+                        }
+                      },
+                      "required": ["data"]
+                    }
+                  }
+                }
+              },
+              "400": {
+                "$ref": "#/components/responses/BadRequest"
+              },
+              "401": {
+                "$ref": "#/components/responses/Unauthorized"
+              },
+              "403": {
+                "$ref": "#/components/responses/Forbidden"
+              },
+              "404": {
+                "$ref": "#/components/responses/NotFound"
+              },
+              "409": {
+                "$ref": "#/components/responses/Conflict"
+              }
+            }
+          },
+          "delete": {
+            "operationId": "deleteAudienceSegment",
+            "tags": ["audience-segments"],
+            "summary": "Delete an audience segment",
+            "description": "Deletes the segment at the observed revision. Answers `409` while an unlaunched draft campaign uses it as its audience. Launched campaigns keep their recipients and `segmentSnapshot`; their `segmentId` becomes null. Deletion stays available after beta withdrawal.\n\nAPI keys require `campaigns:manage`. Project tokens are not accepted.",
+            "x-audience": "public",
+            "x-polymorfa-resource-boundary": "organization",
+            "x-excluded-from-public": false,
+            "x-required-scope": "campaigns:manage",
+            "security": [
+              {
+                "ApiKeyAuth": []
+              },
+              {
+                "ConsoleSession": []
+              }
+            ],
+            "parameters": [
+              {
+                "name": "segmentId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              },
+              {
+                "name": "expectedRevision",
+                "in": "query",
+                "required": true,
+                "schema": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Success",
+                "headers": {
+                  "X-Request-Id": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "Stable request correlation identifier."
+                  },
+                  "X-Trace-Id": {
+                    "schema": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{32}$"
+                    },
+                    "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+                  },
+                  "Polymorfa-Version": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "API version applied to this response."
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "deleted": {
+                              "type": "boolean",
+                              "enum": [true]
+                            },
+                            "id": {
+                              "type": "string",
+                              "format": "uuid"
+                            }
+                          },
+                          "required": ["deleted", "id"]
+                        }
+                      },
+                      "required": ["data"]
+                    }
+                  }
+                }
+              },
+              "400": {
+                "$ref": "#/components/responses/BadRequest"
+              },
+              "401": {
+                "$ref": "#/components/responses/Unauthorized"
+              },
+              "403": {
+                "$ref": "#/components/responses/Forbidden"
+              },
+              "404": {
+                "$ref": "#/components/responses/NotFound"
+              },
+              "409": {
+                "$ref": "#/components/responses/Conflict"
+              }
+            }
+          }
+        },
+        "/platform/audience-segments/{segmentId}/preview": {
+          "get": {
+            "operationId": "previewAudienceSegment",
+            "tags": ["audience-segments"],
+            "summary": "Preview an audience segment",
+            "description": "Evaluates the saved segment now and returns counts, up to five masked matching profiles and the evaluated `revision`. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nAPI keys require `campaigns:read`. Project tokens are not accepted.",
+            "x-audience": "public",
+            "x-polymorfa-resource-boundary": "organization",
+            "x-excluded-from-public": false,
+            "x-required-scope": "campaigns:read",
+            "security": [
+              {
+                "ApiKeyAuth": []
+              },
+              {
+                "ConsoleSession": []
+              }
+            ],
+            "parameters": [
+              {
+                "name": "segmentId",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Success",
+                "headers": {
+                  "X-Request-Id": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "Stable request correlation identifier."
+                  },
+                  "X-Trace-Id": {
+                    "schema": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{32}$"
+                    },
+                    "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+                  },
+                  "Polymorfa-Version": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "API version applied to this response."
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "matchedCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "description": "Profiles that match the rules."
+                            },
+                            "optedOutCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "description": "Matched profiles whose number is on the team's opt-out list."
+                            },
+                            "consentWithheldCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "description": "Matched profiles, not opted out, whose latest consent assertion is `allowed: false`. Launch leaves them out."
+                            },
+                            "eligibleCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "description": "Matched profiles a launch now would send to."
+                            },
+                            "sample": {
+                              "type": "array",
+                              "maxItems": 5,
+                              "description": "Up to five eligible profiles with the phone masked.",
+                              "items": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "properties": {
+                                  "phone": {
+                                    "type": "string",
+                                    "description": "Masked phone, for example `+49*******12`."
+                                  },
+                                  "tags": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": ["phone", "tags"]
+                              }
+                            },
+                            "evaluatedAt": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "description": "Evaluation time in Unix milliseconds."
+                            },
+                            "revision": {
+                              "type": "integer",
+                              "minimum": 1
+                            }
+                          },
+                          "required": [
+                            "matchedCount",
+                            "optedOutCount",
+                            "consentWithheldCount",
+                            "eligibleCount",
+                            "sample",
+                            "evaluatedAt",
+                            "revision"
+                          ]
+                        }
+                      },
+                      "required": ["data"]
+                    }
+                  }
+                }
+              },
+              "400": {
+                "$ref": "#/components/responses/BadRequest"
+              },
+              "401": {
+                "$ref": "#/components/responses/Unauthorized"
+              },
+              "403": {
+                "$ref": "#/components/responses/Forbidden"
+              },
+              "404": {
+                "$ref": "#/components/responses/NotFound"
+              },
+              "409": {
+                "$ref": "#/components/responses/Conflict"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

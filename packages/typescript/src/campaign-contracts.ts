@@ -133,6 +133,7 @@ export type CampaignRecipientFailureReason =
   | "blocked_by_safety"
   | "send_failed"
   | "missing_variable"
+  | "frequency_cap"
   | "other";
 
 export interface CampaignRecipientExportParams {

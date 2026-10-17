@@ -27,6 +27,7 @@ import {
 } from "./platform/call-consent.js";
 import { PlatformCallsResource } from "./platform/calls.js";
 import { CallRetentionResource } from "./platform/call-retention.js";
+import { AudienceSegmentsResource } from "./platform/audience-segments.js";
 import { CampaignsResource } from "./platform/campaigns.js";
 import { ProjectCampaignsResource } from "./platform/project-campaigns.js";
 import { AudienceProfilesResource } from "./platform/audience-profiles.js";
@@ -97,6 +98,7 @@ export interface OrganizationControlPlaneResources {
   /** The team's do-not-call list. */
   readonly callOptOuts: CallOptOutsResource;
   readonly campaigns: CampaignsResource;
+  readonly audienceSegments: AudienceSegmentsResource;
   readonly customers: CustomersResource;
   readonly members: MembersResource;
   readonly organizations: OrganizationsResource;
@@ -237,6 +239,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
         callPolicy: new CallPolicyResource(this.#transport),
         callOptOuts: new CallOptOutsResource(this.#transport),
         campaigns: new CampaignsResource(this.#transport),
+        audienceSegments: new AudienceSegmentsResource(this.#transport),
         customers: new CustomersResource(this.#transport),
         members: new MembersResource(this.#transport),
         organizations: new OrganizationsResource(this.#transport),

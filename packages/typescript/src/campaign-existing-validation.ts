@@ -168,7 +168,7 @@ function followUp(value: unknown): void {
     contractUuid(message.templateId, "followUp.message.templateId");
   }
 }
-function composed(value: unknown): void {
+function composed(value: unknown, mayBeDrip: boolean): void {
   if (!Array.isArray(value) || value.length > 10) invalid("messagesArray");
   for (const item of value) {
     const v = contractObject(item, "messagesArray");
@@ -176,7 +176,12 @@ function composed(value: unknown): void {
     for (const key of ["source", "footer"])
       if (present(v, key)) contractString(v[key], key, 0);
     if (present(v, "delayAfterSec"))
-      contractInteger(v.delayAfterSec, "delayAfterSec", 0, 86400);
+      contractInteger(
+        v.delayAfterSec,
+        "delayAfterSec",
+        0,
+        mayBeDrip ? 2592000 : 86400,
+      );
     if (present(v, "media")) {
       const media = contractObject(v.media, "media");
       enumValue(
@@ -261,7 +266,9 @@ export function validateExistingCampaign(
   if (present(v, "templateId") && patch && v.templateId !== null)
     contractUuid(v.templateId, "templateId");
   if (present(v, "followUp")) followUp(v.followUp);
-  if (present(v, "messagesArray")) composed(v.messagesArray);
+  // A PATCH can target an existing drip without repeating its stored settings.
+  if (present(v, "messagesArray"))
+    composed(v.messagesArray, patch || (present(v, "drip") && v.drip !== null));
   for (const [key, variant] of [
     ["variants", true],
     ["messageVariations", false],
@@ -317,6 +324,7 @@ export function validateRecipientList(value: unknown, platform = false): void {
         "blocked_by_safety",
         "send_failed",
         "missing_variable",
+        "frequency_cap",
         "other",
       ],
       "reason",

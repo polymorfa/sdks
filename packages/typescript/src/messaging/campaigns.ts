@@ -7,6 +7,11 @@ import {
 import { requestContract } from "../campaign-contract-response.js";
 import type { MessagingCredential } from "../credentials.js";
 import { PolymorfaConfigurationError } from "../errors.js";
+
+import type {
+  CampaignEnrollment,
+  EnrollCampaignContactRequest,
+} from "./campaign-drip.js";
 import { HttpTransport } from "../transport/http.js";
 import type {
   CampaignRecipientExportPage,
@@ -199,6 +204,24 @@ export class MessagingCampaignsResource {
       validateRecipientExport(params),
       options,
     );
+  }
+
+  /** Continuous drip enrollment; existing phones return created:false and never restart. */
+  enroll(
+    projectSlug: string,
+    campaignId: string,
+    body: EnrollCampaignContactRequest,
+    options: RequestOptions = {},
+  ): Promise<
+    ApiResponse<{ readonly success: true; readonly data: CampaignEnrollment }>
+  > {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(projectSlug, campaignId)}/enrollments`,
+      body,
+      ...options,
+      maxNetworkRetries: 0,
+    });
   }
 
   list(

@@ -1387,3 +1387,12 @@ export type {
   HistorySyncDelivery,
   HistorySyncPolicyPatch,
 } from "./messaging/session-configuration.js";
+
+export type { CampaignFrequencyCap } from "./messaging/types.js";
+export type {
+  CampaignFrequencyCapSettings,
+  UpdateCampaignFrequencyCapInput,
+} from "./platform/types.js";
+
+export * from "./platform/audience-segments.js";
+export * from "./messaging/campaign-drip.js";
