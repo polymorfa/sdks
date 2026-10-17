@@ -1,3 +1,7 @@
+import type {
+  CampaignEnrollment,
+  EnrollCampaignContactRequest,
+} from "./campaign-drip.js";
 import { HttpTransport } from "../transport/http.js";
 import {
   withIdempotencyKey,
@@ -28,6 +32,24 @@ import type {
 /** Exact project-slug campaign workflow exposed by the Messaging API. */
 export class MessagingCampaignsResource {
   constructor(private readonly transport: HttpTransport) {}
+
+  /** Continuous drip enrollment; existing phones return created:false and never restart. */
+  enroll(
+    projectSlug: string,
+    campaignId: string,
+    body: EnrollCampaignContactRequest,
+    options: RequestOptions = {},
+  ): Promise<
+    ApiResponse<{ readonly success: true; readonly data: CampaignEnrollment }>
+  > {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(projectSlug, campaignId)}/enrollments`,
+      body,
+      ...options,
+      maxNetworkRetries: 0,
+    });
+  }
 
   list(
     projectSlug: string,

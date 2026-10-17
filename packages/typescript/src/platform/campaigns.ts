@@ -1,3 +1,7 @@
+import type {
+  CampaignEnrollment,
+  EnrollCampaignContactRequest,
+} from "../messaging/campaign-drip.js";
 import { HttpTransport } from "../transport/http.js";
 import {
   withIdempotencyKey,
@@ -63,6 +67,22 @@ export class CampaignsResource {
     return this.transport.request({
       method: "PUT",
       path: "/platform/campaign-settings/frequency-cap",
+      body,
+      ...options,
+      maxNetworkRetries: 0,
+    });
+  }
+
+  /** Continuous drip enrollment is idempotent per phone, including exited contacts.
+   * Beta and campaigns:manage required; 409 state_conflict when closed. */
+  enroll(
+    campaignId: string,
+    body: EnrollCampaignContactRequest & { readonly projectId: string },
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignEnrollment> {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(campaignId)}/enrollments`,
       body,
       ...options,
       maxNetworkRetries: 0,

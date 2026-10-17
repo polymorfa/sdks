@@ -1,3 +1,10 @@
+import type {
+  CampaignDrip,
+  CampaignDripInput,
+  CampaignDripPatch,
+  CampaignDripStats,
+  CampaignSegmentSnapshot,
+} from "./campaign-drip.js";
 /** Exact observed provider references; at least one provider is known. */
 export type WhatsAppMessageIds =
   | { readonly linked_devices: string; readonly official_api?: string }
@@ -280,6 +287,11 @@ export interface CampaignFollowUpReport {
 
 /** Project-scoped campaign summary returned by the Messaging API. */
 export interface Campaign {
+  readonly drip?: CampaignDrip | null;
+  readonly enrollmentOpen?: boolean | null;
+  readonly pauseReason?: string | null;
+  readonly segmentId?: string | null;
+  readonly segmentSnapshot?: CampaignSegmentSnapshot | null;
   readonly id: string;
   readonly name: string;
   /** The pinned contract deliberately leaves campaign states forward-compatible. */
@@ -391,6 +403,7 @@ export type CampaignRecipientFailureReason =
   | "other";
 
 export interface CampaignAnalytics {
+  readonly drip?: CampaignDripStats | null;
   readonly frequencyCap?: { readonly skippedRecipientCount: number };
   readonly campaignId: string;
   readonly recipientCount: number;
@@ -408,6 +421,7 @@ export interface CampaignAnalytics {
 }
 
 export interface CreateCampaignRequest {
+  readonly drip?: CampaignDripInput | null;
   readonly name: string;
   readonly templateId?: string;
   readonly recipientListId?: string;
@@ -464,6 +478,11 @@ export interface CampaignRecipientInput {
 
 /** One queued or settled recipient of a campaign. */
 export interface CampaignRecipient {
+  /** Number of accepted sequence messages; delivery timestamps below describe step 0. */
+  readonly messagesSent?: number;
+  readonly nextMessageAt?: number | null;
+  /** Includes replied, link_clicked, opted_out and open-ended send failures. */
+  readonly sequenceError?: string | null;
   readonly id: string;
   readonly phone: string;
   readonly variables: Readonly<Record<string, unknown>>;
@@ -528,6 +547,7 @@ export interface LaunchCampaignRequest {
 }
 
 interface UpdateCampaignChanges {
+  readonly drip?: CampaignDripPatch | null;
   readonly name?: string;
   readonly recipientListId?: string | null;
   readonly senderConfig?: Readonly<Record<string, unknown>>;
@@ -551,6 +571,7 @@ interface UpdateCampaignChanges {
 
 /** At least one draft field must be supplied. */
 export type UpdateCampaignRequest =
+  | (UpdateCampaignChanges & { readonly drip: CampaignDripPatch | null })
   | (UpdateCampaignChanges & {
       readonly frequencyCap: CampaignFrequencyCap | null;
     })

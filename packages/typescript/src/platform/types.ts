@@ -1,4 +1,9 @@
 import type {
+  CampaignDripInput,
+  CampaignDripPatch,
+  CampaignSequenceMessage,
+} from "../messaging/campaign-drip.js";
+import type {
   Campaign,
   CampaignFrequencyCap,
   CampaignRecipientFailureReason,
@@ -185,6 +190,8 @@ export interface TransferCustomerNumberRequest {
 
 /** Create a campaign through the organization client's Platform resource. */
 export interface CreatePlatformCampaignRequest {
+  readonly segmentId?: string;
+  readonly drip?: CampaignDripInput | null;
   /** Owning project; organization API keys are not bound to one project. */
   readonly projectId: string;
   /** Trimmed by the API; 1 to 200 characters and must not be blank. */
@@ -203,7 +210,7 @@ export interface CreatePlatformCampaignRequest {
   readonly recipientCount?: number;
   // The API deliberately leaves these JSON values opaque.
   readonly composerBlueprint?: unknown;
-  readonly messagesArray?: unknown;
+  readonly messagesArray?: readonly CampaignSequenceMessage[];
   readonly audienceRef?: unknown;
   readonly complianceConfig?: unknown;
   /** Two to four A/B variants (beta); requires `variantStrategy`. */
@@ -256,6 +263,9 @@ export interface ReschedulePlatformCampaignRequest extends PlatformCampaignParam
  * not been copied into recipients. After that the API refuses the change.
  */
 export interface UpdatePlatformCampaignRequest {
+  readonly segmentId?: string | null;
+  readonly drip?: CampaignDripPatch | null;
+  readonly messagesArray?: readonly CampaignSequenceMessage[];
   /** 1 to 200 characters. */
   readonly name?: string;
   readonly recipientListId?: string | null;

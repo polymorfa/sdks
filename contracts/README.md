@@ -632,3 +632,8 @@ Recipient reads expose `failureReason` and accept `reason: "frequency_cap"`.
 Analytics adds `frequencyCap.skippedRecipientCount`. Raising limits never retries
 settled skips. `contracts/campaign-frequency-cap.json` pins the merged API source;
 package publication and API availability remain separate release gates.
+
+`campaign-segments-drip.json` pins the merged audience segment and drip additions
+at API dev `f46ebd5162453e812dafa76ce02b420ddabe6921`, including source hashes,
+focused schemas, fields and operations. The full baseline snapshots keep their
+independent pins. This file records source adoption, not release availability.
