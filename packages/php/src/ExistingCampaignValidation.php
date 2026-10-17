@@ -59,7 +59,10 @@ final class ExistingCampaignValidation
             self::followUp($body['followUp']);
         }
         if (array_key_exists('messagesArray', $body)) {
-            self::composed($body['messagesArray']);
+            // A PATCH can target a stored drip without repeating its settings; the
+            // API keeps delay-unit, eligibility and stored-state authority.
+            $drip = $patch || (array_key_exists('drip', $body) && $body['drip'] !== null);
+            self::composed($body['messagesArray'], $drip ? self::DRIP_MAX_DELAY : self::ORDINARY_MAX_DELAY);
         }
         foreach (['variants' => true,'messageVariations' => false] as $key => $variants) {
             if (array_key_exists($key, $body) && !($body[$key] === null && (!$platform || $patch))) {
@@ -117,7 +120,10 @@ final class ExistingCampaignValidation
             CampaignContractValidation::uuid($m['templateId'], 'followUp.message.templateId');
         }
     }
-    private static function composed(mixed $value): void
+    private const ORDINARY_MAX_DELAY = 86400;
+    private const DRIP_MAX_DELAY = 2592000;
+
+    private static function composed(mixed $value, int $maxDelay): void
     {
         foreach (CampaignContractValidation::list($value, 'messagesArray', 0, 10) as $item) {
             $v = CampaignContractValidation::object($item, 'messagesArray');
@@ -130,7 +136,7 @@ final class ExistingCampaignValidation
                 }
             }
             if (array_key_exists('delayAfterSec', $v)) {
-                CampaignContractValidation::integer($v['delayAfterSec'], 'delayAfterSec', 0, 86400);
+                CampaignContractValidation::integer($v['delayAfterSec'], 'delayAfterSec', 0, $maxDelay);
             }
             if (array_key_exists('media', $v)) {
                 $media = CampaignContractValidation::object($v['media'], 'media');
@@ -209,7 +215,7 @@ final class ExistingCampaignValidation
             CampaignContractValidation::enum($params['status'], ['queued','sending','sent','delivered','read','failed','skipped'], 'status');
         }
         if (array_key_exists('reason', $params)) {
-            CampaignContractValidation::enum($params['reason'], ['opted_out','cold_held','campaign_cancelled','invalid_recipient','session_not_connected','ack_timeout','blocked_by_safety','send_failed','missing_variable','other'], 'reason');
+            CampaignContractValidation::enum($params['reason'], ['opted_out','cold_held','campaign_cancelled','invalid_recipient','session_not_connected','ack_timeout','blocked_by_safety','send_failed','missing_variable','frequency_cap','other'], 'reason');
         }
         if (array_key_exists('cursor', $params)) {
             CampaignContractValidation::text($params['cursor'], 'cursor', 1, 256);

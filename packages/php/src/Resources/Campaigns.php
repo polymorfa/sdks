@@ -32,6 +32,10 @@ use Polymorfa\{ApiResponse,RequestOptions,CampaignModels,ExistingContract,Existi
  * @phpstan-import-type Approval from \Polymorfa\CampaignContractModels
  * @phpstan-import-type Settings from \Polymorfa\CampaignContractModels
  * @phpstan-import-type PlatformExportParams from \Polymorfa\CampaignContractModels
+ * @phpstan-import-type FrequencyCapSettings from CampaignModels
+ * @phpstan-import-type FrequencyCapInput from CampaignModels
+ * @phpstan-import-type PlatformEnrollInput from CampaignModels
+ * @phpstan-import-type Enrollment from CampaignModels
  */
 final class Campaigns extends Resource
 {
@@ -111,6 +115,31 @@ final class Campaigns extends Resource
         return \Polymorfa\CampaignContract::export($this->transport, $this->path($id).'/recipients/export', $params, $options);
     }
 
+
+    /** Team cap. Organization API key with campaigns:read.
+     * @return ApiResponse<array{data:FrequencyCapSettings}> */
+    public function getFrequencyCap(?RequestOptions $options = null): ApiResponse
+    { /** @var ApiResponse<array{data:FrequencyCapSettings}> */ return ExistingContract::request($this->transport, 'GET', '/platform/campaign-settings/frequency-cap', options:$options, model:'frequencyCap');
+    }
+    /** Replaces both limits with the last read revision. A stale revision raises
+     * ConflictException; read again and reconcile. Limits require beta access.
+     * Sent once: reconcile a lost response with a fresh read.
+     * @param FrequencyCapInput $body
+     * @return ApiResponse<array{data:FrequencyCapSettings}> */
+    public function updateFrequencyCap(array $body, ?RequestOptions $options = null): ApiResponse
+    { /** @var ApiResponse<array{data:FrequencyCapSettings}> */ return ExistingContract::request($this->transport, 'PUT', '/platform/campaign-settings/frequency-cap', $body, options:($options ?? new RequestOptions())->withoutRetries(), model:'frequencyCap');
+    }
+    /** Adds a contact to a running or paused continuous drip. Sent once: per-phone
+     * server idempotency does not make an ambiguous retry safe.
+     * @param PlatformEnrollInput $body
+     * @return ApiResponse<array{data:Enrollment}> */
+    public function enroll(string $id, array $body, ?RequestOptions $options = null): ApiResponse
+    {
+        /** @var array<string,mixed> $untyped Callers can pass arrays outside the declared shape. */
+        $untyped = $body;
+        \Polymorfa\CampaignContractValidation::uuid($untyped['projectId'] ?? null, 'projectId');
+        /** @var ApiResponse<array{data:Enrollment}> */ return ExistingContract::request($this->transport, 'POST', $this->path($id).'/enrollments', $body, options:($options ?? new RequestOptions())->withoutRetries(), model:'enrollment');
+    }
 
     /** @param array{projectId:string,projectSlug?:string} $params
      * @return ApiResponse<array{data:list<PlatformCampaign>}> */

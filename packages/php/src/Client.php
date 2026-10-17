@@ -26,6 +26,7 @@ final readonly class Client
     public Resources\Audiences $audiences;
     public Resources\AudienceProfiles $audienceProfiles;
     public Resources\Campaigns $campaigns;
+    public Resources\AudienceSegments $audienceSegments;
     public Resources\RequestLogs $requestLogs;
     public Resources\Operations $operations;
     public Resources\WebhookDeliveries $webhookDeliveries;
@@ -70,6 +71,7 @@ final readonly class Client
         $this->audiences = new Resources\Audiences($this->transport);
         $this->audienceProfiles = new Resources\AudienceProfiles($this->transport);
         $this->campaigns = new Resources\Campaigns($this->transport);
+        $this->audienceSegments = new Resources\AudienceSegments($this->transport);
         $this->requestLogs = new Resources\RequestLogs($this->transport);
         $this->quickLinkSettings = new Resources\QuickLinkSettings($this->transport);
         $this->sessionConfiguration = new Resources\SessionConfiguration($this->transport);

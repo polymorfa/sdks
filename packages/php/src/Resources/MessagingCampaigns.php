@@ -8,6 +8,8 @@ use Polymorfa\{ApiResponse,RequestOptions,CampaignModels,ValidationException,Exi
 
 /**
  * @phpstan-import-type MessagingLaunch from CampaignModels
+ * @phpstan-import-type EnrollInput from CampaignModels
+ * @phpstan-import-type Enrollment from CampaignModels
  * @phpstan-import-type RecipientParams from CampaignModels
  * @phpstan-import-type Campaign from CampaignModels
  * @phpstan-import-type CreateInput from CampaignModels
@@ -122,6 +124,12 @@ final class MessagingCampaigns extends Resource
         if ($body === []) {
             throw new ValidationException('Supply at least one draft field.');
         } /** @var ApiResponse<array{success:true,data:Campaign}> */ return ExistingContract::request($this->transport, 'PATCH', $this->path($projectSlug, $id), $body, options:($options ?? new RequestOptions())->withoutAutomaticRetry(), model:'campaign', messaging:true);
+    }
+    /** Adds a contact to a running or paused continuous drip; sent once.
+     * @param EnrollInput $body
+     * @return ApiResponse<array{success:true,data:Enrollment}> */
+    public function enroll(string $projectSlug, string $id, array $body, ?RequestOptions $options = null): ApiResponse
+    { /** @var ApiResponse<array{success:true,data:Enrollment}> */ return ExistingContract::request($this->transport, 'POST', $this->path($projectSlug, $id).'/enrollments', $body, options:($options ?? new RequestOptions())->withoutRetries(), model:'enrollment', messaging:true);
     }
     /** @return ApiResponse<array{success:true,data:Analytics}> */
     public function analytics(string $projectSlug, string $id, ?RequestOptions $options = null): ApiResponse

@@ -22,7 +22,7 @@ namespace Polymorfa;
  * @phpstan-type PlatformAssignmentInput array{projectId:string,replyFlowId:string|null}
  * @phpstan-type Assignment array{campaignId:string,replyFlowId:string|null}
  * @phpstan-type LinkReport array{key:string,url:string,uniqueOpens:int,totalOpens:int}
- * @phpstan-type FailureReason 'opted_out'|'cold_held'|'campaign_cancelled'|'invalid_recipient'|'session_not_connected'|'ack_timeout'|'blocked_by_safety'|'send_failed'|'missing_variable'|'other'
+ * @phpstan-type FailureReason 'opted_out'|'cold_held'|'campaign_cancelled'|'invalid_recipient'|'session_not_connected'|'ack_timeout'|'blocked_by_safety'|'send_failed'|'missing_variable'|'frequency_cap'|'other'
  * @phpstan-type RecipientStatus 'queued'|'sending'|'sent'|'delivered'|'read'|'failed'|'skipped'
  * @phpstan-type ExportParams array{status?:RecipientStatus,reason?:FailureReason,cursor?:string,limit?:int}
  * @phpstan-type PlatformExportParams array{projectId:string,status?:RecipientStatus,reason?:FailureReason,cursor?:string,limit?:int}

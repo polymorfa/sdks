@@ -28,7 +28,7 @@ final class ExistingContract
         }
         $out = [];
         foreach ($value as $key => $child) {
-            $dictionary = in_array($key, ['variableMapping','variables','attributes','configuration','set','observation','historySync','hms','testing','billingControls','media','blueprint'], true);
+            $dictionary = in_array($key, ['variableMapping','variables','attributes','configuration','set','observation','historySync','hms','testing','billingControls','media','blueprint','drip'], true);
             if ($key === 'variableMapping' && is_array($child)) {
                 $map = new \stdClass();
                 foreach ($child as $name => $binding) {
@@ -68,7 +68,7 @@ final class ExistingContract
         $response = $transport->requestJsonTree($method, $path, $query, $captured, $options);
         $value = $response->data;
         if ($response->metadata->status !== $status || !self::json($response->metadata) || !$value instanceof \stdClass || !property_exists($value, 'data') || ($messaging && ($value->success ?? null) !== true) || !ExistingContractCodec::matches($value->data, $model)
-            || (in_array($model, ['recipients','platformRecipients'], true) && (!property_exists($value, 'page') || !CampaignContractCodec::matches($value->page, CampaignContractCodec::model('page'))))) {
+            || (in_array($model, ['recipients','platformRecipients','segments'], true) && (!property_exists($value, 'page') || !CampaignContractCodec::matches($value->page, CampaignContractCodec::model('page'))))) {
             throw new ServerException('Invalid API response structure.', 'invalid_response', status: $response->metadata->status, metadata: $response->metadata);
         }
         /** @var array<string,mixed> $data */

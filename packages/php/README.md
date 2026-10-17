@@ -259,6 +259,41 @@ Follow-up timestamps are Unix milliseconds. Native fixtures and PHPStan consumer
 checks verify the merged contract; no live follow-up campaign or publication was
 exercised.
 
+## Contact frequency caps, audience segments and drips (beta)
+
+These methods follow `contracts/campaign-frequency-cap.json` and
+`contracts/campaign-segments-drip.json`. They do not enroll a team in a beta;
+the API returns `403 feature_unavailable` when a team lacks access.
+
+`$client->campaigns->getFrequencyCap()` returns the team limits, `revision` and
+`updatedAt` (`null` until first saved). `updateFrequencyCap()` replaces both
+windows with the revision you read; `null` limits remove them. The PUT is sent
+once, and a stale revision throws `ConflictException`, so read again and
+reconcile. Campaign create and update accept `frequencyCap` (`null` removes a
+campaign cap), recipients report `failureReason` `frequency_cap` and accept it
+as a `reason` filter, and analytics add `frequencyCap.skippedRecipientCount`.
+
+`$client->audienceSegments` lists, retrieves, creates, updates and deletes saved
+segments, and previews a saved segment or unsaved rules. `ProjectClient` has no
+segment resource. Conditions other than the typed shapes in
+`AudienceSegmentModels`, and values of the wrong type, throw
+`ConfigurationException` before sending. Updates and deletes need the last
+observed revision. Writes and both previews are sent once; a 409
+`state_conflict` means a stale revision or an evaluation timeout, so re-read or
+simplify the rules.
+
+Platform create accepts `segmentId` (omit it rather than sending `null`), and
+Platform update accepts `'segmentId' => null` to clear it. `drip` takes the
+create settings or a partial update; the SDK applies no defaults, omitted
+fields keep their stored values, and an empty array is sent as `{}`. Drip steps
+accept `delayUnit` and a per-step `sendWindow`. Ordinary creates allow
+`delayAfterSec` up to 86400; drip creates and every PATCH allow up to 2592000,
+and the API checks the stored drip, delay unit and eligibility.
+`campaigns->enroll()` on both clients adds a contact to a continuous drip and
+is never retried automatically. Campaign reads expose `drip`, `enrollmentOpen`,
+`pauseReason`, `segmentId` and `segmentSnapshot`; analytics expose per-step
+`drip` results.
+
 ## Raw JSON and pagination
 
 `RawClient::request()` returns any successful JSON value, including objects,

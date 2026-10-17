@@ -175,6 +175,7 @@ require __DIR__.'/templates.php';
 
 require __DIR__.'/campaigns.php';
 require __DIR__.'/campaign_followups.php';
+require __DIR__.'/campaign_segments_drip.php';
 require __DIR__.'/raw_parity.php';
 require __DIR__.'/audiences.php';
 
