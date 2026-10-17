@@ -2,7 +2,7 @@
 
 `@polymorfa/storage/d1-bridge` exports `createD1StorageBridge`, `D1_BRIDGE_CONTRACT` and `D1_BRIDGE_HEADERS`. The bridge is a customer-hosted Worker using a D1 binding. Each commit invokes the same `d1Adapter` as the TypeScript reference, whose batch applies all conditional writes or rolls them back. Native clients must not advertise D1 administrative REST calls as atomic storage commits.
 
-The wire contract is `polymorfa-d1-storage-v1`, storage schema 2. Authority and SQL table prefix are immutable Worker configuration, not request-selected tenant scopes. Give every authority an independent application secret, Worker binding and trusted prefix. The secret is 32–256 visible ASCII characters; it is not a Polymorfa project, organization or client credential. The bridge accepts no SQL, reducer, truncate operation, caller database connection or browser Origin header.
+The wire contract is `polymorfa-d1-storage-v1`, storage schema 2. Authority and SQL table prefix are immutable Worker configuration, not request-selected tenant scopes. Give every authority an independent application secret, Worker binding and trusted prefix. The secret is 32–256 visible ASCII characters; it is not a Polymorfa project, organization or client credential. The Worker and every native client reject secrets beginning with the reserved `pmfa_` credential prefix before any request or database operation. The bridge accepts no SQL, reducer, truncate operation, caller database connection or browser Origin header.
 
 Every request includes these headers:
 

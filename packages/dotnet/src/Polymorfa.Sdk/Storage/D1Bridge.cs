@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 namespace Polymorfa.Sdk.Storage;
-/// <summary>Customer-hosted D1 binding bridge, independent of API credentials and administrative REST.</summary>
+/// <summary>Customer-hosted D1 binding bridge, independent of API credentials and administrative REST. ApplicationSecret is an independent 32-256 visible ASCII secret, never a Polymorfa credential; the reserved <c>pmfa_</c> prefix is rejected before any request.</summary>
 public sealed record D1BridgeOptions(Uri BaseUrl, string Authority, string TablePrefix, string ApplicationSecret)
 {
     public TimeSpan Timeout { get; init; } = TimeSpan.FromSeconds(30);
@@ -22,7 +22,7 @@ public sealed class D1BridgeStorageAdapter : IStorageAdapter, IDisposable
     private D1BridgeStorageAdapter(D1BridgeOptions options)
     {
         var uri = options.BaseUrl;
-        if (OperatingSystem.IsBrowser() || !uri.IsAbsoluteUri || !(uri.Scheme == "https" || uri.Scheme == "http" && uri.IsLoopback) || uri.UserInfo.Length != 0 || uri.Query.Length != 0 || uri.Fragment.Length != 0 || uri.AbsolutePath != "/" || !ValidName(options.Authority, false) || !ValidName(options.TablePrefix, true) || options.ApplicationSecret.Length is < 32 or > 256 || options.ApplicationSecret.Any(c => c < '!' || c > '~') || options.Timeout <= TimeSpan.Zero || options.Timeout.TotalMilliseconds > uint.MaxValue - 1) throw Invalid();
+        if (OperatingSystem.IsBrowser() || !uri.IsAbsoluteUri || !(uri.Scheme == "https" || uri.Scheme == "http" && uri.IsLoopback) || uri.UserInfo.Length != 0 || uri.Query.Length != 0 || uri.Fragment.Length != 0 || uri.AbsolutePath != "/" || !ValidName(options.Authority, false) || !ValidName(options.TablePrefix, true) || options.ApplicationSecret.Length is < 32 or > 256 || options.ApplicationSecret.StartsWith("pmfa_", StringComparison.Ordinal) || options.ApplicationSecret.Any(c => c < '!' || c > '~') || options.Timeout <= TimeSpan.Zero || options.Timeout.TotalMilliseconds > uint.MaxValue - 1) throw Invalid();
         var handler = new SocketsHttpHandler(); options.ConfigureHttpHandler?.Invoke(handler); handler.AllowAutoRedirect = false; handler.UseCookies = false; handler.Credentials = null;
         http = new(handler) { Timeout = System.Threading.Timeout.InfiniteTimeSpan }; baseUrl = uri.AbsoluteUri.TrimEnd('/'); authority = options.Authority; prefix = options.TablePrefix; secret = options.ApplicationSecret; timeout = options.Timeout;
     }

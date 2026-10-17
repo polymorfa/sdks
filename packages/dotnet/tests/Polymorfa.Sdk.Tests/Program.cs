@@ -12,6 +12,7 @@ if (args.Contains("--consumer-signal-truncation-only")) { await ConsumerRepairTe
 if (args.Contains("--consumer-signal-ack-only")) { await ConsumerRepairTests.SignalAckAsync(); return; }
 if (args.Contains("--consumer-signal-deadline-only")) { await ConsumerRepairTests.SignalDeadlineAsync(); return; }
 if (args.Contains("--signal-webhook-keys-only")) { SignalTests.WebhookKeys(); return; }
+if (args.Contains("--d1-secret-only")) { await StorageD1Tests.SecretBoundaryAsync(); return; }
 
 if (args.Contains("--descriptor-storage-only")) { await DescriptorStorageTests.RunAsync(); return; }
 

@@ -20,8 +20,45 @@ internal static class StorageD1Tests
             try{using var _=await D1BridgeStorageAdapter.ConnectAsync(Options(url)with{Timeout=TimeSpan.FromMilliseconds(80)});throw new Exception("Untrusted bridge accepted");}catch(StorageProviderException error){ResourceTests.True(!error.ToString().Contains("never-reflect",StringComparison.Ordinal));ResourceTests.True(!error.ToString().Contains("synthetic_",StringComparison.Ordinal));}await server;
         }
         await SignedNegatives();
+        await SecretBoundaryAsync();
         if(Environment.GetEnvironmentVariable("POLYMORFA_D1_BRIDGE_URL") is {}live)await Actual(live);
         Console.WriteLine("PASS D1 bridge safe configuration, unsigned/redirect rejection and whole-body deadline");
+    }
+    // The application secret is independent of Polymorfa credentials: reserved pmfa_ prefixes
+    // and out-of-range lengths fail before any request; independent secrets complete a signed handshake.
+    internal static async Task SecretBoundaryAsync()
+    {
+        using var listener = new TcpListener(IPAddress.Loopback, 0); listener.Start();
+        var url = $"http://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}/"; var calls = 0;
+        using var stop = new CancellationTokenSource();
+        var server = Task.Run(async () =>
+        {
+            while (!stop.IsCancellationRequested)
+            {
+                TcpClient client; try { client = await listener.AcceptTcpClientAsync(stop.Token); } catch (OperationCanceledException) { return; }
+                using (client)
+                {
+                    Interlocked.Increment(ref calls);
+                    await using var stream = client.GetStream(); using var raw = new MemoryStream(); var b = new byte[1];
+                    while (await stream.ReadAsync(b) > 0) { raw.Write(b); if (raw.Length >= 4 && Encoding.ASCII.GetString(raw.GetBuffer(), (int)raw.Length - 4, 4) == "\r\n\r\n") break; }
+                    var lines = Encoding.UTF8.GetString(raw.ToArray()).Split("\r\n");
+                    string Header(string name) => lines.Single(l => l.StartsWith(name + ":", StringComparison.OrdinalIgnoreCase)).Split(':', 2)[1].Trim();
+                    var nonce = Header("Polymorfa-Storage-Nonce"); var secret = Header("Authorization")["Bearer ".Length..];
+                    var body = new JsonObject { ["contract"] = "polymorfa-d1-storage-v1", ["schemaVersion"] = 2, ["authority"] = "fixture-customer-a", ["tablePrefix"] = "bridge_a_", ["data"] = new JsonObject { ["atomicCommit"] = true, ["maxCommitSize"] = 50, ["maxGetSize"] = 1000, ["maxQuerySize"] = 1000, ["maxBodyBytes"] = 8388608, ["conditionalDeletes"] = true, ["setupAllowed"] = false } }.ToJsonString();
+                    var signature = "v1=" + Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes(secret), Encoding.UTF8.GetBytes($"{nonce}.200.{body}"))).ToLowerInvariant();
+                    await stream.WriteAsync(Encoding.UTF8.GetBytes($"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nPolymorfa-Storage-Nonce: {nonce}\r\nPolymorfa-Storage-Signature: {signature}\r\nContent-Length: {Encoding.UTF8.GetByteCount(body)}\r\nConnection: close\r\n\r\n{body}"));
+                }
+            }
+        });
+        D1BridgeOptions With(string secret) => new(new(url), "fixture-customer-a", "bridge_a_", secret);
+        var rejected = new[] { "pmfa_", "pmfa_pt_", "pmfa_ct_", "pmfa_ls_", "pmfa_at_", "pmfa_wst_", "pmfa_sd_" }.Select(p => p + "synthetic-fixture-value-0123456789").Concat(new[] { "pmfa_" + new string('x', 251), new string('x', 31), new string('x', 257) });
+        foreach (var secret in rejected) try { using var _ = await D1BridgeStorageAdapter.ConnectAsync(With(secret)); throw new Exception("Reserved or out-of-range D1 secret accepted"); } catch (StorageValidationException error) { ResourceTests.True(!error.ToString().Contains(secret, StringComparison.Ordinal)); }
+        ResourceTests.Equal(Volatile.Read(ref calls), 0);
+        foreach (var secret in new[] { new string('x', 32), new string('x', 256), "PMFA_uppercase-is-not-reserved-0123456789", "xpmfa_not-a-prefix-fixture-0123456789" })
+        { using var adapter = await D1BridgeStorageAdapter.ConnectAsync(With(secret)); ResourceTests.True(adapter.Capabilities.AtomicCommit); }
+        ResourceTests.Equal(Volatile.Read(ref calls), 4);
+        stop.Cancel(); await server;
+        Console.WriteLine("PASS D1 application secret boundary: reserved and out-of-range secrets send no request");
     }
     private static async Task SignedNegatives()
     {
