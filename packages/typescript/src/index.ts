@@ -1325,3 +1325,12 @@ export type {
   BillingPriorities,
   ReorderBillingPrioritiesInput,
 } from "./platform/billing-controls.js";
+
+export type {
+  CampaignFrequencyCap,
+  CampaignRecipientFailureReason,
+} from "./messaging/types.js";
+export type {
+  CampaignFrequencyCapSettings,
+  UpdateCampaignFrequencyCapInput,
+} from "./platform/types.js";

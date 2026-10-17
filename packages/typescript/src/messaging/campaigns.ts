@@ -163,6 +163,7 @@ export class MessagingCampaignsResource {
       path: recipientsPath(projectSlug, campaignId),
       query: {
         ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.reason === undefined ? {} : { reason: params.reason }),
         ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
         ...(params.limit === undefined ? {} : { limit: params.limit }),
       },
