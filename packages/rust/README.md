@@ -307,9 +307,31 @@ the conversion rejects those fields instead of dropping them.
 `history_chunks::download_history_chunk` authenticates the ciphertext and hashes
 with the History Keys HKDF label before decompressing or parsing. It accepts
 an encrypted descriptor or inline compressed payload, detects zlib/gzip/raw
-DEFLATE and bounds inflation at 512 MiB by default. Common history fields are
-typed; the complete original protobuf, unknown fields and full-width integers
-remain in `HistoryChunk::proto`. Use `decode_with` with your application's full
+DEFLATE and bounds inflation at 512 MiB by default. It requires exactly one
+complete stream, validates wrapper checksums and rejects unused whole bytes,
+zero padding, concatenated members and incomplete streams before protobuf
+parsing. Quota overflow returns `media_too_large`, including when a later trailer
+is corrupt. Other compressed-data failures retain `media_invalid_ciphertext`.
+No partial plaintext is returned.
+
+Pinned flate2 1.1.10 preserves its existing gzip limit of 65,535 non-NUL bytes
+per optional filename and comment field. Longer RFC-valid headers are unsupported
+and safely return `media_invalid_ciphertext`; this error does not establish
+that the compressed stream is malformed. Supported optional headers and FHCRC,
+gzip CRC/length and zlib Adler checks remain validated. This is a Rust-specific
+support boundary, not a claim of format parity across SDK languages.
+
+Inflation grows only with produced output, uses at most a 64 KiB output read
+buffer and one overflow byte, and does not allocate from advertised gzip ISIZE
+or the full configured quota. flate2 retains its bounded decoder/header state.
+The existing download cancellation token is checked between reads and immediately
+before protobuf parsing. Downloads cooperatively yield every 32 output reads;
+cancellation cannot interrupt one synchronous decoder call, header parsing or
+protobuf parsing, and scheduler latency is not a deadline guarantee. Direct
+`decode_history_payload` remains synchronous with no cancellation option. Rust
+borrows immutable direct input and owns downloaded bytes; no extra input copy is
+needed. Common history fields are typed; the complete original protobuf, unknown
+fields and full-width integers remain in `HistoryChunk::proto`. Use `decode_with` with your application's full
 schema. This is narrower typed support than TypeScript's complete generated
 history schema, without importing the Signal core into this MIT package.
 

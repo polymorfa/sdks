@@ -260,32 +260,107 @@ fn limit() -> Error {
         "media_too_large",
     )
 }
-pub fn decode_history_payload(compressed: &[u8], maximum: usize) -> Result<HistoryChunk> {
+fn validate_history_input(compressed: &[u8], maximum: usize) -> Result<()> {
     if compressed.is_empty() {
         return Err(invalid());
     }
     if maximum == 0 || maximum > isize::MAX as usize {
         return Err(crate::transport::configuration("maxInflatedBytes"));
     }
-    let reader: Box<dyn Read> = if compressed.starts_with(&[0x1f, 0x8b]) {
-        Box::new(flate2::read::GzDecoder::new(compressed))
-    } else if compressed.len() >= 2
-        && compressed[0] & 15 == 8
-        && ((u16::from(compressed[0]) << 8) | u16::from(compressed[1])) % 31 == 0
+    Ok(())
+}
+enum HistoryReader<'a, 'input> {
+    Gzip(flate2::bufread::GzDecoder<&'a mut &'input [u8]>),
+    Zlib(flate2::bufread::ZlibDecoder<&'a mut &'input [u8]>),
+    Raw(flate2::bufread::DeflateDecoder<&'a mut &'input [u8]>),
+}
+fn history_reader<'a, 'input>(remaining: &'a mut &'input [u8]) -> HistoryReader<'a, 'input> {
+    if remaining.starts_with(&[0x1f, 0x8b]) {
+        HistoryReader::Gzip(flate2::bufread::GzDecoder::new(remaining))
+    } else if remaining.len() >= 2
+        && remaining[0] & 15 == 8
+        && ((u16::from(remaining[0]) << 8) | u16::from(remaining[1])) % 31 == 0
     {
-        Box::new(flate2::read::ZlibDecoder::new(compressed))
+        HistoryReader::Zlib(flate2::bufread::ZlibDecoder::new(remaining))
     } else {
-        Box::new(flate2::read::DeflateDecoder::new(compressed))
+        HistoryReader::Raw(flate2::bufread::DeflateDecoder::new(remaining))
+    }
+}
+// A nonempty read is essential: flate2 reports incomplete streams as an error,
+// and gzip validates its trailer on the read following the last output bytes.
+fn inflate_history_step(
+    reader: &mut HistoryReader<'_, '_>,
+    inflated: &mut Vec<u8>,
+    maximum: usize,
+) -> Result<bool> {
+    let mut buffer = [0; 64 * 1024];
+    let budget = buffer.len().min(maximum - inflated.len() + 1);
+    let (result, produced) = match reader {
+        HistoryReader::Gzip(decoder) => (decoder.read(&mut buffer[..budget]), None),
+        HistoryReader::Zlib(decoder) => {
+            let result = decoder.read(&mut buffer[..budget]);
+            (result, Some(decoder.total_out()))
+        }
+        HistoryReader::Raw(decoder) => {
+            let result = decoder.read(&mut buffer[..budget]);
+            (result, Some(decoder.total_out()))
+        }
     };
-    let mut inflated = Vec::new();
-    reader
-        .take(maximum as u64 + 1)
-        .read_to_end(&mut inflated)
-        .map_err(|_| invalid())?;
-    if inflated.len() > maximum {
+    // The backend can produce bytes and report a bad zlib trailer in one call.
+    // Its public output count preserves quota precedence even on that error.
+    if produced.is_some_and(|count| count > maximum as u64) {
         return Err(limit());
     }
-    HistoryChunk::from_proto(ProtoMessage::decode(&inflated)?)
+    let count = result.map_err(|_| invalid())?;
+    if count > maximum - inflated.len() {
+        return Err(limit());
+    }
+    inflated.extend_from_slice(&buffer[..count]);
+    Ok(count == 0)
+}
+fn finish_history(remaining: &[u8], inflated: &[u8]) -> Result<HistoryChunk> {
+    if !remaining.is_empty() {
+        return Err(invalid());
+    }
+    HistoryChunk::from_proto(ProtoMessage::decode(inflated)?)
+}
+pub fn decode_history_payload(compressed: &[u8], maximum: usize) -> Result<HistoryChunk> {
+    validate_history_input(compressed, maximum)?;
+    let mut remaining = compressed;
+    let mut reader = history_reader(&mut remaining);
+    let mut inflated = Vec::new();
+    while !inflate_history_step(&mut reader, &mut inflated, maximum)? {}
+    // BufRead consumes only the first stream, without read-ahead into its tail.
+    drop(reader);
+    finish_history(remaining, &inflated)
+}
+async fn decode_downloaded_history(
+    compressed: &[u8],
+    maximum: usize,
+    cancellation: &tokio_util::sync::CancellationToken,
+) -> Result<HistoryChunk> {
+    validate_history_input(compressed, maximum)?;
+    let mut remaining = compressed;
+    let mut reader = history_reader(&mut remaining);
+    let mut inflated = Vec::new();
+    let mut steps = 0;
+    loop {
+        if cancellation.is_cancelled() {
+            return Err(crate::transport::cancelled());
+        }
+        if inflate_history_step(&mut reader, &mut inflated, maximum)? {
+            break;
+        }
+        steps = (steps + 1) % 32;
+        if steps == 0 {
+            tokio::task::yield_now().await;
+        }
+    }
+    drop(reader);
+    if cancellation.is_cancelled() {
+        return Err(crate::transport::cancelled());
+    }
+    finish_history(remaining, &inflated)
 }
 pub async fn download_history_chunk(
     input: HistoryChunkInput,
@@ -340,7 +415,12 @@ pub async fn download_history_chunk(
         return Err(crate::transport::cancelled());
     }
     {
-        let chunk = decode_history_payload(&compressed, options.max_inflated_bytes)?;
+        let chunk = decode_downloaded_history(
+            &compressed,
+            options.max_inflated_bytes,
+            &options.media.cancellation,
+        )
+        .await?;
         if options.media.cancellation.is_cancelled() {
             return Err(crate::transport::cancelled());
         }
