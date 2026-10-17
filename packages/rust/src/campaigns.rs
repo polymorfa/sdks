@@ -1,4 +1,8 @@
 //! Typed Messaging and Platform campaigns. Enrollment and send eligibility remain API-owned.
+use crate::campaign_contracts::{
+    optional_nonnull, required_nullable, CampaignRecipientFailureReason,
+};
+use crate::campaign_existing::{input_error, validate_input, validate_message_extensions};
 use crate::{
     models::SuccessEnvelope,
     transport::{encode, HttpTransport},
@@ -9,6 +13,32 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 macro_rules! wire_enum{($name:ident{$($variant:ident=$wire:literal),*$(,)?})=>{#[derive(Clone,Copy,Debug,Serialize,Deserialize)]pub enum $name{$(#[serde(rename=$wire)]$variant),*}}}
 macro_rules! model{($name:ident{$($field:ident:$ty:ty),*;$($opt:ident:$opt_ty:ty),*$(,)?})=>{#[derive(Clone,Debug,Serialize,Deserialize)]#[serde(rename_all="camelCase")]pub struct $name{$(pub $field:$ty,)*$(#[serde(skip_serializing_if="Option::is_none")]pub $opt:Option<$opt_ty>,)*}}}
+
+/// A recipient-variable binding. Empty bindings and numeric mapping keys are valid.
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CampaignVariableBinding {
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub source: Option<String>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub fallback: Option<String>,
+}
+pub type CampaignVariableMapping = BTreeMap<String, CampaignVariableBinding>;
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CampaignTrackedLink {
+    pub key: String,
+    pub url: String,
+}
+
 wire_enum!(CampaignWinnerCriterion{Delivery="delivery",Read="read",Reply="reply"});
 wire_enum!(CampaignWeekday{Monday="monday",Tuesday="tuesday",Wednesday="wednesday",Thursday="thursday",Friday="friday",Saturday="saturday",Sunday="sunday"});
 wire_enum!(CampaignRecipientStatus{Queued="queued",Sending="sending",Sent="sent",Delivered="delivered",Read="read",Failed="failed",Skipped="skipped"});
@@ -33,12 +63,30 @@ impl TryFrom<u8> for CampaignBlueprintVersion {
         }
     }
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct CampaignVariantMessage {
     pub version: CampaignBlueprintVersion,
     pub source: String,
     #[serde(flatten)]
     pub extensions: BTreeMap<String, serde_json::Value>,
+}
+impl Serialize for CampaignVariantMessage {
+    fn serialize<S: serde::Serializer>(&self, s: S) -> std::result::Result<S::Ok, S::Error> {
+        use serde::ser::{Error, SerializeMap};
+        if ["version", "source"]
+            .iter()
+            .any(|k| self.extensions.contains_key(*k))
+        {
+            return Err(S::Error::custom("Reserved campaign blueprint field"));
+        }
+        let mut map = s.serialize_map(Some(2 + self.extensions.len()))?;
+        map.serialize_entry("version", &self.version)?;
+        map.serialize_entry("source", &self.source)?;
+        for (k, v) in &self.extensions {
+            map.serialize_entry(k, v)?;
+        }
+        map.end()
+    }
 }
 pub type CampaignMessageVariationBlueprint = CampaignVariantMessage;
 model!(CampaignVariant{key:String,label:String,weight:u8,blueprint:CampaignVariantMessage;});
@@ -56,11 +104,20 @@ pub enum CampaignExperimentOutcome {
 }
 wire_enum!(CampaignInconclusiveReason{InsufficientEvidence="insufficient_evidence"});
 model!(CampaignExperimentVariantResult{key:String,label:String,weight:u8,assigned:u64,sent:u64,delivered:u64,read:u64,replied:u64,outcome_rate:f64;});
-model!(CampaignExperimentResults{criterion:CampaignWinnerCriterion,outcome:Option<CampaignExperimentOutcome>,holdout_count:u64,reserve_count:u64,variants:Vec<CampaignExperimentVariantResult>;});
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CampaignExperimentResults {
+    pub criterion: CampaignWinnerCriterion,
+    #[serde(deserialize_with = "required_nullable")]
+    pub outcome: Option<CampaignExperimentOutcome>,
+    pub holdout_count: u64,
+    pub reserve_count: u64,
+    pub variants: Vec<CampaignExperimentVariantResult>,
+}
 model!(CampaignMessageVariation{key:String,weight:u8,blueprint:CampaignVariantMessage;});
 /// A follow-up sends either text or a project-scoped template.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "snake_case")]
+#[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum CampaignFollowUpMessage {
     Text {
         text: String,
@@ -72,12 +129,72 @@ pub enum CampaignFollowUpMessage {
 }
 // Receipt-timed beta follow-up. Timing stays optional even in returned configuration.
 // Enrollment, defaults, bounds, and send eligibility remain API-owned.
-model!(CampaignFollowUp{message:CampaignFollowUpMessage;delay_seconds:u32,expiry_seconds:u32});
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CampaignFollowUp {
+    pub message: CampaignFollowUpMessage,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub delay_seconds: Option<u32>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub expiry_seconds: Option<u32>,
+}
 wire_enum!(CampaignFollowUpStatus{WaitingReceipt="waiting_receipt",Scheduled="scheduled",Sending="sending",Sent="sent",Cancelled="cancelled",Expired="expired",Failed="failed",OutcomeUnknown="outcome_unknown"});
 wire_enum!(CampaignFollowUpAnchorKind{Delivered="delivered",Read="read"});
 // Receipt and outcome times are Unix milliseconds, with null for absent receipts.
-model!(CampaignFollowUpSummary{id:String,number_id:String,status:CampaignFollowUpStatus,anchor_kind:Option<CampaignFollowUpAnchorKind>,first_delivered_at:Option<u64>,first_read_at:Option<u64>,due_at:Option<u64>,expires_at:u64,sent_at:Option<u64>,delivered_at:Option<u64>,read_at:Option<u64>,replied_at:Option<u64>,reason:Option<String>,command_id:Option<String>;});
-model!(CampaignFollowUpReport{total:u64,waiting:u64,scheduled:u64,sending:u64,sent:u64,delivered:u64,read:u64,replied:u64,cancelled:u64,expired:u64,failed:u64,unknown:u64,next_due_at:Option<u64>;});
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CampaignFollowUpSummary {
+    pub id: String,
+    pub number_id: String,
+    pub status: CampaignFollowUpStatus,
+    #[serde(deserialize_with = "required_nullable")]
+    pub anchor_kind: Option<CampaignFollowUpAnchorKind>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub first_delivered_at: Option<u64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub first_read_at: Option<u64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub due_at: Option<u64>,
+    pub expires_at: u64,
+    #[serde(deserialize_with = "required_nullable")]
+    pub sent_at: Option<u64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub delivered_at: Option<u64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub read_at: Option<u64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub replied_at: Option<u64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub reason: Option<String>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub command_id: Option<String>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CampaignFollowUpReport {
+    pub total: u64,
+    pub waiting: u64,
+    pub scheduled: u64,
+    pub sending: u64,
+    pub sent: u64,
+    pub delivered: u64,
+    pub read: u64,
+    pub replied: u64,
+    pub cancelled: u64,
+    pub expired: u64,
+    pub failed: u64,
+    pub unknown: u64,
+    #[serde(deserialize_with = "required_nullable")]
+    pub next_due_at: Option<u64>,
+}
 
 model!(CampaignSendWindowRange{start:String,end:String;});
 model!(CampaignSendWindowRequest{days:Vec<CampaignWeekday>,hours:Vec<CampaignSendWindowRange>;time_zone:String,recipient_time_zone:bool,time_zone_variable:String});
@@ -85,6 +202,13 @@ model!(CampaignSendWindow{time_zone:String,days:Vec<CampaignWeekday>,hours:Vec<C
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Campaign {
+    pub tracked_links: Vec<CampaignTrackedLink>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub variable_mapping: Option<Option<CampaignVariableMapping>>,
     pub id: String,
     pub name: String,
     pub status: String,
@@ -124,24 +248,16 @@ pub struct Campaign {
         deserialize_with = "crate::configuration::deserialize_present_option"
     )]
     pub variant_strategy: Option<Option<CampaignVariantStrategy>>,
-    #[serde(
-        default,
-        skip_serializing_if = "Option::is_none",
-        deserialize_with = "crate::configuration::deserialize_present_option"
-    )]
-    pub experiment_outcome: Option<Option<CampaignExperimentOutcome>>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub experiment_outcome: Option<CampaignExperimentOutcome>,
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
         deserialize_with = "crate::configuration::deserialize_present_option"
     )]
     pub message_variations: Option<Option<Vec<CampaignMessageVariation>>>,
-    #[serde(
-        default,
-        skip_serializing_if = "Option::is_none",
-        deserialize_with = "crate::configuration::deserialize_present_option"
-    )]
-    pub follow_up: Option<Option<CampaignFollowUp>>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub follow_up: Option<CampaignFollowUp>,
     #[serde(flatten)]
     pub extensions: BTreeMap<String, serde_json::Value>,
 }
@@ -157,15 +273,17 @@ pub struct CampaignAnalytics {
     pub skipped_count: u64,
     pub responded_count: u64,
     pub response_rate: f64,
-    #[serde(
-        default,
-        skip_serializing_if = "Option::is_none",
-        deserialize_with = "crate::configuration::deserialize_present_option"
-    )]
-    pub experiment: Option<Option<CampaignExperimentResults>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub follow_ups: Option<CampaignFollowUpReport>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub average_response_time_ms: Option<f64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub min_response_time_ms: Option<f64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub max_response_time_ms: Option<f64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub experiment: Option<CampaignExperimentResults>,
+    pub follow_ups: CampaignFollowUpReport,
 }
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum CampaignVariableValue {
@@ -174,12 +292,48 @@ pub enum CampaignVariableValue {
     Boolean(bool),
 }
 model!(CampaignRecipientInput{phone:String;variables:BTreeMap<String,CampaignVariableValue>});
-model!(CampaignRecipient{id:String,phone:String,variables:BTreeMap<String,serde_json::Value>,variant_key:Option<String>,status:CampaignRecipientStatus,attempts:u32,last_error:Option<String>,external_message_id:Option<String>,queued_at:u64,sent_at:Option<u64>,delivered_at:Option<u64>,read_at:Option<u64>,failed_at:Option<u64>,responded_at:Option<u64>;follow_up:CampaignFollowUpSummary});
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CampaignRecipient {
+    pub id: String,
+    pub phone: String,
+    pub variables: BTreeMap<String, serde_json::Value>,
+    pub status: CampaignRecipientStatus,
+    pub attempts: u32,
+    pub queued_at: u64,
+    pub messages_sent: u64,
+    #[serde(deserialize_with = "required_nullable")]
+    pub variant_key: Option<String>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub last_error: Option<String>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub external_message_id: Option<String>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub sent_at: Option<u64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub delivered_at: Option<u64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub read_at: Option<u64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub failed_at: Option<u64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub responded_at: Option<u64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub failure_reason: Option<CampaignRecipientFailureReason>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub next_message_at: Option<f64>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub sequence_error: Option<String>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub follow_up: Option<CampaignFollowUpSummary>,
+}
+
 model!(CampaignRecipientPage{next_cursor:Option<String>,has_more:bool;});
 model!(ListCampaignRecipientsResponse{success:bool,data:Vec<CampaignRecipient>,page:CampaignRecipientPage;});
 model!(PlatformCampaignRecipientsEnvelope{data:Vec<CampaignRecipient>,page:CampaignRecipientPage;});
 #[derive(Clone, Debug, Default)]
 pub struct ListCampaignRecipientsParameters {
+    pub reason: Option<CampaignRecipientFailureReason>,
     pub status: Option<CampaignRecipientStatus>,
     pub cursor: Option<String>,
     pub limit: Option<u32>,
@@ -202,10 +356,20 @@ pub struct CampaignStopOperation {
     pub operation_id: Option<String>,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct LaunchCampaignRequest {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub scheduled_at: Option<u64>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub skip_missing_variables: Option<bool>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub scheduled_at: Option<f64>,
 }
 model!(RescheduleCampaignRequest{scheduled_at:Option<u64>;});
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -216,18 +380,46 @@ pub struct RequeueCampaignRequest {
 }
 model!(CampaignRequeueResult{requeued:u64;});
 macro_rules! nullable{($($field:ident:$ty:ty),*$(,)?)=>{#[derive(Clone,Debug,Default,Serialize,Deserialize)]#[serde(rename_all="camelCase")]pub struct UpdateCampaignRequest{#[serde(skip_serializing_if="Option::is_none")]pub name:Option<String>,#[serde(skip_serializing_if="Option::is_none")]pub sender_config:Option<BTreeMap<String,serde_json::Value>>,$(#[serde(default,skip_serializing_if="Option::is_none",deserialize_with="crate::configuration::deserialize_present_option")]pub $field:Option<Option<$ty>>,)*}}}
-nullable!(recipient_list_id:String,scheduled_at:u64,send_window:CampaignSendWindowRequest,message_variations:Vec<CampaignMessageVariation>,variants:Vec<CampaignVariant>,variant_strategy:CampaignVariantStrategy,follow_up:CampaignFollowUp);
+nullable!(template_id:String,variable_mapping:CampaignVariableMapping,tracked_links:Vec<CampaignTrackedLink>,recipient_list_id:String,scheduled_at:u64,send_window:CampaignSendWindowRequest,message_variations:Vec<CampaignMessageVariation>,variants:Vec<CampaignVariant>,variant_strategy:CampaignVariantStrategy,follow_up:CampaignFollowUp);
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateCampaignRequest {
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub variable_mapping: Option<CampaignVariableMapping>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub tracked_links: Option<Option<Vec<CampaignTrackedLink>>>,
     pub name: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub template_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub recipient_list_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub sender_config: Option<BTreeMap<String, serde_json::Value>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub scheduled_at: Option<u64>,
     #[serde(
         default,
@@ -235,7 +427,11 @@ pub struct CreateCampaignRequest {
         deserialize_with = "crate::configuration::deserialize_present_option"
     )]
     pub send_window: Option<Option<CampaignSendWindowRequest>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub recipients: Option<Vec<CampaignRecipientInput>>,
     #[serde(
         default,
@@ -263,8 +459,29 @@ pub struct CreateCampaignRequest {
     pub follow_up: Option<Option<CampaignFollowUp>>,
 }
 impl ListCampaignRecipientsParameters {
+    fn validate(&self) -> Result<()> {
+        if self.limit.is_some_and(|n| !(1..=100).contains(&n))
+            || self
+                .cursor
+                .as_ref()
+                .is_some_and(|s| s.is_empty() || s.encode_utf16().count() > 256)
+        {
+            return Err(Error::local(
+                ErrorKind::Validation,
+                "Invalid campaign recipient query",
+                "invalid_parameter",
+            ));
+        }
+        Ok(())
+    }
     fn query(&self) -> Vec<(&'static str, String)> {
         let mut query = Vec::new();
+        if let Some(v) = self.reason {
+            query.push((
+                "reason",
+                serde_json::to_value(v).unwrap().as_str().unwrap().into(),
+            ));
+        }
         if let Some(v) = self.status {
             query.push((
                 "status",
@@ -307,6 +524,7 @@ impl MessagingCampaigns<'_> {
         body: &CreateCampaignRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Campaign>>> {
+        validate_input(body, false, false)?;
         self.0
             .request(
                 Method::POST,
@@ -332,6 +550,7 @@ impl MessagingCampaigns<'_> {
         body: &UpdateCampaignRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Campaign>>> {
+        validate_input(body, false, true)?;
         if body.name.is_none()
             && body.sender_config.is_none()
             && body.recipient_list_id.is_none()
@@ -341,6 +560,9 @@ impl MessagingCampaigns<'_> {
             && body.variants.is_none()
             && body.variant_strategy.is_none()
             && body.follow_up.is_none()
+            && body.template_id.is_none()
+            && body.variable_mapping.is_none()
+            && body.tracked_links.is_none()
         {
             return Err(Error::local(
                 ErrorKind::Validation,
@@ -378,6 +600,9 @@ impl MessagingCampaigns<'_> {
         body: &LaunchCampaignRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CampaignOperation>>> {
+        if body.scheduled_at.is_some_and(|n| !n.is_finite()) {
+            return Err(input_error());
+        }
         self.0
             .request(
                 Method::POST,
@@ -460,6 +685,7 @@ impl MessagingCampaigns<'_> {
         params: &ListCampaignRecipientsParameters,
         options: RequestOptions,
     ) -> Result<ApiResponse<ListCampaignRecipientsResponse>> {
+        params.validate()?;
         self.0
             .request::<_, ()>(
                 Method::GET,
@@ -511,15 +737,43 @@ pub type PlatformCampaign = Campaign;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreatePlatformCampaignRequest {
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub variable_mapping: Option<CampaignVariableMapping>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub tracked_links: Option<Option<Vec<CampaignTrackedLink>>>,
     pub project_id: String,
     pub name: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub template_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub recipient_list_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub sender_config: Option<BTreeMap<String, serde_json::Value>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub scheduled_at: Option<u64>,
     #[serde(
         default,
@@ -527,23 +781,59 @@ pub struct CreatePlatformCampaignRequest {
         deserialize_with = "crate::configuration::deserialize_present_option"
     )]
     pub send_window: Option<Option<CampaignSendWindowRequest>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub recipients: Option<Vec<CampaignRecipientInput>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub recipient_count: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub composer_blueprint: Option<serde_json::Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub messages_array: Option<serde_json::Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub messages_array: Option<Vec<CampaignMessage>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub audience_ref: Option<serde_json::Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub compliance_config: Option<serde_json::Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub variants: Option<Vec<CampaignVariant>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub variant_strategy: Option<CampaignVariantStrategy>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
     pub message_variations: Option<Vec<CampaignMessageVariation>>,
     #[serde(
         default,
@@ -555,6 +845,13 @@ pub struct CreatePlatformCampaignRequest {
 // The open update body names the documented fields, preserving any later API field.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct UpdatePlatformCampaignRequest {
+    #[serde(
+        rename = "messagesArray",
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub messages_array: Option<Vec<CampaignMessage>>,
     #[serde(flatten)]
     pub changes: UpdateCampaignRequest,
     #[serde(flatten)]
@@ -566,13 +863,14 @@ model!(ReschedulePlatformCampaignRequest{project_id:String,scheduled_at:Option<u
 #[derive(Clone, Debug)]
 pub struct ListPlatformCampaignRecipientsParameters {
     pub project_id: String,
+    pub reason: Option<CampaignRecipientFailureReason>,
     pub status: Option<CampaignRecipientStatus>,
     pub cursor: Option<String>,
     pub limit: Option<u32>,
 }
 model!(AddPlatformCampaignRecipientsRequest{project_id:String,recipients:Vec<CampaignRecipientInput>;});
 pub type AddPlatformCampaignRecipientsResult = AddCampaignRecipientsResult;
-model!(PlatformCampaignAnalytics{campaign_id:String,recipient_count:u64,sent_count:u64,delivered_count:u64,read_count:u64,failed_count:u64,skipped_count:u64,responded_count:u64,response_rate:f64,average_response_time_ms:Option<f64>,min_response_time_ms:Option<f64>,max_response_time_ms:Option<f64>,experiment:Option<CampaignExperimentResults>,follow_ups:CampaignFollowUpReport;});
+pub type PlatformCampaignAnalytics = CampaignAnalytics;
 model!(CampaignConversionValue{amount_minor:u64,currency:String;});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -599,6 +897,118 @@ wire_enum!(CampaignConversionCorrelation{ExplicitRecipient="explicit_recipient"}
 model!(CampaignConversionModel{touch:CampaignConversionTouch,window_days:u8,correlation:CampaignConversionCorrelation;});
 model!(CampaignConversionCounts{total:u64,attributed:u64,outside_window:u64,not_sent:u64,opted_out:u64;});
 model!(CampaignConversionReport{campaign_id:String,model:CampaignConversionModel,sent_count:u64,conversions:CampaignConversionCounts,converted_recipients:u64,conversion_rate:f64,values:Vec<CampaignConversionCurrencyTotal>;});
+
+wire_enum!(CampaignMessageMediaKind{Image="image",Video="video",Audio="audio",Document="document"});
+wire_enum!(CampaignMessageButtonKind{Reply="reply",Link="link",Call="call"});
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CampaignMessageMedia {
+    pub kind: CampaignMessageMediaKind,
+    pub url: String,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub filename: Option<String>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub caption: Option<String>,
+    #[serde(flatten)]
+    pub extensions: BTreeMap<String, serde_json::Value>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CampaignMessageButton {
+    pub kind: CampaignMessageButtonKind,
+    pub label: String,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub url: Option<String>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub phone: Option<String>,
+    #[serde(flatten)]
+    pub extensions: BTreeMap<String, serde_json::Value>,
+}
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CampaignMessage {
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub version: Option<CampaignBlueprintVersion>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub source: Option<String>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub media: Option<CampaignMessageMedia>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub buttons: Option<Vec<CampaignMessageButton>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub footer: Option<String>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub delay_after_sec: Option<u32>,
+    #[serde(flatten)]
+    pub extensions: BTreeMap<String, serde_json::Value>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct LaunchPlatformCampaignRequest {
+    pub project_id: String,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub scheduled_at: Option<f64>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub skip_missing_variables: Option<bool>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PlatformCampaignLaunchResult {
+    pub id: String,
+    pub status: String,
+    pub operation_id: String,
+    #[serde(flatten)]
+    pub extensions: BTreeMap<String, serde_json::Value>,
+}
+
 pub type PlatformCampaignPayload = BTreeMap<String, serde_json::Value>;
 pub struct PlatformCampaigns<'a>(pub(crate) &'a HttpTransport);
 fn platform_campaign(id: &str) -> String {
@@ -623,6 +1033,10 @@ impl PlatformCampaigns<'_> {
         body: &CreatePlatformCampaignRequest,
         mut options: RequestOptions,
     ) -> Result<ApiResponse<crate::models::DataEnvelope<PlatformCampaign>>> {
+        if let Some(messages) = &body.messages_array {
+            validate_message_extensions(messages)?;
+        }
+        validate_input(body, true, false)?;
         options.max_network_retries = Some(0);
         options.idempotency_key = None;
         self.0
@@ -641,7 +1055,13 @@ impl PlatformCampaigns<'_> {
         params: &PlatformCampaignParameters,
         options: RequestOptions,
     ) -> Result<ApiResponse<crate::models::DataEnvelope<Option<PlatformCampaign>>>> {
-        self.0
+        #[derive(Deserialize)]
+        struct NullableCampaignData {
+            #[serde(deserialize_with = "required_nullable")]
+            data: Option<PlatformCampaign>,
+        }
+        let response: ApiResponse<NullableCampaignData> = self
+            .0
             .request::<_, ()>(
                 Method::GET,
                 &platform_campaign(id),
@@ -649,7 +1069,13 @@ impl PlatformCampaigns<'_> {
                 None,
                 options,
             )
-            .await
+            .await?;
+        Ok(ApiResponse {
+            data: crate::models::DataEnvelope {
+                data: response.data.data,
+            },
+            metadata: response.metadata,
+        })
     }
     pub async fn update(
         &self,
@@ -658,6 +1084,33 @@ impl PlatformCampaigns<'_> {
         params: &PlatformCampaignParameters,
         options: RequestOptions,
     ) -> Result<ApiResponse<crate::models::DataEnvelope<PlatformCampaign>>> {
+        if let Some(body) = body {
+            for key in [
+                "projectId",
+                "id",
+                "name",
+                "senderConfig",
+                "templateId",
+                "variableMapping",
+                "trackedLinks",
+                "recipientListId",
+                "scheduledAt",
+                "sendWindow",
+                "messageVariations",
+                "variants",
+                "variantStrategy",
+                "followUp",
+                "messagesArray",
+            ] {
+                if body.extensions.contains_key(key) {
+                    return Err(input_error());
+                }
+            }
+            if let Some(messages) = &body.messages_array {
+                validate_message_extensions(messages)?;
+            }
+            validate_input(body, true, true)?;
+        }
         self.0
             .request(
                 Method::PATCH,
@@ -687,10 +1140,23 @@ impl PlatformCampaigns<'_> {
     pub async fn launch(
         &self,
         id: &str,
-        body: Option<&PlatformCampaignPayload>,
+        body: &LaunchPlatformCampaignRequest,
         options: RequestOptions,
-    ) -> Result<ApiResponse<crate::models::DataEnvelope<PlatformCampaignPayload>>> {
-        self.action(id, "launch", body, options.idempotent()).await
+    ) -> Result<ApiResponse<crate::models::DataEnvelope<PlatformCampaignLaunchResult>>> {
+        if !crate::campaign_existing::uuid(&body.project_id)
+            || body.scheduled_at.is_some_and(|n| !n.is_finite())
+        {
+            return Err(input_error());
+        }
+        self.0
+            .request(
+                Method::POST,
+                &format!("{}/launch", platform_campaign(id)),
+                &[],
+                Some(body),
+                options.idempotent(),
+            )
+            .await
     }
     pub async fn pause(
         &self,
@@ -794,16 +1260,25 @@ impl PlatformCampaigns<'_> {
         params: &ListPlatformCampaignRecipientsParameters,
         options: RequestOptions,
     ) -> Result<ApiResponse<PlatformCampaignRecipientsEnvelope>> {
+        ListCampaignRecipientsParameters {
+            reason: params.reason,
+            status: params.status,
+            cursor: params.cursor.clone(),
+            limit: params.limit,
+        }
+        .validate()?;
         let mut query = vec![("projectId", params.project_id.clone())];
         query.extend(
             ListCampaignRecipientsParameters {
+                reason: params.reason,
                 status: params.status,
                 cursor: params.cursor.clone(),
                 limit: params.limit,
             }
             .query(),
         );
-        self.0
+        let response: ApiResponse<PlatformCampaignRecipientsEnvelope> = self
+            .0
             .request::<_, ()>(
                 Method::GET,
                 &format!("{}/recipients", platform_campaign(id)),
@@ -811,7 +1286,19 @@ impl PlatformCampaigns<'_> {
                 None,
                 options,
             )
-            .await
+            .await?;
+        if response.data.data.iter().any(|r| {
+            r.next_message_at
+                .is_some_and(|n| !n.is_finite() || n.fract() != 0.0)
+        }) {
+            return Err(Error::local(
+                ErrorKind::Server,
+                "Invalid Platform recipient time",
+                "invalid_response",
+            )
+            .with_metadata(response.metadata));
+        }
+        Ok(response)
     }
     pub async fn add_recipients(
         &self,

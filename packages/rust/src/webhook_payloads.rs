@@ -369,12 +369,225 @@ pub struct LinkedHistorySyncPayload {
     pub whatsapp: EncodedHistory,
 }
 payload!(CloudHistorySyncPayload {kind:CloudHistoryKind,value:BTreeMap<String,serde_json::Value>} {});
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize)]
 #[serde(untagged)]
 pub enum HistorySyncPayload {
+    DescriptorMedia(Box<DirectHistoryMediaPayload>),
+    DescriptorInline(Box<DirectHistoryInlinePayload>),
     LinkedDevices(Box<LinkedHistorySyncPayload>),
     OfficialApi(CloudHistorySyncPayload),
 }
+/// New projected history delivery. This is distinct from the runner's broker payload.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+pub enum DescriptorHistoryDelivery {
+    #[serde(rename = "descriptor")]
+    Descriptor,
+}
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+pub enum DescriptorHistoryMediaType {
+    #[serde(rename = "md-msg-hist")]
+    MessageHistory,
+}
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+pub enum DescriptorHistoryInlineEncoding {
+    #[serde(rename = "zlib-base64-protobuf")]
+    ZlibBase64Protobuf,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DirectHistorySyncCommon {
+    pub delivery: DescriptorHistoryDelivery,
+    #[serde(rename = "whatsapp_ids")]
+    pub whatsapp_ids: WhatsAppMessageIds,
+    pub sync_type: String,
+    /// JSON number domain. No downloader allocation or uint32 bound is implied.
+    pub file_length: f64,
+    #[serde(
+        rename = "original_whatsapp_ids",
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
+    pub original_whatsapp_ids: Option<WhatsAppMessageIds>,
+    #[serde(
+        rename = "whatsapp_id",
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
+    pub whatsapp_id: Option<String>,
+    #[serde(
+        rename = "original_whatsapp_id",
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
+    pub original_whatsapp_id: Option<String>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
+    pub chunk_order: Option<f64>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
+    pub progress: Option<u8>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
+    pub oldest_message_at: Option<String>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
+    pub peer_data_request_session_id: Option<String>,
+}
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct DirectHistoryMedia {
+    #[serde(rename = "type")]
+    pub media_type: DescriptorHistoryMediaType,
+    pub direct_path: String,
+    pub media_key: String,
+    pub file_sha256: String,
+    pub file_enc_sha256: String,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
+    pub enc_handle: Option<String>,
+}
+impl std::fmt::Debug for DirectHistoryMedia {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("DirectHistoryMedia { [REDACTED] }")
+    }
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectHistoryInline {
+    pub encoding: DescriptorHistoryInlineEncoding,
+    pub data: String,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DirectHistoryMediaPayload {
+    #[serde(flatten)]
+    pub common: DirectHistorySyncCommon,
+    pub media: DirectHistoryMedia,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DirectHistoryInlinePayload {
+    #[serde(flatten)]
+    pub common: DirectHistorySyncCommon,
+    pub inline: DirectHistoryInline,
+}
+impl<'de> Deserialize<'de> for HistorySyncPayload {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> std::result::Result<Self, D::Error> {
+        use serde::de::Error as _;
+        let v = serde_json::Value::deserialize(d)?;
+        let bad = || D::Error::custom("Invalid projected history payload");
+        if v.get("delivery").is_some() {
+            let object = v.as_object().ok_or_else(bad)?;
+            let allowed = [
+                "delivery",
+                "whatsapp_ids",
+                "whatsapp_id",
+                "original_whatsapp_ids",
+                "original_whatsapp_id",
+                "syncType",
+                "fileLength",
+                "chunkOrder",
+                "progress",
+                "oldestMessageAt",
+                "peerDataRequestSessionId",
+                "media",
+                "inline",
+            ];
+            if object.keys().any(|k| !allowed.contains(&k.as_str()))
+                || v["delivery"] != "descriptor"
+                || object.contains_key("media") == object.contains_key("inline")
+            {
+                return Err(bad());
+            }
+            let provider_ids = |v: &serde_json::Value| {
+                v.as_object().is_some_and(|ids| {
+                    !ids.is_empty()
+                        && ids.iter().all(|(key, value)| {
+                            ["linked_devices", "official_api"].contains(&key.as_str())
+                                && value
+                                    .as_str()
+                                    .is_some_and(|s| (1..=512).contains(&s.encode_utf16().count()))
+                        })
+                })
+            };
+            if !provider_ids(&v["whatsapp_ids"])
+                || v.get("original_whatsapp_ids")
+                    .is_some_and(|v| !provider_ids(v))
+            {
+                return Err(bad());
+            }
+            for key in ["whatsapp_id", "original_whatsapp_id"] {
+                if v.get(key).is_some_and(|v| {
+                    v.as_str()
+                        .is_none_or(|s| !(1..=512).contains(&s.encode_utf16().count()))
+                }) {
+                    return Err(bad());
+                }
+            }
+            let integer = |v: &serde_json::Value| {
+                v.as_f64()
+                    .is_some_and(|n| n.is_finite() && n >= 0.0 && n.fract() == 0.0)
+            };
+            if !integer(&v["fileLength"])
+                || v.get("chunkOrder").is_some_and(|v| !integer(v))
+                || v["syncType"].as_str().is_none_or(str::is_empty)
+            {
+                return Err(bad());
+            }
+            if let Some(t) = v.get("oldestMessageAt") {
+                let t = t.as_str().ok_or_else(bad)?;
+                if !t.ends_with('Z') || chrono::DateTime::parse_from_rfc3339(t).is_err() {
+                    return Err(bad());
+                }
+            }
+            if v.get("progress")
+                .is_some_and(|v| !integer(v) || v.as_f64().unwrap() > 100.0)
+            {
+                return Err(bad());
+            }
+            if object.contains_key("media") {
+                for key in ["directPath", "mediaKey", "fileSha256", "fileEncSha256"] {
+                    if v["media"][key].as_str().is_none_or(str::is_empty) {
+                        return Err(bad());
+                    }
+                }
+                let p = serde_json::from_value(v).map_err(|_| bad())?;
+                Ok(Self::DescriptorMedia(Box::new(p)))
+            } else {
+                if v["inline"]["data"].as_str().is_none_or(str::is_empty) {
+                    return Err(bad());
+                }
+                let p = serde_json::from_value(v).map_err(|_| bad())?;
+                Ok(Self::DescriptorInline(Box::new(p)))
+            }
+        } else if v.get("kind").is_some() {
+            serde_json::from_value(v)
+                .map(Self::OfficialApi)
+                .map_err(|_| bad())
+        } else {
+            serde_json::from_value(v)
+                .map(|p| Self::LinkedDevices(Box::new(p)))
+                .map_err(|_| bad())
+        }
+    }
+}
+
 payload!(ContactsSyncPayload {kind:ContactsSyncKind,value:BTreeMap<String,serde_json::Value>} {});
 payload!(MessageEchoPayload {source:MessageEchoSource,value:BTreeMap<String,serde_json::Value>} {});
 payload!(CommandResultPayload {request_id:String,command:String,success:bool} {data:BTreeMap<String,serde_json::Value>,error:String});

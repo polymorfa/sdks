@@ -117,6 +117,7 @@ pub struct SendTestingPhoneMessageRequest {
 pub struct SendTestingPhoneMessageResponse {
     pub session: String,
     pub to: String,
+    #[serde(deserialize_with = "crate::campaign_contracts::required_nullable")]
     pub message_id: Option<String>,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -125,6 +126,17 @@ pub struct UnlinkTestingPhoneDeviceResponse {
     pub session: String,
     pub device_id: u8,
     pub unlinked: bool,
+}
+fn phone_response<T>(response: ApiResponse<T>, status: u16, valid: bool) -> Result<ApiResponse<T>> {
+    if response.metadata.status != status || !valid {
+        return Err(Error::local(
+            ErrorKind::Server,
+            "Invalid testing-phone response",
+            "invalid_response",
+        )
+        .with_metadata(response.metadata));
+    }
+    Ok(response)
 }
 pub struct CloudOnboarding<'a>(pub(crate) &'a HttpTransport);
 pub struct Testing<'a>(pub(crate) &'a HttpTransport);
@@ -211,7 +223,8 @@ impl Testing<'_> {
         options: RequestOptions,
     ) -> Result<ApiResponse<TestingPhone>> {
         self.0.server()?;
-        self.0.get(&phone_path(project, session), options).await
+        let response = self.0.get(&phone_path(project, session), options).await?;
+        phone_response(response, 200, true)
     }
     pub async fn send_phone_message(
         &self,
@@ -221,7 +234,8 @@ impl Testing<'_> {
         options: RequestOptions,
     ) -> Result<ApiResponse<SendTestingPhoneMessageResponse>> {
         self.0.server()?;
-        self.0
+        let response = self
+            .0
             .request(
                 Method::POST,
                 &format!("{}/messages", phone_path(project, session)),
@@ -229,7 +243,8 @@ impl Testing<'_> {
                 Some(body),
                 options,
             )
-            .await
+            .await?;
+        phone_response(response, 202, true)
     }
     pub async fn unlink_phone_device(
         &self,
@@ -246,7 +261,8 @@ impl Testing<'_> {
                 "invalid_device_id",
             ));
         }
-        self.0
+        let response: ApiResponse<UnlinkTestingPhoneDeviceResponse> = self
+            .0
             .request::<_, ()>(
                 Method::POST,
                 &format!("{}/devices/{device}/unlink", phone_path(project, session)),
@@ -254,6 +270,8 @@ impl Testing<'_> {
                 None,
                 options,
             )
-            .await
+            .await?;
+        let valid = response.data.unlinked;
+        phone_response(response, 200, valid)
     }
 }

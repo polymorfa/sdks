@@ -3,7 +3,7 @@ mod support;
 use polymorfa_sdk::{campaigns::*, ErrorKind, RequestOptions};
 use serde_json::json;
 fn campaign() -> serde_json::Value {
-    json!({"id":"campaign","name":"Campaign","status":"draft","templateId":null,"recipientListId":"audience","recipientCount":2,"sentCount":1,"deliveredCount":1,"readCount":1,"failedCount":0,"skippedCount":0,"scheduledAt":null,"launchedAt":null,"completedAt":null,"createdAt":1000,"updatedAt":2000,"sendWindow":{"timeZone":"UTC","days":["monday"],"hours":[{"start":"09:00","end":"18:00"}],"recipientTimeZone":true,"timeZoneVariable":"timeZone"},"composerBlueprint":{"version":2,"source":"Hello"},"messages":[],"audienceRef":{"id":"audience"},"senderConfig":{"strategy":"round-robin"},"complianceConfig":{"consent":true},"variants":[{"key":"a","label":"A","weight":50,"blueprint":{"version":2,"source":"Hello","asset":"asset"}},{"key":"b","label":"B","weight":50,"blueprint":{"version":2,"source":"Hi"}}],"variantStrategy":{"winnerCriterion":"read","holdoutPercent":10,"testSlicePercent":20,"autoPromote":true,"testWindowMinutes":60},"experimentOutcome":{"state":"inconclusive","reason":"insufficient_evidence"},"messageVariations":null})
+    json!({"id":"campaign","name":"Campaign","status":"draft","templateId":null,"recipientListId":"audience","recipientCount":2,"sentCount":1,"deliveredCount":1,"readCount":1,"failedCount":0,"skippedCount":0,"scheduledAt":null,"launchedAt":null,"completedAt":null,"createdAt":1000,"updatedAt":2000,"sendWindow":{"timeZone":"UTC","days":["monday"],"hours":[{"start":"09:00","end":"18:00"}],"recipientTimeZone":true,"timeZoneVariable":"timeZone"},"composerBlueprint":{"version":2,"source":"Hello"},"messages":[],"audienceRef":{"id":"audience"},"senderConfig":{"strategy":"round-robin"},"complianceConfig":{"consent":true},"variants":[{"key":"a","label":"A","weight":50,"blueprint":{"version":2,"source":"Hello","asset":"asset"}},{"key":"b","label":"B","weight":50,"blueprint":{"version":2,"source":"Hi"}}],"variantStrategy":{"winnerCriterion":"read","holdoutPercent":10,"testSlicePercent":20,"autoPromote":true,"testWindowMinutes":60},"experimentOutcome":{"state":"inconclusive","reason":"insufficient_evidence"},"messageVariations":null,"trackedLinks":[],"followUp":null})
 }
 fn operation() -> serde_json::Value {
     let mut c = campaign();
@@ -11,7 +11,7 @@ fn operation() -> serde_json::Value {
     c
 }
 fn recipients() -> serde_json::Value {
-    json!([{"id":"recipient","phone":"+15551234567","variables":{"name":"Alex"},"variantKey":"a","status":"read","attempts":1,"lastError":null,"externalMessageId":"message","queuedAt":1000,"sentAt":1100,"deliveredAt":1200,"readAt":1300,"failedAt":null,"respondedAt":1400}])
+    json!([{"id":"recipient","phone":"+15551234567","variables":{"name":"Alex"},"variantKey":"a","status":"read","attempts":1,"lastError":null,"externalMessageId":"message","queuedAt":1000,"sentAt":1100,"deliveredAt":1200,"readAt":1300,"failedAt":null,"respondedAt":1400,"messagesSent":0,"failureReason":null,"nextMessageAt":null,"sequenceError":null,"followUp":null}])
 }
 #[tokio::test]
 async fn messaging_campaign_drafts_analytics_and_recipient_native_wire() {
@@ -77,12 +77,12 @@ async fn messaging_campaign_drafts_analytics_and_recipient_native_wire() {
         "GET",
         "/messaging/projects/project/campaigns/campaign/analytics",
         None,
-        json!({"success":true,"data":{"campaignId":"campaign","recipientCount":2,"sentCount":1,"deliveredCount":1,"readCount":1,"failedCount":0,"skippedCount":0,"respondedCount":1,"responseRate":1.0,"experiment":{"criterion":"read","outcome":{"state":"promoted","winnerKey":"a"},"holdoutCount":1,"reserveCount":5,"variants":[{"key":"a","label":"A","weight":50,"assigned":1,"sent":1,"delivered":1,"read":1,"replied":1,"outcomeRate":1.0}]}}}),
+        json!({"success":true,"data":{"campaignId":"campaign","recipientCount":2,"sentCount":1,"deliveredCount":1,"readCount":1,"failedCount":0,"skippedCount":0,"respondedCount":1,"responseRate":1.0,"averageResponseTimeMs":null,"minResponseTimeMs":null,"maxResponseTimeMs":null,"followUps":{"total":0,"waiting":0,"scheduled":0,"sending":0,"sent":0,"delivered":0,"read":0,"replied":0,"cancelled":0,"expired":0,"failed":0,"unknown":0,"nextDueAt":null},"experiment":{"criterion":"read","outcome":{"state":"promoted","winnerKey":"a"},"holdoutCount":1,"reserveCount":5,"variants":[{"key":"a","label":"A","weight":50,"assigned":1,"sent":1,"delivered":1,"read":1,"replied":1,"outcomeRate":1.0}]}}}),
         client
             .campaigns()
             .analytics("project", "campaign", RequestOptions::default())
     );
-    wire_messaging!(client,"GET","/messaging/projects/project/campaigns/campaign/recipients?status=read&cursor=cursor&limit=25",None,json!({"success":true,"data":recipients(),"page":{"nextCursor":null,"hasMore":false}}),client.campaigns().list_recipients("project","campaign",&ListCampaignRecipientsParameters{status:Some(CampaignRecipientStatus::Read),cursor:Some("cursor".into()),limit:Some(25)},RequestOptions::default()));
+    wire_messaging!(client,"GET","/messaging/projects/project/campaigns/campaign/recipients?status=read&cursor=cursor&limit=25",None,json!({"success":true,"data":recipients(),"page":{"nextCursor":null,"hasMore":false}}),client.campaigns().list_recipients("project","campaign",&ListCampaignRecipientsParameters{reason:None,status:Some(CampaignRecipientStatus::Read),cursor:Some("cursor".into()),limit:Some(25)},RequestOptions::default()));
     wire_messaging!(
         client,
         "POST",
@@ -110,13 +110,14 @@ async fn messaging_campaign_lifecycle_nullable_stop_and_reschedule_native_wire()
         client,
         "POST",
         "/messaging/projects/project/campaigns/campaign/launch",
-        Some(json!({"scheduledAt":1000})),
+        Some(json!({"scheduledAt":1000.0})),
         json!({"success":true,"data":operation()}),
         client.campaigns().launch(
             "project",
             "campaign",
             &LaunchCampaignRequest {
-                scheduled_at: Some(1000)
+                scheduled_at: Some(1000.0),
+                skip_missing_variables: None
             },
             RequestOptions::default()
         )
@@ -316,6 +317,7 @@ async fn platform_campaign_drafts_open_fields_and_recipient_contracts_native_wir
             .retrieve("missing", &params, RequestOptions::default())
     );
     let patch = UpdatePlatformCampaignRequest {
+        messages_array: None,
         changes: UpdateCampaignRequest {
             name: Some("Changed".into()),
             send_window: Some(None),
@@ -363,7 +365,7 @@ async fn platform_campaign_drafts_open_fields_and_recipient_contracts_native_wir
             .campaigns()
             .events("campaign", &params, RequestOptions::default())
     );
-    wire_organization!(client,"GET","/platform/campaigns/campaign/recipients?projectId=project&status=read&cursor=cursor&limit=25",None,json!({"data":recipients(),"page":{"nextCursor":null,"hasMore":false}}),client.campaigns().recipients("campaign",&ListPlatformCampaignRecipientsParameters{project_id:"project".into(),status:Some(CampaignRecipientStatus::Read),cursor:Some("cursor".into()),limit:Some(25)},RequestOptions::default()));
+    wire_organization!(client,"GET","/platform/campaigns/campaign/recipients?projectId=project&status=read&cursor=cursor&limit=25",None,json!({"data":recipients(),"page":{"nextCursor":null,"hasMore":false}}),client.campaigns().recipients("campaign",&ListPlatformCampaignRecipientsParameters{project_id:"project".into(),reason:None,status:Some(CampaignRecipientStatus::Read),cursor:Some("cursor".into()),limit:Some(25)},RequestOptions::default()));
     wire_organization!(
         client,
         "POST",
@@ -390,11 +392,17 @@ async fn platform_campaign_lifecycle_payloads_and_reported_conversions_native_wi
         client,
         "POST",
         "/platform/campaigns/campaign/launch",
-        Some(json!({"projectId":"project"})),
-        json!({"data":{"operationId":"operation"}}),
-        client
-            .campaigns()
-            .launch("campaign", Some(&body), RequestOptions::default())
+        Some(json!({"projectId":"11111111-1111-4111-8111-111111111111"})),
+        json!({"data":{"id":"campaign","status":"scheduled","operationId":"operation"}}),
+        client.campaigns().launch(
+            "campaign",
+            &LaunchPlatformCampaignRequest {
+                project_id: "11111111-1111-4111-8111-111111111111".into(),
+                scheduled_at: None,
+                skip_missing_variables: None
+            },
+            RequestOptions::default()
+        )
     );
     wire_organization!(
         client,
@@ -568,7 +576,7 @@ fn follow_up_contract_models_and_sparse_timing() {
 async fn receipt_timed_follow_up_native_campaign_requests_and_optional_responses() {
     for follow_up in [
         json!({"message":{"type":"text","text":"Hello {{name}}"}}),
-        json!({"delaySeconds":60,"expirySeconds":86400,"message":{"type":"template","templateId":"template"}}),
+        json!({"delaySeconds":60,"expirySeconds":86400,"message":{"type":"template","templateId":"11111111-1111-4111-8111-111111111111"}}),
     ] {
         let body = json!({"name":"Campaign","followUp":follow_up});
         let mut returned = campaign();
@@ -639,7 +647,7 @@ async fn receipt_timed_follow_up_native_campaign_requests_and_optional_responses
     let mut null = campaign();
     null["followUp"] = json!(null);
     let null: Campaign = serde_json::from_value(null).unwrap();
-    assert!(matches!(null.follow_up, Some(None)));
+    assert!(null.follow_up.is_none());
 }
 #[tokio::test]
 async fn follow_up_reports_and_recipient_receipts_native_wire() {
@@ -668,6 +676,7 @@ async fn follow_up_reports_and_recipient_receipts_native_wire() {
         client.campaigns().recipients(
             "campaign",
             &ListPlatformCampaignRecipientsParameters {
+                reason: None,
                 project_id: "project".into(),
                 status: None,
                 cursor: None,
@@ -676,7 +685,7 @@ async fn follow_up_reports_and_recipient_receipts_native_wire() {
             RequestOptions::default()
         )
     );
-    let mut analytics = json!({"campaignId":"campaign","recipientCount":2,"sentCount":1,"deliveredCount":1,"readCount":1,"failedCount":0,"skippedCount":0,"respondedCount":1,"responseRate":1.0,"followUps":follow_up_report()});
+    let mut analytics = json!({"campaignId":"campaign","recipientCount":2,"sentCount":1,"deliveredCount":1,"readCount":1,"failedCount":0,"skippedCount":0,"respondedCount":1,"responseRate":1.0,"averageResponseTimeMs":null,"minResponseTimeMs":null,"maxResponseTimeMs":null,"experiment":null,"followUps":follow_up_report()});
     wire_messaging!(
         client,
         "GET",

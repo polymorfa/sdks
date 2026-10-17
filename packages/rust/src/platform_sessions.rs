@@ -341,6 +341,7 @@ impl PlatformSessions<'_> {
         body: &crate::configuration::UpdateSessionRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Session>>> {
+        let options = body.configuration.options(options);
         self.0
             .request(Method::PUT, &path(id), &[], Some(body), options)
             .await

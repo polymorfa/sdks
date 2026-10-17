@@ -158,7 +158,10 @@ async fn connect(State(app): State<Arc<App>>, headers: HeaderMap) -> Response {
         return StatusCode::UNAUTHORIZED.into_response();
     }
     let request = polymorfa_sdk::models::CreateQuickLinkRequest {
+        purpose: Some(polymorfa_sdk::models::CreateQuickLinkPurpose::AddConnection),
         session: Some(app.session.clone()),
+        add_connection: Some(polymorfa_sdk::models::ConnectionKind::LinkedDevices),
+        connection_goal: Some(polymorfa_sdk::models::ConnectionGoal::Hybrid),
         ..Default::default()
     };
     match app.client.quick_links().create(&request,Default::default()).await {Ok(result)=>([(header::CACHE_CONTROL,"no-store")],Json(serde_json::json!({"data":{"id":result.data.data.id,"url":result.data.data.url,"expiresAt":result.data.data.expires_at}}))).into_response(),Err(_)=>StatusCode::BAD_GATEWAY.into_response()}

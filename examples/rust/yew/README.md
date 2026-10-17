@@ -9,8 +9,11 @@ This example provides an application-owned empty inbox. It stores no WhatsApp
 content and enables no hosted history. Replace the history source with your
 application's authorized webhook store or an explicitly enabled HMS source
 when retained conversations are required. The Connect control creates a
-QuickLink on the server for the assigned session and opens Polymorfa's pairing
-page. Client rules, funding, enrollment, and API permissions remain enforced
+supplementary Linked Devices QuickLink on the server for the assigned Number
+and opens Polymorfa's pairing page. The assigned Number must already have an
+Official API connection and be eligible to add Linked Devices. This example
+does not create or select a different Number; initial QuickLinks cannot name an
+existing session. Client rules, funding, enrollment, and API permissions remain enforced
 by Polymorfa.
 
 Install Rust 1.85 or later, Trunk 0.21, and Node.js. From the SDK repository root:

@@ -208,6 +208,7 @@ impl WhatsAppMediaResource<'_> {
         direct: DirectUploadOptions,
         request: RequestOptions,
     ) -> Result<MediaUploadResult> {
+        self.0.server()?;
         if direct.max_attempts == 0 || direct.document_part_size == 0 || direct.timeout.is_zero() {
             return Err(configuration("directUpload"));
         }
@@ -228,6 +229,7 @@ impl WhatsAppMediaResource<'_> {
         direct: DirectUploadOptions,
         request: RequestOptions,
     ) -> Result<UploadLocation> {
+        self.0.server()?;
         if direct.max_attempts == 0 || direct.document_part_size == 0 || direct.timeout.is_zero() {
             return Err(configuration("directUpload"));
         }

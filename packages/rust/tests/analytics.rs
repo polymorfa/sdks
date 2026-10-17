@@ -200,3 +200,72 @@ async fn collector_prometheus_openmetrics_and_invalid_content_native_wire() {
     assert_eq!(error.request_id.as_deref(), Some("analytics"));
     task.await.unwrap();
 }
+#[tokio::test]
+async fn partial_unknown_inventory_and_unavailable_metrics_remain_distinct_on_both_routes() {
+    let mut a = analytics();
+    for owner in ["summary", "numbers"] {
+        let row = if owner == "summary" {
+            &mut a["summary"]
+        } else {
+            &mut a["numbers"][0]
+        };
+        row["deviceAnalytics"]["complete"] = json!(false);
+        row["deviceAnalytics"]["customerPlatforms"][0]["platform"] = json!("unknown");
+        row["deviceAnalytics"]["inventory"]["truncated"] = json!(true);
+        row["deviceAnalytics"]["inventory"]["observedAt"] = json!(null);
+        row["deviceAnalytics"]["inventory"]["deviceCount"] = json!(0);
+        row["recipientActivity"]["complete"] = json!(false);
+        row["recipientActivity"]["droppedSignals"] = json!(2);
+        row["recipientActivity"]["truncated"] = json!(true);
+        row["conversationBreakdown"]["complete"] = json!(false);
+        row["conversationBreakdown"]["droppedConversations"] = json!(3);
+        row["conversationBreakdown"]["truncated"] = json!(true);
+        row["conversationBreakdown"]["rows"][0]["readRate"] = json!(null);
+        row["conversationBreakdown"]["rows"][0]["replyRate"] = json!(0);
+    }
+    let (base, server) = support::wire(
+        "GET",
+        "/platform/analytics",
+        None,
+        json!({"data":a.clone()}),
+    )
+    .await;
+    let result = support::organization(base)
+        .analytics()
+        .get(&Default::default(), Default::default())
+        .await
+        .unwrap();
+    let summary = &result.data.summary.unwrap().metrics;
+    let devices = &summary.device_analytics;
+    assert!(!devices.complete);
+    assert!(matches!(
+        devices.customer_platforms[0].platform,
+        EstimatedPlatform::Unknown
+    ));
+    assert_eq!(devices.inventory.as_ref().unwrap().device_count, Some(0));
+    assert!(devices.inventory.as_ref().unwrap().observed_at.is_none());
+    assert_eq!(
+        summary.recipient_activity.as_ref().unwrap().dropped_signals,
+        2
+    );
+    let conversations = &summary.conversation_breakdown;
+    assert_eq!(conversations.dropped_conversations, 3);
+    assert_eq!(conversations.rows[0].read_rate, None);
+    assert_eq!(conversations.rows[0].reply_rate, Some(0.0));
+    server.await.unwrap();
+    let (base, server) = support::wire(
+        "GET",
+        &format!("/platform/projects/{PROJECT}/analytics"),
+        None,
+        json!({"data":a}),
+    )
+    .await;
+    let client = support::organization(base).project(PROJECT).unwrap();
+    let result = client
+        .analytics()
+        .get(&Default::default(), Default::default())
+        .await
+        .unwrap();
+    assert!(!result.data.numbers[0].metrics.device_analytics.complete);
+    server.await.unwrap();
+}

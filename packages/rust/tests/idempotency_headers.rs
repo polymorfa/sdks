@@ -230,7 +230,7 @@ async fn replay(options: RequestOptions, expected: Option<&str>) {
             } else {
                 (
                     200,
-                    json!({"success":true,"data":{"id":"campaign","name":"Campaign","status":"draft","recipientCount":0,"sentCount":0,"deliveredCount":0,"readCount":0,"failedCount":0,"skippedCount":0,"createdAt":1,"updatedAt":1}}),
+                    json!({"success":true,"data":{"id":"campaign","name":"Campaign","status":"draft","recipientCount":0,"sentCount":0,"deliveredCount":0,"readCount":0,"failedCount":0,"skippedCount":0,"createdAt":1,"updatedAt":1,"trackedLinks":[],"experimentOutcome":null,"followUp":null}}),
                 )
             };
             let body = body.to_string();

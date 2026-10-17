@@ -61,7 +61,8 @@ MAC and encrypted/plaintext hash verification, bounded downloads and an HTTPS
 WhatsApp host allowlist. No plaintext is returned before verification. Calls
 expose server control methods and programmatic PCM/H.264 media sockets.
 
-All 439 primary operations exposed by the pinned Messaging and Platform clients have typed public methods and native request/response tests. The implementation includes
+The baseline Messaging and Platform operation mappings are recorded in
+`coverage.json`. Typed resources include
 sessions, all merged message content variants, hosted chat/message history with stored
 media streaming and service windows, Linked Devices groups and Channels, QuickLinks, webhooks, contacts, profile, privacy,
 presence, identities, labels, quick replies, core projects and project safety/warmup/insurance/health policies, events, media and
@@ -139,6 +140,60 @@ or UTF-16 units as appropriate, and imports also check the actual serialized
 shortest decimal digits with ECMAScript exponent thresholds and negative-zero
 normalization. Equivalence is not exhaustively verified; this 30-operation
 checkpoint observed no numeric spelling counterexample.
+
+### Campaign and descriptor contracts
+
+The existing campaign methods consume the same `f97ad78` API source. Named
+`CampaignVariableBinding`, `CampaignVariableMapping` and `CampaignTrackedLink`
+types preserve empty maps, numeric keys and `__proto__`. Create mappings omit
+`None`; PATCH mappings and template/link fields use `Option<Option<T>>` for
+omission versus an explicit null reset. Messaging PATCH requires a change.
+Platform PATCH accepts an empty body or no body and retains open extensions,
+but refuses `projectId`, `id` and collisions with named fields in extensions.
+Select the campaign and project through the method arguments and parameters.
+
+`CampaignMessage` represents open Platform composed drafts, including an empty
+object. Its optional source, media, buttons, footer and delay are separate from
+the stricter variation blueprints. Request checks enforce mapping/link counts,
+UTF-16 text lengths, ECMAScript whitespace and effective follow-up timing defaults.
+Returned stored campaign arrays do not inherit outbound request quotas.
+Required nullable campaign/recipient/analytics facts reject missing fields;
+optional non-null fields reject explicit null. Platform launch takes
+`LaunchPlatformCampaignRequest` and returns `PlatformCampaignLaunchResult`,
+including its compatible extension fields. Launch scheduling and Messaging
+recipient `next_message_at` use `f64`; Platform recipient time must be integral.
+
+Read history delivery is `HistorySyncDelivery::{Archive, Descriptor}`. Writes
+use the descriptor-only `HistorySyncDeliveryWrite`. A delivery set or exact
+`SessionConfigurationReset::HistorySyncDelivery` selects `2026-10-14` only
+when the request has no explicit API version. Whole-history resets and existing
+GET methods retain their configured version. Use an explicit newer version to
+read versioned delivery fields. `Session::signal_mode` is an optional returned
+custody fact, separate from writable configuration.
+
+QuickLink initial requests accept top-level `signal_mode` and nested descriptor
+delivery with the same absent-only version selection. Supplementary requests
+require `session` and `add_connection` and refuse initial owner, billing and
+custody fields. These branch rules are checked before HTTP. The retained public
+request struct permits some invalid combinations at compile time; runtime
+checks refuse them. No client check grants consent, feature eligibility, funding
+or browser pairing access.
+
+Direct upload grants and history retry/delete require a server credential.
+Direct selection refuses a Client credential before opening a source factory;
+relay and caller-owned ciphertext transports remain available under their
+existing authority. History commands validate canonical acknowledged outcomes:
+retry returns a required request ID and `HistoryChunkRetryStatus::Requested`;
+delete keeps `Result<()>` and resolves only after `status: deleted`.
+
+Verified `history.sync` webhooks narrow through `WebhookEvent::Known` and
+`KnownWebhookPayload::HistorySync`. `HistorySyncPayload` includes archive,
+Cloud, `DescriptorMedia` and `DescriptorInline` branches. Descriptor variants
+carry projected WhatsApp identities and optional ISO `oldest_message_at`, with
+exactly one media or inline branch. Media Debug formatting redacts key material.
+These types do not verify a download, decryption or compressed archive, and do
+not establish ZK custody or deployed availability. The raw envelope remains
+available through `WebhookEvent::envelope()`.
 
 From this directory:
 

@@ -111,14 +111,18 @@ pub struct GroupCapability {
     pub key: GroupCapabilityKey,
     pub kind: GroupCapabilityKind,
     pub unit: (),
+    #[serde(deserialize_with = "crate::campaign_contracts::required_nullable")]
     pub value: Option<bool>,
+    #[serde(deserialize_with = "crate::campaign_contracts::required_nullable")]
     pub source: Option<GroupCapabilitySource>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GroupCapabilities {
     pub status: crate::platform_sessions::SessionCapabilitiesStatus,
+    #[serde(deserialize_with = "crate::campaign_contracts::required_nullable")]
     pub synced_at: Option<String>,
+    #[serde(deserialize_with = "crate::campaign_contracts::required_nullable")]
     pub checked_at: Option<String>,
     pub capabilities: Vec<GroupCapability>,
 }
@@ -193,9 +197,19 @@ impl Groups<'_> {
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<GroupCapabilities>>> {
-        self.0
+        let response: ApiResponse<SuccessEnvelope<GroupCapabilities>> = self
+            .0
             .get(&format!("{}/capabilities", path(session, id)), options)
-            .await
+            .await?;
+        if response.metadata.status != 200 || !response.data.success {
+            return Err(crate::Error::local(
+                crate::ErrorKind::Server,
+                "Invalid group capabilities response",
+                "invalid_response",
+            )
+            .with_metadata(response.metadata));
+        }
+        Ok(response)
     }
     pub async fn delete(
         &self,

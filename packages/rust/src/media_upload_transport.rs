@@ -152,6 +152,7 @@ impl<'a> WhatsAppMediaResource<'a> {
         direct: DirectUploadOptions,
         request: RequestOptions,
     ) -> Result<BuiltinMediaUploadTransport<'a>> {
+        self.0.server()?;
         if direct.max_attempts == 0 || direct.document_part_size == 0 || direct.timeout.is_zero() {
             return Err(configuration("directUpload"));
         }

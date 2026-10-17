@@ -80,6 +80,7 @@ async fn quicklink_configuration_testing_history_and_onboarding_native_wire() {
         prefill_phone: Some("+15551234567".into()),
         allow_phone_change: Some(false),
         history_sync: Some(QuickLinkHistorySync {
+            delivery: None,
             consent: Some("optional".into()),
             mode: Some("deliver".into()),
             request_full: Some(true),

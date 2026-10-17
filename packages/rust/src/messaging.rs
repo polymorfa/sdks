@@ -156,6 +156,7 @@ impl Sessions<'_> {
         body: &crate::configuration::UpdateSessionRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Session>>> {
+        let options = body.configuration.options(options);
         self.0.server()?;
         self.0
             .request(
@@ -451,10 +452,30 @@ impl QuickLinks<'_> {
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<QuickLink>>> {
         self.0.server()?;
-        if matches!(body.purpose, Some(CreateQuickLinkPurpose::AddConnection))
-            && body.session.as_ref().is_none_or(|s| s.is_empty())
-        {
-            return Err(crate::transport::configuration("session"));
+        let supplementary = matches!(body.purpose, Some(CreateQuickLinkPurpose::AddConnection));
+        if supplementary {
+            if body.session.as_ref().is_none_or(|s| s.is_empty())
+                || body.add_connection.is_none()
+                || body.customer_id.is_some()
+                || body.external_id.is_some()
+                || body.billing_controls.is_some()
+                || body.signal_mode.is_some()
+                || matches!(body.connection_goal, Some(ConnectionGoal::Single))
+            {
+                return Err(crate::transport::configuration("supplementaryQuickLink"));
+            }
+        } else if body.session.is_some() || body.add_connection.is_some() {
+            return Err(crate::transport::configuration("initialQuickLink"));
+        }
+        let new_intent = body.signal_mode.is_some()
+            || body
+                .configuration
+                .as_ref()
+                .and_then(|c| c.history_sync.as_ref())
+                .is_some_and(|h| h.delivery.is_some());
+        let mut options = options;
+        if new_intent && options.api_version.is_none() {
+            options.api_version = Some(crate::direct_media::CUSTOMER_OWNED_API_VERSION.into());
         }
         if let Some(controls) = &body.billing_controls {
             if controls.priority > 1_000_000

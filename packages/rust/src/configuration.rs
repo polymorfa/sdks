@@ -51,15 +51,46 @@ pub enum HistorySyncMode {
     MetadataOnly,
     Deliver,
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum HistorySyncDelivery {
+    Archive,
+    Descriptor,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum HistorySyncDeliveryWrite {
+    #[serde(rename = "descriptor")]
+    Descriptor,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum HistorySyncDeliverySource {
+    Platform,
+    Team,
+    Project,
+    Session,
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HistorySyncPolicy {
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
+    pub delivery: Option<HistorySyncDelivery>,
     pub mode: HistorySyncMode,
     pub request_full: bool,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct HistorySyncPolicyPatch {
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
+    pub delivery: Option<HistorySyncDeliveryWrite>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mode: Option<HistorySyncMode>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -154,7 +185,7 @@ impl<'de> Deserialize<'de> for HmsConfiguration {
     }
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct SessionConfigurationOverrides {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub observation: Option<ObservationConfigurationPatch>,
@@ -181,6 +212,13 @@ pub enum ConfigurationSource {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ConfigurationSources {
+    #[serde(
+        rename = "historySync.delivery",
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
+    pub history_sync_delivery: Option<HistorySyncDeliverySource>,
     #[serde(rename = "historySync.mode")]
     pub history_sync_mode: ConfigurationSource,
     #[serde(rename = "historySync.requestFull")]
@@ -221,6 +259,8 @@ pub struct SessionConfigurationView {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum SessionConfigurationReset {
+    #[serde(rename = "historySync.delivery")]
+    HistorySyncDelivery,
     #[serde(rename = "historySync")]
     HistorySync,
     #[serde(rename = "historySync.mode")]
@@ -311,4 +351,22 @@ pub struct QuickLinkOnboarding {
     pub history_progress: f64,
     pub sync: CloudSyncStatus,
     pub error_code: Option<String>,
+}
+
+impl SessionConfigurationPatch {
+    pub(crate) fn options(&self, mut options: crate::RequestOptions) -> crate::RequestOptions {
+        let intent = self
+            .set
+            .as_ref()
+            .and_then(|s| s.history_sync.as_ref())
+            .is_some_and(|s| s.delivery.is_some())
+            || self.reset.as_ref().is_some_and(|s| {
+                s.iter()
+                    .any(|r| matches!(r, SessionConfigurationReset::HistorySyncDelivery))
+            });
+        if intent && options.api_version.is_none() {
+            options.api_version = Some(crate::direct_media::CUSTOMER_OWNED_API_VERSION.into());
+        }
+        options
+    }
 }

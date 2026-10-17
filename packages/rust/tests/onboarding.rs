@@ -96,7 +96,8 @@ async fn simulated_phone_supplemental_native_wire_and_invalid_device_guard() {
             .testing()
             .get_phone("project", "support", RequestOptions::default())
     );
-    wire_messaging!(
+    wire_messaging_status!(
+        202,
         client,
         "POST",
         "/messaging/testing/project/numbers/support/phone/messages",

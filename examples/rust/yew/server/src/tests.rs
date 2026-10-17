@@ -186,13 +186,13 @@ async fn connect_and_empty_history_require_app_session_and_keep_assignment_on_se
                     assert!(head.starts_with("POST /messaging/quicklinks HTTP/1.1"));
                     assert_eq!(
                         serde_json::from_slice::<serde_json::Value>(&bytes[end + 4..]).unwrap(),
-                        json!({"session":"authorized-support"})
+                        json!({"purpose":"add_connection","session":"authorized-support","addConnection":"linked_devices","connectionGoal":"hybrid"})
                     );
                     break;
                 }
             }
         }
-        let body=json!({"success":true,"data":{"purpose":"initial","connectionGoal":"single","addConnection":null,"id":"link","url":"https://quick.example.com/link","session":"authorized-support","expiresAt":null}}).to_string();
+        let body=json!({"success":true,"data":{"purpose":"add_connection","connectionGoal":"hybrid","addConnection":"linked_devices","id":"link","url":"https://quick.example.com/link","session":"authorized-support","expiresAt":null}}).to_string();
         stream.write_all(format!("HTTP/1.1 200 OK\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{body}",body.len()).as_bytes()).await.unwrap();
     });
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();

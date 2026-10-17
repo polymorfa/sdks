@@ -44,6 +44,7 @@ impl SessionDefaults<'_> {
         body: &UpdateSessionDefaults,
         options: RequestOptions,
     ) -> Result<ApiResponse<SessionConfigurationView>> {
+        let options = body.configuration.options(options);
         request(
             self.http,
             Method::PUT,

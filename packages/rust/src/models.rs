@@ -32,6 +32,12 @@ pub struct StatusResult {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Session {
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
+    pub signal_mode: Option<crate::campaign_contracts::SignalCustodyMode>,
     pub session_id: String,
     pub name: String,
     pub external_id: Option<String>,
@@ -422,25 +428,67 @@ pub struct MessageOperationReceipt {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct CreateQuickLinkRequest {
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
+    pub signal_mode: Option<crate::campaign_contracts::SignalCustodyMode>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
     pub purpose: Option<CreateQuickLinkPurpose>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
     pub session: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
     pub project_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
     pub customer_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
     pub external_id: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
     pub connection_goal: Option<ConnectionGoal>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
     pub add_connection: Option<ConnectionKind>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
     pub configuration: Option<QuickLinkConfiguration>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
     pub billing_controls: Option<BillingControls>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -475,7 +523,7 @@ pub struct BillingControls {
     pub priority: u32,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct QuickLinkConfiguration {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub observation: Option<crate::configuration::ObservationConfigurationPatch>,
@@ -503,8 +551,14 @@ pub struct QuickLinkConfiguration {
     pub history_sync: Option<QuickLinkHistorySync>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct QuickLinkHistorySync {
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::campaign_contracts::optional_nonnull"
+    )]
+    pub delivery: Option<crate::configuration::HistorySyncDeliveryWrite>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub consent: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

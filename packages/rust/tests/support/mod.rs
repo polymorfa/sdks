@@ -48,12 +48,39 @@ pub async fn wire(
     .await
 }
 
+pub async fn wire_status(
+    status: u16,
+    method: &str,
+    path: &str,
+    body: Option<Value>,
+    response: Value,
+) -> (String, JoinHandle<()>) {
+    wire_authorization_status(
+        method,
+        path,
+        body,
+        response,
+        Some(format!("pmfa_{}", "a".repeat(72))),
+        status,
+    )
+    .await
+}
 pub async fn wire_authorization(
     method: &str,
     path: &str,
     body: Option<Value>,
     response: Value,
     authorization: Option<String>,
+) -> (String, JoinHandle<()>) {
+    wire_authorization_status(method, path, body, response, authorization, 200).await
+}
+async fn wire_authorization_status(
+    method: &str,
+    path: &str,
+    body: Option<Value>,
+    response: Value,
+    authorization: Option<String>,
+    status: u16,
 ) -> (String, JoinHandle<()>) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let url = format!("http://{}", listener.local_addr().unwrap());
@@ -86,7 +113,7 @@ pub async fn wire_authorization(
             request.extend_from_slice(&buffer[..read]);
         }
         let encoded = response.to_string();
-        socket.write_all(format!("HTTP/1.1 200 OK\r\ncontent-type: application/json\r\nx-request-id: wire_fixture\r\npolymorfa-version: 2026-09-22\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{encoded}",encoded.len()).as_bytes()).await.unwrap();
+        socket.write_all(format!("HTTP/1.1 {status} Fixture\r\ncontent-type: application/json\r\nx-request-id: wire_fixture\r\npolymorfa-version: 2026-09-22\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{encoded}",encoded.len()).as_bytes()).await.unwrap();
         let head = String::from_utf8_lossy(&request[..head_end]).to_string();
         assert_eq!(
             head.lines().next().unwrap(),
@@ -180,6 +207,20 @@ macro_rules! wire_unwrapped_organization {
             &expected["data"],
             &serde_json::to_value(response.data).unwrap(),
         );
+        server.await.unwrap();
+    }};
+}
+
+#[macro_export]
+macro_rules! wire_messaging_status {
+    ($status:expr,$client:ident,$method:expr,$path:expr,$body:expr,$response:expr,$call:expr) => {{
+        let expected = $response;
+        let (base, server) =
+            $crate::support::wire_status($status, $method, $path, $body, expected.clone()).await;
+        let $client = $crate::support::messaging(base);
+        let response = $call.await.unwrap();
+        assert_eq!(response.metadata.status, $status);
+        $crate::support::assert_subset(&expected, &serde_json::to_value(response.data).unwrap());
         server.await.unwrap();
     }};
 }
