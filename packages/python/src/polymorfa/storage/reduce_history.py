@@ -380,7 +380,7 @@ def reduce_web_message_info(
                 fields = mapped[1]
                 put(fields, "chatId", chat, 0)
                 put(fields, "editedAt", version, version)
-                return [Upsert("messages", target_key, fields)]
+                return [Upsert("messages", target_key, fields, guard)]
         return []
     reaction = record(content.get("reactionMessage"))
     if reaction:
