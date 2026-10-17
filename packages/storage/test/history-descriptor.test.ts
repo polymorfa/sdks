@@ -101,3 +101,29 @@ it("validates descriptor mode even when a stream explicitly permits absent paylo
     }),
   ).toThrow("descriptor mode");
 });
+
+it("rejects unprojected descriptor fields before metadata-only consumption", async () => {
+  for (const payload of [
+    { ...descriptor, unprojected: "synthetic" },
+    {
+      ...descriptor,
+      inline: { ...descriptor.inline, unprojected: "synthetic" },
+    },
+  ]) {
+    const adapter = memoryAdapter();
+    await expect(
+      storageLib.applyEvent(
+        adapter,
+        {
+          id: "strict-fields",
+          session: "session",
+          event: "history.sync",
+          timestamp: "2026-10-17T00:00:00Z",
+          payload,
+        },
+        { historyDescriptorMode: "metadata-only" },
+      ),
+    ).rejects.toThrow("descriptor");
+    expect(adapter.rows("history_progress")).toHaveLength(0);
+  }
+});

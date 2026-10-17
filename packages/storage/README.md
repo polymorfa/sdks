@@ -36,7 +36,7 @@ A large event/history chunk spans multiple atomic commits. Rows from its complet
 
 `syncToStorage` resumes a saved cursor, requests manual acknowledgement, applies each event, conditionally saves the cursor, then ACKs the delivered sequence. An ACK failure leaves the saved cursor durable; replay skips the completed event. A concurrent checkpoint change raises `StorageCheckpointConflictError`. A stale fence raises `StorageLeaseLostError`; restart from the saved checkpoint. A missing event body or retention gap stops synchronization without advancing past that item. Reconcile customer-owned history before restarting after a gap. `requirePayload: false` explicitly enables metadata-only cursor consumption; it does not reconstruct missing content. Storage consumption does not turn on HMS or change server retention.
 
-Provide `decodeHistory` to download/decrypt/decode linked history with the owning SDK's media/history helpers. The callback returns a `HistorySyncChunk` or null. A decoded chunk and its progress use the same shared reducer and completion marker. Keep downloaded plaintext within your own trust boundary.
+Provide archive-only `decodeHistory` to download/decrypt/decode archive history with the owning SDK's media/history helpers. The callback returns a `HistorySyncChunk` or null. A decoded chunk and its progress use the same shared reducer and event marker. Keep downloaded plaintext within your own trust boundary.
 
 ## Adapters
 

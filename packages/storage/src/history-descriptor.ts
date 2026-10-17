@@ -10,6 +10,8 @@ const record = (v: unknown): v is Record<string, unknown> =>
 const text = (v: unknown) => typeof v === "string" && v.length > 0;
 const integer = (v: unknown) =>
   typeof v === "number" && Number.isInteger(v) && v >= 0;
+const fields = (v: Record<string, unknown>, allowed: readonly string[]) =>
+  Object.keys(v).every((k) => allowed.includes(k));
 function datetime(v: unknown): boolean {
   if (typeof v !== "string") return false;
   const m =
@@ -54,13 +56,28 @@ function ids(v: unknown): boolean {
 export function descriptorIntent(v: unknown): boolean {
   return record(v) && own(v, "delivery");
 }
-/** Validate known projected fields. Unknown event fields stay forward compatible. */
+/** Validate the strict descriptor projection; other event families stay unchanged. */
 export function historyDescriptor(v: unknown): DirectHistorySyncPayload {
   const fail = () => {
     throw new Error("Invalid history descriptor.");
   };
   if (!record(v)) return fail();
   if (
+    !fields(v, [
+      "delivery",
+      "whatsapp_ids",
+      "whatsapp_id",
+      "original_whatsapp_ids",
+      "original_whatsapp_id",
+      "syncType",
+      "fileLength",
+      "chunkOrder",
+      "progress",
+      "oldestMessageAt",
+      "peerDataRequestSessionId",
+      "media",
+      "inline",
+    ]) ||
     v.delivery !== "descriptor" ||
     !ids(v.whatsapp_ids) ||
     !text(v.syncType) ||
@@ -90,6 +107,14 @@ export function historyDescriptor(v: unknown): DirectHistorySyncPayload {
     const d = v.media;
     if (
       !record(d) ||
+      !fields(d, [
+        "type",
+        "directPath",
+        "mediaKey",
+        "fileSha256",
+        "fileEncSha256",
+        "encHandle",
+      ]) ||
       d.type !== "md-msg-hist" ||
       ![d.directPath, d.mediaKey, d.fileSha256, d.fileEncSha256].every(text) ||
       (own(d, "encHandle") && typeof d.encHandle !== "string")
@@ -97,7 +122,12 @@ export function historyDescriptor(v: unknown): DirectHistorySyncPayload {
       return fail();
   } else {
     const d = v.inline;
-    if (!record(d) || d.encoding !== "zlib-base64-protobuf" || !text(d.data))
+    if (
+      !record(d) ||
+      !fields(d, ["encoding", "data"]) ||
+      d.encoding !== "zlib-base64-protobuf" ||
+      !text(d.data)
+    )
       return fail();
   }
   return v as unknown as DirectHistorySyncPayload;

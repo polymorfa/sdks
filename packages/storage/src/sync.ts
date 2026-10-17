@@ -31,7 +31,7 @@ function validateDescriptorMode(options: ApplyEventOptions): void {
 }
 
 /**
- * Downloads and decodes the history chunk a `history.sync` event refers to.
+ * Downloads and decodes an archive history chunk. Descriptors use the separate callback.
  * Return `null` to record only the chunk's progress.
  */
 export type HistoryChunkDecoder = (

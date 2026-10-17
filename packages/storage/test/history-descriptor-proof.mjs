@@ -175,6 +175,66 @@ export async function prove(sdk, lib, fixture, history) {
     true,
   );
   await test(fixture.inline, { historyDescriptorMode: "invalid" }, true);
+  await test(
+    { ...fixture.inline, unprojected: "synthetic" },
+    { historyDescriptorMode: "metadata-only" },
+    true,
+  );
+  await test(
+    {
+      ...fixture.inline,
+      inline: { ...fixture.inline.inline, unprojected: "synthetic" },
+    },
+    { historyDescriptorMode: "metadata-only" },
+    true,
+  );
+  await test(
+    {
+      ...fixture.media,
+      media: { ...fixture.media.media, unprojected: "synthetic" },
+    },
+    { historyDescriptorMode: "metadata-only" },
+    true,
+  );
+  for (const field of [
+    "whatsapp_ids",
+    "original_whatsapp_ids",
+    "whatsapp_id",
+    "original_whatsapp_id",
+  ])
+    for (const units of [512, 514]) {
+      const id = "😀".repeat(units / 2);
+      await test(
+        {
+          ...fixture.inline,
+          [field]: field.endsWith("_ids") ? { linked_devices: id } : id,
+        },
+        { historyDescriptorMode: "metadata-only" },
+        units > 512,
+      );
+    }
+  for (const [value, valid] of [
+    ["0000-02-29T00:00Z", true],
+    ["2026-10-17T00:00Z", true],
+    ["2026-10-17T00:00:00+00:00", false],
+    ["2025-02-29T00:00Z", false],
+    ["2026-10-17T00:00:00.123Z", true],
+  ])
+    await test(
+      { ...fixture.inline, oldestMessageAt: value },
+      { historyDescriptorMode: "metadata-only" },
+      !valid,
+    );
+  const future = lib.createStorage(lib.memoryAdapter());
+  await lib.applyEvent(future, {
+    ...event({ delivery: "future", unprojected: "synthetic" }),
+    event: "future.experimental",
+  });
+  check(
+    await future.hasEvent("descriptor-session", "descriptor-event"),
+    "unknown event compatibility",
+  );
+  outcomes++;
   const valid = await test(
     fixture.inline,
     { historyDescriptorMode: "metadata-only" },
