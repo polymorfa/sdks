@@ -18,7 +18,23 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 	for _, framework := range []string{"nethttp", "gin"} {
 		t.Run(framework, func(t *testing.T) {
 			var minted atomic.Int32
+			var connected atomic.Int32
 			upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path == "/messaging/quicklinks" {
+					if r.Method != "POST" || r.Header.Get("Authorization") != "Bearer pmfa_"+strings.Repeat("a", 72) || r.Header.Get("Polymorfa-Version") != "2026-09-22" {
+						t.Error("QuickLink upstream auth/version")
+					}
+					var body map[string]any
+					_ = json.NewDecoder(r.Body).Decode(&body)
+					if len(body) != 4 || body["purpose"] != "add_connection" || body["session"] != "authorized-support" || body["addConnection"] != "linked_devices" || body["connectionGoal"] != "hybrid" {
+						t.Error("QuickLink server assignment", body)
+					}
+					connected.Add(1)
+					w.Header().Set("Content-Type", "application/json")
+					w.Write([]byte(`{"success":true,"data":{"purpose":"add_connection","connectionGoal":"hybrid","addConnection":"linked_devices","id":"link","url":"https://quick.example.test/link","session":"authorized-support","expiresAt":null}}`))
+					return
+				}
+
 				if r.Method != "POST" || r.URL.Path != "/platform/client-tokens" {
 					t.Errorf("upstream route %s %s", r.Method, r.URL.Path)
 				}
@@ -97,6 +113,18 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 			if response.StatusCode != 200 || token["audience"] != "browser" || token["value"] != "pmfa_ct_browser_fixture" || response.Header.Get("Cache-Control") != "no-store" || minted.Load() != 1 {
 				t.Fatal("token result", token, response.Status)
 			}
+			response = send("POST", "/api/polymorfa/connect", server.URL, "session=attacker&purpose=initial")
+			var link map[string]any
+			_ = json.NewDecoder(response.Body).Decode(&link)
+			response.Body.Close()
+			if response.StatusCode != 200 || connected.Load() != 1 || link["data"].(map[string]any)["url"] != "https://quick.example.test/link" {
+				t.Fatal("supplementary QuickLink", response.Status, link)
+			}
+			response = send("POST", "/api/polymorfa/connect", "https://foreign.invalid", "")
+			if response.StatusCode != 403 || connected.Load() != 1 {
+				t.Fatal("QuickLink origin bypass")
+			}
+			response.Body.Close()
 			response = send("POST", "/api/polymorfa/token", "https://foreign.invalid", "")
 			if response.StatusCode != 403 || minted.Load() != 1 {
 				t.Fatal("origin bypass")
@@ -107,6 +135,11 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 			response = send("POST", "/api/polymorfa/token", server.URL, "")
 			if response.StatusCode != 401 || minted.Load() != 1 {
 				t.Fatal("logout failed")
+			}
+			response.Body.Close()
+			response = send("POST", "/api/polymorfa/connect", server.URL, "")
+			if response.StatusCode != 401 || connected.Load() != 1 {
+				t.Fatal("QuickLink logout bypass")
 			}
 			response.Body.Close()
 		})

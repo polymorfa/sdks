@@ -28,3 +28,5 @@ go run github.com/a-h/templ/cmd/templ@v0.3.960 generate
 ```
 
 The SDK itself has no Gin, templ or HTMX dependency. This example uses a separate Go module and a local `replace` directive until an SDK release is available.
+
+The Connect number action creates a hosted supplementary linked-device invitation for the server-assigned `POLYMORFA_SESSION`. Assign an eligible Official Number that can add linked devices. The API still checks assignment, eligibility, consent and funding. Browser fields cannot choose another Number or change custody. This does not create an initial Number or prove live WhatsApp pairing.

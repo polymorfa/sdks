@@ -74,7 +74,7 @@ func (a *app) routes() http.Handler {
 			http.Error(w, "Sign in required.", 401)
 			return
 		}
-		result, err := a.client.QuickLinks().Create(r.Context(), polymorfa.CreateQuickLinkRequest{Session: a.session})
+		result, err := a.client.QuickLinks().Create(r.Context(), polymorfa.CreateQuickLinkRequest{Purpose: "add_connection", Session: a.session, AddConnection: "linked_devices", ConnectionGoal: "hybrid"})
 		if err != nil {
 			http.Error(w, "Number connection is unavailable.", 502)
 			return
