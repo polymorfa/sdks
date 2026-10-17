@@ -166,6 +166,23 @@ class MessagingCampaigns(Resource):
             options=append_options(options),
         )
 
+    async def enroll(
+        self,
+        project_slug: str,
+        campaign_id: str,
+        body: C.EnrollContact,
+        *,
+        options: RequestOptions = O,
+    ) -> ApiResponse[Envelope[C.Enrollment]]:
+        """Adds a contact to a running or paused continuous drip. Sent once:
+        per-phone server idempotency does not make an ambiguous retry safe."""
+        return await self._request(
+            "POST",
+            campaign_path(project_slug, campaign_id) + "/enrollments",
+            body=V.capture(body),
+            options=replace(options, max_network_retries=0),
+        )
+
     async def analytics(
         self, project_slug: str, campaign_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[C.Analytics]]:
@@ -393,6 +410,39 @@ class Campaigns(Resource):
         self, *, options: RequestOptions = O
     ) -> ApiResponse[DataEnvelope[M.CampaignSettings]]:
         return await self._request("GET", "/platform/campaign-settings", options=V.options(options))
+
+    async def get_frequency_cap(
+        self, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[C.FrequencyCapSettings]]:
+        """Team cap. Organization API key with campaigns:read."""
+        return await self._request(
+            "GET", "/platform/campaign-settings/frequency-cap", options=options
+        )
+
+    async def update_frequency_cap(
+        self, body: C.UpdateFrequencyCap, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[C.FrequencyCapSettings]]:
+        """Replaces both limits with the last read revision. A stale revision raises
+        ConflictError; read again and reconcile. Limits require beta access. Sent
+        once: reconcile a lost response with a fresh read."""
+        return await self._request(
+            "PUT",
+            "/platform/campaign-settings/frequency-cap",
+            body=V.capture(body),
+            options=replace(options, max_network_retries=0),
+        )
+
+    async def enroll(
+        self, campaign_id: str, body: C.EnrollPlatformContact, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[C.Enrollment]]:
+        """Adds a contact to a running or paused continuous drip; sent once."""
+        V.uuid(V.obj(body).get("projectId"), "projectId")
+        return await self._request(
+            "POST",
+            f"/platform/campaigns/{segment(campaign_id)}/enrollments",
+            body=V.capture(body),
+            options=replace(options, max_network_retries=0),
+        )
 
     async def list(
         self, params: C.ListCampaigns, *, options: RequestOptions = O

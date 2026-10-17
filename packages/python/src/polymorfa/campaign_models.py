@@ -235,13 +235,131 @@ class CampaignMessageButton(dict[str, Json]):
         return cast(CampaignMessageButtonFields, self)
 
 
+DelayUnit = Literal["minutes", "hours", "days"]
+
+
+class StepWindow(TypedDict):
+    """Later drip steps only. At most four hour ranges, in the campaign's time zone."""
+
+    days: list[Weekday]
+    hours: list[Hours]
+
+
 class CampaignMessageFields(TypedDict, total=False):
     version: Literal[2]
     source: str
     media: CampaignMessageMediaFields | CampaignMessageMedia
     buttons: list[CampaignMessageButtonFields | CampaignMessageButton]
     footer: str
+    # 0..86400 for ordinary campaigns and 0..2592000 for drip steps, in whole
+    # multiples of delayUnit when set.
     delayAfterSec: int
+    delayUnit: DelayUnit
+    sendWindow: StepWindow | None
+
+
+class FrequencyCap(TypedDict):
+    """Rolling per-contact limits; None means no additional limit for that window.
+
+    maxPer24Hours is 1..50 and cannot exceed maxPer7Days (1..200) when both are set."""
+
+    maxPer24Hours: int | None
+    maxPer7Days: int | None
+
+
+class FrequencyCapSettings(FrequencyCap):
+    """The team cap. revision is 0 and updatedAt None until first saved."""
+
+    teamId: str
+    revision: int
+    updatedAt: int | None
+
+
+class UpdateFrequencyCap(FrequencyCap):
+    """Complete replacement with the revision from the last read."""
+
+    revision: int
+
+
+class FrequencyCapAnalytics(TypedDict):
+    skippedRecipientCount: int
+
+
+DripEnrollment = Literal["audience", "continuous"]
+# Values of recipient sequenceError; arbitrary send failure codes also occur.
+DripExitReason = Literal["replied", "link_clicked", "opted_out"]
+
+
+class Drip(TypedDict):
+    enrollment: DripEnrollment
+    exitOnReply: bool
+    # GET opens count, including link previews and scanners; HEAD does not.
+    exitOnLinkClick: bool
+
+
+class DripInput(TypedDict, total=False):
+    """Create defaults (applied by the API): audience, True, False."""
+
+    enrollment: DripEnrollment
+    exitOnReply: bool
+    exitOnLinkClick: bool
+
+
+class DripPatch(TypedDict, total=False):
+    """Omitted settings keep their stored values; no defaults are applied."""
+
+    enrollment: DripEnrollment
+    exitOnReply: bool
+    exitOnLinkClick: bool
+
+
+class DripStepStats(TypedDict):
+    step: int
+    entered: int
+    waiting: int
+    sent: int
+    delivered: int
+    read: int
+    replied: int
+    exited: int
+    failed: int
+
+
+class DripStats(TypedDict):
+    enrollment: DripEnrollment
+    enrolled: int
+    enrolledByApi: int
+    active: int
+    completed: int
+    exited: int
+    steps: list[DripStepStats]
+
+
+class SegmentSnapshot(TypedDict):
+    revision: int
+    evaluatedAt: int
+    matchedCount: int
+
+
+class EnrollContact(TypedDict):
+    """A phone already in the drip returns created False and never restarts."""
+
+    phone: str
+    variables: NotRequired[dict[str, str | float | bool]]
+
+
+class EnrollPlatformContact(EnrollContact):
+    # Organization API keys select the owning project explicitly.
+    projectId: str
+
+
+class Enrollment(TypedDict):
+    campaignId: str
+    recipientId: str
+    phone: str
+    created: bool
+    status: str
+    enrolledAt: float
 
 
 class CampaignMessage(dict[str, Json]):
@@ -294,6 +412,13 @@ class Campaign(TypedDict):
     followUp: FollowUp | None
     trackedLinks: list[CampaignTrackedLink]
     variableMapping: NotRequired[CampaignVariableMapping | None]
+    frequencyCap: NotRequired[FrequencyCap | None]
+    drip: NotRequired[Drip | None]
+    enrollmentOpen: NotRequired[bool | None]
+    pauseReason: NotRequired[str | None]
+    # Read-only on the Messaging API; choose segments through the Platform API.
+    segmentId: NotRequired[str | None]
+    segmentSnapshot: NotRequired[SegmentSnapshot | None]
 
 
 class PlatformCampaign(dict[str, Json]):
@@ -330,6 +455,8 @@ class Analytics(AnalyticsCounts):
     averageResponseTimeMs: float | None
     minResponseTimeMs: float | None
     maxResponseTimeMs: float | None
+    frequencyCap: NotRequired[FrequencyCapAnalytics]
+    drip: NotRequired[DripStats | None]
 
 
 class PlatformAnalytics(AnalyticsCounts):
@@ -338,6 +465,8 @@ class PlatformAnalytics(AnalyticsCounts):
     averageResponseTimeMs: float | None
     minResponseTimeMs: float | None
     maxResponseTimeMs: float | None
+    frequencyCap: NotRequired[FrequencyCapAnalytics]
+    drip: NotRequired[DripStats | None]
 
 
 class RecipientInput(TypedDict):
@@ -359,6 +488,8 @@ class CreateCampaign(TypedDict):
     followUp: NotRequired[FollowUp | None]
     variableMapping: NotRequired[CampaignVariableMapping]
     trackedLinks: NotRequired[list[CampaignTrackedLink] | None]
+    frequencyCap: NotRequired[FrequencyCap | None]
+    drip: NotRequired[DripInput | None]
 
 
 class CreatePlatformCampaign(TypedDict):
@@ -381,6 +512,10 @@ class CreatePlatformCampaign(TypedDict):
     followUp: NotRequired[FollowUp | None]
     variableMapping: NotRequired[CampaignVariableMapping]
     trackedLinks: NotRequired[list[CampaignTrackedLink] | None]
+    frequencyCap: NotRequired[FrequencyCap | None]
+    drip: NotRequired[DripInput | None]
+    # Omit rather than sending null; cannot combine with recipientListId.
+    segmentId: NotRequired[str]
 
 
 class UpdateCampaign(TypedDict, total=False):
@@ -396,10 +531,14 @@ class UpdateCampaign(TypedDict, total=False):
     variants: list[Variant] | None
     variantStrategy: VariantStrategy | None
     followUp: FollowUp | None
+    frequencyCap: FrequencyCap | None
+    drip: DripPatch | None
 
 
 class UpdatePlatformCampaign(UpdateCampaign, total=False):
     messagesArray: list[CampaignMessageFields | CampaignMessage]
+    # Unlaunched drafts only; None clears the segment.
+    segmentId: str | None
     composerBlueprint: Json
     audienceRef: Json
     complianceConfig: Json

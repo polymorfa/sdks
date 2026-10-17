@@ -453,6 +453,7 @@ def export(value: object, project: bool = False) -> dict[str, object]:
                 "blocked_by_safety",
                 "send_failed",
                 "missing_variable",
+                "frequency_cap",
                 "other",
             ),
             "reason",

@@ -650,6 +650,40 @@ HMAC parsing verifies the signature and envelope and preserves the parsed payloa
 full payload schema or cryptographic validation. Never log media-key descriptors.
 These source additions do not establish registry or deployed availability.
 
+### Contact frequency caps, audience segments and drips (beta)
+
+These methods follow `contracts/campaign-frequency-cap.json` and
+`contracts/campaign-segments-drip.json`. They do not enroll a team in a beta;
+the API returns `403 feature_unavailable` when a team lacks access.
+
+`client.campaigns.get_frequency_cap()` returns the team limits, `revision` and
+`updatedAt` (`None` until first saved). `update_frequency_cap()` replaces both
+windows with the revision you read; `None` limits remove them. The PUT is sent
+once, and a stale revision raises `ConflictError`, so read again and reconcile.
+Campaign create and update accept `frequencyCap` (`None` removes a campaign
+cap), recipients report `failureReason="frequency_cap"` and accept it as a
+`reason` filter, and analytics add `frequencyCap.skippedRecipientCount`.
+
+`client.audience_segments` lists, retrieves, creates, updates and deletes saved
+segments, and previews a saved segment or unsaved rules. Project clients have
+no segment resource. Rules use the typed condition shapes in
+`polymorfa.audience_segments`; other shapes and value types raise
+`ValidationError` before sending. Updates and deletes need the last observed
+revision. Writes and both previews are sent once; a 409 `state_conflict` means
+a stale revision or an evaluation timeout, so re-read or simplify the rules.
+
+Platform create accepts `segmentId` (omit it rather than sending `None`), and
+Platform update accepts `segmentId: None` to clear it. `drip` takes
+`DripInput` on create and a partial `DripPatch` on update; the SDK applies no
+defaults and omitted fields keep their stored values. Drip steps accept
+`delayUnit` and a per-step `sendWindow`. Ordinary creates allow
+`delayAfterSec` up to 86400; drip creates and every PATCH allow up to 2592000,
+and the API checks the stored drip, delay unit and eligibility.
+`campaigns.enroll()` on both clients adds a contact to a continuous drip and is
+never retried automatically. Campaign reads expose `drip`, `enrollmentOpen`,
+`pauseReason`, `segmentId` and `segmentSnapshot`; analytics expose per-step
+`drip` results.
+
 ## Strict compressed history support
 
 History decoding requires one complete gzip, zlib or raw DEFLATE stream, with

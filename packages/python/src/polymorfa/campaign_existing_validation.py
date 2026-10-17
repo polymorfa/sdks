@@ -115,7 +115,11 @@ def follow_up(value: object) -> None:
         V.uuid(message["templateId"], "followUp.message.templateId")
 
 
-def composed(value: object) -> None:
+ORDINARY_MAX_DELAY = 86400
+DRIP_MAX_DELAY = 2592000
+
+
+def composed(value: object, max_delay: int = ORDINARY_MAX_DELAY) -> None:
     if not isinstance(value, list) or len(value) > 10:
         V.invalid("messagesArray")
     for item in value:
@@ -126,7 +130,7 @@ def composed(value: object) -> None:
             if key in v:
                 V.text(v[key], key, 0)
         if "delayAfterSec" in v:
-            V.integer(v["delayAfterSec"], "delayAfterSec", 0, 86400)
+            V.integer(v["delayAfterSec"], "delayAfterSec", 0, max_delay)
         if "media" in v:
             m = obj(v["media"], "media")
             V.choice(m.get("kind"), ("image", "video", "audio", "document"), "media.kind")
@@ -184,7 +188,10 @@ def campaign(value: object, *, platform: bool = False, patch: bool = False) -> N
     if "followUp" in v:
         follow_up(v["followUp"])
     if "messagesArray" in v:
-        composed(v["messagesArray"])
+        # A PATCH can target a stored drip without repeating its settings; the API
+        # keeps delay-unit, eligibility and stored-state authority.
+        drip = patch or ("drip" in v and v["drip"] is not None)
+        composed(v["messagesArray"], DRIP_MAX_DELAY if drip else ORDINARY_MAX_DELAY)
     for key, variant in (("variants", True), ("messageVariations", False)):
         if key in v and not (v[key] is None and (not platform or patch)):
             alternatives(v[key], variant, platform)

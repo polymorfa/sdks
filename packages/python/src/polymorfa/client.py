@@ -8,6 +8,7 @@ from typing_extensions import Self, Unpack
 
 from . import messaging, platform
 from .analytics import Analytics
+from .audience_segments import AudienceSegments
 from .bansafe import BanSafe
 from .bansafe_observations import BanSafeObservations
 from .billing import Billing
@@ -248,6 +249,7 @@ class AsyncClient:
     voice: Voice
     campaigns: Campaigns
     audience_profiles: AudienceProfiles
+    audience_segments: AudienceSegments
     audiences: Audiences
     billing: Billing
     projects: platform.Projects
@@ -282,6 +284,7 @@ class AsyncClient:
             ("media", PlatformMedia),
             ("campaigns", Campaigns),
             ("audience_profiles", AudienceProfiles),
+            ("audience_segments", AudienceSegments),
             ("billing", Billing),
             ("projects", platform.Projects),
             ("sessions", platform.PlatformSessions),
