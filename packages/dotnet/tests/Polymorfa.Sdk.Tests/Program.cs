@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.Json;
 using Polymorfa.Sdk;
 
+if (args.Contains("--strict-history-only")) { await StrictHistoryTests.RunAsync(); return; }
+
 if (args.Contains("--history41-only")) { DirectHistory41Tests.Run(); return; }
 
 if (args.Contains("--url41-only")) { await TrackedUrl41Tests.RunAsync(); return; }
@@ -172,6 +174,7 @@ try
     await SignalTests.RunAsync();
     await MediaEncryptionTests.RunAsync(root);
     await CustomerDataTests.RunAsync(root);
+    await StrictHistoryTests.RunAsync();
     await StorageCoreTests.RunAsync();
     await CustomUploadTransportTests.RunAsync();
     Console.WriteLine($"Passed {count} shared behavior cases and media integrity tests.");

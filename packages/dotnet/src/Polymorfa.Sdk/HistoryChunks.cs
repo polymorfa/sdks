@@ -1,4 +1,3 @@
-using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -86,11 +85,10 @@ public static class HistoryChunks
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (compressed.IsEmpty) throw Invalid();
-            using var source = new MemoryStream(compressed.ToArray(), writable: false); var header = compressed.ToArray();
-            using Stream inflater = header.Length >= 2 && header[0] == 0x1f && header[1] == 0x8b ? new GZipStream(source, CompressionMode.Decompress) : header.Length >= 2 && (header[0] & 15) == 8 && ((header[0] << 8) | header[1]) % 31 == 0 ? new ZLibStream(source, CompressionMode.Decompress) : new DeflateStream(source, CompressionMode.Decompress);
-            using var target = new MemoryStream(); var buffer = new byte[65536];
-            while (true) { var count = await inflater.ReadAsync(buffer, cancellationToken).ConfigureAwait(false); if (count == 0) break; if (target.Length + count > maxInflatedBytes) throw WhatsAppMedia.TooLarge(); await target.WriteAsync(buffer.AsMemory(0, count), cancellationToken).ConfigureAwait(false); }
-            cancellationToken.ThrowIfCancellationRequested(); return HistoryChunk.FromProto(HistoryProtoMessage.Decode(target.ToArray()));
+            // Own one snapshot before the first await. Neither pass reads caller memory again.
+            var snapshot = compressed.ToArray();
+            var plaintext = await StrictHistoryCompression.DecodeAsync(snapshot, maxInflatedBytes, cancellationToken).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested(); return HistoryChunk.FromProto(HistoryProtoMessage.Decode(plaintext));
         }
         catch (OperationCanceledException) { throw new PolymorfaCancelledException(); }
         catch (InvalidDataException) { throw Invalid(); }

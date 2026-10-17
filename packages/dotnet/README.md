@@ -209,6 +209,23 @@ pinned service does not accept them.
 `HistoryChunks.DownloadAsync` authenticates encrypted history before decompression
 and protobuf parsing. It accepts descriptors or inline payloads, detects
 zlib/gzip/raw DEFLATE, and limits inflated data to 512 MiB by default.
+Each payload must contain exactly one complete compressed stream. Truncation,
+whole-byte tails, padding bytes, concatenated streams, invalid wrapper headers
+and checksum failures return `media_invalid_ciphertext`. Unused bits in the last
+required DEFLATE byte are allowed. Gzip optional fields, including long terminated
+names/comments and FHCRC, are supported; zlib preset dictionaries are refused.
+Inflated overflow returns `media_too_large` before a later bad wrapper trailer.
+
+Decoding snapshots input before its first suspension and validates a full raw
+DEFLATE pass plus a last-byte-shortened pass over that same snapshot. Output is
+withheld until both passes and wrapper checks finish. Input/output work uses
+bounded windows and cooperative cancellation/yields. Cancellation cannot
+interrupt a synchronous native decoder or protobuf call already executing.
+The default ceiling remains 512 MiB: the compressed snapshot, retained output,
+contiguous result and protobuf copies can coexist. This is not zero-copy decoding.
+Local exact-stream regressions cover .NET 8.0.3 and 10.0.2; other runtime/platform
+acceptance remains separate from these checks.
+
 Common fields have native types; original protobuf bytes, unknown fields and
 `ulong` values remain in `HistoryChunk.Proto`. `DecodeWith` accepts your
 application's full-schema decoder. Native history typing covers fewer fields
