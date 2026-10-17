@@ -5,12 +5,12 @@ import (
 	"math"
 	"regexp"
 	"strconv"
-	"unicode/utf8"
+	"unicode/utf16"
 )
 
 func descriptorText(v any, min, max int) bool {
 	s, ok := v.(string)
-	return ok && utf8.RuneCountInString(s) >= min && utf8.RuneCountInString(s) <= max
+	return ok && len(utf16.Encode([]rune(s))) >= min && len(utf16.Encode([]rune(s))) <= max
 }
 func descriptorIDs(v any) bool {
 	m, ok := v.(map[string]any)

@@ -1,6 +1,8 @@
 package polymorfa_test
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
@@ -255,6 +257,14 @@ func TestDescriptorStorageHTTP(t *testing.T) {
 				if marked == failed {
 					t.Fatal("marker")
 				}
+				contentRows := descriptorRows(t, e, "messages")
+				wantContent := mode == "full" || mode == "conflict" || mode == "ack-error"
+				if (len(contentRows) == 1) != wantContent {
+					t.Fatal("HTTP content")
+				}
+				if (len(descriptorRows(t, e, "history_progress")) > 0) == failed {
+					t.Fatal("HTTP progress")
+				}
 				if (acked > 0) != (mode == "metadata" || mode == "full" || mode == "ack-error") {
 					t.Fatal("ACK", acked, err)
 				}
@@ -277,3 +287,97 @@ func TestDescriptorStorageHTTP(t *testing.T) {
 	}
 }
 func intPtrDescriptor(v int) *int { return &v }
+
+func TestDescriptorStorageProducerIDUTF16Boundary(t *testing.T) {
+	ctx := context.Background()
+	f := descriptorFixture(t)
+	for _, field := range []string{"whatsapp_ids", "original_whatsapp_ids", "whatsapp_id", "original_whatsapp_id"} {
+		for _, units := range []int{512, 514} {
+			var p map[string]any
+			json.Unmarshal(f["inline"], &p)
+			id := strings.Repeat("😀", units/2)
+			if field == "whatsapp_ids" || field == "original_whatsapp_ids" {
+				p[field] = map[string]any{"linked_devices": id}
+			} else {
+				p[field] = id
+			}
+			raw, _ := json.Marshal(p)
+			a, _ := s.NewMemoryAdapter(1000)
+			e, _ := s.NewEngine(a, s.EngineOptions{})
+			ev := sdk.WebhookEvent{ID: "utf16", Session: "descriptor-session", Event: "history.sync", Timestamp: "2026-10-17T00:00:00Z", Payload: raw}
+			_, err := e.ApplyEvent(ctx, ev, s.ApplyEventOptions{HistoryDescriptorMode: s.DescriptorMetadataOnly})
+			if (err == nil) != (units == 512) {
+				t.Fatalf("producer UTF16 boundary: %s units=%d accepted=%v", field, units, err == nil)
+			}
+			marked, _ := e.HasEvent(ctx, ev.Session, ev.ID)
+			if marked != (units == 512) {
+				t.Fatal("UTF16 marker")
+			}
+		}
+	}
+}
+
+func TestDescriptorStorageArchiveCloudControls(t *testing.T) {
+	ctx := context.Background()
+	f := descriptorFixture(t)
+	var p map[string]any
+	json.Unmarshal(f["inline"], &p)
+	delete(p, "delivery")
+	delete(p, "inline")
+	p["messages"] = []any{}
+	p["mode"] = "deliver"
+	for _, key := range []string{"conversationCount", "messageCount", "pushNameCount", "statusMessageCount"} {
+		p[key] = 0
+	}
+	rawBytes, _ := base64.StdEncoding.DecodeString(string(bytes.Trim(f["protobuf"], "\"")))
+	var compressed bytes.Buffer
+	w := gzip.NewWriter(&compressed)
+	w.Write(rawBytes)
+	w.Close()
+	p["fileLength"] = compressed.Len()
+	p["whatsapp"] = map[string]any{"encoding": "gzip-base64-protobuf", "data": base64.StdEncoding.EncodeToString(compressed.Bytes())}
+	for _, mode := range []string{"missing", "null", "full", "error", "cloud"} {
+		a, _ := s.NewMemoryAdapter(1000)
+		engine, _ := s.NewEngine(a, s.EngineOptions{})
+		payload, _ := json.Marshal(p)
+		if mode == "cloud" {
+			payload = []byte(`{"kind":"history","value":{}}`)
+		}
+		event := sdk.WebhookEvent{ID: "archive", Session: "descriptor-session", Event: "history.sync", Timestamp: "2026-10-17T00:00:00Z", Payload: payload}
+		calls := 0
+		options := s.ApplyEventOptions{DecodeHistoryDescriptor: func(context.Context, map[string]any, sdk.WebhookEvent) (map[string]any, error) {
+			t.Fatal("descriptor callback for archive/cloud")
+			return nil, nil
+		}}
+		if mode != "missing" {
+			options.DecodeHistory = func(_ context.Context, archive map[string]any, original sdk.WebhookEvent) (map[string]any, error) {
+				calls++
+				if archive["syncType"] != "RECENT" || !bytes.Equal(original.Payload, payload) {
+					t.Fatal("archive callback args")
+				}
+				if mode == "error" {
+					return nil, errors.New("archive callback failure")
+				}
+				if mode == "full" {
+					var chunk map[string]any
+					json.Unmarshal(f["chunk"], &chunk)
+					return chunk, nil
+				}
+				return nil, nil
+			}
+		}
+		_, err := engine.ApplyEvent(ctx, event, options)
+		if (err != nil) != (mode == "error") {
+			t.Fatal("archive/cloud behavior", mode, err)
+		}
+		if mode == "missing" || mode == "cloud" {
+			if calls != 0 {
+				t.Fatal("archive/cloud callback")
+			}
+		}
+		marked, _ := engine.HasEvent(ctx, event.Session, event.ID)
+		if marked != (mode != "error") {
+			t.Fatal("archive marker")
+		}
+	}
+}
