@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import re
 from datetime import datetime
 from typing import cast
 
@@ -46,11 +47,26 @@ def text(value: object) -> str | None:
     return value if isinstance(value, str) and value else None
 
 
+# ECMAScript WhiteSpace + LineTerminator; NEL and NUL are not included.
+_PROTO_WHITESPACE = "\t\n\v\f\r \u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff"
+_PROTO_DECIMAL = re.compile(r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?")
+_PROTO_RADIX = re.compile(r"(?:0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+)")
+
+
 def number(value: object) -> float | None:
     if isinstance(value, str):
+        source = value.strip(_PROTO_WHITESPACE)
+        if not source:
+            return 0.0
         try:
-            converted = float(value)
-        except ValueError:
+            if _PROTO_RADIX.fullmatch(source):
+                # One integer-to-binary64 conversion provides nearest-even rounding.
+                converted = float(int(source, 0))
+            elif _PROTO_DECIMAL.fullmatch(source):
+                converted = float(source)
+            else:
+                return None
+        except (ValueError, OverflowError):
             return None
         return converted if finite(converted) else None
     return cast(float, value) if finite(value) else None

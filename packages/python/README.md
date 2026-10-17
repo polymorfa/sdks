@@ -705,3 +705,10 @@ individual messages; existing native `wa:` fallback keys retain their joining
 limits. Content/marker commit precedes checkpoint CAS and manual ACK. ACK failure
 leaves committed data intact. Archive and Cloud behavior remain unchanged. This
 change establishes local package behavior, not registry or deployed availability.
+
+Decoded-history numeric strings follow the producer's finite `Number(string)`
+contract: exact ECMAScript whitespace, complete ASCII decimal/radix grammar and
+nearest-even binary64 rounding. Generic row numbers and safe revisions remain
+strict. This parser compatibility does not change durable key spelling outside
+the normal producer's uint32 chunk-order domain. Local fixtures and physical
+wheel/sdist consumers do not establish registry or deployed acceptance.
