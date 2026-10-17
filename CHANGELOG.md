@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Webhook phone offline start day. Platform and Messaging webhook create,
+  update and read types gain `phoneOfflineStartDay` (7-13, default 10): the
+  first day without the phone on which the webhook receives
+  `session.phone_offline`. Platform webhooks always return it. To stop the
+  warning, leave the event out of `eventTypes` (Platform) or `events`
+  (Messaging). `PHONE_OFFLINE_START_DAY` exports the bounds. Not usable until
+  the API release that adds the field is deployed. API contract:
+  polymorfa/polymorfa#631.
 - Receipt-timed campaign follow-ups (beta). Messaging and Platform campaign
   create and update accept `followUp` (`CampaignFollowUp`): one text or
   template message sent from the first message's number, timed from its first

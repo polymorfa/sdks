@@ -9,6 +9,15 @@ its `RequestLog` and `RequestLogPageMetadata` schemas to API merge commit
 The release gate requires this pin to match the global source before
 publication, so the method publishes only with a reconciled, accepted contract.
 
+## Webhook phone offline start day
+
+`webhook-phone-offline.json` pins `phoneOfflineStartDay` on the nine Platform
+and Messaging webhook schemas that carry it to API source commit
+`6ee63d5321dffc2b997a60f348d14a6c8744a018` (polymorfa/polymorfa#631, not yet
+merged). `webhook-phone-offline-contract.test.ts` checks the SDK types and
+`PHONE_OFFLINE_START_DAY` against it. Re-pin to the merge commit and refresh
+the global snapshots before publication.
+
 ## Message provider references
 
 Native message receipts, webhook references, acknowledgements, history, and
