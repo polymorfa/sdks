@@ -1,7 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import {
-  ApiKeysResource,
   AuditLogsResource,
   AudiencesResource,
   BillingResource,
@@ -29,7 +28,6 @@ import {
   QuickRepliesResource,
   QuickLinkSettingsResource,
   Client,
-  ProjectTokensResource,
   PRIVACY_SETTING_VALUES,
   PRESENCE_CHAT_STATES,
   PRESENCE_OBSERVATION_STATUSES,
@@ -49,7 +47,6 @@ import {
   constructWebhookEvent,
   isEvent,
   verifyWebhookSignature,
-  type ApiKey,
   type ApiResponse,
   type AuditLog,
   type BillingBalance,
@@ -96,7 +93,6 @@ import {
   type OrganizationMember,
   type PlatformPayload,
   type ClientOptions,
-  type ProjectToken,
   type RawRequest,
   type RequestOptions,
   type ResolveIdentityParams,
@@ -138,7 +134,6 @@ describe("public exports", () => {
       MessagingCampaignsResource,
       MessagingMediaResource,
       Client,
-      ApiKeysResource,
       AuditLogsResource,
       AudiencesResource,
       BillingResource,
@@ -160,7 +155,6 @@ describe("public exports", () => {
       PrivacyResource,
       PresenceResource,
       QuickRepliesResource,
-      ProjectTokensResource,
       CursorPage,
       PolymorfaError,
       PolymorfaConfigurationError,
@@ -177,12 +171,11 @@ describe("public exports", () => {
       constructWebhookEvent,
       verifyWebhookSignature,
       isEvent,
-    ]).toHaveLength(43);
+    ]).toHaveLength(41);
   });
 
   it("exposes every public CLI-facing type from one entrypoint", () => {
     expectTypeOf<ApiResponse<unknown>>().toHaveProperty("metadata");
-    expectTypeOf<ApiKey>().toHaveProperty("last4");
     expectTypeOf<AuditLog>().toHaveProperty("actorEmail");
     expectTypeOf<BillingBalance>().toHaveProperty("balanceCents");
     expectTypeOf<BillingUsage>().toHaveProperty("activeNumbers");
@@ -217,7 +210,6 @@ describe("public exports", () => {
     expectTypeOf<PlatformPayload>().toMatchTypeOf<
       Readonly<Record<string, unknown>>
     >();
-    expectTypeOf<ProjectToken>().toHaveProperty("revokedAt");
     expectTypeOf<SecurityIncident>().toHaveProperty("resolution");
     expectTypeOf<SessionBan>().toHaveProperty("status");
     expectTypeOf<SessionBatchRequest>().toHaveProperty("sessionIds");

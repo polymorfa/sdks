@@ -16,7 +16,6 @@ import {
   type ProjectScopedRawClient,
 } from "./raw.js";
 import { HttpTransport } from "./transport/http.js";
-import { ApiKeysResource } from "./platform/api-keys.js";
 import { AudiencesResource } from "./platform/audiences.js";
 import { AuditLogsResource } from "./platform/audit-logs.js";
 import { BillingResource } from "./platform/billing.js";
@@ -40,7 +39,6 @@ import { MediaResource } from "./platform/media.js";
 import { MembersResource } from "./platform/members.js";
 import { OptOutsResource } from "./platform/opt-outs.js";
 import { OrganizationsResource } from "./platform/organizations.js";
-import { ProjectTokensResource } from "./platform/project-tokens.js";
 import { ProjectsResource } from "./platform/projects.js";
 import { QuickLinkSettingsResource } from "./platform/quicklink-settings.js";
 import { SecurityIncidentsResource } from "./platform/security-incidents.js";
@@ -80,7 +78,6 @@ export interface ClientBase<O extends ClientOwner> {
 }
 
 export interface OrganizationControlPlaneResources {
-  readonly apiKeys: ApiKeysResource;
   readonly audiences: AudiencesResource;
   readonly auditLogs: AuditLogsResource;
   readonly billing: BillingResource;
@@ -96,7 +93,6 @@ export interface OrganizationControlPlaneResources {
   readonly media: MediaResource;
   readonly optOuts: OptOutsResource;
   readonly projects: ProjectsResource;
-  readonly projectTokens: ProjectTokensResource;
   readonly securityIncidents: SecurityIncidentsResource;
   readonly sessionBans: SessionBansResource;
   readonly sessions: PlatformSessionsResource;
@@ -213,7 +209,6 @@ class ClientImplementation implements ClientBase<ClientOwner> {
 
     if (this.owner === "organization") {
       Object.assign(this, {
-        apiKeys: new ApiKeysResource(this.#transport),
         audiences: new AudiencesResource(this.#transport),
         auditLogs: new AuditLogsResource(this.#transport),
         billing: new BillingResource(this.#transport),
@@ -227,7 +222,6 @@ class ClientImplementation implements ClientBase<ClientOwner> {
         media: new MediaResource(this.#transport),
         optOuts: new OptOutsResource(this.#transport),
         projects: new ProjectsResource(this.#transport),
-        projectTokens: new ProjectTokensResource(this.#transport),
         securityIncidents: new SecurityIncidentsResource(this.#transport),
         sessionBans: new SessionBansResource(this.#transport),
         sessions: new PlatformSessionsResource(this.#transport),

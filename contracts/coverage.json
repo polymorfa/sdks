@@ -2781,17 +2781,6 @@
     {
       "family": "platform",
       "method": "DELETE",
-      "path": "/platform/keys/{keyId}",
-      "operationId": "deactivateApiKey",
-      "fingerprint": "3bc6580c15162209c02f62d80fce46f3860eeaeab4cdcf762462575611403286",
-      "typescript": {
-        "status": "covered",
-        "method": "Client.apiKeys.deactivate"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
       "path": "/platform/media/{mediaId}",
       "operationId": "deleteMedia",
       "fingerprint": "dceaa59f7b484c85161e63e0781130814d3370cf142b69b6e6d914f559b7d418",
@@ -3352,7 +3341,7 @@
       },
       "sourceContractSha256": "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b",
       "sourceCommit": "e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb",
-      "sdkContractSha256": "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b"
+      "sdkContractSha256": "ba693410c483b444cf28b673bf6da90bb643cc319b38a611ab0e15988dd015e5"
     },
     {
       "family": "platform",
@@ -3365,7 +3354,7 @@
       },
       "fingerprint": "e999dce00d84dd7b4d40958ea76527c37c27fc867fa7ccf5f9f4e713c1f12555",
       "sourceContractSha256": "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b",
-      "sdkContractSha256": "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b",
+      "sdkContractSha256": "ba693410c483b444cf28b673bf6da90bb643cc319b38a611ab0e15988dd015e5",
       "sourceCommit": "e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb"
     },
     {
@@ -4148,17 +4137,6 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/keys",
-      "operationId": "listApiKeys",
-      "fingerprint": "9ee9f6dd215383112136a81a368df55ac054ef468daa9fd200a5824f27ad3b16",
-      "typescript": {
-        "status": "covered",
-        "method": "Client.apiKeys.list"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
       "path": "/platform/media/{mediaId}",
       "operationId": "getMediaUrl",
       "fingerprint": "6320d2cd1af9d90a8dac77041c2ae7535594f95da19a378ffc01f6d88229cdc9",
@@ -4278,7 +4256,7 @@
       },
       "sourceContractSha256": "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b",
       "sourceCommit": "e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb",
-      "sdkContractSha256": "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b"
+      "sdkContractSha256": "ba693410c483b444cf28b673bf6da90bb643cc319b38a611ab0e15988dd015e5"
     },
     {
       "family": "platform",
@@ -4291,7 +4269,7 @@
       },
       "fingerprint": "240ac51bf9ba12d47624b0cd8ba96b018d1b2e0e7e7e4e8e4d8c3152025c4fab",
       "sourceContractSha256": "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b",
-      "sdkContractSha256": "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b",
+      "sdkContractSha256": "ba693410c483b444cf28b673bf6da90bb643cc319b38a611ab0e15988dd015e5",
       "sourceCommit": "e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb"
     },
     {
@@ -4668,17 +4646,6 @@
         "status": "excluded",
         "reason": "This dashboard-only route does not accept the organization server API key used by Client.",
         "milestone": "credential-boundary"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/tokens",
-      "operationId": "listPolymorfaTokens",
-      "fingerprint": "d8ab97e205775112f019858dee537c0b36a65987eb8d003b1681910572e50473",
-      "typescript": {
-        "status": "covered",
-        "method": "Client.projectTokens.list"
       }
     },
     {

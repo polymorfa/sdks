@@ -3,7 +3,7 @@
   "commit": "e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb",
   "branch": "dev",
   "published": true,
-  "note": "Full Messaging and Platform snapshots pin the merged API dev revision. SDK publication and API deployment remain separate gates.",
+  "note": "Full snapshots retain the recorded baseline; Platform applies the separately pinned human-only credential-management removal supplement. Publication and deployment are separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
@@ -13,7 +13,15 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b"
+      "sha256": "ba693410c483b444cf28b673bf6da90bb643cc319b38a611ab0e15988dd015e5"
     }
-  }
+  },
+  "supplements": [
+    {
+      "name": "human-only-credential-management",
+      "snapshotPath": "contracts/credential-management.json",
+      "sourceCommit": "cdc3d8dd2770693f1d319ecf5d0fa1a058717a0d",
+      "sha256": "bda73eec25574a37c9fa412d5052d0c163322d6b3df0fa7daafcdaa7132e3223"
+    }
+  ]
 }

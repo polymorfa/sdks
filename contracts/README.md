@@ -1,3 +1,11 @@
+## Human-only credential-management supplement
+
+The Platform snapshot removes GET /platform/keys, DELETE /platform/keys/{keyId}
+and GET /platform/tokens. The full baseline remains recorded below; the exact
+removal source revision is recorded in credential-management.json. No unrelated
+contract parity or registry availability is implied. Signed-in Console people
+manage organization keys and project tokens. Client-token operations remain.
+
 # Contract coverage
 
 ## Message provider references
@@ -41,7 +49,7 @@ published SDK package before updating their pinned dependency.
 
 ## Full snapshots
 
-The current snapshots are byte-identical copies of the Messaging and Platform
+The baseline snapshots are byte-identical copies of the Messaging and Platform
 contracts at API dev merge commit `e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb`
 (after polymorfa/polymorfa#330, #328, #335, #382, #408, #494, #482 and #488).
 Campaign create, update and launch types add template variable mappings,
@@ -50,8 +58,8 @@ add sequence progress; webhooks add `campaign.recipient_link_opened` and
 `messageIndex`. Fourteen new Campaigns operations (test send, audience profiles and imports, link reports, campaign
 settings and approval reads) are recorded as
 missing until their methods follow. The three approval decisions and the
-threshold update are console routes and are excluded. The ledger contains 608
-operations: 454 covered, 0 partial, 14 missing and 140 excluded.
+threshold update are console routes and are excluded. The ledger after the human-only credential-management removal contains 605
+operations: 451 covered, 0 partial, 14 missing and 140 excluded.
 
 The previous snapshots were byte-identical copies of the Messaging and Platform
 contracts at API dev merge commit `ff12a76fe44fa23bf71e00fc6454a51b1fdbb399`

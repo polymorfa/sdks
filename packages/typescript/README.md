@@ -2570,12 +2570,11 @@ access; without it the API returns `403 feature_unavailable`.
 
 ## Organization access and security
 
-The organization view exposes key metadata, members, audit logs, session bans,
-security incidents, and project-token metadata:
+The organization view exposes members, audit logs, session bans and
+security incidents:
 
 ```ts
-const [keys, members, audit, bans, incidents, tokens] = await Promise.all([
-  platform.apiKeys.list(),
+const [members, audit, bans, incidents] = await Promise.all([
   platform.members.list(),
   platform.auditLogs.list({
     action: "session.stop",
@@ -2584,44 +2583,20 @@ const [keys, members, audit, bans, incidents, tokens] = await Promise.all([
   }),
   platform.sessionBans.listActive(),
   platform.securityIncidents.list(),
-  platform.projectTokens.list("018f0000-0000-7000-8000-000000000002"),
 ]);
 
 await platform.securityIncidents.acknowledge(incidents.data.data[0]!.id, {
   idempotencyKey: "acknowledge-incident-1",
 });
-await platform.apiKeys.deactivate(keys.data.data[0]!.keyId, {
-  idempotencyKey: "deactivate-key-1",
-});
 ```
 
-These read operations require `sessions:read`. API-key deactivation and incident
-acknowledgement require `sessions:manage`. The two mutations are direct
-organization-scoped writes rather than asynchronous operations. The SDK retries
-them only when an idempotency key is supplied, but the pinned handlers do not
-persist that header. Incident acknowledgement is repeatable; an API-key
-deactivation retry after an unseen successful response can return `404` because
-the key is already inactive.
+Create, list and revoke organization keys and project tokens as a signed-in
+person in the Console. Machine credentials cannot manage those credentials.
 
 These list responses are complete arrays. The source exposes no cursor or
 page token. The live audit handler accepts exact `action` and `resource`
 filters plus a limit bounded to 1 through 500, although those query fields are
-missing from the pinned OpenAPI operation. Project-token metadata requires an
-explicit project ID for organization-key calls even though OpenAPI marks the
-query field optional. Neither token-list operation returns bearer secrets.
-
-The API-key list handler currently reports the all-scopes mask for each row
-instead of the stored row-specific mask. The SDK preserves that numeric wire
-field without interpreting it as proof of the caller's live authorization.
-Incident acknowledgement records an empty acting-user value for API-key calls;
-the subsequent incident list can therefore expose an empty `acknowledgedBy`
-string rather than a dashboard user ID.
-
-Organization updates, member role changes, member deletion, invitations,
-billing top-ups, and console usage insights require a dashboard session and
-are not exposed by the server SDK. Browser client tokens are rejected by the
-Management API. Project tokens are accepted only by a project-scoped `Client`;
-organization-only resources are absent from that view's public type.
+missing from the pinned OpenAPI operation.
 
 ## QuickLink lifecycle and settings
 

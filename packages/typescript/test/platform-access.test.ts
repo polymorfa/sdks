@@ -1,21 +1,18 @@
+import * as publicApi from "../src/index.js";
 import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
-  ApiKeysResource,
   AuditLogsResource,
   MembersResource,
   Client,
-  ProjectTokensResource,
   SecurityIncidentsResource,
   SessionBansResource,
   type ApiResponse,
-  type ApiKey,
   type AuditLog,
   type DataEnvelope,
   type ManagementOperation,
   type OrganizationMember,
-  type ProjectToken,
   type SecurityIncident,
   type SessionBan,
 } from "../src/index.js";
@@ -58,7 +55,6 @@ async function platformAccessServer(): Promise<{
 
 describe("Client organization access and operations", () => {
   it("exports the complete resource and response contracts", () => {
-    expectTypeOf<Client["apiKeys"]>().toEqualTypeOf<ApiKeysResource>();
     expectTypeOf<Client["members"]>().toEqualTypeOf<MembersResource>();
     expectTypeOf<Client["auditLogs"]>().toEqualTypeOf<AuditLogsResource>();
     expectTypeOf<Client["sessionBans"]>().toEqualTypeOf<SessionBansResource>();
@@ -66,39 +62,21 @@ describe("Client organization access and operations", () => {
       Client["securityIncidents"]
     >().toEqualTypeOf<SecurityIncidentsResource>();
     expectTypeOf<Client>().toHaveProperty("operations");
-    expectTypeOf<
-      Client["projectTokens"]
-    >().toEqualTypeOf<ProjectTokensResource>();
 
-    expectTypeOf<ApiKey>().toHaveProperty("lastUsed");
     expectTypeOf<OrganizationMember>().toHaveProperty("joinedAt");
     expectTypeOf<AuditLog>().toHaveProperty("metadata");
     expectTypeOf<SessionBan>().toHaveProperty("banExpiresAt");
     expectTypeOf<SecurityIncident>().toHaveProperty("acknowledgedAt");
     expectTypeOf<ManagementOperation>().toHaveProperty("capabilities");
-    expectTypeOf<ProjectToken>().toHaveProperty("revokedAt");
   });
 
-  it("lists and deactivates organization API keys without exposing key material", async () => {
+  it("has no organization-key or project-token management resources", async () => {
     const { client, requests } = await platformAccessServer();
-    const listed = await client.apiKeys.list();
-    const deactivated = await client.apiKeys.deactivate("key/a", {
-      idempotencyKey: "deactivate-key-a",
-    });
-
-    expectTypeOf(listed).toEqualTypeOf<
-      ApiResponse<DataEnvelope<readonly ApiKey[]>>
-    >();
-    expectTypeOf(deactivated.data.data).toEqualTypeOf<{
-      readonly ok: true;
-      readonly keyId: string;
-    }>();
-    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /platform/keys",
-      "DELETE /platform/keys/key%2Fa",
-    ]);
-    expect(requests[1]?.headers["idempotency-key"]).toBe("deactivate-key-a");
-    expect(listed.metadata.requestId).toBe("req_platform_access");
+    expect(publicApi).not.toHaveProperty("ApiKeysResource");
+    expect(publicApi).not.toHaveProperty("ProjectTokensResource");
+    expect(client).not.toHaveProperty("apiKeys");
+    expect(client).not.toHaveProperty("projectTokens");
+    expect(requests).toHaveLength(0);
   });
 
   it("lists members but excludes dashboard-only invitations and mutations", async () => {
@@ -175,19 +153,5 @@ describe("Client organization access and operations", () => {
       },
     ]);
     expect(requests[1]?.headers["idempotency-key"]).toBe("ack-incident-a");
-  });
-
-  it("retrieves durable operation state and requires a project for token metadata", async () => {
-    const { client, requests } = await platformAccessServer();
-    const tokens = await client.projectTokens.list("project/a", {
-      timeoutMs: 5_000,
-    });
-
-    expectTypeOf(tokens).toEqualTypeOf<
-      ApiResponse<DataEnvelope<readonly ProjectToken[]>>
-    >();
-    expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /platform/tokens?projectId=project%2Fa",
-    ]);
   });
 });
