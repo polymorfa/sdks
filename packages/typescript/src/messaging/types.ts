@@ -478,6 +478,11 @@ export interface CampaignRecipientInput {
 
 /** One queued or settled recipient of a campaign. */
 export interface CampaignRecipient {
+  /** Number of accepted sequence messages; delivery timestamps below describe step 0. */
+  readonly messagesSent?: number;
+  readonly nextMessageAt?: number | null;
+  /** Includes replied, link_clicked, opted_out and open-ended send failures. */
+  readonly sequenceError?: string | null;
   readonly id: string;
   readonly phone: string;
   readonly variables: Readonly<Record<string, unknown>>;

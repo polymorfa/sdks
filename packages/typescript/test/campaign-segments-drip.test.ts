@@ -202,3 +202,76 @@ it("pins PATCH defaults, four-range step windows, and segment bounds to merged d
       .maxItems,
   ).toBe(10);
 });
+
+it.each([
+  "The saved segment was deleted; this launched campaign cannot launch again",
+  "Segment evaluation exceeded its time limit; simplify the rules and retry",
+])("preserves launch 409: %s", async (message) => {
+  const server = await startTestServer(() => ({
+    status: 409,
+    body: JSON.stringify({ error: { code: "state_conflict", message } }),
+  }));
+  servers.push(server);
+  const result = platform(server.url).campaigns.launch("c", { projectId: "p" });
+  await expect(result).rejects.toMatchObject({
+    status: 409,
+    code: "state_conflict",
+    message,
+  });
+  expect(server.requests).toHaveLength(1);
+});
+it("projects per-step analytics and recipient exits on both APIs", async () => {
+  const drip = {
+    enrollment: "continuous",
+    enrolled: 3,
+    enrolledByApi: 1,
+    active: 1,
+    completed: 1,
+    exited: 1,
+    steps: [
+      {
+        step: 0,
+        entered: 3,
+        waiting: 1,
+        sent: 2,
+        delivered: 2,
+        read: 1,
+        replied: 1,
+        exited: 1,
+        failed: 0,
+      },
+    ],
+  };
+  const server = await startTestServer((request) => ({
+    body: JSON.stringify({
+      success: true,
+      data: request.path.includes("analytics")
+        ? { drip }
+        : [
+            {
+              messagesSent: 1,
+              nextMessageAt: null,
+              sequenceError: "link_clicked",
+            },
+          ],
+      page: { hasMore: false, nextCursor: null },
+    }),
+  }));
+  servers.push(server);
+  expect(
+    (await platform(server.url).campaigns.analytics("c", { projectId: "p" }))
+      .data.data.drip,
+  ).toEqual(drip);
+  expect(
+    (await messaging(server.url).campaigns.analytics("p", "c")).data.data.drip
+      ?.steps[0]?.exited,
+  ).toBe(1);
+  expect(
+    (await platform(server.url).campaigns.recipients("c", { projectId: "p" }))
+      .data.data[0]?.sequenceError,
+  ).toBe("link_clicked");
+  expect(
+    (await messaging(server.url).campaigns.listRecipients("p", "c")).data
+      .data[0]?.messagesSent,
+  ).toBe(1);
+});
