@@ -113,6 +113,18 @@ function validateInput(input: MessagingClientTokenMintRequest): void {
     typeof input.session === "string" && input.session.length > 0;
   const hasCustomer =
     typeof input.customer === "string" && input.customer.length > 0;
+  if (input.allow !== undefined) {
+    const actions = hasCustomer ? CUSTOMER_ACTIONS : SESSION_ACTIONS;
+    if (
+      !Array.isArray(input.allow) ||
+      (hasCustomer && input.allow.length === 0) ||
+      input.allow.some(
+        (action) => typeof action !== "string" || !actions.has(action),
+      )
+    ) {
+      throw new TypeError("allow must contain supported client-token actions.");
+    }
+  }
   if (
     hasSession === hasCustomer ||
     typeof input.ephemeralId !== "string" ||
@@ -123,3 +135,24 @@ function validateInput(input: MessagingClientTokenMintRequest): void {
     );
   }
 }
+
+const CUSTOMER_ACTIONS: ReadonlySet<string> = new Set([
+  "send_message",
+  "send_reaction",
+  "send_typing",
+  "send_seen",
+  "read_presence",
+  "subscribe_presence",
+  "read_contact",
+  "chats_read",
+  "chats_manage",
+  "contact_write",
+  "contact_delete",
+]);
+const SESSION_ACTIONS: ReadonlySet<string> = new Set([
+  ...CUSTOMER_ACTIONS,
+  "mcp",
+  "voip_place",
+  "voip_answer",
+  "voip_signal",
+]);

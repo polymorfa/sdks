@@ -14,6 +14,10 @@ export type PolymorfaPermission =
   | "read_presence"
   | "subscribe_presence"
   | "read_contact"
+  | "chats_read"
+  | "chats_manage"
+  | "contact_write"
+  | "contact_delete"
   | "voip_place"
   | "voip_answer"
   | "voip_signal"
@@ -31,6 +35,10 @@ export const POLYMORFA_PERMISSIONS: readonly PolymorfaPermission[] =
     "read_presence",
     "subscribe_presence",
     "read_contact",
+    "chats_read",
+    "chats_manage",
+    "contact_write",
+    "contact_delete",
     "voip_place",
     "voip_answer",
     "voip_signal",
