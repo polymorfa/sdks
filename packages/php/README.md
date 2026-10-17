@@ -831,3 +831,8 @@ then rounds once to nearest even; GMP and BCMath are not required. Generic row
 numbers, safe revisions and fenced CAS remain strict. Shared vectors, native
 SQLite and local archive consumers establish local compatibility only. Registry
 publication and matching environment acceptance remain separate gates.
+
+Ordinary JSON requests require HTTP 200-299 before body reading or decoding.
+Final informational and redirect responses fail as `invalid_response`, retaining
+safe status/request metadata and closing the body without a follow or retry.
+Direct binary media uses its separate validated redirect policy.

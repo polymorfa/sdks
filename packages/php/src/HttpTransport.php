@@ -217,6 +217,9 @@ final class HttpTransport
     {
         [$response, $metadata] = $this->openStream($method, $path, $query, $body, $options);
         try {
+            if ($metadata->status < 200 || $metadata->status >= 300) {
+                throw new ServerException('Unexpected HTTP response status.', 'invalid_response', status:$metadata->status, requestId:$metadata->requestId, metadata:$metadata);
+            }
             $raw = $response->getBody()->getContents();
             if ($metadata->status === 204 || $raw === '') {
                 return new ApiResponse(null, $metadata);

@@ -203,6 +203,7 @@ foreach ([
     'campaign_contracts.php',
     'existing_contracts.php',
     'whatsapp_stream.php',
+    'json_status.php',
     'media_redirect_review.php',
     'media_encryption.php',
     'media_upload.php',
