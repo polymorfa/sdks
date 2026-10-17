@@ -172,7 +172,7 @@ final class HistoryReducer
                     $f = $mapped[1];
                     $f['chatId'] = new FieldWrite($chat, 0);
                     $f['editedAt'] = new FieldWrite($v, $v);
-                    return [new Upsert('messages', $targetKey, $f)];
+                    return [new Upsert('messages', $targetKey, $f, $guard)];
                 }
             } return [];
         }

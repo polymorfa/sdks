@@ -230,6 +230,7 @@ require_once __DIR__.'/storage_engine.php';
 // shared portable fixtures remain explicit globals for their proof functions.
 foreach ([
     'numeric_storage.php',
+    'history_edit_guard.php',
     'descriptor_storage.php',
     'storage_engine_sync.php',
     'storage_engine_http.php',
