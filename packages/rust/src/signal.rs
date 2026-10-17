@@ -381,7 +381,10 @@ impl SignalClient {
     }
 }
 /// Verify exact raw webhook bytes and a bounded timestamp window before parsing.
-/// Durably deduplicate by event ID before returning a webhook 2xx response.
+/// The key is an independent application secret of at least 16 bytes; keys
+/// beginning with the reserved `pmfa_` credential prefix are rejected before
+/// any authentication. Durably deduplicate by event ID before returning a
+/// webhook 2xx response.
 pub fn verify_signal_webhook(
     secret: &[u8],
     timestamp: i64,
@@ -397,6 +400,9 @@ pub fn verify_signal_webhook(
             "invalid_signature",
         )
     };
+    if secret.len() < 16 || secret.starts_with(b"pmfa_") {
+        return Err(crate::transport::configuration("Signal webhook secret"));
+    }
     if timestamp.abs_diff(now) > tolerance.as_secs() {
         return Err(reject());
     }

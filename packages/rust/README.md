@@ -340,7 +340,9 @@ secret. It runs on servers, sends no Origin header, refuses redirects, and never
 receives a Signal master or session key. Its native SSE stream has no resume
 cursor and never automatically acknowledges an event. Commit application data
 before `ack`; repeated delivery is possible. `verify_signal_webhook` verifies
-HMAC over the exact timestamp and raw body before parsing. Enforce a timestamp
+HMAC over the exact timestamp and raw body before parsing. Its key must be an
+independent secret of at least 16 bytes; keys beginning with `pmfa_` return a
+configuration error before any verification. Enforce a timestamp
 window and durable event-ID deduplication before returning 2xx. Convert local
 history notifications with `SignalHistoryDescriptor::chunk_input`.
 

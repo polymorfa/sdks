@@ -230,6 +230,75 @@ fn webhook_mac_uses_exact_bytes_timestamp_and_preserves_extensions() {
     assert!(parser.feed(&vec![b'x'; 4 * 1024 * 1024 + 1]).is_err());
 }
 
+fn signed(key: &[u8], timestamp: i64, body: &[u8]) -> String {
+    let mut mac = Hmac::<Sha256>::new_from_slice(key).unwrap();
+    mac.update(format!("{timestamp}.").as_bytes());
+    mac.update(body);
+    format!("v1={}", hex::encode(mac.finalize().into_bytes()))
+}
+#[test]
+fn webhook_rejects_weak_or_reserved_keys_before_authentication() {
+    let body = serde_json::to_vec(&event()).unwrap();
+    let verify = |key: &[u8], body: &[u8], signature: &str, now: i64| {
+        verify_signal_webhook(key, 100, body, signature, now, Duration::from_secs(5))
+    };
+    // Correctly signed with the weak or reserved key itself: still rejected as configuration.
+    let mut rejected: Vec<Vec<u8>> = vec![vec![], vec![b'k'], vec![b'k'; 15], vec![0xff; 15]];
+    for prefix in [
+        "pmfa_",
+        "pmfa_pt_",
+        "pmfa_ct_",
+        "pmfa_ls_",
+        "pmfa_wst_",
+        "pmfa_sd_",
+    ] {
+        rejected.push(format!("{prefix}synthetic-fixture-key-0000").into_bytes());
+    }
+    for key in &rejected {
+        let error = verify(key, &body, &signed(key, 100, &body), 100)
+            .map(|_| ())
+            .unwrap_err();
+        assert_eq!(
+            error.kind,
+            ErrorKind::Configuration,
+            "key length {}",
+            key.len()
+        );
+        assert_eq!(error.code.as_deref(), Some("invalid_configuration"));
+    }
+    // Exact 16 bytes, longer ASCII and arbitrary non-ASCII byte keys remain valid.
+    for key in [
+        vec![b'k'; 16],
+        b"application-fixture-secret".to_vec(),
+        vec![0xff; 32],
+        b"PMFA_uppercase-is-not-reserved".to_vec(),
+        b"xpmfa_not-a-prefix-fixture".to_vec(),
+    ] {
+        let Ok(parsed) = verify(&key, &body, &signed(&key, 100, &body), 104) else {
+            panic!("valid key rejected")
+        };
+        assert_eq!(parsed.id, "event-fixture");
+        let wrong = signed(b"another-fixture-secret", 100, &body);
+        let error = verify(&key, &body, &wrong, 100).map(|_| ()).unwrap_err();
+        assert_eq!(error.code.as_deref(), Some("invalid_signature"));
+        let error = verify(&key, &body, &signed(&key, 100, &body), 106)
+            .map(|_| ())
+            .unwrap_err();
+        assert_eq!(error.code.as_deref(), Some("invalid_signature"));
+    }
+    let key = vec![b'k'; 16];
+    let invalid = b"{not json".to_vec();
+    let error = verify(&key, &invalid, &signed(&key, 100, &invalid), 100)
+        .map(|_| ())
+        .unwrap_err();
+    assert_eq!(error.code.as_deref(), Some("invalid_response"));
+    let large = vec![b' '; 4 * 1024 * 1024 + 1];
+    let error = verify(&key, &large, &signed(&key, 100, &large), 100)
+        .map(|_| ())
+        .unwrap_err();
+    assert_eq!(error.code.as_deref(), Some("invalid_response"));
+}
+
 /// Optional integration against the exact private producer's synthetic local HTTP harness.
 #[tokio::test]
 async fn actual_service_auth_and_sessions_contract() {
