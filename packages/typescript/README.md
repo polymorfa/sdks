@@ -3311,6 +3311,30 @@ inline notifications skip the download. Set `maxBytes` and `maxInflatedBytes`
 for application limits. Protobuf integer values and unknown fields survive
 processing. The helper does not download a notification automatically.
 
+History decoding accepts exactly one gzip, zlib or raw-deflate stream on Node.js
+20 and later, browsers and Workers. It validates wrapper checksums and rejects
+truncated streams, dictionaries, concatenated streams and trailing bytes,
+including zero padding. It uses the pinned pako runtime dependency and does not
+require `DecompressionStream`. Keep the MIT and Zlib notices from
+`THIRD_PARTY_NOTICES` when bundling the history entry point.
+
+`maxBytes` defaults to 256 MiB for downloads and inline payloads;
+`maxInflatedBytes` defaults to 512 MiB. Both limits must be positive safe
+integers. Inflation uses input windows of at most 8 KiB and output windows of
+at most 64 KiB. It snapshots compressed input before yielding. Joining the
+output temporarily needs another output-sized allocation; these ceilings do
+not promise a small memory footprint.
+
+Pass `signal` to `downloadHistoryChunk()` to cancel downloads and local decoding,
+including inline payloads. Cancellation is checked between bounded calls and
+output copies, with task yields after at most 32 continuing calls or copies.
+It cannot interrupt a synchronous call or protobuf parsing and has no hard
+latency guarantee. `decodeHistorySyncPayload()` retains its existing options
+without a signal. Invalid compressed data reports `media_invalid_ciphertext`,
+size overflow reports `media_too_large` and download cancellation reports
+`request_cancelled`. Internal dependency or allocation failures remain distinct.
+No decoded chunk is returned before full compressed-stream validation.
+
 After verifying and storing a chunk, `messaging.historySync.deleteChunk()` asks
 the linked device to delete its CDN blob. Its `fileEncSha256` is the encrypted
 chunk's 32-byte SHA-256 encoded as standard base64, including the trailing `=`.

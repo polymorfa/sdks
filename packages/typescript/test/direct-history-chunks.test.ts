@@ -111,6 +111,31 @@ describe("local history chunk processing", () => {
       );
     },
   );
+  it.each([
+    ["gzip", gzipSync],
+    ["zlib", deflateSync],
+    ["raw", deflateRawSync],
+  ] as const)(
+    "refuses authenticated %s streams with unused input",
+    async (_name, compress) => {
+      const compressed = new Uint8Array([...compress(binary), 0]);
+      const encrypted = seal(compressed);
+      await expect(
+        downloadHistoryChunk(
+          {
+            directPath: "/v/strict-history.enc",
+            mediaKey: key,
+            fileSha256: sha(compressed),
+            fileEncSha256: sha(encrypted),
+          },
+          { fetch: async () => new Response(encrypted.slice().buffer) },
+        ),
+      ).rejects.toMatchObject({
+        code: "media_invalid_ciphertext",
+        message: "The history chunk is not valid compressed data.",
+      });
+    },
+  );
   it("rejects ciphertext tampering before protobuf parsing", async () => {
     const compressed = deflateSync(binary);
     const encrypted = seal(compressed);
@@ -124,7 +149,10 @@ describe("local history chunk processing", () => {
           fileSha256: sha(compressed),
           fileEncSha256: hash,
         },
-        { fetch: async () => new Response(encrypted.slice().buffer) },
+        {
+          fetch: async () => new Response(encrypted.slice().buffer),
+          maxInflatedBytes: 0,
+        },
       ),
     ).rejects.toMatchObject({ code: "media_enc_hash_mismatch" });
   });

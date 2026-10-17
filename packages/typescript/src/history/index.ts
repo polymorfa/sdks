@@ -16,6 +16,7 @@ import {
   downloadEncryptedBlob,
   type WhatsAppMediaCrypto,
 } from "../media/whatsapp.js";
+import { inflateHistory, checkHistoryCancellation } from "./inflate.js";
 import { HistorySyncSchema, type HistorySync } from "./gen/whatsapp_pb.js";
 
 export {
@@ -128,76 +129,6 @@ function resolveInflatedLimit(value: number | undefined): number {
   return limit;
 }
 
-function compressionFormat(header: Uint8Array): CompressionFormat {
-  // WhatsApp Web inflates with fflate's decompressSync, which detects gzip,
-  // zlib and raw deflate (Cellar whatsapp-1049950004 WAGzip.js,
-  // WAWebHandleHistorySyncChunk.js:134). whatsmeow and the phone produce zlib.
-  if (header[0] === 0x1f && header[1] === 0x8b) return "gzip";
-  if (
-    header.length >= 2 &&
-    (header[0]! & 0x0f) === 8 &&
-    ((header[0]! << 8) | header[1]!) % 31 === 0
-  ) {
-    return "deflate";
-  }
-  return "deflate-raw";
-}
-
-async function inflate(
-  compressed: Uint8Array,
-  maxInflatedBytes: number,
-): Promise<Uint8Array> {
-  if (typeof DecompressionStream === "undefined") {
-    throw new PolymorfaConfigurationError(
-      "History sync decoding requires DecompressionStream.",
-      "DecompressionStream",
-    );
-  }
-  const source = new ReadableStream<Uint8Array>({
-    start(controller) {
-      controller.enqueue(compressed);
-      controller.close();
-    },
-  });
-  const reader = source
-    .pipeThrough(
-      new DecompressionStream(
-        compressionFormat(compressed),
-      ) as unknown as ReadableWritablePair<Uint8Array, Uint8Array>,
-    )
-    .getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      total += value.length;
-      if (total > maxInflatedBytes) {
-        throw new PolymorfaMediaIntegrityError(
-          "The inflated history chunk exceeds the permitted size.",
-          "media_too_large",
-        );
-      }
-      chunks.push(value);
-    }
-  } catch (error) {
-    await reader.cancel().catch(() => undefined);
-    if (error instanceof PolymorfaMediaIntegrityError) throw error;
-    throw new PolymorfaMediaIntegrityError(
-      "The history chunk is not valid compressed data.",
-      "media_invalid_ciphertext",
-    );
-  }
-  const out = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    out.set(chunk, offset);
-    offset += chunk.length;
-  }
-  return out;
-}
-
 /**
  * Inflates and decodes a compressed `HistorySync` payload (an inline payload
  * or a decrypted chunk). WhatsApp Web does the same: inflate, then decode
@@ -207,11 +138,21 @@ export async function decodeHistorySyncPayload(
   compressed: Uint8Array | string,
   options: DecodeHistorySyncOptions = {},
 ): Promise<HistorySync> {
+  return decodeHistory(compressed, options);
+}
+
+async function decodeHistory(
+  compressed: Uint8Array | string,
+  options: DecodeHistorySyncOptions,
+  signal?: AbortSignal,
+): Promise<HistorySync> {
   const bytes = bytesField(compressed, "payload");
-  const inflated = await inflate(
+  const inflated = await inflateHistory(
     bytes,
     resolveInflatedLimit(options.maxInflatedBytes),
+    signal,
   );
+  checkHistoryCancellation(signal);
   try {
     return fromBinary(HistorySyncSchema, inflated);
   } catch {
@@ -224,11 +165,13 @@ export async function decodeHistorySyncPayload(
 
 async function collect(
   stream: ReadableStream<Uint8Array>,
+  signal?: AbortSignal,
 ): Promise<Uint8Array> {
   const reader = stream.getReader();
   const chunks: Uint8Array[] = [];
   let total = 0;
   while (true) {
+    checkHistoryCancellation(signal);
     const { done, value } = await reader.read();
     if (done) break;
     chunks.push(value);
@@ -236,10 +179,16 @@ async function collect(
   }
   const out = new Uint8Array(total);
   let offset = 0;
+  let copies = 0;
   for (const chunk of chunks) {
+    checkHistoryCancellation(signal);
     out.set(chunk, offset);
     offset += chunk.length;
+    if (++copies % 32 === 0) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    }
   }
+  checkHistoryCancellation(signal);
   return out;
 }
 
@@ -276,7 +225,7 @@ export async function downloadHistoryChunk(
         "media_too_large",
       );
     }
-    return decodeHistorySyncPayload(compressed, options);
+    return decodeHistory(compressed, options, options.signal);
   }
   if (typeof input !== "object" || input === null) {
     throw invalid("The history chunk descriptor must be an object.");
@@ -303,5 +252,9 @@ export async function downloadHistoryChunk(
       ...(options.crypto === undefined ? {} : { crypto: options.crypto }),
     },
   );
-  return decodeHistorySyncPayload(await collect(body), options);
+  return decodeHistory(
+    await collect(body, options.signal),
+    options,
+    options.signal,
+  );
 }
