@@ -99,7 +99,7 @@ try {
 }
 ccCheck($ccCancelled, 'CSV cancellation is checked during finite body consumption');
 
-$ccProjectCredential = Polymorfa\Credential::projectToken('pmfa_pt_'.str_repeat('a', 93).'A');
+$ccProjectCredential = Polymorfa\Credential::projectToken('pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
 foreach ([$ccCredential, $ccProjectCredential] as $ccPrincipal) {
     $ccBound = new Polymorfa\ProjectClient($ccPrincipal, $ccProject, baseUrl: $ccUrl);
     $ccBoundCases = [

@@ -42,7 +42,7 @@ internal static class TemplateTests
     }
     private static async Task OneAttempt()
     {
-        using var fixture = new WireFixture(); var serving = fixture.ServeAsync("POST", "/messaging/projects/support/templates/t1/submit", """{"session":"support"}""", """{"error":{"code":"provider_unavailable","message":"Unavailable"}}""", 503); using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = fixture.Url }); try { await client.Templates.SubmitAsync("support", "t1", new("support"), new() { IdempotencyKey = "fixture", MaxNetworkRetries = 3 }); throw new Exception("Expected rejection"); } catch (PolymorfaServerException e) { ResourceTests.Equal(e.Metadata!.Attempts, 1); }
+        using var fixture = new WireFixture(); var serving = fixture.ServeAsync("POST", "/messaging/projects/support/templates/t1/submit", """{"session":"support"}""", """{"error":{"code":"provider_unavailable","message":"Unavailable"}}""", 503); using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), new() { BaseUrl = fixture.Url }); try { await client.Templates.SubmitAsync("support", "t1", new("support"), new() { IdempotencyKey = "fixture", MaxNetworkRetries = 3 }); throw new Exception("Expected rejection"); } catch (PolymorfaServerException e) { ResourceTests.Equal(e.Metadata!.Attempts, 1); }
         await serving;
     }
 }

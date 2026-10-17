@@ -740,3 +740,11 @@ integers and nearest-even binary64 rounding beyond uint64. Generic row numbers,
 safe revisions, leases and CAS remain strict. Shared producer vectors and local
 physical-module consumers verify this compatibility; registry publication and
 matching environment acceptance remain separate release gates.
+
+## Signed credential shapes
+
+Organization keys (`pmfa_`) and project tokens (`pmfa_pt_`) use variable-length
+signed v2 credentials. Pass the complete value from the Console. Local shape
+validation does not authenticate a credential; the API verifies its signature
+and live permissions. This source change is held for the coordinated v2 release;
+do not install it against a deployment that still issues v1 credentials.

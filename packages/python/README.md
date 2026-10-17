@@ -765,3 +765,11 @@ These methods run on the owning asyncio loop.
 Project views returned by `client.project(id)` borrow the root transport.
 Closing a view or leaving its context does not close that transport. The root,
 or an independently constructed project client, owns its transport lifetime.
+
+## Signed credential shapes
+
+Organization keys (`pmfa_`) and project tokens (`pmfa_pt_`) use variable-length
+signed v2 credentials. Pass the complete value from the Console. Local shape
+validation does not authenticate a credential; the API verifies its signature
+and live permissions. This source change is held for the coordinated v2 release;
+do not install it against a deployment that still issues v1 credentials.

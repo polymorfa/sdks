@@ -365,7 +365,7 @@ async def test_all_typed_developer_methods(
         )
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(
@@ -382,7 +382,7 @@ async def test_all_typed_developer_methods(
 
 
 async def test_webhook_test_owner_and_operation_wait_guards():
-    async with AsyncClient(Credential("organization_api_key", "pmfa_" + "a" * 72)) as client:
+    async with AsyncClient(Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")) as client:
         with pytest.raises(ValidationError):
             await client.webhooks.test("hook_1", {"body": PAYLOAD, "sessionId": "support"})
         for wait in [True, -1, 31, 1.5]:
@@ -417,7 +417,7 @@ async def test_indexed_event_page_ingestion_offset_and_filter(project):
         )
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         resource = (client.project("project_1") if project else client).events
@@ -445,7 +445,7 @@ async def test_indexed_invalid_server_metadata_retains_response_metadata(page):
     from polymorfa import ServerError
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(
             lambda request: httpx.Response(
                 200, json={"data": [], "page": page}, headers={"x-request-id": "req_invalid"}
@@ -469,7 +469,7 @@ async def test_indexed_offset_preflight_and_operation_wait_sequence():
         return httpx.Response(200, json={"data": OP})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         for params in [

@@ -937,3 +937,11 @@ environment acceptance remain separate release gates.
 Media downloads retain the successful API request deadline through body EOF. Each approved storage redirect hop has its own request deadline, retained through the final body. Async and synchronous body reads distinguish the request deadline from caller cancellation. Disposing a download releases its response, timer and owned storage transport; it does not dispose the API client. Body failures do not replay the download. Calls WebSockets retain the configured base-path prefix and authenticate in the first frame. Raw cursor pages reject repeated cursors before requesting them again, including cycles across manually requested pages.
 
 Signal finite JSON requests share one header/body deadline. Event streams enforce a requested session and report incomplete lines or frames at EOF; they retain their idle timeout and manual acknowledgment policy. ACK success requires exactly HTTP 204. Usage iteration preserves a starting cursor and rejects its repetition. Native HTTP fixtures verify these local consumer rules; they do not establish service deployment or registry availability.
+
+## Signed credential shapes
+
+Organization keys (`pmfa_`) and project tokens (`pmfa_pt_`) use variable-length
+signed v2 credentials. Pass the complete value from the Console. Local shape
+validation does not authenticate a credential; the API verifies its signature
+and live permissions. This source change is held for the coordinated v2 release;
+do not install it against a deployment that still issues v1 credentials.

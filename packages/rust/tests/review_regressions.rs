@@ -29,7 +29,7 @@ fn specialized_secrets_cannot_impersonate_organization_keys_even_when_padded() {
         )
         .is_err());
     }
-    assert!(Credential::organization_api_key(format!("pmfa_{}", "a".repeat(72))).is_ok());
+    assert!(Credential::organization_api_key("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string()).is_ok());
 }
 #[tokio::test]
 async fn download_stream_deadline_covers_a_body_that_stalls_after_headers() {

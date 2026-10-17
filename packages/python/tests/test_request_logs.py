@@ -19,7 +19,7 @@ from polymorfa import (
 from polymorfa import request_logs as module
 
 PROJECT = "11111111-1111-4111-8111-111111111111"
-PROJECT_TOKEN = "pmfa_pt_" + "a" * 93 + "A"
+PROJECT_TOKEN = "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 ENTRY = {
     "id": "log_1",
     "projectId": PROJECT,

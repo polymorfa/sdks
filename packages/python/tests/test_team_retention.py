@@ -26,7 +26,7 @@ RETENTION = {
 
 @pytest.mark.parametrize(
     "kind,value",
-    [("organization_api_key", "pmfa_" + "a" * 72), ("project_token", "pmfa_pt_" + "a" * 93 + "A")],
+    [("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), ("project_token", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")],
 )
 async def test_native_team_retention_facade_needs_no_project_id_and_keeps_metadata(kind, value):
     requests = []

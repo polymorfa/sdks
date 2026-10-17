@@ -111,7 +111,7 @@ async def test_native_follow_up_requests_responses_and_removal(surface, configur
     async def handler(request):
         body = await request.json() if request.can_read_body else None
         seen.append((request.method, request.path, dict(request.query), body))
-        assert request.headers["authorization"] == "Bearer pmfa_" + "a" * 72
+        assert request.headers["authorization"] == "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
         if request.path.endswith("/analytics"):
             data = {"campaignId": "campaign_1", "followUps": REPORT}
         elif request.path.endswith("/recipients"):
@@ -141,7 +141,7 @@ async def test_native_follow_up_requests_responses_and_removal(surface, configur
     cls = AsyncMessagingClient if surface == "messaging" else AsyncClient
     try:
         async with cls(
-            Credential("organization_api_key", "pmfa_" + "a" * 72), base_url=base_url
+            Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), base_url=base_url
         ) as client:
             campaigns = client.campaigns
             if surface == "messaging":
@@ -211,7 +211,7 @@ async def test_follow_up_enrollment_refusal_preserves_api_error(surface):
 
     cls = AsyncMessagingClient if surface == "messaging" else AsyncClient
     async with cls(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         with pytest.raises(AuthorizationError) as caught:

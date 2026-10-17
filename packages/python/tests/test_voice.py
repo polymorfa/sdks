@@ -248,9 +248,9 @@ async def test_voice_public_typed_methods_and_project_ownership(scope, case):
         return httpx.Response(200, json=payload, headers={"x-request-id": "req_voice"})
 
     credential = (
-        Credential("project_token", "pmfa_pt_" + "a" * 93 + "A")
+        Credential("project_token", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
         if scope == "project-token"
-        else Credential("organization_api_key", "pmfa_" + "a" * 72)
+        else Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     )
     cls = AsyncProjectClient if scope == "project-token" else AsyncClient
     args = (credential, PROJECT) if scope == "project-token" else (credential,)
@@ -283,7 +283,7 @@ async def test_foreign_voice_resource_never_exposes_or_changes(resource, method)
         return httpx.Response(200, json={"data": {**value, "projectId": "project_other"}})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         r = getattr(client.project(PROJECT).voice, resource)
@@ -301,7 +301,7 @@ async def test_project_can_read_team_provider_key_but_never_manage_it():
         return httpx.Response(200, json={"data": {**CREDENTIAL, "projectId": None}})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         r = client.project(PROJECT).voice.provider_credentials
@@ -327,7 +327,7 @@ async def test_team_wide_credentials_and_unknown_server_enum_preservation():
         )
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         assert (await client.voice.provider_credentials.list()).data[0][
@@ -370,7 +370,7 @@ async def test_upload_capability_isolation_and_followup_key():
         return httpx.Response(200, json={"data": {**ASSET, "status": "transcoding"}})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await client.voice.audio.upload(
@@ -408,7 +408,7 @@ async def test_storage_errors_sanitized_never_retry_or_complete(kind):
     from polymorfa import PolymorfaError
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         with pytest.raises(PolymorfaError) as caught:
@@ -430,7 +430,7 @@ async def test_storage_errors_sanitized_never_retry_or_complete(kind):
 async def test_upload_preflight_and_project_rebinding_guard():
     requests = []
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(lambda request: requests.append(request)),
     ) as client:
         with pytest.raises(ValidationError):
@@ -468,7 +468,7 @@ async def test_wait_ready_failed_deadline_and_task_cancellation():
         )
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await client.voice.audio.wait_until_ready("asset_1", timeout=1, interval=0.001)
@@ -484,7 +484,7 @@ async def test_wait_ready_failed_deadline_and_task_cancellation():
             cancelled.set()
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(pending),
     ) as client:
         with pytest.raises(TimeoutError):
@@ -517,7 +517,7 @@ async def test_upload_stream_requires_declared_size_and_transmits_once():
         return httpx.Response(200, json={"data": ASSET})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         with pytest.raises(ConfigurationError):

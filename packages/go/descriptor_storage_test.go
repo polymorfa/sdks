@@ -11,14 +11,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	sdk "github.com/polymorfa/sdks/packages/go"
-	s "github.com/polymorfa/sdks/packages/go/storage"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	sdk "github.com/polymorfa/sdks/packages/go"
+	s "github.com/polymorfa/sdks/packages/go/storage"
 )
 
 func descriptorFixture(t *testing.T) map[string]json.RawMessage {
@@ -233,7 +234,7 @@ func TestDescriptorStorageHTTP(t *testing.T) {
 					<-r.Context().Done()
 				}))
 				defer server.Close()
-				client, err := sdk.NewOrganizationClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: "pmfa_" + strings.Repeat("A", 72)}, BaseURL: server.URL, MaxNetworkRetries: intPtrDescriptor(0)})
+				client, err := sdk.NewOrganizationClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}, BaseURL: server.URL, MaxNetworkRetries: intPtrDescriptor(0)})
 				if err != nil {
 					t.Fatal(err)
 				}

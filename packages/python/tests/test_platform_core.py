@@ -286,7 +286,7 @@ async def test_typed_platform_core(method, path, body, query, fixture, invoke):
         )
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(client)
@@ -306,7 +306,7 @@ async def test_quote_confirm_guards_and_hybrid_variants():
         return httpx.Response(200, json={"data": TIER})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         with pytest.raises(ValidationError):

@@ -6,14 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	polymorfa "github.com/polymorfa/sdks/packages/go"
 	"iter"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	polymorfa "github.com/polymorfa/sdks/packages/go"
 )
 
 type sourceFixture struct {
@@ -155,7 +155,7 @@ func TestSyncActualNativeAPIStreamPersistsBeforeACK(t *testing.T) {
 		<-r.Context().Done()
 	}))
 	defer server.Close()
-	key := polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_" + strings.Repeat("a", 72)}
+	key := polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
 	client, err := polymorfa.NewOrganizationClient(polymorfa.Config{Credential: key, BaseURL: server.URL})
 	if err != nil {
 		t.Fatal(err)

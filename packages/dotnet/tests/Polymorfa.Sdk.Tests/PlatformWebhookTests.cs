@@ -38,7 +38,7 @@ internal static class PlatformWebhookTests
         await Organization("GET", "/platform/projects/p1/webhook-deliveries/d1/attempts", null, Project(Page(Attempt)), async c => ResourceTests.Equal((await c.Project("p1").WebhookDeliveries.ListAttemptsAsync("d1")).Items[0].ProjectId, "p1"));
         await Organization("GET", "/platform/projects/p1/webhook-deliveries/d1/attempts/a1", null, Project(Envelope(Attempt)), async c => ResourceTests.Equal((await c.Project("p1").WebhookDeliveries.RetrieveAttemptAsync("d1", "a1")).Data.Response!.Excerpt, "[redacted] upstream failure"));
         await Organization("POST", "/platform/projects/p1/webhook-deliveries/d1/retry", "{}", Retry, async c => ResourceTests.Equal((await c.Project("p1").WebhookDeliveries.RetryAsync("d1")).Data.OperationId, "op1"));
-        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)));
+        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         try { await client.Webhooks.TestAsync("w1", new TestProjectWebhookPayloadInput(new("base64", "e30="), "s1")); throw new Exception("Organization payload accepted"); } catch (PolymorfaValidationException) { }
         Console.WriteLine("PASS 24 typed organization/project webhook and delivery routes, headers, redacted receipts and test scope");
     }

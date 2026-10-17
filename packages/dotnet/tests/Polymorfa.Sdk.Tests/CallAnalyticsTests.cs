@@ -15,20 +15,20 @@ internal static class CallAnalyticsTests
         await Organization("GET", "/platform/projects/" + Id + "/analytics?start=0&end=42", null, Disabled, async c => ResourceTests.True(!(await c.Project(Id).Analytics.GetAsync(new(Id, Start: 0, End: 42))).Data.Enabled));
         await Organization("GET", "/platform/analytics/metrics?windowHours=24&segments=false&format=prometheus", null, Metrics, async c => ResourceTests.Equal((await c.Analytics.MetricsAsync(new(WindowHours: 24, Segments: false))).Data, Metrics), "text/plain");
         await Organization("GET", "/platform/projects/" + Id + "/analytics/metrics?format=openmetrics", null, Metrics + "# EOF\n", async c => ResourceTests.True((await c.Project(Id).Analytics.MetricsAsync(new(Format: "openmetrics"))).Data.EndsWith("# EOF\n", StringComparison.Ordinal)), "application/openmetrics-text");
-        using var server = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)));
+        using var server = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         await Invalid(() => server.Calls.ListAsync(new(Limit: 0))); await Invalid(() => server.Calls.StatsAsync(new(Since: "2026-02-30T00:00:00Z"))); await Invalid(() => server.Calls.RetrieveAsync("with space")); await Invalid(() => server.Project(Id).Calls.ListAsync(new(ProjectId: "other"))); await Invalid(() => server.Analytics.GetAsync(new(Start: 43, End: 42))); await Invalid(() => server.Analytics.MetricsAsync(new(WindowHours: 169))); await Invalid(() => server.Project(Id).Analytics.GetAsync(new(ProjectId: "11111111-2222-3333-4444-555555555555")));
         await RejectContentType(); await ExportCursor();
         Console.WriteLine("PASS typed call records/stats, actual CSV/OpenMetrics, disabled analytics, project guards and export cursor safety");
     }
     private static async Task RejectContentType()
     {
-        using var fixture = new WireFixture(); var serve = fixture.ServeAsync("GET", "/platform/calls/export?format=csv", null, "<html>proxy</html>", responseHeaders: new Dictionary<string, string> { ["content-type"] = "text/html" }); using var c = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
+        using var fixture = new WireFixture(); var serve = fixture.ServeAsync("GET", "/platform/calls/export?format=csv", null, "<html>proxy</html>", responseHeaders: new Dictionary<string, string> { ["content-type"] = "text/html" }); using var c = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
         try { await c.Calls.ExportAsync(); throw new Exception("HTML accepted as CSV"); } catch (PolymorfaServerException e) { ResourceTests.Equal(e.Code, "invalid_response"); }
         await serve;
     }
     private static async Task ExportCursor()
     {
-        using var fixture = new WireFixture(); using var c = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
+        using var fixture = new WireFixture(); using var c = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
         var serve = fixture.ServeAsync("GET", "/platform/calls/export?format=csv", null, "callId\r\nc1\r\n", responseHeaders: new Dictionary<string, string> { ["content-type"] = "text/csv", ["polymorfa-next-cursor"] = "cursor1" }); await using var pages = c.Calls.ExportAllAsync().GetAsyncEnumerator(); ResourceTests.True(await pages.MoveNextAsync()); ResourceTests.Equal(pages.Current, "callId\r\nc1\r\n"); await serve;
         serve = fixture.ServeAsync("GET", "/platform/calls/export?format=csv&cursor=cursor1", null, "callId\r\nc1\r\n", responseHeaders: new Dictionary<string, string> { ["content-type"] = "text/csv", ["polymorfa-next-cursor"] = "cursor1" }); try { await pages.MoveNextAsync(); throw new Exception("Repeated page yielded"); } catch (PolymorfaServerException e) { ResourceTests.Equal(e.Code, "invalid_response"); }
         await serve;
@@ -36,6 +36,6 @@ internal static class CallAnalyticsTests
     private static async Task Invalid(Func<Task> invoke) { try { await invoke(); } catch (PolymorfaException e) when (e is PolymorfaConfigurationException or PolymorfaValidationException) { return; } throw new Exception("Invalid filter accepted."); }
     private static async Task Organization(string method, string path, string? body, string response, Func<OrganizationClient, Task> invoke, string contentType = "application/json")
     {
-        var key = "pmfa_" + new string('a', 72); using var fixture = new WireFixture { Authorization = "Bearer " + key }; var serve = fixture.ServeAsync(method, path, body, response, responseHeaders: new Dictionary<string, string> { ["content-type"] = contentType }); using var c = new OrganizationClient(Credential.OrganizationApiKey(key), new() { BaseUrl = fixture.Url, Timeout = TimeSpan.FromSeconds(3), MaxNetworkRetries = 0 }); try { await invoke(c); await serve; } catch { await serve; throw; }
+        var key = "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"; using var fixture = new WireFixture { Authorization = "Bearer " + key }; var serve = fixture.ServeAsync(method, path, body, response, responseHeaders: new Dictionary<string, string> { ["content-type"] = contentType }); using var c = new OrganizationClient(Credential.OrganizationApiKey(key), new() { BaseUrl = fixture.Url, Timeout = TimeSpan.FromSeconds(3), MaxNetworkRetries = 0 }); try { await invoke(c); await serve; } catch { await serve; throw; }
     }
 }

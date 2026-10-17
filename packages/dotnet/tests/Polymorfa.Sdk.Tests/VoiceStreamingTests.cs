@@ -13,7 +13,7 @@ internal static class VoiceStreamingTests
     {
         using var certificate = VoiceTests.FixtureCertificate();
         foreach (var scenario in new[] { "streaming", "short", "long", "read_failure", "timeout", "cancel", "redirect" }) await Exercise(scenario, certificate);
-        using var invalid = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = new("http://127.0.0.1:1") });
+        using var invalid = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), new() { BaseUrl = new("http://127.0.0.1:1") });
         foreach (var input in new[] { new CreateVoiceAudioUploadInput("Greeting", "text/plain", 1), new("Greeting", "audio/ogg", 16777217), new("Greeting", "audio/ogg", 0) })
             try { await invalid.Voice.Audio.UploadAsync(input, new MemoryStream([1]), "project"); throw new Exception("Invalid upload admitted"); } catch (PolymorfaValidationException) { }
         Console.WriteLine("PASS genuine native TLS voice upload streaming, progress before EOF, exact length, stream ownership, bounded failure/cancel/timeout, no retry or complete on failure, redirect and credential isolation");
@@ -27,7 +27,7 @@ internal static class VoiceStreamingTests
         using var cancellation = new CancellationTokenSource();
         using var body = new Producer(scenario, admitted.Task, firstBytes.Task, length);
         var servingApi = ServeApi(); var servingStorage = ServeStorage();
-        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new()
+        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), new()
         {
             BaseUrl = api.Url,
             StorageTransportHandlerFactory = () => new SocketsHttpHandler { AllowAutoRedirect = false, UseCookies = false, SslOptions = new SslClientAuthenticationOptions { RemoteCertificateValidationCallback = (_, peer, _, _) => peer?.GetCertHashString() == certificate.GetCertHashString() } }

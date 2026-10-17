@@ -15,7 +15,7 @@ from aiohttp import web
 from test_calls_runtime import wire
 
 EXAMPLE = Path(__file__).resolve().parents[3] / "examples/python/web_host"
-PROJECT_TOKEN = "pmfa_pt_" + "a" * 93 + "A"
+PROJECT_TOKEN = "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 
 
 @asynccontextmanager

@@ -10,8 +10,8 @@ function callsCheck(bool $condition, string $message): void
         throw new RuntimeException($message);
     }
 }
-$old = Credential::projectToken('pmfa_pt_'.str_repeat('a', 93).'A');
-$fresh = Credential::projectToken('pmfa_pt_'.str_repeat('a', 93).'Q');
+$old = Credential::projectToken('pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
+$fresh = Credential::projectToken('pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ');
 $now = 100.;
 $count = 0;
 $refreshes = [];

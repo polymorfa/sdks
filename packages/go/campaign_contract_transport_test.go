@@ -43,7 +43,7 @@ func TestCampaignContractBoundAliasesAndMessagingCredentials(t *testing.T) {
 					defer s.Close()
 					cfg := orgConfig(s.URL)
 					if kind == ProjectToken {
-						cfg.Credential = Credential{ProjectToken, "pmfa_pt_" + strings.Repeat("a", 93) + "A"}
+						cfg.Credential = Credential{ProjectToken, "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
 					}
 					expected = cfg.Credential.Value
 					p, e := NewProjectClient(cfg, contractProject)

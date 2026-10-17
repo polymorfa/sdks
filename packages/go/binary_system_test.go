@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 )
 
@@ -105,7 +104,7 @@ var bridgeWireCases = []struct{ SDKMethod, Method, Path string }{{"BridgeClient.
 func TestTypedBridgeWire(t *testing.T) {
 	for _, f := range bridgeWireCases {
 		t.Run(f.SDKMethod, func(t *testing.T) {
-			credential := Credential{ProjectToken, "pmfa_pt_" + strings.Repeat("a", 93) + "A"}
+			credential := Credential{ProjectToken, "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
 			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method != f.Method || r.URL.Path != f.Path || r.Header.Get("Authorization") != "Bearer "+credential.Value {
 					t.Error("request", r.Method, r.URL, r.Header)

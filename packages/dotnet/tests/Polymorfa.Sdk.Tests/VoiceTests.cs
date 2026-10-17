@@ -20,7 +20,7 @@ internal static class VoiceTests
         await Organization("POST", "/platform/voice/provider-credentials/c1/verify", null, Envelope(CredentialJson), async c => ResourceTests.Equal((await c.Voice.ProviderCredentials.VerifyAsync("c1")).Data.Revision, 2L));
         await Organization("DELETE", "/platform/voice/provider-credentials/c1", null, """{"data":{"id":"c1","deleted":true}}""", async c => ResourceTests.True((await c.Voice.ProviderCredentials.DeleteAsync("c1")).Data.Deleted));
         await Confine(); await WaitTerminal(); await WaitDeadline(); await UploadTls();
-        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)));
+        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         try { await client.Voice.Audio.UploadAsync(new("Greeting", "audio/ogg", 4), new byte[3], "p1"); throw new Exception("Size mismatch accepted"); } catch (PolymorfaValidationException) { }
         try { await client.Voice.Audio.ListAsync(); throw new Exception("Missing project accepted"); } catch (PolymorfaConfigurationException) { }
         ResourceTests.True(!new CreateVoiceProviderCredentialInput("openai", "Voice", "fixture-key").ToString().Contains("fixture-key"));
@@ -34,7 +34,7 @@ internal static class VoiceTests
         {
             using var fixture = new WireFixture { AbsentHeaders = ["idempotency-key"] };
             var serving = fixture.ServeAsync("GET", team ? "/platform/voice/provider-credentials/c1" : "/platform/voice/audio/a1", null, Envelope(team ? CredentialJson : Asset.Replace("\"p1\"", "\"other\"")));
-            using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = fixture.Url }); var bound = client.Project("p1");
+            using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), new() { BaseUrl = fixture.Url }); var bound = client.Project("p1");
             try { if (team) await bound.Voice.ProviderCredentials.DeleteAsync("c1", new() { IdempotencyKey = "mutation-key" }); else await bound.Voice.Audio.DeleteAsync("a1", new() { IdempotencyKey = "mutation-key" }); throw new Exception("Project escaped confinement"); }
             catch (PolymorfaAuthorizationException) when (team) { }
             catch (PolymorfaNotFoundException) when (!team) { }
@@ -43,11 +43,11 @@ internal static class VoiceTests
     }
     private static async Task WaitTerminal()
     {
-        using var fixture = new WireFixture(); var serving = fixture.ServeAsync("GET", "/platform/voice/audio/a1", null, Envelope(Asset.Replace("\"ready\"", "\"failed\""))); using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = fixture.Url }); ResourceTests.Equal((await client.Voice.Audio.WaitUntilReadyAsync("a1", new(TimeSpan.FromSeconds(1)))).Data.Status, "failed"); await serving;
+        using var fixture = new WireFixture(); var serving = fixture.ServeAsync("GET", "/platform/voice/audio/a1", null, Envelope(Asset.Replace("\"ready\"", "\"failed\""))); using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), new() { BaseUrl = fixture.Url }); ResourceTests.Equal((await client.Voice.Audio.WaitUntilReadyAsync("a1", new(TimeSpan.FromSeconds(1)))).Data.Status, "failed"); await serving;
     }
     private static async Task WaitDeadline()
     {
-        using var fixture = new WireFixture(); using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = fixture.Url });
+        using var fixture = new WireFixture(); using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), new() { BaseUrl = fixture.Url });
         var started = System.Diagnostics.Stopwatch.GetTimestamp(); try { await client.Voice.Audio.WaitUntilReadyAsync("a1", new(TimeSpan.FromMilliseconds(20))); throw new Exception("Wait ignored budget"); } catch (PolymorfaTimeoutException) { ResourceTests.True(System.Diagnostics.Stopwatch.GetElapsedTime(started) < TimeSpan.FromSeconds(1)); }
     }
 #pragma warning disable SYSLIB0057 // Public certificate fixture supports .NET 8 loading.
@@ -62,7 +62,7 @@ internal static class VoiceTests
         using var storage = new WireFixture(cert) { AbsentHeaders = ["authorization", "cookie", "idempotency-key", "x-private", "polymorfa-version"], ExpectedHeaders = new Dictionary<string, string> { ["x-upload"] = "fixture", ["content-type"] = "audio/ogg" } };
         using var api = new WireFixture();
         var servingApi = Serve(); var servingStorage = storage.ServeAsync("POST", "/upload", "bytes:b2dn", "", 204);
-        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = api.Url, StorageTransportHandlerFactory = () => new SocketsHttpHandler { AllowAutoRedirect = false, UseCookies = false, SslOptions = new System.Net.Security.SslClientAuthenticationOptions { RemoteCertificateValidationCallback = (_, peer, _, _) => peer?.GetCertHashString() == cert.GetCertHashString() } } });
+        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), new() { BaseUrl = api.Url, StorageTransportHandlerFactory = () => new SocketsHttpHandler { AllowAutoRedirect = false, UseCookies = false, SslOptions = new System.Net.Security.SslClientAuthenticationOptions { RemoteCertificateValidationCallback = (_, peer, _, _) => peer?.GetCertHashString() == cert.GetCertHashString() } } });
         ResourceTests.Equal((await client.Voice.Audio.UploadAsync(new("Greeting", "audio/ogg", 3), System.Text.Encoding.UTF8.GetBytes("ogg"), "p1", new() { IdempotencyKey = "create", Headers = new Dictionary<string, string> { ["x-private"] = "fixture" } })).Data.Status, "ready");
         await Task.WhenAll(servingApi, servingStorage);
         async Task Serve()

@@ -149,7 +149,7 @@ try {
                     $s->apply(new Batch('*', [new Checkpoint('*', 'events', 'competitor', expectedCursor:null)]));
                 }return $descriptorFixture['chunk'];
             };
-            $api = new ProjectClient(Credential::organizationApiKey('pmfa_'.str_repeat('A', 72)), '018f0000-0000-7000-8000-000000000077', baseUrl:$ready['baseUrl'], maxNetworkRetries:0);
+            $api = new ProjectClient(Credential::organizationApiKey('pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'), '018f0000-0000-7000-8000-000000000077', baseUrl:$ready['baseUrl'], maxNetworkRetries:0);
             $source = new class (new ApiEventSource($api->events), $s) implements SyncSource {
                 public function __construct(private ApiEventSource $api, private Engine $storage)
                 {

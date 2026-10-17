@@ -18,8 +18,8 @@ internal static class BrowserCases
     private sealed class DatabaseInfo { public int Version { get; set; } public string[] Stores { get; set; } = Array.Empty<string>(); }
     internal static async Task Run(IJSRuntime runtime, IndexedDbStorageAdapter adapter, string name, IJSObjectReference harness)
     {
-        try { _ = Credential.OrganizationApiKey("pmfa_" + new string('a', 72)); throw new Exception("Browser organization credential accepted"); } catch (PolymorfaConfigurationException) { }
-        try { _ = Credential.ProjectToken("pmfa_pt_" + new string('a', 93) + "A"); throw new Exception("Browser project credential accepted"); } catch (PolymorfaConfigurationException) { }
+        try { _ = Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"); throw new Exception("Browser organization credential accepted"); } catch (PolymorfaConfigurationException) { }
+        try { _ = Credential.ProjectToken("pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"); throw new Exception("Browser project credential accepted"); } catch (PolymorfaConfigurationException) { }
         Check(Credential.ClientToken("pmfa_ct_synthetic-browser-client").Kind == CredentialKind.ClientToken, "Browser client principal unavailable");
         try { await using var wrong = await IndexedDbStorageAdapter.ConnectAsync(runtime, new("different-owner") { DatabaseName = name }); throw new Exception("Namespace owner rebound"); } catch (StorageValidationException) { }
         var missing = Row("rolled-back-before-stale-delete");

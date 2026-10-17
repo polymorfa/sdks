@@ -15,7 +15,7 @@ $state = getenv('EXAMPLE_STATE_DIR');
 check(is_string($state) && str_starts_with($state, '/') && !str_starts_with($state, '/tmp/'), 'persistent test state directory');
 foreach (['laravel','symfony'] as $framework) {
     $env = getenv();
-    $env = array_replace($env, ['EXAMPLE_APP_USERNAME' => 'example-user','EXAMPLE_APP_PASSWORD' => 'test-only-password','POLYMORFA_PROJECT_TOKEN' => 'pmfa_pt_'.str_repeat('a', 93).'A','POLYMORFA_SESSION' => 'authorized-support']);
+    $env = array_replace($env, ['EXAMPLE_APP_USERNAME' => 'example-user','EXAMPLE_APP_PASSWORD' => 'test-only-password','POLYMORFA_PROJECT_TOKEN' => 'pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA','POLYMORFA_SESSION' => 'authorized-support']);
     $env['EXAMPLE_STATE_DIR'] = $state.'/'.$framework;
     $env['EXAMPLE_FRAMEWORK'] = $framework;
     $env['EXAMPLE_APP_ORIGIN'] = 'http://127.0.0.1:31306';

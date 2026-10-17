@@ -19,7 +19,7 @@ internal static class OperationsTests
         await Organization("GET", "/platform/operations/op?wait=0", null, "{\"data\":" + Operation + "}", async c => ResourceTests.Equal((await c.Operations.WaitAsync("op", new() { MaximumWait = TimeSpan.Zero })).Data.Status, "running"));
         await Organization("GET", "/platform/operations/op?wait=30&afterSequence=1", null, "{\"data\":" + Operation + "}", async c => ResourceTests.Equal((await c.Operations.WaitAsync("op", new() { AfterSequence = 1 })).Data.Sequence, 2L));
         await Organization("GET", "/platform/operations/op?wait=30", null, "{\"data\":" + Operation.Replace("\"running\"", "\"succeeded\"") + "}", async c => ResourceTests.Equal((await c.Operations.WaitAsync("op")).Data.Status, "succeeded"));
-        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)));
+        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         try { await client.Operations.GetAsync("op", new(31)); throw new Exception("Invalid long poll accepted."); } catch (PolymorfaConfigurationException) { }
         try { await client.Operations.ListTransitionsAsync("op", new(1, "next")); throw new Exception("Ambiguous transition pagination accepted."); } catch (PolymorfaValidationException) { }
         using var stop = new CancellationTokenSource(); stop.Cancel();

@@ -146,7 +146,7 @@ async def test_upload_to_local_signal_descriptor_all_kinds(kind):
     [
         "",
         "short",
-        "pmfa_" + "a" * 72,
+        "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "pmfa_pt_" + "a" * 64,
         "pmfa_ct_" + "a" * 64,
         "x" * 16 + "\n",

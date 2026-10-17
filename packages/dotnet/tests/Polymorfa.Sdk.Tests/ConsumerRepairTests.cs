@@ -10,7 +10,7 @@ using Polymorfa.Sdk;
 
 internal static class ConsumerRepairTests
 {
-    private const string Key = "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    private const string Key = "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     private static void Check(bool value, string message) { if (!value) throw new Exception(message); }
     public static async Task RunAsync() { await MediaAsync(); await CallsAsync(); await CursorAsync(); await UsageAsync(); await SignalSessionAsync(); await SignalTruncationAsync(); await SignalAckAsync(); await SignalDeadlineAsync(); }
     public static async Task UsageAsync()

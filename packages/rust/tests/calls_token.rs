@@ -10,8 +10,8 @@ use tokio_util::sync::CancellationToken;
 fn token(value: char, expiry: Option<SystemTime>) -> CallsToken {
     CallsToken {
         credential: Credential::organization_api_key(format!(
-            "pmfa_{}",
-            value.to_string().repeat(72)
+            "pmfa_Ag{}",
+            value.to_string().repeat(86)
         ))
         .unwrap(),
         expires_at: expiry,

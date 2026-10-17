@@ -17,8 +17,8 @@ import (
 
 // Synthetic values shaped like Polymorfa credentials. None is a real secret.
 var reservedSignalSecrets = []string{
-	"pmfa_" + strings.Repeat("A", 72),
-	"pmfa_pt_" + strings.Repeat("B", 93) + "A",
+	"pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+	"pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
 	"pmfa_ct_synthetic-client-token-value",
 	"pmfa_ls_synthetic-link-session-value",
 	"pmfa_at_synthetic-special-purpose-value",

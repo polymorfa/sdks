@@ -1,4 +1,5 @@
 use crate::{Error, ErrorKind, Result, NATIVE_API_VERSION, SDK_VERSION};
+use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
 use bytes::Bytes;
 use futures_util::{Stream, StreamExt};
 use reqwest::{header::HeaderMap, Method};
@@ -16,7 +17,7 @@ pub enum Credential {
 impl Credential {
     pub fn organization_api_key(value: impl Into<String>) -> Result<Self> {
         let value = value.into();
-        if !canonical(&value, "pmfa_", 72)
+        if !signed_v2_shape(&value, "pmfa_")
             || [
                 "pmfa_pt_",
                 "pmfa_ct_",
@@ -34,7 +35,7 @@ impl Credential {
     }
     pub fn project_token(value: impl Into<String>) -> Result<Self> {
         let value = value.into();
-        if !canonical(&value, "pmfa_pt_", 94) || !value.ends_with(['A', 'Q', 'g', 'w']) {
+        if !signed_v2_shape(&value, "pmfa_pt_") {
             return Err(configuration("credential"));
         }
         Ok(Self::ProjectToken(value))
@@ -69,11 +70,15 @@ impl Credential {
         }
     }
 }
-fn canonical(value: &str, prefix: &str, size: usize) -> bool {
-    value.strip_prefix(prefix).is_some_and(|s| {
-        s.len() == size
-            && s.bytes()
-                .all(|c| c.is_ascii_alphanumeric() || c == b'_' || c == b'-')
+// Framing only; the API verifies signatures and issuance records.
+fn signed_v2_shape(value: &str, prefix: &str) -> bool {
+    if value.len() > 16384 {
+        return false;
+    }
+    value.strip_prefix(prefix).is_some_and(|body| {
+        URL_SAFE_NO_PAD
+            .decode(body)
+            .is_ok_and(|raw| raw.len() >= 66 && raw[0] == 2 && URL_SAFE_NO_PAD.encode(&raw) == body)
     })
 }
 pub(crate) fn configuration(field: &str) -> Error {

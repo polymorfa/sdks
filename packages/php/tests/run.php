@@ -39,7 +39,8 @@ function mocked(array $responses, array &$history): HttpClient
     return new HttpClient(['handler' => $stack]);
 }
 
-$credential = Credential::organizationApiKey('pmfa_' . str_repeat('a', 72));
+require __DIR__.'/credential_v2.php';
+$credential = Credential::organizationApiKey('pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');
 foreach (['pt', 'ct', 'ls', 'at', 'wst', 'sd'] as $prefix) {
     raises(fn () => Credential::organizationApiKey('pmfa_' . $prefix . '_' . str_repeat('a', 72 - strlen($prefix) - 1)), ConfigurationException::class);
 }

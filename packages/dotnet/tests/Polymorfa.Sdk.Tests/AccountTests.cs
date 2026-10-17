@@ -26,7 +26,7 @@ internal static class AccountTests
         await Messaging("GET", "/messaging/support/operations/op1", null, """{"success":true,"data":{"operationId":"op1","status":"unknown","transport":"official_api","rejectionCode":null,"receipt":null}}""", async c => ResourceTests.Equal((await c.Messages.OperationStatusAsync("support", "op1")).Data.Data.Status, "unknown"));
         using var client = new MessagingClient(Credential.ClientToken("pmfa_ct_fixture"));
         try { await client.ClientTokens.MintAsync(new("visitor1", Session: "support")); throw new Exception("Client minted server token"); } catch (PolymorfaConfigurationException) { }
-        using var server = new MessagingClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)));
+        using var server = new MessagingClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         try { await server.ClientTokens.MintAsync(new("visitor1", Session: "support", Customer: "cu1")); throw new Exception("Conflicting targets accepted"); } catch (PolymorfaConfigurationException) { }
         Console.WriteLine("PASS typed account metadata, security, client token rules, identity and message controls");
     }

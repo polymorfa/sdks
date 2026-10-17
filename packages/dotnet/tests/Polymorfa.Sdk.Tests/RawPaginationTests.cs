@@ -3,7 +3,7 @@ using Polymorfa.Sdk;
 
 internal static class RawPaginationTests
 {
-    private const string Key = "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    private const string Key = "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     private static DecodedRawPage<int> Decode(JsonElement body, ResponseMetadata metadata)
     {
         ResourceTests.Equal(metadata.RequestId, "req_native");

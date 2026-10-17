@@ -826,3 +826,11 @@ remain separate release gates.
 
 HTTP API requests, media request bases and Calls sockets retain configured base-path prefixes. Raw pages reject repeated cursors before another request, including cycles across manual pages. Signal finite JSON requests share one header/body deadline; event streams retain their idle timeout, enforce a requested session and report incomplete frames at EOF. Signal acknowledgments require exactly HTTP 204 and never replay automatically. These are local SDK consumer guarantees against the pinned service contract, not evidence of a deployed service or package publication.
 Usage record iteration preserves a supplied starting cursor and rejects a response that returns it again.
+
+## Signed credential shapes
+
+Organization keys (`pmfa_`) and project tokens (`pmfa_pt_`) use variable-length
+signed v2 credentials. Pass the complete value from the Console. Local shape
+validation does not authenticate a credential; the API verifies its signature
+and live permissions. This source change is held for the coordinated v2 release;
+do not install it against a deployment that still issues v1 credentials.

@@ -64,7 +64,7 @@ async def test_quick_reply_and_user_typed_methods(method, suffix, body, data, in
         return httpx.Response(200, json=fixture, headers={"x-request-id": "req_quick"})
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = await invoke(client)

@@ -534,7 +534,7 @@ async def test_d1_never_advertises_atomicity_before_trusted_handshake(changed):
 
 
 @pytest.mark.parametrize(
-    "secret", ["short", "pmfa_" + "a" * 72, "pmfa_pt_" + "a" * 93 + "A", "pmfa_ct_" + "a" * 40]
+    "secret", ["short", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "pmfa_ct_" + "a" * 40]
 )
 def test_d1_rejects_wrong_principal_or_short_secret(secret):
     with pytest.raises(ConfigurationError):

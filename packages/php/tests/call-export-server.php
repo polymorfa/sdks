@@ -5,7 +5,7 @@ if ($_SERVER['REQUEST_URI'] === '/ready') {
     echo 'ready';
     return;
 }
-if ($_SERVER['REQUEST_METHOD'] !== 'GET' || parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) !== '/platform/calls/export' || ($_SERVER['HTTP_AUTHORIZATION'] ?? '') !== ('Bearer pmfa_'.str_repeat('a', 72))) {
+if ($_SERVER['REQUEST_METHOD'] !== 'GET' || parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) !== '/platform/calls/export' || ($_SERVER['HTTP_AUTHORIZATION'] ?? '') !== ('Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')) {
     http_response_code(400);
     echo 'bad request';
     return;

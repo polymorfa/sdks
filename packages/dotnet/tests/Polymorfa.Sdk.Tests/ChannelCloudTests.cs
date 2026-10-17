@@ -32,7 +32,7 @@ internal static class ChannelCloudTests
         await Messaging("GET", "/messaging/s/chats/peer/service-window", null, """{"success":true,"data":{"state":"unknown","reason":"not_tracked","openedAt":null,"expiresAt":null,"checkedAt":"2026-09-22T00:00:00Z"}}""", async c => ResourceTests.Equal((await c.Chats.GetServiceWindowAsync("s", "peer")).Data.Data.State, "unknown"));
         using var client = new MessagingClient(Credential.ClientToken("pmfa_ct_fixture"));
         await Invalid(() => client.Sessions.GetMetaPricingAsync("s")); await Invalid(() => client.Sessions.GetCloudCredentialHealthAsync("s")); await Invalid(() => client.Sessions.ReauthorizeCloudCredentialsAsync("s")); await Invalid(() => client.Chats.GetServiceWindowAsync("s", "peer"));
-        var key = "pmfa_" + new string('a', 72);
+        var key = "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
         using var fixture = new WireFixture { Authorization = "Bearer " + key };
         var serve = fixture.ServeAsync("POST", "/messaging/s/cloud-credentials/reauthorize", null, """{"error":{"code":"unavailable","message":"Try later"}}""", 503);
         using var server = new MessagingClient(Credential.OrganizationApiKey(key), new() { BaseUrl = fixture.Url, Timeout = TimeSpan.FromMilliseconds(300) });
@@ -43,7 +43,7 @@ internal static class ChannelCloudTests
     private static async Task Invalid(Func<Task> action) { try { await action(); throw new Exception("Client token reached server API"); } catch (PolymorfaConfigurationException) { } }
     private static async Task Messaging(string method, string path, string? body, string response, Func<MessagingClient, Task> invoke, IReadOnlyDictionary<string, string>? headers = null)
     {
-        var key = "pmfa_" + new string('a', 72);
+        var key = "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
         using var fixture = new WireFixture { Authorization = "Bearer " + key, ExpectedHeaders = headers };
         var serve = fixture.ServeAsync(method, path, body, response);
         using var client = new MessagingClient(Credential.OrganizationApiKey(key), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });

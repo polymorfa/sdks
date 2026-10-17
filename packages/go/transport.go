@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -13,7 +14,6 @@ import (
 	"math/big"
 	"net/http"
 	"net/url"
-	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -130,8 +130,15 @@ func validation(message string) error {
 	return &Error{Kind: ValidationError, Code: "invalid_parameter", Message: message}
 }
 
-var organizationPattern = regexp.MustCompile(`^pmfa_[A-Za-z0-9_-]{72}$`)
-var projectPattern = regexp.MustCompile(`^pmfa_pt_[A-Za-z0-9_-]{93}[AQgw]$`)
+// signedV2Shape checks framing only. The API authenticates the signature.
+func signedV2Shape(value, prefix string) bool {
+	if len(value) > 16384 || !strings.HasPrefix(value, prefix) {
+		return false
+	}
+	body := strings.TrimPrefix(value, prefix)
+	raw, err := base64.RawURLEncoding.Strict().DecodeString(body)
+	return err == nil && len(raw) >= 66 && raw[0] == 2 && base64.RawURLEncoding.EncodeToString(raw) == body
+}
 
 func validateCredential(c Credential, messaging bool) error {
 	if runtime.GOOS == "js" || runtime.GOOS == "wasip1" {
@@ -139,12 +146,12 @@ func validateCredential(c Credential, messaging bool) error {
 	}
 	switch c.Kind {
 	case OrganizationAPIKey:
-		if !organizationPattern.MatchString(c.Value) || strings.HasPrefix(c.Value, "pmfa_pt_") || strings.HasPrefix(c.Value, "pmfa_ct_") || strings.HasPrefix(c.Value, "pmfa_ls_") || strings.HasPrefix(c.Value, "pmfa_at_") || strings.HasPrefix(c.Value, "pmfa_wst_") || strings.HasPrefix(c.Value, "pmfa_sd_") {
-			return configuration("credential", "Organization API keys require the canonical pmfa_ v1 format.")
+		if !signedV2Shape(c.Value, "pmfa_") || strings.HasPrefix(c.Value, "pmfa_pt_") || strings.HasPrefix(c.Value, "pmfa_ct_") || strings.HasPrefix(c.Value, "pmfa_ls_") || strings.HasPrefix(c.Value, "pmfa_at_") || strings.HasPrefix(c.Value, "pmfa_wst_") || strings.HasPrefix(c.Value, "pmfa_sd_") {
+			return configuration("credential", "Organization API keys require the canonical pmfa_ v2 format.")
 		}
 	case ProjectToken:
-		if !projectPattern.MatchString(c.Value) {
-			return configuration("credential", "Project tokens require the canonical pmfa_pt_ v1 format.")
+		if !signedV2Shape(c.Value, "pmfa_pt_") {
+			return configuration("credential", "Project tokens require the canonical pmfa_pt_ v2 format.")
 		}
 	case ClientToken:
 		if !messaging || !strings.HasPrefix(c.Value, "pmfa_ct_") || len(c.Value) <= 8 {

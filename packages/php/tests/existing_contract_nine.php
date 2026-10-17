@@ -6,7 +6,7 @@ $ecConfigure = static function (array $fixture) use ($ecHttp, $ecUrl, $ecCredent
     $ecHttp->post($ecUrl.'/__case', ['json' => $fixture + ['body' => null,'authorization' => $ecCredential->authorization(),'version' => '2026-09-22','response' => '{}']]);
 };
 $ecObserved = static fn (): array => json_decode((string)$ecHttp->get($ecUrl.'/__state')->getBody(), true, flags:JSON_THROW_ON_ERROR);
-$ecPrincipals = [$ecCredential,Polymorfa\Credential::projectToken('pmfa_pt_'.str_repeat('a', 93).'A'),Polymorfa\Credential::clientToken('pmfa_ct_fixture')];
+$ecPrincipals = [$ecCredential,Polymorfa\Credential::projectToken('pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'),Polymorfa\Credential::clientToken('pmfa_ct_fixture')];
 $ecCapabilities = ['status' => 'unknown','syncedAt' => null,'checkedAt' => null,'capabilities' => [['key' => 'polls.endTime','kind' => 'feature','unit' => null,'value' => null,'source' => null],['key' => 'polls.creatorEdit','kind' => 'feature','unit' => null,'value' => false,'source' => 'client_default']]];
 foreach ($ecPrincipals as $principal) {
     $client = new Polymorfa\MessagingClient($principal, baseUrl:$ecUrl);

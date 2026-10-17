@@ -22,7 +22,8 @@ use tokio_tungstenite::{
 };
 use tokio_util::sync::CancellationToken;
 
-const KEY: &str = "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const KEY: &str =
+    "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 const SECRET: &str = "application-fixture-secret";
 async fn listener() -> (TcpListener, String) {
     let peer = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -39,7 +40,10 @@ async fn headers(socket: &mut TcpStream, secret: &str) -> String {
     }
     let text = String::from_utf8(bytes).unwrap();
     let lower = text.to_lowercase();
-    assert!(lower.contains(&format!("authorization: bearer {secret}\r\n")));
+    assert!(text.lines().any(|line| line
+        .split_once(':')
+        .is_some_and(|(name, value)| name.eq_ignore_ascii_case("authorization")
+            && value.trim() == format!("Bearer {secret}"))));
     assert!(!lower.contains("\r\ncookie:") && !lower.contains("\r\norigin:"));
     text
 }

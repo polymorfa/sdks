@@ -236,7 +236,7 @@ fn credential_and_runtime_configuration_fail_closed() {
     assert!(Credential::organization_api_key("pmfa_ct_client").is_err());
     assert!(Credential::project_token(format!("pmfa_pt_{}B", "a".repeat(93))).is_err());
     assert!(Credential::client_token("pmfa_ct_").is_err());
-    let credential = Credential::organization_api_key(format!("pmfa_{}", "a".repeat(72))).unwrap();
+    let credential = Credential::organization_api_key("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string()).unwrap();
     assert!(MessagingClient::new(
         credential.clone(),
         ClientOptions {
@@ -258,13 +258,13 @@ fn credential_and_runtime_configuration_fail_closed() {
 #[tokio::test]
 async fn immutable_project_views_and_raw_path_guards() {
     use polymorfa_sdk::{OrganizationClient, ProjectClient};
-    let key = Credential::organization_api_key(format!("pmfa_{}", "a".repeat(72))).unwrap();
+    let key = Credential::organization_api_key("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string()).unwrap();
     let organization = OrganizationClient::new(key, ClientOptions::default()).unwrap();
     let first = organization.project("one").unwrap();
     let second = first.project("two").unwrap();
     assert_eq!(first.project_id(), "one");
     assert_eq!(second.project_id(), "two");
-    let token = Credential::project_token(format!("pmfa_pt_{}A", "a".repeat(93))).unwrap();
+    let token = Credential::project_token("pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string()).unwrap();
     assert!(OrganizationClient::new(token.clone(), ClientOptions::default()).is_err());
     let project = ProjectClient::new(token, "one", ClientOptions::default()).unwrap();
     assert!(project.project("two").is_err());

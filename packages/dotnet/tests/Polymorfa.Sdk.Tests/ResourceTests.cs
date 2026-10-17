@@ -2,7 +2,7 @@ using Polymorfa.Sdk;
 
 internal static class ResourceTests
 {
-    private const string Key = "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    private const string Key = "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     private const string Success = "{\"success\":true}";
     private const string Group = "{\"success\":true,\"data\":{\"id\":\"g\",\"name\":\"Support\",\"description\":\"Team\",\"createdAt\":42,\"participants\":[{\"id\":\"u\",\"isAdmin\":true,\"isSuperAdmin\":false}],\"ownerId\":\"u\"}}";
     private const string Contact = "{\"success\":true,\"data\":{\"id\":\"u\",\"name\":\"Peer\",\"pushName\":\"Peer\",\"phoneNumber\":\"+15551234567\"}}";

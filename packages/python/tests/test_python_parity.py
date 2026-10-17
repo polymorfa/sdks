@@ -25,7 +25,7 @@ from polymorfa import (
 )
 from polymorfa.campaign_models import PlatformCampaign
 
-CREDENTIAL = Credential("organization_api_key", "pmfa_" + "a" * 72)
+CREDENTIAL = Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 ROOT = Path(__file__).resolve().parents[1]
 
 

@@ -12,7 +12,7 @@ internal static class AspNetExampleTests
         var password = Guid.NewGuid().ToString("N");
         var info = new ProcessStartInfo("dotnet") { WorkingDirectory = Path.Combine(root, "packages/dotnet/examples/aspnet-core"), RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
         info.ArgumentList.Add(Path.Combine(info.WorkingDirectory, "bin/Release/net8.0/Polymorfa.Example.AspNet.dll"));
-        info.Environment["ASPNETCORE_URLS"] = origin; info.Environment["ASPNETCORE_ENVIRONMENT"] = "Development"; info.Environment["POLYMORFA_SESSION"] = "support"; info.Environment["POLYMORFA_API_KEY"] = "pmfa_" + new string('a', 72); info.Environment["POLYMORFA_API_BASE_URL"] = wire.Url.ToString(); info.Environment["POLYMORFA_EXAMPLE_PASSWORD"] = password;
+        info.Environment["ASPNETCORE_URLS"] = origin; info.Environment["ASPNETCORE_ENVIRONMENT"] = "Development"; info.Environment["POLYMORFA_SESSION"] = "support"; info.Environment["POLYMORFA_API_KEY"] = "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"; info.Environment["POLYMORFA_API_BASE_URL"] = wire.Url.ToString(); info.Environment["POLYMORFA_EXAMPLE_PASSWORD"] = password;
         using var app = Process.Start(info) ?? throw new Exception("Cannot launch ASP.NET example."); var output = app.StandardOutput.ReadToEndAsync(); var errors = app.StandardError.ReadToEndAsync();
         try
         {

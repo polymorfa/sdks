@@ -66,7 +66,7 @@ async def wire(
         async with (
             server,
             AsyncClient(
-                Credential("organization_api_key", "pmfa_" + "a" * 72),
+                Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
                 base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",
             ) as client,
         ):
@@ -441,7 +441,7 @@ async def test_messaging_routes_escape_slug_and_keep_envelope(operation, tail, b
     )
     async with wire(payload) as (owner, requests):
         async with AsyncMessagingClient(
-            Credential("project_token", "pmfa_pt_" + "a" * 93 + "A"),
+            Credential("project_token", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
             base_url=owner._transport._base_url,
         ) as client:
             args = (
@@ -477,7 +477,7 @@ async def test_csv_is_one_exact_page_and_keeps_safe_metadata(resource):
             result = await client.project(PROJECT).campaigns.export_recipients(ID, {"limit": 1})
         else:
             async with AsyncMessagingClient(
-                Credential("project_token", "pmfa_pt_" + "a" * 93 + "A"),
+                Credential("project_token", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
                 base_url=client._transport._base_url,
             ) as messaging:
                 result = await messaging.campaigns.export_recipients("slug", ID, {"limit": 1})
@@ -647,7 +647,7 @@ async def test_invalid_response_shapes_fail_without_outbound_revalidation(change
         payload["success"] = False
     async with wire(payload) as (owner, requests):
         async with AsyncMessagingClient(
-            Credential("project_token", "pmfa_pt_" + "a" * 93 + "A"),
+            Credential("project_token", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
             base_url=owner._transport._base_url,
         ) as client:
             with pytest.raises(ServerError) as failure:
@@ -776,7 +776,7 @@ async def test_cancelling_csv_body_wait_settles_request_and_does_not_fetch_next_
     try:
         async with (
             AsyncClient(
-                Credential("organization_api_key", "pmfa_" + "a" * 72),
+                Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
                 base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",
             ) as client,
         ):
@@ -814,7 +814,7 @@ async def test_cancelling_import_wait_is_not_a_durable_cancel():
     try:
         async with (
             AsyncClient(
-                Credential("organization_api_key", "pmfa_" + "a" * 72),
+                Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
                 base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",
             ) as client,
         ):

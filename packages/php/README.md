@@ -898,3 +898,11 @@ raw HTTP framing and conflicting Transfer-Encoding/Content-Length rejection.
 Synchronous adapters cannot preempt an arbitrary blocking third-party read.
 Local HttpKernel/Laravel route and chunk-decoding ingress tests establish these
 fixture boundaries, without claiming deployed receiver configuration.
+
+## Signed credential shapes
+
+Organization keys (`pmfa_`) and project tokens (`pmfa_pt_`) use variable-length
+signed v2 credentials. Pass the complete value from the Console. Local shape
+validation does not authenticate a credential; the API verifies its signature
+and live permissions. This source change is held for the coordinated v2 release;
+do not install it against a deployment that still issues v1 credentials.

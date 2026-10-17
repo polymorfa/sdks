@@ -5,7 +5,7 @@ using Polymorfa.Sdk.Storage;
 
 internal static class WireChecks
 {
-    private const string Key = "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    private const string Key = "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private static string Frame(bool payload = true)
     {

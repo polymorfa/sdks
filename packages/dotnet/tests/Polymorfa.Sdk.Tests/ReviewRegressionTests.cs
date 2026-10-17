@@ -4,7 +4,7 @@ internal static class ReviewRegressionTests
 {
     internal static async Task RunAsync()
     {
-        const string key = "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        const string key = "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
         foreach (var prefix in new[] { "/proxy", "/proxy/" })
         {
             using var fixture = new WireFixture { Authorization = "Bearer " + key };

@@ -15,7 +15,7 @@ $readHistory = static function (Polymorfa\MessagingClient $client): Polymorfa\Ap
         $download->close();
     }
 };
-foreach ([$credential, Polymorfa\Credential::projectToken('pmfa_pt_'.str_repeat('a', 93).'A')] as $historyCredential) {
+foreach ([$credential, Polymorfa\Credential::projectToken('pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')] as $historyCredential) {
     nativeCases([
         ['GET', $historyPath, null, "\x00ABC\x00", $readHistory, "\x00ABC\x00", [
             'requestHeaders' => ['X-History-Proof' => 'stream', 'Accept' => 'application/octet-stream'],

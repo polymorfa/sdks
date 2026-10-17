@@ -171,7 +171,7 @@ async def test_every_group_public_method_request_response_metadata(
         return httpx.Response(200, json=fixture, headers={"x-request-id": "req_group"})
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = await invoke(client.groups)

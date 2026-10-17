@@ -30,7 +30,7 @@ async def test_native_borrowed_project_lifetime_and_owner_failure(close_failure)
         try:
             raw = await reader.readuntil(b"\r\n\r\n")
             request = raw.decode()
-            assert "Authorization: Bearer pmfa_" + "a" * 72 in request
+            assert "Authorization: Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" in request
             requests.append(request.split("\r\n")[0])
             body = json.dumps({"data": {"id": "event"}}).encode()
             writer.write(
@@ -50,7 +50,7 @@ async def test_native_borrowed_project_lifetime_and_owner_failure(close_failure)
     server = await asyncio.start_server(serve, "127.0.0.1", 0)
     native = NativeTransport()
     root = AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",
         http_transport=native,
         max_network_retries=0,
@@ -102,7 +102,7 @@ async def test_independently_owned_project_closes_its_native_transport_once():
 
     transport = NativeTransport()
     async with AsyncProjectClient(
-        Credential("project_token", "pmfa_pt_" + "A" * 94), "project-one", http_transport=transport
+        Credential("project_token", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), "project-one", http_transport=transport
     ) as project:
         assert project.project("project-one") is project
         with pytest.raises(ConfigurationError):

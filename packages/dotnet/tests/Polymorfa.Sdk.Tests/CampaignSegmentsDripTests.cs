@@ -11,7 +11,7 @@ internal static class CampaignSegmentsDripTests
 {
     private const string Project = "11111111-1111-4111-8111-111111111111";
     private const string Id = "22222222-2222-4222-8222-222222222222";
-    private const string Key = "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    private const string Key = "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     private const string RulesJson = """{"match":"all","groups":[{"match":"any","conditions":[{"field":"tag","operator":"contains","value":"vip"},{"field":"attribute","name":"spend","operator":"greater_than","value":100},{"field":"consent","operator":"equals","value":true}]}]}""";
     private static readonly string SegmentJson = "{\"id\":\"" + Id + "\",\"name\":\"VIP\",\"revision\":2,\"rules\":" + RulesJson + ",\"createdAt\":1,\"updatedAt\":2}";
     private const string PreviewJson = """{"matchedCount":4,"optedOutCount":1,"consentWithheldCount":1,"eligibleCount":2,"sample":[{"phone":"+49*******12","tags":["vip"]}],"evaluatedAt":3}""";

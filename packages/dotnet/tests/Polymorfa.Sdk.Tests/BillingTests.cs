@@ -19,7 +19,7 @@ internal static class BillingTests
         await Organization("GET", "/platform/billing/priorities?projectId=" + Id, null, Priorities, async c => ResourceTests.Equal((await c.Billing.GetPrioritiesAsync(new(Id))).Data.Data.Projects[0].Priority, 3));
         await Organization("PUT", "/platform/billing/priorities/project/" + Id, "{\"priority\":3,\"expectedRevision\":2}", Priorities, async c => ResourceTests.Equal((await c.Billing.SetPriorityAsync("project", Id, new(3, 2))).Data.Data.Revision, 4L));
         await Organization("PUT", "/platform/billing/priorities", "{\"scope\":\"project\",\"expectedRevision\":3,\"resourceIds\":[\"" + Id + "\"]}", Priorities, async c => ResourceTests.Equal((await c.Billing.ReorderPrioritiesAsync(new("project", 3, ResourceIds: [Id]))).Data.Data.Revision, 4L));
-        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)));
+        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
         await Invalid(() => client.Billing.SetLimitAsync("project", Id, new(0.0000001m, 1)));
         await Invalid(() => client.Billing.SetLimitAsync("project", Id, new(-1, 1)));
         await Invalid(() => client.Billing.SetPriorityAsync("project", Id, new(1000001, 1)));
@@ -29,7 +29,7 @@ internal static class BillingTests
     }
     internal static async Task Organization(string method, string path, string? body, string response, Func<OrganizationClient, Task> invoke)
     {
-        var key = "pmfa_" + new string('a', 72);
+        var key = "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
         using var fixture = new WireFixture { Authorization = "Bearer " + key };
         var serving = fixture.ServeAsync(method, path, body, response);
         using var client = new OrganizationClient(Credential.OrganizationApiKey(key), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0, Timeout = TimeSpan.FromSeconds(3) });

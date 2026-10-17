@@ -3,7 +3,6 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/json"
-	polymorfa "github.com/polymorfa/sdks/packages/go"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
@@ -12,6 +11,8 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+
+	polymorfa "github.com/polymorfa/sdks/packages/go"
 )
 
 func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
@@ -51,7 +52,7 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 				w.Write([]byte(`{"success":true,"data":{"token":"pmfa_ct_browser_fixture","expiresAt":"2030-01-01T00:00:00Z"}}`))
 			}))
 			defer upstream.Close()
-			sdk, err := polymorfa.NewMessagingClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_" + strings.Repeat("a", 72)}, BaseURL: upstream.URL})
+			sdk, err := polymorfa.NewMessagingClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}, BaseURL: upstream.URL})
 			if err != nil {
 				t.Fatal(err)
 			}

@@ -11,18 +11,33 @@ final readonly class Credential
         if ($kind === 'organization_api_key' && preg_match('/^pmfa_(pt|ct|ls|at|wst|sd)_/', $value)) {
             throw new ConfigurationException('credential');
         }
-        $pattern = match ($kind) {
-            'organization_api_key' => '/^pmfa_[A-Za-z0-9_-]{72}$/D',
-            'project_token' => '/^pmfa_pt_[A-Za-z0-9_-]{93}[AQgw]$/D',
-            'client_token' => '/^pmfa_ct_.+$/D',
-            default => throw new ConfigurationException('credential'),
+        $valid = match ($kind) {
+            'organization_api_key' => self::signedV2Shape($value, 'pmfa_'),
+            'project_token' => self::signedV2Shape($value, 'pmfa_pt_'),
+            'client_token' => (bool) preg_match('/^pmfa_ct_.+$/D', $value),
+            default => false,
         };
-        if (!preg_match($pattern, $value)) {
+        if (!$valid) {
             throw new ConfigurationException('credential');
         }
         if (PHP_OS_FAMILY === 'Unknown' && str_contains(PHP_SAPI, 'wasm') && $kind !== 'client_token') {
             throw new ConfigurationException('runtime');
         }
+    }
+
+    // Framing only; the API authenticates this credential.
+    private static function signedV2Shape(string $value, string $prefix): bool
+    {
+        if (strlen($value) > 16384 || !str_starts_with($value, $prefix)) {
+            return false;
+        }
+        $body = substr($value, strlen($prefix));
+        if (!preg_match('/^[A-Za-z0-9_-]+$/D', $body)) {
+            return false;
+        }
+        $raw = base64_decode(strtr($body, '-_', '+/'), true);
+        return $raw !== false && strlen($raw) >= 66 && ord($raw[0]) === 2
+            && rtrim(strtr(base64_encode($raw), '+/', '-_'), '=') === $body;
     }
 
     public static function organizationApiKey(#[\SensitiveParameter] string $value): self

@@ -51,7 +51,7 @@ async fn credential_free_system_probes_native_request_response_contracts() {
 }
 #[tokio::test]
 async fn project_token_bridge_route_discovery_native_wire_and_principal_guards() {
-    let token = format!("pmfa_pt_{}A", "a".repeat(93));
+    let token = "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string();
     let expected = json!({"wsUrl":"wss://bridge.example.com/connect","region":"BR","kind":"sandbox","signal":"bartender","tokenKind":"project","expiresAt":1800000000000u64});
     let (base, server) = support::wire_authorization(
         "GET",

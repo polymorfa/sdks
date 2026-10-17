@@ -2,19 +2,19 @@ package polymorfa_test
 
 import (
 	"context"
-	sdk "github.com/polymorfa/sdks/packages/go"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
+
+	sdk "github.com/polymorfa/sdks/packages/go"
 )
 
 func go41Client(t *testing.T, handler http.HandlerFunc) (*sdk.MessagingClient, *sdk.OrganizationClient) {
 	t.Helper()
 	s := httptest.NewServer(handler)
 	t.Cleanup(s.Close)
-	cfg := sdk.Config{BaseURL: s.URL, Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: "pmfa_" + strings.Repeat("a", 72)}}
+	cfg := sdk.Config{BaseURL: s.URL, Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}}
 	m, e := sdk.NewMessagingClient(cfg)
 	if e != nil {
 		t.Fatal(e)

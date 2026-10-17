@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.Json;
 using Polymorfa.Sdk;
 
+CredentialV2Tests.Run();
+if (args.Contains("--credential-v2-only")) { Console.WriteLine("PASS signed v2 credential shapes"); return; }
 if (args.Contains("--consumer-media-only")) { await ConsumerRepairTests.MediaAsync(); return; }
 if (args.Contains("--consumer-calls-only")) { await ConsumerRepairTests.CallsAsync(); return; }
 if (args.Contains("--consumer-cursor-only")) { await ConsumerRepairTests.CursorAsync(); return; }

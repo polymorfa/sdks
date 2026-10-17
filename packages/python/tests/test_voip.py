@@ -247,7 +247,7 @@ async def test_typed_voip_controls(method, path, body, fixture, server, invoke):
         return httpx.Response(200, json=fixture, headers={"x-request-id": "req_calls"})
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = await invoke(client.voip)
@@ -266,7 +266,7 @@ async def test_call_control_guards_and_no_retry_boundaries():
         return httpx.Response(503, json={"error": {"code": "service_unavailable"}})
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         for invoke in (

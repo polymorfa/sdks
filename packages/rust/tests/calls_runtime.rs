@@ -23,7 +23,7 @@ use tokio_tungstenite::{
     },
 };
 fn credential(ch: char) -> Credential {
-    Credential::organization_api_key(format!("pmfa_{}", ch.to_string().repeat(72))).unwrap()
+    Credential::organization_api_key(format!("pmfa_Ag{}", ch.to_string().repeat(86))).unwrap()
 }
 fn options(base: String) -> CallsClientOptions {
     let mut o = CallsClientOptions::new("support");
@@ -460,7 +460,7 @@ async fn lifecycle_http_connect_proxy_keeps_bearer_out_of_tunnel_and_handshake()
         let mut socket = accept_async(stream).await.unwrap();
         assert_eq!(
             auth(&mut socket).await["token"],
-            format!("pmfa_{}", "a".repeat(72))
+            format!("pmfa_Ag{}", "a".repeat(86))
         );
         socket
             .send(Message::Text(json!({"type":"ready"}).to_string().into()))

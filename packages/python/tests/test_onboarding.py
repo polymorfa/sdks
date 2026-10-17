@@ -160,7 +160,7 @@ async def test_typed_onboarding_methods(method, path, body, fixture, invoke):
         )
 
     async with AsyncMessagingClient(
-        Credential("project_token", "pmfa_pt_" + "a" * 93 + "A"),
+        Credential("project_token", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(client)
@@ -173,7 +173,7 @@ async def test_typed_onboarding_methods(method, path, body, fixture, invoke):
 
 async def test_unlink_companion_bounds_and_keyed_fixture_retry():
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72)
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
     ) as client:
         for device_id in [0, 100, True, 1.5]:
             with pytest.raises(ValidationError):
@@ -201,7 +201,7 @@ async def test_unlink_companion_bounds_and_keyed_fixture_retry():
         )
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await client.testing.trigger_event(

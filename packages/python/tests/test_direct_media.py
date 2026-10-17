@@ -33,7 +33,7 @@ from polymorfa.media_encrypt import (
 )
 from polymorfa.transport import Transport
 
-KEY = Credential("organization_api_key", "pmfa_" + "a" * 72)
+KEY = Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 PLAIN = b"Polymorfa golden vector: whatsmeow cbcutil + hkdfutil, 2026."
 
 

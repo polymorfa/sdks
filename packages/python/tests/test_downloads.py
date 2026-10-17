@@ -81,7 +81,7 @@ async def test_typed_media_public_json_routes(case):
 
     cls = AsyncMessagingClient if surface == "messaging" else AsyncClient
     async with cls(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(client, RequestOptions(headers={"x-proof": "media"}))
@@ -137,7 +137,7 @@ async def test_all_media_binary_helpers_and_storage_credential_isolation(helper,
         )
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await getattr(client.media, helper)(
@@ -188,7 +188,7 @@ async def test_all_media_binary_helpers_and_storage_credential_isolation(helper,
 )
 async def test_invalid_storage_redirect_metadata_preserved(location):
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(
             lambda r: httpx.Response(
                 302, headers={"location": location, "x-request-id": "req_invalid"}
@@ -230,7 +230,7 @@ async def test_body_failure_after_operation_admission_preserves_metadata_and_nev
         )
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         with pytest.raises(error) as caught:
@@ -289,7 +289,7 @@ async def test_actual_unbuffered_media_stream_and_task_cancellation():
     try:
         url = f"http://127.0.0.1:{native.sockets[0].getsockname()[1]}"
         async with AsyncMessagingClient(
-            Credential("organization_api_key", "pmfa_" + "a" * 72), base_url=url
+            Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), base_url=url
         ) as client:
             stream = await client.media.download_stream("media_1")
             iterator = stream.__aiter__()

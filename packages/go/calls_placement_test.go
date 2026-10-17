@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 )
 
@@ -34,7 +33,7 @@ func TestCallsPlacementBindsOnlyServerPrincipal(t *testing.T) {
 				w.Write([]byte(`{"success":true,"data":{"callId":"call","session":"bound","video":false}}`))
 			}))
 			defer server.Close()
-			credential := Credential{Kind: OrganizationAPIKey, Value: "pmfa_" + strings.Repeat("a", 72)}
+			credential := Credential{Kind: OrganizationAPIKey, Value: "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
 			participant := "worker"
 			if clientToken {
 				credential = Credential{Kind: ClientToken, Value: "pmfa_ct_fixture"}
