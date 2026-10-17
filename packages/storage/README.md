@@ -120,3 +120,10 @@ the existing native `wa:` fallback keys, with no claim that they join later opaq
 Polymorfa IDs. Content and marker commit precede checkpoint CAS and ACK. Checkpoint
 conflicts prevent ACK; remote ACK failures leave already committed data intact.
 These local package capabilities do not establish registry or deployed availability.
+
+Numeric strings in decoded history follow the TypeScript producer's existing
+`Number(string)` finite-result contract. The shared `proto-number-fixtures.json`
+records binary64 bits, including signed zero, exact ECMAScript whitespace and
+unsigned binary/octal/hexadecimal integers. Generic row numbers, revisions and
+lease/CAS checks remain strict. These fixtures and local physical-package checks
+do not establish registry publication or deployed acceptance.
