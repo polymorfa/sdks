@@ -775,3 +775,11 @@ commit precedes checkpoint CAS and ACK; remote ACK failure leaves committed data
 intact. Archive and Cloud behavior remain unchanged. Add `..Default::default()` to
 exhaustive option literals when adopting the new fields. These are local package
 capabilities, without registry or deployed availability claims.
+
+Decoded-history numeric strings use the producer's finite `Number(string)`
+contract. Portable storage-core trims exact ECMAScript whitespace, validates the
+complete ASCII grammar, and rounds unsigned radix integers once using a 53-bit
+prefix with guard/sticky bits. Finite values are not limited to uint64. Generic
+row numbers and safe revisions remain strict. Native and physical-crate checks
+are local evidence; registry publication and matching environment acceptance
+remain separate release gates.

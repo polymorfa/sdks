@@ -33,25 +33,114 @@ pub(crate) fn number(v: &Value) -> Option<f64> {
 pub(crate) fn array(v: &Value) -> &[Value] {
     v.as_array().map(Vec::as_slice).unwrap_or(&[])
 }
+// ECMAScript WhiteSpace + LineTerminator. Native Unicode trim also accepts NEL.
+fn proto_space(c: char) -> bool {
+    matches!(c, '\u{0009}'..='\u{000d}' | '\u{0020}' | '\u{00a0}' | '\u{1680}' | '\u{2000}'..='\u{200a}' | '\u{2028}' | '\u{2029}' | '\u{202f}' | '\u{205f}' | '\u{3000}' | '\u{feff}')
+}
+fn proto_decimal(s: &[u8]) -> bool {
+    let mut at = usize::from(matches!(s.first(), Some(b'+' | b'-')));
+    let start = at;
+    while s.get(at).is_some_and(u8::is_ascii_digit) {
+        at += 1;
+    }
+    let mut digits = at - start;
+    if s.get(at) == Some(&b'.') {
+        at += 1;
+        let start = at;
+        while s.get(at).is_some_and(u8::is_ascii_digit) {
+            at += 1;
+        }
+        digits += at - start;
+    }
+    if digits == 0 {
+        return false;
+    }
+    if matches!(s.get(at), Some(b'e' | b'E')) {
+        at += 1;
+        if matches!(s.get(at), Some(b'+' | b'-')) {
+            at += 1;
+        }
+        let start = at;
+        while s.get(at).is_some_and(u8::is_ascii_digit) {
+            at += 1;
+        }
+        if at == start {
+            return false;
+        }
+    }
+    at == s.len()
+}
+fn proto_radix(digits: &[u8], width: u32) -> Option<f64> {
+    if digits.is_empty() {
+        return None;
+    }
+    let mut length = 0_u32;
+    let mut head = 0_u64;
+    let mut guard = false;
+    let mut sticky = false;
+    for &c in digits {
+        let digit = match c {
+            b'0'..=b'9' => c - b'0',
+            b'a'..=b'f' => c - b'a' + 10,
+            b'A'..=b'F' => c - b'A' + 10,
+            _ => return None,
+        };
+        if u32::from(digit) >= 1 << width {
+            return None;
+        }
+        for shift in (0..width).rev() {
+            let bit = u64::from((digit >> shift) & 1);
+            if length == 0 && bit == 0 {
+                continue;
+            }
+            // Saturation bounds counters while still validating every digit.
+            length = (length + 1).min(1025);
+            if length <= 53 {
+                head = (head << 1) | bit;
+            } else if length == 54 {
+                guard = bit != 0;
+            } else {
+                sticky |= bit != 0;
+            }
+        }
+    }
+    if length > 1024 {
+        return None;
+    }
+    if length <= 53 {
+        return Some(head as f64);
+    }
+    if guard && (sticky || head & 1 != 0) {
+        head += 1;
+    }
+    Some((head as f64) * 2_f64.powi((length - 53) as i32)).filter(|n| n.is_finite())
+}
 pub(crate) fn numeric(v: &Value) -> Option<f64> {
     if let Some(n) = number(v) {
         return Some(n);
     }
-    let s = v.as_str()?.trim();
+    let s = v.as_str()?.trim_matches(proto_space);
     if s.is_empty() {
         return Some(0.);
     }
-    let n = if let Some(s) = s.strip_prefix("0x").or_else(|| s.strip_prefix("0X")) {
-        u64::from_str_radix(s, 16).ok().map(|n| n as f64)
-    } else if let Some(s) = s.strip_prefix("0b").or_else(|| s.strip_prefix("0B")) {
-        u64::from_str_radix(s, 2).ok().map(|n| n as f64)
-    } else if let Some(s) = s.strip_prefix("0o").or_else(|| s.strip_prefix("0O")) {
-        u64::from_str_radix(s, 8).ok().map(|n| n as f64)
-    } else {
-        s.parse::<f64>().ok()
-    };
-    n.filter(|n| n.is_finite())
+    let b = s.as_bytes();
+    if b.first() == Some(&b'0') {
+        let width = match b.get(1) {
+            Some(b'x' | b'X') => 4,
+            Some(b'o' | b'O') => 3,
+            Some(b'b' | b'B') => 1,
+            _ => 0,
+        };
+        if width != 0 {
+            return proto_radix(&b[2..], width);
+        }
+    }
+    if !proto_decimal(b) {
+        return None;
+    }
+    s.parse::<f64>().ok().filter(|n| n.is_finite())
 }
+
 pub fn to_millis(value: Option<f64>) -> Option<f64> {
     value
         .filter(|n| n.is_finite() && *n > 0.)

@@ -98,3 +98,10 @@ commit precedes checkpoint CAS and ACK; remote ACK failure leaves committed data
 intact. Archive and Cloud behavior remain unchanged. Add `..Default::default()` to
 exhaustive option literals when adopting the new fields. These are local package
 capabilities, without registry or deployed availability claims.
+
+History proto-number strings match the TypeScript producer's finite
+`Number(string)` results, including signed zero, exact ECMAScript whitespace and
+unsigned radix values beyond uint64. Radix parsing uses bounded significant bits
+and one nearest-even rounding, with no added dependency. Strict generic row and
+revision checks retain their existing rules. Local native/crate checks and WASM
+compilation do not establish registry or browser runtime acceptance.
