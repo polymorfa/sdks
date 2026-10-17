@@ -836,3 +836,28 @@ Ordinary JSON requests require HTTP 200-299 before body reading or decoding.
 Final informational and redirect responses fail as `invalid_response`, retaining
 safe status/request metadata and closing the body without a follow or retry.
 Direct binary media uses its separate validated redirect policy.
+
+`WebhookRequest::fromSymfony`, `fromLaravel` and `fromPsr` accept an optional
+positive integer `maxBodyBytes`, defaulting to
+`WebhookRequest::DEFAULT_MAX_BODY_BYTES` (1,048,576). Existing two-argument calls
+retain that default. A malformed exposed Content-Length fails with
+`invalid_content_length` (400); a declared or observed oversize body fails with
+`webhook_body_too_large` (413). Failed, consumed or unprovable body streams fail
+with `invalid_webhook_body` (400). Handlers should map these validation statuses
+before performing application effects, and accept POST only.
+
+Reads use at most 8,192 bytes and the remaining allowance plus one detection
+byte. The complete body must reach EOF within the limit before native exact-byte
+HMAC and JSON verification. A short or zero Content-Length cannot bypass the
+actual-byte bound. PSR bodies must be readable and rewindable, or prove an
+unconsumed position of zero. The adapters never close or detach borrowed bodies.
+
+Set matching fixed-length and chunked limits at ingress before PHP/framework
+buffering, with server body-read timeouts. The adapters bound their own
+accumulation. They cannot undo SAPI/PSR factory buffering, Symfony's copy of an
+already buffered string, or Laravel JSON capture before a controller runs.
+Framework header normalization may also precede these helpers; the ingress owns
+raw HTTP framing and conflicting Transfer-Encoding/Content-Length rejection.
+Synchronous adapters cannot preempt an arbitrary blocking third-party read.
+Local HttpKernel/Laravel route and chunk-decoding ingress tests establish these
+fixture boundaries, without claiming deployed receiver configuration.

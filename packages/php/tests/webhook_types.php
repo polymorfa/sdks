@@ -58,3 +58,10 @@ function typedWebhookBoolean(bool $value): void
 {
     echo $value;
 }
+
+function typedBoundedWebhookAdapters(Symfony\Component\HttpFoundation\Request $symfony, Illuminate\Http\Request $laravel, Psr\Http\Message\ServerRequestInterface $psr, string $secret): void
+{
+    typedWebhookConsumer(Polymorfa\WebhookRequest::fromSymfony($symfony, $secret, 1024));
+    typedWebhookConsumer(Polymorfa\WebhookRequest::fromLaravel($laravel, $secret, PHP_INT_MAX));
+    typedWebhookConsumer(Polymorfa\WebhookRequest::fromPsr($psr, $secret, Polymorfa\WebhookRequest::DEFAULT_MAX_BODY_BYTES));
+}
