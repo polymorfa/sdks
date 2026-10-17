@@ -3,6 +3,10 @@ using System.Text;
 using System.Text.Json;
 using Polymorfa.Sdk;
 
+if (args.Contains("--consumer-media-only")) { await ConsumerRepairTests.MediaAsync(); return; }
+if (args.Contains("--consumer-calls-only")) { await ConsumerRepairTests.CallsAsync(); return; }
+if (args.Contains("--consumer-cursor-only")) { await ConsumerRepairTests.CursorAsync(); return; }
+
 if (args.Contains("--descriptor-storage-only")) { await DescriptorStorageTests.RunAsync(); return; }
 
 if (args.Contains("--strict-history-only")) { await StrictHistoryTests.RunAsync(); return; }
@@ -127,6 +131,7 @@ try
     await UsageTests.RunAsync();
     await BanSafeTests.RunAsync();
     await RawPaginationTests.RunAsync();
+    await ConsumerRepairTests.RunAsync();
     await ConstrainedTypeTests.RunAsync();
     await VoiceStreamingTests.RunAsync();
     await VoiceTests.RunAsync();

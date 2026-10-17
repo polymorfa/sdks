@@ -61,7 +61,7 @@ public sealed class CallsSocket : IAsyncDisposable
             var clientToken = result.token.Value.StartsWith("pmfa_ct_", StringComparison.Ordinal);
             if (!clientToken) { if (OperatingSystem.IsBrowser()) throw new PolymorfaConfigurationException("Server Calls credentials cannot be used in a browser."); if (callId is null && (string.IsNullOrWhiteSpace(options.Session) || options.Session.Length > 128)) throw new PolymorfaConfigurationException("Server lifecycle sockets require a session."); }
             var path = callId is null ? "/voip/ws" : "/voip/calls/" + Uri.EscapeDataString(callId) + "/media";
-            var uri = new UriBuilder(new Uri(options.BaseUrl, path)) { Scheme = options.BaseUrl.Scheme == "https" ? "wss" : "ws" };
+            var uri = new UriBuilder(new Uri(options.BaseUrl.AbsoluteUri.TrimEnd('/') + path)) { Scheme = options.BaseUrl.Scheme == "https" ? "wss" : "ws" };
             if (callId is null && !clientToken) uri.Query = "session=" + Uri.EscapeDataString(options.Session!) + (options.Participant is null ? "" : "&participant=" + Uri.EscapeDataString(options.Participant));
             if (callId is not null) result.socket.Options.AddSubProtocol(CallsProtocol.MediaSubprotocol);
             result.socket.Options.KeepAliveInterval = TimeSpan.Zero;

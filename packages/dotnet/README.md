@@ -891,3 +891,5 @@ one binary64 rounding. Bare radix prefixes already failed correctly. Generic
 row numbers and safe revisions remain strict. Full public assemblies and local
 NuGet consumers provide local evidence; registry publication and matching
 environment acceptance remain separate release gates.
+
+Media downloads retain the successful API request deadline through body EOF. Each approved storage redirect hop has its own request deadline, retained through the final body. Async and synchronous body reads distinguish the request deadline from caller cancellation. Disposing a download releases its response, timer and owned storage transport; it does not dispose the API client. Body failures do not replay the download. Calls WebSockets retain the configured base-path prefix and authenticate in the first frame. Raw cursor pages reject repeated cursors before requesting them again, including cycles across manually requested pages.

@@ -14,9 +14,9 @@ public sealed class MediaDownload : IAsyncDisposable, IDisposable
     public ResponseMetadata Metadata { get; }
     private readonly HttpResponseMessage response;
     private readonly IDisposable? owner;
-    internal MediaDownload(Stream body, HttpResponseMessage response, ResponseMetadata metadata, bool redirected, CancellationToken cancellation, IDisposable? owner = null)
+    internal MediaDownload(Stream body, HttpResponseMessage response, ResponseMetadata metadata, bool redirected, CancellationToken cancellation, CancellationTokenSource deadline, IDisposable? owner = null)
     {
-        Body = new CancellableStream(body, cancellation); this.response = response; this.owner = owner; Metadata = metadata; Redirected = redirected;
+        Body = new CancellableStream(body, cancellation, deadline, metadata); this.response = response; this.owner = owner; Metadata = metadata; Redirected = redirected;
         ContentType = response.Content.Headers.ContentType?.MediaType; ContentLength = response.Content.Headers.ContentLength;
         Filename = ContentDisposition.ParseFilename(response.Content.Headers.TryGetValues("Content-Disposition", out var disposition) ? disposition.FirstOrDefault() : null);
     }
@@ -28,28 +28,43 @@ public sealed record MediaDownloadUrl(bool Streamed, Uri? Url, DateTimeOffset? E
 {
     public override string ToString() => $"MediaDownloadUrl(streamed={Streamed}, expiresAt={ExpiresAt}, requestId={RequestId}, url=redacted)";
 }
-internal sealed class CancellableStream(Stream source, CancellationToken cancellation) : Stream
+internal sealed class CancellableStream(Stream source, CancellationToken cancellation, CancellationTokenSource deadline, ResponseMetadata metadata) : Stream
 {
+    private bool completed;
+    private int disposed;
+    private readonly CancellationToken deadlineToken = deadline.Token;
     public override bool CanRead => source.CanRead;
     public override bool CanSeek => source.CanSeek;
     public override bool CanWrite => false;
     public override long Length => source.Length;
-    public override long Position { get => source.Position; set => source.Position = value; }
+    public override long Position { get => source.Position; set { source.Position = value; completed = false; } }
     public override void Flush() => source.Flush();
-    public override int Read(byte[] buffer, int offset, int count) { cancellation.ThrowIfCancellationRequested(); return source.Read(buffer, offset, count); }
+    public override int Read(byte[] buffer, int offset, int count) => ReadAsync(buffer.AsMemory(offset, count)).AsTask().GetAwaiter().GetResult();
     public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
-        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellation, cancellationToken);
-        try { return await source.ReadAsync(buffer, linked.Token).ConfigureAwait(false); }
-        catch (OperationCanceledException) { throw new PolymorfaCancelledException(); }
-        catch (IOException) { throw new PolymorfaConnectionException("Media response body was interrupted."); }
+        ObjectDisposedException.ThrowIf(disposed != 0, this);
+        if (completed) return 0;
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(deadlineToken, cancellationToken);
+        try
+        {
+            var read = await source.ReadAsync(buffer, linked.Token).ConfigureAwait(false);
+            if (read == 0 && buffer.Length != 0) { completed = true; deadline.CancelAfter(Timeout.InfiniteTimeSpan); }
+            return read;
+        }
+        catch (OperationCanceledException)
+        {
+            if (cancellation.IsCancellationRequested || cancellationToken.IsCancellationRequested) throw new PolymorfaCancelledException(metadata);
+            throw new PolymorfaTimeoutException("Media response body timed out.", metadata);
+        }
+        catch (IOException) { throw new PolymorfaConnectionException("Media response body was interrupted.", metadata); }
+        catch (HttpRequestException) { throw new PolymorfaConnectionException("Media response body was interrupted.", metadata); }
     }
     public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) => ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
-    public override long Seek(long offset, SeekOrigin origin) => source.Seek(offset, origin);
+    public override long Seek(long offset, SeekOrigin origin) { var position = source.Seek(offset, origin); completed = false; return position; }
     public override void SetLength(long value) => throw new NotSupportedException();
     public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-    protected override void Dispose(bool disposing) { if (disposing) source.Dispose(); base.Dispose(disposing); }
-    public override async ValueTask DisposeAsync() { await source.DisposeAsync().ConfigureAwait(false); GC.SuppressFinalize(this); }
+    protected override void Dispose(bool disposing) { if (disposing && Interlocked.Exchange(ref disposed, 1) == 0) { deadline.Dispose(); source.Dispose(); } base.Dispose(disposing); }
+    public override async ValueTask DisposeAsync() { if (Interlocked.Exchange(ref disposed, 1) == 0) { deadline.Dispose(); await source.DisposeAsync().ConfigureAwait(false); } GC.SuppressFinalize(this); }
 }
 public sealed class MessagingMedia : Resource
 {
@@ -72,29 +87,30 @@ public sealed class MessagingMedia : Resource
         var opened = await http.OpenAsync(HttpMethod.Get, path, null, options, "*/*", allowMediaRedirect: true).ConfigureAwait(false);
         var response = opened.Response;
         HttpClient? storage = null;
+        CancellationTokenSource? deadline = opened.TakeDeadline();
         try
         {
             var metadata = opened.Metadata; var redirected = !response.IsSuccessStatusCode;
             if (redirected)
             {
-                var url = Location(response, http.ApiUrl(path), metadata); response.Dispose();
+                var url = Location(response, http.ApiUrl(path), metadata); response.Dispose(); deadline.Dispose(); deadline = null;
                 // A separate client sends no API authorization, cookies, or application request headers.
                 storage = http.CreateStorageClient();
                 for (var hop = 0; ; hop++)
                 {
-                    using var linked = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken); linked.CancelAfter(options.Timeout ?? http.Options.Timeout);
-                    response = await storage.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, linked.Token).ConfigureAwait(false);
+                    deadline?.Dispose(); deadline = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken); deadline.CancelAfter(options.Timeout ?? http.Options.Timeout);
+                    response = await storage.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, deadline.Token).ConfigureAwait(false);
                     if (response.IsSuccessStatusCode) break;
                     if ((int)response.StatusCode is 301 or 302 or 303 or 307 or 308 && hop < 3) { url = Location(response, url, metadata); response.Dispose(); continue; }
                     var status = (int)response.StatusCode; response.Dispose(); throw new PolymorfaException($"Storage returned HTTP {status}.", "media_download_failed", metadata);
                 }
             }
-            var body = await response.Content.ReadAsStreamAsync(options.CancellationToken).ConfigureAwait(false);
-            return new(body, response, metadata, redirected, options.CancellationToken, storage);
+            var body = await response.Content.ReadAsStreamAsync(deadline!.Token).ConfigureAwait(false);
+            return new(body, response, metadata, redirected, options.CancellationToken, deadline, storage);
         }
-        catch (OperationCanceledException) { response.Dispose(); storage?.Dispose(); if (options.CancellationToken.IsCancellationRequested) throw new PolymorfaCancelledException(); throw new PolymorfaTimeoutException("Media response headers timed out."); }
-        catch (HttpRequestException) { response.Dispose(); storage?.Dispose(); throw new PolymorfaConnectionException("Cannot reach media storage."); }
-        catch { response.Dispose(); storage?.Dispose(); throw; }
+        catch (OperationCanceledException) { response.Dispose(); deadline?.Dispose(); storage?.Dispose(); if (options.CancellationToken.IsCancellationRequested) throw new PolymorfaCancelledException(opened.Metadata); throw new PolymorfaTimeoutException("Media response headers timed out.", opened.Metadata); }
+        catch (HttpRequestException) { response.Dispose(); deadline?.Dispose(); storage?.Dispose(); throw new PolymorfaConnectionException("Cannot reach media storage."); }
+        catch { response.Dispose(); deadline?.Dispose(); storage?.Dispose(); throw; }
     }
     private static Uri Location(HttpResponseMessage response, Uri source, ResponseMetadata metadata)
     {

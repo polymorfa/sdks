@@ -106,36 +106,45 @@ internal sealed class HttpTransport : IDisposable
             if (options.IdempotencyKey is not null) { request.Headers.Remove("idempotency-key"); request.Headers.TryAddWithoutValidation("idempotency-key", options.IdempotencyKey); }
             if (binaryContent is not null) request.Content = binaryContent;
             else if (body is not null) { request.Content = new ByteArrayContent(body); request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json"); }
-            using var linked = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken);
-            linked.CancelAfter(timeout);
-            HttpResponseMessage response;
-            try { response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linked.Token).ConfigureAwait(false); }
-            catch (OperationCanceledException)
+            var linked = CancellationTokenSource.CreateLinkedTokenSource(options.CancellationToken);
+            var transferred = false;
+            try
             {
-                if (options.CancellationToken.IsCancellationRequested) throw new PolymorfaCancelledException();
-                if (safe && attempt <= retries) { await WaitAsync(Delay(null, attempt), options.CancellationToken).ConfigureAwait(false); continue; }
-                throw new PolymorfaTimeoutException("Request timed out.");
+                linked.CancelAfter(timeout);
+                HttpResponseMessage response;
+                try { response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linked.Token).ConfigureAwait(false); }
+                catch (OperationCanceledException)
+                {
+                    if (options.CancellationToken.IsCancellationRequested) throw new PolymorfaCancelledException();
+                    if (safe && attempt <= retries) { await WaitAsync(Delay(null, attempt), options.CancellationToken).ConfigureAwait(false); continue; }
+                    throw new PolymorfaTimeoutException("Request timed out.");
+                }
+                catch (HttpRequestException error)
+                {
+                    if (PreparedWhatsAppUpload.HasChangedSource(error)) throw PreparedWhatsAppUpload.Changed();
+                    if (safe && attempt <= retries) { await WaitAsync(Delay(null, attempt), options.CancellationToken).ConfigureAwait(false); continue; }
+                    throw new PolymorfaConnectionException("Cannot reach the Polymorfa API.");
+                }
+                var metadata = Metadata(response, attempt);
+                if (response.IsSuccessStatusCode || allowMediaRedirect && metadata.Status is 301 or 302 or 303 or 307 or 308)
+                {
+                    transferred = allowMediaRedirect;
+                    return new(response, metadata, transferred ? linked : null);
+                }
+                if (safe && attempt <= retries && IsRetryable(metadata.Status) && Header(response, "idempotent-replayed") != "true" && metadata.OperationId is null)
+                {
+                    var delay = Delay(response, attempt); response.Dispose();
+                    await WaitAsync(delay, options.CancellationToken).ConfigureAwait(false); continue;
+                }
+                using (response)
+                {
+                    JsonElement error;
+                    try { error = await ReadAsync<JsonElement>(response, options, metadata).ConfigureAwait(false); }
+                    catch (PolymorfaServerException) { error = default; }
+                    throw PolymorfaException.FromResponse(error, metadata);
+                }
             }
-            catch (HttpRequestException error)
-            {
-                if (PreparedWhatsAppUpload.HasChangedSource(error)) throw PreparedWhatsAppUpload.Changed();
-                if (safe && attempt <= retries) { await WaitAsync(Delay(null, attempt), options.CancellationToken).ConfigureAwait(false); continue; }
-                throw new PolymorfaConnectionException("Cannot reach the Polymorfa API.");
-            }
-            var metadata = Metadata(response, attempt);
-            if (response.IsSuccessStatusCode || allowMediaRedirect && metadata.Status is 301 or 302 or 303 or 307 or 308) return new(response, metadata);
-            if (safe && attempt <= retries && IsRetryable(metadata.Status) && Header(response, "idempotent-replayed") != "true" && metadata.OperationId is null)
-            {
-                var delay = Delay(response, attempt); response.Dispose();
-                await WaitAsync(delay, options.CancellationToken).ConfigureAwait(false); continue;
-            }
-            using (response)
-            {
-                JsonElement error;
-                try { error = await ReadAsync<JsonElement>(response, options, metadata).ConfigureAwait(false); }
-                catch (PolymorfaServerException) { error = default; }
-                throw PolymorfaException.FromResponse(error, metadata);
-            }
+            finally { if (!transferred) linked.Dispose(); }
         }
     }
     private async Task<T> ReadAsync<T>(HttpResponseMessage response, RequestOptions options, ResponseMetadata? metadata = null)
@@ -205,9 +214,11 @@ internal sealed class HttpTransport : IDisposable
     }
     public void Dispose() { if (ownsHttp) http.Dispose(); }
 }
-internal sealed class OpenedResponse(HttpResponseMessage response, ResponseMetadata metadata) : IDisposable
+internal sealed class OpenedResponse(HttpResponseMessage response, ResponseMetadata metadata, CancellationTokenSource? deadline = null) : IDisposable
 {
     internal HttpResponseMessage Response { get; } = response;
     internal ResponseMetadata Metadata { get; } = metadata;
-    public void Dispose() => Response.Dispose();
+    private CancellationTokenSource? deadline = deadline;
+    internal CancellationTokenSource TakeDeadline() => Interlocked.Exchange(ref deadline, null) ?? throw new InvalidOperationException("No media deadline to transfer.");
+    public void Dispose() { Response.Dispose(); Interlocked.Exchange(ref deadline, null)?.Dispose(); }
 }

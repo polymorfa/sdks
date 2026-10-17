@@ -18,25 +18,29 @@ public sealed class RawCursorPage<T> : IAsyncEnumerable<T>
     private readonly RawRequest request;
     private readonly RawPageDecoder<T> decode;
     private readonly string cursorParameter;
-    private RawCursorPage(HttpTransport http, RawRequest request, RawPageDecoder<T> decode, string cursorParameter, ApiResponse<JsonElement> response)
+    private readonly HashSet<string> seenCursors;
+    private RawCursorPage(HttpTransport http, RawRequest request, RawPageDecoder<T> decode, string cursorParameter, ApiResponse<JsonElement> response, HashSet<string>? seenCursors)
     {
         this.http = http; this.request = request with { Query = request.Query?.ToArray() }; this.decode = decode; this.cursorParameter = cursorParameter; Response = response;
+        this.seenCursors = seenCursors is null ? new(request.Query?.Where(pair => pair.Key == cursorParameter).Select(pair => pair.Value) ?? [], StringComparer.Ordinal) : new(seenCursors, StringComparer.Ordinal);
         var page = decode(response.Data, response.Metadata); Items = Array.AsReadOnly(page.Items.ToArray()); NextCursor = page.NextCursor;
     }
-    internal static async Task<RawCursorPage<T>> LoadAsync(HttpTransport http, RawRequest request, RawPageDecoder<T> decode, string cursorParameter, CancellationToken? requestCancellation = null)
+    internal static async Task<RawCursorPage<T>> LoadAsync(HttpTransport http, RawRequest request, RawPageDecoder<T> decode, string cursorParameter, CancellationToken? requestCancellation = null, HashSet<string>? seenCursors = null)
     {
         ArgumentNullException.ThrowIfNull(decode);
         request = request with { Body = request.Body?.Clone(), Query = request.Query?.ToArray() };
         if (string.IsNullOrEmpty(cursorParameter)) throw new PolymorfaConfigurationException("A cursor parameter is required.");
         var response = await http.RequestAsync<JsonElement>(request.Method, request.Path, request.Body, requestCancellation is null ? request.Options : (request.Options ?? new()) with { CancellationToken = requestCancellation.Value }, request.Query).ConfigureAwait(false);
-        return new(http, request, decode, cursorParameter, response);
+        return new(http, request, decode, cursorParameter, response, seenCursors);
     }
     public async Task<RawCursorPage<T>?> NextPageAsync(CancellationToken cancellationToken = default)
     {
         if (NextCursor is null) return null;
+        if (seenCursors.Contains(NextCursor)) throw new PolymorfaServerException("Raw pagination returned a repeated cursor.", "invalid_response", Metadata);
+        var nextSeen = new HashSet<string>(seenCursors, StringComparer.Ordinal) { NextCursor };
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(request.Options?.CancellationToken ?? default, cancellationToken);
         var query = (request.Query ?? []).Where(pair => pair.Key != cursorParameter).Append(new(cursorParameter, NextCursor)).ToArray();
-        return await LoadAsync(http, request with { Query = query }, decode, cursorParameter, linked.Token).ConfigureAwait(false);
+        return await LoadAsync(http, request with { Query = query }, decode, cursorParameter, linked.Token, nextSeen).ConfigureAwait(false);
     }
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
     {
