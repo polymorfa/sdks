@@ -58,16 +58,24 @@ if (language === "go") {
 } else if (language === "php") {
   run("composer", ["validate", "--strict"]);
   run("composer", ["install", "--prefer-dist", "--no-interaction"]);
+  const host = resolve(root, "examples/php/web-host");
+  // Core receiver HTTP tests exercise both optional framework hosts.
+  const installHost = spawnSync(
+    "composer",
+    ["install", "--prefer-dist", "--no-interaction"],
+    { cwd: host, stdio: "inherit", env: process.env },
+  );
+  if (installHost.error) throw installHost.error;
+  if (installHost.status !== 0)
+    throw new Error("PHP framework dependency installation failed");
   for (const script of ["lint", "typecheck", "test", "build"])
     run("composer", [script]);
-  const host = resolve(root, "examples/php/web-host");
   const state = resolve(
     homedir(),
     ".polymorfa-agent-work/php-sdk-framework-checks",
   );
   mkdirSync(state, { recursive: true, mode: 0o700 });
   for (const [command, args] of [
-    ["composer", ["install", "--prefer-dist", "--no-interaction"]],
     ["node", ["build-assets.mjs"]],
     ["php", ["tests/run.php"]],
   ]) {
