@@ -3168,3 +3168,16 @@ configuration changes that do not change capabilities produce no event. Treat
 the event ID as the deduplication key. Eligibility is checked before publication
 and delivery; withdrawn events wait for re-enablement and expire after seven days.
 These additions require an API and SDK release containing this contract.
+
+## Campaign contact frequency caps (beta)
+
+`client.campaigns.getFrequencyCap()` reads team limits and their revision.
+`client.campaigns.updateFrequencyCap({ maxPer24Hours: 2, maxPer7Days: 5, revision })`
+replaces both windows. Send both limits as null to remove them. A stale revision
+raises `PolymorfaConflictError`; read and reconcile before trying again. A new
+limit requires beta access and can return `403 feature_unavailable`.
+Campaign create/update accepts `frequencyCap`; null removes a campaign cap.
+Recipient reads expose `failureReason` and accept `reason: "frequency_cap"`.
+Analytics adds `frequencyCap.skippedRecipientCount`. Raising limits never retries
+settled skips. `contracts/campaign-frequency-cap.json` pins the merged API source;
+package publication and API availability remain separate release gates.

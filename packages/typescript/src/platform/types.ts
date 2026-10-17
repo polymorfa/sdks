@@ -1,5 +1,7 @@
 import type {
   Campaign,
+  CampaignFrequencyCap,
+  CampaignRecipientFailureReason,
   CampaignRecipient,
   CampaignRecipientInput,
   CampaignRecipientStatus,
@@ -194,6 +196,7 @@ export interface CreatePlatformCampaignRequest {
   readonly scheduledAt?: number;
   /** When the campaign may send; null or omitted sends at any time. */
   readonly sendWindow?: CampaignSendWindowRequest | null;
+  readonly frequencyCap?: CampaignFrequencyCap | null;
   /** At most 1,000 recipients. */
   readonly recipients?: readonly CampaignRecipientInput[];
   /** Ignored when inline recipients are supplied. */
@@ -261,6 +264,7 @@ export interface UpdatePlatformCampaignRequest {
   readonly scheduledAt?: number | null;
   /** Null removes the window. Only while the campaign is a draft or paused. */
   readonly sendWindow?: CampaignSendWindowRequest | null;
+  readonly frequencyCap?: CampaignFrequencyCap | null;
   /** Replaces the weighted alternatives; null clears them. Only an unlaunched draft. */
   readonly messageVariations?: readonly CampaignMessageVariation[] | null;
   /** Replaces the A/B variants; null with a null strategy makes a broadcast. Only an unlaunched draft. */
@@ -282,6 +286,7 @@ export interface PlatformCampaignAnalytics extends CampaignAnalytics {
 }
 
 export interface ListPlatformCampaignRecipientsParams {
+  readonly reason?: CampaignRecipientFailureReason;
   /** Owning project for this organization-client request. */
   readonly projectId: string;
   readonly status?: CampaignRecipientStatus;
@@ -1594,4 +1599,16 @@ export interface UpdateProjectHealthPolicyRequest {
   readonly slowDownMps: number | null;
   readonly emailNotification: boolean;
   readonly webhookNotification: boolean;
+}
+
+/** Team settings. Revision 0 and updatedAt null until first saved. */
+export interface CampaignFrequencyCapSettings extends CampaignFrequencyCap {
+  readonly teamId: string;
+  readonly revision: number;
+  readonly updatedAt: number | null;
+}
+
+/** Complete replacement. A stale revision returns PolymorfaConflictError (409). */
+export interface UpdateCampaignFrequencyCapInput extends CampaignFrequencyCap {
+  readonly revision: number;
 }
