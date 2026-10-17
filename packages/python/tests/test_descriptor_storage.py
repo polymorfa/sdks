@@ -208,9 +208,6 @@ async def test_descriptor_http_sse_ack_and_resume():
     ready = json.loads(await asyncio.wait_for(peer.stdout.readline(), 5))
     url = ready["baseUrl"]
 
-    class Finished(Exception):
-        pass
-
     try:
         async with httpx.AsyncClient(base_url=url) as fixture_client:
             for branch in ["inline", "media"]:
@@ -270,7 +267,7 @@ async def test_descriptor_http_sse_ack_and_resume():
                         options["decode_history_descriptor"] = decoder
 
                     def finish(*args):
-                        raise Finished()
+                        job.stop()
 
                     def client():
                         return AsyncProjectClient(
@@ -304,10 +301,13 @@ async def test_descriptor_http_sse_ack_and_resume():
                             if mode == "conflict"
                             else ServerError
                             if mode == "ack-error"
-                            else Finished
+                            else None
                         )
-                        with pytest.raises(expected_error):
+                        if expected_error is None:
                             await asyncio.wait_for(job.done, 5)
+                        else:
+                            with pytest.raises(expected_error):
+                                await asyncio.wait_for(job.done, 5)
                     state = (await fixture_client.get("/state")).json()
                     failed = mode in ("missing", "archive", "null", "error", "invalid", "malformed")
                     assert state["manual"] and state["media"] == 0
@@ -329,8 +329,7 @@ async def test_descriptor_http_sse_ack_and_resume():
                     if mode in ("full", "metadata"):
                         async with client() as api:
                             job = sync_to_storage(api.events, storage, on_applied=finish)
-                            with pytest.raises(Finished):
-                                await asyncio.wait_for(job.done, 5)
+                            await asyncio.wait_for(job.done, 5)
                         state = (await fixture_client.get("/state")).json()
                         assert state["lastEventId"] == "descriptor-cursor" and state["acks"] == 2
     finally:

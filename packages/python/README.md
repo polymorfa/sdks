@@ -712,3 +712,22 @@ nearest-even binary64 rounding. Generic row numbers and safe revisions remain
 strict. This parser compatibility does not change durable key spelling outside
 the normal producer's uint32 chunk-order domain. Local fixtures and physical
 wheel/sdist consumers do not establish registry or deployed acceptance.
+
+`StorageSync.stop()` stops admission. It lets an admitted event finish decoding
+and applying, checkpoint CAS, manual Platform ACK and the awaited `on_applied`
+callback, then closes the owned stream. Repeated `stop()`/`close()` calls share
+that completion. Cancelling a `close()` waiter does not cancel the worker.
+Errors, fence loss, checkpoint conflicts and ACK failures still reach `done`;
+an ACK failure leaves committed state and an uncertain remote outcome.
+
+Call `stop()` inside `on_applied` and await `close()` externally. Awaiting
+`close()` from that worker raises a self-join error. Explicit `done.cancel()` or
+cancelling a task that directly awaits `done` remains hard cancellation. Use
+`await asyncio.shield(sync.done)` when only the waiting task should be cancelled.
+A custom source that cannot settle its cancelled next read can keep shutdown
+pending; the SDK does not detach it or close a borrowed client or storage adapter.
+These methods run on the owning asyncio loop.
+
+Project views returned by `client.project(id)` borrow the root transport.
+Closing a view or leaving its context does not close that transport. The root,
+or an independently constructed project client, owns its transport lifetime.

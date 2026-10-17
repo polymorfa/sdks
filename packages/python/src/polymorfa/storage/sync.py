@@ -156,11 +156,12 @@ class StorageSync:
 
     def stop(self) -> None:
         self._stopped.set()
-        asyncio.get_running_loop().call_soon(self.done.cancel)
 
     async def close(self) -> None:
         self.stop()
-        await self.done
+        if asyncio.current_task() is self.done:
+            raise RuntimeError("Call stop() inside on_applied and await close() externally")
+        await asyncio.shield(self.done)
 
 
 def sync_to_storage(
@@ -189,14 +190,22 @@ def sync_to_storage(
             "Event retention has a storage gap; reconcile customer-owned history before resuming"
         )
 
+    async def read_next(current: AsyncIterator[StreamedEvent]) -> StreamedEvent:
+        return await anext(current)
+
     async def run() -> None:
         stream: AsyncIterable[StreamedEvent] | None = None
         iterator: AsyncIterator[StreamedEvent] | None = None
+        pending: asyncio.Task[StreamedEvent] | None = None
+        stop_waiter: asyncio.Task[bool] | None = None
+        primary: BaseException | None = None
         try:
             if stopped.is_set():
                 return
             saved = await storage.get_checkpoint(checkpoint_session_id, checkpoint_stream)
             expected = saved.cursor if saved is not None else None
+            if stopped.is_set():
+                return
             stream = source.stream(
                 project_id=project_id,
                 since=expected,
@@ -206,7 +215,20 @@ def sync_to_storage(
                 on_gap=gap,
             )
             iterator = aiter(stream)
-            async for item in iterator:
+            stop_waiter = asyncio.create_task(stopped.wait())
+            while not stopped.is_set():
+                # Only this owned next read races graceful admission stop.
+                pending = asyncio.create_task(read_next(iterator))
+                await asyncio.wait((pending, stop_waiter), return_when=asyncio.FIRST_COMPLETED)
+                if stopped.is_set():
+                    break
+                try:
+                    item = pending.result()
+                except StopAsyncIteration:
+                    pending = None
+                    break
+                pending = None
+                # No await separates this check from admission of the sequence.
                 if stopped.is_set():
                     break
                 if item.webhook is None and require_payload:
@@ -250,22 +272,37 @@ def sync_to_storage(
                     response = on_applied(item, result)
                     if inspect.isawaitable(response):
                         await response
-        except asyncio.CancelledError:
-            if not stopped.is_set():
-                raise
+        except BaseException as error:
+            primary = error
+            raise
         finally:
-            close = getattr(stream, "close", None)
-            if close is not None:
-                result = close()
-                if inspect.isawaitable(result):
-                    await result
-            else:
-                aclose = getattr(stream, "aclose", None)
-                if aclose is not None:
-                    await aclose()
-            if iterator is not stream:
-                aclose = getattr(iterator, "aclose", None)
-                if aclose is not None:
-                    await aclose()
+            cleanup_error: BaseException | None = None
+            # Settle every owned task before closing its iterator. Hard worker
+            # cancellation is propagated above, independently of graceful stop.
+            for task in (pending, stop_waiter):
+                if task is None:
+                    continue
+                task.cancel()
+                try:
+                    await task
+                except (asyncio.CancelledError, StopAsyncIteration):
+                    pass
+                except BaseException as error:  # noqa: BLE001 - settle resources, then rethrow the primary error.
+                    if cleanup_error is None:
+                        cleanup_error = error
+            resources = [stream] if iterator is stream else [stream, iterator]
+            for resource in resources:
+                close = getattr(resource, "close", None) or getattr(resource, "aclose", None)
+                if close is None:
+                    continue
+                try:
+                    result = close()
+                    if inspect.isawaitable(result):
+                        await result
+                except BaseException as error:  # noqa: BLE001 - settle resources, then rethrow the primary error.
+                    if cleanup_error is None:
+                        cleanup_error = error
+            if primary is None and cleanup_error is not None:
+                raise cleanup_error
 
     return StorageSync(asyncio.create_task(run()), stopped)
