@@ -454,7 +454,9 @@ export function reduceWebMessageInfo(
       const fields: Fields = { ...mapped.fields };
       put(fields, "chatId", chatId, 0);
       put(fields, "editedAt", version, version);
-      return [upsert("messages", { sessionId, messageId: target }, fields)];
+      return [
+        upsert("messages", { sessionId, messageId: target }, fields, guard),
+      ];
     }
     return [];
   }

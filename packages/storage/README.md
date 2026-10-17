@@ -127,3 +127,10 @@ records binary64 bits, including signed zero, exact ECMAScript whitespace and
 unsigned binary/octal/hexadecimal integers. Generic row numbers, revisions and
 lease/CAS checks remain strict. These fixtures and local physical-package checks
 do not establish registry publication or deployed acceptance.
+
+A history edit (`protocolMessage` type `MESSAGE_EDIT`) carries the chat
+watermark guard of its envelope `messageTimestamp`, the same guard as ordinary
+history messages. After `chat.clear` or `chat.delete`, an edit at or before the
+watermark is dropped and does not recreate the cleared message. Edits without
+an envelope timestamp keep the existing unguarded handling. The shared
+`history-edit-guard-fixtures.json` records the producer operations and stored rows.
