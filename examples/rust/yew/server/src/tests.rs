@@ -45,7 +45,7 @@ async fn real_app_login_uses_opaque_cookie_and_server_assignment_for_native_toke
     let origin = format!("http://{}", listener.local_addr().unwrap());
     let app = Arc::new(App {
         client: MessagingClient::new(
-            Credential::organization_api_key(format!("pmfa_{}", "a".repeat(72))).unwrap(),
+            Credential::organization_api_key("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA").unwrap(),
             ClientOptions {
                 base_url: api_url,
                 max_network_retries: 0,
@@ -199,7 +199,7 @@ async fn connect_and_empty_history_require_app_session_and_keep_assignment_on_se
     let origin = format!("http://{}", listener.local_addr().unwrap());
     let app = Arc::new(App {
         client: MessagingClient::new(
-            Credential::organization_api_key(format!("pmfa_{}", "a".repeat(72))).unwrap(),
+            Credential::organization_api_key("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA").unwrap(),
             ClientOptions {
                 base_url: api_url,
                 max_network_retries: 0,

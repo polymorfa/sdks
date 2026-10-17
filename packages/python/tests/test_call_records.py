@@ -201,9 +201,15 @@ async def test_public_typed_call_record_methods_full_request_response_metadata(s
         )
 
     token = (
-        Credential("project_token", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        Credential(
+            "project_token",
+            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        )
         if scope == "project_token"
-        else Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        else Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        )
     )
     cls = AsyncProjectClient if scope == "project_token" else AsyncClient
     args = (token, "project_1") if scope == "project_token" else (token,)
@@ -241,7 +247,10 @@ async def test_export_all_suppresses_csv_headers_and_keeps_ndjson(format):
         )
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         chunks = [
@@ -259,7 +268,10 @@ async def test_export_all_suppresses_csv_headers_and_keeps_ndjson(format):
 
 async def test_export_repeated_cursor_fails_before_replayed_body_yield():
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         http_transport=httpx.MockTransport(
             lambda r: httpx.Response(
                 200,
@@ -290,7 +302,10 @@ async def test_call_record_validation_and_datetime_serialization():
         return httpx.Response(200, json={"data": STATS})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         for call_id in ["", "space id", "a" * 129, "new\nline"]:
@@ -323,7 +338,10 @@ async def test_call_record_validation_and_datetime_serialization():
 
 async def test_export_unexpected_content_type_retains_request_metadata():
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         http_transport=httpx.MockTransport(
             lambda r: httpx.Response(
                 200, text="html", headers={"content-type": "text/html", "x-request-id": "req_bad"}

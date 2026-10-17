@@ -413,7 +413,10 @@ async def test_bansafe_observation_native_wire(name, method, path, body, query, 
             assert got_method == method and urlsplit(target).path == path
             assert {k: v[0] for k, v in parse_qs(urlsplit(target).query).items()} == query
             assert (json.loads(raw) if raw else None) == body
-            assert headers["authorization"] == "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            assert (
+                headers["authorization"]
+                == "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            )
             assert headers["polymorfa-version"] == "2026-09-22"
             assert headers["idempotency-key"] == "proof-key"
             encoded = json.dumps(payload).encode()
@@ -431,7 +434,10 @@ async def test_bansafe_observation_native_wire(name, method, path, body, query, 
 
     server = await asyncio.start_server(serve, "127.0.0.1", 0)
     client = AsyncClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",
         max_network_retries=0,
     )

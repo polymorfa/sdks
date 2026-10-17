@@ -146,7 +146,10 @@ async def test_typed_sip_methods(method, path, body, query, data, invoke):
         return httpx.Response(200, json={"data": data}, headers={"x-request-id": "req_sip"})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(client.sip_trunks)
@@ -166,7 +169,10 @@ async def test_project_org_key_confines_before_mutation(action):
         return httpx.Response(200, json={"data": TRUNK | {"projectId": "project_other"}})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         resource = client.project("project_1").sip_trunks
@@ -196,7 +202,10 @@ async def test_project_binding_preflight_and_project_token_write():
         return httpx.Response(200, json={"data": TRUNK})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         with pytest.raises(ConfigurationError):
@@ -207,7 +216,10 @@ async def test_project_binding_preflight_and_project_token_write():
         result = await bound.list()
         assert result.data[0]["projectId"] == "project_1"
     async with AsyncProjectClient(
-        Credential("project_token", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "project_token",
+            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         "project_1",
         http_transport=httpx.MockTransport(handler),
     ) as client:
@@ -232,7 +244,10 @@ async def test_project_org_key_checks_ownership_then_keeps_write_key():
         return httpx.Response(200, json={"data": TRUNK}, headers={"x-request-id": "req_confined"})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await client.project("project_1").sip_trunks.update(

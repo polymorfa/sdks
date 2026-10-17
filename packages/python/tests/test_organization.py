@@ -141,11 +141,17 @@ async def test_organization_metadata_methods(method, path, query, data, invoke):
     def handler(request):
         assert request.method == method and request.url.path == path
         assert dict(request.url.params) == query and not request.content
-        assert request.headers["authorization"] == "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        assert (
+            request.headers["authorization"]
+            == "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+        )
         return httpx.Response(200, json={"data": data}, headers={"x-request-id": "req_org"})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(client)

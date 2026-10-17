@@ -164,7 +164,10 @@ async def test_typed_chat_methods(method, suffix, query, body, fixture, server, 
         )
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(client.chats)

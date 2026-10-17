@@ -70,7 +70,10 @@ async def test_typed_cloud_session_observations(method, suffix, query, data, inv
         return httpx.Response(200, json=fixture, headers={"x-request-id": "req_cloud"})
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = await invoke(client.sessions)
@@ -88,7 +91,10 @@ async def test_reauthorization_never_retries_even_with_idempotency_key():
         return httpx.Response(503, json={"error": {"code": "service_unavailable"}})
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         with pytest.raises(ServerError):

@@ -24,7 +24,10 @@ from polymorfa import (
     verify_webhook_signature,
 )
 
-KEY = Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+KEY = Credential(
+    "organization_api_key",
+    "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+)
 RECEIPT = {
     "success": True,
     "data": {
@@ -363,8 +366,19 @@ async def test_project_binding_and_raw_confinement() -> None:
         result = await project.events.retrieve("event_1")
         assert result.data["id"] == "event_1"
     with pytest.raises(ConfigurationError):
-        AsyncClient(Credential("project_token", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"))
-    AsyncProjectClient(Credential("project_token", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), "project_1")
+        AsyncClient(
+            Credential(
+                "project_token",
+                "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            )
+        )
+    AsyncProjectClient(
+        Credential(
+            "project_token",
+            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
+        "project_1",
+    )
 
 
 async def test_borrowed_project_close_preserves_root_and_other_views() -> None:

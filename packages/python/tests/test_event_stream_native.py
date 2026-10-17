@@ -25,7 +25,10 @@ async def test_actual_http_stream_encoded_webhook_resume_gap_and_manual_ack():
                 if ":" in line
             }
             requests.append((lines[0], headers))
-            assert headers["authorization"] == "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            assert (
+                headers["authorization"]
+                == "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            )
             if lines[0].startswith("POST "):
                 length = int(headers.get("content-length", "0"))
                 body = json.loads(await reader.readexactly(length))
@@ -104,7 +107,11 @@ async def test_actual_http_stream_encoded_webhook_resume_gap_and_manual_ack():
     url = "http://127.0.0.1:" + str(server.sockets[0].getsockname()[1])
     try:
         async with AsyncClient(
-            Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), base_url=url
+            Credential(
+                "organization_api_key",
+                "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            ),
+            base_url=url,
         ) as client:
             stream = client.project("project_1").events.stream(
                 since="cursor_old",
@@ -167,7 +174,11 @@ async def test_native_stream_close_interrupts_headers_or_body(headers_sent):
     url = "http://127.0.0.1:" + str(server.sockets[0].getsockname()[1])
     try:
         async with AsyncClient(
-            Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), base_url=url
+            Credential(
+                "organization_api_key",
+                "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            ),
+            base_url=url,
         ) as client:
             stream = client.project("project_1").events.stream()
             iterator = stream.__aiter__()
@@ -194,7 +205,10 @@ async def test_stream_revocation_is_terminal():
         )
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         with pytest.raises(AuthorizationError) as caught:

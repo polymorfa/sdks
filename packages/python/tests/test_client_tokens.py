@@ -67,7 +67,10 @@ async def test_typed_client_token_methods(method, path, body, fixture, invoke):
         return httpx.Response(200, json=fixture, headers={"x-request-id": "req_tokens"})
 
     async with AsyncMessagingClient(
-        Credential("project_token", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+        Credential(
+            "project_token",
+            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = await invoke(client.client_tokens)
@@ -79,7 +82,10 @@ async def test_typed_client_token_methods(method, path, body, fixture, invoke):
 
 async def test_mint_target_guards_before_network():
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        Credential(
+            "organization_api_key",
+            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        )
     ) as client:
         for body in (
             {"ephemeralId": "browser_1"},

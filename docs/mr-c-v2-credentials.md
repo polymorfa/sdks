@@ -42,3 +42,9 @@ or browser execution, deployment or production acceptance.
 The API, CLI dependency publication and public documentation remain coordinated
 release gates. No Admin state/action, permissions, pricing, feature settings,
 telemetry or entitlement behavior changes in this SDK draft.
+
+The Calls setup scripts delegate server-key validation to the SDK instead of
+keeping their own v1 regular expression. Go/PHP/Rust example-host fixtures now
+send v2 values and retain exact Authorization comparisons. Local framework
+checks pass for Go (race), Laravel/Symfony HTTP and the Rust token server.
+Python Ruff formatting and mypy pass; the workspace Prettier check passes.

@@ -33,7 +33,10 @@ from polymorfa.history import (
 from polymorfa.media_encrypt import encrypt_whatsapp_media
 from polymorfa.s3 import S3MediaStore
 
-KEY = Credential("organization_api_key", "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+KEY = Credential(
+    "organization_api_key",
+    "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+)
 
 
 def compressed_history(format="zlib"):

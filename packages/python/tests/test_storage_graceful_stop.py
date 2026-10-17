@@ -427,7 +427,10 @@ async def test_native_platform_sse_storage_held_manual_ack_and_idle_headers(mode
                 if ":" in line
             }
             requests.append(lines[0])
-            assert headers["authorization"] == "Bearer pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            assert (
+                headers["authorization"]
+                == "Bearer pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            )
             assert headers["polymorfa-version"] == "2026-09-22"
             if lines[0].startswith("POST "):
                 body = json.loads(await reader.readexactly(int(headers["content-length"])))
@@ -532,7 +535,10 @@ async def test_native_platform_sse_storage_held_manual_ack_and_idle_headers(mode
     port = server.sockets[0].getsockname()[1]
     try:
         async with AsyncProjectClient(
-            Credential("project_token", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+            Credential(
+                "project_token",
+                "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            ),
             project,
             base_url=f"http://127.0.0.1:{port}",
             max_network_retries=0,

@@ -22,7 +22,7 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 			var connected atomic.Int32
 			upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.URL.Path == "/messaging/quicklinks" {
-					if r.Method != "POST" || r.Header.Get("Authorization") != "Bearer pmfa_"+strings.Repeat("a", 72) || r.Header.Get("Polymorfa-Version") != "2026-09-22" {
+					if r.Method != "POST" || r.Header.Get("Authorization") != "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" || r.Header.Get("Polymorfa-Version") != "2026-09-22" {
 						t.Error("QuickLink upstream auth/version")
 					}
 					var body map[string]any
@@ -39,7 +39,7 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 				if r.Method != "POST" || r.URL.Path != "/platform/client-tokens" {
 					t.Errorf("upstream route %s %s", r.Method, r.URL.Path)
 				}
-				if r.Header.Get("Authorization") != "Bearer pmfa_"+strings.Repeat("a", 72) || r.Header.Get("Polymorfa-Version") != "2026-09-22" {
+				if r.Header.Get("Authorization") != "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" || r.Header.Get("Polymorfa-Version") != "2026-09-22" {
 					t.Error("upstream auth/version")
 				}
 				var body map[string]any

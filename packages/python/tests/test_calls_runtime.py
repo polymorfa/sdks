@@ -10,7 +10,9 @@ from polymorfa.calls_lifecycle import LifecycleSocket
 from polymorfa.calls_runtime import CallsClient
 from polymorfa.calls_tokens import CallsError, CallsToken, CallsTokenSource
 
-SERVER = "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+SERVER = (
+    "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+)
 CLIENT = "pmfa_ct_fixture"
 
 
