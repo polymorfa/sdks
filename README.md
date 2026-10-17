@@ -1040,3 +1040,11 @@ or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
 ## License
 
 MIT
+
+
+Client tokens accept an immutable `allow` ceiling for a session or Customer.
+Every request still requires live Number rules and current ownership. Omitting
+`allow` snapshots a session's configured actions; Customer omission selects the
+original Customer action set. `chats_read`, `chats_manage`, `contact_write`, and
+`contact_delete` are reserved for enrolled regional beta access. These types do
+not establish regional availability or enable access by themselves.

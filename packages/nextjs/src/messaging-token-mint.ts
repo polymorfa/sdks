@@ -12,7 +12,11 @@ export type CustomerClientTokenAction =
   | "send_seen"
   | "read_presence"
   | "subscribe_presence"
-  | "read_contact";
+  | "read_contact"
+  | "chats_read"
+  | "chats_manage"
+  | "contact_write"
+  | "contact_delete";
 
 /**
  * What `resolve` returns: a token for one `session`, or (beta) for the
@@ -24,7 +28,13 @@ export type MessagingClientTokenMintRequest =
       readonly ephemeralId: string;
       readonly ttlSeconds?: number;
       readonly customer?: never;
-      readonly allow?: never;
+      readonly allow?: readonly (
+        | CustomerClientTokenAction
+        | "mcp"
+        | "voip_place"
+        | "voip_answer"
+        | "voip_signal"
+      )[];
     }
   | {
       /** Polymorfa Customer ID. Never pass your own external ID. */
@@ -110,11 +120,6 @@ function validateInput(input: MessagingClientTokenMintRequest): void {
   ) {
     throw new TypeError(
       "Exactly one of session or customer, and an ephemeralId, are required to mint a client token.",
-    );
-  }
-  if (input.allow !== undefined && !hasCustomer) {
-    throw new TypeError(
-      "allow is only supported for Customer-scoped client tokens.",
     );
   }
 }

@@ -89,10 +89,6 @@ describe("createMessagingClientTokenMint", () => {
       },
     ],
     ["neither session nor customer", { ephemeralId: "u" }],
-    [
-      "allow on a session token",
-      { session: "support", ephemeralId: "u", allow: ["send_message"] },
-    ],
   ])("refuses %s before minting", async (_label, input) => {
     const mint = vi.fn();
     const adapter = createMessagingClientTokenMint({
