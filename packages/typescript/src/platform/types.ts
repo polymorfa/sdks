@@ -260,6 +260,10 @@ export interface ReschedulePlatformCampaignRequest extends PlatformCampaignParam
  * not been copied into recipients. After that the API refuses the change.
  */
 export interface UpdatePlatformCampaignRequest {
+  /** Select the owning project in request params. */
+  readonly projectId?: never;
+  /** Select the campaign in the request path. */
+  readonly id?: never;
   readonly templateId?: string | null;
   readonly variableMapping?: CampaignVariableMapping | null;
   readonly trackedLinks?: readonly CampaignTrackedLink[] | null;

@@ -251,6 +251,9 @@ export function validateExistingCampaign(
   patch = false,
 ): void {
   const v = contractObject(value, "body");
+  if (platform && patch)
+    for (const field of ["projectId", "id"])
+      if (present(v, field)) invalid(field);
   if (!platform && patch && Object.keys(v).length === 0) invalid("body");
   if (present(v, "variableMapping") && !(patch && v.variableMapping === null))
     mapping(v.variableMapping);
