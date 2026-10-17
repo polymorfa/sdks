@@ -189,8 +189,8 @@ try {
                     $again->close();
                 });
                 $again->pump();
-                $state = json_decode((string)$fixtureHttp->get('/state')->getBody(),true,flags:JSON_THROW_ON_ERROR);
-                descriptorCheck($state['lastEventId'] === 'descriptor-cursor' && $state['acks'] === 2,'HTTP duplicate resume');
+                $state = json_decode((string)$fixtureHttp->get('/state')->getBody(), true, flags:JSON_THROW_ON_ERROR);
+                descriptorCheck($state['lastEventId'] === 'descriptor-cursor' && $state['acks'] === 2, 'HTTP duplicate resume');
             }$descriptorOutcomes++;
         }
     }
@@ -201,3 +201,55 @@ try {
     }proc_close($peer);
 }
 echo "PHP descriptor storage: ".$descriptorOutcomes." public outcomes including signed webhook, raw validation and actual HTTP/SSE/manual ACK.\n";
+
+// Producer schema controls exercise both the signed parser and raw stream seam.
+$schemaCases = [];
+foreach (['whatsapp_ids','original_whatsapp_ids','whatsapp_id','original_whatsapp_id'] as $key) {
+    foreach ([256,257] as $length) {
+        $value = str_repeat("\u{1F431}", $length);
+        $schemaCases[] = [$key.'-'.$length,array_replace($descriptorFixture['inline'], [$key => str_ends_with($key, '_ids') ? ['linked_devices' => $value] : $value]),$length === 256];
+    }
+}
+foreach (['0000-02-29T00:00Z' => true,'2026-10-17T00:00Z' => true,'2026-10-17T00:00:00+00:00' => false,'2025-02-29T00:00Z' => false,'2026-10-17T00:00:00.123Z' => true] as $date => $valid) {
+    $schemaCases[] = ['date-'.$date,array_replace($descriptorFixture['inline'], ['oldestMessageAt' => $date]),$valid];
+}
+foreach (['top','inline','media'] as $branch) {
+    $p = $descriptorFixture[$branch === 'media' ? 'media' : 'inline'];
+    if ($branch === 'top') {
+        $p['unprojected'] = true;
+    } else {
+        $p[$branch]['unprojected'] = true;
+    }
+    $schemaCases[] = ['unprojected-'.$branch,$p,false];
+}
+foreach ([['whatsapp_ids' => (object)[]],['original_whatsapp_ids' => (object)[]],['whatsapp_id' => ''],['original_whatsapp_id' => ''],['syncType' => ''],['fileLength' => 1.5],['progress' => null],['peerDataRequestSessionId' => null]] as $index => $patch) {
+    $schemaCases[] = ['optional-'.$index,array_replace($descriptorFixture['inline'], $patch),false];
+}
+$schemaCases[] = ['whole-floats',array_replace($descriptorFixture['inline'], ['fileLength' => 1.0,'chunkOrder' => 7.0,'progress' => 92.0]),true];
+$schemaFailures = [];
+foreach ($schemaCases as [$label,$payload,$valid]) {
+    $parserPassed = true;
+    try {
+        descriptorEvent($payload);
+    } catch (Throwable) {
+        $parserPassed = false;
+    }
+    $a = new StorageEngineMemory();
+    $s = new Engine($a);
+    $storagePassed = true;
+    try {
+        (new WebhookHandler($s, historyDescriptorMode:HistoryDescriptorMode::MetadataOnly))(descriptorEvent($payload, false));
+    } catch (Throwable) {
+        $storagePassed = false;
+    }
+    if ($parserPassed !== $valid || $storagePassed !== $valid || (!$valid && $a->rows !== [])) {
+        $schemaFailures[] = ['case' => $label,'expected' => $valid,'parser' => $parserPassed,'storage' => $storagePassed];
+    }
+}
+echo 'PHP producer schema controls: '.count($schemaCases).' outcomes, mismatches '.json_encode($schemaFailures, JSON_THROW_ON_ERROR)."\n";
+descriptorCheck($schemaFailures === [], 'descriptor schema disagrees with producer');
+$archivePayload['futureField'] = ['safe' => true];
+descriptorCheck(descriptorEvent($archivePayload)->payload === $archivePayload, 'archive extension changed');
+$unknown = ['id' => 'future-event','session' => 'descriptor-session','timestamp' => '2026-10-17T00:00:00Z','event' => 'future.event','payload' => ['delivery' => 'future','futureField' => true]];
+$raw = json_encode($unknown, JSON_THROW_ON_ERROR);
+descriptorCheck(Webhooks::constructEvent($raw, hash_hmac('sha256', $raw, 'synthetic-secret'), 'synthetic-secret')->payload === $unknown['payload'], 'unknown event changed');

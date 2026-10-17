@@ -105,8 +105,9 @@ foreach ([false,true] as $animated) {
 $ecStickerWire = $wire;
 $ecStickerSent = $sent;
 $ecStickerDescriptor = $descriptor;
+// Descriptor bodies follow the strict producer schema; envelope extensions remain raw.
 // Independent signed native shapes: archive, Cloud, descriptor media, descriptor inline.
-$common = ['delivery' => 'descriptor','whatsapp_ids' => ['linked_devices' => 'chunk-identity'],'original_whatsapp_ids' => ['linked_devices' => 'original-identity'],'syncType' => 'FUTURE_SYNC','fileLength' => 0,'chunkOrder' => 4294967296,'progress' => 0,'oldestMessageAt' => '2026-10-16T00:00:00Z','future' => ['flag' => false,'count' => 0,'unknown' => null]];
+$common = ['delivery' => 'descriptor','whatsapp_ids' => ['linked_devices' => 'chunk-identity'],'original_whatsapp_ids' => ['linked_devices' => 'original-identity'],'syncType' => 'FUTURE_SYNC','fileLength' => 0,'chunkOrder' => 4294967296,'progress' => 0,'oldestMessageAt' => '2026-10-16T00:00:00Z'];
 $media = ['type' => 'md-msg-hist','directPath' => '/history/chunk','mediaKey' => 'opaque-key','fileSha256' => 'opaque-hash','fileEncSha256' => 'opaque-encrypted-hash'];
 $inline = ['encoding' => 'zlib-base64-protobuf','data' => 'eA=='];
 foreach ([['kind' => 'history','value' => ['provider' => []]],['whatsapp_ids' => ['linked_devices' => 'archive'],'mode' => 'deliver','syncType' => 'FULL','fileLength' => 0,'messages' => [],'conversationCount' => 0,'messageCount' => 0,'pushNameCount' => 0,'statusMessageCount' => 0,'whatsapp' => ['encoding' => 'gzip-base64-protobuf','data' => 'opaque']],$common + ['media' => $media],$common + ['inline' => $inline]] as $payload) {

@@ -762,8 +762,9 @@ validators reject. Runtime guards also protect owner selection and closed inputs
 These SDK contracts do not grant hosted invitation, Console setup, feature
 evaluation/enrollment, Signal custody, browser-tunnel, billing or approval
 authority. Package installation does not establish feature or API availability.
-Generic JSON redirect policy, framework raw-body bounds, compressed-history
-validation, storage dispatch and numeric-reducer parity are separate work.
+Generic JSON redirect policy, framework raw-body bounds and numeric-reducer
+parity remain separate work. Compressed-history validation and descriptor storage
+dispatch are described below.
 
 ## Strict compressed history support
 
