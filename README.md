@@ -1041,7 +1041,6 @@ or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
 
 MIT
 
-
 Client tokens accept an immutable `allow` ceiling for a session or Customer.
 Every request still requires live Number rules and current ownership. Omitting
 `allow` snapshots a session's configured actions; Customer omission selects the
