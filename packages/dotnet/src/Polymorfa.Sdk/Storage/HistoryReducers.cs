@@ -95,7 +95,7 @@ public static partial class StorageReducers
         {
             if (protocol.Key is null || keys.MessageId(protocol.Key, jid) is not { } target) return []; var kind = EnumNumber(protocol.Type, ("REVOKE", 0), ("MESSAGE_EDIT", 14));
             if (kind == 0) { var revoked = Cleared(ContentNames); PutValue(revoked, "chatId", chat, 0); PutValue(revoked, "revokedAt", timestamp ?? 0, StorageMerge.FinalVersion); return [Upsert(StorageEntity.Messages, Key(sessionId, ("messageId", target)), revoked), Upsert(StorageEntity.Media, Key(sessionId, ("messageId", target)), Cleared(MediaSecretNames))]; }
-            if (kind == 14 && protocol.EditedMessage is not null) { var version = Millis(Number(protocol.TimestampMs)) ?? timestamp ?? 0; var mapped = MapContent(Unwrap(protocol.EditedMessage) ?? new(), version); if (mapped is null) return []; PutValue(mapped.Fields, "chatId", chat, 0); PutValue(mapped.Fields, "editedAt", version, version); return [Upsert(StorageEntity.Messages, Key(sessionId, ("messageId", target)), mapped.Fields)]; }
+            if (kind == 14 && protocol.EditedMessage is not null) { var version = Millis(Number(protocol.TimestampMs)) ?? timestamp ?? 0; var mapped = MapContent(Unwrap(protocol.EditedMessage) ?? new(), version); if (mapped is null) return []; PutValue(mapped.Fields, "chatId", chat, 0); PutValue(mapped.Fields, "editedAt", version, version); return [Upsert(StorageEntity.Messages, Key(sessionId, ("messageId", target)), mapped.Fields, guard)]; }
             return [];
         }
         if (content?.ReactionMessage is { } reaction)

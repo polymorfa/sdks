@@ -4,6 +4,7 @@ using Polymorfa.Sdk;
 using Polymorfa.Sdk.Storage;
 
 await NumericStrings.Run();
+await HistoryEditGuard.Run();
 await Checks.Run();
 internal static class Checks
 {
