@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/\u2026` \u2014 **public registry** (267 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/\u2026` \u2014 **console-only** (114 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (267 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (114 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -960,7 +960,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -1123,7 +1123,7 @@
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
         },
-        "description": "**Required scopes (all):** `sessions:manage` \u00b7 `messages:write` \u00b7 `contacts:read` \u00b7 `presence:read` \u00b7 `presence:observe` \u00b7 `mcp`",
+        "description": "**Required scopes (all):** `sessions:manage` · `messages:write` · `contacts:read` · `presence:read` · `presence:observe` · `mcp`",
         "x-audience": "public"
       }
     },
@@ -1173,7 +1173,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -1401,7 +1401,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -1564,7 +1564,7 @@
         "x-mint": {
           "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
         },
-        "description": "**Required scopes (all):** `sessions:manage` \u00b7 `messages:write` \u00b7 `contacts:read` \u00b7 `presence:read` \u00b7 `presence:observe` \u00b7 `mcp`",
+        "description": "**Required scopes (all):** `sessions:manage` · `messages:write` · `contacts:read` · `presence:read` · `presence:observe` · `mcp`",
         "x-audience": "public"
       },
       "delete": {
@@ -1612,7 +1612,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -1827,7 +1827,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -2051,7 +2051,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -2286,7 +2286,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -2497,7 +2497,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -2875,7 +2875,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -3149,7 +3149,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -3455,7 +3455,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -3690,7 +3690,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -3905,7 +3905,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -4116,7 +4116,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -4393,7 +4393,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -4616,7 +4616,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -4892,7 +4892,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -5138,7 +5138,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -5405,7 +5405,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -5616,7 +5616,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -5895,7 +5895,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -6127,7 +6127,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -6372,7 +6372,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -6618,7 +6618,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -6862,7 +6862,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -7073,7 +7073,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -7382,7 +7382,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -7724,7 +7724,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -8001,7 +8001,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -8224,7 +8224,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -8468,7 +8468,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -8714,7 +8714,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -8993,7 +8993,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -9204,7 +9204,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -9545,7 +9545,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -9758,7 +9758,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -9972,7 +9972,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -10216,7 +10216,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -10436,7 +10436,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -10882,7 +10882,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -11095,7 +11095,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -11308,7 +11308,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -11481,7 +11481,7 @@
         "tags": [
           "Sessions"
         ],
-        "summary": "Initiate M\u2194P toggle: fetch the destination Curve25519 pubkey",
+        "summary": "Initiate M↔P toggle: fetch the destination Curve25519 pubkey",
         "security": [
           {
             "ApiKeyAuth": []
@@ -11521,7 +11521,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -11743,7 +11743,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -11965,7 +11965,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -12138,7 +12138,7 @@
         "tags": [
           "Sessions"
         ],
-        "summary": "Acknowledge receipt of an M\u2192P export; API flips bartenderMode after hash verify",
+        "summary": "Acknowledge receipt of an M→P export; API flips bartenderMode after hash verify",
         "security": [
           {
             "ApiKeyAuth": []
@@ -12166,7 +12166,7 @@
         },
         "responses": {
           "200": {
-            "description": "Ack accepted; bartenderMode flipped from magic \u2192 passthrough",
+            "description": "Ack accepted; bartenderMode flipped from magic → passthrough",
             "content": {
               "application/json": {
                 "schema": {
@@ -12187,7 +12187,7 @@
             }
           },
           "400": {
-            "description": "Bad request \u2014 request body or params failed validation",
+            "description": "Bad request — request body or params failed validation",
             "content": {
               "application/json": {
                 "schema": {
@@ -38320,11 +38320,11 @@
           "keys"
         ],
         "summary": "Mint for console api key",
-        "description": "**EXCLUDED from the public API** (`console`). Credential red line: a pmfa_ key must never mint a pmfa_ key. Human session only \u2014 keeps revocation meaningful.",
+        "description": "**EXCLUDED from the public API** (`console`). Credential red line: a pmfa_ key must never mint a pmfa_ key. Human session only — keeps revocation meaningful.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Credential red line: a pmfa_ key must never mint a pmfa_ key. Human session only \u2014 keeps revocation meaningful.",
+        "x-exclusion-reason": "Credential red line: a pmfa_ key must never mint a pmfa_ key. Human session only — keeps revocation meaningful.",
         "security": [
           {
             "ConsoleSession": []
@@ -53758,7 +53758,7 @@
             "type": "string",
             "maxLength": 80,
             "nullable": true,
-            "description": "Page title shown above the pairing flow. Defaults to \u201cConnect WhatsApp\u201d."
+            "description": "Page title shown above the pairing flow. Defaults to “Connect WhatsApp”."
           },
           "description": {
             "type": "string",
@@ -67523,7 +67523,7 @@
             "enum": [
               "passthrough_plus"
             ],
-            "description": "When set, atomically flips sessions.config.bartenderMode \u2192 passthrough_plus after the keys persist. Eliminates the window where mode is set but no keys are staged."
+            "description": "When set, atomically flips sessions.config.bartenderMode → passthrough_plus after the keys persist. Eliminates the window where mode is set but no keys are staged."
           }
         },
         "required": [

@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "ba693410c483b444cf28b673bf6da90bb643cc319b38a611ab0e15988dd015e5"
+      "sha256": "dc3c6ddde8280f9d508d725af6c9413aeb089445cdd6677f9774ec994ca6e926"
     }
   },
   "supplements": [

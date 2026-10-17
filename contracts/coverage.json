@@ -3341,7 +3341,7 @@
       },
       "sourceContractSha256": "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b",
       "sourceCommit": "e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb",
-      "sdkContractSha256": "ba693410c483b444cf28b673bf6da90bb643cc319b38a611ab0e15988dd015e5"
+      "sdkContractSha256": "dc3c6ddde8280f9d508d725af6c9413aeb089445cdd6677f9774ec994ca6e926"
     },
     {
       "family": "platform",
@@ -3354,7 +3354,7 @@
       },
       "fingerprint": "e999dce00d84dd7b4d40958ea76527c37c27fc867fa7ccf5f9f4e713c1f12555",
       "sourceContractSha256": "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b",
-      "sdkContractSha256": "ba693410c483b444cf28b673bf6da90bb643cc319b38a611ab0e15988dd015e5",
+      "sdkContractSha256": "dc3c6ddde8280f9d508d725af6c9413aeb089445cdd6677f9774ec994ca6e926",
       "sourceCommit": "e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb"
     },
     {
@@ -4256,7 +4256,7 @@
       },
       "sourceContractSha256": "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b",
       "sourceCommit": "e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb",
-      "sdkContractSha256": "ba693410c483b444cf28b673bf6da90bb643cc319b38a611ab0e15988dd015e5"
+      "sdkContractSha256": "dc3c6ddde8280f9d508d725af6c9413aeb089445cdd6677f9774ec994ca6e926"
     },
     {
       "family": "platform",
@@ -4269,7 +4269,7 @@
       },
       "fingerprint": "240ac51bf9ba12d47624b0cd8ba96b018d1b2e0e7e7e4e8e4d8c3152025c4fab",
       "sourceContractSha256": "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b",
-      "sdkContractSha256": "ba693410c483b444cf28b673bf6da90bb643cc319b38a611ab0e15988dd015e5",
+      "sdkContractSha256": "dc3c6ddde8280f9d508d725af6c9413aeb089445cdd6677f9774ec994ca6e926",
       "sourceCommit": "e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb"
     },
     {

@@ -229,7 +229,7 @@ describe("reconciled coverage evidence", () => {
       },
     ]);
     expect(source.contracts.platform.sha256).toBe(
-      "ba693410c483b444cf28b673bf6da90bb643cc319b38a611ab0e15988dd015e5",
+      "dc3c6ddde8280f9d508d725af6c9413aeb089445cdd6677f9774ec994ca6e926",
     );
     for (const id of [
       "getWhatsAppAnalytics",
