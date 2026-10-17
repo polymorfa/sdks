@@ -209,6 +209,7 @@ foreach ([
     'media_upload_transport.php',
     'media_send.php',
     'history_local.php',
+    'strict_history.php',
     'storage_d1.php',
     'signal_sidecar.php',
 ] as $mediaSuite) {

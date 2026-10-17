@@ -764,3 +764,26 @@ evaluation/enrollment, Signal custody, browser-tunnel, billing or approval
 authority. Package installation does not establish feature or API availability.
 Generic JSON redirect policy, framework raw-body bounds, compressed-history
 validation, storage dispatch and numeric-reducer parity are separate work.
+
+## Strict compressed history support
+
+History decoding accepts one complete gzip, zlib or raw DEFLATE stream. It
+requires stream end and exact consumed input before protobuf parsing, rejecting
+tails, concatenated streams, truncation, dictionaries, reserved gzip flags and
+corrupt checksums. Required protobuf fields remain enforced, so complete empty
+output is a protobuf refusal. Compressed and inflated limits remain unchanged.
+
+The tested PHP 8.2.34 and 8.4.26 native zlib runtimes accept the retained complete
+1 MiB filename plus 1 MiB comment header. The SDK adds no separate name/comment
+cap. This is a tested boundary, not unlimited-header or all-platform support.
+Independent public controls also cover stored, fixed, dynamic and multiple blocks,
+valid final-byte padding, exact byte caps and quota with a later corrupt trailer.
+
+Cancellation is cooperative between inflate steps and through the existing HTTP
+callbacks. It does not interrupt a synchronous native call. A stalled synthetic
+cURL download can report cancellation only when the transport returns; the local
+control reached the existing 30-second HTTP timeout. No real-time cancellation
+guarantee follows. Authentication still precedes compressed/protobuf parsing.
+Signed archive storage controls use an application projection of common fields;
+they do not establish descriptor dispatch or generic full-schema storage. Local
+archive tests do not establish registry publication or live availability.
