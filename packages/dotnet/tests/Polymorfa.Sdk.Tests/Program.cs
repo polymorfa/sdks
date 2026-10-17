@@ -6,6 +6,11 @@ using Polymorfa.Sdk;
 if (args.Contains("--consumer-media-only")) { await ConsumerRepairTests.MediaAsync(); return; }
 if (args.Contains("--consumer-calls-only")) { await ConsumerRepairTests.CallsAsync(); return; }
 if (args.Contains("--consumer-cursor-only")) { await ConsumerRepairTests.CursorAsync(); return; }
+if (args.Contains("--consumer-usage-only")) { await ConsumerRepairTests.UsageAsync(); return; }
+if (args.Contains("--consumer-signal-session-only")) { await ConsumerRepairTests.SignalSessionAsync(); return; }
+if (args.Contains("--consumer-signal-truncation-only")) { await ConsumerRepairTests.SignalTruncationAsync(); return; }
+if (args.Contains("--consumer-signal-ack-only")) { await ConsumerRepairTests.SignalAckAsync(); return; }
+if (args.Contains("--consumer-signal-deadline-only")) { await ConsumerRepairTests.SignalDeadlineAsync(); return; }
 
 if (args.Contains("--descriptor-storage-only")) { await DescriptorStorageTests.RunAsync(); return; }
 

@@ -107,13 +107,13 @@ public sealed class SignalClient : IDisposable
         baseUrl = uri.AbsoluteUri.TrimEnd('/'); secret = options.ApplicationSecret; timeout = options.Timeout;
     }
     public void Dispose() => http.Dispose();
-    private async Task<HttpResponseMessage> OpenAsync(HttpMethod method, string path, object? body, string accept, CancellationToken cancellation)
+    private async Task<HttpResponseMessage> OpenAsync(HttpMethod method, string path, object? body, string accept, CancellationToken cancellation, CancellationToken operationDeadline = default)
     {
         using var request = new HttpRequestMessage(method, baseUrl + path);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", secret);
         request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(accept));
         if (body is not null) request.Content = new StringContent(JsonSerializer.Serialize(body, Json), Encoding.UTF8, "application/json");
-        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellation); deadline.CancelAfter(timeout);
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellation, operationDeadline); deadline.CancelAfter(timeout);
         HttpResponseMessage response;
         try { response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token).ConfigureAwait(false); }
         catch (OperationCanceledException) { if (cancellation.IsCancellationRequested) throw new PolymorfaCancelledException(); throw new PolymorfaTimeoutException("Signal request timed out."); }
@@ -128,9 +128,9 @@ public sealed class SignalClient : IDisposable
     }
     private async Task<T> JsonAsync<T>(HttpMethod method, string path, object? body, CancellationToken cancellation)
     {
-        using var response = await OpenAsync(method, path, body, "application/json", cancellation).ConfigureAwait(false);
-        if (response.Content.Headers.ContentType?.MediaType != "application/json" || response.Content.Headers.ContentLength > BodyLimit) throw InvalidResponse();
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellation); deadline.CancelAfter(timeout);
+        using var response = await OpenAsync(method, path, body, "application/json", cancellation, deadline.Token).ConfigureAwait(false);
+        if (response.Content.Headers.ContentType?.MediaType != "application/json" || response.Content.Headers.ContentLength > BodyLimit) throw InvalidResponse();
         try
         {
             await using var source = await response.Content.ReadAsStreamAsync(deadline.Token).ConfigureAwait(false);
@@ -153,6 +153,7 @@ public sealed class SignalClient : IDisposable
     {
         if (string.IsNullOrEmpty(id)) throw new PolymorfaValidationException("Event ID is required.", "invalid_signal_request");
         using var response = await OpenAsync(HttpMethod.Post, $"/v1/events/{Uri.EscapeDataString(id)}/ack", null, "application/json", cancellation).ConfigureAwait(false);
+        if (response.StatusCode != System.Net.HttpStatusCode.NoContent) throw new PolymorfaServerException("Signal service returned an invalid ACK status.", "invalid_response", new((int)response.StatusCode, null, null, 1, new Dictionary<string, string>(), null, null, null));
     }
     /// <summary>One native SSE connection. No cursor replay or automatic acknowledgment.</summary>
     public async IAsyncEnumerable<SignalEvent> EventsAsync(string? session = null, [EnumeratorCancellation] CancellationToken cancellation = default)
@@ -170,7 +171,8 @@ public sealed class SignalClient : IDisposable
             try { line = await lines.ReadAsync(deadline.Token).ConfigureAwait(false); }
             catch (OperationCanceledException) { if (cancellation.IsCancellationRequested) yield break; throw new PolymorfaTimeoutException("Signal event stream timed out."); }
             catch (IOException) { throw new PolymorfaConnectionException("Signal event stream interrupted."); }
-            if (line is null) yield break;
+            if (lines.IncompleteLine) throw InvalidResponse();
+            if (line is null) { if (data.Length != 0 || eventId is not null || kind is not null) throw InvalidResponse(); yield break; }
             if (line.Length != 0)
             {
                 var colon = line.IndexOf(':'); var field = colon < 0 ? line : line[..colon]; var value = colon < 0 ? "" : line[(colon + 1)..]; if (value.StartsWith(' ')) value = value[1..];
@@ -182,7 +184,7 @@ public sealed class SignalClient : IDisposable
                 SignalEvent item;
                 try { item = JsonSerializer.Deserialize<SignalEvent>(data.ToString(), Json) ?? throw InvalidResponse(); }
                 catch (JsonException) { throw InvalidResponse(); }
-                if (string.IsNullOrEmpty(item.Id) || item.Id != eventId || item.Type != kind) throw InvalidResponse();
+                if (string.IsNullOrEmpty(item.Id) || item.Id != eventId || item.Type != kind || session is not null && item.SessionId != session) throw InvalidResponse();
                 yield return item;
             }
             data.Clear(); eventId = null; kind = null;

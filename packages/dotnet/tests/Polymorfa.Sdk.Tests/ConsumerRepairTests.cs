@@ -12,7 +12,68 @@ internal static class ConsumerRepairTests
 {
     private const string Key = "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     private static void Check(bool value, string message) { if (!value) throw new Exception(message); }
-    public static async Task RunAsync() { await MediaAsync(); await CallsAsync(); await CursorAsync(); }
+    public static async Task RunAsync() { await MediaAsync(); await CallsAsync(); await CursorAsync(); await UsageAsync(); await SignalSessionAsync(); await SignalTruncationAsync(); await SignalAckAsync(); await SignalDeadlineAsync(); }
+    public static async Task UsageAsync()
+    {
+        foreach (var repeated in new[] { false, true })
+        {
+            await using var peer = new Peer((_, stream, _) => Reply(stream, 200, JsonSerializer.Serialize(new { data = new { records = Array.Empty<int>(), nextCursor = repeated ? "seed /+" : null } })));
+            using var client = new OrganizationClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = peer.Url, MaxNetworkRetries = 0 });
+            try { await foreach (var _ in client.Usage.IterateRecordsAsync(new(Cursor: "seed /+"))) { } Check(!repeated, "Usage repeated initial cursor accepted"); }
+            catch (PolymorfaServerException error) { Check(repeated && error.Code == "invalid_response" && error.RequestId == "repair", "Usage cursor error changed"); }
+            Check(peer.Requests.Count == 1 && peer.Requests.Single().Target == "/platform/usage/records?cursor=seed%20%2F%2B", "Usage initial cursor discarded/repeated");
+        }
+        Console.WriteLine("PASS public usage: initial cursor retained and seeded duplicate guard");
+    }
+    private const string SignalSecret = "application-fixture-secret";
+    private static string SignalFrame(string session) => "id: e\nevent: message\ndata: " + JsonSerializer.Serialize(new { id = "e", type = "message", session_id = session, chat = "c", sender = "p", message_id = "m", timestamp = 1, is_from_me = false, redelivered = false, identity_changed = false, message_proto = "", text = "private" }) + "\n\n";
+    private static void SignalHeaders(Request request)
+    {
+        Check(request.Headers["authorization"] == "Bearer " + SignalSecret && !request.Headers.ContainsKey("cookie") && !request.Headers.ContainsKey("origin") && !request.Headers.ContainsKey("polymorfa-version"), "Signal authority changed");
+    }
+    private static Task SignalReply(NetworkStream stream, string body) => stream.WriteAsync(Encoding.UTF8.GetBytes($"HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nContent-Length: {Encoding.UTF8.GetByteCount(body)}\r\nConnection: close\r\n\r\n{body}")).AsTask();
+    public static async Task SignalSessionAsync()
+    {
+        await using (var peer = new Peer((request, stream, _) => { SignalHeaders(request); Check(request.Target == "/v1/events?session_id=assigned%20%2F%2B", "Signal filter query lost"); return SignalReply(stream, SignalFrame("other")); }))
+        {
+            using var client = new SignalClient(new(peer.Url, SignalSecret));
+            try { await foreach (var _ in client.EventsAsync("assigned /+")) { throw new Exception("Cross-session Signal event escaped"); } throw new Exception("Missing Signal mismatch error"); } catch (PolymorfaServerException error) { Check(error.Code == "invalid_response", "Signal mismatch error changed"); }
+        }
+        foreach (var filter in new string?[] { null, "s" })
+        {
+            await using var peer = new Peer((request, stream, _) => { SignalHeaders(request); return SignalReply(stream, ": keepalive\r\n\r\n" + SignalFrame("s")); });
+            using var client = new SignalClient(new(peer.Url, SignalSecret)); var events = new List<SignalEvent>(); await foreach (var item in client.EventsAsync(filter)) events.Add(item); Check(events.Count == 1 && events[0].SessionId == "s", "Valid Signal filter/EOF changed");
+        }
+        Console.WriteLine("PASS public Signal: session filtering and unfiltered/clean EOF controls");
+    }
+    public static async Task SignalTruncationAsync()
+    {
+        foreach (var body in new[] { "id: e", "id: e\nevent: message\n", SignalFrame("s").TrimEnd('\n'), SignalFrame("s") + "id: next\ndata: partial" })
+        {
+            await using var peer = new Peer((request, stream, _) => { SignalHeaders(request); return SignalReply(stream, body); });
+            using var client = new SignalClient(new(peer.Url, SignalSecret)); var count = 0;
+            try { await foreach (var _ in client.EventsAsync("s")) count++; throw new Exception("Truncated Signal frame ended normally"); } catch (PolymorfaServerException error) { Check(error.Code == "invalid_response" && count == (body.StartsWith(SignalFrame("s"), StringComparison.Ordinal) ? 1 : 0), "Signal partial frame outcome changed"); }
+        }
+        Console.WriteLine("PASS public Signal: truncated lines/frames and partial tail after valid event are errors");
+    }
+    public static async Task SignalAckAsync()
+    {
+        foreach (var status in new[] { 200, 201, 202, 205, 206, 299, 204 })
+        {
+            await using var peer = new Peer((request, stream, _) => { SignalHeaders(request); Check(request.Target == "/v1/events/e%20%2F%2B/ack", "Signal ACK id escaping lost"); return Reply(stream, status, status == 204 ? "" : "private"); });
+            using var client = new SignalClient(new(peer.Url, SignalSecret));
+            try { await client.AcknowledgeAsync("e /+"); Check(status == 204, "Signal non-204 ACK accepted"); } catch (PolymorfaServerException error) { Check(status != 204 && error.Status == status && error.Code == "invalid_response" && !error.ToString().Contains("private"), "Signal ACK error lost status/safety"); }
+            Check(peer.Requests.Count == 1, "Signal ACK replayed");
+        }
+        Console.WriteLine("PASS public Signal: exact 204 ACK, actual status, safe errors and no replay");
+    }
+    public static async Task SignalDeadlineAsync()
+    {
+        await using var peer = new Peer(async (request, stream, stop) => { SignalHeaders(request); await Task.Delay(160, stop); var body = "{\"node_id\":\"n\",\"sessions\":[]}"; await stream.WriteAsync(Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {body.Length}\r\nConnection: close\r\n\r\n"), stop); await Task.Delay(240, stop); await stream.WriteAsync(Encoding.UTF8.GetBytes(body), stop); });
+        using var client = new SignalClient(new(peer.Url, SignalSecret) { Timeout = TimeSpan.FromMilliseconds(300) });
+        try { await client.SessionsAsync(); throw new Exception("Signal header time reset body deadline"); } catch (PolymorfaTimeoutException) { }
+        Console.WriteLine("PASS public Signal: finite JSON shares header/body deadline");
+    }
     public static async Task MediaAsync()
     {
         foreach (var redirect in new[] { false, true })

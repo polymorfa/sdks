@@ -133,6 +133,7 @@ internal sealed class StreamReconnect(bool resetBackoff) : PolymorfaException("E
 }
 internal sealed class BoundedSseLines(StreamReader reader)
 {
+    internal bool IncompleteLine { get; private set; }
     private readonly char[] buffer = new char[4096];
     private int position;
     private int length;
@@ -145,7 +146,7 @@ internal sealed class BoundedSseLines(StreamReader reader)
             if (position == length)
             {
                 length = await reader.ReadAsync(buffer.AsMemory(), cancellation).ConfigureAwait(false); position = 0;
-                if (length == 0) { if (line.Length == 0) return null; var tail = line.ToString(); line.Clear(); return tail; }
+                if (length == 0) { if (line.Length == 0) return null; IncompleteLine = true; var tail = line.ToString(); line.Clear(); return tail; }
             }
             var character = buffer[position++];
             if (skipLineFeed) { skipLineFeed = false; if (character == '\n') continue; }

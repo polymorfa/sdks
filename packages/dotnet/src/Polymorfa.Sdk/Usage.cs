@@ -33,7 +33,8 @@ public sealed class Usage : Resource
         parameters ??= new(); options ??= new();
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, options.CancellationToken);
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        string? cursor = null;
+        var cursor = parameters.Cursor;
+        if (cursor is not null) seen.Add(cursor);
         do
         {
             var page = await ListRecordsAsync(parameters with { Cursor = cursor }, options with { CancellationToken = linked.Token }).ConfigureAwait(false);

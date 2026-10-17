@@ -15,7 +15,8 @@ internal static class SignalTests
         ResourceTests.Equal((await client.SessionsAsync()).Sessions[0].LeaseGeneration, 2UL); await served;
         served = fixture.ServeAsync("POST", "/v1/sessions/s%2F1/messages", """{"to":"111@s.whatsapp.net","text":"private"}""", """{"message_id":"m","server_timestamp":100,"resent":false}""");
         ResourceTests.Equal((await client.SendAsync("s/1", SignalSendRequest.TextMessage("111@s.whatsapp.net", "private"))).MessageId, "m"); await served;
-        served = fixture.ServeAsync("GET", "/v1/events?session_id=s%20one", null, $": keepalive\r\n\r\nid: event-fixture\r\nevent: message\r\ndata: {Event}\r\n\r\n", responseHeaders: new Dictionary<string, string> { ["content-type"] = "text/event-stream" });
+        var streamedEvent = Event.Replace("\"session_id\":\"s\"", "\"session_id\":\"s one\"", StringComparison.Ordinal);
+        served = fixture.ServeAsync("GET", "/v1/events?session_id=s%20one", null, $": keepalive\r\n\r\nid: event-fixture\r\nevent: message\r\ndata: {streamedEvent}\r\n\r\n", responseHeaders: new Dictionary<string, string> { ["content-type"] = "text/event-stream" });
         await using var events = client.EventsAsync("s one").GetAsyncEnumerator();
         ResourceTests.True(await events.MoveNextAsync()); ResourceTests.Equal(events.Current.Text, "private text ✓"); ResourceTests.True(events.Current.Additional!["future"].GetProperty("retained").GetBoolean()); await served;
         await Task.Delay(25); ResourceTests.True(!fixture.Pending);
