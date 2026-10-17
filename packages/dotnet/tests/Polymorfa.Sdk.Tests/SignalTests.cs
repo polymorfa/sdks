@@ -7,8 +7,32 @@ internal static class SignalTests
 {
     private const string Secret = "application-fixture-secret";
     private const string Event = """{"id":"event-fixture","type":"message","session_id":"s","chat":"111@s.whatsapp.net","sender":"111:1@s.whatsapp.net","message_id":"m","timestamp":100,"is_from_me":false,"redelivered":false,"identity_changed":false,"message_proto":"","text":"private text ✓","future":{"retained":true}}""";
+    private static string Sign(byte[] key, long timestamp, byte[] body) => "v1=" + Convert.ToHexString(HMACSHA256.HashData(key, Encoding.ASCII.GetBytes(timestamp + ".").Concat(body).ToArray())).ToLowerInvariant();
+    private static string Code(Action action) { try { action(); } catch (PolymorfaException error) { return (error is PolymorfaConfigurationException ? "configuration:" : "") + error.Code; } throw new Exception("Signal webhook accepted"); }
+    internal static void WebhookKeys()
+    {
+        var body = Encoding.UTF8.GetBytes(Event);
+        // Correctly signed with the weak or reserved key itself: still rejected before authentication.
+        var rejected = new List<byte[]> { Array.Empty<byte>(), new[] { (byte)'k' }, Enumerable.Repeat((byte)'k', 15).ToArray(), Enumerable.Repeat((byte)0xff, 15).ToArray() };
+        foreach (var prefix in new[] { "pmfa_", "pmfa_pt_", "pmfa_ct_", "pmfa_ls_", "pmfa_wst_", "pmfa_sd_" }) rejected.Add(Encoding.ASCII.GetBytes(prefix + "synthetic-fixture-key-0000"));
+        foreach (var key in rejected) ResourceTests.Equal(Code(() => SignalClient.VerifyWebhook(key, 100, body, Sign(key, 100, body), 100, TimeSpan.FromSeconds(5))), "configuration:invalid_configuration");
+        // Exact 16 bytes, longer ASCII and arbitrary non-ASCII byte keys remain valid.
+        foreach (var key in new[] { Enumerable.Repeat((byte)'k', 16).ToArray(), Encoding.ASCII.GetBytes(Secret), Enumerable.Repeat((byte)0xff, 32).ToArray(), Encoding.ASCII.GetBytes("PMFA_uppercase-is-not-reserved"), Encoding.ASCII.GetBytes("xpmfa_not-a-prefix-fixture") })
+        {
+            ResourceTests.Equal(SignalClient.VerifyWebhook(key, 100, body, Sign(key, 100, body), 104, TimeSpan.FromSeconds(5)).Id, "event-fixture");
+            ResourceTests.Equal(Code(() => SignalClient.VerifyWebhook(key, 100, body, Sign(Encoding.ASCII.GetBytes("another-fixture-secret"), 100, body), 100, TimeSpan.FromSeconds(5))), "invalid_signature");
+            ResourceTests.Equal(Code(() => SignalClient.VerifyWebhook(key, 100, body, Sign(key, 100, body), 106, TimeSpan.FromSeconds(5))), "invalid_signature");
+        }
+        var valid = Enumerable.Repeat((byte)'k', 16).ToArray();
+        var invalid = Encoding.UTF8.GetBytes("{not json");
+        ResourceTests.Equal(Code(() => SignalClient.VerifyWebhook(valid, 100, invalid, Sign(valid, 100, invalid), 100, TimeSpan.FromSeconds(5))), "invalid_response");
+        var large = Enumerable.Repeat((byte)' ', 4 * 1024 * 1024 + 1).ToArray();
+        ResourceTests.Equal(Code(() => SignalClient.VerifyWebhook(valid, 100, large, Sign(valid, 100, large), 100, TimeSpan.FromSeconds(5))), "invalid_response");
+        Console.WriteLine("PASS Signal webhook key boundary: weak and reserved keys rejected before authentication");
+    }
     internal static async Task RunAsync()
     {
+        WebhookKeys();
         using var fixture = new WireFixture { Authorization = "Bearer " + Secret, AbsentHeaders = ["origin", "cookie"], FragmentBytes = 7 };
         using var client = new SignalClient(new(fixture.Url, Secret));
         var served = fixture.ServeAsync("GET", "/v1/sessions", null, """{"node_id":"node","sessions":[{"id":"s","lease_generation":2,"claimed":true,"has_device_keys":true,"state":"connected","pn":null,"lid":null}]}""");

@@ -236,7 +236,9 @@ It rejects browser execution, sends no Origin header, refuses redirects, and
 never holds Signal master/session keys. Native SSE has no resume cursor or
 automatic acknowledgement. Commit application data before `AcknowledgeAsync`;
 delivery can repeat. `VerifyWebhook` authenticates the exact timestamp and raw
-body before parsing. Use a timestamp window and durable event-ID deduplication
+body before parsing. Its key must be an independent secret of at least 16 bytes;
+keys beginning with `pmfa_` throw `PolymorfaConfigurationException` before any
+verification. Use a timestamp window and durable event-ID deduplication
 before returning 2xx. `SignalHistoryDescriptor.ChunkInput` converts local history
 notifications into verified download inputs.
 

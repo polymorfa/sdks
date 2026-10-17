@@ -192,6 +192,7 @@ public sealed class SignalClient : IDisposable
     }
     public static SignalEvent VerifyWebhook(ReadOnlySpan<byte> secret, long timestamp, ReadOnlySpan<byte> body, string signature, long now, TimeSpan? tolerance = null)
     {
+        if (secret.Length < 16 || secret.StartsWith("pmfa_"u8)) throw new PolymorfaConfigurationException("Invalid Signal webhook secret.");
         var window = tolerance ?? TimeSpan.FromMinutes(5);
         var age = Math.Abs((decimal)timestamp - now);
         if (window < TimeSpan.Zero || age > (decimal)window.TotalSeconds || !signature.StartsWith("v1=", StringComparison.Ordinal)) throw BadSignature();
