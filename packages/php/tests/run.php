@@ -226,6 +226,7 @@ require_once __DIR__.'/storage_engine.php';
 // Release optional native client/fixture graphs after each complete suite. The
 // shared portable fixtures remain explicit globals for their proof functions.
 foreach ([
+    'descriptor_storage.php',
     'storage_engine_sync.php',
     'storage_engine_http.php',
     'storage_engine_d1.php',

@@ -117,7 +117,7 @@ try {
 $adapter = new StorageEngineMemory();
 $engine = new Engine($adapter);
 $called = 0;
-$historyEvent = new WebhookEvent('history-event', 's', '2026-10-01T12:00:00Z', 'history.sync', ['delivery' => 'descriptor','syncType' => 'FULL','chunkOrder' => 0], [], true);
+$historyEvent = new WebhookEvent('history-event', 's', '2026-10-01T12:00:00Z', 'history.sync', ['syncType' => 'FULL','chunkOrder' => 0], [], true);
 $handler = new WebhookHandler($engine, static function (WebhookEvent $event) use (&$called, $fixture): array {
     $called++;
     return $fixture['history'];

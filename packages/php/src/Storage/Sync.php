@@ -15,11 +15,12 @@ final class Sync
     /**
      * @param (\Closure(WebhookEvent):(array<string,mixed>|HistorySyncData|null))|null $decodeHistory
      *
+     * @param (\Closure(array<string,mixed>,WebhookEvent):(array<string,mixed>|HistorySyncData))|null $decodeHistoryDescriptor
      * @param ?\Closure(array{webhook:?WebhookEvent,cursor:string,streamId:string,sequence:int},ApplyResult):void $onApplied */
-    public function __construct(private readonly SyncSource $source, private readonly Engine $storage, private readonly string $checkpointSessionId = '*', private readonly string $checkpointStream = 'events', private readonly bool $requirePayload = true, ?\Closure $decodeHistory = null, private readonly ?\Closure $onApplied = null, ?CancellationToken $cancellation = null)
+    public function __construct(private readonly SyncSource $source, private readonly Engine $storage, private readonly string $checkpointSessionId = '*', private readonly string $checkpointStream = 'events', private readonly bool $requirePayload = true, ?\Closure $decodeHistory = null, private readonly ?\Closure $onApplied = null, ?CancellationToken $cancellation = null, ?\Closure $decodeHistoryDescriptor = null, HistoryDescriptorMode $historyDescriptorMode = HistoryDescriptorMode::Decode)
     {
         $this->cancellation = $cancellation === null ? new CancellationToken() : CancellationToken::linked($cancellation);
-        $this->handler = new WebhookHandler($storage, $decodeHistory);
+        $this->handler = new WebhookHandler($storage, $decodeHistory, $decodeHistoryDescriptor, $historyDescriptorMode);
     }
     public function isClosed(): bool
     {

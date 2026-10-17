@@ -787,3 +787,38 @@ guarantee follows. Authentication still precedes compressed/protobuf parsing.
 Signed archive storage controls use an application projection of common fields;
 they do not establish descriptor dispatch or generic full-schema storage. Local
 archive tests do not establish registry publication or live availability.
+
+### Descriptor history storage
+
+`WebhookHandler` and `Sync` keep `decodeHistory` archive-only, with its original
+event argument and nullable progress-only result. Use the separate named
+`decodeHistoryDescriptor` callback for validated projected media/inline payloads:
+
+```php
+$handler = new WebhookHandler(
+    $storage,
+    decodeHistoryDescriptor: static function (array $descriptor, WebhookEvent $event): array|HistorySyncData {
+        return downloadDecodeAndProjectAuthorizedHistory($descriptor, $event);
+    },
+);
+```
+
+The application defines this function and owns authorized download, key custody,
+full-schema decoding and projection. `HistorySyncCodec` verifies bytes and accepts
+a caller's complete-schema codec. Storage never downloads media itself. The new
+callback must return a non-null array projection or fully decoded `HistorySyncData`.
+A legitimate empty array is allowed. Missing, null, failed or invalid descriptor
+decoding fails before progress, event marker, checkpoint or ACK. Callback error
+details are omitted because they can contain descriptor secrets.
+
+The default is `historyDescriptorMode: HistoryDescriptorMode::Decode`. Explicit
+`HistoryDescriptorMode::MetadataOnly` validates and consumes progress and the event
+marker, skipping all decoders even when configured. Sync then saves the cursor and
+ACKs. Ordinary replay cannot import this event later, because it is deduplicated.
+There is no automatic backfill or marker deletion. Valid duplicate descriptors
+skip decoders before checking availability. Descriptor notification IDs never map
+individual messages; existing native `wa:` fallback identities retain their
+joining limits. Content/marker commit precedes checkpoint CAS and manual ACK.
+Remote ACK failure leaves completed storage intact. Archive and Cloud behavior
+remain unchanged. This change establishes local package behavior, not registry
+or deployed availability.
