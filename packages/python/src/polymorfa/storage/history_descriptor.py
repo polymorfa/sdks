@@ -21,7 +21,7 @@ def _text(value: object, minimum: int = 1, maximum: int | None = None) -> bool:
     return (
         isinstance(value, str)
         and len(value) >= minimum
-        and (maximum is None or len(value) <= maximum)
+        and (maximum is None or len(value.encode("utf-16-le", "surrogatepass")) // 2 <= maximum)
     )
 
 
@@ -74,6 +74,25 @@ def _datetime(value: object) -> bool:
 def validate_descriptor(value: object) -> DirectHistorySyncPayload:
     valid = isinstance(value, Mapping)
     p: Mapping[str, object] = cast(Mapping[str, object], value) if valid else {}
+    valid = valid and all(
+        k
+        in (
+            "delivery",
+            "whatsapp_ids",
+            "whatsapp_id",
+            "original_whatsapp_ids",
+            "original_whatsapp_id",
+            "syncType",
+            "fileLength",
+            "chunkOrder",
+            "progress",
+            "oldestMessageAt",
+            "peerDataRequestSessionId",
+            "media",
+            "inline",
+        )
+        for k in p
+    )
     valid = valid and p.get("delivery") == "descriptor" and _ids(p.get("whatsapp_ids"))
     valid = valid and _text(p.get("syncType")) and _integer(p.get("fileLength"))
     for key in ("whatsapp_id", "original_whatsapp_id"):
@@ -91,6 +110,10 @@ def validate_descriptor(value: object) -> DirectHistorySyncPayload:
         media = p["media"]
         valid = valid and isinstance(media, Mapping)
         if isinstance(media, Mapping):
+            valid = valid and all(
+                k in ("type", "directPath", "mediaKey", "fileSha256", "fileEncSha256", "encHandle")
+                for k in media
+            )
             valid = (
                 valid
                 and media.get("type") == "md-msg-hist"
@@ -104,6 +127,7 @@ def validate_descriptor(value: object) -> DirectHistorySyncPayload:
         inline = p.get("inline")
         valid = valid and isinstance(inline, Mapping)
         if isinstance(inline, Mapping):
+            valid = valid and all(k in ("encoding", "data") for k in inline)
             valid = (
                 valid
                 and inline.get("encoding") == "zlib-base64-protobuf"

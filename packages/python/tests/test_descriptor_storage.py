@@ -40,7 +40,7 @@ import asyncio
 import copy
 import hashlib
 import hmac
-from dataclasses import asdict
+from dataclasses import asdict, replace
 
 import httpx
 
@@ -173,6 +173,7 @@ async def test_descriptor_archive_and_cloud_controls():
     del p["delivery"]
     del p["inline"]
     p["messages"] = []
+    p["futureField"] = "preserved archive extension"
     for mode in ["missing", "null", "full", "error", "cloud"]:
         storage = Storage(memory_adapter())
         calls = []
@@ -335,3 +336,68 @@ async def test_descriptor_http_sse_ack_and_resume():
     finally:
         peer.terminate()
         await asyncio.wait_for(peer.communicate(), 5)
+
+
+@pytest.mark.parametrize(
+    "field", ["whatsapp_ids", "original_whatsapp_ids", "whatsapp_id", "original_whatsapp_id"]
+)
+@pytest.mark.parametrize("units", [512, 514])
+async def test_descriptor_producer_utf16_id_boundary(field, units):
+    payload = copy.deepcopy(FIXTURE["inline"])
+    value = "😀" * (units // 2)
+    payload[field] = {"linked_devices": value} if field.endswith("_ids") else value
+    adapter = memory_adapter()
+    storage = Storage(adapter)
+    if units == 512:
+        await apply_event(storage, signed(payload), history_descriptor_mode="metadata-only")
+        assert await storage.has_event("descriptor-session", "descriptor-event")
+    else:
+        with pytest.raises(ValueError, match="descriptor"):
+            await apply_event(storage, signed(payload), history_descriptor_mode="metadata-only")
+        assert all([not await adapter.rows(entity) for entity in ENTITY_NAMES])
+
+
+@pytest.mark.parametrize(
+    ("value", "valid"),
+    [
+        ("0000-02-29T00:00Z", True),
+        ("2026-10-17T00:00Z", True),
+        ("2026-10-17T00:00:00+00:00", False),
+        ("2025-02-29T00:00Z", False),
+        ("2026-10-17T00:00:00.123Z", True),
+    ],
+)
+async def test_descriptor_producer_datetime(value, valid):
+    storage = Storage(memory_adapter())
+    e = signed({**FIXTURE["inline"], "oldestMessageAt": value})
+    if valid:
+        await apply_event(storage, e, history_descriptor_mode="metadata-only")
+        assert await storage.has_event(e.session, e.id)
+    else:
+        with pytest.raises(ValueError, match="descriptor"):
+            await apply_event(storage, e, history_descriptor_mode="metadata-only")
+        assert not await storage.has_event(e.session, e.id)
+
+
+@pytest.mark.parametrize("branch", ["top", "inline", "media"])
+async def test_descriptor_rejects_unprojected_fields(branch):
+    payload = copy.deepcopy(FIXTURE["media" if branch == "media" else "inline"])
+    (payload if branch == "top" else payload[branch])["unprojected"] = "synthetic-private-field"
+    adapter = memory_adapter()
+    with pytest.raises(ValueError, match="descriptor"):
+        await apply_event(
+            Storage(adapter), signed(payload), history_descriptor_mode="metadata-only"
+        )
+    assert all([not await adapter.rows(entity) for entity in ENTITY_NAMES])
+
+
+async def test_unrelated_unknown_event_fields_remain_forward_compatible():
+    e = signed({"delivery": "future", "unprojected": "synthetic"})
+    e = replace(
+        e, event="future.experimental", known=False, raw={**e.raw, "event": "future.experimental"}
+    )
+    adapter = memory_adapter()
+    storage = Storage(adapter)
+    await apply_event(storage, e)
+    assert await storage.has_event(e.session, e.id)
+    assert not await adapter.rows("history_progress")
