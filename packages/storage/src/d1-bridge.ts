@@ -28,7 +28,10 @@ export interface D1StorageBridgeOptions {
   /** Fixed by the customer's Worker configuration, never selected by requests. */
   readonly authority: string;
   readonly tablePrefix: string;
-  /** Separate customer-owned application secret, not a Polymorfa credential. */
+  /**
+   * Separate customer-owned application secret, not a Polymorfa credential:
+   * 32-256 visible ASCII characters. The reserved `pmfa_` prefix is rejected.
+   */
   readonly secret: string;
   /** Permit idempotent schema creation through /setup. Default false. */
   readonly allowSetup?: boolean;
@@ -233,7 +236,8 @@ export function createD1StorageBridge(options: D1StorageBridgeOptions): {
   if (
     !/^[A-Za-z][A-Za-z0-9_.:-]{0,127}$/.test(authority) ||
     !/^[A-Za-z_][A-Za-z0-9_]{0,63}$/.test(tablePrefix) ||
-    !/^[!-~]{32,256}$/.test(secret)
+    !/^[!-~]{32,256}$/.test(secret) ||
+    secret.startsWith("pmfa_")
   )
     throw new TypeError(
       "A fixed storage authority, SQL prefix and independent application secret are required.",

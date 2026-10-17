@@ -163,6 +163,83 @@ describe("D1 bridge authority and wire failures", () => {
     expect(await response.text()).toBe(fixture.response.rawBody);
     expect(response.headers.get(H.signature)).toBe(fixture.response.signature);
   });
+  it("rejects reserved Polymorfa credential prefixes as application secrets before any database use", async () => {
+    const database = await mf.getD1Database("DB");
+    let calls = 0;
+    const counted = new Proxy(database, {
+      get(target, property, receiver) {
+        const value = Reflect.get(target, property, receiver) as unknown;
+        if (typeof value !== "function") return value;
+        return (...args: unknown[]) => {
+          calls += 1;
+          return (value as (...a: unknown[]) => unknown).apply(target, args);
+        };
+      },
+    });
+    const filler = "synthetic-fixture-value-0123456789";
+    const rejected = [
+      ...[
+        "pmfa_",
+        "pmfa_pt_",
+        "pmfa_ct_",
+        "pmfa_ls_",
+        "pmfa_at_",
+        "pmfa_wst_",
+        "pmfa_sd_",
+      ].map((p) => p + filler),
+      "pmfa_" + "x".repeat(251),
+      "x".repeat(31),
+      "x".repeat(257),
+    ];
+    for (const candidate of rejected)
+      expect(() =>
+        createD1StorageBridge({
+          database: counted,
+          authority,
+          tablePrefix: prefix,
+          secret: candidate,
+          allowSetup: true,
+        }),
+      ).toThrow(TypeError);
+    expect(calls).toBe(0);
+    for (const candidate of [
+      "x".repeat(32),
+      "x".repeat(256),
+      "PMFA_uppercase-is-not-reserved-0123456789",
+      "xpmfa_not-a-prefix-fixture-0123456789",
+    ]) {
+      const bridge = createD1StorageBridge({
+        database: counted,
+        authority,
+        tablePrefix: prefix,
+        secret: candidate,
+      });
+      const nonce = randomBytes(32).toString("base64url");
+      const response = await bridge.fetch(
+        new Request("https://storage.customer.example/handshake", {
+          headers: {
+            Authorization: `Bearer ${candidate}`,
+            [H.nonce]: nonce,
+            [H.authority]: authority,
+            [H.prefix]: prefix,
+            [H.signature]:
+              "v1=" +
+              createHmac("sha256", candidate)
+                .update(`${nonce}.GET./handshake.`)
+                .digest("hex"),
+          },
+        }),
+      );
+      const raw = await response.text();
+      expect(response.status).toBe(200);
+      expect(response.headers.get(H.signature)).toBe(
+        "v1=" +
+          createHmac("sha256", candidate)
+            .update(`${nonce}.200.${raw}`)
+            .digest("hex"),
+      );
+    }
+  });
   it("keeps schema setup disabled unless the customer operator enables it", async () => {
     const locked = createD1StorageBridge({
       database: await mf.getD1Database("DB"),
