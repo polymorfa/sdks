@@ -212,7 +212,11 @@ it.each([
     body: JSON.stringify({ error: { code: "state_conflict", message } }),
   }));
   servers.push(server);
-  const result = platform(server.url).campaigns.launch("c", { projectId: "p" });
+  const result = platform(server.url).campaigns.launch(
+    "c",
+    { projectId: "p" },
+    { maxNetworkRetries: 0 },
+  );
   await expect(result).rejects.toMatchObject({
     status: 409,
     code: "state_conflict",
