@@ -123,9 +123,12 @@ it.each([
       baseUrl: server.url,
       maxNetworkRetries: 2,
     });
-    await expect(
-      client.campaigns.updateFrequencyCap({ ...limits, revision: 0 }),
-    ).rejects.toBeInstanceOf(ErrorClass);
+    const result = client.campaigns.updateFrequencyCap({
+      ...limits,
+      revision: 0,
+    });
+    await expect(result).rejects.toBeInstanceOf(ErrorClass);
+    await expect(result).rejects.toMatchObject({ status, code });
     expect(server.requests).toHaveLength(1);
   },
 );
@@ -179,4 +182,55 @@ it("passes cap fields and recipient reason filters through both audiences", asyn
       .slice(4)
       .every((r) => r.path.includes("reason=frequency_cap")),
   ).toBe(true);
+});
+
+it("preserves cap reads, skip analytics and recipient reasons on both surfaces", async () => {
+  const server = await startTestServer((request) => ({
+    body: JSON.stringify({
+      success: true,
+      data: request.path.includes("/analytics")
+        ? { frequencyCap: { skippedRecipientCount: 3 } }
+        : request.path.includes("/recipients")
+          ? [
+              {
+                failureReason: "frequency_cap",
+                lastError: "frequency_cap_exceeded",
+              },
+            ]
+          : { frequencyCap: limits },
+      page: { hasMore: false, nextCursor: null },
+    }),
+  }));
+  servers.push(server);
+  const client = new Client({
+    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    baseUrl: server.url,
+  });
+  const messaging = new MessagingClient({
+    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    baseUrl: server.url,
+  });
+  expect(
+    (await client.campaigns.retrieve("c", { projectId: "p" })).data.data
+      ?.frequencyCap,
+  ).toEqual(limits);
+  expect(
+    (await messaging.campaigns.retrieve("p", "c")).data.data.frequencyCap,
+  ).toEqual(limits);
+  expect(
+    (await client.campaigns.analytics("c", { projectId: "p" })).data.data
+      .frequencyCap?.skippedRecipientCount,
+  ).toBe(3);
+  expect(
+    (await messaging.campaigns.analytics("p", "c")).data.data.frequencyCap
+      ?.skippedRecipientCount,
+  ).toBe(3);
+  expect(
+    (await client.campaigns.recipients("c", { projectId: "p" })).data.data[0]
+      ?.failureReason,
+  ).toBe("frequency_cap");
+  expect(
+    (await messaging.campaigns.listRecipients("p", "c")).data.data[0]
+      ?.failureReason,
+  ).toBe("frequency_cap");
 });
