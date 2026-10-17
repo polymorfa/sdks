@@ -27,15 +27,17 @@ to this SDK in src/config/credentials.ts. Its release must pin an accepted,
 published v2-capable SDK version after publication; a local workspace build is
 not registry availability. No speculative unpublished dependency is introduced.
 
-Validation: 1,534 tests passed on Node 24.15.0, including the clean package
-consumer and opaque credential fixtures. Typecheck passed. Lint has zero errors
-and two existing unused-disable warnings in packages/store. No live API call,
-registry installation of this change, deployment or production acceptance ran.
-Native validation: Go `go test -p 2 ./...` passed; Python 1,643 passed and
-30 optional integration tests skipped; Rust default-feature tests and doctests
-passed; C# signed-v2 golden/rejection checks and the core native transport
-suites passed. The full C# harness stopped at its prebuilt Blazor/ASP.NET example
-prerequisite; no native desktop/browser host acceptance is claimed. PHP 8.2 native transport, crypto/history and portable storage tests passed; optional external provider integrations were skipped.
+Validation on the native-source stack: 2,022 TypeScript/workspace tests pass
+(113 optional cases skipped); typecheck passes; lint has zero errors and two
+existing unused-disable warnings in `packages/typescript/src/errors.ts`. The
+clean-package test is included. Go full tests pass; Python has 1,643 passes and
+30 optional integration skips; Rust default-feature tests and doctests pass;
+PHP 8.2 full native transport/crypto/history/portable-storage tests and PHPStan
+pass (optional external providers skipped). C# full core/native HTTP harness
+passes after building its ASP.NET/Blazor assets, including v2 golden/refusal
+checks and the local authenticated example. Workspace builds pass. This is
+local source/fixture proof, not registry installation, live API, native desktop
+or browser execution, deployment or production acceptance.
 
 The API, CLI dependency publication and public documentation remain coordinated
 release gates. No Admin state/action, permissions, pricing, feature settings,
