@@ -24,7 +24,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 async fn webhook(State(secret): State<Arc<String>>, headers: HeaderMap, body: Bytes) -> StatusCode {
     let Some(signature) = headers
-        .get("x-polymorfa-signature")
+        .get("x-webhook-signature")
         .and_then(|value| value.to_str().ok())
     else {
         return StatusCode::UNAUTHORIZED;
@@ -55,7 +55,7 @@ mod tests {
             StatusCode::UNAUTHORIZED
         );
         headers.insert(
-            "x-polymorfa-signature",
+            "x-webhook-signature",
             "8b9682c1aee07cf45ce4b83983c2c224000ae4f8289c1ff38169bec4a52c6edd"
                 .parse()
                 .unwrap(),

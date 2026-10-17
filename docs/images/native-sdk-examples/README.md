@@ -4,14 +4,14 @@ Tested SDK source: `a01ff3e2ec39cc243a3c81f507b839494ccf484c`.
 The screenshots render the actual example hosts and bundled Web Components in
 the T3 collaborative browser. These are local fixtures, not published packages.
 
-| Example | Desktop viewport | Narrow viewport | Result |
-| --- | --- | --- | --- |
-| Python FastAPI and Django | 1440 x 1000 | 390 x 844 | Browser grant and empty inbox render; logout removes components and token access returns 401. |
-| Go net/http and Gin | 1440 x 1000 | 390 x 844 | Same browser grant, empty inbox and logout results. |
-| PHP Laravel and Symfony | 1440 x 1000 | 390 x 844 | Same results after the HTMX response settles. |
-| Rust Yew with Axum | 1440 x 1000 | 390 x 844 | Real WASM form sign-in, grant, empty inbox and logout succeed. |
-| ASP.NET Core | 1440 x 640 | 390 x 844 | Grant and empty inbox render; screenshots scroll past the authentication form. |
-| Blazor WebAssembly | 1440 x 1000 | 390 x 844 | Same authenticated ASP.NET server, grant and empty inbox. Separate 1440 x 640 screenshot shows Reconnecting and Retry when the synthetic token service refuses minting. |
+| Example                   | Desktop viewport | Narrow viewport | Result                                                                                                                                                                  |
+| ------------------------- | ---------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Python FastAPI and Django | 1440 x 1000      | 390 x 844       | Browser grant and empty inbox render; logout removes components and token access returns 401.                                                                           |
+| Go net/http and Gin       | 1440 x 1000      | 390 x 844       | Same browser grant, empty inbox and logout results.                                                                                                                     |
+| PHP Laravel and Symfony   | 1440 x 1000      | 390 x 844       | Same results after the HTMX response settles.                                                                                                                           |
+| Rust Yew with Axum        | 1440 x 1000      | 390 x 844       | Real WASM form sign-in, grant, empty inbox and logout succeed.                                                                                                          |
+| ASP.NET Core              | 1440 x 640       | 390 x 844       | Grant and empty inbox render; screenshots scroll past the authentication form.                                                                                          |
+| Blazor WebAssembly        | 1440 x 1000      | 390 x 844       | Same authenticated ASP.NET server, grant and empty inbox. Separate 1440 x 640 screenshot shows Reconnecting and Retry when the synthetic token service refuses minting. |
 
 All measured document widths fit their viewports. Screenshots can have a
 different pixel size because the browser scales its capture; `manifest.json`
