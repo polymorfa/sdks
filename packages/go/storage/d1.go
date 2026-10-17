@@ -28,6 +28,9 @@ type Adapter interface {
 	Commit(context.Context, []Write) (CommitResult, error)
 	Query(context.Context, string, Query) ([]Row, error)
 }
+
+// D1Options.Secret is an independent 32-256 visible ASCII application secret,
+// never a Polymorfa credential; the reserved pmfa_ prefix is rejected.
 type D1Options struct {
 	URL         string
 	Authority   string
@@ -54,7 +57,7 @@ func (v *D1Adapter) GoString() string           { return v.String() }
 func (*D1Adapter) MarshalJSON() ([]byte, error) { return []byte(`{"redacted":true}`), nil }
 func NewD1Adapter(ctx context.Context, options D1Options) (*D1Adapter, error) {
 	target, err := url.Parse(options.URL)
-	if err != nil || target.Host == "" || target.User != nil || target.RawQuery != "" || target.Fragment != "" || (target.Path != "" && target.Path != "/") || !authorityPattern.MatchString(options.Authority) || !prefixPattern.MatchString(options.TablePrefix) || len(options.Secret) < 32 || len(options.Secret) > 256 {
+	if err != nil || target.Host == "" || target.User != nil || target.RawQuery != "" || target.Fragment != "" || (target.Path != "" && target.Path != "/") || !authorityPattern.MatchString(options.Authority) || !prefixPattern.MatchString(options.TablePrefix) || len(options.Secret) < 32 || len(options.Secret) > 256 || strings.HasPrefix(options.Secret, "pmfa_") {
 		return nil, invalid()
 	}
 	if target.Scheme != "https" {
