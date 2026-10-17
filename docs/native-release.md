@@ -2,8 +2,8 @@
 
 `.github/workflows/native-release.yml` prepares and publishes the native SDKs
 from `main` only, by manual dispatch. Nothing in this repository has been
-published by it yet, and no registry account, environment or trust policy
-described here exists until an operator creates it.
+published by it yet. GitHub release environments and immutable Go tag protection
+are configured. Registry trust policies and account access remain prerequisites.
 
 ## What the workflow does
 
@@ -34,7 +34,7 @@ described here exists until an operator creates it.
 | Go        | `github.com/polymorfa/sdks/packages/go` tag `packages/go/v<version>`                                                                            | `GITHUB_TOKEN` with `contents: write` in that job only                    |
 | Packagist | `polymorfa/sdk` from a dedicated mirror repository                                                                                              | GitHub App token for the mirror repository only                           |
 
-Internal dependencies use the exact accepted version: Rust requirements are
+Internal packages build with one accepted version. Rust requirements are
 `=<version>` with no path; NuGet sibling dependencies are emitted as
 `<version>`, NuGet's inclusive minimum, which the resolver satisfies with that
 exact version when it exists. Third-party pins keep their committed ranges.
@@ -65,16 +65,18 @@ Stable releases also push the tag `v<version>`; nightlies are `dev-main`. It
 never forces a branch or moves a tag, and it requires Packagist metadata to
 reference the pushed commit.
 
-## Operator prerequisites
+## Publication prerequisites
 
-Agents cannot perform these steps. Each needs the named owner.
+Complete repository configuration through authorized GitHub access. Registry
+account actions require access to the owning account; a repository permission
+does not grant registry ownership.
 
-1. **GitHub environments** in `polymorfa/sdks`: create `native-sdk-nightly`
-   and `native-sdk-stable`, restricted to the `main` branch, with required
-   reviewers from the SDK release owners and admin bypass disabled. Only
-   `npm-dev` exists today, without protection rules.
-2. **Tag protection**: add a ruleset for `refs/tags/packages/go/v*` that blocks
-   updates and deletion, so a published Go tag cannot move.
+1. **GitHub environments** in `polymorfa/sdks`: `native-sdk-nightly`
+   and `native-sdk-stable` exist with only `main` allowed. No required reviewer
+   was added. Manual dispatch and the exact acceptance gate control entry;
+   registry trust must name the matching environment.
+2. **Tag protection**: the active Go ruleset for `refs/tags/packages/go/v*`
+   blocks updates and deletion without bypass actors.
 3. **crates.io** (crate owner): crates.io trusted publishing cannot create a
    crate. Publish the first version of each of the three crates manually, in
    dependency order, using the accepted artifacts from a reviewed workflow run,
@@ -92,10 +94,10 @@ Agents cannot perform these steps. Each needs the named owner.
    `native-release.yml`, environment `native-sdk-nightly` (and a second for
    `native-sdk-stable`). A pending publisher creates the project on first
    upload; it does not reserve the name.
-6. **PHP mirror** (organization owner and Packagist maintainer): create an
-   empty repository for the Composer root, set repository variable
-   `PHP_MIRROR_REPOSITORY` to its name, and protect its `main` branch against
-   force pushes and its `v*` tags against updates. Install a GitHub App with
+6. **PHP mirror** (organization owner and Packagist maintainer): the empty
+   `polymorfa/sdk-php` repository exists, and `PHP_MIRROR_REPOSITORY` is
+   `sdk-php`. Its `main` history and `v*` tags are protected against rewriting
+   and deletion. Install a GitHub App with
    contents write on that repository only; store its client ID in variable
    `PHP_MIRROR_APP_CLIENT_ID` and private key in environment secret
    `PHP_MIRROR_APP_PRIVATE_KEY`. Submit the mirror to Packagist as
