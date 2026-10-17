@@ -823,3 +823,11 @@ joining limits. Content/marker commit precedes checkpoint CAS and manual ACK.
 Remote ACK failure leaves completed storage intact. Archive and Cloud behavior
 remain unchanged. This change establishes local package behavior, not registry
 or deployed availability.
+
+Decoded-history numeric strings follow the producer's finite `Number(string)`
+contract, including exact ECMAScript whitespace and unsigned radix values beyond
+uint64. Radix conversion keeps a bounded 53-bit prefix, guard and sticky bits,
+then rounds once to nearest even; GMP and BCMath are not required. Generic row
+numbers, safe revisions and fenced CAS remain strict. Shared vectors, native
+SQLite and local archive consumers establish local compatibility only. Registry
+publication and matching environment acceptance remain separate gates.

@@ -28,8 +28,78 @@ final class Reduction
     }
     public static function number(mixed $v): int|float|null
     {
-        return (is_int($v) || is_float($v) || (is_string($v) && is_numeric($v))) && is_finite((float)$v) ? (is_int($v) ? $v : (float)$v) : null;
+        if (is_string($v)) {
+            // ECMAScript WhiteSpace + LineTerminator, excluding NEL and NUL.
+            $space = '\x{0009}-\x{000d}\x{0020}\x{00a0}\x{1680}\x{2000}-\x{200a}\x{2028}\x{2029}\x{202f}\x{205f}\x{3000}\x{feff}';
+            $source = preg_replace('/\A['.$space.']+|['.$space.']+\z/u', '', $v);
+            if ($source === null) {
+                return null;
+            }
+            if ($source === '') {
+                return 0.0;
+            }
+            if (strlen($source) >= 2 && $source[0] === '0') {
+                $width = match ($source[1]) {
+                    'x', 'X' => 4, 'o', 'O' => 3, 'b', 'B' => 1, default => 0
+                };
+                if ($width !== 0) {
+                    return self::radixNumber(substr($source, 2), $width);
+                }
+            }
+            if (preg_match('/\A[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?\z/', $source) !== 1) {
+                return null;
+            }
+            $number = (float)$source;
+            return is_finite($number) ? $number : null;
+        }
+        return (is_int($v) || is_float($v)) && is_finite((float)$v) ? $v : null;
     }
+    /** Power-of-two radix conversion with one nearest-even rounding. */
+    private static function radixNumber(string $digits, int $width): ?float
+    {
+        if ($digits === '') {
+            return null;
+        }
+        $length = 0;
+        $head = '';
+        $guard = false;
+        $sticky = false;
+        for ($i = 0, $count = strlen($digits); $i < $count; $i++) {
+            $digit = strpos('0123456789abcdef', strtolower($digits[$i]));
+            if ($digit === false || $digit >= (1 << $width)) {
+                return null;
+            }
+            for ($shift = $width - 1; $shift >= 0; $shift--) {
+                $bit = ($digit >> $shift) & 1;
+                if ($length === 0 && $bit === 0) {
+                    continue;
+                }
+                // Saturation bounds arithmetic; later digits are still validated.
+                $length = min(1025, $length + 1);
+                if ($length <= 53) {
+                    $head .= (string)$bit;
+                } elseif ($length === 54) {
+                    $guard = $bit === 1;
+                } else {
+                    $sticky = $sticky || $bit === 1;
+                }
+            }
+        }
+        if ($length > 1024) {
+            return null;
+        }
+        // The bounded 53-bit prefix is exact, also when PHP integers are 32-bit.
+        $significand = (float)bindec($head);
+        if ($length <= 53) {
+            return $significand;
+        }
+        if ($guard && ($sticky || fmod($significand, 2.0) === 1.0)) {
+            $significand += 1.0;
+        }
+        $number = $significand * (2.0 ** ($length - 53));
+        return is_finite($number) ? $number : null;
+    }
+
     public static function millis(mixed $v): ?float
     {
         $n = self::number($v);
