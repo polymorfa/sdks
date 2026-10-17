@@ -8,8 +8,7 @@ import {
 } from "../src/credentials.js";
 import { PolymorfaConfigurationError } from "../src/errors.js";
 
-const ORGANIZATION_API_KEY = `pmfa_${"A".repeat(72)}`;
-const PROJECT_TOKEN = `pmfa_pt_${"A".repeat(94)}`;
+import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 
 describe("credential validation", () => {
   it("accepts an explicit Messaging server API key", () => {
@@ -83,8 +82,11 @@ describe("credential validation", () => {
       }),
     ).toEqual({ type: "projectToken", value: PROJECT_TOKEN });
 
-    for (const finalSymbol of ["A", "Q", "g", "w"]) {
-      const value = `pmfa_pt_${"A".repeat(93)}${finalSymbol}`;
+    // Length varies with framing; canonical version 2 is the local shape gate.
+    for (const length of [66, 67, 68, 200]) {
+      const raw = Buffer.alloc(length);
+      raw[0] = 2;
+      const value = "pmfa_pt_" + raw.toString("base64url");
       expect(validateClientCredential({ type: "projectToken", value })).toEqual(
         { type: "projectToken", value },
       );
@@ -104,6 +106,21 @@ describe("credential validation", () => {
         PolymorfaConfigurationError,
       );
     }
+  });
+
+  it("rejects v1 and padded v2 credentials before transport", () => {
+    expect(() =>
+      validateOrganizationApiKey(`pmfa_${"A".repeat(72)}`),
+    ).toThrow();
+    expect(() =>
+      validateClientCredential({
+        type: "projectToken",
+        value: `pmfa_pt_${"A".repeat(94)}`,
+      }),
+    ).toThrow();
+    expect(() =>
+      validateOrganizationApiKey(ORGANIZATION_API_KEY + "="),
+    ).toThrow();
   });
 
   it("rejects malformed and non-canonical organization keys", () => {

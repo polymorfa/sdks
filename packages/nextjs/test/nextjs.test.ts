@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY } from "../../typescript/test/support/credentials.js";
 import { describe, expect, it, vi } from "vitest";
 import { MessagingClient } from "../../typescript/src/index.js";
 import {
@@ -183,7 +184,7 @@ describe("createMessagingClientTokenMint", () => {
       }),
     );
     const messaging = new MessagingClient({
-      credential: { type: "apiKey", value: `pmfa_${"A".repeat(72)}` },
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
       baseUrl: "https://api.example.com",
       fetch,
     });
@@ -226,7 +227,7 @@ describe("createTemplateBuilderRoute", () => {
     const messaging = new MessagingClient({
       credential: {
         type: "apiKey",
-        value: `pmfa_${"A".repeat(72)}`,
+        value: ORGANIZATION_API_KEY,
       },
     });
     expect(() =>

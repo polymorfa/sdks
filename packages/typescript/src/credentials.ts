@@ -1,7 +1,6 @@
 import { PolymorfaConfigurationError } from "./errors.js";
 
-const ORGANIZATION_API_KEY_V1 = /^pmfa_[A-Za-z0-9_-]{72}$/;
-const PROJECT_TOKEN_V1 = /^pmfa_pt_[A-Za-z0-9_-]{93}[AQgw]$/;
+import { isSignedCredentialV2 } from "./credential-shape.js";
 
 export type MessagingCredential =
   | { readonly type: "apiKey"; readonly value: string }
@@ -47,7 +46,7 @@ export function validateMessagingCredential(
   if (credential.type === "projectToken") {
     if (!isProjectToken(credential.value)) {
       throw new PolymorfaConfigurationError(
-        "Messaging project tokens must use the canonical pmfa_pt_ v1 format.",
+        "Messaging project tokens must use the canonical pmfa_pt_ v2 format.",
         "credential",
       );
     }
@@ -77,7 +76,7 @@ export function validateClientCredential(
   if (credential.type === "projectToken") {
     if (!isProjectToken(credential.value)) {
       throw new PolymorfaConfigurationError(
-        "Project tokens must use the canonical pmfa_pt_ v1 format.",
+        "Project tokens must use the canonical pmfa_pt_ v2 format.",
         "credential",
       );
     }
@@ -92,7 +91,7 @@ export function validateOrganizationApiKey(value: string): string {
   rejectNonOrganizationCredential(value);
   if (!isServerApiKey(value)) {
     throw new PolymorfaConfigurationError(
-      "Organization server API keys must use the canonical pmfa_ v1 format.",
+      "Organization server API keys must use the canonical pmfa_ v2 format.",
       "credential",
     );
   }
@@ -166,9 +165,9 @@ export function assertServerRuntime(
 }
 
 function isServerApiKey(value: string): boolean {
-  return ORGANIZATION_API_KEY_V1.test(value);
+  return isSignedCredentialV2(value, "pmfa_");
 }
 
 function isProjectToken(value: string): boolean {
-  return PROJECT_TOKEN_V1.test(value);
+  return isSignedCredentialV2(value, "pmfa_pt_");
 }
