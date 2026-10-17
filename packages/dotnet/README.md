@@ -838,9 +838,8 @@ Verified `history.sync` parsing exposes `DirectHistorySyncMediaPayload` and
 events use projected WhatsApp identities and ISO time, and require exactly one
 media or inline branch. Their diagnostics redact descriptor material. Typed
 parsing does not download, decode or persist history. `StorageHistoryDecoder`
-currently accepts archive payloads only; descriptor storage dispatch remains a
-separate repair. Do not pass descriptor notifications to that archive callback
-or interpret progress/checkpoint updates as stored history.
+remains archive-only. Use the separate `StorageHistoryDescriptorDecoder` and
+descriptor handling modes described below for descriptor storage.
 
 Sticker sends require a WebP descriptor and reject caption and unsupported
 media fields before HTTP. A standard descriptor send includes its key in the
