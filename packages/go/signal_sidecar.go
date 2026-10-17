@@ -37,8 +37,12 @@ type SignalSidecarClient struct {
 func (*SignalSidecarClient) String() string               { return "SignalSidecarClient[redacted]" }
 func (v *SignalSidecarClient) GoString() string           { return v.String() }
 func (*SignalSidecarClient) MarshalJSON() ([]byte, error) { return []byte(`{"redacted":true}`), nil }
+
+// signalSecret accepts an independent application secret of at least 16
+// visible ASCII characters. The reserved pmfa_ prefix belongs to Polymorfa
+// credentials and is rejected before any request or HMAC check.
 func signalSecret(value string) bool {
-	if len(value) < 16 {
+	if len(value) < 16 || strings.HasPrefix(value, "pmfa_") {
 		return false
 	}
 	for _, b := range []byte(value) {
