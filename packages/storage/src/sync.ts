@@ -22,6 +22,14 @@ function asStorage(target: Storage | StorageAdapter): Storage {
   return "apply" in target ? target : createStorage(target);
 }
 
+function validateDescriptorMode(options: ApplyEventOptions): void {
+  if (
+    options.historyDescriptorMode !== undefined &&
+    !["decode", "metadata-only"].includes(options.historyDescriptorMode)
+  )
+    throw new Error("Invalid history descriptor mode.");
+}
+
 /**
  * Downloads and decodes the history chunk a `history.sync` event refers to.
  * Return `null` to record only the chunk's progress.
@@ -55,11 +63,7 @@ export async function applyEvent(
   options: ApplyEventOptions = {},
 ): Promise<ApplyResult> {
   const storage = asStorage(target);
-  if (
-    options.historyDescriptorMode !== undefined &&
-    !["decode", "metadata-only"].includes(options.historyDescriptorMode)
-  )
-    throw new Error("Invalid history descriptor mode.");
+  validateDescriptorMode(options);
   if (event.event === "history.sync" && descriptorIntent(event.payload)) {
     const payload = historyDescriptor(event.payload);
     if (await storage.hasEvent(event.session, event.id))
@@ -163,6 +167,7 @@ export function syncToStorage(
   target: Storage | StorageAdapter,
   options: SyncToStorageOptions = {},
 ): StorageSync {
+  validateDescriptorMode(options);
   const storage = asStorage(target);
   const controller = new AbortController();
   const signal = options.signal

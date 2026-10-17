@@ -83,3 +83,21 @@ const badMode: storageLib.ApplyEventOptions = {
   historyDescriptorMode: "skip",
 };
 void [archiveOptions, descriptorOptions, badReturn, badMode];
+
+it("validates descriptor mode even when a stream explicitly permits absent payloads", () => {
+  const source: storageLib.EventStreamSource = {
+    async *stream() {
+      yield* [];
+    },
+    async acknowledgeStream() {
+      return undefined;
+    },
+  };
+  expect(() =>
+    storageLib.syncToStorage(source, memoryAdapter(), {
+      requirePayload: false,
+      // @ts-expect-error Exercise an invalid raw JavaScript option.
+      historyDescriptorMode: "skip",
+    }),
+  ).toThrow("descriptor mode");
+});

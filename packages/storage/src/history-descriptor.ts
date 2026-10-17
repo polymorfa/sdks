@@ -4,7 +4,9 @@ import type { HistorySyncChunk } from "./history-types.js";
 const own = (v: object, k: string) =>
   Object.prototype.hasOwnProperty.call(v, k);
 const record = (v: unknown): v is Record<string, unknown> =>
-  v !== null && typeof v === "object" && !Array.isArray(v);
+  v !== null &&
+  typeof v === "object" &&
+  Object.prototype.toString.call(v) === "[object Object]";
 const text = (v: unknown) => typeof v === "string" && v.length > 0;
 const integer = (v: unknown) =>
   typeof v === "number" && Number.isInteger(v) && v >= 0;
