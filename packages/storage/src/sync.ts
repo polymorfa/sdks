@@ -3,6 +3,7 @@ import type {
   EventStreamParams,
   EventStreamAcknowledgement,
   LinkedHistorySyncPayload,
+  DirectHistorySyncPayload,
   WebhookEvent,
 } from "@polymorfa/sdk";
 
@@ -11,6 +12,11 @@ import type { HistorySyncChunk } from "./history-types.js";
 import { reduceEvent, STORED_EVENT_TYPES } from "./reducer/events.js";
 import { historyIdentityIndex, reduceHistoryChunk } from "./reducer/history.js";
 import type { StorageAdapter } from "./types.js";
+import {
+  decodedHistoryChunk,
+  descriptorIntent,
+  historyDescriptor,
+} from "./history-descriptor.js";
 
 function asStorage(target: Storage | StorageAdapter): Storage {
   return "apply" in target ? target : createStorage(target);
@@ -25,8 +31,18 @@ export type HistoryChunkDecoder = (
   event: WebhookEvent,
 ) => Promise<HistorySyncChunk | null>;
 
+/** Caller owns authorized download, full decoding and application projection. */
+export type HistoryDescriptorDecoder = (
+  payload: DirectHistorySyncPayload,
+  event: WebhookEvent,
+) => Promise<HistorySyncChunk>;
+export type HistoryDescriptorMode = "decode" | "metadata-only";
+
 export interface ApplyEventOptions {
   readonly decodeHistory?: HistoryChunkDecoder;
+  readonly decodeHistoryDescriptor?: HistoryDescriptorDecoder;
+  /** Metadata-only consumes the event; ordinary replay cannot import it later. */
+  readonly historyDescriptorMode?: HistoryDescriptorMode;
 }
 
 /**
@@ -39,6 +55,38 @@ export async function applyEvent(
   options: ApplyEventOptions = {},
 ): Promise<ApplyResult> {
   const storage = asStorage(target);
+  if (
+    options.historyDescriptorMode !== undefined &&
+    !["decode", "metadata-only"].includes(options.historyDescriptorMode)
+  )
+    throw new Error("Invalid history descriptor mode.");
+  if (event.event === "history.sync" && descriptorIntent(event.payload)) {
+    const payload = historyDescriptor(event.payload);
+    if (await storage.hasEvent(event.session, event.id))
+      return { applied: false, writes: 0 };
+    const batch = reduceEvent(event);
+    if (options.historyDescriptorMode === "metadata-only")
+      return storage.apply(batch);
+    if (!options.decodeHistoryDescriptor)
+      throw new Error("A history descriptor decoder is required.");
+    try {
+      const chunk = decodedHistoryChunk(
+        await options.decodeHistoryDescriptor(payload, event),
+      );
+      const history = reduceHistoryChunk({
+        sessionId: event.session,
+        chunk,
+        identities: {},
+      });
+      return storage.apply({
+        ...batch,
+        operations: [...history.operations, ...batch.operations],
+      });
+    } catch {
+      // Decoder failures may contain descriptor keys or inline bytes.
+      throw new Error("Failed to decode history descriptor.");
+    }
+  }
   let batch = reduceEvent(event);
   if (
     event.event === "history.sync" &&

@@ -1,0 +1,79 @@
+{
+  "origin": {
+    "apiSHA": "f97ad78b172e80788c33bdc0fcf28f75db9283ec",
+    "schema": "apps/api/packages/api/src/lib/webhook-schemas.ts:1189-1204",
+    "projection": "apps/api/packages/api/src/services/messaging-event-identities.ts:25-46",
+    "generation": "Hand-encoded independent minimal HistorySync protobuf; Node zlib and crypto synthetic encryption. No real credentials or customer data."
+  },
+  "inline": {
+    "delivery": "descriptor",
+    "whatsapp_ids": {
+      "linked_devices": "synthetic-notification"
+    },
+    "original_whatsapp_ids": {
+      "linked_devices": "synthetic-original"
+    },
+    "whatsapp_id": "synthetic-notification",
+    "syncType": "RECENT",
+    "chunkOrder": 7,
+    "progress": 92,
+    "fileLength": 114,
+    "oldestMessageAt": "2023-11-14T22:13:20.000Z",
+    "peerDataRequestSessionId": "synthetic-peer",
+    "inline": {
+      "encoding": "zlib-base64-protobuf",
+      "data": "eJzjYBaq5ZJOy6woKS1K1S0tTi1yKNYrz0gsKU4sKNDLSy0RiuOK4TLHq0SAQUosL7EksyxVNyOzuCS/qFI3N7W4ODE9VUiaSzK4Mq8kI7UkM1khJTU5PyU1RSE5P68kNa9EouHR+VVsGuwGMQC+TC44"
+    }
+  },
+  "media": {
+    "delivery": "descriptor",
+    "whatsapp_ids": {
+      "linked_devices": "synthetic-notification"
+    },
+    "original_whatsapp_ids": {
+      "linked_devices": "synthetic-original"
+    },
+    "whatsapp_id": "synthetic-notification",
+    "syncType": "RECENT",
+    "chunkOrder": 7,
+    "progress": 92,
+    "fileLength": 114,
+    "oldestMessageAt": "2023-11-14T22:13:20.000Z",
+    "peerDataRequestSessionId": "synthetic-peer",
+    "media": {
+      "type": "md-msg-hist",
+      "directPath": "/synthetic-history",
+      "mediaKey": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+      "fileSha256": "bvLYE+yWwfcsbWCHt8BxLa2U61OeXYJj1DOMDpVNS4g=",
+      "fileEncSha256": "NKjcAMOfP8fjRZDsbGEXCupsr/4MppZijcMIKdWfECY=",
+      "encHandle": "synthetic-handle"
+    }
+  },
+  "chunk": {
+    "syncType": "RECENT",
+    "chunkOrder": 7,
+    "progress": 92,
+    "conversations": [
+      {
+        "id": "fixture-user@s.whatsapp.net",
+        "messages": [
+          {
+            "message": {
+              "key": {
+                "remoteJid": "fixture-user@s.whatsapp.net",
+                "id": "native-history-message",
+                "fromMe": false
+              },
+              "message": {
+                "conversation": "Synthetic decoded content"
+              },
+              "messageTimestamp": 1700000000
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "protobuf": "CAMSfQobZml4dHVyZS11c2VyQHMud2hhdHNhcHAubmV0El4KXAo3ChtmaXh0dXJlLXVzZXJAcy53aGF0c2FwcC5uZXQQABoWbmF0aXZlLWhpc3RvcnktbWVzc2FnZRIbChlTeW50aGV0aWMgZGVjb2RlZCBjb250ZW50GIDiz6oGKAcwXA==",
+  "encrypted": "jfeFJF0XYVGYJDRUsqcSj9owDOIkNifSQjd26ujzL5/c0UfHMWbAmuwUfMNjQiBk/H6ylOcOeVQTFzjh+zSaUn4AjWO5jZHMP3yzWZcsi68/QIbsybPVyXeQCHuDB2TmnovRrWLlEDtPkijxwhbNg3tprxNjiD+nK1bzFIW87hUWMyd0m7lC190L"
+}

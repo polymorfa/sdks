@@ -78,3 +78,45 @@ Local unit/emulator success does not prove cloud IAM/RLS rules, deployed credent
 ## D1 from native applications
 
 Host `@polymorfa/storage/d1-bridge` in your own Worker to reach the atomic D1 binding from a native application. The bridge fixes customer authority and table prefix in trusted configuration and signs a fresh nonce handshake and each response. Native clients must validate that contract before accepting atomic storage support. The D1 administrative REST API is not used as an atomic adapter. See [the bridge contract](./D1-BRIDGE.md) for setup, authentication, conditional deletion and failure semantics.
+
+### Descriptor history handling
+
+`decodeHistory` remains archive-only. Its arguments and nullable progress-only
+result are unchanged; Cloud history uses its existing path. Projected
+`delivery: "descriptor"` notifications require `decodeHistoryDescriptor` by
+default. The callback receives the validated `DirectHistorySyncPayload` and
+original verified event, and must return a non-null `HistorySyncChunk`.
+
+```ts
+const handle = storageWebhookHandler(storage, {
+  decodeHistoryDescriptor: async (descriptor, event) => {
+    const full = await downloadHistoryChunk(
+      "inline" in descriptor && descriptor.inline
+        ? { inlinePayload: descriptor.inline.data }
+        : { ...descriptor.media!, fileLength: descriptor.fileLength },
+    );
+    return projectHistoryForStorage(full, event.session);
+  },
+});
+```
+
+Import `downloadHistoryChunk` from `@polymorfa/sdk/history`. The application owns
+`projectHistoryForStorage`, authorized media access, full-schema decoding and key
+custody. The storage projection is a subset of the full history schema. The
+bridge never downloads media itself. Missing, null, failed or invalid descriptor
+decoding writes no content, progress or event marker and advances no checkpoint
+or ACK. A legitimate empty chunk is allowed. Descriptor errors omit callback
+error details because they can contain keys or inline bytes.
+
+Use `historyDescriptorMode: "metadata-only"` only to deliberately consume a
+validated descriptor's progress and event marker without decoding. It skips all
+decoders, even a configured descriptor decoder. Stream sync then saves its cursor
+and manually acknowledges it. The event is deduplicated: adding a decoder later
+cannot import it through ordinary replay. No automatic backfill or marker deletion
+is provided. Valid duplicates skip decoders before checking their availability.
+
+Descriptor notification IDs never map individual messages. Decoded messages use
+the existing native `wa:` fallback keys, with no claim that they join later opaque
+Polymorfa IDs. Content and marker commit precede checkpoint CAS and ACK. Checkpoint
+conflicts prevent ACK; remote ACK failures leave already committed data intact.
+These local package capabilities do not establish registry or deployed availability.

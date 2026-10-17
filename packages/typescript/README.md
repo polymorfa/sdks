@@ -3350,3 +3350,15 @@ S3-compatible storage, then removes the spool on every outcome. Use
 an object twice with a matching ETag; both passes must see the same object.
 Install the optional `@aws-sdk/client-s3` peer for S3 and `@bufbuild/protobuf`
 for history decoding. Never log media keys or upload-grant URLs.
+
+### Storing projected history descriptors
+
+With `@polymorfa/storage`, use `decodeHistoryDescriptor` for projected media or
+inline notifications. `decodeHistory` handles archives only. The descriptor
+callback must return a non-null storage projection; authorized download,
+full-schema decoding and custody remain application responsibilities. The default
+`historyDescriptorMode: "decode"` refuses undecoded descriptors before persistence,
+checkpoint or ACK. Explicit `"metadata-only"` skips decoders and consumes progress
+and deduplication state, so ordinary replay cannot import content later. See the
+storage package README for the callback example, native fallback identities and
+checkpoint/ACK ordering. Packages remain unpublished by this change.

@@ -105,6 +105,8 @@ export {
   type ApplyEventOptions,
   type EventStreamSource,
   type HistoryChunkDecoder,
+  type HistoryDescriptorDecoder,
+  type HistoryDescriptorMode,
   type StorageSync,
   type SyncToStorageOptions,
 } from "./sync.js";
