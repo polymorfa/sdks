@@ -1,3 +1,6 @@
+import { campaignContractBody } from "../campaign-contract-validation.js";
+import { configurationIntent } from "../session-delivery-validation.js";
+import { existingOptions } from "../campaign-existing-validation.js";
 import type { MessagingCredential } from "../credentials.js";
 import type {
   CloudCredentialHealth,
@@ -45,7 +48,7 @@ export class SessionsResource {
       method: "GET",
       path: `/messaging/${encodeURIComponent(session)}/meta-pricing`,
       query: { ...params },
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -58,7 +61,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "GET",
       path: `/messaging/${encodeURIComponent(session)}/cloud-credentials`,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -71,7 +74,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "POST",
       path: `/messaging/${encodeURIComponent(session)}/cloud-credentials/reauthorize`,
-      ...options,
+      ...existingOptions(options),
       maxNetworkRetries: 0,
     });
   }
@@ -83,7 +86,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "GET",
       path: "/platform/sessions",
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -95,7 +98,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "GET",
       path: sessionPath(session),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -104,12 +107,13 @@ export class SessionsResource {
     body: UpdateSessionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UpdateSessionResponse>> {
+    options = existingOptions(options, configurationIntent(body));
     this.assertServerCredential();
     return this.transport.request({
       method: "PUT",
       path: sessionPath(session),
-      body,
-      ...options,
+      body: campaignContractBody(body),
+      ...existingOptions(options),
     });
   }
 
@@ -121,7 +125,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "DELETE",
       path: sessionPath(session),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -133,7 +137,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "POST",
       path: `${sessionPath(session)}/start`,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -145,7 +149,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "POST",
       path: `${sessionPath(session)}/stop`,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -171,7 +175,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "GET",
       path: `${sessionPath(session)}/me`,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -184,7 +188,7 @@ export class SessionsResource {
       method: "GET",
       path: `/messaging/${encodeURIComponent(session)}/pair/qr`,
       query: { format: "json" },
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -198,7 +202,7 @@ export class SessionsResource {
       method: "POST",
       path: `/messaging/${encodeURIComponent(session)}/pair/code`,
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -211,7 +215,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "POST",
       path: `${sessionPath(session)}/${action}`,
-      ...options,
+      ...existingOptions(options),
     });
   }
   private assertServerCredential(): void {

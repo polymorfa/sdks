@@ -1,0 +1,22 @@
+@namespace Polymorfa.Example.Components
+@using Microsoft.JSInterop
+@implements IAsyncDisposable
+@inject IJSRuntime JavaScript
+<pmfa-session-status></pmfa-session-status>
+<pmfa-connect-whatsapp></pmfa-connect-whatsapp>
+<pmfa-inbox style="height:640px"></pmfa-inbox>
+@code {
+    [Microsoft.AspNetCore.Components.Parameter] public string TokenEndpoint { get; set; } = "/api/polymorfa/token";
+    private IJSObjectReference? module;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        module = await JavaScript.InvokeAsync<IJSObjectReference>("import", "./_content/Polymorfa.Example.Components/messaging.js");
+        await module.InvokeVoidAsync("mount", TokenEndpoint);
+    }
+    public async ValueTask DisposeAsync()
+    {
+        if (module is null) return;
+        try { await module.InvokeVoidAsync("dispose"); await module.DisposeAsync(); } catch (JSDisconnectedException) { }
+    }
+}

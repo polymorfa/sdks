@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:local="clr-namespace:Polymorfa.Example.Maui" x:Class="Polymorfa.Example.Maui.MainPage">
+  <BlazorWebView HostPage="wwwroot/index.html" UrlLoading="OnUrlLoading"><BlazorWebView.RootComponents><RootComponent Selector="#app" ComponentType="{x:Type local:Home}" /></BlazorWebView.RootComponents></BlazorWebView>
+</ContentPage>

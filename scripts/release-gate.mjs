@@ -64,7 +64,22 @@ export function validateFeatureContractPins(source, pins) {
     );
   }
 }
+export function campaignSupplementPins(supplement) {
+  assert.deepEqual(Object.keys(supplement.sources).sort(), [
+    "messaging",
+    "platform",
+  ]);
+  return Object.entries(supplement.sources).map(([family, snapshot]) => ({
+    repository: supplement.repository,
+    sourceCommit: supplement.commit,
+    published: supplement.published,
+    family,
+    sourcePath: snapshot.sourcePath,
+    sourceSha256: snapshot.sourceSha256,
+  }));
+}
 export function expectedContract() {
+  // Campaign supplements carry separate Messaging and Platform source hashes.
   const source = JSON.parse(readFileSync(join(root, "contracts/source.json")));
   assert.equal(source.repository, "polymorfa/polymorfa");
   assert.match(source.commit, /^[a-f0-9]{40}$/);
@@ -74,6 +89,20 @@ export function expectedContract() {
     ),
     JSON.parse(readFileSync(join(root, "contracts/abprops-capabilities.json"))),
     JSON.parse(readFileSync(join(root, "contracts/request-logs.json"))),
+    ...[
+      "campaign-ab-tests.json",
+      "campaign-message-variations.json",
+      "campaign-follow-ups.json",
+      "campaign-custody-20261014.json",
+      // Integrated main supplements: released only after their source is
+      // reconciled with the accepted release contract.
+      "campaign-frequency-cap.json",
+      "campaign-segments-drip.json",
+    ].flatMap((name) =>
+      campaignSupplementPins(
+        JSON.parse(readFileSync(join(root, "contracts", name))),
+      ),
+    ),
   ]);
   const apiVersion = /NATIVE_API_VERSION = "([^"]+)"/.exec(
     readFileSync(join(root, "packages/typescript/src/version.ts"), "utf8"),
@@ -132,7 +161,7 @@ function github(path, binary = false) {
     );
   }
 }
-async function acceptedContract(expected, output) {
+export async function acceptedContract(expected, output) {
   const branch = expected.environment === "staging" ? "dev" : "main";
   for (let page = 1; page <= 10; page++) {
     const { workflow_runs: runs } = JSON.parse(

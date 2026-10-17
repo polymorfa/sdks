@@ -6,6 +6,10 @@ import type { ResponseMetadata } from "./transport/types.js";
  * existing values are never renamed or reused.
  */
 export const POLYMORFA_ERROR_CODES = [
+  "campaign_approval_required",
+  "campaign_approval_stale",
+  "campaign_variables_missing",
+  "zero_knowledge_session",
   "invalid_parameter",
   "invalid_credential",
   "entitlement_required",
@@ -127,6 +131,7 @@ export function isKnownPolymorfaErrorCode(
 }
 
 export interface PolymorfaErrorOptions {
+  readonly param?: string;
   readonly code?: PolymorfaErrorCode;
   readonly status?: number;
   readonly requestId?: string;
@@ -139,6 +144,7 @@ export interface PolymorfaErrorOptions {
 }
 
 export class PolymorfaError extends Error {
+  readonly param: string | undefined;
   readonly code: PolymorfaErrorCode | undefined;
   readonly status: number | undefined;
   /** `error.request_id` from the body, else the `X-Request-Id` header. */
@@ -159,6 +165,7 @@ export class PolymorfaError extends Error {
     );
     this.name = new.target.name;
     this.code = options.code;
+    this.param = options.param;
     this.status = options.status;
     this.requestId = options.requestId;
     this.requestLogUrl = options.requestLogUrl;

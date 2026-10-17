@@ -45,6 +45,7 @@ export async function startTestServer(
           result.headers ?? { "content-type": "application/json" },
         );
         if (result.bodyDelayMs !== undefined) {
+          response.flushHeaders();
           setTimeout(sendBody, result.bodyDelayMs);
         } else {
           sendBody();

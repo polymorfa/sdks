@@ -1,0 +1,30 @@
+using Polymorfa.Sdk;
+
+internal static class CustomerTests
+{
+    private const string CustomerJson = """{"id":"cu1","orgId":"org1","projectId":"p1","name":null,"externalCustomerId":"external1","status":"active","isDefault":false,"archivedAt":null,"createdAt":10,"updatedAt":20}""";
+    private const string NumberJson = """{"id":"n1","customerId":"cu1","sessionId":"s1","name":null,"phoneMasked":"+1••••1111","status":"connected","backend":"linked_device","createdAt":10}""";
+    private const string LinkJson = """{"id":"link1","orgId":"org1","projectId":"p1","customerId":"cu1","expectedPhoneMasked":"+1••••1111","methods":["qr","phone"],"locale":"en","theme":"system","expiresAt":600,"status":"active","attemptCount":0,"maxAttempts":5,"pendingSessionId":null,"createdBy":"user1","reservedAt":null,"openedAt":null,"connectingAt":null,"connectedAt":null,"failedAt":null,"expiredAt":null,"revokedAt":null,"lastErrorCode":null,"failedExchangeCount":0,"phoneMismatchCount":0,"createdAt":10,"updatedAt":10}""";
+    private const string CustomerEnvelope = "{\"data\":" + CustomerJson + "}";
+    public static async Task RunAsync()
+    {
+        await Organization("GET", "/platform/projects/p1/customers/status", null, "{\"data\":{\"enabled\":false,\"enabledAt\":null,\"enabledBy\":null,\"defaultCustomer\":null}}", async c => ResourceTests.True(!(await c.Customers.StatusAsync("p1")).Data.Data.Enabled));
+        await Organization("POST", "/platform/projects/p1/customers/enable", null, "{\"data\":{\"enabled\":true,\"enabledAt\":10,\"enabledBy\":\"user1\",\"defaultCustomer\":" + CustomerJson + ",\"migratedNumberCount\":2}}", async c => ResourceTests.Equal((await c.Customers.EnableAsync("p1")).Data.Data.MigratedNumberCount, 2));
+        await Organization("GET", "/platform/customers?projectId=p1&cursor=next&limit=5&search=Zo%C3%AB&status=all&isDefault=false&hasNumbers=true&needsAttention=false", null, "{\"data\":[" + CustomerJson[..^1] + ",\"numberCount\":2,\"connectedNumberCount\":1,\"activePairingLinkState\":null,\"lastActivityAt\":20,\"needsAttention\":false}],\"page\":{\"nextCursor\":null,\"hasMore\":false}}", async c => ResourceTests.Equal((await c.Customers.ListAsync(new("p1", "next", 5, "Zoë", "all", false, true, false))).Data.Data[0].ConnectedNumberCount, 1));
+        await Organization("POST", "/platform/customers", "{\"projectId\":\"p1\",\"name\":null,\"externalCustomerId\":\"external1\"}", CustomerEnvelope, async c => ResourceTests.Equal((await c.Customers.CreateAsync(new("p1", PatchValue<string>.Set(null), "external1"))).Data.Data.ExternalCustomerId, "external1"));
+        await Organization("GET", "/platform/customers/cu1?projectId=p1", null, CustomerEnvelope, async c => ResourceTests.True((await c.Customers.RetrieveAsync("cu1", "p1")).Data.Data.Name is null));
+        await Organization("PATCH", "/platform/customers/cu1", "{\"projectId\":\"p1\",\"externalCustomerId\":null}", CustomerEnvelope, async c => ResourceTests.Equal((await c.Customers.UpdateAsync("cu1", new("p1", ExternalCustomerId: PatchValue<string>.Set(null)))).Data.Data.Id, "cu1"));
+        await Organization("POST", "/platform/customers/cu1/archive", "{\"projectId\":\"p1\"}", CustomerEnvelope, async c => ResourceTests.Equal((await c.Customers.ArchiveAsync("cu1", new("p1"))).Data.Data.Id, "cu1"));
+        await Organization("POST", "/platform/customers/cu1/restore", "{}", CustomerEnvelope, async c => ResourceTests.Equal((await c.Customers.RestoreAsync("cu1")).Data.Data.Id, "cu1"));
+        await Organization("GET", "/platform/customers/cu1/numbers?projectId=p1", null, "{\"data\":[" + NumberJson + "]}", async c => ResourceTests.Equal((await c.Customers.ListNumbersAsync("cu1", "p1")).Data.Data[0].PhoneMasked, "+1••••1111"));
+        await Organization("GET", "/platform/customers/cu1/events?projectId=p1&limit=3", null, "{\"data\":[{\"id\":\"e1\",\"action\":\"updated\",\"fromStatus\":null,\"toStatus\":null,\"sessionId\":null,\"pairingLinkId\":null,\"metadata\":{\"fields\":[\"name\"]},\"occurredAt\":20}]}", async c => ResourceTests.Equal((await c.Customers.ListEventsAsync("cu1", new("p1", 3))).Data.Data[0].Metadata.Fields![0], "name"));
+        await Organization("POST", "/platform/customers/cu1/pairing-links", "{\"projectId\":\"p1\",\"expectedPhone\":null,\"methods\":[\"qr\"],\"expiresInSeconds\":600}", "{\"data\":" + LinkJson[..^1] + ",\"url\":\"https://pair.polymorfa.com/secret\"}}", async c => { var link = (await c.Customers.CreatePairingLinkAsync("cu1", new("p1", PatchValue<string>.Set(null), ["qr"], 600))).Data.Data; ResourceTests.Equal(link.Url, "https://pair.polymorfa.com/secret"); ResourceTests.True(!link.ToString().Contains("/secret")); });
+        await Organization("GET", "/platform/customers/cu1/pairing-links?projectId=p1", null, "{\"data\":[" + LinkJson + "]}", async c => ResourceTests.Equal((await c.Customers.ListPairingLinksAsync("cu1", "p1")).Data.Data[0].MaxAttempts, 5));
+        await Organization("DELETE", "/platform/customers/cu1/pairing-links/link1?projectId=p1", null, "{\"data\":" + LinkJson + "}", async c => ResourceTests.True((await c.Customers.RevokePairingLinkAsync("cu1", "link1", "p1")).Data.Data.RevokedAt is null));
+        await Organization("POST", "/platform/customers/cu1/numbers/s1/transfer", "{\"projectId\":\"p1\",\"sourceCustomerId\":\"cu0\",\"confirm\":true}", "{\"data\":" + NumberJson + "}", async c => ResourceTests.Equal((await c.Customers.TransferNumberAsync("cu1", "s1", new("p1", "cu0", true))).Data.Data.SessionId, "s1"));
+        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)));
+        try { await client.Customers.TransferNumberAsync("cu1", "s1", new("p1", "cu0", false)); throw new Exception("Unconfirmed transfer admitted"); } catch (PolymorfaValidationException) { }
+        Console.WriteLine("PASS 14 typed Customer routes, nullable patches, masked links, filters and confirmed transfer");
+    }
+    private static Task Organization(string method, string path, string? body, string response, Func<OrganizationClient, Task> invoke) => BillingTests.Organization(method, path, body, response, invoke);
+}

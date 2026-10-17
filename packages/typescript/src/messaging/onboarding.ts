@@ -1,3 +1,5 @@
+import { requestPhone } from "../campaign-contract-response.js";
+import { existingOptions } from "../campaign-existing-validation.js";
 import {
   PolymorfaConfigurationError,
   PolymorfaValidationError,
@@ -117,11 +119,16 @@ export class TestingResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<TestingPhone>> {
     assertServerCredential(this.credentialType);
-    return this.transport.request({
-      method: "GET",
-      path: phonePath(projectId, session),
-      ...options,
-    });
+    return requestPhone(
+      this.transport,
+      {
+        method: "GET",
+        path: phonePath(projectId, session),
+        ...existingOptions(options),
+      },
+      "phone",
+      200,
+    );
   }
 
   /**
@@ -137,12 +144,17 @@ export class TestingResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<SendTestingPhoneMessageResponse>> {
     assertServerCredential(this.credentialType);
-    return this.transport.request({
-      method: "POST",
-      path: `${phonePath(projectId, session)}/messages`,
-      body: input,
-      ...options,
-    });
+    return requestPhone(
+      this.transport,
+      {
+        method: "POST",
+        path: `${phonePath(projectId, session)}/messages`,
+        body: input,
+        ...existingOptions(options),
+      },
+      "send",
+      202,
+    );
   }
 
   /**
@@ -161,11 +173,16 @@ export class TestingResource {
       throw new PolymorfaValidationError(
         "deviceId must be a companion device ID from 1 to 99.",
       );
-    return this.transport.request({
-      method: "POST",
-      path: `${phonePath(projectId, session)}/devices/${deviceId}/unlink`,
-      ...options,
-    });
+    return requestPhone(
+      this.transport,
+      {
+        method: "POST",
+        path: `${phonePath(projectId, session)}/devices/${deviceId}/unlink`,
+        ...existingOptions(options),
+      },
+      "unlink",
+      200,
+    );
   }
 }
 function phonePath(projectId: string, session: string): string {

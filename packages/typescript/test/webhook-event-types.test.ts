@@ -29,6 +29,7 @@ import type {
   GroupParticipantPayload,
   GroupUpdatePayload,
   HistorySyncPayload,
+  DirectHistorySyncPayload,
   IdentityReference,
   WebhookConversationReference,
   LabelsUpdatePayload,
@@ -339,6 +340,7 @@ type ExpectedPayloads = {
     readonly errors?: readonly ExpectedOfficialGroupError[];
   };
   readonly "history.sync":
+    | DirectHistorySyncPayload
     | {
         readonly whatsapp_ids: WhatsAppMessageIds;
         readonly whatsapp_id?: string;
@@ -561,7 +563,7 @@ describe("webhook event payload types", () => {
       expectTypeOf(payload.value).toEqualTypeOf<
         Readonly<Record<string, unknown>>
       >();
-    } else {
+    } else if (!("delivery" in payload)) {
       expectTypeOf(payload.whatsapp.data).toEqualTypeOf<string>();
     }
     expect("kind" in payload).toBe(true);

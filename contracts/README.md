@@ -1,5 +1,19 @@
 # Contract coverage
 
+## Campaign and custody additions
+
+`campaign-custody-20261014.json` pins thirty machine-accessible operations and
+their referenced components to API source
+`f97ad78b172e80788c33bdc0fcf28f75db9283ec`. TypeScript's new typed helpers select
+`2026-10-14` when request options omit a version. The global API default and
+579-operation baseline snapshots remain unchanged.
+
+The supplement is held with `published: false`, and the release gate checks
+both source audiences. The five native ports, remaining 625-operation contract
+reconciliation, accepted staging/production API evidence, and publication are
+separate unfinished gates. `campaign-20261014-contract.test.ts` checks all thirty
+wire operations; it does not establish provider delivery or deployed access.
+
 ## Request log supplement
 
 `request-logs.json` pins `GET /platform/projects/{projectId}/request-logs` and
@@ -66,8 +80,12 @@ compares their paths and fields. The full snapshots are not repinned here.
 The current snapshots are byte-identical copies of the Messaging and Platform
 contracts at API dev merge commit `171a9683ff45d11a4b5d3917dc428ad2722b0d99`.
 The full revision contains the inherited Logs and Usage contracts and all four
-public Analytics reads. The ledger contains 579 operations: 433 covered and
-146 excluded, with no missing, partial or changed fingerprints. Six reviewed
+public Analytics reads. Each language ledger contains 579 operations: 442
+covered and 137 excluded, with no missing, partial or changed fingerprints
+against these pinned snapshots. The three campaign update/reschedule methods
+are verified in the TypeScript, Python and Rust wire suites; their old PR-owner
+exclusions are removed. This baseline does not establish parity with newer API
+contracts or package publication. Six reviewed
 Console changes cover analytics projections, consent preferences, operational
 error vitals and shared drains. They require dashboard identity and remain
 excluded from server SDK authority.

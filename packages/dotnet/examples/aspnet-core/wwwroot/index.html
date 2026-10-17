@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Polymorfa ASP.NET example</title>
+<style>body{font:16px system-ui;max-width:1000px;margin:2rem auto;padding:1rem}button,input{min-height:44px;font:inherit;border:1px solid #707070;border-radius:6px;padding:0 12px}button{cursor:pointer;background:#f6f6f6}button:focus-visible,input:focus-visible{outline:3px solid #1464e8;outline-offset:2px}form{display:flex;gap:12px;align-items:center;flex-wrap:wrap}label{display:flex;gap:8px;align-items:center;flex-wrap:wrap}pmfa-inbox{display:block}a{display:inline-block;padding:12px}</style>
+<body><main>
+<h1>Messaging</h1>
+<form id="login" method="post" action="/example/login"><label>Local example password <input name="password" type="password" autocomplete="current-password" required></label><button>Sign in</button><p id="login-status" role="status"></p></form>
+<button id="logout" type="button">Sign out</button> <a href="/blazor/">Open Blazor WebAssembly example</a>
+<pmfa-session-status></pmfa-session-status><pmfa-connect-whatsapp></pmfa-connect-whatsapp><pmfa-inbox style="height:640px"></pmfa-inbox>
+</main>
+<script type="module">
+import {mount} from './elements.js';
+let client = await mount();
+document.querySelector('#login').addEventListener('submit', async event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const response = await fetch('/example/login', { method:'POST', credentials:'same-origin', body:new URLSearchParams(new FormData(form)) });
+  document.querySelector('#login-status').textContent = response.ok ? 'Signed in' : 'Sign-in unavailable or refused';
+  if (response.ok) { form.reset(); client.dispose(); client = await mount(); }
+});
+document.querySelector('#logout').addEventListener('click', async () => {
+  const response = await fetch('/example/logout', { method:'POST', credentials:'same-origin' });
+  if (response.ok) { client.dispose(); client = await mount(); document.querySelector('#login-status').textContent = 'Signed out'; }
+});
+</script>
+</body>
+</html>

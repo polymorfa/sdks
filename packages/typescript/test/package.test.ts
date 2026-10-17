@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -9,7 +9,7 @@ const repositoryRoot = new URL("../../../", import.meta.url).pathname;
 const packageRoot = new URL("../", import.meta.url).pathname;
 
 describe("npm package", () => {
-  it("packs and imports in a clean consumer without runtime dependencies", () => {
+  it("packs portable compression and imports without optional peers", () => {
     const directory = mkdtempSync(join(tmpdir(), "polymorfa-package-"));
     const environment = {
       ...process.env,
@@ -34,6 +34,8 @@ describe("npm package", () => {
     }>;
     const paths = metadata[0]?.files.map(({ path }) => path) ?? [];
     expect(paths).toContain("LICENSE");
+    expect(paths).toContain("THIRD_PARTY_NOTICES");
+    expect(paths).toContain("dist/history/inflate.js");
     expect(paths).toContain("README.md");
     expect(paths).toContain("dist/index.js");
     // The Calls client is compiled into this package, not a dependency.
@@ -42,6 +44,11 @@ describe("npm package", () => {
     expect(paths).toContain("dist/calls/internal.js");
     expect(paths).toContain("dist/node.js");
     expect(paths).toContain("dist/node.d.ts");
+    expect(paths).toContain("dist/history/index.js");
+    expect(paths).toContain("dist/history/gen/whatsapp_pb.js");
+    expect(paths).toContain("dist/history/gen/whatsapp_pb.d.ts");
+    expect(paths).toContain("dist/s3.js");
+    expect(paths).toContain("dist/s3.d.ts");
     expect(paths).toContain("package.json");
     expect(
       paths.some((path) => path.includes("/src/") || path.includes("/test/")),
@@ -55,11 +62,30 @@ describe("npm package", () => {
     });
     expect(initialize.status, initialize.stderr).toBe(0);
     const tarball = join(directory, metadata[0]?.filename ?? "missing.tgz");
-    const install = spawnSync("npm", ["install", "--ignore-scripts", tarball], {
+    // Seed only the accepted runtime dependency, then install the SDK offline.
+    const cached = spawnSync("npm", ["cache", "add", "pako@3.0.2"], {
       cwd: directory,
       encoding: "utf8",
       env: environment,
     });
+    expect(cached.status, cached.stderr).toBe(0);
+    const install = spawnSync(
+      "npm",
+      [
+        "install",
+        "--ignore-scripts",
+        "--offline",
+        "--legacy-peer-deps",
+        "--no-audit",
+        "--no-fund",
+        tarball,
+      ],
+      {
+        cwd: directory,
+        encoding: "utf8",
+        env: environment,
+      },
+    );
     expect(install.status, install.stderr).toBe(0);
     writeFileSync(
       consumer,
@@ -158,6 +184,8 @@ describe("npm package", () => {
         "downloadMediaToFile",
         "downloadWhatsAppMediaToFile",
         "nodeMediaCrypto",
+        "nodeMediaEncryptor",
+        "whatsAppMediaFileSource",
         "writeStreamToFile",
       ],
       stream: "function",
@@ -189,6 +217,18 @@ describe("npm package", () => {
         "utf8",
       ),
     ) as { readonly dependencies?: Readonly<Record<string, string>> };
-    expect(installedManifest.dependencies ?? {}).toEqual({});
+    expect(installedManifest.dependencies).toEqual({ pako: "3.0.2" });
+    expect(existsSync(join(directory, "node_modules/@bufbuild/protobuf"))).toBe(
+      false,
+    );
+    expect(existsSync(join(directory, "node_modules/@aws-sdk/client-s3"))).toBe(
+      false,
+    );
+    const notices = readFileSync(
+      join(directory, "node_modules/@polymorfa/sdk/THIRD_PARTY_NOTICES"),
+      "utf8",
+    );
+    expect(notices).toContain("Permission is hereby granted, free of charge");
+    expect(notices).toContain("This notice may not be removed or altered");
   }, 30_000);
 });
