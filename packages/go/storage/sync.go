@@ -10,11 +10,58 @@ import (
 )
 
 type HistoryDecoder func(context.Context, map[string]any, polymorfa.WebhookEvent) (map[string]any, error)
-type ApplyEventOptions struct{ DecodeHistory HistoryDecoder }
+
+// HistoryDescriptorDecoder receives the validated raw public descriptor and original event.
+// A nil projection is an error; use DescriptorMetadataOnly to consume progress deliberately.
+type HistoryDescriptorDecoder func(context.Context, map[string]any, polymorfa.WebhookEvent) (map[string]any, error)
+type HistoryDescriptorMode string
+
+const (
+	DescriptorDecode       HistoryDescriptorMode = "decode"
+	DescriptorMetadataOnly HistoryDescriptorMode = "metadata-only"
+)
+
+type ApplyEventOptions struct {
+	DecodeHistory           HistoryDecoder
+	DecodeHistoryDescriptor HistoryDescriptorDecoder
+	HistoryDescriptorMode   HistoryDescriptorMode
+}
 
 // ApplyEvent accepts only an already verified webhook event. A history decoder
 // downloads/verifies/decrypts locally before returning complete protocol JSON.
 func (e *Engine) ApplyEvent(ctx context.Context, event polymorfa.WebhookEvent, options ApplyEventOptions) (ApplyResult, error) {
+	if options.HistoryDescriptorMode != "" && options.HistoryDescriptorMode != DescriptorDecode && options.HistoryDescriptorMode != DescriptorMetadataOnly {
+		return ApplyResult{}, storageError("storage_invalid_history_descriptor_mode")
+	}
+	payload := object(jsonPayload(event.Payload))
+	if _, descriptor := payload["delivery"]; event.Event == "history.sync" && descriptor {
+		if err := validateHistoryDescriptor(payload); err != nil {
+			return ApplyResult{}, err
+		}
+		if exists, err := e.HasEvent(ctx, event.Session, event.ID); err != nil || exists {
+			return ApplyResult{}, err
+		}
+		batch, err := ReduceEvent(event)
+		if err != nil {
+			return ApplyResult{}, err
+		}
+		if options.HistoryDescriptorMode == DescriptorMetadataOnly {
+			return e.Apply(ctx, batch)
+		}
+		if options.DecodeHistoryDescriptor == nil {
+			return ApplyResult{}, storageError("storage_history_descriptor_decoder_required")
+		}
+		chunk, err := options.DecodeHistoryDescriptor(ctx, payload, event)
+		if err != nil || !validDescriptorChunk(chunk) {
+			return ApplyResult{}, storageError("storage_history_descriptor_decode_failed")
+		}
+		history, err := ReduceHistoryChunk(HistoryInput{SessionID: event.Session, Chunk: chunk, Identities: &HistoryIdentityIndex{}})
+		if err != nil {
+			return ApplyResult{}, storageError("storage_history_descriptor_decode_failed")
+		}
+		batch.Operations = append(history.Operations, batch.Operations...)
+		return e.Apply(ctx, batch)
+	}
 	batch, err := ReduceEvent(event)
 	if err != nil {
 		return ApplyResult{}, err
@@ -85,6 +132,9 @@ type SyncOptions struct {
 // always orders event commit -> checkpoint CAS -> explicit stream ACK. Resume
 // starts at the durable cursor; gaps and missing payloads fail before advance.
 func SyncToStorage(ctx context.Context, source EventSource, target *Engine, options SyncOptions) error {
+	if options.Apply.HistoryDescriptorMode != "" && options.Apply.HistoryDescriptorMode != DescriptorDecode && options.Apply.HistoryDescriptorMode != DescriptorMetadataOnly {
+		return storageError("storage_invalid_history_descriptor_mode")
+	}
 	if source == nil || target == nil {
 		return invalid()
 	}

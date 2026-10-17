@@ -666,3 +666,32 @@ Authenticated downloads still verify ciphertext, MAC and plaintext hash before
 decoding. Signed archive storage tests use an application projection of common
 fields; they do not establish descriptor dispatch or full-schema storage.
 These local tests do not establish registry publication or live availability.
+
+### Descriptor history storage
+
+`storage.ApplyEventOptions.DecodeHistory` remains archive-only, with its original
+arguments and nullable progress-only result. Use `DecodeHistoryDescriptor` for
+validated public media/inline descriptors and return a non-nil map containing your
+application's decoded storage projection. For example:
+
+```go
+options := storage.ApplyEventOptions{
+    DecodeHistoryDescriptor: func(ctx context.Context, payload map[string]any, event polymorfa.WebhookEvent) (map[string]any, error) {
+        return downloadDecodeAndProjectAuthorizedHistory(ctx, payload, event)
+    },
+}
+```
+
+The application defines `downloadDecodeAndProjectAuthorizedHistory`; existing
+public history helpers verify compressed/encrypted bytes and accept a caller's
+full-schema codec. The bridge never downloads media or changes custody. Default
+`DescriptorDecode` rejects missing, nil, failed or invalid decoding before any
+progress, marker, checkpoint or ACK. A legitimate empty map is allowed.
+`HistoryDescriptorMode: storage.DescriptorMetadataOnly` validates and consumes
+progress without any decoder. This deduplicates the event; configuring a decoder
+later cannot import it through ordinary replay. Valid duplicates skip callbacks.
+Descriptor notification IDs are not message IDs; existing `wa:` fallback keys
+remain, without an opaque-ID joining guarantee. Content/marker commit precedes
+checkpoint CAS and manual ACK. A failed ACK leaves committed data intact. Cloud
+history and archive behavior are unchanged. This is local package behavior,
+not registry or deployed availability.
