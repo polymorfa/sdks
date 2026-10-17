@@ -22,7 +22,7 @@ final class D1Bridge implements Adapter, \JsonSerializable
     public function __construct(string $url, private readonly string $authority, private readonly string $tablePrefix, #[\SensitiveParameter] private readonly string $secret, ?ClientInterface $http = null, private readonly float $timeout = 30, ?CancellationToken $cancellation = null)
     {
         $target = parse_url($url);
-        if ($target === false || !isset($target['host'],$target['scheme']) || (isset($target['user']) || isset($target['pass'])) || isset($target['query']) || isset($target['fragment']) || !in_array($target['path'] ?? '', ['','/'], true) || !preg_match('/^[A-Za-z][A-Za-z0-9_.:-]{0,127}$/D', $authority) || !preg_match('/^[A-Za-z_][A-Za-z0-9_]{0,63}$/D', $tablePrefix) || !preg_match('/^[!-~]{32,256}$/D', $secret) || !is_finite($timeout) || $timeout <= 0) {
+        if ($target === false || !isset($target['host'],$target['scheme']) || (isset($target['user']) || isset($target['pass'])) || isset($target['query']) || isset($target['fragment']) || !in_array($target['path'] ?? '', ['','/'], true) || !preg_match('/^[A-Za-z][A-Za-z0-9_.:-]{0,127}$/D', $authority) || !preg_match('/^[A-Za-z_][A-Za-z0-9_]{0,63}$/D', $tablePrefix) || !preg_match('/^[!-~]{32,256}$/D', $secret) || str_starts_with($secret, 'pmfa_') || !is_finite($timeout) || $timeout <= 0) {
             Schema::invalid();
         }
         if ($target['scheme'] !== 'https' && ($target['scheme'] !== 'http' || !($target['host'] === 'localhost' || $target['host'] === '[::1]' || (filter_var($target['host'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false && str_starts_with($target['host'], '127.'))))) {

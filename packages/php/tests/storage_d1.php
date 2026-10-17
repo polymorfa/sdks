@@ -61,6 +61,25 @@ foreach (['foreign-get','foreign-query','reordered-query','malformed-row','forei
 foreach (['http://public.invalid','https://private@host.invalid','https://host.invalid/path','https://host.invalid?tenant=other'] as $url) {
     raises(fn () => new D1Bridge($url, $fixture['authority'], $fixture['tablePrefix'], $fixture['secret']), StorageException::class);
 }
+// The application secret is independent of Polymorfa credentials: reserved pmfa_
+// prefixes and out-of-range lengths fail before any request reaches the bridge.
+$process = proc_open([PHP_BINARY,__DIR__.'/d1-server.php','valid'], [0 => ['pipe','r'],1 => ['pipe','w'],2 => ['pipe','w']], $pipes);
+try {
+    $wire = json_decode(fgets($pipes[1]), true, flags:JSON_THROW_ON_ERROR);
+    $reserved = array_map(static fn (string $p): string => $p.'synthetic-fixture-value-0123456789', ['pmfa_','pmfa_pt_','pmfa_ct_','pmfa_ls_','pmfa_at_','pmfa_wst_','pmfa_sd_']);
+    foreach ([...$reserved, 'pmfa_'.str_repeat('x', 251), str_repeat('x', 31), str_repeat('x', 257)] as $secret) {
+        $error = raises(fn () => new D1Bridge($wire['url'], $fixture['authority'], $fixture['tablePrefix'], $secret), StorageException::class);
+        check(!str_contains($error->getMessage(), $secret), 'D1 secret rejection omits the secret');
+    }
+    fwrite($pipes[0], "finish\n");
+    $state = json_decode(fgets($pipes[1]), true, flags:JSON_THROW_ON_ERROR);
+    check($state['calls'] === 0, 'Reserved or out-of-range D1 secrets send no request');
+} finally {
+    proc_terminate($process);
+    foreach ($pipes as $pipe) {
+        fclose($pipe);
+    }proc_close($process);
+}
 check(Schema::encodeKey('messages', ['sessionId' => 'a.b:é','messageId' => "x/!'()*~"]) === "ka%2Eb%3A%C3%A9:x%2F!'()*~", 'Portable JS key escaping');
 echo "Native D1 signed handshake, independent HMAC, wrong-identity/capability/nonce/body rejection, redirects/body deadline and redaction passed.\n";
 $endpoint = getenv('POLYMORFA_D1_BRIDGE_FIXTURE_URL');
