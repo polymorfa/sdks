@@ -1,0 +1,88 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "a6812f1570814346d5e2a973ed1b855026981793",
+  "note": "Campaign Cloud quality pauses (PR #326). Adds the optional reason and code to campaign.paused and documents skippedAt in Unix milliseconds and the whatsapp_marketing_limit reason on campaign.recipient_skipped; the full snapshots stay pinned to contracts/source.json until the next repin.",
+  "sources": {
+    "messaging": {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sourceSha256": "e6c6e838d7ed96db1dc148c872cb05a016e2a46b02176e036fdbe0c0087b2eaf",
+      "schemas": {
+        "CampaignPausedPayload": {
+          "type": "object",
+          "properties": {
+            "campaignId": {
+              "type": "string",
+              "description": "Campaign id",
+              "example": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11"
+            },
+            "sentCount": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Recipients sent so far"
+            },
+            "remainingCount": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Recipients still queued"
+            },
+            "pausedAt": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix timestamp in seconds when the campaign paused",
+              "example": 1757161200
+            },
+            "reason": {
+              "type": "string",
+              "description": "Why Polymorfa paused the campaign. Present only on an automatic pause.",
+              "example": "WhatsApp lowered the messaging limit of a number this campaign sends from."
+            },
+            "code": {
+              "type": "string",
+              "description": "Stable code for an automatic pause: campaigns_not_entitled, bansafe_org_suspended, bansafe_suspended, campaign_throughput_capped, invalid_parameter, hybrid_campaign_unsupported, blocked_by_safety, number_quality_dropped, or messaging_limit_dropped. Present only on an automatic pause.",
+              "example": "messaging_limit_dropped"
+            }
+          },
+          "required": ["campaignId", "sentCount", "remainingCount", "pausedAt"]
+        },
+        "CampaignRecipientSkippedPayload": {
+          "type": "object",
+          "properties": {
+            "campaignId": {
+              "type": "string",
+              "description": "Campaign id",
+              "example": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11"
+            },
+            "recipientId": {
+              "type": "string",
+              "description": "Campaign recipient id",
+              "example": "01936b2e-6a11-7d2e-8f4a-1c2b3d4e5f66"
+            },
+            "phone": {
+              "type": "string",
+              "description": "Recipient phone number in E.164",
+              "example": "+14155550123"
+            },
+            "reason": {
+              "type": "string",
+              "description": "Stable skip reason, such as optout, or whatsapp_marketing_limit when WhatsApp withheld a marketing message because the person reached their per-user marketing message limit",
+              "example": "whatsapp_marketing_limit"
+            },
+            "skippedAt": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix timestamp in milliseconds when the recipient was skipped",
+              "example": 1757161200000
+            }
+          },
+          "required": [
+            "campaignId",
+            "recipientId",
+            "phone",
+            "reason",
+            "skippedAt"
+          ]
+        }
+      }
+    }
+  }
+}
