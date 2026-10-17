@@ -32,7 +32,7 @@ enumeration!(AudienceProfileImportState{Queued="queued",Completed="completed",Ca
 enumeration!(AudienceProfileConflictReason{Quota="quota",RevisionConflict="revision_conflict"});
 enumeration!(StopConfirmationLocale{English="en",Portuguese="pt-BR",Spanish="es"});
 enumeration!(SignalCustodyMode{Standard="standard",ZeroKnowledge="zero_knowledge"});
-enumeration!(CampaignRecipientFailureReason{OptedOut="opted_out",ColdHeld="cold_held",CampaignCancelled="campaign_cancelled",InvalidRecipient="invalid_recipient",SessionNotConnected="session_not_connected",AckTimeout="ack_timeout",BlockedBySafety="blocked_by_safety",SendFailed="send_failed",MissingVariable="missing_variable",Other="other"});
+enumeration!(CampaignRecipientFailureReason{OptedOut="opted_out",ColdHeld="cold_held",CampaignCancelled="campaign_cancelled",InvalidRecipient="invalid_recipient",SessionNotConnected="session_not_connected",AckTimeout="ack_timeout",BlockedBySafety="blocked_by_safety",SendFailed="send_failed",MissingVariable="missing_variable",FrequencyCap="frequency_cap",Other="other"});
 model!(CampaignReplyButton{id:String,text:String};{};{});
 model!(CampaignReplyRow{id:String,title:String};{};{description:String});
 #[derive(Clone, Debug, Serialize, Deserialize)]

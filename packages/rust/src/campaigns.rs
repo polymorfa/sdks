@@ -258,6 +258,45 @@ pub struct Campaign {
     pub message_variations: Option<Option<Vec<CampaignMessageVariation>>>,
     #[serde(deserialize_with = "required_nullable")]
     pub follow_up: Option<CampaignFollowUp>,
+    /// This campaign's own cap; `Some(None)` when only the team cap applies.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub frequency_cap: Option<Option<CampaignFrequencyCap>>,
+    /// `Some(None)` for a campaign that is not a drip.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub drip: Option<Option<CampaignDrip>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub enrollment_open: Option<Option<bool>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub pause_reason: Option<Option<String>>,
+    /// Read-only on the Messaging API; choose segments through the Platform API.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub segment_id: Option<Option<String>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub segment_snapshot: Option<Option<CampaignSegmentSnapshot>>,
     #[serde(flatten)]
     pub extensions: BTreeMap<String, serde_json::Value>,
 }
@@ -282,6 +321,20 @@ pub struct CampaignAnalytics {
     #[serde(deserialize_with = "required_nullable")]
     pub experiment: Option<CampaignExperimentResults>,
     pub follow_ups: CampaignFollowUpReport,
+    /// Recipients with a message skipped by the contact frequency cap.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub frequency_cap: Option<CampaignFrequencyCapAnalytics>,
+    /// Per-step drip results; `Some(None)` for a campaign that is not a drip.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub drip: Option<Option<CampaignDripStats>>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -380,7 +433,7 @@ pub struct RequeueCampaignRequest {
 }
 model!(CampaignRequeueResult{requeued:u64;});
 macro_rules! nullable{($($field:ident:$ty:ty),*$(,)?)=>{#[derive(Clone,Debug,Default,Serialize,Deserialize)]#[serde(rename_all="camelCase")]pub struct UpdateCampaignRequest{#[serde(skip_serializing_if="Option::is_none")]pub name:Option<String>,#[serde(skip_serializing_if="Option::is_none")]pub sender_config:Option<BTreeMap<String,serde_json::Value>>,$(#[serde(default,skip_serializing_if="Option::is_none",deserialize_with="crate::configuration::deserialize_present_option")]pub $field:Option<Option<$ty>>,)*}}}
-nullable!(template_id:String,variable_mapping:CampaignVariableMapping,tracked_links:Vec<CampaignTrackedLink>,recipient_list_id:String,scheduled_at:u64,send_window:CampaignSendWindowRequest,message_variations:Vec<CampaignMessageVariation>,variants:Vec<CampaignVariant>,variant_strategy:CampaignVariantStrategy,follow_up:CampaignFollowUp);
+nullable!(template_id:String,variable_mapping:CampaignVariableMapping,tracked_links:Vec<CampaignTrackedLink>,recipient_list_id:String,scheduled_at:u64,send_window:CampaignSendWindowRequest,message_variations:Vec<CampaignMessageVariation>,variants:Vec<CampaignVariant>,variant_strategy:CampaignVariantStrategy,follow_up:CampaignFollowUp,frequency_cap:CampaignFrequencyCap,drip:CampaignDripPatch);
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateCampaignRequest {
@@ -457,6 +510,20 @@ pub struct CreateCampaignRequest {
         deserialize_with = "crate::configuration::deserialize_present_option"
     )]
     pub follow_up: Option<Option<CampaignFollowUp>>,
+    /// Beta campaign cap stricter than the team cap; `Some(None)` uses the team cap.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub frequency_cap: Option<Option<CampaignFrequencyCap>>,
+    /// Beta drip; `Some(None)` creates an ordinary campaign.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub drip: Option<Option<CampaignDripInput>>,
 }
 impl ListCampaignRecipientsParameters {
     fn validate(&self) -> Result<()> {
@@ -563,6 +630,8 @@ impl MessagingCampaigns<'_> {
             && body.template_id.is_none()
             && body.variable_mapping.is_none()
             && body.tracked_links.is_none()
+            && body.frequency_cap.is_none()
+            && body.drip.is_none()
         {
             return Err(Error::local(
                 ErrorKind::Validation,
@@ -841,6 +910,25 @@ pub struct CreatePlatformCampaignRequest {
         deserialize_with = "crate::configuration::deserialize_present_option"
     )]
     pub follow_up: Option<Option<CampaignFollowUp>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub frequency_cap: Option<Option<CampaignFrequencyCap>>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub drip: Option<Option<CampaignDripInput>>,
+    /// Beta saved segment evaluated at launch. Create permits omission, not null.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub segment_id: Option<String>,
 }
 // The open update body names the documented fields, preserving any later API field.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -852,6 +940,14 @@ pub struct UpdatePlatformCampaignRequest {
         deserialize_with = "optional_nonnull"
     )]
     pub messages_array: Option<Vec<CampaignMessage>>,
+    /// `Some(None)` clears the saved segment. Unlaunched drafts only.
+    #[serde(
+        rename = "segmentId",
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub segment_id: Option<Option<String>>,
     #[serde(flatten)]
     pub changes: UpdateCampaignRequest,
     #[serde(flatten)]
@@ -979,6 +1075,20 @@ pub struct CampaignMessage {
         deserialize_with = "optional_nonnull"
     )]
     pub delay_after_sec: Option<u32>,
+    /// Display unit; the delay must be a whole multiple of it.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub delay_unit: Option<CampaignDelayUnit>,
+    /// Later drip steps only; `Some(None)` removes a step window.
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "crate::configuration::deserialize_present_option"
+    )]
+    pub send_window: Option<Option<CampaignStepWindow>>,
     #[serde(flatten)]
     pub extensions: BTreeMap<String, serde_json::Value>,
 }
@@ -1034,7 +1144,8 @@ impl PlatformCampaigns<'_> {
         mut options: RequestOptions,
     ) -> Result<ApiResponse<crate::models::DataEnvelope<PlatformCampaign>>> {
         if let Some(messages) = &body.messages_array {
-            validate_message_extensions(messages)?;
+            let drip = matches!(body.drip, Some(Some(_)));
+            validate_message_extensions(messages, drip)?;
         }
         validate_input(body, true, false)?;
         options.max_network_retries = Some(0);
@@ -1101,13 +1212,16 @@ impl PlatformCampaigns<'_> {
                 "variantStrategy",
                 "followUp",
                 "messagesArray",
+                "frequencyCap",
+                "drip",
+                "segmentId",
             ] {
                 if body.extensions.contains_key(key) {
                     return Err(input_error());
                 }
             }
             if let Some(messages) = &body.messages_array {
-                validate_message_extensions(messages)?;
+                validate_message_extensions(messages, true)?;
             }
             validate_input(body, true, true)?;
         }
@@ -1362,6 +1476,213 @@ impl PlatformCampaigns<'_> {
                 &[],
                 body,
                 options,
+            )
+            .await
+    }
+}
+
+/// Rolling per-contact limits; `None` means no additional limit for that window.
+/// `max_per_24_hours` is 1..50 and cannot exceed `max_per_7_days` (1..200).
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CampaignFrequencyCap {
+    #[serde(deserialize_with = "required_nullable")]
+    pub max_per_24_hours: Option<u32>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub max_per_7_days: Option<u32>,
+}
+/// The team cap. `revision` is 0 and `updated_at` is `None` until first saved.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CampaignFrequencyCapSettings {
+    pub team_id: String,
+    #[serde(deserialize_with = "required_nullable")]
+    pub max_per_24_hours: Option<u32>,
+    #[serde(deserialize_with = "required_nullable")]
+    pub max_per_7_days: Option<u32>,
+    pub revision: u64,
+    #[serde(deserialize_with = "required_nullable")]
+    pub updated_at: Option<u64>,
+}
+/// Complete replacement with the revision from the last read.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateCampaignFrequencyCapRequest {
+    pub max_per_24_hours: Option<u32>,
+    pub max_per_7_days: Option<u32>,
+    pub revision: u64,
+}
+model!(CampaignFrequencyCapAnalytics{skipped_recipient_count:u64;});
+wire_enum!(CampaignDripEnrollment{Audience="audience",Continuous="continuous"});
+/// Stored drip settings. A GET of a tracked link counts as a click, including
+/// link previews and scanners.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CampaignDrip {
+    pub enrollment: CampaignDripEnrollment,
+    pub exit_on_reply: bool,
+    pub exit_on_link_click: bool,
+}
+/// Create settings; the API applies audience, true and false to omitted fields.
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CampaignDripInput {
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub enrollment: Option<CampaignDripEnrollment>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub exit_on_reply: Option<bool>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub exit_on_link_click: Option<bool>,
+}
+/// Partial settings. Omitted fields keep their stored values; no defaults apply.
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct CampaignDripPatch {
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub enrollment: Option<CampaignDripEnrollment>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub exit_on_reply: Option<bool>,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub exit_on_link_click: Option<bool>,
+}
+model!(CampaignDripStepStats{step:u32,entered:u64,waiting:u64,sent:u64,delivered:u64,read:u64,replied:u64,exited:u64,failed:u64;});
+model!(CampaignDripStats{enrollment:CampaignDripEnrollment,enrolled:u64,enrolled_by_api:u64,active:u64,completed:u64,exited:u64,steps:Vec<CampaignDripStepStats>;});
+/// Values that appear in `CampaignRecipient::sequence_error`; arbitrary send
+/// failure codes also occur there.
+pub const CAMPAIGN_DRIP_EXIT_REASONS: [&str; 3] = ["replied", "link_clicked", "opted_out"];
+model!(CampaignSegmentSnapshot{revision:u64,evaluated_at:u64,matched_count:u64;});
+wire_enum!(CampaignDelayUnit{Minutes="minutes",Hours="hours",Days="days"});
+/// Replaces the campaign weekdays and hours for a later drip step; at most four ranges.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CampaignStepWindow {
+    pub days: Vec<CampaignWeekday>,
+    pub hours: Vec<CampaignSendWindowRange>,
+}
+/// A phone already in the drip returns `created: false` and never restarts.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EnrollCampaignContactRequest {
+    pub phone: String,
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "optional_nonnull"
+    )]
+    pub variables: Option<BTreeMap<String, CampaignVariableValue>>,
+}
+/// Organization API keys select the owning project explicitly.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EnrollPlatformCampaignContactRequest {
+    pub project_id: String,
+    #[serde(flatten)]
+    pub contact: EnrollCampaignContactRequest,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CampaignEnrollment {
+    pub campaign_id: String,
+    pub recipient_id: String,
+    pub phone: String,
+    pub created: bool,
+    pub status: String,
+    /// Unix milliseconds.
+    pub enrolled_at: f64,
+}
+fn sent_once(mut options: RequestOptions) -> RequestOptions {
+    options.max_network_retries = Some(0);
+    options
+}
+const FREQUENCY_CAP: &str = "/platform/campaign-settings/frequency-cap";
+impl PlatformCampaigns<'_> {
+    /// Team cap. Organization API key with campaigns:read.
+    pub async fn get_frequency_cap(
+        &self,
+        options: RequestOptions,
+    ) -> Result<ApiResponse<crate::models::DataEnvelope<CampaignFrequencyCapSettings>>> {
+        self.0.get(FREQUENCY_CAP, options).await
+    }
+    /// Replaces both limits with the last read revision. A stale revision returns
+    /// `ErrorKind::Conflict`; read again and reconcile. Limits require beta access.
+    /// Sent once: reconcile a lost response with a fresh read.
+    pub async fn update_frequency_cap(
+        &self,
+        body: &UpdateCampaignFrequencyCapRequest,
+        options: RequestOptions,
+    ) -> Result<ApiResponse<crate::models::DataEnvelope<CampaignFrequencyCapSettings>>> {
+        self.0
+            .request(
+                Method::PUT,
+                FREQUENCY_CAP,
+                &[],
+                Some(body),
+                sent_once(options),
+            )
+            .await
+    }
+    /// Adds a contact to a running or paused continuous drip. Sent once: per-phone
+    /// server idempotency does not make an ambiguous retry safe.
+    pub async fn enroll(
+        &self,
+        id: &str,
+        body: &EnrollPlatformCampaignContactRequest,
+        options: RequestOptions,
+    ) -> Result<ApiResponse<crate::models::DataEnvelope<CampaignEnrollment>>> {
+        if !crate::campaign_existing::uuid(&body.project_id) {
+            return Err(input_error());
+        }
+        self.0
+            .request(
+                Method::POST,
+                &format!("{}/enrollments", platform_campaign(id)),
+                &[],
+                Some(body),
+                sent_once(options),
+            )
+            .await
+    }
+}
+impl MessagingCampaigns<'_> {
+    /// Adds a contact to a running or paused continuous drip; sent once.
+    pub async fn enroll(
+        &self,
+        project: &str,
+        id: &str,
+        body: &EnrollCampaignContactRequest,
+        options: RequestOptions,
+    ) -> Result<ApiResponse<SuccessEnvelope<CampaignEnrollment>>> {
+        self.0
+            .request(
+                Method::POST,
+                &format!("{}/enrollments", messaging_campaign(project, id)),
+                &[],
+                Some(body),
+                sent_once(options),
             )
             .await
     }

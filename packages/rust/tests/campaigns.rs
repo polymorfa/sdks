@@ -318,6 +318,7 @@ async fn platform_campaign_drafts_open_fields_and_recipient_contracts_native_wir
     );
     let patch = UpdatePlatformCampaignRequest {
         messages_array: None,
+        segment_id: None,
         changes: UpdateCampaignRequest {
             name: Some("Changed".into()),
             send_window: Some(None),

@@ -193,7 +193,16 @@ fn alternatives(v: &Value, variants: bool, platform: bool) -> Result<()> {
     }
     Ok(())
 }
-pub(crate) fn validate_message_extensions(messages: &[CampaignMessage]) -> Result<()> {
+const ORDINARY_MAX_DELAY: u32 = 86400;
+const DRIP_MAX_DELAY: u32 = 2592000;
+/// `drip` admits 30-day steps: drip creates and every PATCH, which can target a
+/// stored drip. The API keeps delay-unit, eligibility and stored-state authority.
+pub(crate) fn validate_message_extensions(messages: &[CampaignMessage], drip: bool) -> Result<()> {
+    let max_delay = if drip {
+        DRIP_MAX_DELAY
+    } else {
+        ORDINARY_MAX_DELAY
+    };
     fn reserved(map: &std::collections::BTreeMap<String, Value>, keys: &[&str]) -> Result<()> {
         if keys.iter().any(|k| map.contains_key(*k)) {
             Err(input_error())
@@ -214,9 +223,11 @@ pub(crate) fn validate_message_extensions(messages: &[CampaignMessage]) -> Resul
                 "buttons",
                 "footer",
                 "delayAfterSec",
+                "delayUnit",
+                "sendWindow",
             ],
         )?;
-        if m.delay_after_sec.is_some_and(|n| n > 86400) {
+        if m.delay_after_sec.is_some_and(|n| n > max_delay) {
             return Err(input_error());
         }
         if let Some(media) = &m.media {
@@ -265,10 +276,11 @@ pub(crate) fn validate_input<T: Serialize>(body: &T, platform: bool, patch: bool
             return Err(input_error());
         }
     }
+    let drip = patch || v.get("drip").is_some_and(|d| !d.is_null());
     if let Some(v) = v.get("messagesArray") {
         let messages: Vec<CampaignMessage> =
             serde_json::from_value(v.clone()).map_err(|_| input_error())?;
-        validate_message_extensions(&messages)?;
+        validate_message_extensions(&messages, drip)?;
     }
     Ok(())
 }

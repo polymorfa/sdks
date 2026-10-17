@@ -272,6 +272,43 @@ Graph route-choice header for raw requests. It does not grant access to a transp
 
 Call placement accepts optional `session`, `to` and `video`. Group/participant calls omit `to`; client-token calls omit `session`. Omitting `video` preserves the server default. Streamed API downloads enforce the configured timeout while reading the response body. Organization keys reject every reserved special-purpose token prefix, including padded values.
 
+### Contact frequency caps, audience segments and drips (beta)
+
+These methods follow `contracts/campaign-frequency-cap.json` and
+`contracts/campaign-segments-drip.json`. They do not enroll a team in a beta;
+the API returns `403 feature_unavailable` when a team lacks access.
+
+`campaigns().get_frequency_cap` returns the team limits, `revision` and
+`updated_at` (`None` until first saved). `update_frequency_cap` replaces both
+windows with the revision you read; `None` limits remove them. The PUT is sent
+once, and a stale revision returns `ErrorKind::Conflict`, so read again and
+reconcile. Campaign create and update take `frequency_cap` (`Some(None)`
+removes a campaign cap), recipients report
+`CampaignRecipientFailureReason::FrequencyCap`, and analytics add
+`frequency_cap.skipped_recipient_count`.
+
+`OrganizationClient::audience_segments` lists, retrieves, creates, updates and
+deletes saved segments, and previews a saved segment or unsaved rules. Project
+clients have no segment methods. `AudienceSegmentCondition` variants carry typed
+values, using `serde_json::Number` so numbers keep their exact spelling;
+conditions the SDK does not model decode as `Unknown` and are rejected in
+requests. Updates and deletes need the last observed revision. Writes and both
+previews are sent once; a 409 `state_conflict` means a stale revision or an
+evaluation timeout, so re-read or simplify the rules.
+
+Platform create takes `segment_id` (omission only) and update takes
+`segment_id: Some(None)` to clear it. `drip` takes `CampaignDripInput` on create
+and a partial `CampaignDripPatch` on update; the SDK applies no defaults and
+omitted fields keep their stored values. Drip steps take `delay_unit` and a
+per-step `send_window`. Ordinary creates allow `delay_after_sec` up to 86400;
+drip creates and every PATCH allow up to 2592000, and the API checks the stored
+drip, delay unit and eligibility. `enroll` on both campaign resources adds a
+contact to a continuous drip and is never retried automatically. Campaign reads
+expose `drip`, `enrollment_open`, `pause_reason`, `segment_id` and
+`segment_snapshot`; analytics expose per-step `drip` results.
+`UpdatePlatformCampaignRequest` gained a public `segment_id` field, so
+exhaustive struct literals need `segment_id: None` or `..Default::default()`.
+
 ## Customer-owned media, history and Signal service
 
 These development helpers follow TypeScript `254fc6a2d073e7fc79420cf95f9b03927d00c04a`

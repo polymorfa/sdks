@@ -184,6 +184,7 @@ async fn campaign_typed_mapping_null_patches_open_messages_and_normalized_result
         project_id: PROJECT41.into(),
     };
     let patch = UpdatePlatformCampaignRequest {
+        segment_id: None,
         changes: UpdateCampaignRequest {
             template_id: Some(None),
             variable_mapping: Some(None),

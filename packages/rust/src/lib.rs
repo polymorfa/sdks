@@ -5,6 +5,7 @@
 compile_error!("polymorfa-sdk is server-only. Use @polymorfa/browser and @polymorfa/elements in browser/WASM applications.");
 
 pub mod account;
+pub mod audience_segments;
 pub mod audiences;
 pub mod billing;
 pub mod bridge;
