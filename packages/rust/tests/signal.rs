@@ -400,3 +400,38 @@ async fn actual_service_auth_and_sessions_contract() {
     .unwrap();
     stop.cancel();
 }
+#[tokio::test]
+async fn client_rejects_reserved_polymorfa_secrets_before_requests() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let url = format!("http://{}", listener.local_addr().unwrap());
+    // Synthetic values shaped like Polymorfa credentials. None is a real secret.
+    for secret in [
+        format!("pmfa_{}", "A".repeat(72)),
+        format!("pmfa_pt_{}A", "B".repeat(93)),
+        "pmfa_ct_synthetic-client-token-value".to_owned(),
+        "pmfa_ls_synthetic-link-session-value".to_owned(),
+        "pmfa_at_synthetic-special-purpose-value".to_owned(),
+        "pmfa_wst_synthetic-socket-ticket-value".to_owned(),
+        "pmfa_sd_synthetic-session-device-value".to_owned(),
+        "pmfa_independent_looking_but_reserved".to_owned(),
+    ] {
+        let Err(error) = SignalClient::new(SignalClientOptions::new(url.clone(), secret.clone()))
+        else {
+            panic!("reserved Signal application secret accepted")
+        };
+        assert_eq!(error.kind, ErrorKind::Configuration);
+        assert!(!error.to_string().contains(&secret));
+    }
+    assert!(
+        tokio::time::timeout(Duration::from_millis(50), listener.accept())
+            .await
+            .is_err(),
+        "reserved secret configuration reached the network"
+    );
+    for valid in [
+        "PMFA_uppercase-is-not-reserved",
+        "xpmfa_not-a-prefix-fixture",
+    ] {
+        assert!(SignalClient::new(SignalClientOptions::new(url.clone(), valid)).is_ok());
+    }
+}

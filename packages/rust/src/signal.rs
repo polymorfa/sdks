@@ -15,6 +15,8 @@ const BODY_LIMIT: usize = 4 * 1024 * 1024;
 #[derive(Clone)]
 pub struct SignalClientOptions {
     pub base_url: String,
+    /// Independent bearer secret of at least 16 visible ASCII characters. Values
+    /// starting with the reserved `pmfa_` credential prefix are rejected.
     pub application_secret: String,
     pub timeout: Duration,
     /// Configure DNS/proxy/trust. Redirects and credential policy remain SDK-owned.
@@ -194,6 +196,7 @@ impl SignalClient {
             || url.fragment().is_some()
             || options.timeout.is_zero()
             || options.application_secret.len() < 16
+            || options.application_secret.starts_with("pmfa_")
             || !options
                 .application_secret
                 .bytes()

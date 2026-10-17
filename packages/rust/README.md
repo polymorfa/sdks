@@ -336,7 +336,8 @@ schema. This is narrower typed support than TypeScript's complete generated
 history schema, without importing the Signal core into this MIT package.
 
 `signal::SignalClient` takes the service URL and a separate application bearer
-secret. It runs on servers, sends no Origin header, refuses redirects, and never
+secret of at least 16 visible ASCII characters; `SignalClient::new` returns a
+configuration error for values beginning with `pmfa_` before any request. It runs on servers, sends no Origin header, refuses redirects, and never
 receives a Signal master or session key. Its native SSE stream has no resume
 cursor and never automatically acknowledges an event. Commit application data
 before `ack`; repeated delivery is possible. `verify_signal_webhook` verifies
