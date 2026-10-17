@@ -7,9 +7,18 @@ namespace Polymorfa;
 /** @internal Validation of changed campaign inputs, separate from response facts. */
 final class ExistingCampaignValidation
 {
+    private const WHITESPACE = '[\x{0009}-\x{000d}\x{0020}\x{00a0}\x{1680}\x{2000}-\x{200a}\x{2028}\x{2029}\x{202f}\x{205f}\x{3000}\x{feff}]';
+
     /** @param array<string,mixed> $body */
     public static function input(array $body, bool $platform = false, bool $patch = false): void
     {
+        if ($platform && $patch) {
+            foreach (['projectId', 'id'] as $field) {
+                if (array_key_exists($field, $body)) {
+                    CampaignContractValidation::invalid($field);
+                }
+            }
+        }
         if (!$platform && $patch && $body === []) {
             CampaignContractValidation::invalid('body');
         }
@@ -83,7 +92,7 @@ final class ExistingCampaignValidation
         $host = strtolower(rtrim($url['host'] ?? '', '.'));
         // Syntactic public HTTPS policy only. No DNS or reachability claim.
         $normalized = preg_replace_callback('/[^\x21-\x7e]/u', static fn (array $m): string => rawurlencode($m[0]), $raw) ?? '';
-        if ($url === false || preg_match('/[\s\x00-\x20\x7f\\\\]/u', $raw) || ($url['scheme'] ?? '') !== 'https' || isset($url['user']) || isset($url['pass']) || CampaignContractValidation::length($normalized) > 2048 || !str_contains($host, '.') || str_starts_with($host, '[') || preg_match('/^[0-9.]+$/D', $host) || preg_match('/\.[0-9]+$/D', $host) || preg_match('/\.(local|internal|localhost)$/D', $host)) {
+        if ($url === false || preg_match('/(?:'.self::WHITESPACE.'|[\x00-\x20\x7f\\\\])/u', $raw) || strtolower($url['scheme'] ?? '') !== 'https' || isset($url['user']) || isset($url['pass']) || CampaignContractValidation::length($normalized) > 2048 || !str_contains($host, '.') || str_starts_with($host, '[') || preg_match('/^[0-9.]+$/D', $host) || preg_match('/\.[0-9]+$/D', $host) || preg_match('/\.(local|internal|localhost)$/D', $host)) {
             CampaignContractValidation::invalid('trackedLinks.url');
         }
     }
@@ -99,7 +108,7 @@ final class ExistingCampaignValidation
         $m = CampaignContractValidation::object($v['message'], 'followUp.message');
         if (($m['type'] ?? null) === 'text') {
             CampaignContractValidation::fields($m, ['type','text'], ['type','text'], 'followUp.message');
-            if (preg_match('/\{\{\s*link:/i', CampaignContractValidation::text($m['text'], 'followUp.message.text', 1, 16384))) {
+            if (preg_match('/\{\{'.self::WHITESPACE.'*[lL][iI][nN][kK]:/u', CampaignContractValidation::text($m['text'], 'followUp.message.text', 1, 16384))) {
                 CampaignContractValidation::invalid('followUp.message.text');
             }
         } else {

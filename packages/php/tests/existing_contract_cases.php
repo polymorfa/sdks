@@ -99,3 +99,15 @@ foreach ([[],['signalMode' => 'standard'],['signalMode' => 'zero_knowledge'],['c
     $ecRun('POST', '/messaging/quicklinks', $input === [] ? (object)[] : $input, $ecEnvelope($ecLink), fn () => $ecMessaging->quickLinks->create($input), ['version' => $new ? '2026-10-14' : '2026-09-22']);
     $ecRun('POST', '/messaging/quicklinks', $input === [] ? (object)[] : $input, $ecEnvelope($ecLink), fn () => $ecMessaging->quickLinks->create($input, new Polymorfa\RequestOptions(apiVersion:'2026-09-22')));
 }
+
+// Exact JavaScript whitespace semantics retain NEL and non-ASCII case characters as literal text.
+foreach (["{{\u{0085}LiNk:a}}", "{{lin\u{212a}:a}}"] as $text) {
+    $input = ['followUp' => ['message' => ['type' => 'text', 'text' => $text]]];
+    $returned = array_replace($ecCampaign, ['followUp' => ['delaySeconds' => 86400, 'expirySeconds' => 604800, 'message' => ['type' => 'text', 'text' => $text]]]);
+    $ecRun('PATCH', $ecPath, $input, $ecEnvelope($returned), fn () => $ecMessaging->campaigns->update('slug', $ecId, $input));
+}
+foreach ([['https://example.com/'."\u{0085}", 'https://example.com/%C2%85'], ['HTTPS://EXAMPLE.com', 'https://example.com/']] as [$raw, $normalized]) {
+    $input = ['trackedLinks' => [['key' => 'a', 'url' => $raw]]];
+    $returned = array_replace($ecCampaign, ['trackedLinks' => [['key' => 'a', 'url' => $normalized]]]);
+    $ecRun('PATCH', $ecPath, $input, $ecEnvelope($returned), fn () => $ecMessaging->campaigns->update('slug', $ecId, $input));
+}

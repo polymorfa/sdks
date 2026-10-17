@@ -721,7 +721,7 @@ PATCH also accepts `templateId: null`, `variableMapping: null` and
 `trackedLinks: null`. PHP uses associative arrays for maps. Numeric keys such as
 `'0'` and empty bindings `[]` are encoded as JSON objects. Lists stay arrays.
 Platform `messagesArray` accepts open composed message shapes, including an
-empty draft object. Platform PATCH remains open. Launch takes a closed request
+empty draft object. Platform PATCH remains open. Its body cannot replace the selected `projectId` or path `id`. Launch takes a closed request
 with `projectId`, optional `scheduledAt` and `skipMissingVariables`.
 
 Recipient lists accept `reason`, `status`, `cursor` and `limit` together. Their

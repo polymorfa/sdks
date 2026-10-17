@@ -19,5 +19,7 @@ function invalidExistingContracts(Polymorfa\Client $org, Polymorfa\MessagingClie
     $m->quickLinks->create(['signalMode' => 'invalid']);
     $m->messages->send('s', ['conversation' => ['id' => 'chat'],'content' => ['sticker' => []]]);
     $m->historySync->requestChunkRetry('s', ['syncType' => 'UNKNOWN','chunkOrder' => 0]);
+    $org->campaigns->update($id, ['projectId' => $p], ['projectId' => $p]);
+    $org->campaigns->update($id, ['id' => $id], ['projectId' => $p]);
     $m->quickLinks->getQuickLinkState('secret');
 }

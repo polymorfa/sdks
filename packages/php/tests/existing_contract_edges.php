@@ -7,6 +7,10 @@ $ecNoIO = static function (callable $invoke, string $type = Polymorfa\Configurat
     ecRaises($invoke, $type);
     ecCheck(count($ecObserved()) === $before, 'Invalid input refused before HTTP');
 };
+foreach (["\u{00a0}", "\u{feff}"] as $space) {
+    $ecNoIO(fn () => $ecMessaging->campaigns->create('slug', ['name' => 'Draft', 'followUp' => ['message' => ['type' => 'text', 'text' => '{{'.$space.'LiNk:a}}']]]));
+    $ecNoIO(fn () => $ecMessaging->campaigns->create('slug', ['name' => 'Draft', 'trackedLinks' => [['key' => 'a', 'url' => 'https://example.com/'.$space]]]));
+}
 foreach ([['variableMapping' => null],['variableMapping' => ['bad key' => []]],['variableMapping' => array_fill_keys(range(0, 50), [])],['variableMapping' => ['0' => ['source' => null]]],['variableMapping' => ['0' => ['fallback' => null]]],['variableMapping' => ['0' => ['future' => true]]],['variableMapping' => ['0' => ['fallback' => "\xef\xbb\xbf"]]],['variableMapping' => ['0' => ['fallback' => str_repeat('😀', 513)]]],['trackedLinks' => array_fill(0, 6, ['key' => 'a','url' => 'https://example.com'])],['trackedLinks' => [['key' => 'a','url' => 'https://example.com'],['key' => 'a','url' => 'https://elsewhere.com']]],['trackedLinks' => [['key' => 'A','url' => 'https://example.com']]],['trackedLinks' => [['key' => 'a','url' => 'http://example.com']]],['trackedLinks' => [['key' => 'a','url' => 'https://u:p@example.com']]],['trackedLinks' => [['key' => 'a','url' => 'https://127.0.0.1']]],['trackedLinks' => [['key' => 'a','url' => 'https://foo.local']]],['trackedLinks' => [['key' => 'a','url' => 'https://example.com/'.str_repeat('😀', 200)]]],['followUp' => ['delaySeconds' => 604800,'message' => ['type' => 'text','text' => 'x']]],['followUp' => ['expirySeconds' => 86400,'message' => ['type' => 'text','text' => 'x']]],['followUp' => ['message' => ['type' => 'text','text' => '{{ LiNk:a }}']]],['followUp' => ['message' => ['type' => 'template','templateId' => 'not-uuid']]]] as $bad) {
     $ecNoIO(fn () => $ecMessaging->campaigns->create('slug', ['name' => 'Draft'] + $bad));
 }
@@ -15,6 +19,9 @@ foreach ([['messagesArray' => array_fill(0, 11, [])],['messagesArray' => [['dela
 }
 foreach ([['projectId' => $ecProject,'skipMissingVariables' => false,'extra' => 0],['skipMissingVariables' => true],['projectId' => $ecProject,'scheduledAt' => null]] as $bad) {
     $ecNoIO(fn () => $ecOrg->campaigns->launch($ecId, $bad));
+}
+foreach ([['projectId' => $ecBProject], ['projectId' => null], ['id' => 'foreign'], ['id' => null]] as $bad) {
+    $ecNoIO(fn () => $ecOrg->campaigns->update($ecId, $bad, ['projectId' => $ecProject]));
 }
 $ecNoIO(fn () => $ecMessaging->campaigns->update('slug', $ecId, []));
 foreach ([['reason' => 'invented'],['reason' => null],['limit' => 0],['limit' => 101],['cursor' => str_repeat('x', 257)],['status' => 'unknown'],['extra' => true]] as $params) {

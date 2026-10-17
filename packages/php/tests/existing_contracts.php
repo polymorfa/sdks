@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__).'/vendor/autoload.php';
-$ecAssertions = 0;
+$GLOBALS['ecAssertions'] = 0;
 function ecCheck(bool $condition, string $message): void
 {
     ++$GLOBALS['ecAssertions'];
@@ -63,7 +63,7 @@ try {
     require __DIR__.'/existing_contract_cases.php';
     require __DIR__.'/existing_contract_nine.php';
     require __DIR__.'/existing_contract_edges.php';
-    echo $ecCount." PHP41 independent public HTTP checks and ".$ecAssertions." assertions passed.\n";
+    echo $ecCount." PHP41 independent public HTTP checks and ".$GLOBALS['ecAssertions']." assertions passed.\n";
 } finally {
     proc_terminate($ecServer);
     foreach ($ecPipes as $pipe) {
