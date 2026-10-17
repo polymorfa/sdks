@@ -6,7 +6,7 @@ use super::{
 use crate::*;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StorageEvent {
     pub id: String,
@@ -16,6 +16,24 @@ pub struct StorageEvent {
     #[serde(default)]
     pub payload: Value,
 }
+impl std::fmt::Debug for StorageEvent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let payload: &dyn std::fmt::Debug =
+            if self.event == "history.sync" && self.payload.get("delivery").is_some() {
+                &"[redacted history descriptor]"
+            } else {
+                &self.payload
+            };
+        f.debug_struct("StorageEvent")
+            .field("id", &self.id)
+            .field("session", &self.session)
+            .field("timestamp", &self.timestamp)
+            .field("event", &self.event)
+            .field("payload", payload)
+            .finish()
+    }
+}
+
 pub const STORED_EVENT_TYPES: &[&str] = &[
     "blocklist.update",
     "chat.archive",

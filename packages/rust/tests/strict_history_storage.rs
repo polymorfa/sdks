@@ -120,6 +120,7 @@ async fn real_archive_decoder_failure_prevents_content_progress_checkpoint_and_a
             StorageSyncOptions {
                 apply: ApplyEventOptions {
                     decode_history: Some(&ArchiveDecoder),
+                    ..Default::default()
                 },
                 ..Default::default()
             },

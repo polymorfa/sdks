@@ -1,4 +1,5 @@
 //! Opt-in persistence for verified events. Trust and application ACK authority stay with the caller.
+mod history_descriptor;
 use crate::{
     reducer::{
         events::{reduce_event, StorageEvent, STORED_EVENT_TYPES},
@@ -72,12 +73,61 @@ pub trait HistoryChunkDecoder: AdapterBounds {
 #[derive(Clone, Copy, Default)]
 pub struct ApplyEventOptions<'a> {
     pub decode_history: Option<&'a dyn HistoryChunkDecoder>,
+    pub decode_history_descriptor: Option<&'a dyn HistoryDescriptorDecoder>,
+    pub history_descriptor_mode: HistoryDescriptorMode,
+}
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum HistoryDescriptorMode {
+    #[default]
+    Decode,
+    MetadataOnly,
+}
+/// Caller owns authorized download and complete-schema decoding/application projection.
+/// The non-null return is intentional; deliberate consumption uses MetadataOnly.
+pub trait HistoryDescriptorDecoder: AdapterBounds {
+    fn decode<'a>(
+        &'a self,
+        payload: &'a Value,
+        event: &'a StorageEvent,
+    ) -> StorageFuture<'a, HistorySyncChunk>;
 }
 pub async fn apply_event(
     storage: &Storage,
     event: &StorageEvent,
     options: ApplyEventOptions<'_>,
 ) -> StorageResult<engine::ApplyResult> {
+    if event.event == "history.sync" && event.payload.get("delivery").is_some() {
+        history_descriptor::validate(&event.payload)?;
+        if storage.has_event(&event.session, &event.id).await? {
+            return Ok(engine::ApplyResult {
+                applied: false,
+                writes: 0,
+            });
+        }
+        let mut batch = reduce_event(event);
+        if options.history_descriptor_mode == HistoryDescriptorMode::MetadataOnly {
+            return storage.apply(&batch).await;
+        }
+        let decoder = options
+            .decode_history_descriptor
+            .ok_or(StorageError::Invalid(
+                "A history descriptor decoder is required.",
+            ))?;
+        let chunk = decoder
+            .decode(&event.payload, event)
+            .await
+            .map_err(|_| StorageError::Invalid("Failed to decode history descriptor."))?;
+        let history = reduce_history_chunk(&HistoryChunkInput {
+            session_id: event.session.clone(),
+            chunk,
+            identities: None,
+            chunk_id: None,
+        });
+        let mut operations = history.operations;
+        operations.extend(batch.operations);
+        batch.operations = operations;
+        return storage.apply(&batch).await;
+    }
     let mut batch = reduce_event(event);
     if event.event == "history.sync" && event.payload["kind"] != "history" {
         if let Some(decoder) = options.decode_history {

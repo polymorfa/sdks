@@ -737,3 +737,41 @@ incompatible-rust-versions = "fallback"
 Dependency-local Cargo configuration does not configure the consuming app. The
 independent artifact checks use this setting; retain the application's lockfile
 for reproducible builds.
+
+### Descriptor history storage
+
+`HistoryChunkDecoder` remains archive-only, with its existing raw payload/event
+arguments and nullable progress-only result. Projected media/inline descriptors
+use the separate `HistoryDescriptorDecoder` trait. Its `decode` receives the
+validated raw public `Value` and original `StorageEvent`, and returns
+`StorageFuture<HistorySyncChunk>` without `Option`. For example, configure your
+application's decoder with:
+
+```rust,ignore
+let options = ApplyEventOptions {
+    decode_history_descriptor: Some(&decoder),
+    ..Default::default()
+};
+```
+
+The application owns authorized download, complete-schema decoding and storage
+projection. The public history reader preserves verified protobuf and its
+documented subset; that subset alone is not a generic full-schema decoder.
+Storage-core never downloads media and never imports its consuming SDK.
+Missing or failed decoding stops before progress, marker, checkpoint and ACK.
+Typed callback results exclude null and invalid projection types; deserialization
+failures must return `Err`. A legitimate empty `HistorySyncChunk` is allowed.
+Descriptor diagnostics and decoder errors omit keys, hashes and inline bytes.
+
+Default `history_descriptor_mode: HistoryDescriptorMode::Decode` requires the
+new callback. Explicit `HistoryDescriptorMode::MetadataOnly` validates and
+consumes progress and the event marker, skipping all decoders even when configured.
+Stream sync then saves its checkpoint and manually ACKs. Ordinary replay cannot
+import this event later because it is deduplicated. No automatic backfill or marker
+deletion is provided. Valid duplicates skip decoders before checking availability.
+Descriptor notification IDs never map individual messages. Existing native `wa:`
+fallback keys retain their limits when joining later opaque IDs. Content/marker
+commit precedes checkpoint CAS and ACK; remote ACK failure leaves committed data
+intact. Archive and Cloud behavior remain unchanged. Add `..Default::default()` to
+exhaustive option literals when adopting the new fields. These are local package
+capabilities, without registry or deployed availability claims.

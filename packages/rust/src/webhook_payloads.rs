@@ -469,12 +469,18 @@ impl std::fmt::Debug for DirectHistoryMedia {
         f.write_str("DirectHistoryMedia { [REDACTED] }")
     }
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct DirectHistoryInline {
     pub encoding: DescriptorHistoryInlineEncoding,
     pub data: String,
 }
+impl std::fmt::Debug for DirectHistoryInline {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("DirectHistoryInline { [REDACTED] }")
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DirectHistoryMediaPayload {
     #[serde(flatten)]

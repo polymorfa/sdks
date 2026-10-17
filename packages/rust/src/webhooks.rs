@@ -7,7 +7,7 @@ use hmac::{Hmac, Mac};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WebhookEnvelope {
     pub id: String,
@@ -17,6 +17,24 @@ pub struct WebhookEnvelope {
     pub event: String,
     pub payload: serde_json::Value,
 }
+impl std::fmt::Debug for WebhookEnvelope {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let payload: &dyn std::fmt::Debug =
+            if self.event == "history.sync" && self.payload.get("delivery").is_some() {
+                &"[redacted history descriptor]"
+            } else {
+                &self.payload
+            };
+        f.debug_struct("WebhookEnvelope")
+            .field("id", &self.id)
+            .field("session", &self.session)
+            .field("timestamp", &self.timestamp)
+            .field("event", &self.event)
+            .field("payload", payload)
+            .finish()
+    }
+}
+
 #[derive(Clone, Debug)]
 pub enum WebhookEvent {
     MessageReceived {

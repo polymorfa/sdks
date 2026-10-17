@@ -543,7 +543,8 @@ pub async fn synchronization(adapter: Arc<dyn StorageAdapter>) {
         &storage,
         &event,
         ApplyEventOptions {
-            decode_history: Some(&bad)
+            decode_history: Some(&bad),
+            ..Default::default()
         }
     )
     .await
@@ -555,7 +556,8 @@ pub async fn synchronization(adapter: Arc<dyn StorageAdapter>) {
             &storage,
             &event,
             ApplyEventOptions {
-                decode_history: Some(&good)
+                decode_history: Some(&good),
+                ..Default::default()
             }
         )
         .await
@@ -567,7 +569,8 @@ pub async fn synchronization(adapter: Arc<dyn StorageAdapter>) {
             &storage,
             &event,
             ApplyEventOptions {
-                decode_history: Some(&bad)
+                decode_history: Some(&bad),
+                ..Default::default()
             }
         )
         .await
