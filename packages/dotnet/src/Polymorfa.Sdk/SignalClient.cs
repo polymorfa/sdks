@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace Polymorfa.Sdk;
 
-/// <summary>Server-only application client. This bearer is distinct from a project credential and Signal master/session keys.</summary>
+/// <summary>Server-only application client. This bearer is distinct from a project credential and Signal master/session keys: at least 16 visible ASCII characters, and the reserved <c>pmfa_</c> prefix is rejected before any request.</summary>
 public sealed record SignalClientOptions(Uri BaseUrl, string ApplicationSecret)
 {
     public TimeSpan Timeout { get; init; } = TimeSpan.FromSeconds(30);
@@ -99,7 +99,7 @@ public sealed class SignalClient : IDisposable
     {
         if (OperatingSystem.IsBrowser()) throw new PolymorfaConfigurationException("The Signal service client accepts server applications only.");
         var uri = options.BaseUrl;
-        if (!uri.IsAbsoluteUri || !(uri.Scheme == "https" || uri.Scheme == "http" && uri.IsLoopback) || uri.UserInfo.Length != 0 || uri.Query.Length != 0 || uri.Fragment.Length != 0 || options.ApplicationSecret.Length < 16 || options.ApplicationSecret.Any(c => c < '!' || c > '~') || options.Timeout <= TimeSpan.Zero || options.Timeout.TotalMilliseconds > uint.MaxValue - 1) throw new PolymorfaConfigurationException("Invalid Signal client options.");
+        if (!uri.IsAbsoluteUri || !(uri.Scheme == "https" || uri.Scheme == "http" && uri.IsLoopback) || uri.UserInfo.Length != 0 || uri.Query.Length != 0 || uri.Fragment.Length != 0 || options.ApplicationSecret.Length < 16 || options.ApplicationSecret.StartsWith("pmfa_", StringComparison.Ordinal) || options.ApplicationSecret.Any(c => c < '!' || c > '~') || options.Timeout <= TimeSpan.Zero || options.Timeout.TotalMilliseconds > uint.MaxValue - 1) throw new PolymorfaConfigurationException("Invalid Signal client options.");
         var handler = new SocketsHttpHandler();
         options.ConfigureHttpHandler?.Invoke(handler);
         handler.AllowAutoRedirect = false; handler.UseCookies = false; handler.Credentials = null;

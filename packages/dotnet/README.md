@@ -231,7 +231,9 @@ Common fields have native types; original protobuf bytes, unknown fields and
 application's full-schema decoder. Native history typing covers fewer fields
 than TypeScript's complete generated schema.
 
-`SignalClient` is server-only and uses a separate application bearer secret.
+`SignalClient` is server-only and uses a separate application bearer secret of
+at least 16 visible ASCII characters; values beginning with `pmfa_` throw
+`PolymorfaConfigurationException` before any request.
 It rejects browser execution, sends no Origin header, refuses redirects, and
 never holds Signal master/session keys. Native SSE has no resume cursor or
 automatic acknowledgement. Commit application data before `AcknowledgeAsync`;

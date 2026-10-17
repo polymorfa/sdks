@@ -30,9 +30,23 @@ internal static class SignalTests
         ResourceTests.Equal(Code(() => SignalClient.VerifyWebhook(valid, 100, large, Sign(valid, 100, large), 100, TimeSpan.FromSeconds(5))), "invalid_response");
         Console.WriteLine("PASS Signal webhook key boundary: weak and reserved keys rejected before authentication");
     }
+    internal static void ClientSecrets()
+    {
+        using var fixture = new WireFixture();
+        // Synthetic values shaped like Polymorfa credentials. None is a real secret.
+        foreach (var reserved in new[] { "pmfa_" + new string('A', 72), "pmfa_pt_" + new string('B', 93) + "A", "pmfa_ct_synthetic-client-token-value", "pmfa_ls_synthetic-link-session-value", "pmfa_at_synthetic-special-purpose-value", "pmfa_wst_synthetic-socket-ticket-value", "pmfa_sd_synthetic-session-device-value", "pmfa_independent_looking_but_reserved" })
+        {
+            try { using var rejected = new SignalClient(new(fixture.Url, reserved)); throw new Exception("Reserved Signal application secret accepted"); }
+            catch (PolymorfaConfigurationException error) { ResourceTests.True(!error.Message.Contains(reserved, StringComparison.Ordinal)); }
+        }
+        Thread.Sleep(25); ResourceTests.True(!fixture.Pending);
+        foreach (var valid in new[] { "PMFA_uppercase-is-not-reserved", "xpmfa_not-a-prefix-fixture" }) { using var accepted = new SignalClient(new(fixture.Url, valid)); }
+        Console.WriteLine("PASS Signal client secret boundary: reserved Polymorfa prefixes rejected before any request");
+    }
     internal static async Task RunAsync()
     {
         WebhookKeys();
+        ClientSecrets();
         using var fixture = new WireFixture { Authorization = "Bearer " + Secret, AbsentHeaders = ["origin", "cookie"], FragmentBytes = 7 };
         using var client = new SignalClient(new(fixture.Url, Secret));
         var served = fixture.ServeAsync("GET", "/v1/sessions", null, """{"node_id":"node","sessions":[{"id":"s","lease_generation":2,"claimed":true,"has_device_keys":true,"state":"connected","pn":null,"lid":null}]}""");
