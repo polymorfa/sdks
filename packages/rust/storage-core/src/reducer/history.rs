@@ -680,7 +680,7 @@ fn reduce_web(
                     s,
                     &[("messageId", &target)],
                     mapped.fields,
-                    None,
+                    g,
                 )];
             }
         }

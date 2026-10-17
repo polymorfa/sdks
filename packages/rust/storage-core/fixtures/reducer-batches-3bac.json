@@ -5430,6 +5430,11 @@
                 "value": 1790856001000,
                 "version": 1790856001000
               }
+            },
+            "guard": {
+              "sessionId": "history-contract",
+              "chatId": "wa:111@s.whatsapp.net",
+              "timestamp": 1790856000000
             }
           },
           {
