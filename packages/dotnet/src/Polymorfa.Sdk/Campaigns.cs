@@ -143,8 +143,13 @@ public record UpdateCampaignRequest
     /// <summary>Changes only the fields set; null makes the draft an ordinary campaign.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<CampaignDripPatch> Drip { get; init; }
 }
-public sealed record UpdatePlatformCampaignRequest : UpdateCampaignRequest { public IReadOnlyList<PlatformCampaignMessage>? MessagesArray { get; init; } /// <summary>Unlaunched drafts only; null clears the saved segment.</summary>
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<string> SegmentId { get; init; } [JsonExtensionData] public IDictionary<string, JsonElement>? AdditionalFields { get; init; } }
+public sealed record UpdatePlatformCampaignRequest : UpdateCampaignRequest
+{
+    public IReadOnlyList<PlatformCampaignMessage>? MessagesArray { get; init; }
+    /// <summary>Unlaunched drafts only; null clears the saved segment.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<string> SegmentId { get; init; }
+    [JsonExtensionData] public IDictionary<string, JsonElement>? AdditionalFields { get; init; }
+}
 public sealed record LaunchCampaignRequest(double? ScheduledAt = null, bool? SkipMissingVariables = null);
 public sealed record LaunchPlatformCampaignRequest(string ProjectId, double? ScheduledAt = null, bool? SkipMissingVariables = null);
 public sealed record PlatformCampaignLaunchResult(string Id, string Status, string OperationId)
