@@ -1,0 +1,371 @@
+{
+  "testedSdk": "a01ff3e2ec39cc243a3c81f507b839494ccf484c",
+  "transport": "Synthetic loopback HTTP. No live WhatsApp, registry or pairing acceptance.",
+  "screenshots": [
+    {
+      "host": "fastapi",
+      "state": "desktop",
+      "file": "fastapi-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "pngDimensions": [
+        1280,
+        889
+      ],
+      "sha256": "0f14268265667bedf32a8a4fc898622ff3b8fcbefc997a6cc5c3861f08746264",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "fastapi",
+      "state": "phone",
+      "file": "fastapi-phone.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pngDimensions": [
+        780,
+        1688
+      ],
+      "sha256": "19fecc73ea32e63ff44ef8aaae847c7be6aff8f44f08aaea8fe59a57abc41b00",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "django",
+      "state": "desktop",
+      "file": "django-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "pngDimensions": [
+        1280,
+        889
+      ],
+      "sha256": "0f14268265667bedf32a8a4fc898622ff3b8fcbefc997a6cc5c3861f08746264",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "django",
+      "state": "phone",
+      "file": "django-phone.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pngDimensions": [
+        780,
+        1688
+      ],
+      "sha256": "19fecc73ea32e63ff44ef8aaae847c7be6aff8f44f08aaea8fe59a57abc41b00",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "nethttp",
+      "state": "desktop",
+      "file": "nethttp-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "pngDimensions": [
+        1280,
+        889
+      ],
+      "sha256": "0f14268265667bedf32a8a4fc898622ff3b8fcbefc997a6cc5c3861f08746264",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "nethttp",
+      "state": "phone",
+      "file": "nethttp-phone.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pngDimensions": [
+        780,
+        1688
+      ],
+      "sha256": "19fecc73ea32e63ff44ef8aaae847c7be6aff8f44f08aaea8fe59a57abc41b00",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "gin",
+      "state": "desktop",
+      "file": "gin-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "pngDimensions": [
+        1280,
+        889
+      ],
+      "sha256": "0f14268265667bedf32a8a4fc898622ff3b8fcbefc997a6cc5c3861f08746264",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "gin",
+      "state": "phone",
+      "file": "gin-phone.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pngDimensions": [
+        780,
+        1688
+      ],
+      "sha256": "19fecc73ea32e63ff44ef8aaae847c7be6aff8f44f08aaea8fe59a57abc41b00",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "laravel",
+      "state": "desktop",
+      "file": "laravel-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "pngDimensions": [
+        1280,
+        889
+      ],
+      "sha256": "0f14268265667bedf32a8a4fc898622ff3b8fcbefc997a6cc5c3861f08746264",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "laravel",
+      "state": "phone",
+      "file": "laravel-phone.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pngDimensions": [
+        780,
+        1688
+      ],
+      "sha256": "19fecc73ea32e63ff44ef8aaae847c7be6aff8f44f08aaea8fe59a57abc41b00",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "symfony",
+      "state": "desktop",
+      "file": "symfony-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "pngDimensions": [
+        1280,
+        889
+      ],
+      "sha256": "0f14268265667bedf32a8a4fc898622ff3b8fcbefc997a6cc5c3861f08746264",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "symfony",
+      "state": "phone",
+      "file": "symfony-phone.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pngDimensions": [
+        780,
+        1688
+      ],
+      "sha256": "19fecc73ea32e63ff44ef8aaae847c7be6aff8f44f08aaea8fe59a57abc41b00",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "yew",
+      "state": "desktop",
+      "file": "yew-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "pngDimensions": [
+        1280,
+        889
+      ],
+      "sha256": "f9b08de51239107c4f69416704fa11d1efda39befad417eb1e7e823604d671a8",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "yew",
+      "state": "phone",
+      "file": "yew-phone.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pngDimensions": [
+        780,
+        1688
+      ],
+      "sha256": "bc0c65bded70cda43b799ce0a69fff9dca6ca25aa8cc1491e77220d3edd9ce53",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "aspnet",
+      "state": "phone",
+      "file": "aspnet-phone.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pngDimensions": [
+        780,
+        1688
+      ],
+      "sha256": "06b7c0619e46ab13c39235d910b85666e560232debe56eca11445caaf98e26a5",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "blazor",
+      "state": "desktop",
+      "file": "blazor-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "pngDimensions": [
+        1280,
+        889
+      ],
+      "sha256": "98106da5ea56b2433848c8dc53e2a9e30e9162d5796561b387d664b62f663f29",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "blazor",
+      "state": "phone",
+      "file": "blazor-phone.png",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "pngDimensions": [
+        780,
+        1688
+      ],
+      "sha256": "2b9730aa5885f49f95ca44c7a0296829e2cf6b5561eefe3023a53f37d79ad005",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "aspnet",
+      "state": "desktop",
+      "file": "aspnet-desktop.png",
+      "viewport": {
+        "width": 1440,
+        "height": 640
+      },
+      "pngDimensions": [
+        1280,
+        569
+      ],
+      "sha256": "25c50d4a64268e6b63be331e6acd8489149234a54a2cb640ff0c564a39fee271",
+      "noHorizontalOverflow": true
+    },
+    {
+      "host": "blazor",
+      "state": "token-unavailable",
+      "file": "blazor-token-unavailable.png",
+      "viewport": {
+        "width": 1440,
+        "height": 640
+      },
+      "pngDimensions": [
+        1280,
+        569
+      ],
+      "sha256": "de52b8d598093de6f9a4240b3f1f61d8e66eb2290361d0921464f9cc61c5432e",
+      "noHorizontalOverflow": true
+    }
+  ],
+  "buildResults": [
+    {
+      "label": "python-web_host-assets",
+      "exit": 0,
+      "seconds": 0.52,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "go-web-host-assets",
+      "exit": 0,
+      "seconds": 0.28,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "php-web-host-assets",
+      "exit": 0,
+      "seconds": 0.27,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "dotnet-assets",
+      "exit": 0,
+      "seconds": 0.06,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "rust-trunk",
+      "exit": 2,
+      "seconds": 0.03,
+      "sha256": "db3a86165db664e0eed862a259bb4427bf0f710967421eda6efba57c2dd44ff5"
+    },
+    {
+      "label": "rust-assets",
+      "exit": 0,
+      "seconds": 0.04,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "go-host-build",
+      "exit": 0,
+      "seconds": 9.54,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "rust-trunk",
+      "exit": 0,
+      "seconds": 33.07,
+      "sha256": "7c106918a658cd9bc3300c081e964dada6691bdf006f8dd3539437495035b18f"
+    },
+    {
+      "label": "rust-server-build",
+      "exit": 0,
+      "seconds": 5.13,
+      "sha256": "9ddd0cba872bcdfb878adc39f69fc176989ef9d0b1c390f41c3a23b3334369ab"
+    },
+    {
+      "label": "aspnet-build",
+      "exit": 0,
+      "seconds": 8.79,
+      "sha256": "944b57315ce6eff7c7bb129a3385ea7d54364556ab4f8060c4b6b03cd7326f47"
+    },
+    {
+      "label": "blazor-publish",
+      "exit": 0,
+      "seconds": 8.14,
+      "sha256": "1c0b575c2f7dffcab3f8cae2ee3ba7b036b88c106eef79e7027e4046f7fc317d"
+    },
+    {
+      "label": "blazor-prepare",
+      "exit": 0,
+      "seconds": 0.09,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "maui-build",
+      "exit": 0,
+      "seconds": 13.31,
+      "sha256": "ae1eca8e9ccf047940338a589aa85cda4f3085da376c089b807dc51fba0b37ae"
+    }
+  ]
+}
