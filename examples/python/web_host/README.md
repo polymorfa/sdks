@@ -43,3 +43,5 @@ revocation after sign-out. Both hosts were also exercised in a browser with a
 synthetic upstream: sign-in mounted the real components, one mint served the
 browser session, the empty inbox rendered, and sign-out removed the components.
 No real number, customer credentials or live provider was used.
+
+The Connect number endpoint creates a hosted supplementary linked-device invitation for the server-assigned `POLYMORFA_SESSION`. Assign an eligible Official Number that can add linked devices. The API still checks assignment, eligibility, consent and funding. Browser fields cannot choose another Number or change custody. This does not create an initial Number or establish live WhatsApp pairing.

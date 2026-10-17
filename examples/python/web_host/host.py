@@ -17,9 +17,7 @@ from polymorfa import AsyncMessagingClient, Credential
 
 ROOT = Path(__file__).resolve().parent
 COOKIE = "polymorfa_example_session"
-templates = Environment(
-    loader=FileSystemLoader(ROOT / "templates"), autoescape=select_autoescape()
-)
+templates = Environment(loader=FileSystemLoader(ROOT / "templates"), autoescape=select_autoescape())
 
 
 @dataclass(frozen=True)
@@ -32,20 +30,12 @@ class Reply:
 class Host:
     def __init__(self) -> None:
         self.username = os.environ["EXAMPLE_APP_USERNAME"]
-        self.password = hashlib.sha256(
-            os.environ["EXAMPLE_APP_PASSWORD"].encode()
-        ).digest()
+        self.password = hashlib.sha256(os.environ["EXAMPLE_APP_PASSWORD"].encode()).digest()
         self.session = os.environ["POLYMORFA_SESSION"]
         self.origin = os.environ.get("EXAMPLE_APP_ORIGIN", "http://127.0.0.1:8080")
         self.api = os.environ.get("POLYMORFA_API_BASE_URL", "https://api.polymorfa.com")
-        self.credential = Credential(
-            "project_token", os.environ["POLYMORFA_PROJECT_TOKEN"]
-        )
-        if (
-            not self.username
-            or not self.session
-            or not os.environ["EXAMPLE_APP_PASSWORD"]
-        ):
+        self.credential = Credential("project_token", os.environ["POLYMORFA_PROJECT_TOKEN"])
+        if not self.username or not self.session or not os.environ["EXAMPLE_APP_PASSWORD"]:
             raise ValueError("Configure the example account and authorized number.")
         if urlsplit(self.origin).hostname not in ("127.0.0.1", "localhost", "::1"):
             raise ValueError("The example host is restricted to loopback.")
@@ -65,9 +55,7 @@ class Host:
                 hashlib.sha256(username.encode()).digest(),
                 hashlib.sha256(self.username.encode()).digest(),
             )
-            and hmac.compare_digest(
-                hashlib.sha256(password.encode()).digest(), self.password
-            )
+            and hmac.compare_digest(hashlib.sha256(password.encode()).digest(), self.password)
         ):
             return Reply(401, {"error": "sign_in_failed"})
         self.sessions = {
@@ -84,9 +72,9 @@ class Host:
             self.sessions.pop(cookie, None)
 
     def render(self, authenticated: bool, *, fragment: bool = False) -> str:
-        return templates.get_template(
-            "workspace.html" if fragment else "page.html"
-        ).render(authenticated=authenticated)
+        return templates.get_template("workspace.html" if fragment else "page.html").render(
+            authenticated=authenticated
+        )
 
     async def mint(self) -> dict[str, object]:
         async with AsyncMessagingClient(self.credential, base_url=self.api) as client:
@@ -115,5 +103,12 @@ class Host:
 
     async def connect_number(self) -> object:
         async with AsyncMessagingClient(self.credential, base_url=self.api) as client:
-            result = await client.quick_links.create({"session": self.session})
+            result = await client.quick_links.create(
+                {
+                    "purpose": "add_connection",
+                    "session": self.session,
+                    "addConnection": "linked_devices",
+                    "connectionGoal": "hybrid",
+                }
+            )
             return result.data

@@ -43,8 +43,35 @@ async def running_host(app):
 @pytest.mark.parametrize("framework", ["fastapi_app", "django_app"])
 async def test_native_framework_authenticated_token_host_guards_revocation(framework, monkeypatch):
     mints = []
+    links = []
 
     async def upstream(request):
+        if request.path == "/messaging/quicklinks":
+            assert request.method == "POST"
+            assert request.headers["authorization"] == "Bearer " + PROJECT_TOKEN
+            assert request.headers["polymorfa-version"] == "2026-09-22"
+            body = await request.json()
+            assert body == {
+                "purpose": "add_connection",
+                "session": "authorized-support",
+                "addConnection": "linked_devices",
+                "connectionGoal": "hybrid",
+            }
+            links.append(body)
+            return web.json_response(
+                {
+                    "success": True,
+                    "data": {
+                        "purpose": "add_connection",
+                        "session": "authorized-support",
+                        "addConnection": "linked_devices",
+                        "connectionGoal": "hybrid",
+                        "id": "link",
+                        "url": "https://quick.example.test/link",
+                        "expiresAt": None,
+                    },
+                }
+            )
         assert request.path == "/platform/client-tokens" and request.method == "POST"
         assert request.headers["authorization"] == "Bearer " + PROJECT_TOKEN
         assert request.headers["polymorfa-version"] == "2026-09-22"
@@ -125,6 +152,22 @@ async def test_native_framework_authenticated_token_host_guards_revocation(frame
                     "data": [],
                     "nextCursor": None,
                 }
+                link = await client.post(
+                    "/api/polymorfa/connect",
+                    json={"session": "attacker", "purpose": "initial"},
+                    headers={"origin": origin},
+                )
+                assert (
+                    link.status_code == 200
+                    and link.json()["data"]["url"] == "https://quick.example.test/link"
+                    and len(links) == 1
+                )
+                assert PROJECT_TOKEN not in link.text
+                assert (
+                    await client.post(
+                        "/api/polymorfa/connect", headers={"origin": "https://foreign.invalid"}
+                    )
+                ).status_code == 403 and len(links) == 1
                 copied_cookie = client.cookies.get("polymorfa_example_session")
                 assert (
                     await client.post(
@@ -139,3 +182,7 @@ async def test_native_framework_authenticated_token_host_guards_revocation(frame
                     },
                 )
                 assert denied.status_code == 401 and len(mints) == 1
+
+                assert (
+                    await client.post("/api/polymorfa/connect", headers={"origin": origin})
+                ).status_code == 401 and len(links) == 1
