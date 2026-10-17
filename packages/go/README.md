@@ -695,3 +695,10 @@ remain, without an opaque-ID joining guarantee. Content/marker commit precedes
 checkpoint CAS and manual ACK. A failed ACK leaves committed data intact. Cloud
 history and archive behavior are unchanged. This is local package behavior,
 not registry or deployed availability.
+
+Decoded-history numeric strings use the TypeScript producer's finite
+`Number(string)` results, including exact ECMAScript whitespace, unsigned radix
+integers and nearest-even binary64 rounding beyond uint64. Generic row numbers,
+safe revisions, leases and CAS remain strict. Shared producer vectors and local
+physical-module consumers verify this compatibility; registry publication and
+matching environment acceptance remain separate release gates.

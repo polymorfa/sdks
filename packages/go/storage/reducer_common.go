@@ -3,6 +3,8 @@ package storage
 import (
 	"encoding/json"
 	"math"
+	"math/big"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -45,8 +47,58 @@ func first(values ...any) any {
 	}
 	return nil
 }
+
+// ECMAScript WhiteSpace and LineTerminator, deliberately excluding NEL and NUL.
+const protoWhitespace = "\u0009\u000a\u000b\u000c\u000d\u0020\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff"
+
+var protoDecimal = regexp.MustCompile(`^[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?$`)
+
 func finite(v any) (float64, bool) {
 	if s, ok := v.(string); ok {
+		s = strings.Trim(s, protoWhitespace)
+		if s == "" {
+			return 0, true
+		}
+		if len(s) >= 2 && s[0] == '0' {
+			radix := 0
+			switch s[1] {
+			case 'x', 'X':
+				radix = 16
+			case 'b', 'B':
+				radix = 2
+			case 'o', 'O':
+				radix = 8
+			}
+			if radix != 0 {
+				digits := s[2:]
+				if digits == "" {
+					return 0, false
+				}
+				for _, c := range digits {
+					d := -1
+					switch {
+					case c >= '0' && c <= '9':
+						d = int(c - '0')
+					case c >= 'a' && c <= 'f':
+						d = int(c-'a') + 10
+					case c >= 'A' && c <= 'F':
+						d = int(c-'A') + 10
+					}
+					if d < 0 || d >= radix {
+						return 0, false
+					}
+				}
+				integer, ok := new(big.Int).SetString(digits, radix)
+				if !ok {
+					return 0, false
+				}
+				n, _ := integer.Float64()
+				return n, !math.IsInf(n, 0)
+			}
+		}
+		if !protoDecimal.MatchString(s) {
+			return 0, false
+		}
 		n, err := strconv.ParseFloat(s, 64)
 		return n, err == nil && !math.IsNaN(n) && !math.IsInf(n, 0)
 	}
