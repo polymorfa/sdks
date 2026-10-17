@@ -6,7 +6,7 @@ use crate::{
 };
 use reqwest::Method;
 use serde_json::Value;
-use std::sync::Arc;
+use std::{collections::HashSet, sync::Arc};
 
 #[derive(Clone)]
 pub struct RawRequest {
@@ -40,6 +40,7 @@ pub struct RawCursorPage<T> {
     request: RawRequest,
     decode: Decoder<T>,
     cursor_parameter: String,
+    seen_cursors: HashSet<String>,
 }
 impl<T> RawCursorPage<T> {
     pub(crate) async fn load<F>(
@@ -57,13 +58,26 @@ impl<T> RawCursorPage<T> {
                 "A cursor parameter is required",
             ));
         }
-        Self::read(http, request, Arc::new(decode), cursor_parameter.into()).await
+        let seen_cursors = query_pairs(&request.query)?
+            .into_iter()
+            .filter(|(name, _)| *name == cursor_parameter)
+            .map(|(_, value)| value)
+            .collect();
+        Self::read(
+            http,
+            request,
+            Arc::new(decode),
+            cursor_parameter.into(),
+            seen_cursors,
+        )
+        .await
     }
     async fn read(
         http: HttpTransport,
         request: RawRequest,
         decode: Decoder<T>,
         cursor_parameter: String,
+        seen_cursors: HashSet<String>,
     ) -> Result<Self> {
         let query = query_pairs(&request.query)?;
         let response: ApiResponse<Value> = http
@@ -84,6 +98,7 @@ impl<T> RawCursorPage<T> {
             request,
             decode,
             cursor_parameter,
+            seen_cursors,
         })
     }
     pub fn has_more(&self) -> bool {
@@ -93,6 +108,16 @@ impl<T> RawCursorPage<T> {
         let Some(cursor) = &self.next_cursor else {
             return Ok(None);
         };
+        if self.seen_cursors.contains(cursor) {
+            return Err(crate::Error::local(
+                crate::ErrorKind::Server,
+                "Raw pagination returned a repeated cursor.",
+                "invalid_response",
+            )
+            .with_metadata(self.response.metadata.clone()));
+        }
+        let mut seen_cursors = self.seen_cursors.clone();
+        seen_cursors.insert(cursor.clone());
         let mut request = self.request.clone();
         request
             .query
@@ -102,6 +127,7 @@ impl<T> RawCursorPage<T> {
             request,
             self.decode.clone(),
             self.cursor_parameter.clone(),
+            seen_cursors,
         )
         .await
         .map(Some)

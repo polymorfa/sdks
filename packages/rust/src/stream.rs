@@ -172,6 +172,20 @@ pub struct SseParser {
     frame_bytes: usize,
 }
 impl SseParser {
+    pub(crate) fn finish(&self) -> Result<()> {
+        if !self.line.is_empty()
+            || !self.data.is_empty()
+            || !self.event.is_empty()
+            || self.id.is_some()
+        {
+            return Err(Error::local(
+                ErrorKind::Server,
+                "Event stream ended within a frame.",
+                "invalid_response",
+            ));
+        }
+        Ok(())
+    }
     pub fn feed(&mut self, bytes: &[u8]) -> Result<Vec<SseMessage>> {
         let mut messages = Vec::new();
         for byte in bytes {

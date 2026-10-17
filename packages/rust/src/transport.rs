@@ -490,9 +490,7 @@ impl HttpTransport {
         if timeout.is_zero() || retries > 10 {
             return Err(configuration("request options"));
         }
-        let mut url = Url::parse(&self.options.base_url)
-            .and_then(|base| base.join(path))
-            .map_err(|_| configuration("path"))?;
+        let mut url = api_url(&self.options.base_url, path)?;
         if !query.is_empty() {
             let mut pairs = url.query_pairs_mut();
             for (key, value) in query {
@@ -613,10 +611,7 @@ impl HttpTransport {
     ) -> Result<DownloadStream> {
         // Redirects are handled manually so no credential or caller header reaches storage.
         validate_path(path)?;
-        let url = Url::parse(&self.options.base_url)
-            .and_then(|base| base.join(path))
-            .map_err(|_| configuration("path"))?
-            .to_string();
+        let url = api_url(&self.options.base_url, path)?.to_string();
         let token = options.cancellation.clone().unwrap_or_default();
         let (mut response, metadata) = self
             .open_internal(
@@ -718,9 +713,8 @@ impl HttpTransport {
                 .get("location")
                 .and_then(|v| v.to_str().ok())
                 .ok_or_else(|| configuration("media redirect"))?;
-            let url = Url::parse(&self.options.base_url)
-                .and_then(|base| base.join(path))
-                .and_then(|base| base.join(value))
+            let url = api_url(&self.options.base_url, path)?
+                .join(value)
                 .map_err(|_| configuration("media redirect"))?;
             validate_download_target(&url)?;
             Ok(DownloadLocation::Redirect {
@@ -834,6 +828,10 @@ pub(crate) fn encode(value: &str) -> String {
         }
     }
     output
+}
+pub(crate) fn api_url(base: &str, path: &str) -> Result<Url> {
+    validate_path(path)?;
+    Url::parse(&format!("{}{path}", base.trim_end_matches('/'))).map_err(|_| configuration("path"))
 }
 pub(crate) fn validate_base(value: &str) -> Result<()> {
     let url = Url::parse(value).map_err(|_| configuration("base_url"))?;

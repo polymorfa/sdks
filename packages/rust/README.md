@@ -783,3 +783,6 @@ prefix with guard/sticky bits. Finite values are not limited to uint64. Generic
 row numbers and safe revisions remain strict. Native and physical-crate checks
 are local evidence; registry publication and matching environment acceptance
 remain separate release gates.
+
+HTTP API requests, media request bases and Calls sockets retain configured base-path prefixes. Raw pages reject repeated cursors before another request, including cycles across manual pages. Signal finite JSON requests share one header/body deadline; event streams retain their idle timeout, enforce a requested session and report incomplete frames at EOF. Signal acknowledgments require exactly HTTP 204 and never replay automatically. These are local SDK consumer guarantees against the pinned service contract, not evidence of a deployed service or package publication.
+Usage record iteration preserves a supplied starting cursor and rejects a response that returns it again.

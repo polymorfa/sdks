@@ -229,6 +229,7 @@ impl SignalClient {
         body: Option<serde_json::Value>,
         cancellation: &CancellationToken,
         accept: &str,
+        deadline: tokio::time::Instant,
     ) -> Result<reqwest::Response> {
         let mut request = self
             .http
@@ -238,7 +239,7 @@ impl SignalClient {
         if let Some(body) = body {
             request = request.json(&body);
         }
-        let response = tokio::select! { _=cancellation.cancelled()=>return Err(crate::transport::cancelled()), result=tokio::time::timeout(self.timeout,request.send())=>result.map_err(|_|Error::local(ErrorKind::Timeout,"Signal request timed out.","request_timeout"))?.map_err(|_|network())? };
+        let response = tokio::select! { _=cancellation.cancelled()=>return Err(crate::transport::cancelled()), result=tokio::time::timeout_at(deadline,request.send())=>result.map_err(|_|Error::local(ErrorKind::Timeout,"Signal request timed out.","request_timeout"))?.map_err(|_|network())? };
         if !response.status().is_success() {
             let status = response.status().as_u16();
             // Do not copy arbitrary upstream messages, URLs or reflected secrets into errors.
@@ -275,8 +276,16 @@ impl SignalClient {
         body: Option<serde_json::Value>,
         cancellation: &CancellationToken,
     ) -> Result<T> {
+        let deadline = tokio::time::Instant::now() + self.timeout;
         let response = self
-            .open(method, path, body, cancellation, "application/json")
+            .open(
+                method,
+                path,
+                body,
+                cancellation,
+                "application/json",
+                deadline,
+            )
             .await?;
         if !response
             .headers()
@@ -289,7 +298,7 @@ impl SignalClient {
         let mut chunks = response.bytes_stream();
         let mut bytes = Vec::new();
         loop {
-            let chunk = tokio::select! {_=cancellation.cancelled()=>return Err(crate::transport::cancelled()), result=tokio::time::timeout(self.timeout,chunks.next())=>result.map_err(|_|Error::local(ErrorKind::Timeout,"Signal response timed out.","request_timeout"))?};
+            let chunk = tokio::select! {_=cancellation.cancelled()=>return Err(crate::transport::cancelled()), result=tokio::time::timeout_at(deadline,chunks.next())=>result.map_err(|_|Error::local(ErrorKind::Timeout,"Signal response timed out.","request_timeout"))?};
             let Some(chunk) = chunk else { break };
             let chunk = chunk.map_err(|_| network())?;
             if bytes.len().saturating_add(chunk.len()) > BODY_LIMIT {
@@ -308,14 +317,19 @@ impl SignalClient {
         if id.is_empty() {
             return Err(invalid("Event ID is required."));
         }
-        self.open(
-            reqwest::Method::POST,
-            &format!("/v1/events/{}/ack", crate::transport::encode(id)),
-            None,
-            cancellation,
-            "application/json",
-        )
-        .await?;
+        let response = self
+            .open(
+                reqwest::Method::POST,
+                &format!("/v1/events/{}/ack", crate::transport::encode(id)),
+                None,
+                cancellation,
+                "application/json",
+                tokio::time::Instant::now() + self.timeout,
+            )
+            .await?;
+        if response.status() != reqwest::StatusCode::NO_CONTENT {
+            return Err(malformed().with_local_status(response.status().as_u16()));
+        }
         Ok(())
     }
     pub async fn send(
@@ -345,20 +359,21 @@ impl SignalClient {
         cancellation: CancellationToken,
     ) -> Pin<Box<dyn Stream<Item = Result<SignalEvent>> + Send>> {
         let client = self.clone();
+        let expected_session = session.map(str::to_owned);
         let path = session.map_or_else(
             || "/v1/events".into(),
             |id| format!("/v1/events?session_id={}", crate::transport::encode(id)),
         );
         Box::pin(async_stream::try_stream! {
-            let response=client.open(reqwest::Method::GET,&path,None,&cancellation,"text/event-stream").await?;
+            let response=client.open(reqwest::Method::GET,&path,None,&cancellation,"text/event-stream",tokio::time::Instant::now()+client.timeout).await?;
             if !response.headers().get(reqwest::header::CONTENT_TYPE).and_then(|v|v.to_str().ok()).is_some_and(|v|v.starts_with("text/event-stream")) {Err(malformed())?;}
             let mut chunks=response.bytes_stream(); let mut parser=crate::stream::SseParser::default();
             loop {
                 let next=tokio::select! {_=cancellation.cancelled()=>break, result=tokio::time::timeout(client.timeout,chunks.next())=>result};
-                let Some(chunk)=next.map_err(|_|Error::local(ErrorKind::Timeout,"Signal event stream timed out.","request_timeout"))? else {break};
+                let Some(chunk)=next.map_err(|_|Error::local(ErrorKind::Timeout,"Signal event stream timed out.","request_timeout"))? else {parser.finish()?; break};
                 for message in parser.feed(&chunk.map_err(|_|network())?)? {
                     let event:SignalEvent=serde_json::from_str(&message.data).map_err(|_|malformed())?;
-                    if event.id.is_empty() || message.id.as_deref()!=Some(event.id.as_str()) || message.event!=event.event_type {Err(malformed())?;}
+                    if event.id.is_empty() || message.id.as_deref()!=Some(event.id.as_str()) || message.event!=event.event_type || expected_session.as_ref().is_some_and(|session| session != &event.session_id) {Err(malformed())?;}
                     yield event;
                 }
             }

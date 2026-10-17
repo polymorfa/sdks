@@ -91,7 +91,11 @@ async fn native_sidecar_sends_and_streams_without_automatic_ack() {
             "text/event-stream",
             &format!(
                 ": keepalive\r\n\r\nid: event-fixture\r\nevent: message\r\ndata: {}\r\n\r\n",
-                event()
+                {
+                    let mut value = event();
+                    value["session_id"] = "s one".into();
+                    value
+                }
             ),
             "",
         )

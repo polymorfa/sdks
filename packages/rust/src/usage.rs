@@ -297,9 +297,8 @@ impl Usage<'_> {
         mut params: UsageRecordParams,
         options: RequestOptions,
     ) -> std::pin::Pin<Box<dyn futures_util::Stream<Item = Result<UsageRecord>> + Send + '_>> {
-        params.cursor = None;
         Box::pin(async_stream::try_stream! {
-            let mut seen=HashSet::new();
+            let mut seen: HashSet<String> = params.cursor.iter().cloned().collect();
             loop {
                 let response=self.list_records(&params,options.clone()).await?;
                 if let Some(next)=&response.data.next_cursor {

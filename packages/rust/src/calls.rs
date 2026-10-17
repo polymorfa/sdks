@@ -284,9 +284,10 @@ impl<'a> Calls<'a> {
         }) {
             return Err(configuration("participant"));
         }
-        let mut url =
-            url::Url::parse(&self.http.options.base_url).map_err(|_| configuration("base_url"))?;
-        url.set_path(&format!("/voip/calls/{}/media", encode(call_id)));
+        let mut url = crate::transport::api_url(
+            &self.http.options.base_url,
+            &format!("/voip/calls/{}/media", encode(call_id)),
+        )?;
         url.set_query(None);
         let scheme = if url.scheme() == "https" { "wss" } else { "ws" };
         url.set_scheme(scheme)
@@ -370,9 +371,7 @@ impl<'a> Calls<'a> {
         if session.trim().is_empty() || participant.is_some_and(|p| !is_participant_name(p)) {
             return Err(configuration("session or participant"));
         }
-        let mut url =
-            url::Url::parse(&self.http.options.base_url).map_err(|_| configuration("base_url"))?;
-        url.set_path("/voip/ws");
+        let mut url = crate::transport::api_url(&self.http.options.base_url, "/voip/ws")?;
         url.set_query(None);
         url.set_scheme(if url.scheme() == "https" { "wss" } else { "ws" })
             .map_err(|_| configuration("socket URL"))?;
