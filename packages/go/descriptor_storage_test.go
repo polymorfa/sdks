@@ -381,3 +381,27 @@ func TestDescriptorStorageArchiveCloudControls(t *testing.T) {
 		}
 	}
 }
+
+func TestDescriptorStorageRejectsUnprojectedFields(t *testing.T) {
+	for _, branch := range []string{"top", "inline", "media"} {
+		f := descriptorFixture(t)
+		name := "inline"
+		if branch == "media" {
+			name = "media"
+		}
+		var p map[string]any
+		json.Unmarshal(f[name], &p)
+		if branch == "top" {
+			p["unprojected"] = "synthetic"
+		} else {
+			p[branch].(map[string]any)["unprojected"] = "synthetic"
+		}
+		raw, _ := json.Marshal(p)
+		a, _ := s.NewMemoryAdapter(1000)
+		engine, _ := s.NewEngine(a, s.EngineOptions{})
+		ev := sdk.WebhookEvent{ID: "extra", Session: "descriptor-session", Event: "history.sync", Timestamp: "2026-10-17T00:00:00Z", Payload: raw}
+		if _, err := engine.ApplyEvent(context.Background(), ev, s.ApplyEventOptions{HistoryDescriptorMode: s.DescriptorMetadataOnly}); err == nil {
+			t.Fatal("unprojected descriptor field consumed", branch)
+		}
+	}
+}

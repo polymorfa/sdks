@@ -28,6 +28,21 @@ func descriptorNumber(v any) bool {
 	n, ok := v.(float64)
 	return ok && !math.IsNaN(n) && !math.IsInf(n, 0) && n >= 0 && math.Trunc(n) == n
 }
+func descriptorFields(m map[string]any, fields ...string) bool {
+	for key := range m {
+		found := false
+		for _, field := range fields {
+			if key == field {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
 
 var descriptorDate = regexp.MustCompile(`^([0-9]{4})-(0[1-9]|1[0-2])-([0-9]{2})T(?:[01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9](?:\.[0-9]+)?)?Z$`)
 
@@ -53,7 +68,7 @@ func validDescriptorDate(v any) bool {
 // The raw stream seam must validate too; typed webhook parsing is optional.
 func validateHistoryDescriptor(p map[string]any) error {
 	bad := func() error { return storageError("storage_invalid_history_descriptor") }
-	if p["delivery"] != "descriptor" || !descriptorIDs(p["whatsapp_ids"]) || !descriptorText(p["syncType"], 1, math.MaxInt) || !descriptorNumber(p["fileLength"]) {
+	if !descriptorFields(p, "delivery", "whatsapp_ids", "original_whatsapp_ids", "whatsapp_id", "original_whatsapp_id", "syncType", "fileLength", "chunkOrder", "progress", "oldestMessageAt", "peerDataRequestSessionId", "media", "inline") || p["delivery"] != "descriptor" || !descriptorIDs(p["whatsapp_ids"]) || !descriptorText(p["syncType"], 1, math.MaxInt) || !descriptorNumber(p["fileLength"]) {
 		return bad()
 	}
 	for _, k := range []string{"whatsapp_id", "original_whatsapp_id"} {
@@ -82,7 +97,7 @@ func validateHistoryDescriptor(p map[string]any) error {
 	}
 	if media {
 		d, ok := m.(map[string]any)
-		if !ok || d["type"] != "md-msg-hist" {
+		if !ok || !descriptorFields(d, "type", "directPath", "mediaKey", "fileSha256", "fileEncSha256", "encHandle") || d["type"] != "md-msg-hist" {
 			return bad()
 		}
 		for _, k := range []string{"directPath", "mediaKey", "fileSha256", "fileEncSha256"} {
@@ -95,7 +110,7 @@ func validateHistoryDescriptor(p map[string]any) error {
 		}
 	} else {
 		d, ok := i.(map[string]any)
-		if !ok || d["encoding"] != "zlib-base64-protobuf" || !descriptorText(d["data"], 1, math.MaxInt) {
+		if !ok || !descriptorFields(d, "encoding", "data") || d["encoding"] != "zlib-base64-protobuf" || !descriptorText(d["data"], 1, math.MaxInt) {
 			return bad()
 		}
 	}
