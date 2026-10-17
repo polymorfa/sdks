@@ -3,8 +3,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { execFileSync, spawn } from "node:child_process";
+import { cpSync, mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -120,6 +120,52 @@ test("stale, mismatched or tampered acceptance prevents any publisher effect", (
     () => verifyPlan(plan, dir, receipt()),
     /differs from the plan/,
   );
+});
+
+test("registry CLI verifies its downloaded packages without requiring other registries", async () => {
+  const all = packs();
+  const value = receipt();
+  const plan = planNativeRelease(all, value);
+  const dir = mkdtempSync(join(scratchRoot, "registry-job-"));
+  cpSync(join(all, "python"), join(dir, "python"), { recursive: true });
+  const planPath = join(dir, "plan.json");
+  const receiptPath = join(dir, "receipt.json");
+  writeFileSync(planPath, JSON.stringify(plan));
+  writeFileSync(receiptPath, JSON.stringify(value));
+  const registry = await serve((req, res) => {
+    res.statusCode = 404;
+    res.end("{}");
+  });
+  try {
+    const child = spawn(
+      process.execPath,
+      ["scripts/native-publish.mjs", "check", "pypi", planPath],
+      {
+        env: {
+          ...process.env,
+          RELEASE_PACKS: dir,
+          RELEASE_RECEIPT: receiptPath,
+          PYPI_BASE: registry.base,
+        },
+      },
+    );
+    let output = "";
+    child.stdout.on("data", (chunk) => {
+      output += chunk;
+    });
+    child.stderr.on("data", (chunk) => {
+      output += chunk;
+    });
+    const code = await new Promise((resolve, reject) => {
+      child.on("error", reject);
+      child.on("close", resolve);
+    });
+    assert.equal(code, 0, output);
+    assert.equal(registry.requests.length, 1);
+    assert.ok(registry.requests.every((r) => r.method === "GET"));
+  } finally {
+    registry.close();
+  }
 });
 
 function recorder(states) {
@@ -365,6 +411,48 @@ test("NuGet adapter pushes the exact package and treats a re-signed copy as iden
   } finally {
     delete process.env.NUGET_API_KEY;
     delete process.env.RUNNER_TEMP;
+    registry.close();
+  }
+});
+
+test("NuGet compares the entire large DLL and refuses unreadable packages", async () => {
+  const dir = mkdtempSync(join(scratchRoot, "large-nuget-"));
+  mkdirSync(join(dir, "dotnet"));
+  const contents = join(dir, "contents");
+  mkdirSync(contents);
+  const file = join(dir, "dotnet", `Polymorfa.Sdk.${semver}.nupkg`);
+  const changed = join(dir, "changed.nupkg");
+  const dll = Buffer.alloc(4 * 1024 * 1024, 65);
+  writeFileSync(join(contents, "Polymorfa.Sdk.dll"), dll);
+  execFileSync("zip", ["-q", "-X", file, "Polymorfa.Sdk.dll"], {
+    cwd: contents,
+  });
+  dll[dll.length - 1] = 66;
+  writeFileSync(join(contents, "Polymorfa.Sdk.dll"), dll);
+  execFileSync("zip", ["-q", "-X", changed, "Polymorfa.Sdk.dll"], {
+    cwd: contents,
+  });
+  let remote = execFileSync("cat", [file]);
+  const registry = await serve((req, res) => res.end(remote));
+  const step = {
+    id: "nuget:Polymorfa.Sdk",
+    package: "Polymorfa.Sdk",
+    version: semver,
+    dependsOn: [],
+    artifacts: [{ file: `dotnet/Polymorfa.Sdk.${semver}.nupkg` }],
+  };
+  const oldTemp = process.env.RUNNER_TEMP;
+  process.env.RUNNER_TEMP = dir;
+  try {
+    const adapter = nugetAdapter(dir, registry.base);
+    assert.equal(await adapter.existing(step), "same");
+    remote = execFileSync("cat", [changed]);
+    assert.equal(await adapter.existing(step), "different");
+    remote = Buffer.from("invalid zip");
+    await assert.rejects(adapter.existing(step), /unzip|package/i);
+  } finally {
+    if (oldTemp === undefined) delete process.env.RUNNER_TEMP;
+    else process.env.RUNNER_TEMP = oldTemp;
     registry.close();
   }
 });

@@ -114,8 +114,10 @@ export function planNativeRelease(packsRoot, receipt) {
 }
 
 // Re-checks the plan against the downloaded artifacts and receipt before any effect.
-export function verifyPlan(plan, packsRoot, receipt) {
+export function verifyPlan(plan, packsRoot, receipt, registry) {
   validateReceipt(receipt);
+  if (registry !== undefined)
+    assert.ok(Object.hasOwn(registries, registry), "Unknown registry");
   assert.equal(plan.schemaVersion, 1);
   assert.equal(
     plan.receiptSha256,
@@ -125,7 +127,11 @@ export function verifyPlan(plan, packsRoot, receipt) {
   for (const key of ["sourceSha", "fingerprint", "channel"])
     assert.equal(plan[key], receipt[key], `Plan ${key} differs`);
   assert.deepEqual(plan.versions, receipt.versions);
-  for (const step of plan.steps)
+  // The planning job inspects every package. Each publication job downloads
+  // only its own registry's artifacts and re-checks those bytes before effects.
+  for (const step of plan.steps.filter(
+    (step) => registry === undefined || step.registry === registry,
+  ))
     for (const artifact of step.artifacts)
       assert.equal(
         sha256(readFileSync(join(packsRoot, artifact.file))),
@@ -357,16 +363,30 @@ function nupkgDigest(bytes) {
   run("mkdir", ["-p", dir]);
   const file = join(dir, "package.nupkg");
   writeFileSync(file, bytes);
-  const listing = spawnSync("unzip", ["-Z1", file], { encoding: "utf8" })
-    .stdout.split("\n")
+  function unzip(args, encoding) {
+    const result = spawnSync("unzip", args, {
+      encoding,
+      maxBuffer: 64 * 1024 * 1024,
+    });
+    assert.ifError(result.error);
+    assert.equal(result.status, 0, "Cannot read NuGet package with unzip");
+    return result.stdout;
+  }
+  const listing = unzip(["-Z1", file], "utf8")
+    .split("\n")
     .filter((n) => n && !n.endsWith("/") && n !== ".signature.p7s")
     .sort();
+  assert.ok(listing.length > 0, "NuGet package has no contents");
+  assert.equal(
+    new Set(listing).size,
+    listing.length,
+    "NuGet package has duplicate entries",
+  );
   const digest = createHash("sha256");
-  for (const name of listing)
-    digest
-      .update(name + "\0")
-      .update(spawnSync("unzip", ["-p", file, name]).stdout)
-      .update("\0");
+  for (const name of listing) {
+    const bytes = unzip(["-p", file, name]);
+    digest.update(JSON.stringify([name, bytes.length]) + "\n").update(bytes);
+  }
   return digest.digest("hex");
 }
 export function nugetAdapter(
@@ -488,6 +508,7 @@ if (
       JSON.parse(readFileSync(planPath)),
       packsRoot,
       receipt,
+      registry,
     );
     const steps = plan.steps.filter((step) => step.registry === registry);
     const adapter = {
