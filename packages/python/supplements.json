@@ -85,6 +85,116 @@
       "fixturePath": "/platform/projects/11111111-1111-4111-8111-111111111111/request-logs",
       "status": "covered",
       "testFile": "tests/test_request_logs.py"
+    },
+    {
+      "sdkMethod": "AsyncClient.campaigns.get_frequency_cap",
+      "method": "GET",
+      "fixturePath": "/platform/campaign-settings/frequency-cap",
+      "status": "covered",
+      "testFile": "tests/test_campaign_segments_drip.py",
+      "contract": "contracts/campaign-frequency-cap.json",
+      "operationId": "getCampaignFrequencyCap",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "AsyncClient.campaigns.update_frequency_cap",
+      "method": "PUT",
+      "fixturePath": "/platform/campaign-settings/frequency-cap",
+      "status": "covered",
+      "testFile": "tests/test_campaign_segments_drip.py",
+      "contract": "contracts/campaign-frequency-cap.json",
+      "operationId": "updateCampaignFrequencyCap",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "AsyncClient.campaigns.enroll",
+      "method": "POST",
+      "fixturePath": "/platform/campaigns/c%2F1/enrollments",
+      "status": "covered",
+      "testFile": "tests/test_campaign_segments_drip.py",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "enrollCampaignContact",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "AsyncMessagingClient.campaigns.enroll",
+      "method": "POST",
+      "fixturePath": "/messaging/projects/11111111-1111-4111-8111-111111111111/campaigns/c/enrollments",
+      "status": "covered",
+      "testFile": "tests/test_campaign_segments_drip.py",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "enrollProjectCampaignContact",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "AsyncClient.audience_segments.list",
+      "method": "GET",
+      "fixturePath": "/platform/audience-segments",
+      "status": "covered",
+      "testFile": "tests/test_campaign_segments_drip.py",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "listAudienceSegments",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "AsyncClient.audience_segments.create",
+      "method": "POST",
+      "fixturePath": "/platform/audience-segments",
+      "status": "covered",
+      "testFile": "tests/test_campaign_segments_drip.py",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "createAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "AsyncClient.audience_segments.retrieve",
+      "method": "GET",
+      "fixturePath": "/platform/audience-segments/s%2F1",
+      "status": "covered",
+      "testFile": "tests/test_campaign_segments_drip.py",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "getAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "AsyncClient.audience_segments.update",
+      "method": "PATCH",
+      "fixturePath": "/platform/audience-segments/s%2F1",
+      "status": "covered",
+      "testFile": "tests/test_campaign_segments_drip.py",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "updateAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "AsyncClient.audience_segments.delete",
+      "method": "DELETE",
+      "fixturePath": "/platform/audience-segments/s%2F1",
+      "status": "covered",
+      "testFile": "tests/test_campaign_segments_drip.py",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "deleteAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "AsyncClient.audience_segments.preview",
+      "method": "GET",
+      "fixturePath": "/platform/audience-segments/s/preview",
+      "status": "covered",
+      "testFile": "tests/test_campaign_segments_drip.py",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "previewAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "AsyncClient.audience_segments.preview_rules",
+      "method": "POST",
+      "fixturePath": "/platform/audience-segments/preview",
+      "status": "covered",
+      "testFile": "tests/test_campaign_segments_drip.py",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "previewAudienceSegmentRules",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     }
   ],
   "helpers": [

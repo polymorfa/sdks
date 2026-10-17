@@ -6,10 +6,20 @@ tested resources and remaining gaps. Do not infer full parity, live API
 availability or enrollment from an installed client.
 
 The implementation reference is the TypeScript server SDK at
-`ff51567105b64bf6997e7330ba8eb502d875e7b9`. The full Messaging and Platform
-snapshots remain pinned to API source
-`171a9683ff45d11a4b5d3917dc428ad2722b0d99`; supplements keep their exact
+`e24cb176fc1124f5fe852ff6c77902648fd13b4a`, recorded as `sourceSdkCommit` in
+each native `coverage.json`. It pins the TypeScript implementation the native
+ports mirror. It is not API acceptance, deployed availability or registry
+publication. The full Messaging and Platform snapshots remain pinned to API
+source `171a9683ff45d11a4b5d3917dc428ad2722b0d99`; supplements keep their exact
 recorded revisions. No global contract repin is part of this change.
+
+`contracts/native-campaign-supplements.json` maps the eleven contact
+frequency-cap, audience-segment and drip operations, plus the affected field
+shapes, from the two integrated campaign supplements to each language's public
+method and wire test. These operations are outside the 579-operation ledger;
+the inventory does not equate that ledger with any later API operation count.
+`scripts/check-native-coverage.mjs` checks each mapping against the pinned
+supplement, the package source and the named test.
 
 | Language | Source            | Intended package                        | Baseline    |
 | -------- | ----------------- | --------------------------------------- | ----------- |

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve, relative, isAbsolute } from "node:path";
 import { SDK_LANGUAGES } from "./check-coverage.mjs";
+import { checkNativeSupplements } from "./native-supplements.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const ledger = JSON.parse(
@@ -32,7 +33,7 @@ for (const language of languages) {
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(
     manifest.sourceSdkCommit,
-    "daac84b1bd24c9460a2bcad555629a5466d85e2c",
+    "e24cb176fc1124f5fe852ff6c77902648fd13b4a",
   );
   assert.ok(Array.isArray(manifest.operations));
   const key = (entry) => `${entry.family}|${entry.method}|${entry.path}`;
@@ -72,4 +73,16 @@ for (const language of languages) {
   }
   // Native CI must also execute the tests. A manifest proves attribution only.
   console.log(`${language}: native coverage mapping matches the ledger`);
+}
+// Integrated supplement operations outside the pinned ledger.
+if (!requested) {
+  const result = checkNativeSupplements(
+    root,
+    JSON.parse(
+      readFileSync(resolve(root, "contracts/native-campaign-supplements.json")),
+    ),
+  );
+  console.log(
+    `native campaign supplements: ${result.operations} operations and ${result.fields} fields mapped in every language`,
+  );
 }

@@ -1,6 +1,6 @@
 # Polymorfa Go SDK
 
-Handwritten server SDK for Go 1.24 or newer. This source checkout is under development and has not been published. The checked coverage manifest records native request/response evidence for all 439 primary operations supported by TypeScript SDK commit `daac84b1bd24c9460a2bcad555629a5466d85e2c`, plus three campaign supplements in the ledger. Eight additional Graph and testing-phone routes have typed wire tests. This evidence describes SDK contracts, not deployed feature availability.
+Handwritten server SDK for Go 1.24 or newer. This source checkout is under development and has not been published. The checked coverage manifest records native request/response evidence for all 439 primary operations supported by TypeScript SDK commit `e24cb176fc1124f5fe852ff6c77902648fd13b4a`, plus three campaign supplements in the ledger. Eight additional Graph and testing-phone routes and the eleven frequency-cap, audience-segment and drip operations in `contracts/native-campaign-supplements.json` have typed wire tests. This evidence describes SDK contracts, not deployed feature availability.
 
 The module import is `github.com/polymorfa/sdks/packages/go`. This corrects the proposed `github.com/polymorfa/sdks/go` name to match the actual repository subdirectory. A release from this layout needs a `packages/go/vX.Y.Z` tag. Do not advertise an installation version until that version exists. For local work, use the `replace` directive in `examples/go/send-message/go.mod`.
 

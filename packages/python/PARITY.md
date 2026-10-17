@@ -6,6 +6,10 @@ OpenAPI snapshots supply coverage attribution, not generated implementations.
 The raw pagination, presence catalogs and typing audit also inspected merged
 TypeScript `daac84b1bd24c9460a2bcad555629a5466d85e2c` on 2026-10-14.
 Primary operation and supplemental API contract pins retain their own revisions.
+The coverage manifest and the frequency-cap, audience-segment and drip
+entries in `supplements.json` reference TypeScript
+`e24cb176fc1124f5fe852ff6c77902648fd13b4a`, which pins the implementation
+mirrored, not API acceptance.
 
 `coverage.json` attributes all 439 primary covered operations to typed public
 methods and passing request/response tests. The other 140 primary operations

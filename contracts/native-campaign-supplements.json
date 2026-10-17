@@ -1,0 +1,1088 @@
+{
+  "schemaVersion": 1,
+  "implementationReference": {
+    "repository": "polymorfa/sdks",
+    "typescriptCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a",
+    "note": "TypeScript implementation the native ports mirror. It is not API acceptance, deployed availability or registry publication."
+  },
+  "baselineLedger": {
+    "path": "contracts/coverage.json",
+    "operations": 579,
+    "note": "These supplement operations are outside the pinned 579-operation ledger. Neither file establishes equality with any later API operation inventory."
+  },
+  "supplements": [
+    {
+      "path": "contracts/campaign-frequency-cap.json",
+      "commit": "e404a727ddb4abf42a8df768a5336fad922cc99a",
+      "sources": {
+        "messaging": "9d8faf13be970bee800ad15e308c130bc4ae8703865ae99278b9ae315cc27638",
+        "platform": "e28256daac1e8efd84998d7399b74c3200623c19ac807a4b0730523a667976ff"
+      }
+    },
+    {
+      "path": "contracts/campaign-segments-drip.json",
+      "commit": "f46ebd5162453e812dafa76ce02b420ddabe6921",
+      "sources": {
+        "messaging": "a1e4538d57a47169539d4a3254585df473d23da46fd67e89dfbf8aacaeff8a6b",
+        "platform": "ccb468d7e0540f5f1b0b1e881b8965c54cf51cfbc85ad03606a690af0d3b6096"
+      }
+    }
+  ],
+  "operations": [
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaign-settings/frequency-cap",
+      "operationId": "getCampaignFrequencyCap",
+      "languages": {
+        "typescript": {
+          "status": "covered",
+          "sdkMethod": "Client.campaigns.getFrequencyCap",
+          "testFile": "test/campaign-frequency-cap.test.ts"
+        },
+        "go": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.Campaigns().GetFrequencyCap",
+          "testFile": "campaign_segments_drip_test.go"
+        },
+        "python": {
+          "status": "covered",
+          "sdkMethod": "AsyncClient.campaigns.get_frequency_cap",
+          "testFile": "tests/test_campaign_segments_drip.py"
+        },
+        "php": {
+          "status": "covered",
+          "sdkMethod": "Client::campaigns.getFrequencyCap",
+          "testFile": "tests/campaign_segments_drip.php"
+        },
+        "rust": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.campaigns().get_frequency_cap",
+          "testFile": "tests/campaign_segments_drip.rs"
+        },
+        "dotnet": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.Campaigns.GetFrequencyCapAsync",
+          "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
+        }
+      }
+    },
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/campaign-settings/frequency-cap",
+      "operationId": "updateCampaignFrequencyCap",
+      "languages": {
+        "typescript": {
+          "status": "covered",
+          "sdkMethod": "Client.campaigns.updateFrequencyCap",
+          "testFile": "test/campaign-frequency-cap.test.ts"
+        },
+        "go": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.Campaigns().UpdateFrequencyCap",
+          "testFile": "campaign_segments_drip_test.go"
+        },
+        "python": {
+          "status": "covered",
+          "sdkMethod": "AsyncClient.campaigns.update_frequency_cap",
+          "testFile": "tests/test_campaign_segments_drip.py"
+        },
+        "php": {
+          "status": "covered",
+          "sdkMethod": "Client::campaigns.updateFrequencyCap",
+          "testFile": "tests/campaign_segments_drip.php"
+        },
+        "rust": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.campaigns().update_frequency_cap",
+          "testFile": "tests/campaign_segments_drip.rs"
+        },
+        "dotnet": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.Campaigns.UpdateFrequencyCapAsync",
+          "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
+        }
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/enrollments",
+      "operationId": "enrollCampaignContact",
+      "languages": {
+        "typescript": {
+          "status": "covered",
+          "sdkMethod": "Client.campaigns.enroll",
+          "testFile": "test/campaign-segments-drip.test.ts"
+        },
+        "go": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.Campaigns().Enroll",
+          "testFile": "campaign_segments_drip_test.go"
+        },
+        "python": {
+          "status": "covered",
+          "sdkMethod": "AsyncClient.campaigns.enroll",
+          "testFile": "tests/test_campaign_segments_drip.py"
+        },
+        "php": {
+          "status": "covered",
+          "sdkMethod": "Client::campaigns.enroll",
+          "testFile": "tests/campaign_segments_drip.php"
+        },
+        "rust": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.campaigns().enroll",
+          "testFile": "tests/campaign_segments_drip.rs"
+        },
+        "dotnet": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.Campaigns.EnrollAsync",
+          "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
+        }
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/enrollments",
+      "operationId": "enrollProjectCampaignContact",
+      "languages": {
+        "typescript": {
+          "status": "covered",
+          "sdkMethod": "MessagingClient.campaigns.enroll",
+          "testFile": "test/campaign-segments-drip.test.ts"
+        },
+        "go": {
+          "status": "covered",
+          "sdkMethod": "MessagingClient.Campaigns().Enroll",
+          "testFile": "campaign_segments_drip_test.go"
+        },
+        "python": {
+          "status": "covered",
+          "sdkMethod": "AsyncMessagingClient.campaigns.enroll",
+          "testFile": "tests/test_campaign_segments_drip.py"
+        },
+        "php": {
+          "status": "covered",
+          "sdkMethod": "MessagingClient::campaigns.enroll",
+          "testFile": "tests/campaign_segments_drip.php"
+        },
+        "rust": {
+          "status": "covered",
+          "sdkMethod": "MessagingClient.campaigns().enroll",
+          "testFile": "tests/campaign_segments_drip.rs"
+        },
+        "dotnet": {
+          "status": "covered",
+          "sdkMethod": "MessagingClient.Campaigns.EnrollAsync",
+          "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
+        }
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-segments",
+      "operationId": "listAudienceSegments",
+      "languages": {
+        "typescript": {
+          "status": "covered",
+          "sdkMethod": "Client.audienceSegments.list",
+          "testFile": "test/campaign-segments-drip.test.ts"
+        },
+        "go": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.AudienceSegments().List",
+          "testFile": "campaign_segments_drip_test.go"
+        },
+        "python": {
+          "status": "covered",
+          "sdkMethod": "AsyncClient.audience_segments.list",
+          "testFile": "tests/test_campaign_segments_drip.py"
+        },
+        "php": {
+          "status": "covered",
+          "sdkMethod": "Client::audienceSegments.list",
+          "testFile": "tests/campaign_segments_drip.php"
+        },
+        "rust": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.audience_segments().list",
+          "testFile": "tests/campaign_segments_drip.rs"
+        },
+        "dotnet": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.AudienceSegments.ListAsync",
+          "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
+        }
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audience-segments",
+      "operationId": "createAudienceSegment",
+      "languages": {
+        "typescript": {
+          "status": "covered",
+          "sdkMethod": "Client.audienceSegments.create",
+          "testFile": "test/campaign-segments-drip.test.ts"
+        },
+        "go": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.AudienceSegments().Create",
+          "testFile": "campaign_segments_drip_test.go"
+        },
+        "python": {
+          "status": "covered",
+          "sdkMethod": "AsyncClient.audience_segments.create",
+          "testFile": "tests/test_campaign_segments_drip.py"
+        },
+        "php": {
+          "status": "covered",
+          "sdkMethod": "Client::audienceSegments.create",
+          "testFile": "tests/campaign_segments_drip.php"
+        },
+        "rust": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.audience_segments().create",
+          "testFile": "tests/campaign_segments_drip.rs"
+        },
+        "dotnet": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.AudienceSegments.CreateAsync",
+          "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
+        }
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-segments/{segmentId}",
+      "operationId": "getAudienceSegment",
+      "languages": {
+        "typescript": {
+          "status": "covered",
+          "sdkMethod": "Client.audienceSegments.retrieve",
+          "testFile": "test/campaign-segments-drip.test.ts"
+        },
+        "go": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.AudienceSegments().Retrieve",
+          "testFile": "campaign_segments_drip_test.go"
+        },
+        "python": {
+          "status": "covered",
+          "sdkMethod": "AsyncClient.audience_segments.retrieve",
+          "testFile": "tests/test_campaign_segments_drip.py"
+        },
+        "php": {
+          "status": "covered",
+          "sdkMethod": "Client::audienceSegments.retrieve",
+          "testFile": "tests/campaign_segments_drip.php"
+        },
+        "rust": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.audience_segments().retrieve",
+          "testFile": "tests/campaign_segments_drip.rs"
+        },
+        "dotnet": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.AudienceSegments.RetrieveAsync",
+          "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
+        }
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/audience-segments/{segmentId}",
+      "operationId": "updateAudienceSegment",
+      "languages": {
+        "typescript": {
+          "status": "covered",
+          "sdkMethod": "Client.audienceSegments.update",
+          "testFile": "test/campaign-segments-drip.test.ts"
+        },
+        "go": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.AudienceSegments().Update",
+          "testFile": "campaign_segments_drip_test.go"
+        },
+        "python": {
+          "status": "covered",
+          "sdkMethod": "AsyncClient.audience_segments.update",
+          "testFile": "tests/test_campaign_segments_drip.py"
+        },
+        "php": {
+          "status": "covered",
+          "sdkMethod": "Client::audienceSegments.update",
+          "testFile": "tests/campaign_segments_drip.php"
+        },
+        "rust": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.audience_segments().update",
+          "testFile": "tests/campaign_segments_drip.rs"
+        },
+        "dotnet": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.AudienceSegments.UpdateAsync",
+          "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
+        }
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/audience-segments/{segmentId}",
+      "operationId": "deleteAudienceSegment",
+      "languages": {
+        "typescript": {
+          "status": "covered",
+          "sdkMethod": "Client.audienceSegments.delete",
+          "testFile": "test/campaign-segments-drip.test.ts"
+        },
+        "go": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.AudienceSegments().Delete",
+          "testFile": "campaign_segments_drip_test.go"
+        },
+        "python": {
+          "status": "covered",
+          "sdkMethod": "AsyncClient.audience_segments.delete",
+          "testFile": "tests/test_campaign_segments_drip.py"
+        },
+        "php": {
+          "status": "covered",
+          "sdkMethod": "Client::audienceSegments.delete",
+          "testFile": "tests/campaign_segments_drip.php"
+        },
+        "rust": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.audience_segments().delete",
+          "testFile": "tests/campaign_segments_drip.rs"
+        },
+        "dotnet": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.AudienceSegments.DeleteAsync",
+          "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
+        }
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-segments/{segmentId}/preview",
+      "operationId": "previewAudienceSegment",
+      "languages": {
+        "typescript": {
+          "status": "covered",
+          "sdkMethod": "Client.audienceSegments.preview",
+          "testFile": "test/campaign-segments-drip.test.ts"
+        },
+        "go": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.AudienceSegments().Preview",
+          "testFile": "campaign_segments_drip_test.go"
+        },
+        "python": {
+          "status": "covered",
+          "sdkMethod": "AsyncClient.audience_segments.preview",
+          "testFile": "tests/test_campaign_segments_drip.py"
+        },
+        "php": {
+          "status": "covered",
+          "sdkMethod": "Client::audienceSegments.preview",
+          "testFile": "tests/campaign_segments_drip.php"
+        },
+        "rust": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.audience_segments().preview",
+          "testFile": "tests/campaign_segments_drip.rs"
+        },
+        "dotnet": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.AudienceSegments.PreviewAsync",
+          "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
+        }
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audience-segments/preview",
+      "operationId": "previewAudienceSegmentRules",
+      "languages": {
+        "typescript": {
+          "status": "covered",
+          "sdkMethod": "Client.audienceSegments.previewRules",
+          "testFile": "test/campaign-segments-drip.test.ts"
+        },
+        "go": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.AudienceSegments().PreviewRules",
+          "testFile": "campaign_segments_drip_test.go"
+        },
+        "python": {
+          "status": "covered",
+          "sdkMethod": "AsyncClient.audience_segments.preview_rules",
+          "testFile": "tests/test_campaign_segments_drip.py"
+        },
+        "php": {
+          "status": "covered",
+          "sdkMethod": "Client::audienceSegments.previewRules",
+          "testFile": "tests/campaign_segments_drip.php"
+        },
+        "rust": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.audience_segments().preview_rules",
+          "testFile": "tests/campaign_segments_drip.rs"
+        },
+        "dotnet": {
+          "status": "covered",
+          "sdkMethod": "OrganizationClient.AudienceSegments.PreviewRulesAsync",
+          "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
+        }
+      }
+    }
+  ],
+  "fields": [
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "platform",
+      "contractName": "CampaignRecipientFailureReason",
+      "shape": "enum value frequency_cap",
+      "native": {
+        "go": "CampaignFailureFrequencyCap",
+        "python": "frequency_cap",
+        "php": "frequency_cap",
+        "rust": "FrequencyCap",
+        "dotnet": "FrequencyCap"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "platform",
+      "contractName": "CampaignFrequencyCapSettings",
+      "shape": "schema",
+      "native": {
+        "go": "CampaignFrequencyCapSettings",
+        "python": "FrequencyCapSettings",
+        "php": "FrequencyCapSettings",
+        "rust": "CampaignFrequencyCapSettings",
+        "dotnet": "CampaignFrequencyCapSettings"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "platform",
+      "contractName": "UpdateCampaignFrequencyCapInput",
+      "shape": "schema",
+      "native": {
+        "go": "UpdateCampaignFrequencyCapInput",
+        "python": "UpdateFrequencyCap",
+        "php": "FrequencyCapInput",
+        "rust": "UpdateCampaignFrequencyCapRequest",
+        "dotnet": "UpdateCampaignFrequencyCapRequest"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "platform",
+      "contractName": "PlatformCampaign.frequencyCap",
+      "shape": "read",
+      "native": {
+        "go": "FrequencyCap",
+        "python": "frequencyCap",
+        "php": "frequencyCap",
+        "rust": "frequency_cap",
+        "dotnet": "FrequencyCap"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "platform",
+      "contractName": "CreatePlatformCampaignRequest.frequencyCap",
+      "shape": "write",
+      "native": {
+        "go": "FrequencyCap",
+        "python": "frequencyCap",
+        "php": "frequencyCap",
+        "rust": "frequency_cap",
+        "dotnet": "FrequencyCap"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "platform",
+      "contractName": "UpdatePlatformCampaignRequest.frequencyCap",
+      "shape": "write nullable",
+      "native": {
+        "go": "FrequencyCap",
+        "python": "frequencyCap",
+        "php": "frequencyCap",
+        "rust": "frequency_cap",
+        "dotnet": "FrequencyCap"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "platform",
+      "contractName": "PlatformCampaignAnalytics.frequencyCap",
+      "shape": "read",
+      "native": {
+        "go": "SkippedRecipientCount",
+        "python": "skippedRecipientCount",
+        "php": "skippedRecipientCount",
+        "rust": "skipped_recipient_count",
+        "dotnet": "SkippedRecipientCount"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "platform",
+      "contractName": "CampaignRecipient.failureReason",
+      "shape": "read",
+      "native": {
+        "go": "CampaignFailureFrequencyCap",
+        "python": "frequency_cap",
+        "php": "frequency_cap",
+        "rust": "FrequencyCap",
+        "dotnet": "FrequencyCap"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "messaging",
+      "contractName": "Campaign.frequencyCap",
+      "shape": "read",
+      "native": {
+        "go": "FrequencyCap",
+        "python": "frequencyCap",
+        "php": "frequencyCap",
+        "rust": "frequency_cap",
+        "dotnet": "FrequencyCap"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "messaging",
+      "contractName": "CampaignAnalytics.frequencyCap",
+      "shape": "read",
+      "native": {
+        "go": "SkippedRecipientCount",
+        "python": "skippedRecipientCount",
+        "php": "skippedRecipientCount",
+        "rust": "skipped_recipient_count",
+        "dotnet": "SkippedRecipientCount"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "messaging",
+      "contractName": "CreateCampaignRequest.frequencyCap",
+      "shape": "write",
+      "native": {
+        "go": "FrequencyCap",
+        "python": "frequencyCap",
+        "php": "frequencyCap",
+        "rust": "frequency_cap",
+        "dotnet": "FrequencyCap"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "messaging",
+      "contractName": "UpdateCampaignRequest.frequencyCap",
+      "shape": "write nullable",
+      "native": {
+        "go": "FrequencyCap",
+        "python": "frequencyCap",
+        "php": "frequencyCap",
+        "rust": "frequency_cap",
+        "dotnet": "FrequencyCap"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-frequency-cap.json",
+      "family": "messaging",
+      "contractName": "CampaignRecipient.failureReason",
+      "shape": "read",
+      "native": {
+        "go": "CampaignFailureFrequencyCap",
+        "python": "frequency_cap",
+        "php": "frequency_cap",
+        "rust": "FrequencyCap",
+        "dotnet": "FrequencyCap"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "AudienceSegment",
+      "shape": "schema",
+      "native": {
+        "go": "AudienceSegment",
+        "python": "AudienceSegment",
+        "php": "Segment",
+        "rust": "AudienceSegment",
+        "dotnet": "AudienceSegment"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "AudienceSegmentCondition",
+      "shape": "schema",
+      "native": {
+        "go": "AudienceSegmentCondition",
+        "python": "AudienceSegmentCondition",
+        "php": "Condition",
+        "rust": "AudienceSegmentCondition",
+        "dotnet": "AudienceSegmentCondition"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "AudienceSegmentPreview",
+      "shape": "schema",
+      "native": {
+        "go": "AudienceSegmentPreview",
+        "python": "AudienceSegmentPreview",
+        "php": "Preview",
+        "rust": "AudienceSegmentPreview",
+        "dotnet": "AudienceSegmentPreview"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "AudienceSegmentRules",
+      "shape": "schema",
+      "native": {
+        "go": "AudienceSegmentRules",
+        "python": "AudienceSegmentRules",
+        "php": "Rules",
+        "rust": "AudienceSegmentRules",
+        "dotnet": "AudienceSegmentRules"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "CampaignDrip",
+      "shape": "schema",
+      "native": {
+        "go": "CampaignDrip",
+        "python": "Drip",
+        "php": "Drip",
+        "rust": "CampaignDrip",
+        "dotnet": "CampaignDrip"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "CampaignDripInput",
+      "shape": "schema",
+      "native": {
+        "go": "CampaignDripInput",
+        "python": "DripInput",
+        "php": "DripInput",
+        "rust": "CampaignDripInput",
+        "dotnet": "CampaignDripInput"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "CampaignDripPatch",
+      "shape": "schema",
+      "native": {
+        "go": "CampaignDripPatch",
+        "python": "DripPatch",
+        "php": "DripInput",
+        "rust": "CampaignDripPatch",
+        "dotnet": "CampaignDripPatch"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "CampaignDripStats",
+      "shape": "schema",
+      "native": {
+        "go": "CampaignDripStats",
+        "python": "DripStats",
+        "php": "DripStats",
+        "rust": "CampaignDripStats",
+        "dotnet": "CampaignDripStats"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "CampaignEnrollment",
+      "shape": "schema",
+      "native": {
+        "go": "CampaignEnrollment",
+        "python": "Enrollment",
+        "php": "Enrollment",
+        "rust": "CampaignEnrollment",
+        "dotnet": "CampaignEnrollment"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "CampaignSendWindowRange",
+      "shape": "schema",
+      "native": {
+        "go": "CampaignSendWindowRange",
+        "python": "Hours",
+        "php": "StepWindow",
+        "rust": "CampaignSendWindowRange",
+        "dotnet": "CampaignSendWindowRange"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "EnrollCampaignContactRequest",
+      "shape": "schema",
+      "native": {
+        "go": "EnrollPlatformCampaignContactRequest",
+        "python": "EnrollPlatformContact",
+        "php": "PlatformEnrollInput",
+        "rust": "EnrollPlatformCampaignContactRequest",
+        "dotnet": "EnrollPlatformCampaignContactRequest"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "messaging",
+      "contractName": "CampaignDripStepStats",
+      "shape": "schema",
+      "native": {
+        "go": "CampaignDripStepStats",
+        "python": "DripStepStats",
+        "php": "DripStepStats",
+        "rust": "CampaignDripStepStats",
+        "dotnet": "CampaignDripStepStats"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "messaging",
+      "contractName": "EnrollCampaignContactRequest",
+      "shape": "schema",
+      "native": {
+        "go": "EnrollCampaignContactRequest",
+        "python": "EnrollContact",
+        "php": "EnrollInput",
+        "rust": "EnrollCampaignContactRequest",
+        "dotnet": "EnrollCampaignContactRequest"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "messaging",
+      "contractName": "EnrollCampaignContactResponse",
+      "shape": "schema",
+      "native": {
+        "go": "CampaignEnrollment",
+        "python": "Enrollment",
+        "php": "Enrollment",
+        "rust": "CampaignEnrollment",
+        "dotnet": "CampaignEnrollment"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "CreatePlatformCampaignRequest.segmentId",
+      "shape": "write omission only",
+      "native": {
+        "go": "SegmentID",
+        "python": "segmentId",
+        "php": "segmentId",
+        "rust": "segment_id",
+        "dotnet": "SegmentId"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "CreatePlatformCampaignRequest.drip",
+      "shape": "write nullable",
+      "native": {
+        "go": "Drip",
+        "python": "drip",
+        "php": "drip",
+        "rust": "drip",
+        "dotnet": "Drip"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "CampaignMessage.delayUnit",
+      "shape": "write",
+      "native": {
+        "go": "DelayUnit",
+        "python": "delayUnit",
+        "php": "delayUnit",
+        "rust": "delay_unit",
+        "dotnet": "DelayUnit"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "CampaignMessage.sendWindow",
+      "shape": "write nullable",
+      "native": {
+        "go": "SendWindow",
+        "python": "sendWindow",
+        "php": "sendWindow",
+        "rust": "send_window",
+        "dotnet": "SendWindow"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "CampaignMessage.delayAfterSec",
+      "shape": "write bound 86400 or 2592000",
+      "native": {
+        "go": "DelayAfterSec",
+        "python": "delayAfterSec",
+        "php": "delayAfterSec",
+        "rust": "delay_after_sec",
+        "dotnet": "DelayAfterSec"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "PlatformCampaignAnalytics.drip",
+      "shape": "read nullable",
+      "native": {
+        "go": "Drip",
+        "python": "drip",
+        "php": "drip",
+        "rust": "drip",
+        "dotnet": "Drip"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "UpdatePlatformCampaignRequest.drip",
+      "shape": "write partial nullable",
+      "native": {
+        "go": "Drip",
+        "python": "drip",
+        "php": "drip",
+        "rust": "drip",
+        "dotnet": "Drip"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "UpdatePlatformCampaignRequest.segmentId",
+      "shape": "write nullable",
+      "native": {
+        "go": "SegmentID",
+        "python": "segmentId",
+        "php": "segmentId",
+        "rust": "segment_id",
+        "dotnet": "SegmentId"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "PlatformCampaign.drip",
+      "shape": "read nullable",
+      "native": {
+        "go": "Drip",
+        "python": "drip",
+        "php": "drip",
+        "rust": "drip",
+        "dotnet": "Drip"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "PlatformCampaign.enrollmentOpen",
+      "shape": "read nullable",
+      "native": {
+        "go": "EnrollmentOpen",
+        "python": "enrollmentOpen",
+        "php": "enrollmentOpen",
+        "rust": "enrollment_open",
+        "dotnet": "EnrollmentOpen"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "PlatformCampaign.pauseReason",
+      "shape": "read nullable",
+      "native": {
+        "go": "PauseReason",
+        "python": "pauseReason",
+        "php": "pauseReason",
+        "rust": "pause_reason",
+        "dotnet": "PauseReason"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "PlatformCampaign.segmentId",
+      "shape": "read nullable",
+      "native": {
+        "go": "SegmentID",
+        "python": "segmentId",
+        "php": "segmentId",
+        "rust": "segment_id",
+        "dotnet": "SegmentId"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "platform",
+      "contractName": "PlatformCampaign.segmentSnapshot",
+      "shape": "read nullable",
+      "native": {
+        "go": "SegmentSnapshot",
+        "python": "segmentSnapshot",
+        "php": "segmentSnapshot",
+        "rust": "segment_snapshot",
+        "dotnet": "SegmentSnapshot"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "messaging",
+      "contractName": "Campaign.drip",
+      "shape": "read nullable",
+      "native": {
+        "go": "Drip",
+        "python": "drip",
+        "php": "drip",
+        "rust": "drip",
+        "dotnet": "Drip"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "messaging",
+      "contractName": "Campaign.enrollmentOpen",
+      "shape": "read nullable",
+      "native": {
+        "go": "EnrollmentOpen",
+        "python": "enrollmentOpen",
+        "php": "enrollmentOpen",
+        "rust": "enrollment_open",
+        "dotnet": "EnrollmentOpen"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "messaging",
+      "contractName": "Campaign.pauseReason",
+      "shape": "read nullable",
+      "native": {
+        "go": "PauseReason",
+        "python": "pauseReason",
+        "php": "pauseReason",
+        "rust": "pause_reason",
+        "dotnet": "PauseReason"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "messaging",
+      "contractName": "Campaign.segmentId",
+      "shape": "read only, nullable",
+      "native": {
+        "go": "SegmentID",
+        "python": "segmentId",
+        "php": "segmentId",
+        "rust": "segment_id",
+        "dotnet": "SegmentId"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "messaging",
+      "contractName": "Campaign.segmentSnapshot",
+      "shape": "read nullable",
+      "native": {
+        "go": "SegmentSnapshot",
+        "python": "segmentSnapshot",
+        "php": "segmentSnapshot",
+        "rust": "segment_snapshot",
+        "dotnet": "SegmentSnapshot"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "messaging",
+      "contractName": "CampaignAnalytics.drip",
+      "shape": "read nullable",
+      "native": {
+        "go": "Drip",
+        "python": "drip",
+        "php": "drip",
+        "rust": "drip",
+        "dotnet": "Drip"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "messaging",
+      "contractName": "CreateCampaignRequest.drip",
+      "shape": "write nullable",
+      "native": {
+        "go": "Drip",
+        "python": "drip",
+        "php": "drip",
+        "rust": "drip",
+        "dotnet": "Drip"
+      }
+    },
+    {
+      "supplement": "contracts/campaign-segments-drip.json",
+      "family": "messaging",
+      "contractName": "UpdateCampaignRequest.drip",
+      "shape": "write partial nullable",
+      "native": {
+        "go": "Drip",
+        "python": "drip",
+        "php": "drip",
+        "rust": "drip",
+        "dotnet": "Drip"
+      }
+    }
+  ]
+}
