@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, expectTypeOf, it } from "vitest";
 import {
   Client,
   MessagingClient,
@@ -278,4 +278,31 @@ it("projects per-step analytics and recipient exits on both APIs", async () => {
     (await messaging(server.url).campaigns.listRecipients("p", "c")).data
       .data[0]?.messagesSent,
   ).toBe(1);
+});
+
+it("surfaces saved preview timeout once so the caller can simplify rules", async () => {
+  const server = await startTestServer(() => ({
+    status: 409,
+    body: JSON.stringify({
+      error: { code: "state_conflict", message: "Simplify rules and retry" },
+    }),
+  }));
+  servers.push(server);
+  await expect(
+    platform(server.url).audienceSegments.preview("s"),
+  ).rejects.toMatchObject({ status: 409, code: "state_conflict" });
+  expect(server.requests).toHaveLength(1);
+});
+
+it("requires organization project context and keeps segment authority out of project clients", () => {
+  const client = platform("https://api.example.test");
+  expectTypeOf<Parameters<typeof client.campaigns.enroll>[1]>().toMatchTypeOf<{
+    readonly projectId: string;
+  }>();
+  expect(client.project("p")).not.toHaveProperty("audienceSegments");
+  type Create = Parameters<typeof client.campaigns.create>[0];
+  const valid: Create = { projectId: "p", name: "draft" };
+  // @ts-expect-error The create schema permits omission, not null.
+  const invalid: Create = { projectId: "p", name: "draft", segmentId: null };
+  expect(valid.name).toBe(invalid.name);
 });

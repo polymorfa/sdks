@@ -190,7 +190,7 @@ export interface TransferCustomerNumberRequest {
 
 /** Create a campaign through the organization client's Platform resource. */
 export interface CreatePlatformCampaignRequest {
-  readonly segmentId?: string | null;
+  readonly segmentId?: string;
   readonly drip?: CampaignDripInput | null;
   /** Owning project; organization API keys are not bound to one project. */
   readonly projectId: string;

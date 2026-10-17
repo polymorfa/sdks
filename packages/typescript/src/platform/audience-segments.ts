@@ -187,6 +187,7 @@ export class AudienceSegmentsResource {
       method: "GET",
       path: `${segmentPath(id)}/preview`,
       ...options,
+      maxNetworkRetries: 0,
     });
   }
   previewRules(

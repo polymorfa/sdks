@@ -77,7 +77,7 @@ export class CampaignsResource {
    * Beta and campaigns:manage required; 409 state_conflict when closed. */
   enroll(
     campaignId: string,
-    body: EnrollCampaignContactRequest & { readonly projectId?: string },
+    body: EnrollCampaignContactRequest & { readonly projectId: string },
     options: RequestOptions = {},
   ): CampaignResult<CampaignEnrollment> {
     return this.transport.request({
