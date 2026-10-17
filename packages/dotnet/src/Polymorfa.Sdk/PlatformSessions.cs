@@ -53,8 +53,12 @@ public sealed class PlatformSessions : Resource
     internal PlatformSessions(HttpTransport http) : base(http) { }
     private static string Path(string id) => "/platform/sessions/" + E(id);
     public Task<ApiResponse<DataEnvelope<IReadOnlyList<PlatformSession>>>> ListAsync(ListPlatformSessionsParameters? parameters = null, RequestOptions? options = null) => Get<DataEnvelope<IReadOnlyList<PlatformSession>>>("/platform/sessions", options, parameters);
-    public Task<ApiResponse<SuccessEnvelope<Session>>> RetrieveAsync(string id, RequestOptions? options = null) => Get<SuccessEnvelope<Session>>(Path(id), options);
-    public Task<ApiResponse<SuccessEnvelope<Session>>> UpdateAsync(string id, UpdateSessionRequest body, RequestOptions? options = null) => Put<SuccessEnvelope<Session>>(Path(id), body, options);
+    public Task<ApiResponse<SuccessEnvelope<Session>>> RetrieveAsync(string id, RequestOptions? options = null) => ExistingContractCodec.Request<SuccessEnvelope<Session>>(Http, HttpMethod.Get, Path(id), options: options);
+    public Task<ApiResponse<SuccessEnvelope<Session>>> UpdateAsync(string id, UpdateSessionRequest body, RequestOptions? options = null)
+    {
+        var captured = ConfigurationContract.Capture(body, body.Configuration, out var intent);
+        return ExistingContractCodec.Request<SuccessEnvelope<Session>>(Http, HttpMethod.Put, Path(id), captured, ExistingContractCodec.Options(options, intent));
+    }
     public Task<ApiResponse<DataEnvelope<SessionStartResult>>> StartAsync(string id, SessionProjectContext? body = null, RequestOptions? options = null) => Post<DataEnvelope<SessionStartResult>>(Path(id) + "/start", body ?? new(), options);
     public Task<ApiResponse<DataEnvelope<SessionStopResult>>> StopAsync(string id, SessionProjectContext? body = null, RequestOptions? options = null) => Post<DataEnvelope<SessionStopResult>>(Path(id) + "/stop", body ?? new(), options);
     public Task<ApiResponse<DataEnvelope<SessionBatchStopResult>>> StopManyAsync(SessionBatchRequest body, RequestOptions? options = null) => Post<DataEnvelope<SessionBatchStopResult>>("/platform/sessions/stop", body, options);

@@ -1,9 +1,17 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Polymorfa.Sdk;
 
-public sealed record HistorySyncPolicy(string Mode, bool RequestFull);
-public sealed record HistorySyncOverride(string? Mode = null, bool? RequestFull = null);
+[JsonConverter(typeof(HistorySyncDeliveryConverter))]
+public enum HistorySyncDelivery { Archive, Descriptor }
+[JsonConverter(typeof(HistorySyncDeliveryOverrideConverter))]
+public enum HistorySyncDeliveryOverride { Descriptor }
+[JsonConverter(typeof(ConfigurationSourceConverter))]
+public enum ConfigurationSource { Platform, Team, Project, Session }
+public sealed record HistorySyncPolicy(string Mode, bool RequestFull, HistorySyncDelivery? Delivery = null);
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed record HistorySyncOverride(string? Mode = null, bool? RequestFull = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<HistorySyncDeliveryOverride?> Delivery = default);
 public sealed record HmsConfiguration(bool Enabled, string? Region = null, string? Policy = null, int? RetentionDays = null, string? PolicyVersion = null, bool? LegalHold = null);
 public sealed record ObservationConfiguration(string PresenceMode, string TypingMode, string LabelMode, string QuickReplyMode);
 public sealed record ObservationOverride(string? PresenceMode = null, string? TypingMode = null, string? LabelMode = null, string? QuickReplyMode = null);
@@ -17,7 +25,8 @@ public sealed record ConfigurationSources(
     [property: JsonPropertyName("observation.presenceMode")] string PresenceMode,
     [property: JsonPropertyName("observation.typingMode")] string TypingMode,
     [property: JsonPropertyName("observation.labelMode")] string LabelMode,
-    [property: JsonPropertyName("observation.quickReplyMode")] string QuickReplyMode);
+    [property: JsonPropertyName("observation.quickReplyMode")] string QuickReplyMode,
+    [property: JsonPropertyName("historySync.delivery")] ConfigurationSource? HistorySyncDelivery = null);
 public sealed record ConfigurationRevisions(long Team, long Project, long Session);
 public sealed record ConfigurationApplication(long DesiredGeneration, long AppliedGeneration, string Status);
 public sealed record SessionConfigurationView(EffectiveSessionConfiguration Effective, SessionConfigurationOverrides Overrides, ConfigurationSources Sources, HistorySyncPolicy RequestedHistory, ConfigurationRevisions Revisions, string? HistoryConsent = null, ConfigurationApplication? Application = null);
@@ -29,13 +38,18 @@ public sealed class ConfigurationResource : Resource
     internal ConfigurationResource(HttpTransport http, string? projectId) : base(http) => this.projectId = projectId;
     public async Task<ApiResponse<SessionConfigurationView>> RetrieveAsync(RequestOptions? options = null)
     {
-        var response = await Get<DataEnvelope<SessionConfigurationView>>("/platform/session-configuration", options, projectId is null ? null : new { projectId });
+        var response = await ExistingContractCodec.Request<DataEnvelope<SessionConfigurationView>>(Http, HttpMethod.Get, "/platform/session-configuration", options: options, query: Query(projectId is null ? null : new { projectId }));
         return new(response.Data.Data, response.Metadata);
     }
     public async Task<ApiResponse<SessionConfigurationView>> UpdateAsync(UpdateConfigurationRequest body, RequestOptions? options = null)
     {
-        var response = await Put<DataEnvelope<SessionConfigurationView>>("/platform/session-configuration", new { body.Configuration, body.Revision, projectId }, options);
+        var captured = ConfigurationContract.Capture(new { body.Configuration, body.Revision, projectId }, body.Configuration, out var intent);
+        var response = await ExistingContractCodec.Request<DataEnvelope<SessionConfigurationView>>(Http, HttpMethod.Put, "/platform/session-configuration", captured, ExistingContractCodec.Options(options, intent));
         return new(response.Data.Data, response.Metadata);
     }
 }
 public sealed record UpdateConfigurationRequest(SessionConfigurationPatch Configuration, long Revision);
+
+internal sealed class HistorySyncDeliveryConverter() : JsonStringEnumConverter<HistorySyncDelivery>(JsonNamingPolicy.SnakeCaseLower, allowIntegerValues: false);
+internal sealed class HistorySyncDeliveryOverrideConverter() : JsonStringEnumConverter<HistorySyncDeliveryOverride>(JsonNamingPolicy.SnakeCaseLower, allowIntegerValues: false);
+internal sealed class ConfigurationSourceConverter() : JsonStringEnumConverter<ConfigurationSource>(JsonNamingPolicy.SnakeCaseLower, allowIntegerValues: false);

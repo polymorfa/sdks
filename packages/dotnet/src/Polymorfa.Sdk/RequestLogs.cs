@@ -47,10 +47,9 @@ public sealed class RequestLogs : Resource
     }
     private async Task<RequestLogPage> ReadAsync(string? project, Dictionary<string, string> query, RequestOptions? options)
     {
-        var response = await Get<JsonElement>(Path(project), options, query).ConfigureAwait(false); var body = response.Data;
-        if (body.ValueKind != JsonValueKind.Object || !body.TryGetProperty("data", out var items) || items.ValueKind != JsonValueKind.Array || !body.TryGetProperty("page", out var page) || page.ValueKind != JsonValueKind.Object || !page.TryGetProperty("hasMore", out var more) || more.ValueKind is not (JsonValueKind.True or JsonValueKind.False) || !page.TryGetProperty("followCursor", out var follow) || follow.ValueKind != JsonValueKind.String || !page.TryGetProperty("nextCursor", out var next) || next.ValueKind is not (JsonValueKind.String or JsonValueKind.Null)) throw new PolymorfaServerException("Invalid request log page.", "invalid_response", response.Metadata);
-        try { return new(items.Deserialize<IReadOnlyList<RequestLog>>(HttpTransport.Json) ?? throw new JsonException(), more.GetBoolean(), next.ValueKind == JsonValueKind.Null ? null : next.GetString(), follow.GetString()!, response.Metadata); }
-        catch (JsonException) { throw new PolymorfaServerException("Invalid request log items.", "invalid_response", response.Metadata); }
+        var response = await ExistingContractCodec.Request<RequestLogWireEnvelope>(Http, HttpMethod.Get, Path(project), options: options, query: Query(query)).ConfigureAwait(false);
+        var page = response.Data.Page;
+        return new(response.Data.Data, page.HasMore, page.NextCursor, page.FollowCursor, response.Metadata);
     }
     public async IAsyncEnumerable<RequestLog> TailAsync(TailRequestLogsParameters? parameters = null, RequestOptions? options = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -86,3 +85,6 @@ public sealed class RequestLogs : Resource
     }
     private static async Task<bool> WaitAsync(int milliseconds, CancellationToken cancellation) { try { await Task.Delay(milliseconds, cancellation).ConfigureAwait(false); return true; } catch (OperationCanceledException) { return false; } }
 }
+
+internal sealed record RequestLogWireEnvelope(IReadOnlyList<RequestLog> Data, RequestLogWirePage Page);
+internal sealed record RequestLogWirePage(bool HasMore, string? NextCursor, string FollowCursor);

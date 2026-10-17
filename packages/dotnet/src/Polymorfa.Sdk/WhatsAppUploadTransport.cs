@@ -53,6 +53,7 @@ public sealed partial class WhatsAppMediaResource
     public IWhatsAppMediaUploadTransport RelayTransport(RequestOptions? request = null) => new BuiltinUploadTransport(this, null, request);
     public IWhatsAppMediaUploadTransport DirectTransport(WhatsAppDirectUploadOptions? direct = null, RequestOptions? request = null)
     {
+        http.Credential.RequireServer();
         direct ??= new();
         if (direct.MaxAttempts < 1 || direct.DocumentPartSize < 1 || direct.Timeout <= TimeSpan.Zero) throw new PolymorfaConfigurationException("Invalid direct upload options.");
         return new BuiltinUploadTransport(this, direct, request);

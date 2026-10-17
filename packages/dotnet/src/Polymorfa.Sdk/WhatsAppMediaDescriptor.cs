@@ -39,7 +39,7 @@ public sealed record WhatsAppMediaSendDescriptor(string DirectPath, byte[] Media
         if (Filename is not null && kind != WhatsAppUploadMediaType.Document || Ptt.HasValue && kind is not (WhatsAppUploadMediaType.Audio or WhatsAppUploadMediaType.Ptt)) throw Invalid("filename or ptt");
         if (Thumbnail?.Length > 16384) throw Invalid("thumbnail");
         if (Waveform is not null && (Waveform.Length is < 64 or > 192 || kind is not (WhatsAppUploadMediaType.Audio or WhatsAppUploadMediaType.Ptt))) throw Invalid("waveform");
-        if (kind == WhatsAppUploadMediaType.Sticker) { if (MimeType != "image/webp" || Thumbnail is not null || Seconds is not null || Waveform is not null) throw Invalid("sticker"); }
+        if (kind == WhatsAppUploadMediaType.Sticker) { if (MimeType != "image/webp" || Caption is not null || Thumbnail is not null || Seconds is not null || Waveform is not null) throw Invalid("sticker"); }
         else if (IsAnimated.HasValue) throw Invalid("isAnimated");
     }
     public SignalMediaDescriptor ToSignalDescriptor(WhatsAppUploadMediaType kind, string? caption = null, string? fileName = null)

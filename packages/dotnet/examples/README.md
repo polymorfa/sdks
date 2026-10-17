@@ -31,3 +31,10 @@ See [the MAUI instructions](maui/README.md) for the supported workload, build an
 `calls-agent` connects the server lifecycle socket, answers incoming calls and consumes typed PCM frames. Set `POLYMORFA_API_KEY` and `POLYMORFA_SESSION`, then run `dotnet run --project calls-agent/Polymorfa.Example.Calls.csproj`. Add consent and application policy before answering. Ctrl+C cancels the event and media consumers. Production providers can use `CallsTokenSource` to supply and refresh short-lived credentials.
 
 The client reconnects media with the same connection identity, restores acknowledged media preferences and bounds retry attempts. Browser call media remains in the TypeScript Calls package.
+
+The authenticated ASP.NET connect route adds Linked Devices to its server-assigned
+Number. Set `POLYMORFA_SESSION` to an existing Number with an eligible Official
+API connection. The route requests a supplementary hybrid QuickLink and ignores
+client-supplied session choices. Initial invitations must omit session and
+addConnection. Blazor and MAUI use this same authenticated route; bridge/build
+checks do not establish browser pairing or live provider acceptance.

@@ -8,7 +8,7 @@ public sealed record SuccessEnvelope<T>(bool Success, T Data);
 public sealed record SuccessResponse(bool Success, string? Message);
 public sealed record OperationAccepted(bool Success, string Message, string OperationId);
 public sealed record StatusResult(string Status);
-public sealed record Session(string SessionId, string Name, string? ExternalId, string TenantId, string Type, bool TestMode, string Status, string? StatusReason, SessionConfigurationView? Configuration, NewChatCapping? NewChatCapping, string CreatedAt, string UpdatedAt);
+public sealed record Session(string SessionId, string Name, string? ExternalId, string TenantId, string Type, bool TestMode, string Status, string? StatusReason, SessionConfigurationView? Configuration, NewChatCapping? NewChatCapping, string CreatedAt, string UpdatedAt, SignalCustodyMode? SignalMode = null);
 public sealed record NewChatCapping(bool? Enabled, bool Pacing, string? Status, bool Capped, long? Limit, long? Used, long? Remaining, string? CycleStartsAt, string? ResetsAt, string ObservedAt);
 public sealed record PlatformSession([property: JsonPropertyName("_id")] string Id, [property: JsonPropertyName("_creationTime")] long CreationTime, string ProjectId, string SessionId, string Name, string? Phone, string? Platform, bool IsBusiness, bool TestMode, string? TierOverride, string Status, long MessageCount, long? LastActiveAt, long? PaidUntil);
 public sealed record SessionStartResult(bool Starting, string SessionId);
@@ -47,13 +47,15 @@ public sealed record StarRequest(ConversationReference Conversation, string Id, 
 public sealed record MessageOperation(string OperationId, string Status, string? Transport, string? RejectionCode, MessageOperationReceipt? Receipt);
 public sealed record MessageOperationReceipt([property: JsonPropertyName("whatsapp_ids")] WhatsAppMessageIds WhatsAppIds, string Timestamp);
 
-public sealed record CreateQuickLinkRequest(string? Purpose = null, string? Session = null, string? ProjectId = null, string? CustomerId = null, string? ExternalId = null, string? ConnectionGoal = null, string? AddConnection = null, QuickLinkConfiguration? Configuration = null, BillingControls? BillingControls = null);
+public sealed record CreateQuickLinkRequest(string? Purpose = null, string? Session = null, string? ProjectId = null, string? CustomerId = null, string? ExternalId = null, string? ConnectionGoal = null, string? AddConnection = null, QuickLinkConfiguration? Configuration = null, BillingControls? BillingControls = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<SignalCustodyMode?> SignalMode = default);
 public sealed record BillingControls([property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] decimal? LimitCredits, int Priority);
 public sealed record TestingProfile(string? Name = null, string? Status = null);
 public sealed record TestingConfiguration(TestingProfile? Profile = null, string? AccountType = null, string? ReplyBehavior = null, string? FailureScenario = null, string? HistoryFixtureId = null);
 public sealed record QuickLinkTesting(string? Country = null, TestingConfiguration? Configuration = null, IReadOnlyList<string>? Editable = null);
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record QuickLinkConfiguration(string? ConnectionPreference = null, string? ConnectionEnforcement = null, IReadOnlyList<string>? Methods = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<string> DefaultMethod = default, string? PrefillPhone = null, bool? AllowPhoneChange = null, QuickLinkHistorySync? HistorySync = null, ObservationOverride? Observation = null, HmsConfiguration? Hms = null, QuickLinkTesting? Testing = null);
-public sealed record QuickLinkHistorySync(string? Consent = null, string? Mode = null, bool? RequestFull = null);
+[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+public sealed record QuickLinkHistorySync(string? Consent = null, string? Mode = null, bool? RequestFull = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<HistorySyncDeliveryOverride?> Delivery = default);
 public sealed record QuickLink(string Purpose, string ConnectionGoal, string? AddConnection, string Id, string Url, string Session, string? ExpiresAt)
 {
     public override string ToString() => $"QuickLink {{ Id = {Id}, Url = [REDACTED] }}";

@@ -775,3 +775,59 @@ python3 packages/dotnet/tests/Polymorfa.Storage.IndexedDb.BrowserTests/serve.py 
 Open `http://127.0.0.1:54865/?id=unique-test-run`. Each run needs a fresh `id`;
 append `&reopen=1` to the same URL to verify durable reads after a page reload.
 The fixture uses synthetic data and does not access an operator browser profile.
+
+## Campaign and direct-history contracts
+
+Campaign requests expose `CampaignVariableMapping`, `CampaignVariableBinding`
+and `CampaignTrackedLink`. Use `PatchValue<T>.Set(null)` for a PATCH reset;
+leave its default value to omit the field. Create mappings and binding members
+reject explicit null. Messaging updates require at least one captured field.
+Platform updates allow null or empty bodies and open extensions, but reject
+`projectId`, `id` and extensions that collide with typed fields. Select the
+Project in `PlatformCampaignParameters` and the campaign in the method path.
+Platform launch takes `LaunchPlatformCampaignRequest` and returns a typed,
+open `PlatformCampaignLaunchResult`.
+
+The client checks mapping, link, variation and follow-up constraints before HTTP.
+Tracked-link checks validate URL syntax and domain names, without DNS lookup.
+Requests retain the caller's URL spelling; returned URLs reflect server storage.
+Follow-up validation uses the server's effective defaults without adding omitted
+timing fields to the request. Stored link arrays have no request-count cap.
+Platform composed messages use `PlatformCampaignMessage`; empty drafts and open
+nested media/button extensions remain supported. Stored campaign `Messages`
+remain opaque JSON. Recipient filters can combine reason, status, cursor and
+limit. Messaging recipient `NextMessageAt` retains fractional JSON numbers;
+Platform recipient decoding requires an integer.
+
+Read history delivery with `HistorySyncDelivery` (`Archive` or `Descriptor`).
+Writes use `HistorySyncDeliveryOverride.Descriptor`. Delivery-specific writes
+and resets, initial QuickLink custody, and QuickLink delivery select
+`2026-10-14` only when the request has no explicit `ApiVersion`. Existing GETs,
+whole-history resets and requests without new intent retain the client default.
+`Session.SignalMode` is an optional immutable fact, separate from configuration.
+Initial QuickLinks cannot select an existing session. Supplementary links require
+both session and connection, and cannot choose custody, Customer, external ID,
+billing controls or a single-connection goal.
+
+Direct grants and history retry/delete require server credentials. Prepared
+uploads may already have consumed plaintext during explicit local preparation;
+a Client denial prevents further source, grant and storage work. Scoped Client
+relay uploads and custom ciphertext-only transports remain supported. A retry
+acknowledgement is not chunk delivery. Deletion validates the API acknowledgement
+and does not delete local history.
+
+Verified `history.sync` parsing exposes `DirectHistorySyncMediaPayload` and
+`DirectHistorySyncInlinePayload` alongside archive and Cloud events. Descriptor
+events use projected WhatsApp identities and ISO time, and require exactly one
+media or inline branch. Their diagnostics redact descriptor material. Typed
+parsing does not download, decode or persist history. `StorageHistoryDecoder`
+currently accepts archive payloads only; descriptor storage dispatch remains a
+separate repair. Do not pass descriptor notifications to that archive callback
+or interpret progress/checkpoint updates as stored history.
+
+Sticker sends require a WebP descriptor and reject caption and unsupported
+media fields before HTTP. A standard descriptor send includes its key in the
+API body and does not establish customer-owned Signal custody. Server consent,
+eligibility, approval, funding, feature policy and pairing checks still apply.
+These source and local package checks do not establish registry publication,
+live WhatsApp, browser pairing or production availability.

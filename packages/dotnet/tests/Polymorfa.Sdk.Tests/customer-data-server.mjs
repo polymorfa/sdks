@@ -7,7 +7,7 @@ import { mkdtempSync, writeFileSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import path from 'node:path';
 import { mkdirSync } from 'node:fs';
-const root=path.join(homedir(),'.polymorfa-agent-work','zk-program-20261014','native-customer-peers');mkdirSync(root,{recursive:true});
+const root=process.env.SDK_CUSTOMER_PEER_ROOT??path.join(homedir(),'.polymorfa-agent-work','zk-program-20261014','native-customer-peers');mkdirSync(root,{recursive:true});
 const directory=mkdtempSync(path.join(root,'peer-'));
 const authority=path.join(directory,'authority.pem'),authorityKey=path.join(directory,'authority-key.pem');
 execFileSync('openssl',['req','-x509','-newkey','rsa:2048','-nodes','-days','1','-keyout',authorityKey,'-out',authority,'-subj','/CN=PolymorfaSyntheticRoot','-addext','basicConstraints=critical,CA:TRUE'],{stdio:'ignore'});
@@ -23,13 +23,14 @@ const requests=[],states=new Map();let grants=0;
 function state(name){if(!states.has(name))states.set(name,{attempts:0,bytes:Buffer.alloc(0),finals:0});return states.get(name)}
 function send(res,status,value,extra={}){res.writeHead(status,{'content-type':'application/json',...extra});res.end(value===undefined?'':JSON.stringify(value))}
 const api=http.createServer(async(req,res)=>{const parts=new URL(req.url,'http://fixture').pathname.split('/'),session=decodeURIComponent(parts[2]??'');let bytes=[];try{for await(const c of req)bytes.push(c);}catch{return;}const body=Buffer.concat(bytes);requests.push({boundary:'api',path:req.url,authorization:!!req.headers.authorization,version:req.headers['polymorfa-version'],type:req.headers['content-type'],body:body.toString('base64')});
-if(req.url.includes('upload-grants')){const request=JSON.parse(body);if(Object.keys(request).some(k=>!['type','fileEncSha256','ptt'].includes(k)))return send(res,400,{});const kind=request.type==='file'?'document':request.type==='voice'?(request.ptt?'ptt':'audio'):request.type;grants++;return send(res,200,{data:{host:'mmg.whatsapp.net',uploadUrl:`https://mmg.whatsapp.net/mms/${kind}/${request.fileEncSha256}?auth=synthetic-grant-${grants}&token=kept&scenario=${session}`,expiresAt:2000000000}})}
-if(req.url.includes('media/uploads')){const hash=new URL(req.url,'http://fixture').searchParams.get('fileEncSha256');if(sha(body).toString('base64url')!==hash)return send(res,415,{});return send(res,200,{data:{directPath:'/stored.enc',url:'https://mmg.whatsapp.net/stored.enc'}})}
+if(req.url.includes('upload-grants')){const request=JSON.parse(body);if(Object.keys(request).some(k=>!['type','fileEncSha256','ptt'].includes(k)))return send(res,400,{});const kind=request.type==='file'?'document':request.type==='voice'?(request.ptt?'ptt':'audio'):request.type;grants++;return send(res,200,{success:true,data:{host:'mmg.whatsapp.net',uploadUrl:`https://mmg.whatsapp.net/mms/${kind}/${request.fileEncSha256}?auth=synthetic-grant-${grants}&token=kept&scenario=${session}`,expiresAt:2000000000}})}
+if(req.url.includes('media/uploads')){const hash=new URL(req.url,'http://fixture').searchParams.get('fileEncSha256');if(sha(body).toString('base64url')!==hash)return send(res,415,{});state(session).bytes=body;return send(res,200,{success:true,data:{directPath:'/stored.enc',url:'https://mmg.whatsapp.net/stored.enc'}})}
 if(req.url.includes('/messages/send'))return send(res,200,{success:true,data:{id:'message',whatsapp_ids:{linked_devices:'wa'},conversation:{id:'c'},timestamp:'2026-10-14',status:'sent',type:'image'}});return send(res,200,{data:{requestId:'request'}})});
 const archiveVector=JSON.parse(readFileSync(path.join(process.cwd(),'contracts/fixtures/whatsapp-media.json'),'utf8')).fixtures.find(v=>v.kind==='image');
 const archiveBytes=Buffer.from(archiveVector.encrypted,'hex');const archiveWaiting=[];
 const cdn=https.createServer({key:readFileSync(path.join(directory,'key.pem')),cert:readFileSync(path.join(directory,'cert.pem'))},async(req,res)=>{
 const url=new URL(req.url,'https://mmg.whatsapp.net');if(url.pathname==='/release-archive'){for(const pending of archiveWaiting.splice(0))pending.end(archiveBytes.subarray(-1));return send(res,200,{released:true});}
+if(url.pathname.startsWith('/stored/')){const bytes=state(decodeURIComponent(url.pathname.slice(8))).bytes;res.writeHead(200,{'content-type':'application/octet-stream','content-length':bytes.length});res.end(bytes);return;}
 if(url.pathname==='/state')return send(res,200,{requests,grants,states:[...states].map(([name,s])=>({name,attempts:s.attempts,finals:s.finals,size:s.bytes.length}))});
 requests.push({boundary:'cdn',path:req.url,authorization:!!req.headers.authorization,cookie:!!req.headers.cookie,origin:req.headers.origin,referer:req.headers.referer});
 if(['/archive.enc','/archive-bad.enc','/archive-gate.enc'].includes(url.pathname)){const body=Buffer.from(archiveBytes);if(url.pathname==='/archive-bad.enc')body[0]^=1;res.writeHead(200,{'content-length':body.length});if(url.pathname==='/archive-gate.enc'){res.write(body.subarray(0,-1));archiveWaiting.push(res);}else res.end(body);return;}

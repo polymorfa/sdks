@@ -60,6 +60,7 @@ public static partial class Webhooks
         "customer.number.disconnected" => Typed<CustomerNumberDisconnectedPayload>(envelope),
         "group.participant" => Typed<GroupParticipantPayload>(envelope),
         "group.update" => Typed<GroupUpdatePayload>(envelope),
+        "history.sync" when envelope.Payload.ValueKind == JsonValueKind.Object && envelope.Payload.TryGetProperty("delivery", out _) => DirectHistoryEvents.Parse(envelope),
         "history.sync" => Field(envelope, "kind") == "history" ? Typed<CloudHistorySyncPayload>(envelope) : Typed<LinkedHistorySyncPayload>(envelope),
         "labels.update" => Typed<LabelsUpdatePayload>(envelope),
         "message.ack" => Typed<MessageAckPayload>(envelope),

@@ -53,7 +53,7 @@ internal static class IdempotencyHeaderTests
                 var input = new byte[int.Parse(length)]; await stream.ReadExactlyAsync(input, timeout.Token);
                 onRead?.Invoke(i);
                 var status = i % 2 == 0 ? 503 : 200;
-                var body = status == 503 ? "{\"error\":{\"code\":\"service_unavailable\",\"message\":\"retry\"}}" : "{\"success\":true,\"data\":{}}";
+                var body = status == 503 ? "{\"error\":{\"code\":\"service_unavailable\",\"message\":\"retry\"}}" : Adoption41Fixtures.Envelope(CampaignExistingTests.Change(Adoption41Fixtures.CampaignJson, "operationId", System.Text.Json.Nodes.JsonValue.Create("op")));
                 await stream.WriteAsync(Encoding.UTF8.GetBytes($"HTTP/1.1 {status} Fixture\r\ncontent-type: application/json\r\nretry-after: 0\r\ncontent-length: {body.Length}\r\nconnection: close\r\n\r\n{body}"), timeout.Token);
             }
         });

@@ -30,28 +30,28 @@ internal static class CampaignFollowUpTests
         foreach (var (followUp, expected) in new (CampaignFollowUp, string)[]
         {
             (new(new CampaignFollowUpText("Hello {{name}}")), """{"message":{"type":"text","text":"Hello {{name}}"}}"""),
-            (new(new CampaignFollowUpTemplate("template"), 60, 86400), """{"message":{"type":"template","templateId":"template"},"delaySeconds":60,"expirySeconds":86400}""")
+            (new(new CampaignFollowUpTemplate("11111111-1111-4111-8111-111111111111"), 60, 86400), """{"message":{"type":"template","templateId":"11111111-1111-4111-8111-111111111111"},"delaySeconds":60,"expirySeconds":86400}""")
         })
         {
-            await ResourceTests.Messaging("POST", "/messaging/projects/support/campaigns", "{\"name\":\"Customers\",\"followUp\":" + expected + "}", "{\"success\":true,\"data\":{\"id\":\"c1\",\"followUp\":" + expected + "}}", async c =>
+            await ResourceTests.Messaging("POST", "/messaging/projects/support/campaigns", "{\"name\":\"Customers\",\"followUp\":" + expected + "}", Adoption41Fixtures.Envelope(CampaignExistingTests.Change(Adoption41Fixtures.CampaignJson.Replace("\"c\"", "\"c1\""), "followUp", System.Text.Json.Nodes.JsonNode.Parse(expected))), async c =>
             {
                 var response = await c.Campaigns.CreateAsync("support", new("Customers", FollowUp: followUp));
                 ResourceTests.Equal(response.Data.Data.FollowUp!.DelaySeconds, followUp.DelaySeconds);
                 ResourceTests.Equal(response.Data.Data.FollowUp.ExpirySeconds, followUp.ExpirySeconds);
                 ResourceTests.Equal(response.Data.Data.FollowUp.Message, followUp.Message);
             });
-            await BillingTests.Organization("POST", "/platform/campaigns", "{\"projectId\":\"p1\",\"name\":\"Customers\",\"followUp\":" + expected + "}", "{\"data\":{\"id\":\"c1\",\"followUp\":" + expected + "}}", async c => ResourceTests.Equal((await c.Campaigns.CreateAsync(new("p1", "Customers", FollowUp: followUp))).Data.Data.FollowUp!.Message, followUp.Message));
+            await BillingTests.Organization("POST", "/platform/campaigns", "{\"projectId\":\"11111111-1111-4111-8111-111111111111\",\"name\":\"Customers\",\"followUp\":" + expected + "}", Adoption41Fixtures.Envelope(CampaignExistingTests.Change(Adoption41Fixtures.CampaignJson.Replace("\"c\"", "\"c1\""), "followUp", System.Text.Json.Nodes.JsonNode.Parse(expected)), false), async c => ResourceTests.Equal((await c.Campaigns.CreateAsync(new("11111111-1111-4111-8111-111111111111", "Customers", FollowUp: followUp))).Data.Data.FollowUp!.Message, followUp.Message));
         }
         foreach (var followUp in new CampaignFollowUp?[] { null, new(new CampaignFollowUpText("Only a follow-up edit")) })
         {
             var expected = "{\"followUp\":" + JsonSerializer.Serialize(followUp, Json) + "}";
-            await ResourceTests.Messaging("PATCH", "/messaging/projects/support/campaigns/c1", expected, "{\"success\":true,\"data\":{\"id\":\"c1\"}}", async c => ResourceTests.Equal((await c.Campaigns.UpdateAsync("support", "c1", new() { FollowUp = PatchValue<CampaignFollowUp>.Set(followUp) })).Data.Data.Id, "c1"));
-            await BillingTests.Organization("PATCH", "/platform/campaigns/c1?projectId=p1", expected, "{\"data\":{\"id\":\"c1\"}}", async c => ResourceTests.Equal((await c.Campaigns.UpdateAsync("c1", new() { FollowUp = PatchValue<CampaignFollowUp>.Set(followUp) }, new("p1"))).Data.Data.Id, "c1"));
+            await ResourceTests.Messaging("PATCH", "/messaging/projects/support/campaigns/c1", expected, Adoption41Fixtures.Envelope(Adoption41Fixtures.CampaignJson.Replace("\"c\"", "\"c1\"")), async c => ResourceTests.Equal((await c.Campaigns.UpdateAsync("support", "c1", new() { FollowUp = PatchValue<CampaignFollowUp>.Set(followUp) })).Data.Data.Id, "c1"));
+            await BillingTests.Organization("PATCH", "/platform/campaigns/c1?projectId=p1", expected, Adoption41Fixtures.Envelope(Adoption41Fixtures.CampaignJson.Replace("\"c\"", "\"c1\""), false), async c => ResourceTests.Equal((await c.Campaigns.UpdateAsync("c1", new() { FollowUp = PatchValue<CampaignFollowUp>.Set(followUp) }, new("p1"))).Data.Data.Id, "c1"));
         }
-        var recipient = "{\"id\":\"r1\",\"phone\":\"+15550001111\",\"variables\":{},\"status\":\"sent\",\"attempts\":1,\"queuedAt\":42,\"followUp\":" + Summary + "}";
+        var recipient = CampaignExistingTests.Change(Adoption41Fixtures.Recipient, "followUp", System.Text.Json.Nodes.JsonNode.Parse(Summary));
         await ResourceTests.Messaging("GET", "/messaging/projects/support/campaigns/c1/recipients", null, "{\"success\":true,\"data\":[" + recipient + "],\"page\":{\"nextCursor\":null,\"hasMore\":false}}", async c => CheckSummary((await c.Campaigns.ListRecipientsAsync("support", "c1", new())).Data.Data[0].FollowUp!));
-        await BillingTests.Organization("GET", "/platform/campaigns/c1/recipients?projectId=p1", null, "{\"data\":[" + recipient + "],\"page\":{\"nextCursor\":null,\"hasMore\":false}}", async c => CheckSummary((await c.Campaigns.RecipientsAsync("c1", new("p1"))).Data.Data[0].FollowUp!));
-        var analytics = "{\"campaignId\":\"c1\",\"followUps\":" + Report + "}";
+        await BillingTests.Organization("GET", "/platform/campaigns/c1/recipients?projectId=11111111-1111-4111-8111-111111111111", null, "{\"data\":[" + recipient + "],\"page\":{\"nextCursor\":null,\"hasMore\":false}}", async c => CheckSummary((await c.Campaigns.RecipientsAsync("c1", new("11111111-1111-4111-8111-111111111111"))).Data.Data[0].FollowUp!));
+        var analytics = CampaignExistingTests.Change(Adoption41Fixtures.Report, "followUps", System.Text.Json.Nodes.JsonNode.Parse(Report));
         await ResourceTests.Messaging("GET", "/messaging/projects/support/campaigns/c1/analytics", null, "{\"success\":true,\"data\":" + analytics + "}", async c => ResourceTests.Equal((await c.Campaigns.AnalyticsAsync("support", "c1")).Data.Data.FollowUps, report));
         await BillingTests.Organization("GET", "/platform/campaigns/c1/analytics?projectId=p1", null, "{\"data\":" + analytics + "}", async c => ResourceTests.Equal((await c.Campaigns.AnalyticsAsync("c1", new("p1"))).Data.Data.FollowUps, report));
         ResourceTests.Equal(JsonSerializer.Deserialize<Campaign>("{}", Json)!.FollowUp, null);
@@ -62,11 +62,11 @@ internal static class CampaignFollowUpTests
             try { JsonSerializer.Deserialize<CampaignFollowUpMessage>(malformed, Json); throw new Exception("Invalid follow-up union accepted"); }
             catch (JsonException) { }
         }
-        try { JsonSerializer.Deserialize<PlatformCampaignAnalytics>("{}", Json); throw new Exception("Missing platform follow-up report accepted"); } catch (JsonException) { }
+        // Endpoint response presence is checked by CampaignExistingTests over TCP.
         using var server = new WireFixture { Authorization = "Bearer pmfa_" + new string('a', 72) };
         var served = server.ServeAsync("POST", "/messaging/projects/support/campaigns", """{"name":"Customers","followUp":{"message":{"type":"text","text":"Hello"}}}""", """{"error":{"code":"feature_unavailable","message":"Follow-ups require enrollment"}}""", 403);
         using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = server.Url, MaxNetworkRetries = 0 });
-        try { await client.Campaigns.CreateAsync("support", new("Customers", FollowUp: new(new CampaignFollowUpText("Hello")))); throw new Exception("Unavailable follow-up accepted"); }
+        try { await client.Campaigns.CreateAsync("support", new("Customers", FollowUp: new CampaignFollowUp(new CampaignFollowUpText("Hello")))); throw new Exception("Unavailable follow-up accepted"); }
         catch (PolymorfaException error) { if (error.Status != 403 || error.Code != "feature_unavailable") throw new Exception($"Expected enrollment denial, received {error.Status} {error.Code}: {error.Message}", error); }
         await served;
         Console.WriteLine("PASS receipt-timed follow-ups: both audiences, sparse defaults, null removal, receipt times, reports, statuses and enrollment denial");

@@ -113,6 +113,8 @@ public sealed partial class WhatsAppMediaResource
     }
     public async Task<WhatsAppMediaUploadResult> UploadDirectAsync(string session, PreparedWhatsAppUpload prepared, WhatsAppDirectUploadOptions? direct = null, RequestOptions? requestOptions = null)
     {
+        http.Credential.RequireServer();
+        Session(session);
         direct ??= new(); if (direct.MaxAttempts < 1 || direct.DocumentPartSize < 1 || direct.Timeout <= TimeSpan.Zero) throw new PolymorfaConfigurationException("Invalid direct upload options.");
         var handler = new SocketsHttpHandler(); direct.ConfigureHttpHandler?.Invoke(handler); handler.AllowAutoRedirect = false; handler.UseCookies = false; handler.Credentials = null; using var client = new HttpClient(handler) { Timeout = Timeout.InfiniteTimeSpan };
         var request = (requestOptions ?? new()) with { CancellationToken = direct.CancellationToken }; var grant = await CreateUploadGrantAsync(session, prepared.Info.MediaType, prepared.Info.FileEncSha256, request).ConfigureAwait(false);

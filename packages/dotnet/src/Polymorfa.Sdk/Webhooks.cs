@@ -5,7 +5,12 @@ using System.Text.Json;
 
 namespace Polymorfa.Sdk;
 
-public sealed record WebhookEnvelope(string Id, string Session, string Timestamp, string Event, JsonElement Payload, string? ExternalId = null);
+public sealed record WebhookEnvelope(string Id, string Session, string Timestamp, string Event, JsonElement Payload, string? ExternalId = null)
+{
+    public override string ToString() => Event == "history.sync" && Payload.ValueKind == JsonValueKind.Object && Payload.TryGetProperty("delivery", out var delivery) && delivery.ValueKind == JsonValueKind.String && delivery.GetString() == "descriptor"
+        ? "WebhookEnvelope(descriptor history redacted)"
+        : $"WebhookEnvelope {{ Id = {Id}, Session = {Session}, Timestamp = {Timestamp}, Event = {Event}, Payload = {Payload}, ExternalId = {ExternalId} }}";
+}
 public abstract record WebhookEvent(WebhookEnvelope Envelope);
 public sealed record UnknownWebhookEvent(WebhookEnvelope Envelope) : WebhookEvent(Envelope);
 public sealed record WebhookFixture(byte[] Body, string ContentType, string Signature, IReadOnlyDictionary<string, string> Headers);

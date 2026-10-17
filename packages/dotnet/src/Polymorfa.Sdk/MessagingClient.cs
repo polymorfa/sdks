@@ -51,8 +51,8 @@ public sealed partial class MessagingSessions
     internal MessagingSessions(HttpTransport http) => this.http = http;
     private static string Path(string session) => $"/platform/sessions/{Uri.EscapeDataString(session)}";
     public Task<ApiResponse<DataEnvelope<IReadOnlyList<PlatformSession>>>> ListAsync(RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<DataEnvelope<IReadOnlyList<PlatformSession>>>(HttpMethod.Get, "/platform/sessions", null, options); }
-    public Task<ApiResponse<SuccessEnvelope<Session>>> RetrieveAsync(string session, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<SuccessEnvelope<Session>>(HttpMethod.Get, Path(session), null, options); }
-    public Task<ApiResponse<SuccessEnvelope<Session>>> UpdateAsync(string session, UpdateSessionRequest body, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<SuccessEnvelope<Session>>(HttpMethod.Put, Path(session), body, options); }
+    public Task<ApiResponse<SuccessEnvelope<Session>>> RetrieveAsync(string session, RequestOptions? options = null) { http.Credential.RequireServer(); return ExistingContractCodec.Request<SuccessEnvelope<Session>>(http, HttpMethod.Get, Path(session), options: options); }
+    public Task<ApiResponse<SuccessEnvelope<Session>>> UpdateAsync(string session, UpdateSessionRequest body, RequestOptions? options = null) { http.Credential.RequireServer(); var captured = ConfigurationContract.Capture(body, body.Configuration, out var intent); return ExistingContractCodec.Request<SuccessEnvelope<Session>>(http, HttpMethod.Put, Path(session), captured, ExistingContractCodec.Options(options, intent)); }
     public Task<ApiResponse<DataEnvelope<SessionRemoveResult>>> DeleteAsync(string session, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<DataEnvelope<SessionRemoveResult>>(HttpMethod.Delete, Path(session), null, options); }
     public Task<ApiResponse<DataEnvelope<SessionStartResult>>> StartAsync(string session, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<DataEnvelope<SessionStartResult>>(HttpMethod.Post, Path(session) + "/start", null, options); }
     public Task<ApiResponse<DataEnvelope<SessionStopResult>>> StopAsync(string session, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<DataEnvelope<SessionStopResult>>(HttpMethod.Post, Path(session) + "/stop", null, options); }
@@ -71,6 +71,7 @@ public sealed class Messages
     {
         if (body.Conversation.Id is null && body.Conversation.PhoneNumber is null && body.Conversation.Bsuid is null && body.Conversation.Username is null) throw new PolymorfaValidationException("A conversation identifier is required.", "invalid_parameter");
         var descriptor = body.Content switch { DescriptorImageContent c => (c.Image, WhatsAppUploadMediaType.Image), DescriptorVideoContent c => (c.Video, WhatsAppUploadMediaType.Video), DescriptorFileContent c => (c.File, WhatsAppUploadMediaType.Document), DescriptorVoiceContent c => (c.Voice, c.Voice.Ptt == true ? WhatsAppUploadMediaType.Ptt : WhatsAppUploadMediaType.Audio), StickerContent c => (c.Sticker, WhatsAppUploadMediaType.Sticker), _ => ((WhatsAppMediaSendDescriptor?)null, default(WhatsAppUploadMediaType)) };
+        if (body.Content is StickerContent { Sticker: null }) throw new PolymorfaConfigurationException("A sticker descriptor is required.");
         if (descriptor.Item1 is { } media) { media.Validate(descriptor.Item2); options = WhatsAppMediaResource.Version(options); }
         return http.RequestAsync<SuccessEnvelope<MessageResponse>>(HttpMethod.Post, Path(session, "send"), body, (options ?? new()).WithIdempotency());
     }
@@ -89,7 +90,8 @@ public sealed class QuickLinks
         http.Credential.RequireServer(); body ??= new();
         if (body.Purpose == "add_connection" && string.IsNullOrWhiteSpace(body.Session)) throw new PolymorfaValidationException("An add_connection link requires session.", "invalid_parameter");
         if (body.BillingControls is { } billing && (billing.Priority < 0 || billing.Priority > 1_000_000 || billing.LimitCredits < 0 || billing.LimitCredits > 1_000_000 || billing.LimitCredits is decimal limit && decimal.Round(limit, 6) != limit || body.Purpose == "add_connection" || body.Configuration?.Testing is not null)) throw new PolymorfaValidationException("Invalid billingControls.", "invalid_parameter");
-        return http.RequestAsync<SuccessEnvelope<QuickLink>>(HttpMethod.Post, "/messaging/quicklinks", body, options);
+        var captured = ConfigurationContract.QuickLink(body, out var intent);
+        return http.RequestAsync<SuccessEnvelope<QuickLink>>(HttpMethod.Post, "/messaging/quicklinks", new CampaignCapturedBody(CampaignContractCodec.Encode(captured)), ExistingContractCodec.Options(options, intent));
     }
     public Task<ApiResponse<SuccessEnvelope<QuickLinkStatus>>> RetrieveAsync(string id, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<SuccessEnvelope<QuickLinkStatus>>(HttpMethod.Get, $"/messaging/quicklinks/{Uri.EscapeDataString(id)}", null, options); }
     public Task<ApiResponse<SuccessResponse>> CancelAsync(string id, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<SuccessResponse>(HttpMethod.Delete, $"/messaging/quicklinks/{Uri.EscapeDataString(id)}", null, options); }

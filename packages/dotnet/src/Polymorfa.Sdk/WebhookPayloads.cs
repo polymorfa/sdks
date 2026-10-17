@@ -3,7 +3,10 @@ using System.Text.Json.Serialization;
 
 namespace Polymorfa.Sdk;
 
-public sealed record TypedWebhookEvent<T>(WebhookEnvelope Envelope, T Payload) : WebhookEvent(Envelope);
+public sealed record TypedWebhookEvent<T>(WebhookEnvelope Envelope, T Payload) : WebhookEvent(Envelope)
+{
+    public override string ToString() => Payload is DirectHistorySyncPayload ? "TypedWebhookEvent(descriptor history redacted)" : $"TypedWebhookEvent {{ Envelope = {Envelope}, Payload = {Payload} }}";
+}
 public sealed record IdentityReference(string Id, string? PhoneNumber = null, string? Bsuid = null, string? Username = null);
 public sealed record EventConversation(string Id, string? PhoneNumber = null, string? Bsuid = null, string? Username = null, IdentityReference? Sender = null);
 public sealed record NativeFlowResponse(string Name, string ParamsJson, int? Version = null);

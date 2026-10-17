@@ -101,7 +101,7 @@ public sealed class Analytics : Resource
     {
         parameters ??= new(); Validate(parameters.ProjectId, parameters.SessionId);
         if (parameters.Start is < 0 or > 9007199254740991 || parameters.End is < 0 or > 9007199254740991 || parameters.Start is { } start && parameters.End is { } end && (end < start || end - start > 366L * 86400000)) throw new PolymorfaValidationException("Choose an ordered analytics range of up to 366 days.", "invalid_analytics_range");
-        var r = await Get<DataEnvelope<WhatsAppAnalytics>>(Path, options, parameters with { ProjectId = projectId is null ? parameters.ProjectId : null }).ConfigureAwait(false); return new(r.Data.Data, r.Metadata);
+        var r = await ExistingContractCodec.Request<DataEnvelope<WhatsAppAnalytics>>(Http, HttpMethod.Get, Path, options: options, query: Query(parameters with { ProjectId = projectId is null ? parameters.ProjectId : null })).ConfigureAwait(false); return new(r.Data.Data, r.Metadata);
     }
     public async Task<ApiResponse<string>> MetricsAsync(AnalyticsMetricsParameters? parameters = null, RequestOptions? options = null)
     {

@@ -71,7 +71,7 @@ app.MapPost("/api/polymorfa/connect", async (HttpContext context, MessagingClien
 {
     if (context.Request.Headers.Origin.ToString() != $"{context.Request.Scheme}://{context.Request.Host}") return Results.StatusCode(403);
     context.Response.Headers.CacheControl = "no-store";
-    try { var response = await client.QuickLinks.CreateAsync(new(Session: session), new() { CancellationToken = context.RequestAborted }); return Results.Json(new { data = new { response.Data.Data.Id, response.Data.Data.Url, response.Data.Data.ExpiresAt } }); }
+    try { var response = await client.QuickLinks.CreateAsync(new(Purpose: "add_connection", Session: session, AddConnection: "linked_devices", ConnectionGoal: "hybrid"), new() { CancellationToken = context.RequestAborted }); return Results.Json(new { data = new { response.Data.Data.Id, response.Data.Data.Url, response.Data.Data.ExpiresAt } }); }
     catch (PolymorfaException error) { return Results.StatusCode(error.Status is >= 400 and < 500 ? 403 : 502); }
 }).RequireAuthorization("PolymorfaSession");
 app.MapPost("/webhooks/polymorfa", async (HttpContext context) =>
