@@ -215,6 +215,7 @@ foreach ([
     'strict_history.php',
     'storage_d1.php',
     'signal_sidecar.php',
+    'signal_reserved_secret.php',
 ] as $mediaSuite) {
     (static function (string $suite): void {
         global $mediaVectors, $credential;

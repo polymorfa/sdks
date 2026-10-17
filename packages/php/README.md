@@ -432,7 +432,9 @@ and their native proofs are listed below.
 
 The server-side sidecar client consumes the application HTTP contract pinned to
 `8aa191ef0d4c318229c91bcdf474bf2d79dac47c`. The separate application bearer secret
-is not a Polymorfa API credential. Device keys remain with the customer-operated
+is not a Polymorfa API credential: it needs at least 16 visible ASCII characters,
+and values starting with the reserved `pmfa_` prefix are rejected before any
+request or webhook HMAC check. Device keys remain with the customer-operated
 Signal service; the SDK imports no Signal core and uses no FFI. Require HTTPS
 except on loopback. Redirects, credential cookies and automatic retries are
 refused. Request deadlines and caller cancellation do not undo a send or ACK.

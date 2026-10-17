@@ -12,9 +12,10 @@ final class SignalCodec
     {
         throw new SignalSidecarException('The Signal sidecar returned an invalid response.', 'signal_sidecar_invalid_response');
     }
+    /** Independent application secret: at least 16 visible ASCII characters, never a reserved pmfa_ credential. */
     public static function secret(string $value): bool
     {
-        return preg_match('/^[!-~]{16,}$/D', $value) === 1;
+        return preg_match('/^[!-~]{16,}$/D', $value) === 1 && !str_starts_with($value, 'pmfa_');
     }
     /** @return array<string,mixed> */
     public static function object(#[\SensitiveParameter] string $raw): array
