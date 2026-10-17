@@ -41,7 +41,9 @@ internal static class ExistingContractCodec
     }
     private static bool Optional(Type type, string name)
     {
-        if (typeof(Campaign).IsAssignableFrom(type)) return (name is "composerBlueprint" or "messages" or "audienceRef" or "senderConfig" or "complianceConfig" or "variants" or "variantStrategy" or "messageVariations" or "variableMapping") || name == "operationId" && type == typeof(CampaignStopOperation);
+        if (typeof(Campaign).IsAssignableFrom(type)) return (name is "composerBlueprint" or "messages" or "audienceRef" or "senderConfig" or "complianceConfig" or "variants" or "variantStrategy" or "messageVariations" or "variableMapping" or "frequencyCap" or "drip" or "enrollmentOpen" or "pauseReason" or "segmentId" or "segmentSnapshot") || name == "operationId" && type == typeof(CampaignStopOperation);
+        if (typeof(CampaignAnalytics).IsAssignableFrom(type)) return name is "frequencyCap" or "drip";
+        if (type == typeof(AudienceSegmentGroup)) return name == "negate";
         if (type == typeof(CampaignFollowUp)) return name is "delaySeconds" or "expirySeconds";
         if (type == typeof(CampaignVariableBinding)) return name is "source" or "fallback";
         if (type == typeof(CampaignVariantStrategy)) return name == "testSlicePercent";
@@ -55,7 +57,7 @@ internal static class ExistingContractCodec
         if (type == typeof(WhatsAppConversationGroup)) return name is "recipientCountry" or "recipientDeviceCount";
         return false;
     }
-    private static bool OptionalNull(Type type, string name) => typeof(Campaign).IsAssignableFrom(type) || typeof(WhatsAppMetrics).IsAssignableFrom(type) && name == "responseQueue" || type == typeof(Session) && name is "externalId" or "statusReason" or "configuration" or "newChatCapping";
+    private static bool OptionalNull(Type type, string name) => typeof(Campaign).IsAssignableFrom(type) || typeof(CampaignAnalytics).IsAssignableFrom(type) && name == "drip" || typeof(WhatsAppMetrics).IsAssignableFrom(type) && name == "responseQueue" || type == typeof(Session) && name is "externalId" or "statusReason" or "configuration" or "newChatCapping";
     private static void Validate(JsonElement value, Type type, bool nullable, bool nullableData = false)
     {
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(PatchValue<>)) type = type.GetGenericArguments()[0];

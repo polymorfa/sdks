@@ -9,6 +9,8 @@ public sealed class OrganizationClient : IDisposable
     public PlatformCampaigns Campaigns { get; }
     public Audiences Audiences { get; }
     public AudienceProfiles AudienceProfiles { get; }
+    /// <summary>Organization segment authority; project clients have no segment resource.</summary>
+    public AudienceSegments AudienceSegments { get; }
     public CallRecords Calls { get; }
     public Analytics Analytics { get; }
     public RequestLogs RequestLogs { get; }
@@ -42,7 +44,7 @@ public sealed class OrganizationClient : IDisposable
     {
         credential.RequireServer();
         if (credential.Kind != CredentialKind.OrganizationApiKey) throw new PolymorfaConfigurationException("OrganizationClient requires an organization API key.");
-        http = new(credential, options ?? new()); AudienceProfiles = new(http); Audiences = new(http); Campaigns = new(http); QuickLinkSettings = new(http, null); Calls = new(http, null); Analytics = new(http, null); RequestLogs = new(http, null); Projects = new(http); Sessions = new(http); Configuration = new(http, null); SipTrunks = new(http, null); Operations = new(http, null); CallPolicy = new(http); CallOptOuts = new(http); CallRetention = new(http); Media = new(http); Billing = new(http); Customers = new(http); Organizations = new(http); Members = new(http); ApiKeys = new(http); ProjectTokens = new(http); BanSafe = new(http); OptOuts = new(http); Voice = new(http, null); Usage = new(http, null); AuditLogs = new(http); SecurityIncidents = new(http); SessionBans = new(http); Events = new(http, "/platform", null); Webhooks = new(http, null); WebhookDeliveries = new(http, null);
+        http = new(credential, options ?? new()); AudienceProfiles = new(http); AudienceSegments = new(http); Audiences = new(http); Campaigns = new(http); QuickLinkSettings = new(http, null); Calls = new(http, null); Analytics = new(http, null); RequestLogs = new(http, null); Projects = new(http); Sessions = new(http); Configuration = new(http, null); SipTrunks = new(http, null); Operations = new(http, null); CallPolicy = new(http); CallOptOuts = new(http); CallRetention = new(http); Media = new(http); Billing = new(http); Customers = new(http); Organizations = new(http); Members = new(http); ApiKeys = new(http); ProjectTokens = new(http); BanSafe = new(http); OptOuts = new(http); Voice = new(http, null); Usage = new(http, null); AuditLogs = new(http); SecurityIncidents = new(http); SessionBans = new(http); Events = new(http, "/platform", null); Webhooks = new(http, null); WebhookDeliveries = new(http, null);
     }
     public ProjectClient Project(string projectId) => new(http, projectId);
     public Task<RawCursorPage<T>> PaginateRawAsync<T>(RawRequest request, RawPageDecoder<T> decode, string cursorParameter = "cursor") => RawCursorPage<T>.LoadAsync(http, request, decode, cursorParameter);

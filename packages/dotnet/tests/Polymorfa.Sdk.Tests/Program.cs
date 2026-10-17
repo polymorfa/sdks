@@ -26,6 +26,7 @@ if (args.Contains("--url41-only")) { await TrackedUrl41Tests.RunAsync(); return;
 if (args.Contains("--adoption41-only")) { await CampaignExistingTests.RunAsync(); await TrackedUrl41Tests.RunAsync(); await Configuration41Tests.RunAsync(); await Analytics41Tests.RunAsync(); await NineSeams41Tests.RunAsync(); await NineBoundary41Tests.RunAsync(); DirectHistory41Tests.Run(); await Media41Tests.RunAsync(); Console.WriteLine($"PASS adoption41 total {CampaignExistingTests.Checks} assertions"); return; }
 
 if (args.Contains("--campaign-existing-only")) { await CampaignExistingTests.RunAsync(); return; }
+if (args.Contains("--segments-drip-only")) { await CampaignSegmentsDripTests.RunAsync(); return; }
 
 if (args.Contains("--campaign-types-only")) { await CampaignContractTypeTests.RunAsync(); return; }
 if (args.Contains("--campaign-import-only")) { await CampaignContractTests.LargeImportAsync(); return; }
@@ -151,6 +152,7 @@ try
     await AudienceSettingsTests.RunAsync();
     await CampaignTests.RunAsync();
     await CampaignExistingTests.RunAsync();
+    await CampaignSegmentsDripTests.RunAsync();
     await TrackedUrl41Tests.RunAsync();
     await Configuration41Tests.RunAsync();
     await Analytics41Tests.RunAsync();

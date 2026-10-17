@@ -42,7 +42,7 @@ internal static class CampaignExistingValidation
     }
     private static IReadOnlyList<PlatformCampaignMessage> Messages(IReadOnlyList<PlatformCampaignMessage> input) => input.Select(message => message with
     {
-        AdditionalFields = Extensions(message.AdditionalFields, ["version", "source", "media", "buttons", "footer", "delayAfterSec"]),
+        AdditionalFields = Extensions(message.AdditionalFields, ["version", "source", "media", "buttons", "footer", "delayAfterSec", "delayUnit", "sendWindow"]),
         Media = message.Media is { } media ? media with { AdditionalFields = Extensions(media.AdditionalFields, ["kind", "url", "filename", "caption"]) } : null,
         Buttons = message.Buttons?.Select(button => button with { AdditionalFields = Extensions(button.AdditionalFields, ["kind", "label", "url", "phone"]) }).ToArray()
     }).ToArray();
@@ -62,7 +62,7 @@ internal static class CampaignExistingValidation
         if (input is UpdatePlatformCampaignRequest { MessagesArray: { } updateMessages } updateBody) input = updateBody with { MessagesArray = Messages(updateMessages) };
         if (platform && patch && input is UpdatePlatformCampaignRequest update && update.AdditionalFields is { } extra)
         {
-            var known = new[] { "projectId", "id", "name", "templateId", "recipientListId", "senderConfig", "scheduledAt", "sendWindow", "messageVariations", "variants", "variantStrategy", "followUp", "variableMapping", "trackedLinks", "messagesArray" };
+            var known = new[] { "projectId", "id", "name", "templateId", "recipientListId", "senderConfig", "scheduledAt", "sendWindow", "messageVariations", "variants", "variantStrategy", "followUp", "variableMapping", "trackedLinks", "messagesArray", "frequencyCap", "drip", "segmentId" };
             input = update with { AdditionalFields = Extensions(extra, known) };
         }
         var body = Capture(input);
@@ -77,7 +77,7 @@ internal static class CampaignExistingValidation
         if (platform && patch && (Has(body, "projectId") || Has(body, "id"))) Invalid("projectId/id");
         if (!platform)
         {
-            var allowed = new[] { "name", "templateId", "recipientListId", "senderConfig", "scheduledAt", "sendWindow", "recipients", "messageVariations", "variants", "variantStrategy", "followUp", "variableMapping", "trackedLinks" };
+            var allowed = new[] { "name", "templateId", "recipientListId", "senderConfig", "scheduledAt", "sendWindow", "recipients", "messageVariations", "variants", "variantStrategy", "followUp", "variableMapping", "trackedLinks", "frequencyCap", "drip" };
             Fields(body, allowed, patch ? [] : ["name"]);
             if (patch && !body.EnumerateObject().Any()) Invalid("body");
         }
@@ -86,7 +86,9 @@ internal static class CampaignExistingValidation
         if (Has(body, "trackedLinks")) Links(body.GetProperty("trackedLinks"));
         if (patch && Has(body, "templateId") && body.GetProperty("templateId").ValueKind != JsonValueKind.Null) CampaignContractValidation.Uuid(Text(body.GetProperty("templateId"), "templateId"), "templateId");
         if (Has(body, "followUp")) FollowUp(body.GetProperty("followUp"));
-        if (Has(body, "messagesArray")) Composed(body.GetProperty("messagesArray"));
+        // A PATCH can target a stored drip without repeating its settings; the API
+        // keeps delay-unit, eligibility and stored-state authority.
+        if (Has(body, "messagesArray")) Composed(body.GetProperty("messagesArray"), patch || Has(body, "drip") && body.GetProperty("drip").ValueKind != JsonValueKind.Null ? 2592000 : 86400);
         foreach (var name in new[] { "variants", "messageVariations" })
             if (Has(body, name) && !(body.GetProperty(name).ValueKind == JsonValueKind.Null && (!platform || patch))) Alternatives(body.GetProperty(name), name == "variants", platform);
         if (Has(body, "variantStrategy") && !(body.GetProperty("variantStrategy").ValueKind == JsonValueKind.Null && (!platform || patch)))
@@ -202,7 +204,7 @@ internal static class CampaignExistingValidation
         }
         if (total != 100) Invalid("weight");
     }
-    private static void Composed(JsonElement value)
+    private static void Composed(JsonElement value, long maxDelay)
     {
         if (value.ValueKind != JsonValueKind.Array || value.GetArrayLength() > 10) Invalid("messagesArray");
         foreach (var item in value.EnumerateArray())
@@ -210,7 +212,7 @@ internal static class CampaignExistingValidation
             if (item.ValueKind != JsonValueKind.Object) Invalid("message");
             if (Has(item, "version") && (item.GetProperty("version").ValueKind != JsonValueKind.Number || item.GetProperty("version").GetDouble() != 2)) Invalid("version");
             foreach (var key in new[] { "source", "footer" }) if (Has(item, key)) Text(item.GetProperty(key), key, 0);
-            if (Has(item, "delayAfterSec")) Integer(item.GetProperty("delayAfterSec"), "delayAfterSec", 0, 86400);
+            if (Has(item, "delayAfterSec")) Integer(item.GetProperty("delayAfterSec"), "delayAfterSec", 0, maxDelay);
             if (Has(item, "media"))
             {
                 var media = item.GetProperty("media");
@@ -250,7 +252,7 @@ internal static class CampaignExistingValidation
         Fields(body, platform ? ["projectId", "status", "reason", "cursor", "limit"] : ["status", "reason", "cursor", "limit"], platform ? ["projectId"] : []);
         if (platform) CampaignContractValidation.Uuid(Text(body.GetProperty("projectId"), "projectId"), "projectId");
         if (Has(body, "status")) One(body.GetProperty("status"), "status", "queued", "sending", "sent", "delivered", "read", "failed", "skipped");
-        if (Has(body, "reason")) One(body.GetProperty("reason"), "reason", "opted_out", "cold_held", "campaign_cancelled", "invalid_recipient", "session_not_connected", "ack_timeout", "blocked_by_safety", "send_failed", "missing_variable", "other");
+        if (Has(body, "reason")) One(body.GetProperty("reason"), "reason", "opted_out", "cold_held", "campaign_cancelled", "invalid_recipient", "session_not_connected", "ack_timeout", "blocked_by_safety", "send_failed", "missing_variable", "frequency_cap", "other");
         if (Has(body, "cursor")) Text(body.GetProperty("cursor"), "cursor", 1, 256);
         if (Has(body, "limit")) Integer(body.GetProperty("limit"), "limit", 1, 100);
         return Resource.Query(body);

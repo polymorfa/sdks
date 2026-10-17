@@ -335,7 +335,7 @@ internal static class CampaignContractValidation
         var body = Capture(input ?? new());
         Fields(body, ["status", "reason", "cursor", "limit"], []);
         if (Has(body, "status")) One(body.GetProperty("status"), ["queued", "sending", "sent", "delivered", "read", "failed", "skipped"], "status");
-        if (Has(body, "reason")) One(body.GetProperty("reason"), ["opted_out", "cold_held", "campaign_cancelled", "invalid_recipient", "session_not_connected", "ack_timeout", "blocked_by_safety", "send_failed", "missing_variable", "other"], "reason");
+        if (Has(body, "reason")) One(body.GetProperty("reason"), ["opted_out", "cold_held", "campaign_cancelled", "invalid_recipient", "session_not_connected", "ack_timeout", "blocked_by_safety", "send_failed", "missing_variable", "frequency_cap", "other"], "reason");
         if (Has(body, "cursor")) String(body.GetProperty("cursor"), "cursor", 1, 256);
         if (Has(body, "limit")) Integer(body.GetProperty("limit"), "limit", 1, 1000);
         if ((Has(body, "status") || Has(body, "reason")) && (Has(body, "cursor") || Has(body, "limit") && body.GetProperty("limit").GetInt32() != 1000)) Invalid("params");

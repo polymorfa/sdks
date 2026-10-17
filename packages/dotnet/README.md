@@ -166,6 +166,44 @@ API credential, and refuse redirects.
 
 Configured API base URLs can include a reverse-proxy path. Requests and relative download capabilities retain that prefix; a trailing slash does not change the request path.
 
+### Contact frequency caps, audience segments and drips (beta)
+
+These methods follow `contracts/campaign-frequency-cap.json` and
+`contracts/campaign-segments-drip.json`. They do not enroll a team in a beta;
+the API returns `403 feature_unavailable` when a team lacks access.
+
+`Campaigns.GetFrequencyCapAsync` returns the team limits, `Revision` and
+`UpdatedAt` (null until first saved). `UpdateFrequencyCapAsync` replaces both
+windows with the revision you read; null limits remove them. The PUT is sent
+once, and a stale revision throws `PolymorfaConflictException`, so read again
+and reconcile. Campaign create and update take `FrequencyCap`
+(`PatchValue<CampaignFrequencyCap>.Set(null)` removes a campaign cap),
+recipients report `CampaignRecipientFailureReason.FrequencyCap`, and analytics
+add `FrequencyCap.SkippedRecipientCount`.
+
+`OrganizationClient.AudienceSegments` lists, retrieves, creates, updates and
+deletes saved segments, and previews a saved segment or unsaved rules.
+`ProjectClient` has no segment resource. Conditions are records such as
+`AudienceSegmentTagContains` and `AudienceSegmentAttributeCompare`;
+`AudienceSegmentValue.Of` keeps each value's exact JSON spelling. Conditions the
+SDK does not model decode as `AudienceSegmentUnknownCondition` and are rejected
+in requests. Updates and deletes need the last observed revision. Writes and
+both previews are sent once; a 409 `state_conflict` means a stale revision or an
+evaluation timeout, so re-read or simplify the rules.
+
+Platform create takes `SegmentId` (omission only) and update takes
+`SegmentId = PatchValue<string>.Set(null)` to clear it. `Drip` takes
+`CampaignDripInput` on create and a partial `CampaignDripPatch` on update; the
+SDK applies no defaults and omitted fields keep their stored values. Drip steps
+take `DelayUnit` and a per-step `SendWindow`. Ordinary creates allow
+`DelayAfterSec` up to 86400; drip creates and every PATCH allow up to 2592000,
+and the API checks the stored drip, delay unit and eligibility. `EnrollAsync`
+on both campaign resources adds a contact to a continuous drip and is never
+retried automatically. Campaign reads expose `Drip`, `EnrollmentOpen`,
+`PauseReason`, `SegmentId` and `SegmentSnapshot`; analytics expose per-step
+`Drip` results. The new fields are init-only properties, so existing positional
+constructors are unchanged.
+
 ## Customer-owned media, history and Signal service
 
 These unpublished helpers follow TypeScript `254fc6a2d073e7fc79420cf95f9b03927d00c04a`

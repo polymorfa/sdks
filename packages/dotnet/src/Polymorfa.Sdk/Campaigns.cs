@@ -43,7 +43,11 @@ public sealed record PlatformCampaignMessage
     public PlatformCampaignMedia? Media { get; init; }
     public IReadOnlyList<PlatformCampaignButton>? Buttons { get; init; }
     public string? Footer { get; init; }
+    /// <summary>0..86400, or 0..2592000 for drip steps, in whole multiples of <see cref="DelayUnit"/> when set.</summary>
     public int? DelayAfterSec { get; init; }
+    public CampaignDelayUnit? DelayUnit { get; init; }
+    /// <summary>Later drip steps only; an explicit null removes a step window.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<CampaignStepWindow> SendWindow { get; init; }
     [JsonExtensionData] public IDictionary<string, JsonElement>? AdditionalFields { get; init; }
 }
 public sealed record PlatformCampaignMedia(string Kind, string Url, string? Filename = null, string? Caption = null)
@@ -85,14 +89,41 @@ public record Campaign
     public CampaignFollowUp? FollowUp { get; init; }
     public IReadOnlyList<CampaignTrackedLink> TrackedLinks { get; init; } = null!;
     public CampaignVariableMapping? VariableMapping { get; init; }
+    /// <summary>This campaign's own cap; null when only the team cap applies.</summary>
+    public CampaignFrequencyCap? FrequencyCap { get; init; }
+    /// <summary>Null for a campaign that is not a drip.</summary>
+    public CampaignDrip? Drip { get; init; }
+    public bool? EnrollmentOpen { get; init; }
+    public string? PauseReason { get; init; }
+    /// <summary>Read-only on the Messaging API; choose segments through the Platform API.</summary>
+    public string? SegmentId { get; init; }
+    public CampaignSegmentSnapshot? SegmentSnapshot { get; init; }
 }
 public sealed record CampaignOperation : Campaign { public string OperationId { get; init; } = ""; }
 public sealed record CampaignStopOperation : Campaign { public string? OperationId { get; init; } }
 public sealed record PlatformCampaign : Campaign { [JsonExtensionData] public IDictionary<string, JsonElement>? AdditionalFields { get; init; } }
-public record CampaignAnalytics(string CampaignId, long RecipientCount, long SentCount, long DeliveredCount, long ReadCount, long FailedCount, long SkippedCount, long RespondedCount, decimal ResponseRate, decimal? AverageResponseTimeMs, decimal? MinResponseTimeMs, decimal? MaxResponseTimeMs, CampaignExperimentResults? Experiment, CampaignFollowUpReport FollowUps);
+public record CampaignAnalytics(string CampaignId, long RecipientCount, long SentCount, long DeliveredCount, long ReadCount, long FailedCount, long SkippedCount, long RespondedCount, decimal ResponseRate, decimal? AverageResponseTimeMs, decimal? MinResponseTimeMs, decimal? MaxResponseTimeMs, CampaignExperimentResults? Experiment, CampaignFollowUpReport FollowUps)
+{
+    /// <summary>Recipients with a message skipped by the contact frequency cap.</summary>
+    public CampaignFrequencyCapAnalytics? FrequencyCap { get; init; }
+    /// <summary>Per-step drip results; null for a campaign that is not a drip.</summary>
+    public CampaignDripStats? Drip { get; init; }
+}
 public sealed record PlatformCampaignAnalytics(string CampaignId, long RecipientCount, long SentCount, long DeliveredCount, long ReadCount, long FailedCount, long SkippedCount, long RespondedCount, decimal ResponseRate, decimal? AverageResponseTimeMs, decimal? MinResponseTimeMs, decimal? MaxResponseTimeMs, CampaignExperimentResults? Experiment, CampaignFollowUpReport FollowUps) : CampaignAnalytics(CampaignId, RecipientCount, SentCount, DeliveredCount, ReadCount, FailedCount, SkippedCount, RespondedCount, ResponseRate, AverageResponseTimeMs, MinResponseTimeMs, MaxResponseTimeMs, Experiment, FollowUps);
-public record CreateCampaignRequest(string Name, string? TemplateId = null, string? RecipientListId = null, IReadOnlyDictionary<string, JsonElement>? SenderConfig = null, long? ScheduledAt = null, CampaignSendWindowRequest? SendWindow = null, IReadOnlyList<CampaignRecipientInput>? Recipients = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<IReadOnlyList<CampaignMessageVariation>> MessageVariations = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<IReadOnlyList<CampaignVariant>> Variants = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<CampaignVariantStrategy> VariantStrategy = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<CampaignFollowUp> FollowUp = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<CampaignVariableMapping> VariableMapping = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<IReadOnlyList<CampaignTrackedLink>> TrackedLinks = default);
-public sealed record CreatePlatformCampaignRequest(string ProjectId, string Name, string? TemplateId = null, string? RecipientListId = null, IReadOnlyDictionary<string, JsonElement>? SenderConfig = null, long? ScheduledAt = null, CampaignSendWindowRequest? SendWindow = null, IReadOnlyList<CampaignRecipientInput>? Recipients = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<IReadOnlyList<CampaignMessageVariation>> MessageVariations = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<IReadOnlyList<CampaignVariant>> Variants = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<CampaignVariantStrategy> VariantStrategy = default, long? RecipientCount = null, JsonElement? ComposerBlueprint = null, IReadOnlyList<PlatformCampaignMessage>? MessagesArray = null, JsonElement? AudienceRef = null, JsonElement? ComplianceConfig = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<CampaignFollowUp> FollowUp = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<CampaignVariableMapping> VariableMapping = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<IReadOnlyList<CampaignTrackedLink>> TrackedLinks = default);
+public record CreateCampaignRequest(string Name, string? TemplateId = null, string? RecipientListId = null, IReadOnlyDictionary<string, JsonElement>? SenderConfig = null, long? ScheduledAt = null, CampaignSendWindowRequest? SendWindow = null, IReadOnlyList<CampaignRecipientInput>? Recipients = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<IReadOnlyList<CampaignMessageVariation>> MessageVariations = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<IReadOnlyList<CampaignVariant>> Variants = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<CampaignVariantStrategy> VariantStrategy = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<CampaignFollowUp> FollowUp = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<CampaignVariableMapping> VariableMapping = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<IReadOnlyList<CampaignTrackedLink>> TrackedLinks = default)
+{
+    /// <summary>Beta campaign cap stricter than the team cap; null uses the team cap.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<CampaignFrequencyCap> FrequencyCap { get; init; }
+    /// <summary>Beta drip; null creates an ordinary campaign.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<CampaignDripInput> Drip { get; init; }
+}
+public sealed record CreatePlatformCampaignRequest(string ProjectId, string Name, string? TemplateId = null, string? RecipientListId = null, IReadOnlyDictionary<string, JsonElement>? SenderConfig = null, long? ScheduledAt = null, CampaignSendWindowRequest? SendWindow = null, IReadOnlyList<CampaignRecipientInput>? Recipients = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<IReadOnlyList<CampaignMessageVariation>> MessageVariations = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<IReadOnlyList<CampaignVariant>> Variants = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<CampaignVariantStrategy> VariantStrategy = default, long? RecipientCount = null, JsonElement? ComposerBlueprint = null, IReadOnlyList<PlatformCampaignMessage>? MessagesArray = null, JsonElement? AudienceRef = null, JsonElement? ComplianceConfig = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<CampaignFollowUp> FollowUp = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<CampaignVariableMapping> VariableMapping = default, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<IReadOnlyList<CampaignTrackedLink>> TrackedLinks = default)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<CampaignFrequencyCap> FrequencyCap { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<CampaignDripInput> Drip { get; init; }
+    /// <summary>Beta saved segment evaluated at launch. Create permits omission, not null.</summary>
+    public string? SegmentId { get; init; }
+}
 public record UpdateCampaignRequest
 {
     public string? Name { get; init; }
@@ -107,8 +138,13 @@ public record UpdateCampaignRequest
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<IReadOnlyList<CampaignVariant>> Variants { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<CampaignVariantStrategy> VariantStrategy { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<CampaignFollowUp> FollowUp { get; init; }
+    /// <summary>Replaces the campaign cap; null removes it. Draft or paused only.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<CampaignFrequencyCap> FrequencyCap { get; init; }
+    /// <summary>Changes only the fields set; null makes the draft an ordinary campaign.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<CampaignDripPatch> Drip { get; init; }
 }
-public sealed record UpdatePlatformCampaignRequest : UpdateCampaignRequest { public IReadOnlyList<PlatformCampaignMessage>? MessagesArray { get; init; } [JsonExtensionData] public IDictionary<string, JsonElement>? AdditionalFields { get; init; } }
+public sealed record UpdatePlatformCampaignRequest : UpdateCampaignRequest { public IReadOnlyList<PlatformCampaignMessage>? MessagesArray { get; init; } /// <summary>Unlaunched drafts only; null clears the saved segment.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public PatchValue<string> SegmentId { get; init; } [JsonExtensionData] public IDictionary<string, JsonElement>? AdditionalFields { get; init; } }
 public sealed record LaunchCampaignRequest(double? ScheduledAt = null, bool? SkipMissingVariables = null);
 public sealed record LaunchPlatformCampaignRequest(string ProjectId, double? ScheduledAt = null, bool? SkipMissingVariables = null);
 public sealed record PlatformCampaignLaunchResult(string Id, string Status, string OperationId)
