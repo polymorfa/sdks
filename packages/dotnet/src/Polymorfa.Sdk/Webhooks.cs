@@ -7,7 +7,7 @@ namespace Polymorfa.Sdk;
 
 public sealed record WebhookEnvelope(string Id, string Session, string Timestamp, string Event, JsonElement Payload, string? ExternalId = null)
 {
-    public override string ToString() => Event == "history.sync" && Payload.ValueKind == JsonValueKind.Object && Payload.TryGetProperty("delivery", out var delivery) && delivery.ValueKind == JsonValueKind.String && delivery.GetString() == "descriptor"
+    public override string ToString() => Event == "history.sync" && Payload.ValueKind == JsonValueKind.Object && Payload.TryGetProperty("delivery", out _)
         ? "WebhookEnvelope(descriptor history redacted)"
         : $"WebhookEnvelope {{ Id = {Id}, Session = {Session}, Timestamp = {Timestamp}, Event = {Event}, Payload = {Payload}, ExternalId = {ExternalId} }}";
 }

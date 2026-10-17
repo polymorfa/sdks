@@ -848,3 +848,39 @@ API body and does not establish customer-owned Signal custody. Server consent,
 eligibility, approval, funding, feature policy and pairing checks still apply.
 These source and local package checks do not establish registry publication,
 live WhatsApp, browser pairing or production availability.
+
+### Descriptor history storage
+
+`StorageApplyEventOptions.DecodeHistory` remains archive-only with the same
+`LinkedHistorySyncPayload`, event and cancellation arguments, and nullable
+progress-only result. Use the separate descriptor callback:
+
+```csharp
+var handler = storage.WebhookHandler(new()
+{
+    DecodeHistoryDescriptor = async (descriptor, webhookEvent, cancellation) =>
+        await DownloadDecodeAndProjectAuthorizedHistoryAsync(descriptor, webhookEvent, cancellation)
+});
+```
+
+The application defines this function. It receives a validated
+`DirectHistorySyncPayload` and the original verified event and must return a
+non-null `StorageHistoryChunk`. The application owns authorized media access,
+key custody, complete-schema decoding and storage projection. `HistoryChunks`
+preserves verified protobuf and its documented subset; it does not supply a
+generic full-schema decoder. Storage never downloads media implicitly. Missing,
+null, failed or invalid descriptor decoding fails before progress, marker,
+checkpoint or ACK. A legitimate empty chunk is allowed. Descriptor errors and
+diagnostics omit media keys, hashes and inline bytes.
+
+The default `HistoryDescriptorMode = StorageHistoryDescriptorMode.Decode`
+requires the new callback. Explicit `StorageHistoryDescriptorMode.MetadataOnly`
+validates and consumes progress and the event marker, skipping all decoders even
+when configured. Stream sync then saves its cursor and manually ACKs. The event
+is deduplicated, so adding a decoder later cannot import it through ordinary replay.
+There is no automatic backfill or marker deletion. Valid duplicate descriptors
+skip decoders before checking availability. Notification IDs never map individual
+messages; existing native `wa:` fallback keys retain their joining limits. Content
+and marker commit precede checkpoint CAS and ACK. A failed remote ACK leaves
+committed data intact. Archive and Cloud behavior remain unchanged. This establishes
+local package behavior, not registry or deployed availability.

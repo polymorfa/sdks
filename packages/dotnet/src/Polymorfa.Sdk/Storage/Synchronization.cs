@@ -2,9 +2,14 @@ namespace Polymorfa.Sdk.Storage;
 
 /// <summary>Downloads and fully decodes a linked history notification. Return null to retain progress only.</summary>
 public delegate Task<StorageHistoryChunk?> StorageHistoryDecoder(LinkedHistorySyncPayload payload, WebhookEvent webhookEvent, CancellationToken cancellation);
+/// <summary>Caller owns authorized descriptor download, full decoding and application projection.</summary>
+public delegate Task<StorageHistoryChunk> StorageHistoryDescriptorDecoder(DirectHistorySyncPayload payload, WebhookEvent webhookEvent, CancellationToken cancellation);
+public enum StorageHistoryDescriptorMode { Decode, MetadataOnly }
 public record StorageApplyEventOptions
 {
     public StorageHistoryDecoder? DecodeHistory { get; init; }
+    public StorageHistoryDescriptorDecoder? DecodeHistoryDescriptor { get; init; }
+    public StorageHistoryDescriptorMode HistoryDescriptorMode { get; init; } = StorageHistoryDescriptorMode.Decode;
 }
 public interface IStorageEventStreamSource
 {
@@ -39,6 +44,7 @@ public sealed class StorageSynchronization : IAsyncDisposable, IDisposable
         var gap = false;
         try
         {
+            StorageSynchronizationExtensions.ValidateDescriptorMode(options);
             var saved = await storage.CheckpointAsync(options.CheckpointSessionId, options.CheckpointStream).ConfigureAwait(false); var expected = saved?.Cursor;
             var parameters = options.StreamOptions with
             {
@@ -76,12 +82,48 @@ public sealed class StorageSynchronization : IAsyncDisposable, IDisposable
 }
 public static class StorageSynchronizationExtensions
 {
+    internal static void ValidateDescriptorMode(StorageApplyEventOptions options)
+    {
+        if (!Enum.IsDefined(options.HistoryDescriptorMode)) throw new StorageValidationException("Invalid history descriptor mode.");
+    }
+    private static void ValidateDescriptorChunk(StorageHistoryChunk chunk)
+    {
+        if (chunk.Conversations?.Any(c => c is null || c.Messages?.Any(m => m is null) == true) == true ||
+            chunk.StatusV3Messages?.Any(m => m is null) == true || chunk.Pushnames?.Any(p => p is null) == true ||
+            chunk.PastParticipants?.Any(p => p is null) == true || chunk.PhoneNumberToLidMappings?.Any(p => p is null) == true)
+            throw new StorageValidationException("Invalid decoded history descriptor chunk.");
+    }
     public static Task<StorageApplyResult> ApplyEventAsync(this IStorageAdapter adapter, WebhookEvent webhookEvent, StorageApplyEventOptions? options = null, CancellationToken cancellation = default) => new CustomerStorage(adapter).ApplyEventAsync(webhookEvent, options, cancellation);
     public static async Task<StorageApplyResult> ApplyEventAsync(this CustomerStorage storage, WebhookEvent webhookEvent, StorageApplyEventOptions? options = null, CancellationToken cancellation = default)
     {
-        ArgumentNullException.ThrowIfNull(storage); ArgumentNullException.ThrowIfNull(webhookEvent); var envelope = webhookEvent.Envelope;
+        ArgumentNullException.ThrowIfNull(storage); ArgumentNullException.ThrowIfNull(webhookEvent); options ??= new(); ValidateDescriptorMode(options); var envelope = webhookEvent.Envelope;
         // Snapshot JSON before invoking a caller decoder, which may suspend or mutate its own source objects.
-        var snapshot = envelope with { Payload = envelope.Payload.Clone() }; var batch = StorageReducers.ReduceEvent(snapshot);
+        var snapshot = envelope with { Payload = envelope.Payload.Clone() };
+        if (snapshot.Event == "history.sync" && snapshot.Payload.ValueKind == System.Text.Json.JsonValueKind.Object && snapshot.Payload.TryGetProperty("delivery", out _))
+        {
+            var parsed = DirectHistoryEvents.Parse(snapshot);
+            DirectHistorySyncPayload descriptor = parsed switch
+            {
+                TypedWebhookEvent<DirectHistorySyncMediaPayload> media => media.Payload,
+                TypedWebhookEvent<DirectHistorySyncInlinePayload> inline => inline.Payload,
+                _ => throw new StorageValidationException("Invalid history descriptor.")
+            };
+            if (await storage.HasEventAsync(snapshot.Session, snapshot.Id, cancellation).ConfigureAwait(false)) return new(false, 0);
+            var descriptorBatch = StorageReducers.ReduceEvent(snapshot);
+            if (options.HistoryDescriptorMode == StorageHistoryDescriptorMode.MetadataOnly)
+                return await storage.ApplyAsync(descriptorBatch, cancellation).ConfigureAwait(false);
+            var descriptorDecoder = options.DecodeHistoryDescriptor ?? throw new StorageValidationException("A history descriptor decoder is required.");
+            StorageBatch history;
+            try
+            {
+                var descriptorChunk = await descriptorDecoder(descriptor, webhookEvent, cancellation).ConfigureAwait(false) ?? throw new StorageValidationException("A non-null history descriptor chunk is required.");
+                ValidateDescriptorChunk(descriptorChunk);
+                history = StorageReducers.ReduceHistoryChunk(new(snapshot.Session, descriptorChunk));
+            }
+            catch (Exception) { throw new StorageValidationException("Failed to decode history descriptor."); }
+            return await storage.ApplyAsync(descriptorBatch with { Operations = history.Operations.Concat(descriptorBatch.Operations).ToArray() }, cancellation).ConfigureAwait(false);
+        }
+        var batch = StorageReducers.ReduceEvent(snapshot);
         if (snapshot.Event == "history.sync" && options?.DecodeHistory is { } decode && !(snapshot.Payload.ValueKind == System.Text.Json.JsonValueKind.Object && snapshot.Payload.TryGetProperty("kind", out var kind) && kind.ValueKind == System.Text.Json.JsonValueKind.String && kind.GetString() == "history"))
         {
             if (await storage.HasEventAsync(snapshot.Session, snapshot.Id, cancellation).ConfigureAwait(false)) return new(false, 0);
