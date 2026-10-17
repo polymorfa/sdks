@@ -583,28 +583,6 @@ export interface TierPricing {
   readonly features: readonly string[];
 }
 
-/** Metadata for an organization server API key. Raw key material is never returned. */
-export interface ApiKey {
-  readonly _id: string;
-  readonly _creationTime: number;
-  readonly id: string;
-  readonly keyId: string;
-  readonly start: string;
-  readonly last4: string;
-  readonly orgId: string;
-  readonly label: string;
-  readonly scopes: number;
-  readonly source: string;
-  readonly expiresAt: number;
-  readonly lastUsed?: number;
-  readonly isActive: boolean;
-}
-
-export interface ApiKeyDeactivation {
-  readonly ok: true;
-  readonly keyId: string;
-}
-
 export type OrganizationMemberRole = "owner" | "admin" | "member";
 
 export interface OrganizationMember {
@@ -674,19 +652,6 @@ export interface SecurityIncident {
 
 export interface SecurityIncidentAcknowledgement {
   readonly acknowledged: true;
-}
-
-/** Project-token metadata. The bearer token itself is never returned. */
-export interface ProjectToken {
-  readonly id: string;
-  readonly start: string;
-  readonly last4: string;
-  readonly label: string | null;
-  readonly scopes: number;
-  readonly expiresAt: number | null;
-  readonly createdAt: number;
-  readonly lastUsedAt: number | null;
-  readonly revokedAt: number | null;
 }
 
 export interface ProjectIcon {

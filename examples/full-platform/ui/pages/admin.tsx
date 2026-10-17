@@ -289,7 +289,7 @@ function Panel({ tab }: { readonly tab: string }) {
     case "organization":
       return (
         <Section path="/api/admin/organization">
-          {(data, reload) => {
+          {(data) => {
             const org = field(data, "organization") as Row | undefined;
             return (
               <>
@@ -307,10 +307,6 @@ function Panel({ tab }: { readonly tab: string }) {
                       label="Members"
                       value={rowsOf(field(data, "members")).length}
                     />
-                    <Stat
-                      label="API keys"
-                      value={rowsOf(field(data, "apiKeys")).length}
-                    />
                   </div>
                 </Card>
                 <Card title="Members" className="flush">
@@ -318,44 +314,6 @@ function Panel({ tab }: { readonly tab: string }) {
                     caption="Members"
                     rows={rowsOf(field(data, "members"))}
                     keys={["name", "email", "role", "joinedAt"]}
-                  />
-                </Card>
-                <Card title="API keys" className="flush">
-                  <Table
-                    caption="API keys"
-                    rows={rowsOf(field(data, "apiKeys"))}
-                    keys={["name", "prefix", "active", "lastUsedAt"]}
-                    actions={(row) =>
-                      row.active !== false && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            if (
-                              window.confirm(`Deactivate ${String(row.name)}?`)
-                            ) {
-                              void run(
-                                "/api/admin/organization",
-                                {
-                                  action: "deactivateApiKey",
-                                  keyId: String(row.id),
-                                },
-                                reload,
-                              );
-                            }
-                          }}
-                        >
-                          Deactivate
-                        </Button>
-                      )
-                    }
-                  />
-                </Card>
-                <Card title="Project tokens" className="flush">
-                  <Table
-                    caption="Project tokens"
-                    rows={rowsOf(field(data, "projectTokens"))}
-                    keys={["name", "prefix", "scopes", "createdAt"]}
                   />
                 </Card>
               </>

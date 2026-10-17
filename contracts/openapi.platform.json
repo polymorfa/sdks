@@ -28440,7 +28440,7 @@
                   "limitCredits": {
                     "type": "number",
                     "minimum": 0,
-                    "multipleOf": 0.000001,
+                    "multipleOf": 1e-06,
                     "maximum": 1000000,
                     "nullable": true
                   },
@@ -28674,7 +28674,7 @@
                   "limitCredits": {
                     "type": "number",
                     "minimum": 0,
-                    "multipleOf": 0.000001,
+                    "multipleOf": 1e-06,
                     "maximum": 1000000,
                     "nullable": true
                   },
@@ -37766,197 +37766,6 @@
         }
       }
     },
-    "/platform/keys": {
-      "get": {
-        "operationId": "listApiKeys",
-        "tags": [
-          "keys"
-        ],
-        "summary": "List api keys",
-        "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
-        "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": false,
-        "x-required-scope": "sessions:read",
-        "security": [
-          {
-            "ApiKeyAuth": []
-          },
-          {
-            "ConsoleSession": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "headers": {
-              "X-Request-Id": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "Stable request correlation identifier."
-              },
-              "Polymorfa-Version": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "API version applied to this response."
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
-          }
-        }
-      }
-    },
-    "/platform/keys/{keyId}": {
-      "delete": {
-        "operationId": "deactivateApiKey",
-        "tags": [
-          "keys"
-        ],
-        "summary": "Deactivate api key",
-        "description": "Public Management API. Requires a team API key with `sessions:manage`. Project tokens are not accepted.",
-        "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
-        "x-excluded-from-public": false,
-        "x-required-scope": "sessions:manage",
-        "security": [
-          {
-            "ApiKeyAuth": []
-          },
-          {
-            "ConsoleSession": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "keyId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "headers": {
-              "X-Request-Id": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "Stable request correlation identifier."
-              },
-              "Polymorfa-Version": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "API version applied to this response."
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
-          }
-        }
-      }
-    },
-    "/platform/tokens": {
-      "get": {
-        "operationId": "listPolymorfaTokens",
-        "tags": [
-          "tokens"
-        ],
-        "summary": "List polymorfa tokens",
-        "description": "Public Management API. Requires `sessions:read`. Project tokens only access resources in their own project.",
-        "x-audience": "public",
-        "x-polymorfa-resource-boundary": "project",
-        "x-excluded-from-public": false,
-        "x-required-scope": "sessions:read",
-        "security": [
-          {
-            "ApiKeyAuth": []
-          },
-          {
-            "ConsoleSession": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "projectId",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success",
-            "headers": {
-              "X-Request-Id": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "Stable request correlation identifier."
-              },
-              "Polymorfa-Version": {
-                "schema": {
-                  "type": "string"
-                },
-                "description": "API version applied to this response."
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DataEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "501": {
-            "$ref": "#/components/responses/NotImplemented"
-          }
-        }
-      }
-    },
     "/platform/audit": {
       "get": {
         "operationId": "listAuditLogs",
@@ -45276,19 +45085,19 @@
           "limitCredits": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 0.000001,
+            "multipleOf": 1e-06,
             "maximum": 1000000,
             "nullable": true
           },
           "spentCredits": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 0.000001
+            "multipleOf": 1e-06
           },
           "reservedCredits": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 0.000001
+            "multipleOf": 1e-06
           },
           "revision": {
             "type": "integer",
@@ -45350,12 +45159,12 @@
           "todayCredits": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 0.000001
+            "multipleOf": 1e-06
           },
           "monthCredits": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 0.000001
+            "multipleOf": 1e-06
           },
           "daily": {
             "type": "array",
@@ -45370,7 +45179,7 @@
                 "credits": {
                   "type": "number",
                   "minimum": 0,
-                  "multipleOf": 0.000001
+                  "multipleOf": 1e-06
                 }
               },
               "required": [
@@ -55180,7 +54989,7 @@
               "amountCents": {
                 "type": "number",
                 "minimum": 0,
-                "multipleOf": 0.000001,
+                "multipleOf": 1e-06,
                 "description": "Credits charged on application, with up to six decimal places."
               },
               "priceVersion": {
@@ -60409,19 +60218,19 @@
           "measuredCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 0.000001,
+            "multipleOf": 1e-06,
             "description": "Credit quantity this number consumed inside the window, with up to six decimal places."
           },
           "capCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 0.000001,
+            "multipleOf": 1e-06,
             "description": "Maximum credit quantity this claim can return, with up to six decimal places."
           },
           "amountCents": {
             "type": "number",
             "minimum": 0,
-            "multipleOf": 0.000001,
+            "multipleOf": 1e-06,
             "description": "Credit quantity this claim returns, with up to six decimal places."
           },
           "evidence": {

@@ -677,7 +677,6 @@ export { WebhooksResource as MessagingWebhooksResource } from "./messaging/webho
 export { CursorPage, type PageDecoder, type PageResult } from "./pagination.js";
 export { FollowableIndexedEventPage } from "./platform/indexed-event-page.js";
 export { AudiencesResource } from "./platform/audiences.js";
-export { ApiKeysResource } from "./platform/api-keys.js";
 export { AuditLogsResource } from "./platform/audit-logs.js";
 export { BillingResource } from "./platform/billing.js";
 export { UsageResource } from "./platform/usage.js";
@@ -742,7 +741,6 @@ export {
   type UpdateQuickLinkSettingsInput,
 } from "./platform/quicklink-settings.js";
 export { OrganizationsResource } from "./platform/organizations.js";
-export { ProjectTokensResource } from "./platform/project-tokens.js";
 export { ProjectsResource } from "./platform/projects.js";
 export { SecurityIncidentsResource } from "./platform/security-incidents.js";
 export { SessionBansResource } from "./platform/session-bans.js";
@@ -866,8 +864,6 @@ export {
   type WaitForVoiceAudioOptions,
 } from "./platform/voice.js";
 export type {
-  ApiKey,
-  ApiKeyDeactivation,
   AuditLog,
   BillingBalance,
   BillingCurrency,
@@ -951,7 +947,6 @@ export type {
   ProjectDefaultTier,
   ProjectIcon,
   ProjectIconInput,
-  ProjectToken,
   ProjectWithStats,
   SecurityIncident,
   SecurityIncidentAcknowledgement,

@@ -47,41 +47,6 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
         joinedAt: iso(12 * DAY),
       },
     ],
-    apiKeys: [
-      {
-        id: "key_1",
-        name: "Production server",
-        prefix: "pmfa_live_7Hq",
-        active: true,
-        lastUsedAt: iso(2 * 60 * 1000),
-        createdAt: iso(120 * DAY),
-      },
-      {
-        id: "key_2",
-        name: "CI deploys",
-        prefix: "pmfa_live_2kL",
-        active: true,
-        lastUsedAt: iso(3 * DAY),
-        createdAt: iso(60 * DAY),
-      },
-      {
-        id: "key_3",
-        name: "Old staging",
-        prefix: "pmfa_live_9aZ",
-        active: false,
-        lastUsedAt: iso(80 * DAY),
-        createdAt: iso(300 * DAY),
-      },
-    ],
-    projectTokens: [
-      {
-        id: "ptk_1",
-        name: "Acme Support app",
-        prefix: "pmfa_pt_c81",
-        scopes: ["messaging"],
-        createdAt: iso(40 * DAY),
-      },
-    ],
   },
   "/api/admin/projects": [
     {

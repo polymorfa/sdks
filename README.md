@@ -278,13 +278,11 @@ project clients see only their project.
 The organization view also exposes these management resources:
 
 - `organizations`: retrieve the organization visible to the API key
-- `apiKeys`: list key metadata and deactivate an organization API key
 - `members`: list organization members
 - `auditLogs`: list the organization audit trail with live action, resource,
   and limit filters
 - `sessionBans`: list all or active session bans
 - `securityIncidents`: list and acknowledge leaked-credential incidents
-- `projectTokens`: list token metadata for an explicit project
 - `sipTrunks`: list, create, retrieve, update, delete, and rotate the
   credentials of a project's SIP trunks, and read the SIP address your PBX
   points at with `endpoint()` (also on project clients)
@@ -962,3 +960,7 @@ quiet gaps, duration sums, sample counts and weighted averages. Ranges up to
 48 hours use hourly activity buckets; longer ranges and call series use daily
 UTC buckets. These signals do not establish phone online/offline or power state.
 See the [measurement definitions](https://docs.polymorfa.com/console/analytics#phone-polymorfa-and-customer-activity).
+
+Organization keys and project tokens are created, listed and revoked by a signed-in
+person in the Console. The SDK exposes client-token operations only; machine
+credentials cannot manage organization keys or project tokens.

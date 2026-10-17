@@ -211,7 +211,7 @@ describe("reconciled coverage evidence", () => {
     }
   });
 
-  it("pins Analytics to the same full Platform source and snapshot hash", () => {
+  it("pins Analytics to its original source and the credential-removal snapshot", () => {
     const source = JSON.parse(
       readFileSync(repositoryFile("contracts/source.json"), "utf8"),
     ) as {
@@ -219,9 +219,17 @@ describe("reconciled coverage evidence", () => {
       contracts: { platform: { sha256: string } };
       supplements?: unknown;
     };
-    expect(source.supplements).toBeUndefined();
+    expect(source.supplements).toEqual([
+      {
+        name: "human-only-credential-management",
+        snapshotPath: "contracts/credential-management.json",
+        sourceCommit: "cdc3d8dd2770693f1d319ecf5d0fa1a058717a0d",
+        sha256:
+          "bda73eec25574a37c9fa412d5052d0c163322d6b3df0fa7daafcdaa7132e3223",
+      },
+    ]);
     expect(source.contracts.platform.sha256).toBe(
-      "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b",
+      "dc3c6ddde8280f9d508d725af6c9413aeb089445cdd6677f9774ec994ca6e926",
     );
     for (const id of [
       "getWhatsAppAnalytics",
@@ -235,11 +243,35 @@ describe("reconciled coverage evidence", () => {
       };
       expect(operation.sourceCommit).toBe(source.commit);
       expect(operation.sourceContractSha256).toBe(
-        source.contracts.platform.sha256,
+        "97fd5ca378699350c53412267a39ef66cc64111283c7bfd155fa932d77bf925b",
       );
       expect(operation.sdkContractSha256).toBe(
         source.contracts.platform.sha256,
       );
+    }
+  });
+
+  it("pins the removal supplement and excludes its operations from snapshots and SDK coverage", () => {
+    const supplement = JSON.parse(
+      readFileSync(
+        repositoryFile("contracts/credential-management.json"),
+        "utf8",
+      ),
+    );
+    const platform = JSON.parse(
+      readFileSync(repositoryFile("contracts/openapi.platform.json"), "utf8"),
+    );
+    expect(supplement.sourceCommit).toBe(
+      "cdc3d8dd2770693f1d319ecf5d0fa1a058717a0d",
+    );
+    expect(supplement.removedOperations).toHaveLength(3);
+    for (const removed of supplement.removedOperations) {
+      expect(platform.paths).not.toHaveProperty(removed.path);
+      expect(
+        ledger.operations.some(
+          (op) => op.path === removed.path && op.method === removed.method,
+        ),
+      ).toBe(false);
     }
   });
 

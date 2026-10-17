@@ -174,8 +174,8 @@ describe("coverage checker", () => {
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
       sourceCommit: "e3d1d2dbc8287f79daf0a1d6f6f5375c1a9d9dbb",
-      total: 608,
-      covered: 454,
+      total: 605,
+      covered: 451,
       partial: 0,
       missing: 14,
       excluded: 140,
@@ -653,8 +653,6 @@ describe("coverage checker", () => {
       }>;
     };
     const operationIds = [
-      "deactivateApiKey",
-      "listApiKeys",
       "listMembers",
       "listAuditLogs",
       "listSessionBans",
@@ -662,7 +660,6 @@ describe("coverage checker", () => {
       "listSecurityIncidents",
       "acknowledgeSecurityIncident",
       "getPlatformOperation",
-      "listPolymorfaTokens",
       "inviteMember",
       "updateMemberRole",
       "deleteMember",
@@ -674,14 +671,6 @@ describe("coverage checker", () => {
     );
 
     expect(mappings).toMatchObject({
-      deactivateApiKey: {
-        status: "covered",
-        method: "Client.apiKeys.deactivate",
-      },
-      listApiKeys: {
-        status: "covered",
-        method: "Client.apiKeys.list",
-      },
       listMembers: {
         status: "covered",
         method: "Client.members.list",
@@ -709,10 +698,6 @@ describe("coverage checker", () => {
       getPlatformOperation: {
         status: "covered",
         method: "Client.operations.get",
-      },
-      listPolymorfaTokens: {
-        status: "covered",
-        method: "Client.projectTokens.list",
       },
       inviteMember: { status: "excluded" },
       updateMemberRole: { status: "excluded" },
