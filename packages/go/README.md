@@ -646,3 +646,23 @@ QuickLink invitation controls, Console configuration/enrollment and the host
 feature evaluator remain excluded. Signal core/service work, strict compressed
 history, history-storage dispatch, numeric coercion, general cursor and stream
 repairs have separate checkpoints.
+
+## Strict compressed history support
+
+The local history decoder accepts one complete gzip, zlib or raw DEFLATE stream.
+It rejects unused compressed bytes, concatenated streams, truncation, dictionaries,
+reserved gzip flags and corrupt wrapper checksums before protobuf parsing.
+The Go standard gzip reader accepts at most 511 non-NUL bytes in each filename
+and comment. Complete streams exceeding either existing limit are unsupported;
+the SDK does not replace the standard reader. Extra fields retain the gzip
+16-bit length boundary. Required HistorySync.syncType remains enforced, so a
+complete stream with empty output is a protobuf refusal.
+
+Independent public tests cover stored, fixed, dynamic and multiple DEFLATE
+blocks, optional headers, exact byte caps, valid unused final-byte bits and
+malformed streams. Context cancellation is checked before and between reads; it
+does not interrupt a synchronous standard-library read or protobuf parse.
+Authenticated downloads still verify ciphertext, MAC and plaintext hash before
+decoding. Signed archive storage tests use an application projection of common
+fields; they do not establish descriptor dispatch or full-schema storage.
+These local tests do not establish registry publication or live availability.

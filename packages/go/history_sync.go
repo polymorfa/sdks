@@ -241,6 +241,10 @@ func DecodeHistorySyncPayload(ctx context.Context, compressed []byte, options De
 	var reader io.ReadCloser
 	var err error
 	if len(compressed) >= 2 && compressed[0] == 31 && compressed[1] == 139 {
+		// The standard reader ignores reserved flags; RFC 1952 requires refusal.
+		if len(compressed) >= 4 && compressed[3]&0xe0 != 0 {
+			return HistorySyncData{}, historyInvalid()
+		}
 		var r *gzip.Reader
 		r, err = gzip.NewReader(source)
 		if err == nil {
