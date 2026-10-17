@@ -17,13 +17,14 @@ public readonly record struct StorageHistoryNumber
     {
         if (number is { } native) return double.IsFinite(native) ? native : null;
         if (text is null) return null;
-        var source = text.Trim(); if (source.Length == 0) return 0;
+        var source = text.Trim('\u0009', '\u000a', '\u000b', '\u000c', '\u000d', '\u0020', '\u00a0', '\u1680', '\u2000', '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200a', '\u2028', '\u2029', '\u202f', '\u205f', '\u3000', '\ufeff'); if (source.Length == 0) return 0;
         if (source.Length > 2 && source[0] == '0' && source[1] is 'x' or 'X' or 'b' or 'B' or 'o' or 'O')
         {
             var radix = source[1] is 'x' or 'X' ? 16 : source[1] is 'b' or 'B' ? 2 : 8; var integer = BigInteger.Zero;
             foreach (var character in source.AsSpan(2)) { var digit = character is >= '0' and <= '9' ? character - '0' : character is >= 'a' and <= 'f' ? character - 'a' + 10 : character is >= 'A' and <= 'F' ? character - 'A' + 10 : -1; if (digit < 0 || digit >= radix) return null; integer = integer * radix + digit; }
             return double.TryParse(integer.ToString(CultureInfo.InvariantCulture), NumberStyles.Float, CultureInfo.InvariantCulture, out var converted) && double.IsFinite(converted) ? converted : null;
         }
+        if (!System.Text.RegularExpressions.Regex.IsMatch(source, @"\A[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?\z", System.Text.RegularExpressions.RegexOptions.CultureInvariant)) return null;
         return double.TryParse(source, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed) && double.IsFinite(parsed) ? parsed : null;
     }
     internal object? WireValue => text is not null ? text : number;

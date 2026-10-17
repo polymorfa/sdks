@@ -883,3 +883,11 @@ messages; existing native `wa:` fallback keys retain their joining limits. Conte
 and marker commit precede checkpoint CAS and ACK. A failed remote ACK leaves
 committed data intact. Archive and Cloud behavior remain unchanged. This establishes
 local package behavior, not registry or deployed availability.
+
+Decoded-history numeric strings follow the producer's finite `Number(string)`
+contract, including signed zero, exact ECMAScript whitespace and full ASCII
+numeric grammar. Unsigned radix values retain the existing BigInteger path and
+one binary64 rounding. Bare radix prefixes already failed correctly. Generic
+row numbers and safe revisions remain strict. Full public assemblies and local
+NuGet consumers provide local evidence; registry publication and matching
+environment acceptance remain separate release gates.

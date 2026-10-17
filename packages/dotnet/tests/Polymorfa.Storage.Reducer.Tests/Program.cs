@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Polymorfa.Sdk;
 using Polymorfa.Sdk.Storage;
 
+await NumericStrings.Run();
 await Checks.Run();
 internal static class Checks
 {
