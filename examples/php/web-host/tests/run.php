@@ -24,6 +24,8 @@ foreach (['laravel','symfony'] as $framework) {
         mkdir($env['EXAMPLE_STATE_DIR'], 0700, true);
     }
     $counter = $env['EXAMPLE_STATE_DIR'].'/native-mints';
+    $linkCounter = $env['EXAMPLE_STATE_DIR'].'/native-links';
+    if (is_file($linkCounter)) { unlink($linkCounter); }
     if (is_file($counter)) {
         unlink($counter);
     }
@@ -49,6 +51,7 @@ foreach (['laravel','symfony'] as $framework) {
         $send = fn (string $method, string $path, string $origin, array $fields = []) => $client->request($method, $path, ['headers' => ['Origin' => $origin,'HX-Request' => 'true'],'form_params' => $fields]);
         $origin = $env['EXAMPLE_APP_ORIGIN'];
         check($send('POST', '/api/polymorfa/token', $origin)->getStatusCode() === 401, 'anonymous');
+        check($send('POST', '/api/polymorfa/connect', $origin)->getStatusCode() === 401, 'anonymous connect');
         check($send('GET', '/api/login', $origin)->getStatusCode() === 405, 'GET login');
         check($send('POST', '/api/login', 'https://foreign.invalid', ['username' => 'example-user','password' => 'test-only-password'])->getStatusCode() === 403, 'foreign origin');
         check($send('POST', '/api/login', $origin, ['username' => 'example-user','password' => 'wrong'])->getStatusCode() === 401, 'invalid password');
@@ -59,10 +62,16 @@ foreach (['laravel','symfony'] as $framework) {
         $token = json_decode((string)$response->getBody(), true);
         check($response->getStatusCode() === 200 && ($token['value'] ?? null) === 'pmfa_ct_browser_fixture' && ($token['audience'] ?? null) === 'browser' && ($token['expiresAt'] ?? 0) > time() * 1000 && str_contains($response->getHeaderLine('Cache-Control'), 'no-store'), 'native SDK token mint');
         check((int)file_get_contents($counter) === 1, 'one real upstream request');
+        $response = $send('POST', '/api/polymorfa/connect', $origin, ['session' => 'attacker','purpose' => 'initial']);
+        $raw = (string)$response->getBody(); $link = json_decode($raw, true);
+        check($response->getStatusCode() === 200 && ($link['data']['url'] ?? null) === 'https://quick.example.test/link' && !str_contains($raw, 'pmfa_pt_'), 'assigned supplementary QuickLink');
+        check((int)file_get_contents($linkCounter) === 1, 'one QuickLink upstream request');
+        check($send('POST', '/api/polymorfa/connect', 'https://foreign.invalid')->getStatusCode() === 403, 'QuickLink origin guard');
         check($send('POST', '/api/polymorfa/token', 'https://foreign.invalid')->getStatusCode() === 403, 'mint origin guard');
         check($send('POST', '/api/logout', $origin)->getStatusCode() === 200, 'logout');
         check($send('POST', '/api/polymorfa/token', $origin)->getStatusCode() === 401, 'revoked application session');
         check((int)file_get_contents($counter) === 1, 'no unauthorized upstream requests');
+        check($send('POST', '/api/polymorfa/connect', $origin)->getStatusCode() === 401 && (int)file_get_contents($linkCounter) === 1, 'revoked QuickLink access');
         echo $framework." real HTTP/auth/token boundary passed\n";
     } finally {
         foreach ($servers as $server) {

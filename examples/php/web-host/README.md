@@ -27,3 +27,5 @@ EXAMPLE_STATE_DIR="$HOME/.polymorfa-agent-work/php-web-host-tests" php tests/run
 ```
 
 The test starts loopback servers on ports 31305 and 31306 with synthetic credentials. It verifies both frameworks, initial template rendering, POST-only sign-in, invalid credentials, foreign origins, opaque cookies, exact server-derived SDK mint requests, browser response claims and revocation after sign-out. PHP 8.2 and 8.4 passed these tests. Both hosts were also exercised in a browser: real components mounted, one mint served the session, the empty inbox rendered, and sign-out removed the components. No customer credentials or live WhatsApp number were used.
+
+The Connect number endpoint creates a hosted supplementary linked-device invitation for the server-assigned `POLYMORFA_SESSION`. Assign an eligible Official Number that can add linked devices. The API still checks assignment, eligibility, consent and funding. Browser fields cannot choose another Number or change custody. This does not create an initial Number or establish live WhatsApp pairing.

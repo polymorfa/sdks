@@ -139,7 +139,7 @@ final class Host
         }
         try {
             if ($path === '/api/polymorfa/connect') {
-                return $this->json($this->client->quickLinks->create(['session' => $this->session])->data);
+                return $this->json($this->client->quickLinks->create(['purpose' => 'add_connection','session' => $this->session,'addConnection' => 'linked_devices','connectionGoal' => 'hybrid'])->data);
             }
             $result = $this->client->clientTokens->mint(['ephemeralId' => 'example:local-app-user','session' => $this->session,'ttlSeconds' => 600]);
             $token = $result->data['data'];
