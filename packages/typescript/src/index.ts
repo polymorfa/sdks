@@ -1334,3 +1334,6 @@ export type {
   CampaignFrequencyCapSettings,
   UpdateCampaignFrequencyCapInput,
 } from "./platform/types.js";
+
+export * from "./platform/audience-segments.js";
+export * from "./messaging/campaign-drip.js";

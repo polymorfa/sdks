@@ -897,3 +897,11 @@ Recipient reads expose `failureReason` and accept `reason: "frequency_cap"`.
 Analytics adds `frequencyCap.skippedRecipientCount`. Raising limits never retries
 settled skips. `contracts/campaign-frequency-cap.json` pins the merged API source;
 package publication and API availability remain separate release gates.
+
+## Unreleased: audience segments and drip sequences
+
+- Add organization-only audience segment CRUD, observed revisions and count previews.
+- Add segment campaign selection and frozen snapshot reads.
+- Add partial drip settings, enrollment, pause/enrollment reads and step analytics types.
+- Bind focused contracts to merged API `f46ebd5162453e812dafa76ce02b420ddabe6921`.
+  Package publication and matching environment acceptance remain pending.
