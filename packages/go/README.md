@@ -92,6 +92,42 @@ and reason. `CampaignAnalytics.FollowUps` is required on both surfaces. `Campaig
 message. Follow-up timestamps are Unix milliseconds. Native fixture verification
 covers the merged contract; no live follow-up campaign or publication was exercised.
 
+## Contact frequency caps, audience segments and drips (beta)
+
+These methods follow `contracts/campaign-frequency-cap.json` and
+`contracts/campaign-segments-drip.json`. They do not enroll a team in a beta;
+the API returns `403 feature_unavailable` when a team lacks access.
+
+The team cap is an organization setting. `Campaigns().GetFrequencyCap(ctx)`
+returns both limits, `Revision` and `UpdatedAt` (nil until first saved).
+`UpdateFrequencyCap` replaces both windows with the revision you read; nil
+limits remove them. The PUT is sent once. A stale revision returns a
+`ConflictError`; read again and reconcile. Campaign create and update accept
+`FrequencyCap` (`&Nullable[CampaignFrequencyCap]{}` removes a campaign cap),
+recipients report `CampaignFailureFrequencyCap`, and analytics add
+`FrequencyCap.SkippedRecipientCount`.
+
+`OrganizationClient.AudienceSegments()` lists, retrieves, creates, updates and
+deletes saved segments, and previews a saved segment or unsaved rules. A
+project client has no segment methods. Build rules from typed conditions such
+as `AudienceSegmentTagContains` and `AudienceSegmentAttributeCompare`; conditions
+the SDK does not model decode as `AudienceSegmentUnknownCondition` and are
+rejected in requests. Updates and deletes need the last observed revision.
+Writes and both previews are sent once; a 409 `state_conflict` means a stale
+revision or an evaluation timeout, so re-read or simplify the rules.
+
+Platform create accepts `SegmentID` (omit it rather than sending null) and
+update accepts `SegmentID: &Nullable[string]{}` to clear it. `Drip` takes a
+`CampaignDripInput` on create and a partial `CampaignDripPatch` on update; the
+SDK applies no defaults, and omitted fields keep their stored values. Drip steps
+accept `DelayUnit` and a per-step `SendWindow`. Ordinary creates allow
+`DelayAfterSec` up to 86400; drip creates and every PATCH allow up to 2592000,
+and the API checks the stored drip, delay unit and eligibility.
+`Campaigns().Enroll` and `MessagingCampaigns.Enroll` add a contact to a
+continuous drip and are never retried automatically. Campaign reads expose
+`Drip`, `EnrollmentOpen`, `PauseReason`, `SegmentID` and `SegmentSnapshot`;
+analytics expose per-step `Drip` results.
+
 ## Raw pagination
 
 `PaginateRaw[T]` accepts any SDK client with a `Raw` method and a decoder that

@@ -63,13 +63,18 @@ func (v CampaignTrackedLinks) MarshalJSON() ([]byte, error) {
 
 // Composed messages and their nested media/buttons preserve declared extensions.
 type CampaignComposedMessage struct {
-	Version       *int                      `json:"version,omitempty"`
-	Source        *string                   `json:"source,omitempty"`
-	Media         *CampaignComposedMedia    `json:"media,omitempty"`
-	Buttons       *[]CampaignComposedButton `json:"buttons,omitempty"`
-	Footer        *string                   `json:"footer,omitempty"`
-	DelayAfterSec *int                      `json:"delayAfterSec,omitempty"`
-	Extra         PlatformPayload           `json:"-"`
+	Version *int                      `json:"version,omitempty"`
+	Source  *string                   `json:"source,omitempty"`
+	Media   *CampaignComposedMedia    `json:"media,omitempty"`
+	Buttons *[]CampaignComposedButton `json:"buttons,omitempty"`
+	Footer  *string                   `json:"footer,omitempty"`
+	// DelayAfterSec is 0..86400, or 0..2592000 for drip steps, in whole
+	// multiples of DelayUnit when set.
+	DelayAfterSec *int               `json:"delayAfterSec,omitempty"`
+	DelayUnit     *CampaignDelayUnit `json:"delayUnit,omitempty"`
+	// SendWindow applies to later drip steps only; null removes a step window.
+	SendWindow *Nullable[CampaignStepWindow] `json:"sendWindow,omitempty"`
+	Extra      PlatformPayload               `json:"-"`
 }
 type CampaignComposedMedia struct {
 	Kind     string          `json:"kind"`
@@ -106,7 +111,7 @@ func openCampaignJSON(v any, extra PlatformPayload, owned ...string) ([]byte, er
 }
 func (v CampaignComposedMessage) MarshalJSON() ([]byte, error) {
 	type plain CampaignComposedMessage
-	return openCampaignJSON(plain(v), v.Extra, "version", "source", "media", "buttons", "footer", "delayAfterSec")
+	return openCampaignJSON(plain(v), v.Extra, composedMessageFields...)
 }
 func (v CampaignComposedMedia) MarshalJSON() ([]byte, error) {
 	type plain CampaignComposedMedia
@@ -134,13 +139,17 @@ func (v *CampaignComposedMessage) UnmarshalJSON(b []byte) error {
 	if json.Unmarshal(b, &raw) != nil {
 		return existingInvalid("messagesArray")
 	}
-	if e := validateComposed([]any{raw}); e != nil {
+	// The enclosing request decides between the ordinary and drip delay bounds.
+	if e := validateComposed([]any{raw}, dripMaxDelaySeconds); e != nil {
 		return e
 	}
 	type plain CampaignComposedMessage
 	var x plain
-	m, e := decodeOpenCampaign(b, &x, "version", "source", "media", "buttons", "footer", "delayAfterSec")
+	m, e := decodeOpenCampaign(b, &x, composedMessageFields...)
 	*v = CampaignComposedMessage(x)
+	if window, ok := raw["sendWindow"]; ok && window == nil {
+		v.SendWindow = &Nullable[CampaignStepWindow]{}
+	}
 	v.Extra = m
 	return e
 }
@@ -173,12 +182,13 @@ const (
 	CampaignFailureBlockedBySafety     CampaignRecipientFailureReason = "blocked_by_safety"
 	CampaignFailureSendFailed          CampaignRecipientFailureReason = "send_failed"
 	CampaignFailureMissingVariable     CampaignRecipientFailureReason = "missing_variable"
+	CampaignFailureFrequencyCap        CampaignRecipientFailureReason = "frequency_cap"
 	CampaignFailureOther               CampaignRecipientFailureReason = "other"
 )
 
 func validCampaignFailure(v string) bool {
 	switch CampaignRecipientFailureReason(v) {
-	case CampaignFailureOptedOut, CampaignFailureColdHeld, CampaignFailureCancelled, CampaignFailureInvalidRecipient, CampaignFailureSessionNotConnected, CampaignFailureAckTimeout, CampaignFailureBlockedBySafety, CampaignFailureSendFailed, CampaignFailureMissingVariable, CampaignFailureOther:
+	case CampaignFailureOptedOut, CampaignFailureColdHeld, CampaignFailureCancelled, CampaignFailureInvalidRecipient, CampaignFailureSessionNotConnected, CampaignFailureAckTimeout, CampaignFailureBlockedBySafety, CampaignFailureSendFailed, CampaignFailureMissingVariable, CampaignFailureFrequencyCap, CampaignFailureOther:
 		return true
 	}
 	return false
@@ -320,7 +330,13 @@ func validateExistingCampaignMap(m map[string]any, platform, patch bool) error {
 		}
 	}
 	if x, ok := m["messagesArray"]; ok {
-		if e := validateComposed(x); e != nil {
+		// A PATCH can target a stored drip without repeating its settings; the
+		// API keeps delay-unit, eligibility and stored-state authority.
+		maxDelay := float64(ordinaryMaxDelaySeconds)
+		if drip, present := m["drip"]; patch || present && drip != nil {
+			maxDelay = dripMaxDelaySeconds
+		}
+		if e := validateComposed(x, maxDelay); e != nil {
 			return e
 		}
 	}
@@ -492,7 +508,15 @@ func validateAlternatives(x any, variants, platform bool) error {
 	}
 	return nil
 }
-func validateComposed(x any) error {
+
+var composedMessageFields = []string{"version", "source", "media", "buttons", "footer", "delayAfterSec", "delayUnit", "sendWindow"}
+
+const (
+	ordinaryMaxDelaySeconds = 86400
+	dripMaxDelaySeconds     = 2592000
+)
+
+func validateComposed(x any, maxDelay float64) error {
 	a, ok := x.([]any)
 	if !ok || len(a) > 10 {
 		return existingInvalid("messagesArray")
@@ -510,7 +534,7 @@ func validateComposed(x any) error {
 				return existingInvalid(k)
 			}
 		}
-		if v, ok := m["delayAfterSec"]; ok && !existingInt(v, 0, 86400) {
+		if v, ok := m["delayAfterSec"]; ok && !existingInt(v, 0, maxDelay) {
 			return existingInvalid("delayAfterSec")
 		}
 		if x, ok := m["media"]; ok {
@@ -670,13 +694,14 @@ func (v *UpdatePlatformCampaignRequest) UnmarshalJSON(b []byte) error {
 	var x struct {
 		update
 		MessagesArray *[]CampaignComposedMessage `json:"messagesArray,omitempty"`
+		SegmentID     *Nullable[string]          `json:"segmentId,omitempty"`
 	}
-	extra, e := decodeOpenCampaign(b, &x, "name", "templateId", "variableMapping", "trackedLinks", "recipientListId", "senderConfig", "scheduledAt", "sendWindow", "messageVariations", "variants", "variantStrategy", "followUp", "messagesArray")
+	extra, e := decodeOpenCampaign(b, &x, "name", "templateId", "variableMapping", "trackedLinks", "recipientListId", "senderConfig", "scheduledAt", "sendWindow", "messageVariations", "variants", "variantStrategy", "followUp", "frequencyCap", "drip", "messagesArray", "segmentId")
 	if e != nil {
 		return e
 	}
 	restoreCampaignNulls(m, &x)
-	*v = UpdatePlatformCampaignRequest{UpdateCampaignRequest: UpdateCampaignRequest(x.update), MessagesArray: x.MessagesArray, Extra: extra}
+	*v = UpdatePlatformCampaignRequest{UpdateCampaignRequest: UpdateCampaignRequest(x.update), MessagesArray: x.MessagesArray, SegmentID: x.SegmentID, Extra: extra}
 	return nil
 }
 

@@ -481,7 +481,7 @@ func campaignExportQuery(v CampaignRecipientExportParams) (url.Values, error) {
 		q.Set("status", *v.Status)
 	}
 	if v.Reason != nil {
-		if err := contractOne(*v.Reason, "reason", "opted_out", "cold_held", "campaign_cancelled", "invalid_recipient", "session_not_connected", "ack_timeout", "blocked_by_safety", "send_failed", "missing_variable", "other"); err != nil {
+		if err := contractOne(*v.Reason, "reason", "opted_out", "cold_held", "campaign_cancelled", "invalid_recipient", "session_not_connected", "ack_timeout", "blocked_by_safety", "send_failed", "missing_variable", "frequency_cap", "other"); err != nil {
 			return nil, err
 		}
 		q.Set("reason", *v.Reason)

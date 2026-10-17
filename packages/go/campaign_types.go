@@ -274,6 +274,18 @@ type Campaign struct {
 	ExperimentOutcome *CampaignExperimentOutcome `json:"experimentOutcome"`
 	MessageVariations []CampaignMessageVariation `json:"messageVariations,omitempty"`
 	FollowUp          *CampaignFollowUp          `json:"followUp"`
+	// FrequencyCap is this campaign's own cap; nil when only the team cap applies.
+	FrequencyCap *CampaignFrequencyCap `json:"frequencyCap,omitempty"`
+	// Drip is nil for a campaign that is not a drip.
+	Drip *CampaignDrip `json:"drip,omitempty"`
+	// EnrollmentOpen reports continuous enrollment; nil for a non-drip.
+	EnrollmentOpen *bool `json:"enrollmentOpen,omitempty"`
+	// PauseReason is the stored reason while paused, or nil.
+	PauseReason *string `json:"pauseReason,omitempty"`
+	// SegmentID is the saved segment evaluated at launch, or nil. Read-only on
+	// the Messaging API; choose segments with an organization API key.
+	SegmentID       *string                  `json:"segmentId,omitempty"`
+	SegmentSnapshot *CampaignSegmentSnapshot `json:"segmentSnapshot,omitempty"`
 }
 type PlatformCampaign struct {
 	Campaign
@@ -301,7 +313,7 @@ func (v *PlatformCampaign) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &all); err != nil {
 		return err
 	}
-	for _, k := range []string{"id", "name", "status", "templateId", "recipientListId", "recipientCount", "sentCount", "deliveredCount", "readCount", "failedCount", "skippedCount", "scheduledAt", "launchedAt", "completedAt", "createdAt", "updatedAt", "sendWindow", "composerBlueprint", "messages", "audienceRef", "senderConfig", "complianceConfig", "variants", "variantStrategy", "experimentOutcome", "messageVariations", "followUp", "variableMapping", "trackedLinks"} {
+	for _, k := range []string{"id", "name", "status", "templateId", "recipientListId", "recipientCount", "sentCount", "deliveredCount", "readCount", "failedCount", "skippedCount", "scheduledAt", "launchedAt", "completedAt", "createdAt", "updatedAt", "sendWindow", "composerBlueprint", "messages", "audienceRef", "senderConfig", "complianceConfig", "variants", "variantStrategy", "experimentOutcome", "messageVariations", "followUp", "variableMapping", "trackedLinks", "frequencyCap", "drip", "enrollmentOpen", "pauseReason", "segmentId", "segmentSnapshot"} {
 		delete(all, k)
 	}
 	v.Extra = all
@@ -323,6 +335,10 @@ type CampaignAnalytics struct {
 	ResponseRate          float64                    `json:"responseRate"`
 	Experiment            *CampaignExperimentResults `json:"experiment"`
 	FollowUps             CampaignFollowUpReport     `json:"followUps"`
+	// FrequencyCap counts recipients with a message skipped by the cap.
+	FrequencyCap *CampaignFrequencyCapAnalytics `json:"frequencyCap,omitempty"`
+	// Drip reports results by step; nil for a campaign that is not a drip.
+	Drip *CampaignDripStats `json:"drip,omitempty"`
 }
 type PlatformCampaignAnalytics struct {
 	CampaignAnalytics
@@ -341,6 +357,10 @@ type CreateCampaignRequest struct {
 	Variants          *Nullable[[]CampaignVariant]          `json:"variants,omitempty"`
 	VariantStrategy   *Nullable[CampaignVariantStrategy]    `json:"variantStrategy,omitempty"`
 	FollowUp          *Nullable[CampaignFollowUp]           `json:"followUp,omitempty"`
+	// FrequencyCap is a beta campaign cap stricter than the team cap; null uses the team cap.
+	FrequencyCap *Nullable[CampaignFrequencyCap] `json:"frequencyCap,omitempty"`
+	// Drip is beta; null creates an ordinary campaign.
+	Drip *Nullable[CampaignDripInput] `json:"drip,omitempty"`
 }
 type CreatePlatformCampaignRequest struct {
 	VariableMapping   *CampaignVariableMapping             `json:"variableMapping,omitempty"`
@@ -362,6 +382,11 @@ type CreatePlatformCampaignRequest struct {
 	VariantStrategy   *CampaignVariantStrategy             `json:"variantStrategy,omitempty"`
 	MessageVariations []CampaignMessageVariation           `json:"messageVariations,omitempty"`
 	FollowUp          *Nullable[CampaignFollowUp]          `json:"followUp,omitempty"`
+	FrequencyCap      *Nullable[CampaignFrequencyCap]      `json:"frequencyCap,omitempty"`
+	// SegmentID is a beta saved segment evaluated at launch. The create schema
+	// permits omission, not null, and cannot combine it with RecipientListID.
+	SegmentID string                       `json:"segmentId,omitempty"`
+	Drip      *Nullable[CampaignDripInput] `json:"drip,omitempty"`
 }
 type UpdateCampaignRequest struct {
 	TemplateID        *Nullable[string]                     `json:"templateId,omitempty"`
@@ -376,17 +401,26 @@ type UpdateCampaignRequest struct {
 	Variants          *Nullable[[]CampaignVariant]          `json:"variants,omitempty"`
 	VariantStrategy   *Nullable[CampaignVariantStrategy]    `json:"variantStrategy,omitempty"`
 	FollowUp          *Nullable[CampaignFollowUp]           `json:"followUp,omitempty"`
+	// FrequencyCap replaces the campaign cap; null removes it. Draft or paused only.
+	FrequencyCap *Nullable[CampaignFrequencyCap] `json:"frequencyCap,omitempty"`
+	// Drip changes only the fields set; null makes the draft an ordinary campaign.
+	Drip *Nullable[CampaignDripPatch] `json:"drip,omitempty"`
 }
 type UpdatePlatformCampaignRequest struct {
 	UpdateCampaignRequest
 	MessagesArray *[]CampaignComposedMessage `json:"messagesArray,omitempty"`
-	Extra         PlatformPayload            `json:"-"`
+	// SegmentID sets the saved segment, or null clears it. Unlaunched drafts only.
+	SegmentID *Nullable[string] `json:"segmentId,omitempty"`
+	Extra     PlatformPayload   `json:"-"`
 }
 
 func (v UpdatePlatformCampaignRequest) MarshalJSON() ([]byte, error) {
 	m := clonePayload(v.Extra)
 	if v.MessagesArray != nil {
 		m["messagesArray"], _ = json.Marshal(v.MessagesArray)
+	}
+	if v.SegmentID != nil {
+		m["segmentId"], _ = json.Marshal(v.SegmentID)
 	}
 	b, err := json.Marshal(v.UpdateCampaignRequest)
 	if err != nil {
