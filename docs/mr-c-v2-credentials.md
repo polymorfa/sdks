@@ -35,8 +35,7 @@ Native validation: Go `go test -p 2 ./...` passed; Python 1,643 passed and
 30 optional integration tests skipped; Rust default-feature tests and doctests
 passed; C# signed-v2 golden/rejection checks and the core native transport
 suites passed. The full C# harness stopped at its prebuilt Blazor/ASP.NET example
-prerequisite; no native desktop/browser host acceptance is claimed. PHP native
-validation is recorded in the PR when its complete run finishes.
+prerequisite; no native desktop/browser host acceptance is claimed. PHP 8.2 native transport, crypto/history and portable storage tests passed; optional external provider integrations were skipped.
 
 The API, CLI dependency publication and public documentation remain coordinated
 release gates. No Admin state/action, permissions, pricing, feature settings,
