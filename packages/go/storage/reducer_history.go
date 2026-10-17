@@ -332,7 +332,7 @@ func ReduceWebMessageInfo(info map[string]any, session string, keys *HistoryKeys
 			}
 			put(mapped.fields, "chatId", chat, 0)
 			put(mapped.fields, "editedAt", version, version)
-			return []Operation{rowOperation("messages", session, map[string]any{"messageId": target}, mapped.fields, nil)}
+			return []Operation{rowOperation("messages", session, map[string]any{"messageId": target}, mapped.fields, guard)}
 		}
 		return nil
 	}
