@@ -649,3 +649,25 @@ Archive and Cloud payloads remain available. `is_event` narrows by event name;
 HMAC parsing verifies the signature and envelope and preserves the parsed payload. Neither performs
 full payload schema or cryptographic validation. Never log media-key descriptors.
 These source additions do not establish registry or deployed availability.
+
+## Strict compressed history support
+
+History decoding requires one complete gzip, zlib or raw DEFLATE stream, with
+exact input consumption and wrapper checksums before protobuf parsing. Tails,
+concatenated streams, truncation, reserved gzip flags and preset dictionaries
+are refused. Required protobuf fields remain enforced; compressed empty output
+is a protobuf refusal. The compressed and inflated byte caps remain unchanged.
+
+The tested Python 3.10.20 and 3.13.5 zlib runtimes accept complete optional gzip
+headers through the retained 1 MiB filename plus 1 MiB comment control. The SDK
+adds no separate filename/comment cap. This is a tested boundary, not a claim of
+unlimited headers or support on every platform. Stored, fixed, dynamic and
+multiple blocks, valid final-byte padding, exact caps and late-corrupt trailers
+have independent public regression controls.
+
+Async download cancellation works while awaiting the network. The synchronous
+zlib and protobuf calls have no decode cancellation API and cannot be interrupted
+by an asyncio task during those calls. Authentication still completes before
+compressed/protobuf parsing. Signed archive storage controls use an application
+projection; descriptor dispatch and generic full-schema storage remain separate.
+Local package tests do not establish registry publication or live availability.
