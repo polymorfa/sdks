@@ -89,6 +89,9 @@ export function expectedContract() {
     ),
     JSON.parse(readFileSync(join(root, "contracts/abprops-capabilities.json"))),
     JSON.parse(readFileSync(join(root, "contracts/request-logs.json"))),
+    JSON.parse(
+      readFileSync(join(root, "contracts/client-token-ceilings.json")),
+    ),
     ...[
       "campaign-ab-tests.json",
       "campaign-message-variations.json",
