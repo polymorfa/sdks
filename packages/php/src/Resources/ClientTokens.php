@@ -26,9 +26,6 @@ final class ClientTokens extends Resource
         if ($session === $customer) {
             throw new ConfigurationException($session ? 'customer' : 'session');
         }
-        if (array_key_exists('allow', $body) && !$customer) {
-            throw new ConfigurationException('allow');
-        }
         /** @var ApiResponse<array{success:bool,data:TokenValue}> */
         return $this->request('POST', '/platform/client-tokens', $body, options:$options);
     }
