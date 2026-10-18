@@ -22,6 +22,48 @@ CASES = [
     (
         "POST",
         "/platform/client-tokens",
+        {"ephemeralId": "browser_1", "session": "support", "allow": []},
+        TOKEN,
+        lambda r: r.mint({"ephemeralId": "browser_1", "session": "support", "allow": []}),
+    ),
+    (
+        "POST",
+        "/platform/client-tokens",
+        {
+            "ephemeralId": "browser_1",
+            "session": "support",
+            "allow": [
+                "chats_read",
+                "chats_manage",
+                "contact_write",
+                "contact_delete",
+                "mcp",
+                "voip_place",
+                "voip_answer",
+                "voip_signal",
+            ],
+        },
+        TOKEN,
+        lambda r: r.mint(
+            {
+                "ephemeralId": "browser_1",
+                "session": "support",
+                "allow": [
+                    "chats_read",
+                    "chats_manage",
+                    "contact_write",
+                    "contact_delete",
+                    "mcp",
+                    "voip_place",
+                    "voip_answer",
+                    "voip_signal",
+                ],
+            }
+        ),
+    ),
+    (
+        "POST",
+        "/platform/client-tokens",
         {"ephemeralId": "browser_1", "session": "support", "ttlSeconds": 600},
         TOKEN,
         lambda r: r.mint({"ephemeralId": "browser_1", "session": "support", "ttlSeconds": 600}),
@@ -84,7 +126,6 @@ async def test_mint_target_guards_before_network():
         for body in (
             {"ephemeralId": "browser_1"},
             {"ephemeralId": "browser_1", "session": "support", "customer": "cust_1"},
-            {"ephemeralId": "browser_1", "session": "support", "allow": []},
         ):
             with pytest.raises(ConfigurationError):
                 await client.client_tokens.mint(body)

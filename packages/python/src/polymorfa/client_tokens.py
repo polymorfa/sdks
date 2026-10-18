@@ -19,13 +19,19 @@ CustomerAction = Literal[
     "read_presence",
     "subscribe_presence",
     "read_contact",
+    "chats_read",
+    "chats_manage",
+    "contact_write",
+    "contact_delete",
 ]
+SessionAction = CustomerAction | Literal["mcp", "voip_place", "voip_answer", "voip_signal"]
 RecipientMode = Literal["conversation", "any", "none"]
 
 
 class MintSessionTokenRequest(TypedDict):
     ephemeralId: str
     session: str
+    allow: NotRequired[list[SessionAction]]
     ttlSeconds: NotRequired[int]
 
 
@@ -80,8 +86,6 @@ class ClientTokens(Resource):
         customer = isinstance(payload.get("customer"), str) and bool(payload.get("customer"))
         if session == customer:
             raise ConfigurationError("customer" if session else "session")
-        if "allow" in payload and not customer:
-            raise ConfigurationError("allow")
         return cast(
             ApiResponse[Envelope[ClientTokenValue]],
             await self._transport.request(
