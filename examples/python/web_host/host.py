@@ -186,7 +186,7 @@ class Host:
                     "id": receipt["id"],
                     "clientId": key,
                     "text": text,
-                    "createdAt": int(at.timestamp() * 1000),
+                    "createdAt": int(at.timestamp()) * 1000,
                     "direction": "outbound",
                     "status": "sent",
                     "receipt": receipt["status"],

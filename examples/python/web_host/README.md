@@ -39,7 +39,9 @@ retry; a changed body with the same key is rejected. The example keeps at most
 Register `/webhooks/polymorfa` as a native webhook for the assigned Number with
 `message.received` and `message.ack`, using the same signing secret. Both frameworks
 verify the original bounded request bytes through the Python SDK before updating
-the inbox. Incoming events must match the Number and canonical conversation ID
+the inbox. Display timestamps use whole seconds, matching native message events, so a
+same-second reply retains arrival order rather than sorting before its send.
+Incoming events must match the Number and canonical conversation ID
 from the send receipt. Phone matching is only a fallback before that ID is known.
 Duplicate event IDs are ignored within a bounded 1024-event window.
 `POLYMORFA_EXAMPLE_TRANSPORT=local-test-number` labels simulated transport in the UI.
