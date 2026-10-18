@@ -93,6 +93,15 @@ var operationFixtures = []operationFixture{
 	{"MessagingClient.ClientTokens.Mint", "POST", "/platform/client-tokens", "", `{"ephemeralId":"user","customer":"customer","allow":["send_message"]}`, `{"success":true,"data":{"token":"pmfa_ct_example","expiresAt":"2026-10-11"}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(m.ClientTokens().Mint(ctx, MintClientTokenRequest{EphemeralID: "user", Customer: "customer", Allow: []string{"send_message"}}))
 	}},
+	{"MessagingClient.ClientTokens.Mint", "POST", "/platform/client-tokens", "", `{"ephemeralId":"user","session":"s"}`, `{"success":true,"data":{"token":"pmfa_ct_example","expiresAt":"2026-10-11"}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+		return wireData(m.ClientTokens().Mint(ctx, MintClientTokenRequest{EphemeralID: "user", Session: "s"}))
+	}},
+	{"MessagingClient.ClientTokens.Mint", "POST", "/platform/client-tokens", "", `{"ephemeralId":"user","session":"s","allow":[]}`, `{"success":true,"data":{"token":"pmfa_ct_example","expiresAt":"2026-10-11"}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+		return wireData(m.ClientTokens().Mint(ctx, MintClientTokenRequest{EphemeralID: "user", Session: "s", Allow: []string{}}))
+	}},
+	{"MessagingClient.ClientTokens.Mint", "POST", "/platform/client-tokens", "", `{"ephemeralId":"user","session":"s","allow":["chats_read","chats_manage","contact_write","contact_delete","mcp","voip_place","voip_answer","voip_signal"]}`, `{"success":true,"data":{"token":"pmfa_ct_example","expiresAt":"2026-10-11"}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+		return wireData(m.ClientTokens().Mint(ctx, MintClientTokenRequest{EphemeralID: "user", Session: "s", Allow: []string{"chats_read", "chats_manage", "contact_write", "contact_delete", "mcp", "voip_place", "voip_answer", "voip_signal"}}))
+	}},
 	{"MessagingClient.ClientTokens.RetrieveRules", "GET", "/platform/sessions/s/client-rules", "", "", `{"success":true,"data":{"recipientMode":"conversation","allowedActions":"send_message","rateLimit":0,"maxDaily":0,"allowedOrigins":"https://app.example.com"}}`, "data.recipientMode", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(m.ClientTokens().RetrieveRules(ctx, "s"))
 	}},
