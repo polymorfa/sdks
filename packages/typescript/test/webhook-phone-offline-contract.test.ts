@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import {
@@ -35,9 +35,8 @@ interface Supplement {
 // Pinned to the exact API source revision that adds the field.
 const supplement = JSON.parse(
   readFileSync(
-    resolve(
-      import.meta.dirname,
-      "../../../contracts/webhook-phone-offline.json",
+    fileURLToPath(
+      new URL("../../../contracts/webhook-phone-offline.json", import.meta.url),
     ),
     "utf8",
   ),
