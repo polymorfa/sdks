@@ -15,6 +15,7 @@ import (
 // Application-owned example state, never HMS. It lasts for this process only.
 // At capacity, sends fail closed rather than forgetting their replay keys.
 type conversationState struct {
+	peerID    string
 	mu        sync.Mutex
 	sendMu    sync.Mutex
 	messages  []conversationMessage
@@ -101,6 +102,9 @@ func (a *app) sendMessage(w http.ResponseWriter, r *http.Request) {
 	}
 	message := conversationMessage{ID: receipt.ID, ClientID: key, Text: input.Text, CreatedAt: at.UnixMilli(), Direction: "outbound", Status: "sent", Receipt: receipt.Status}
 	s.mu.Lock()
+	if receipt.Conversation.ID != "" {
+		s.peerID = receipt.Conversation.ID
+	}
 	s.upsert(message)
 	s.mu.Unlock()
 	attempt.message = &message
@@ -141,12 +145,12 @@ func (a *app) receiveEvent(_ *http.Request, event polymorfa.WebhookEvent) error 
 	}
 	switch p := payload.(type) {
 	case *polymorfa.LinkedDeviceMessagePayload:
-		if event.Event != "message.received" || p.FromMe || p.IsGroup || !a.assignedPeer(p.Conversation.PhoneNumber) || p.Text == "" || p.ID == "" || len(p.Text) > 4096 {
+		if event.Event != "message.received" || p.FromMe || p.IsGroup || !a.assignedConversation(p.Conversation) || p.Text == "" || p.ID == "" || len(p.Text) > 4096 {
 			return nil
 		}
 		s.upsert(conversationMessage{ID: p.ID, Text: p.Text, CreatedAt: p.Timestamp * 1000, Direction: "inbound", Status: "sent", Receipt: "received"})
 	case *polymorfa.MessageAckPayload:
-		if !a.assignedPeer(p.Conversation.PhoneNumber) {
+		if !a.assignedConversation(p.Conversation) {
 			return nil
 		}
 		for _, reference := range p.Messages {
@@ -168,8 +172,14 @@ func (a *app) receiveEvent(_ *http.Request, event polymorfa.WebhookEvent) error 
 	}
 	return nil
 }
-func (a *app) assignedPeer(phone string) bool {
-	return a.peer != "" && strings.TrimPrefix(phone, "+") == strings.TrimPrefix(a.peer, "+")
+
+// Called under the conversation lock. An established canonical ID takes
+// precedence; phoneNumber is optional in events, including LID conversations.
+func (a *app) assignedConversation(conversation polymorfa.WebhookConversation) bool {
+	if a.conversation.peerID != "" {
+		return conversation.ID == a.conversation.peerID
+	}
+	return a.peer != "" && strings.TrimPrefix(conversation.PhoneNumber, "+") == strings.TrimPrefix(a.peer, "+")
 }
 func receiptRank(value string) int {
 	switch value {

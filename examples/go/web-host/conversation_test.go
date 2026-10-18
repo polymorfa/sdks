@@ -19,6 +19,7 @@ import (
 
 func TestSignedIncomingReplySurvivesReloadAndRejectsOtherTargets(t *testing.T) {
 	a := &app{peer: "+15550001111", session: "assigned", webhookSecret: "private-local-test-secret", sessions: map[string]appSession{"signed-in": {expires: time.Now().Add(time.Minute), userID: "user"}}}
+	a.conversation.peerID = "assigned-conversation"
 	server := httptest.NewServer(a.routes())
 	defer server.Close()
 	post := func(body, signature string) int {
@@ -36,11 +37,11 @@ func TestSignedIncomingReplySurvivesReloadAndRejectsOtherTargets(t *testing.T) {
 		m.Write([]byte(body))
 		return "sha256=" + hex.EncodeToString(m.Sum(nil))
 	}
-	body := `{"id":"event-1","session":"assigned","timestamp":"2026-10-18T06:00:00Z","event":"message.received","payload":{"id":"incoming-1","conversation":{"phoneNumber":"+15550001111"},"fromMe":false,"timestamp":1792303200,"type":"text","text":"Independent peer reply"}}`
+	body := `{"id":"event-1","session":"assigned","timestamp":"2026-10-18T06:00:00Z","event":"message.received","payload":{"id":"incoming-1","conversation":{"id":"assigned-conversation"},"fromMe":false,"timestamp":1792303200,"type":"text","text":"Independent peer reply"}}`
 	if post(body, "sha256=wrong") != 400 {
 		t.Fatal("unsigned message accepted")
 	}
-	for _, foreign := range []string{strings.Replace(body, `"session":"assigned"`, `"session":"foreign"`, 1), strings.Replace(body, "+15550001111", "+15550002222", 1)} {
+	for _, foreign := range []string{strings.Replace(body, `"session":"assigned"`, `"session":"foreign"`, 1), strings.Replace(body, "assigned-conversation", "foreign-conversation", 1)} {
 		if post(foreign, sign(foreign)) != 204 {
 			t.Fatal("foreign envelope handling")
 		}
