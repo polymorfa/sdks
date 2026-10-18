@@ -2858,6 +2858,13 @@ export interface Webhook {
   readonly headers: readonly WebhookHeader[];
   readonly enabled: boolean;
   readonly format?: "native" | "meta";
+  /**
+   * First day without the phone on which this webhook receives
+   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * device out on day 14. To stop the warning, leave the event out of
+   * the webhook's events.
+   */
+  readonly phoneOfflineStartDay?: number;
   readonly createdAt: string;
 }
 
@@ -2869,6 +2876,13 @@ export interface CreateWebhookRequest {
   readonly retries?: WebhookRetryConfig;
   readonly headers?: readonly WebhookHeader[];
   readonly format?: "native" | "meta";
+  /**
+   * First day without the phone on which this webhook receives
+   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * device out on day 14. To stop the warning, leave the event out of
+   * the webhook's events.
+   */
+  readonly phoneOfflineStartDay?: number;
 }
 
 export interface UpdateWebhookRequest {
@@ -2879,6 +2893,13 @@ export interface UpdateWebhookRequest {
   readonly headers?: readonly WebhookHeader[];
   readonly enabled?: boolean;
   readonly format?: "native" | "meta";
+  /**
+   * First day without the phone on which this webhook receives
+   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * device out on day 14. To stop the warning, leave the event out of
+   * the webhook's events.
+   */
+  readonly phoneOfflineStartDay?: number;
 }
 
 export type ListWebhooksResponse = SuccessEnvelope<readonly Webhook[]>;
