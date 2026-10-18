@@ -4,13 +4,27 @@ These source examples use the development SDK. They do not establish registry or
 
 ## ASP.NET Core
 
-`aspnet-core` compiles against .NET 8. Set `POLYMORFA_API_KEY` and `POLYMORFA_SESSION` in server configuration. Set `POLYMORFA_WEBHOOK_SECRET` when receiving webhooks. Run `dotnet run --project aspnet-core/Polymorfa.Example.AspNet.csproj` from this directory.
+`aspnet-core` compiles against .NET 8. Set `POLYMORFA_PROJECT_TOKEN` (or `POLYMORFA_API_KEY`), `POLYMORFA_SESSION`, `POLYMORFA_RECIPIENT` and `POLYMORFA_WEBHOOK_SECRET` in server configuration. Run `dotnet run --project aspnet-core/Polymorfa.Example.AspNet.csproj` from this directory.
 
 The Development-only sign-in route requires `POLYMORFA_EXAMPLE_PASSWORD`; it is disabled without that setting or outside Development. It signs an opaque HttpOnly cookie, validates its server-owned session on every request and revokes it at logout. Restarting this example clears its sessions and signing authority. Replace this demonstration identity with your application's authentication scheme before deployment. Token requests require an authenticated subject and a `polymorfa_session` claim equal to the configured session. Resolve that claim from trusted application authorization; never copy a browser-supplied session or customer identifier into it. The token endpoint uses POST, checks the same origin, returns a five-minute client token and disables caching. The token body includes the browser grant; untrusted request fields cannot change the subject or session.
 
-The webhook endpoint verifies the exact bounded raw body using `x-webhook-signature`. Add durable event-ID deduplication and application processing before using it for delivery receipts. Do not log the request body.
+The webhook endpoint verifies the exact bounded raw body using `x-webhook-signature`. The ASP.NET native inbox projects assigned-Number replies and receipts into a bounded application-owned conversation after signature verification. Do not log the request body.
 
-From the repository root run `npm ci`, `npm run build:workspaces`, and `node packages/dotnet/examples/build-elements.mjs` before starting the example. It mounts the existing TypeScript Web Components; server credentials stay in ASP.NET Core.
+From the repository root run `npm ci`, `npm run build:workspaces`, and `node packages/dotnet/examples/build-elements.mjs` before starting the example. It mounts the existing Web Components with a custom application data source. Every
+text send calls the native C# SDK on the server. Replies arrive through a signed
+native webhook, restricted to the assigned Number and canonical conversation ID.
+The state holds up to 100 messages, 128 send attempts and 1024 recent event IDs
+until the server stops. It does not enable HMS. A UUID key belongs to one text;
+unknown outcomes retain it for retry. Display timestamps use whole seconds,
+matching native events. Reload restores the authenticated inbox.
+
+Set `POLYMORFA_EXAMPLE_TRANSPORT=local-test-number` to label simulated transport.
+The local Inspector recording covers the ASP.NET custom UI, a paired simulated
+WhatsApp peer, signed HTTPS delivery, reload and logout. It does not establish
+registry, staging or production availability. Blazor and MAUI below still use
+their separate browser-grant renderer and empty history route; this recording
+does not establish their send/receive acceptance. Server credentials stay in
+ASP.NET Core.
 
 ## Blazor WebAssembly
 

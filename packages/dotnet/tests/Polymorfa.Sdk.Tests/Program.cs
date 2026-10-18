@@ -37,6 +37,7 @@ if (args.Contains("--idempotency-only")) { await IdempotencyHeaderTests.RunAsync
 var directory = new DirectoryInfo(AppContext.BaseDirectory);
 while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "contracts/fixtures/behavior.json"))) directory = directory.Parent;
 var root = directory?.FullName ?? throw new Exception("SDK repository root not found.");
+if (args.Contains("--aspnet-example-only")) { await AspNetExampleTests.RunAsync(root); return; }
 using var fixtures = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "contracts/fixtures/behavior.json")));
 var start = new ProcessStartInfo(Environment.GetEnvironmentVariable("SDK_NODE") ?? "node") { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
 start.ArgumentList.Add("scripts/sdk-fixture-server.mjs"); start.ArgumentList.Add("--port"); start.ArgumentList.Add("0");
