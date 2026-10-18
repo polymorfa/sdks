@@ -98,6 +98,8 @@ async def test_native_framework_authenticated_token_host_guards_revocation(frame
             "EXAMPLE_APP_PASSWORD": "local-password",
             "POLYMORFA_PROJECT_TOKEN": PROJECT_TOKEN,
             "POLYMORFA_SESSION": "authorized-support",
+            "POLYMORFA_RECIPIENT": "+15550001234",
+            "POLYMORFA_WEBHOOK_SECRET": "local-test-signing-key",
             "POLYMORFA_API_BASE_URL": api,
         }.items():
             monkeypatch.setenv(name, value)
@@ -105,6 +107,10 @@ async def test_native_framework_authenticated_token_host_guards_revocation(frame
         for module in ("host", framework):
             sys.modules.pop(module, None)
         module = importlib.import_module(framework)
+        if framework == "django_app":
+            from django.urls import clear_url_caches
+
+            clear_url_caches()
         app = module.app if framework == "fastapi_app" else module.application
         async with running_host(app) as origin:
             module.host.origin = origin
@@ -148,10 +154,7 @@ async def test_native_framework_authenticated_token_host_guards_revocation(frame
                 assert grant.json()["value"] == "pmfa_ct_browser_fixture"
                 assert grant.json()["grant"]["session"] == "authorized-support"
                 assert PROJECT_TOKEN not in grant.text and len(mints) == 1
-                assert (await client.get("/api/polymorfa/history/conversations")).json() == {
-                    "data": [],
-                    "nextCursor": None,
-                }
+                assert (await client.get("/api/polymorfa/conversation")).json()["messages"] == []
                 link = await client.post(
                     "/api/polymorfa/connect",
                     json={"session": "attacker", "purpose": "initial"},
@@ -186,3 +189,139 @@ async def test_native_framework_authenticated_token_host_guards_revocation(frame
                 assert (
                     await client.post("/api/polymorfa/connect", headers={"origin": origin})
                 ).status_code == 401 and len(links) == 1
+
+
+@pytest.mark.parametrize("framework", ["fastapi_app", "django_app"])
+async def test_native_host_send_signed_reply_reload_and_revocation(framework, monkeypatch):
+    from polymorfa import create_webhook_fixture
+
+    sends = []
+    key = "ad87d91a-32fc-48ab-aa00-5973d1e9f98d"
+
+    async def upstream(request):
+        assert request.path == "/messaging/authorized-support/messages/send"
+        assert request.headers["authorization"] == "Bearer " + PROJECT_TOKEN
+        assert request.headers["idempotency-key"] == key
+        body = await request.json()
+        assert body == {
+            "conversation": {"phoneNumber": "+15550001234"},
+            "content": {"text": "Native send"},
+        }
+        sends.append(body)
+        return web.json_response(
+            {
+                "success": True,
+                "data": {
+                    "id": "message-out",
+                    "timestamp": "2026-10-18T10:00:00Z",
+                    "status": "sent",
+                    "conversation": {"id": "canonical-peer"},
+                    "whatsapp_ids": {"linked_devices": "wire-out"},
+                },
+            }
+        )
+
+    async with wire(upstream) as api:
+        for name, value in {
+            "EXAMPLE_APP_USERNAME": "local-user",
+            "EXAMPLE_APP_PASSWORD": "local-password",
+            "POLYMORFA_PROJECT_TOKEN": PROJECT_TOKEN,
+            "POLYMORFA_SESSION": "authorized-support",
+            "POLYMORFA_RECIPIENT": "+15550001234",
+            "POLYMORFA_WEBHOOK_SECRET": "local-test-signing-key",
+            "POLYMORFA_API_BASE_URL": api,
+        }.items():
+            monkeypatch.setenv(name, value)
+        monkeypatch.syspath_prepend(str(EXAMPLE))
+        for name in ("host", framework):
+            sys.modules.pop(name, None)
+        module = importlib.import_module(framework)
+        if framework == "django_app":
+            from django.urls import clear_url_caches
+
+            clear_url_caches()
+        app = module.app if framework == "fastapi_app" else module.application
+        async with running_host(app) as origin:
+            module.host.origin = origin
+            async with httpx.AsyncClient(base_url=origin) as client:
+                headers = {"origin": origin, "Idempotency-Key": key}
+                assert (
+                    await client.post(
+                        "/api/polymorfa/send", json={"text": "Native send"}, headers=headers
+                    )
+                ).status_code == 401
+                await client.post(
+                    "/api/login",
+                    content="username=local-user&password=local-password",
+                    headers={"origin": origin},
+                )
+                assert (
+                    await client.post(
+                        "/api/polymorfa/send",
+                        json={"text": "Native send", "recipient": "foreign"},
+                        headers=headers,
+                    )
+                ).status_code == 400
+                sent = await client.post(
+                    "/api/polymorfa/send", json={"text": "Native send"}, headers=headers
+                )
+                assert sent.status_code == 200 and sent.json()["id"] == "message-out"
+                assert (
+                    await client.post(
+                        "/api/polymorfa/send", json={"text": "Native send"}, headers=headers
+                    )
+                ).json() == sent.json()
+                assert len(sends) == 1
+                assert (
+                    await client.post(
+                        "/api/polymorfa/send", json={"text": "Changed"}, headers=headers
+                    )
+                ).status_code == 409
+                envelope = {
+                    "id": "event-1",
+                    "timestamp": "2026-10-18T10:00:01Z",
+                    "session": "authorized-support",
+                    "event": "message.received",
+                    "payload": {
+                        "id": "message-in",
+                        "conversation": {"id": "canonical-peer"},
+                        "fromMe": False,
+                        "isGroup": False,
+                        "timestamp": 1792317601,
+                        "text": "Independent reply",
+                        "type": "text",
+                        "pushName": "Test peer",
+                        "whatsapp_ids": {"linked_devices": "wire-in"},
+                    },
+                }
+                fixture = create_webhook_fixture(envelope, "local-test-signing-key")
+                assert (
+                    await client.post(
+                        "/webhooks/polymorfa",
+                        content=fixture.body,
+                        headers={"x-webhook-signature": "bad"},
+                    )
+                ).status_code == 400
+                for _ in range(2):
+                    assert (
+                        await client.post(
+                            "/webhooks/polymorfa",
+                            content=fixture.body,
+                            headers=dict(fixture.headers),
+                        )
+                    ).status_code == 200
+                snapshot = (await client.get("/api/polymorfa/conversation")).json()
+                assert [m["text"] for m in snapshot["messages"]] == [
+                    "Native send",
+                    "Independent reply",
+                ]
+                assert snapshot["receivedEvents"] == 1
+                await client.get("/")
+                assert (await client.get("/api/polymorfa/conversation")).json() == snapshot
+                await client.post("/api/logout", headers={"origin": origin})
+                assert (await client.get("/api/polymorfa/conversation")).status_code == 401
+                assert (
+                    await client.post(
+                        "/api/polymorfa/send", json={"text": "Native send"}, headers=headers
+                    )
+                ).status_code == 401
