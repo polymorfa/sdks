@@ -9,7 +9,7 @@ are configured. Registry trust policies and account access remain prerequisites.
 
 1. **gate** requires the exact deployed API acceptance receipt for the channel
    (staging for nightly, production for stable), every feature contract pin,
-   including the frequency-cap and segment/drip supplements, reconciled with the
+   including frequency caps, segments/drips and client-token ceilings, reconciled with the
    release contract, and complete native coverage. It computes one version and
    writes `release-contract.json`, binding source SHA, fingerprint, API
    acceptance and every registry version form.

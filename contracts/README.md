@@ -667,3 +667,10 @@ Session `allow` requires the action-ceilings beta; an empty session list seals
 zero actions, while Customer lists remain non-empty. Reserved regional actions
 remain gated. The Next.js handler forwards only the grant's API actions and does
 not turn a wrapper-only grant into the session's broader API action set.
+
+All five native mint helpers preserve omitted, empty and populated session
+ceilings. Go uses the minimum Go 1.24 `omitzero` encoding to distinguish nil from
+an explicit empty slice. Python, PHP and Rust expose the reserved regional
+action spellings in their request types; Go and C# retain their existing string
+lists. Server-only mint guards remain in every language. This extends the
+existing mint request, with no added operation or coverage-ledger claim.
