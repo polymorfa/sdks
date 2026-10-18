@@ -196,6 +196,7 @@ async fn token(
                 ttl_seconds: Some(600),
                 target: ClientTokenTarget::Session {
                     session: app.session.clone(),
+                    allow: None,
                 },
             },
             Default::default(),

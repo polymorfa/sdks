@@ -267,12 +267,37 @@ pub enum CustomerClientAction {
     ReadPresence,
     SubscribePresence,
     ReadContact,
+    ChatsRead,
+    ChatsManage,
+    ContactWrite,
+    ContactDelete,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SessionClientAction {
+    SendMessage,
+    SendReaction,
+    SendTyping,
+    SendSeen,
+    ReadPresence,
+    SubscribePresence,
+    ReadContact,
+    ChatsRead,
+    ChatsManage,
+    ContactWrite,
+    ContactDelete,
+    Mcp,
+    VoipPlace,
+    VoipAnswer,
+    VoipSignal,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ClientTokenTarget {
     Session {
         session: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        allow: Option<Vec<SessionClientAction>>,
     },
     Customer {
         customer: String,
@@ -347,7 +372,7 @@ impl ClientTokens<'_> {
     ) -> Result<ApiResponse<SuccessEnvelope<ClientTokenValue>>> {
         self.0.server()?;
         let target = match &body.target {
-            ClientTokenTarget::Session { session } => session,
+            ClientTokenTarget::Session { session, .. } => session,
             ClientTokenTarget::Customer { customer, .. } => customer,
         };
         if target.is_empty() {
