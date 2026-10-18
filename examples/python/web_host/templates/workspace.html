@@ -1,9 +1,15 @@
 <main id="app">
   <h1>Messaging workspace</h1>
-  {% if authenticated %}
-  {% if transport == "local-test-number" %}<p><strong>Local test numbers. Simulated WhatsApp transport.</strong></p>{% endif %}
-  <p>Python SDK. Text messages use the server-assigned number and recipient. Conversation state lasts until this example server stops.</p>
-  <p id="native-status" role="status">Waiting for the native SDK conversation.</p>
+  {% if authenticated %} {% if transport == "local-test-number" %}
+  <p><strong>Local test numbers. Simulated WhatsApp transport.</strong></p>
+  {% endif %}
+  <p>
+    Python SDK. Text messages use the server-assigned number and recipient.
+    Conversation state lasts until this example server stops.
+  </p>
+  <p id="native-status" role="status">
+    Waiting for the native SDK conversation.
+  </p>
   <form
     method="post"
     action="/api/logout"

@@ -34,17 +34,17 @@ cargo run --locked --manifest-path examples/rust/yew/server/Cargo.toml
 
 Configure these environment variables in the server process before running it:
 
-| Variable                  | Purpose                                                  |
-| ------------------------- | -------------------------------------------------------- |
-| `POLYMORFA_PROJECT_TOKEN` | Server project credential; never passed to WASM          |
-| `POLYMORFA_SESSION`       | Session assigned by your application to the example user |
-| `POLYMORFA_RECIPIENT` | Server-assigned recipient phone |
-| `POLYMORFA_WEBHOOK_SECRET` | Native webhook signing secret |
-| `POLYMORFA_EXAMPLE_TRANSPORT` | Set `local-test-number` to label simulated transport |
-| `EXAMPLE_APP_USERNAME`    | Local example login name                                 |
-| `EXAMPLE_APP_PASSWORD`    | Local example login password                             |
-| `POLYMORFA_EXAMPLE_PORT`  | Loopback port, defaults to `3000`                        |
-| `POLYMORFA_API_BASE_URL`  | Optional API origin for local contract fixtures          |
+| Variable                      | Purpose                                                  |
+| ----------------------------- | -------------------------------------------------------- |
+| `POLYMORFA_PROJECT_TOKEN`     | Server project credential; never passed to WASM          |
+| `POLYMORFA_SESSION`           | Session assigned by your application to the example user |
+| `POLYMORFA_RECIPIENT`         | Server-assigned recipient phone                          |
+| `POLYMORFA_WEBHOOK_SECRET`    | Native webhook signing secret                            |
+| `POLYMORFA_EXAMPLE_TRANSPORT` | Set `local-test-number` to label simulated transport     |
+| `EXAMPLE_APP_USERNAME`        | Local example login name                                 |
+| `EXAMPLE_APP_PASSWORD`        | Local example login password                             |
+| `POLYMORFA_EXAMPLE_PORT`      | Loopback port, defaults to `3000`                        |
+| `POLYMORFA_API_BASE_URL`      | Optional API origin for local contract fixtures          |
 
 Open `http://127.0.0.1:3000` (or the selected port). Sign in with the local
 example credentials. The browser receives an opaque, HttpOnly, SameSite cookie;

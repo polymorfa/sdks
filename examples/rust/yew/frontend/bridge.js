@@ -11,7 +11,8 @@ function nativeInbox(inbox) {
   let timer;
   const request = async (path, options = {}) => {
     const response = await fetch(`/api/polymorfa/${path}`, {
-      credentials: "same-origin", ...options,
+      credentials: "same-origin",
+      ...options,
     });
     if (!response.ok) throw new Error(await response.text());
     return response.json();
@@ -19,10 +20,21 @@ function nativeInbox(inbox) {
   const row = (snapshot) => {
     const last = snapshot.messages.at(-1);
     return {
-      id: snapshot.peer, session: snapshot.session, name: "Assigned recipient",
-      phoneNumber: snapshot.peer, lastActivity: last?.createdAt ?? 0,
+      id: snapshot.peer,
+      session: snapshot.session,
+      name: "Assigned recipient",
+      phoneNumber: snapshot.peer,
+      lastActivity: last?.createdAt ?? 0,
       unreadCount: 0,
-      ...(last ? {lastMessage: {text:last.text, createdAt:last.createdAt, direction:last.direction}} : {}),
+      ...(last
+        ? {
+            lastMessage: {
+              text: last.text,
+              createdAt: last.createdAt,
+              direction: last.direction,
+            },
+          }
+        : {}),
     };
   };
   const poll = async () => {
@@ -32,16 +44,23 @@ function nativeInbox(inbox) {
       const serialized = JSON.stringify(snapshot);
       if (serialized !== previous) {
         previous = serialized;
-        for (const notify of changes) notify({type:"conversation", conversation:row(snapshot)});
+        for (const notify of changes)
+          notify({ type: "conversation", conversation: row(snapshot) });
         for (const message of snapshot.messages)
-          for (const notify of messages) notify({type:"upsert", message});
+          for (const notify of messages) notify({ type: "upsert", message });
       }
       const label = document.querySelector("#transport-label");
-      if(label) label.textContent=snapshot.localTest ? "Local test numbers. Simulated WhatsApp transport." : "";
+      if (label)
+        label.textContent = snapshot.localTest
+          ? "Local test numbers. Simulated WhatsApp transport."
+          : "";
       const status = document.querySelector("#native-status");
       if (status) {
-        const outgoing = snapshot.messages.findLast(m => m.direction === "outbound");
-        status.textContent = `Rust SDK · ${snapshot.receivedEvents} verified webhook events` +
+        const outgoing = snapshot.messages.findLast(
+          (m) => m.direction === "outbound",
+        );
+        status.textContent =
+          `Rust SDK · ${snapshot.receivedEvents} verified webhook events` +
           (outgoing ? ` · Latest send: ${outgoing.receipt}` : "");
       }
     } catch (error) {
@@ -53,25 +72,54 @@ function nativeInbox(inbox) {
   };
   inbox.source = {
     async listConversations(_cursor, signal) {
-      return {conversations:[row(await request("conversation", {signal}))]};
+      return {
+        conversations: [row(await request("conversation", { signal }))],
+      };
     },
-    subscribe(notify) { changes.add(notify); return () => changes.delete(notify); },
+    subscribe(notify) {
+      changes.add(notify);
+      return () => changes.delete(notify);
+    },
     conversation() {
       return {
-        async load(_cursor, signal) {return {messages:(await request("conversation", {signal})).messages};},
-        subscribe(notify) {messages.add(notify); return () => messages.delete(notify);},
+        async load(_cursor, signal) {
+          return {
+            messages: (await request("conversation", { signal })).messages,
+          };
+        },
+        subscribe(notify) {
+          messages.add(notify);
+          return () => messages.delete(notify);
+        },
         async send(message, signal) {
           if (message.replyTo || message.attachments?.length)
             throw new Error("This native example sends text only.");
-          return request("send", {method:"POST", signal,
-            headers:{"Content-Type":"application/json","Idempotency-Key":message.clientId},
-            body:JSON.stringify({text:message.text})});
+          return request("send", {
+            method: "POST",
+            signal,
+            headers: {
+              "Content-Type": "application/json",
+              "Idempotency-Key": message.clientId,
+            },
+            body: JSON.stringify({ text: message.text }),
+          });
         },
       };
     },
   };
   void poll();
-  return () => {stopped=true; clearTimeout(timer); changes.clear(); messages.clear();};
+  return () => {
+    stopped = true;
+    clearTimeout(timer);
+    changes.clear();
+    messages.clear();
+  };
 }
-window.startPolymorfa = () => { const inbox=document.querySelector("pmfa-inbox"); if(inbox) disposeInbox ??= nativeInbox(inbox); };
-window.stopPolymorfa = () => { disposeInbox?.();disposeInbox=undefined; };
+window.startPolymorfa = () => {
+  const inbox = document.querySelector("pmfa-inbox");
+  if (inbox) disposeInbox ??= nativeInbox(inbox);
+};
+window.stopPolymorfa = () => {
+  disposeInbox?.();
+  disposeInbox = undefined;
+};
