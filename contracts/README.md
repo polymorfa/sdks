@@ -13,10 +13,10 @@ publication, so the method publishes only with a reconciled, accepted contract.
 
 `webhook-phone-offline.json` pins `phoneOfflineStartDay` on the nine Platform
 and Messaging webhook schemas that carry it to API source commit
-`676c9d0fdd80b621a2417e16fa4ac7c2b5369672` (polymorfa/polymorfa#631, not yet
-merged). `webhook-phone-offline-contract.test.ts` checks the SDK types and
-`PHONE_OFFLINE_START_DAY` against it. Re-pin to the merge commit and refresh
-the global snapshots before publication.
+`4380e1113f4b6e5830852f35b13e0ee15b6e340b`, the merge of polymorfa/polymorfa#631
+into dev. `webhook-phone-offline-contract.test.ts` checks the SDK types and
+`PHONE_OFFLINE_START_DAY` against it. Refresh the global snapshots in a later
+snapshot update.
 
 ## Message provider references
 

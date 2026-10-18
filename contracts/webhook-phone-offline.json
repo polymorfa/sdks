@@ -1,8 +1,8 @@
 {
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "676c9d0fdd80b621a2417e16fa4ac7c2b5369672",
+  "sourceCommit": "4380e1113f4b6e5830852f35b13e0ee15b6e340b",
   "published": false,
-  "scope": "phoneOfflineStartDay on webhook create, update and read (polymorfa/polymorfa#631). Other SDK contracts retain their recorded source revisions. Re-pin to the merge commit before publication.",
+  "scope": "phoneOfflineStartDay on webhook create, update and read (merge of polymorfa/polymorfa#631 into dev). Other SDK contracts retain their recorded source revisions.",
   "sources": {
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
