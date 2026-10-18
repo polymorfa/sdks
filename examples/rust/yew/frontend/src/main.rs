@@ -31,6 +31,19 @@ fn app() -> Html {
             || {}
         });
     }
+    {
+        let logged_in = logged_in.clone();
+        use_effect_with((), move |_| {
+            wasm_bindgen_futures::spawn_local(async move {
+                if let Ok(response) = Request::get("/api/polymorfa/conversation").send().await {
+                    if response.status() == 200 {
+                        logged_in.set(true);
+                    }
+                }
+            });
+            || {}
+        });
+    }
     let onusername = {
         let username = username.clone();
         Callback::from(move |event: InputEvent| {
@@ -102,7 +115,7 @@ fn app() -> Html {
             });
         })
     };
-    html! {<main><h1>{"Polymorfa in Yew"}</h1>{if *logged_in {html!{<section aria-label="WhatsApp workspace"><button type="button" onclick={logout}>{"Sign out"}</button><p role="alert">{(*error).clone()}</p><pmfa-session-status/><pmfa-connect-whatsapp/><pmfa-inbox/></section>}}else{html!{<form method="post" action="/api/login" onsubmit={submit}><h2>{"Sign in to the local example"}</h2><label for="username">{"Username"}</label><input id="username" name="username" autocomplete="username" required=true value={(*username).clone()} oninput={onusername}/><label for="password">{"Password"}</label><input id="password" name="password" type="password" autocomplete="current-password" required=true value={(*password).clone()} oninput={onpassword}/><button type="submit" disabled={*pending}>{if *pending{"Signing in…"}else{"Sign in"}}</button><p role="alert">{(*error).clone()}</p></form>}}}</main>}
+    html! {<main><h1>{"Polymorfa in Yew"}</h1>{if *logged_in {html!{<section aria-label="WhatsApp workspace"><button type="button" onclick={logout}>{"Sign out"}</button><p role="alert">{(*error).clone()}</p><p id="transport-label"/><p>{"Rust SDK. Text messages use the server-assigned number and recipient. Conversation state lasts until this example server stops."}</p><p id="native-status" role="status"/><pmfa-inbox/></section>}}else{html!{<form method="post" action="/api/login" onsubmit={submit}><h2>{"Sign in to the local example"}</h2><label for="username">{"Username"}</label><input id="username" name="username" autocomplete="username" required=true value={(*username).clone()} oninput={onusername}/><label for="password">{"Password"}</label><input id="password" name="password" type="password" autocomplete="current-password" required=true value={(*password).clone()} oninput={onpassword}/><button type="submit" disabled={*pending}>{if *pending{"Signing in…"}else{"Sign in"}}</button><p role="alert">{(*error).clone()}</p></form>}}}</main>}
 }
 fn main() {
     yew::Renderer::<App>::new().render();
