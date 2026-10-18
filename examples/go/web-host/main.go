@@ -28,6 +28,10 @@ type app struct {
 	client                  *polymorfa.MessagingClient
 	username, password      [32]byte
 	userID, session, origin string
+	peer                    string
+	webhookSecret           string
+	transportLabel          string
+	conversation            conversationState
 	mu                      sync.Mutex
 	sessions                map[string]appSession
 }
@@ -51,7 +55,7 @@ func (a *app) routes() http.Handler {
 	mux.HandleFunc("GET /{$}", func(w http.ResponseWriter, r *http.Request) {
 		_, authenticated := a.authenticated(r)
 		w.Header().Set("Cache-Control", "no-store")
-		if err := page(authenticated).Render(r.Context(), w); err != nil {
+		if err := page(authenticated, a.transportLabel).Render(r.Context(), w); err != nil {
 			log.Print("Page rendering failed")
 		}
 	})
@@ -59,13 +63,11 @@ func (a *app) routes() http.Handler {
 	mux.HandleFunc("POST /api/login", a.login)
 	mux.HandleFunc("POST /api/logout", a.logout)
 	mux.HandleFunc("POST /api/polymorfa/token", a.token)
-	mux.HandleFunc("GET /api/polymorfa/history/conversations", func(w http.ResponseWriter, r *http.Request) {
-		if _, ok := a.authenticated(r); !ok {
-			http.Error(w, "Sign in required.", 401)
-			return
-		}
-		writeJSON(w, map[string]any{"data": []any{}, "nextCursor": nil})
-	})
+	mux.HandleFunc("POST /api/polymorfa/send", a.sendMessage)
+	mux.HandleFunc("GET /api/polymorfa/conversation", a.conversationSnapshot)
+	if a.webhookSecret != "" {
+		mux.Handle("/webhooks/polymorfa", polymorfa.WebhookHandler(a.webhookSecret, 65536, a.receiveEvent))
+	}
 	mux.HandleFunc("POST /api/polymorfa/connect", func(w http.ResponseWriter, r *http.Request) {
 		if !a.originAllowed(w, r) {
 			return
@@ -129,7 +131,7 @@ func (a *app) login(w http.ResponseWriter, r *http.Request) {
 func (a *app) respondWorkspace(w http.ResponseWriter, r *http.Request, authenticated bool) {
 	w.Header().Set("Cache-Control", "no-store")
 	if r.Header.Get("HX-Request") == "true" {
-		if err := workspace(authenticated).Render(r.Context(), w); err != nil {
+		if err := workspace(authenticated, a.transportLabel).Render(r.Context(), w); err != nil {
 			log.Print("Workspace rendering failed")
 		}
 	} else {
@@ -169,7 +171,7 @@ func (a *app) token(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid browser grant response.", 502)
 		return
 	}
-	writeJSON(w, map[string]any{"value": token.Token, "audience": "browser", "expiresAt": expiry.UnixMilli(), "scopes": []string{"read_messages", "connect_whatsapp"}, "grant": map[string]any{"session": a.session, "conversations": []any{}, "allow": []string{"read_messages", "connect_whatsapp"}}})
+	writeJSON(w, map[string]any{"value": token.Token, "audience": "browser", "expiresAt": expiry.UnixMilli(), "scopes": []string{"read_messages", "connect_whatsapp"}, "grant": map[string]any{"session": a.session, "conversations": []string{a.peer}, "allow": []string{"read_messages", "connect_whatsapp"}}})
 }
 func writeJSON(w http.ResponseWriter, value any) {
 	w.Header().Set("Content-Type", "application/json")
@@ -191,8 +193,9 @@ func main() {
 	port := flag.String("port", "8080", "Loopback port")
 	flag.Parse()
 	username, password, session := os.Getenv("EXAMPLE_APP_USERNAME"), os.Getenv("EXAMPLE_APP_PASSWORD"), os.Getenv("POLYMORFA_SESSION")
-	if username == "" || password == "" || session == "" {
-		log.Fatal("Configure the example account and authorized number.")
+	peer, secret := os.Getenv("POLYMORFA_RECIPIENT"), os.Getenv("POLYMORFA_WEBHOOK_SECRET")
+	if username == "" || password == "" || session == "" || peer == "" || secret == "" {
+		log.Fatal("Configure the example account, authorized number, recipient and webhook secret.")
 	}
 	credential := polymorfa.Credential{Kind: polymorfa.ProjectToken, Value: os.Getenv("POLYMORFA_PROJECT_TOKEN")}
 	base := os.Getenv("POLYMORFA_API_BASE_URL")
@@ -203,7 +206,10 @@ func main() {
 	if err != nil {
 		log.Fatal("Invalid API configuration.")
 	}
-	a := &app{client: client, username: sha256.Sum256([]byte(username)), password: sha256.Sum256([]byte(password)), session: session, userID: "local-app-user", origin: "http://127.0.0.1:" + *port, sessions: map[string]appSession{}}
+	a := &app{client: client, username: sha256.Sum256([]byte(username)), password: sha256.Sum256([]byte(password)), session: session, peer: peer, webhookSecret: secret, userID: "local-app-user", origin: "http://127.0.0.1:" + *port, sessions: map[string]appSession{}}
+	if os.Getenv("POLYMORFA_EXAMPLE_TRANSPORT") == "local-test-number" {
+		a.transportLabel = "Local test numbers. Simulated WhatsApp transport."
+	}
 	handler := a.routes()
 	if *mode == "gin" {
 		handler = ginHandler(handler)
