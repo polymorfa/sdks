@@ -1,56 +1,324 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "6839976e7ad54e044c4d789fd296edc44772a907",
+  "commit": "79e62733b1b3d523618232a3794e26df64b7f486",
   "sourcePath": "apps/api/docs/openapi.json",
-  "sourceSha256": "79543bf719017598c3e2497004d761056e919b3200abdaae1560893542816cc7",
-  "schemas": {
-    "TestEventFixtureList": {
-      "type": "object",
-      "properties": {
-        "fixtures": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "enum": [
-                  "message.received",
-                  "message.ack",
-                  "message.failed",
-                  "call.received",
-                  "call.missed",
-                  "call.ended",
-                  "session.status",
-                  "session.restriction_updated",
-                  "template.status"
-                ]
-              },
-              "description": {
-                "type": "string"
-              },
-              "overrides": {
-                "type": "array",
-                "items": {
-                  "type": "string"
+  "sourceSha256": "dcbd21ba3dafe0c30e52c260ccef759eaca1c0a11d6cc092f2a3ef68bf50f4d3",
+  "operations": {
+    "triggerTestEvent": {
+      "method": "POST",
+      "path": "/messaging/{session}/test-events",
+      "operation": {
+        "operationId": "triggerTestEvent",
+        "tags": ["Testing"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Trigger a test event for a Test number",
+        "x-required-scope": "sandbox:write",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Test Number ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[\\x21-\\x7e]{1,255}$",
+              "description": "Optional. Repeating a request with the same key and body reuses the same event ID, so a retry after a failed or uncertain response never creates a second event or duplicate webhook deliveries."
+            },
+            "required": false,
+            "name": "idempotency-key",
+            "in": "header"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/schemas/TriggerTestEventRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Test event accepted for delivery",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/schemas/TriggerTestEventResponse"
                 }
               }
             },
-            "required": ["name", "description", "overrides"]
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid fixture or override",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Test numbers access required, or a client token was used",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Test event rate limit reached",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "rate_limit_error",
+                    "code": "rate_limit_exceeded",
+                    "message": "The request limit was reached. Follow Retry-After when supplied.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#rate-limit-exceeded"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Test event delivery unavailable. Retry with the same Idempotency-Key to avoid a second event.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            }
           }
-        }
-      },
-      "required": ["fixtures"]
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">sandbox:write</Badge>"
+        },
+        "x-protocols": ["Linked Device API"],
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sandbox:write`"
+      }
     },
+    "listTestEventFixtures": {
+      "method": "GET",
+      "path": "/messaging/test-events/fixtures",
+      "operation": {
+        "operationId": "listTestEventFixtures",
+        "tags": ["Testing"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "List test event fixtures",
+        "x-required-scope": "sandbox:read",
+        "responses": {
+          "200": {
+            "description": "Available fixtures and the overrides each accepts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/schemas/TestEventFixtureList"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "403": {
+            "description": "Read scope required; client tokens are not permitted",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/schemas/PublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"yellow\" icon=\"key\">sandbox:read</Badge>"
+        },
+        "description": "**Required scope:** `sandbox:read`"
+      }
+    }
+  },
+  "schemas": {
     "TriggerTestEventRequest": {
       "type": "object",
       "properties": {
-        "session": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Test number session name in the project."
-        },
         "event": {
           "type": "string",
           "enum": [
@@ -69,51 +337,15 @@
         "overrides": {
           "$ref": "#/schemas/TestEventOverrides"
         },
-        "fromSession": {
+        "fromNumber": {
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
           "description": "message.received only. Send a simulated text message from this other connected Test number in the same project instead of generating an event."
         }
       },
-      "required": ["session", "event"],
+      "required": ["event"],
       "additionalProperties": false
-    },
-    "TriggerTestEventResponse": {
-      "type": "object",
-      "properties": {
-        "event": {
-          "type": "string",
-          "enum": [
-            "message.received",
-            "message.ack",
-            "message.failed",
-            "call.received",
-            "call.missed",
-            "call.ended",
-            "session.status",
-            "session.restriction_updated",
-            "template.status"
-          ]
-        },
-        "session": {
-          "type": "string"
-        },
-        "delivery": {
-          "type": "string",
-          "enum": ["generated", "simulated"]
-        },
-        "eventId": {
-          "type": "string",
-          "nullable": true,
-          "format": "uuid"
-        },
-        "source": {
-          "type": "string",
-          "enum": ["test", "runtime"]
-        }
-      },
-      "required": ["event", "session", "delivery", "eventId", "source"]
     },
     "TestEventOverrides": {
       "type": "object",
@@ -212,6 +444,256 @@
         }
       },
       "additionalProperties": false
+    },
+    "TriggerTestEventResponse": {
+      "type": "object",
+      "properties": {
+        "event": {
+          "type": "string",
+          "enum": [
+            "message.received",
+            "message.ack",
+            "message.failed",
+            "call.received",
+            "call.missed",
+            "call.ended",
+            "session.status",
+            "session.restriction_updated",
+            "template.status"
+          ]
+        },
+        "session": {
+          "type": "string"
+        },
+        "delivery": {
+          "type": "string",
+          "enum": ["generated", "simulated"]
+        },
+        "eventId": {
+          "type": "string",
+          "nullable": true,
+          "format": "uuid"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["test", "runtime"]
+        }
+      },
+      "required": ["event", "session", "delivery", "eventId", "source"]
+    },
+    "PublicError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "invalid_request_error",
+                "authentication_error",
+                "permission_error",
+                "conflict_error",
+                "rate_limit_error",
+                "api_error",
+                "upstream_error"
+              ]
+            },
+            "code": {
+              "type": "string",
+              "enum": [
+                "invalid_parameter",
+                "invalid_credential",
+                "entitlement_required",
+                "cloud_template_authority_restricted",
+                "gate_limit_reached",
+                "method_not_allowed",
+                "permission_denied",
+                "missing_scope",
+                "resource_not_found",
+                "hms_not_enabled",
+                "media_fetch_failed",
+                "resource_gone",
+                "feature_unavailable",
+                "stream_cursor_invalid",
+                "stream_cursor_expired",
+                "stream_connection_limit_reached",
+                "state_conflict",
+                "team_deletion_scheduled",
+                "hybrid_routing_paused",
+                "hybrid_choice_required",
+                "hybrid_transition_ineligible",
+                "hybrid_automation_unavailable",
+                "hybrid_group_linked_devices_unavailable",
+                "hybrid_transport_unavailable",
+                "hybrid_target_reference_unavailable",
+                "send_outcome_unknown",
+                "idempotency_conflict",
+                "idempotency_in_progress",
+                "idempotency_completed",
+                "idempotency_outcome_unknown",
+                "call_claimed",
+                "call_not_ringing",
+                "connection_limit",
+                "unsupported_for_connection",
+                "call_permission_required",
+                "invalid_sip_trunk",
+                "calls_disabled",
+                "call_recipient_opted_out",
+                "call_destination_blocked",
+                "call_permission_request_limited",
+                "call_permission_granted",
+                "order_status_transition_invalid",
+                "order_cancellation_failed",
+                "call_opt_out_limit",
+                "number_restricted",
+                "sip_trunk_in_use",
+                "sip_trunk_revision_conflict",
+                "sip_trunk_limit",
+                "sip_unavailable",
+                "voice_not_enabled",
+                "provider_credential_invalid",
+                "provider_unavailable",
+                "asset_not_ready",
+                "voice_asset_in_use",
+                "voice_asset_revision_conflict",
+                "voice_unavailable",
+                "rate_limit_exceeded",
+                "internal_error",
+                "operation_not_supported",
+                "upstream_failure",
+                "service_unavailable",
+                "credential_verification_unavailable",
+                "session_not_ready",
+                "command_dispatch_failed",
+                "result_unknown",
+                "parent_bsuid_not_supported",
+                "recipient_not_on_whatsapp",
+                "conversation_window_closed",
+                "template_not_approved",
+                "media_too_large",
+                "whatsapp_rate_limited",
+                "new_chat_limit_reached",
+                "marketing_disabled_on_cloud_api",
+                "whatsapp_account_restricted",
+                "whatsapp_authorization_required",
+                "whatsapp_payment_method_required",
+                "whatsapp_number_not_registered",
+                "whatsapp_groups_ineligible",
+                "whatsapp_group_creation_paused",
+                "whatsapp_group_limit_reached",
+                "whatsapp_group_full",
+                "whatsapp_group_suspended",
+                "whatsapp_group_has_no_participants",
+                "bansafe_suspended",
+                "bansafe_org_suspended",
+                "bansafe_cold_blocked",
+                "bansafe_cold_held",
+                "bansafe_throttled",
+                "bansafe_daily_allowance_reached",
+                "bansafe_accounting_unavailable",
+                "bansafe_send_outcome_unknown",
+                "campaigns_not_entitled",
+                "campaign_throughput_capped",
+                "campaign_approval_required",
+                "campaign_approval_stale",
+                "campaign_variables_missing"
+              ]
+            },
+            "message": {
+              "type": "string"
+            },
+            "param": {
+              "type": "string",
+              "nullable": true
+            },
+            "request_id": {
+              "type": "string",
+              "description": "Matches the X-Request-Id response header. Include it when you contact support."
+            },
+            "request_log_url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+            }
+          },
+          "required": ["type", "code", "message", "param", "request_id"]
+        },
+        "data": {
+          "type": "string",
+          "nullable": true,
+          "enum": [null],
+          "description": "Always null for a failed request."
+        },
+        "docs": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": ["error", "data", "docs"]
+    },
+    "TestEventFixtureList": {
+      "type": "object",
+      "properties": {
+        "fixtures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "enum": [
+                  "message.received",
+                  "message.ack",
+                  "message.failed",
+                  "call.received",
+                  "call.missed",
+                  "call.ended",
+                  "session.status",
+                  "session.restriction_updated",
+                  "template.status"
+                ]
+              },
+              "description": {
+                "type": "string"
+              },
+              "overrides": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": ["name", "description", "overrides"]
+          }
+        }
+      },
+      "required": ["fixtures"]
+    }
+  },
+  "components": {
+    "headers": {
+      "X-RateLimit-Limit": {
+        "description": "Team request quota per rolling minute, when the per-team request limiter applies.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "X-RateLimit-Remaining": {
+        "description": "Requests left in the per-team quota; zero when this limiter rejects the request.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "X-RateLimit-Reset": {
+        "description": "Unix timestamp in seconds when the oldest counted request leaves the rolling window, when the per-team request limiter applies. Follow Retry-After on a rejected request.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
     }
   }
 }
