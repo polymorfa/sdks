@@ -340,6 +340,16 @@ export interface SessionLoggedOutPayload {
   readonly code: number;
 }
 
+/**
+ * Bounds for a webhook's `phoneOfflineStartDay`. Sent once a day from that
+ * day until the phone is seen again; WhatsApp signs the device out on day 14.
+ */
+export const PHONE_OFFLINE_START_DAY = {
+  min: 7,
+  max: 13,
+  default: 10,
+} as const;
+
 export interface SessionPhoneOfflinePayload {
   readonly daysSinceLastSeen: number;
   readonly daysRemaining: number;

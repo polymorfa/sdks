@@ -80,6 +80,24 @@ describe("createMessagingClientTokenMint", () => {
     );
   });
 
+  it.each(["send_message", ["unknown"], ["voip_place"]])(
+    "refuses invalid Customer allow %j before transport",
+    async (allow) => {
+      const mint = vi.fn();
+      const adapter = createMessagingClientTokenMint({
+        clientTokens: { mint },
+        resolve: () => ({ customer: "c", ephemeralId: "u", allow }) as never,
+      });
+      await expect(
+        adapter(
+          { userId: "u" },
+          new Request("https://app.test/token", { method: "POST" }),
+        ),
+      ).rejects.toThrow(TypeError);
+      expect(mint).not.toHaveBeenCalled();
+    },
+  );
+
   it.each([
     [
       "both session and customer",
@@ -90,10 +108,6 @@ describe("createMessagingClientTokenMint", () => {
       },
     ],
     ["neither session nor customer", { ephemeralId: "u" }],
-    [
-      "allow on a session token",
-      { session: "support", ephemeralId: "u", allow: ["send_message"] },
-    ],
   ])("refuses %s before minting", async (_label, input) => {
     const mint = vi.fn();
     const adapter = createMessagingClientTokenMint({

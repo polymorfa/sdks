@@ -1850,7 +1850,11 @@ export type CustomerClientTokenAction =
   | "send_seen"
   | "read_presence"
   | "subscribe_presence"
-  | "read_contact";
+  | "read_contact"
+  | "chats_read"
+  | "chats_manage"
+  | "contact_write"
+  | "contact_delete";
 
 interface MintClientTokenBase {
   readonly ephemeralId: string;
@@ -1861,7 +1865,13 @@ interface MintClientTokenBase {
 export interface MintSessionClientTokenRequest extends MintClientTokenBase {
   readonly session: string;
   readonly customer?: never;
-  readonly allow?: never;
+  readonly allow?: readonly (
+    | CustomerClientTokenAction
+    | "mcp"
+    | "voip_place"
+    | "voip_answer"
+    | "voip_signal"
+  )[];
 }
 
 /**
@@ -1872,7 +1882,7 @@ export interface MintSessionClientTokenRequest extends MintClientTokenBase {
 export interface MintCustomerClientTokenRequest extends MintClientTokenBase {
   /** Polymorfa Customer ID. Never pass your own external ID. */
   readonly customer: string;
-  /** Narrows the token's actions further; omit to use session rules alone. */
+  /** Immutable action ceiling. Omission uses the original Customer action set. */
   readonly allow?: readonly CustomerClientTokenAction[];
   readonly session?: never;
 }
@@ -1905,6 +1915,10 @@ export type ClientAction =
   | "read_presence"
   | "subscribe_presence"
   | "read_contact"
+  | "chats_read"
+  | "chats_manage"
+  | "contact_write"
+  | "contact_delete"
   | "widget_start"
   | "widget_pair"
   | "widget_status"
@@ -2878,6 +2892,13 @@ export interface Webhook {
   readonly headers: readonly WebhookHeader[];
   readonly enabled: boolean;
   readonly format?: "native" | "meta";
+  /**
+   * First day without the phone on which this webhook receives
+   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * device out on day 14. To stop the warning, leave the event out of
+   * the webhook's events.
+   */
+  readonly phoneOfflineStartDay?: number;
   readonly createdAt: string;
 }
 
@@ -2889,6 +2910,13 @@ export interface CreateWebhookRequest {
   readonly retries?: WebhookRetryConfig;
   readonly headers?: readonly WebhookHeader[];
   readonly format?: "native" | "meta";
+  /**
+   * First day without the phone on which this webhook receives
+   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * device out on day 14. To stop the warning, leave the event out of
+   * the webhook's events.
+   */
+  readonly phoneOfflineStartDay?: number;
 }
 
 export interface UpdateWebhookRequest {
@@ -2899,6 +2927,13 @@ export interface UpdateWebhookRequest {
   readonly headers?: readonly WebhookHeader[];
   readonly enabled?: boolean;
   readonly format?: "native" | "meta";
+  /**
+   * First day without the phone on which this webhook receives
+   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * device out on day 14. To stop the warning, leave the event out of
+   * the webhook's events.
+   */
+  readonly phoneOfflineStartDay?: number;
 }
 
 export type ListWebhooksResponse = SuccessEnvelope<readonly Webhook[]>;

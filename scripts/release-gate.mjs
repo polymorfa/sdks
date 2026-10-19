@@ -103,6 +103,9 @@ export function expectedContract() {
         JSON.parse(readFileSync(join(root, "contracts", name))),
       ),
     ),
+    JSON.parse(
+      readFileSync(join(root, "contracts/client-token-ceilings.json")),
+    ),
   ]);
   const apiVersion = /NATIVE_API_VERSION = "([^"]+)"/.exec(
     readFileSync(join(root, "packages/typescript/src/version.ts"), "utf8"),

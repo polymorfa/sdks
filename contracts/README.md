@@ -23,6 +23,15 @@ its `RequestLog` and `RequestLogPageMetadata` schemas to API merge commit
 The release gate requires this pin to match the global source before
 publication, so the method publishes only with a reconciled, accepted contract.
 
+## Webhook phone offline start day
+
+`webhook-phone-offline.json` pins `phoneOfflineStartDay` on the nine Platform
+and Messaging webhook schemas that carry it to API source commit
+`4380e1113f4b6e5830852f35b13e0ee15b6e340b`, the merge of polymorfa/polymorfa#631
+into dev. `webhook-phone-offline-contract.test.ts` checks the SDK types and
+`PHONE_OFFLINE_START_DAY` against it. Refresh the global snapshots in a later
+snapshot update.
+
 ## Message provider references
 
 Native message receipts, webhook references, acknowledgements, history, and
@@ -655,3 +664,15 @@ package publication and API availability remain separate release gates.
 at API dev `f46ebd5162453e812dafa76ce02b420ddabe6921`, including source hashes,
 focused schemas, fields and operations. The full baseline snapshots keep their
 independent pins. This file records source adoption, not release availability.
+
+## Client-token ceilings
+
+`client-token-ceilings.json` pins API source `02aee1d010c5009401c0b60ab98eafd3dfd69f08`
+and its exact Platform spec hash for session/Customer mint ceilings and rule
+validation. The supplement is held from publication. Reconcile full snapshots,
+feature pins and the exact deployed API acceptance before publication; source
+merge, passing SDK tests and opaque-token transport do not establish availability.
+Session `allow` requires the action-ceilings beta; an empty session list seals
+zero actions, while Customer lists remain non-empty. Reserved regional actions
+remain gated. The Next.js handler forwards only the grant's API actions and does
+not turn a wrapper-only grant into the session's broader API action set.

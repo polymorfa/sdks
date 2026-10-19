@@ -146,7 +146,12 @@ describe("POST /token", () => {
     expect(response.headers.get("cache-control")).toContain("no-store");
     expect(mint).toHaveBeenCalledWith({ id: "user_1" }, expect.any(Request));
     expect(polymorfa.clientTokens.mint).toHaveBeenCalledWith(
-      { session: "support", ephemeralId: "user_1", ttlSeconds: 600 },
+      {
+        session: "support",
+        allow: ["send_message"],
+        ephemeralId: "user_1",
+        ttlSeconds: 600,
+      },
       { signal: expect.any(AbortSignal) },
     );
     const body = await response.json();
@@ -173,9 +178,31 @@ describe("POST /token", () => {
     );
     expect(polymorfa.clientTokens.mint.mock.calls[0]?.[0]).toEqual({
       session: "support",
+      allow: ["send_message"],
       ephemeralId: "user_1",
       ttlSeconds: 600,
     });
+  });
+
+  it("preserves a session grant's exact API ceiling and excludes wrapper permissions", async () => {
+    const { route, polymorfa } = handler({
+      mint: () => ({
+        ...grant,
+        allow: ["read_messages", "contact_delete", "voip_signal"],
+      }),
+    });
+    expect((await route.POST(post("token"))).status).toBe(200);
+    expect(polymorfa.clientTokens.mint.mock.calls[0]?.[0].allow).toEqual([
+      "contact_delete",
+      "voip_signal",
+    ]);
+  });
+  it("mints an explicit zero API ceiling for a wrapper-only session grant", async () => {
+    const { route, polymorfa } = handler({
+      mint: () => ({ ...grant, allow: ["read_messages"] }),
+    });
+    expect((await route.POST(post("token"))).status).toBe(200);
+    expect(polymorfa.clientTokens.mint.mock.calls[0]?.[0].allow).toEqual([]);
   });
 
   it("narrows Customer tokens to the API actions in allow", async () => {
