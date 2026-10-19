@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "63a1776c761ab3e03ecbdbce7af11bece1d6393f",
-  "sourceFilesSha256": "6de03cef88c9d69e2e425bce078af099b652c21189b6b7b6be8733510d8fc81a",
+  "sourceCommit": "4602c398e68914cfe628580beab51ba35851f60e",
+  "sourceFilesSha256": "39a23450d4a257353c03c1ae37630e4ccf11e5e40535ba02e77b3d8d20950a50",
   "apiVersion": "2026-09-22",
   "apiSourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
   "specs": {
@@ -10,30 +10,15 @@
   },
   "releaseStatus": "source-only",
   "packages": {
-    "typescript": {
-      "name": "@polymorfa/sdk",
-      "version": "0.1.0-dev.0"
-    },
+    "typescript": { "name": "@polymorfa/sdk", "version": "0.1.0-dev.0" },
     "go": {
       "name": "github.com/polymorfa/sdks/packages/go",
       "version": "0.1.0-dev.0"
     },
-    "python": {
-      "name": "polymorfa-sdk",
-      "version": "0.1.0.dev0"
-    },
-    "php": {
-      "name": "polymorfa/sdk",
-      "version": "0.1.0-dev.0"
-    },
-    "dotnet": {
-      "name": "Polymorfa.Sdk",
-      "version": "0.1.0-dev.0"
-    },
-    "rust": {
-      "name": "polymorfa-sdk",
-      "version": "0.1.0-dev.0"
-    }
+    "python": { "name": "polymorfa-sdk", "version": "0.1.0.dev0" },
+    "php": { "name": "polymorfa/sdk", "version": "0.1.0-dev.0" },
+    "dotnet": { "name": "Polymorfa.Sdk", "version": "0.1.0-dev.0" },
+    "rust": { "name": "polymorfa-sdk", "version": "0.1.0-dev.0" }
   },
   "operations": {
     "createBusinessCatalog": {
@@ -67,12 +52,7 @@
       "path": "/messaging/{session}/business/collections",
       "credentialKind": "organization_api_key",
       "request": {
-        "body": {
-          "name": "Featured",
-          "productIds": [
-            "product-id"
-          ]
-        }
+        "body": { "name": "Featured", "productIds": ["product-id"] }
       },
       "typescript": {
         "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.createCollection(\"{{session}}\", {\"name\": \"Featured\", \"productIds\": [\"product-id\"]});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
@@ -198,11 +178,7 @@
       "method": "GET",
       "path": "/messaging/{session}/business/catalog",
       "credentialKind": "organization_api_key",
-      "request": {
-        "query": {
-          "id": "42"
-        }
-      },
+      "request": { "query": { "id": "42" } },
       "typescript": {
         "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.getCatalog(\"{{session}}\", {\"id\": \"42\"});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
       },
@@ -227,11 +203,7 @@
       "method": "GET",
       "path": "/messaging/{session}/business/collections/{collectionId}",
       "credentialKind": "organization_api_key",
-      "request": {
-        "query": {
-          "id": "42"
-        }
-      },
+      "request": { "query": { "id": "42" } },
       "typescript": {
         "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.getCollection(\"{{session}}\", \"{{collectionId}}\", {\"id\": \"42\"});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
       },
@@ -256,11 +228,7 @@
       "method": "GET",
       "path": "/messaging/{session}/business/collections",
       "credentialKind": "organization_api_key",
-      "request": {
-        "query": {
-          "id": "42"
-        }
-      },
+      "request": { "query": { "id": "42" } },
       "typescript": {
         "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.listCollections(\"{{session}}\", {\"id\": \"42\"});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
       },
@@ -360,11 +328,7 @@
       "method": "GET",
       "path": "/messaging/{session}/business/products/{productId}",
       "credentialKind": "organization_api_key",
-      "request": {
-        "query": {
-          "id": "42"
-        }
-      },
+      "request": { "query": { "id": "42" } },
       "typescript": {
         "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.getProduct(\"{{session}}\", \"{{productId}}\", {\"id\": \"42\"});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
       },
@@ -616,12 +580,8 @@
       "credentialKind": "organization_api_key",
       "request": {
         "body": {
-          "conversation": {
-            "phoneNumber": "+15550001111"
-          },
-          "content": {
-            "text": "Hello"
-          }
+          "conversation": { "phoneNumber": "+15550001111" },
+          "content": { "text": "Hello" }
         }
       },
       "typescript": {
@@ -649,13 +609,7 @@
       "path": "/messaging/{session}/messages/react",
       "credentialKind": "organization_api_key",
       "request": {
-        "body": {
-          "conversation": {
-            "id": "42"
-          },
-          "id": "43",
-          "reaction": "👍"
-        }
+        "body": { "conversation": { "id": "42" }, "id": "43", "reaction": "👍" }
       },
       "typescript": {
         "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.messages.react(\"{{session}}\", {\"conversation\": {\"id\": \"42\"}, \"id\": \"43\", \"reaction\": \"👍\"});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
@@ -681,14 +635,7 @@
       "method": "POST",
       "path": "/messaging/{session}/messages/seen",
       "credentialKind": "organization_api_key",
-      "request": {
-        "body": {
-          "conversation": {
-            "id": "42"
-          },
-          "id": "43"
-        }
-      },
+      "request": { "body": { "conversation": { "id": "42" }, "id": "43" } },
       "typescript": {
         "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.messages.markSeen(\"{{session}}\", {\"conversation\": {\"id\": \"42\"}, \"id\": \"43\"});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
       },
@@ -713,11 +660,7 @@
       "method": "PATCH",
       "path": "/messaging/{session}/business/catalog/cart",
       "credentialKind": "organization_api_key",
-      "request": {
-        "body": {
-          "enabled": true
-        }
-      },
+      "request": { "body": { "enabled": true } },
       "typescript": {
         "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.setCartEnabled(\"{{session}}\", {\"enabled\": true});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
       },
@@ -742,11 +685,7 @@
       "method": "PATCH",
       "path": "/messaging/{session}/business/products/{productId}/visibility",
       "credentialKind": "organization_api_key",
-      "request": {
-        "body": {
-          "hidden": true
-        }
-      },
+      "request": { "body": { "hidden": true } },
       "typescript": {
         "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.setProductVisibility(\"{{session}}\", \"{{productId}}\", {\"hidden\": true});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
       },
@@ -772,12 +711,7 @@
       "path": "/messaging/{session}/messages/typing",
       "credentialKind": "organization_api_key",
       "request": {
-        "body": {
-          "conversation": {
-            "id": "42"
-          },
-          "state": "paused"
-        }
+        "body": { "conversation": { "id": "42" }, "state": "paused" }
       },
       "typescript": {
         "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.messages.setTyping(\"{{session}}\", {\"conversation\": {\"id\": \"42\"}, \"state\": \"paused\"});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
@@ -804,13 +738,7 @@
       "path": "/messaging/{session}/messages/star",
       "credentialKind": "organization_api_key",
       "request": {
-        "body": {
-          "conversation": {
-            "id": "42"
-          },
-          "id": "43",
-          "star": false
-        }
+        "body": { "conversation": { "id": "42" }, "id": "43", "star": false }
       },
       "typescript": {
         "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.messages.star(\"{{session}}\", {\"conversation\": {\"id\": \"42\"}, \"id\": \"43\", \"star\": false});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"

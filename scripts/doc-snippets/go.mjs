@@ -5,14 +5,16 @@ export function render(id, { client, request }) {
   const s = p("session"),
     sid = p("sessionId"),
     b = request.body;
-  const conv = 'sdk.ConversationReference{ID: "42"}';
+  const quote = JSON.stringify;
+  const conv = `sdk.ConversationReference{ID: ${quote(b?.conversation?.id)}}`;
+  const queryId = quote(request.query?.id);
   const calls = {
-    sendMessage: `api.Messages().Send(ctx, ${s}, sdk.SendMessageRequest{Conversation: sdk.ConversationReference{PhoneNumber: "+15550001111"}, Content: sdk.MessageContent{Text: &text}})`,
+    sendMessage: `api.Messages().Send(ctx, ${s}, sdk.SendMessageRequest{Conversation: sdk.ConversationReference{PhoneNumber: ${quote(b?.conversation?.phoneNumber)}}, Content: sdk.MessageContent{Text: &text}})`,
     getMessageOperation: `api.Messages().OperationStatus(ctx, ${s}, ${p("operationId")})`,
     sendSeen: `api.Messages().MarkSeen(ctx, ${s}, sdk.SeenRequest{Conversation: ${conv}, ID: ${JSON.stringify(b?.id)}})`,
-    setTyping: `api.Messages().SetTyping(ctx, ${s}, sdk.TypingRequest{Conversation: ${conv}, State: "paused"})`,
-    sendReaction: `api.Messages().React(ctx, ${s}, sdk.ReactionRequest{Conversation: ${conv}, ID: ${JSON.stringify(b?.id)}, Reaction: "👍"})`,
-    starMessage: `api.Messages().Star(ctx, ${s}, sdk.StarRequest{Conversation: ${conv}, ID: ${JSON.stringify(b?.id)}, Star: false})`,
+    setTyping: `api.Messages().SetTyping(ctx, ${s}, sdk.TypingRequest{Conversation: ${conv}, State: ${quote(b?.state)}})`,
+    sendReaction: `api.Messages().React(ctx, ${s}, sdk.ReactionRequest{Conversation: ${conv}, ID: ${JSON.stringify(b?.id)}, Reaction: ${quote(b?.reaction)}})`,
+    starMessage: `api.Messages().Star(ctx, ${s}, sdk.StarRequest{Conversation: ${conv}, ID: ${JSON.stringify(b?.id)}, Star: ${b?.star}})`,
     listPlatformSessions: "api.Sessions().List(ctx)",
     getSession: `api.Sessions().Retrieve(ctx, ${sid})`,
     getSessionAccount: `api.Sessions().Account(ctx, ${sid})`,
@@ -25,17 +27,17 @@ export function render(id, { client, request }) {
     getBusinessMerchantCompliance: `api.Business().GetMerchantCompliance(ctx, ${s})`,
     getBusinessLinkedAccounts: `api.Business().GetLinkedAccounts(ctx, ${s})`,
     getBusinessEligibility: `api.Business().GetEligibility(ctx, ${s})`,
-    getBusinessCatalog: `api.Business().GetCatalog(ctx, ${s}, sdk.BusinessCatalogParams{ID: "42"})`,
-    getBusinessProduct: `api.Business().GetProduct(ctx, ${s}, ${p("productId")}, "42")`,
-    getBusinessCollections: `api.Business().ListCollections(ctx, ${s}, sdk.BusinessCollectionsParams{ID: "42"})`,
-    getBusinessCollection: `api.Business().GetCollection(ctx, ${s}, ${p("collectionId")}, sdk.BusinessCollectionParams{ID: "42"})`,
+    getBusinessCatalog: `api.Business().GetCatalog(ctx, ${s}, sdk.BusinessCatalogParams{ID: ${queryId}})`,
+    getBusinessProduct: `api.Business().GetProduct(ctx, ${s}, ${p("productId")}, ${queryId})`,
+    getBusinessCollections: `api.Business().ListCollections(ctx, ${s}, sdk.BusinessCollectionsParams{ID: ${queryId}})`,
+    getBusinessCollection: `api.Business().GetCollection(ctx, ${s}, ${p("collectionId")}, sdk.BusinessCollectionParams{ID: ${queryId}})`,
     createBusinessCatalog: `api.Business().CreateCatalog(ctx, ${s})`,
-    createBusinessCollection: `api.Business().CreateCollection(ctx, ${s}, sdk.BusinessCollectionCreateRequest{Name: "Featured", ProductIDs: []string{"product-id"}})`,
+    createBusinessCollection: `api.Business().CreateCollection(ctx, ${s}, sdk.BusinessCollectionCreateRequest{Name: ${quote(b?.name)}, ProductIDs: []string{${b?.productIds?.map(quote).join(", ")}}})`,
     deleteBusinessCollection: `api.Business().DeleteCollection(ctx, ${s}, ${p("collectionId")})`,
     deleteBusinessProduct: `api.Business().DeleteProduct(ctx, ${s}, ${p("productId")})`,
     deleteBusinessCoverPhoto: `api.Business().DeleteCoverPhoto(ctx, ${s}, ${p("coverPhotoId")})`,
-    setBusinessCartEnabled: `api.Business().SetCartEnabled(ctx, ${s}, true)`,
-    setBusinessProductVisibility: `api.Business().SetProductVisibility(ctx, ${s}, ${p("productId")}, true)`,
+    setBusinessCartEnabled: `api.Business().SetCartEnabled(ctx, ${s}, ${b?.enabled})`,
+    setBusinessProductVisibility: `api.Business().SetProductVisibility(ctx, ${s}, ${p("productId")}, ${b?.hidden})`,
     listProjects: "api.Projects().List(ctx)",
     listProjectEvents: "api.Events().List(ctx, sdk.ListEventsParams{})",
   };
@@ -47,5 +49,5 @@ export function render(id, { client, request }) {
         ? "NewProjectClient"
         : "NewOrganizationClient";
   const project = client === "project" ? `, ${p("projectId")}` : "";
-  return `package main\n\nimport (\n  "context"\n  "fmt"\n  "log"\n  sdk "github.com/polymorfa/sdks/packages/go"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.${ctor}(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: ${key}}}${project})\n  if err != nil { log.Fatal(err) }\n${id === "sendMessage" ? '  text := "Hello"\n' : ""}  result, err := ${calls[id]}\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n`;
+  return `package main\n\nimport (\n  "context"\n  "fmt"\n  "log"\n  sdk "github.com/polymorfa/sdks/packages/go"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.${ctor}(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: ${key}}}${project})\n  if err != nil { log.Fatal(err) }\n${id === "sendMessage" ? `  text := ${quote(b.content.text)}\n` : ""}  result, err := ${calls[id]}\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n`;
 }

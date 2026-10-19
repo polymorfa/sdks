@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import Ajv from "ajv";
+import { format } from "prettier";
 import addFormats from "ajv-formats";
 import {
   apiVersion,
@@ -12,6 +13,7 @@ import {
   sourceCommit,
 } from "./recipes.mjs";
 import * as typescript from "./typescript.mjs";
+import { compareCoverage, extractOperations } from "../check-coverage.mjs";
 
 export const root = resolve(import.meta.dirname, "../..");
 export const sha256 = (value) =>
@@ -30,7 +32,11 @@ export function sourceDigest(commit, live = true) {
       const [meta, path] = line.split("\t");
       return { path, blob: meta.split(" ")[2] };
     })
-    .filter(({ path }) => !path.startsWith("contracts/doc-snippets"));
+    .filter(
+      ({ path }) =>
+        !path.startsWith("contracts/doc-snippets") &&
+        (path.startsWith("packages/") || path.endsWith(".json")),
+    );
   if (live) {
     const current = git([
       "ls-files",
@@ -42,7 +48,11 @@ export function sourceDigest(commit, live = true) {
       "contracts",
     ])
       .split("\n")
-      .filter((p) => !p.startsWith("contracts/doc-snippets"));
+      .filter(
+        (p) =>
+          !p.startsWith("contracts/doc-snippets") &&
+          (p.startsWith("packages/") || p.endsWith(".json")),
+      );
     if (
       JSON.stringify([...new Set(current)].sort()) !==
       JSON.stringify(entries.map((e) => e.path).sort())
@@ -67,6 +77,65 @@ export function sourceDigest(commit, live = true) {
   });
   return sha256(rows.join(""));
 }
+export function validatePackageMetadata(metadata) {
+  const file = (path) => readFileSync(resolve(root, path), "utf8");
+  const match = (path, pattern) => {
+    const value = file(path).match(pattern)?.[1];
+    if (!value) throw new Error(`Missing package/version metadata in ${path}`);
+    return value;
+  };
+  const ts = readJSON("packages/typescript/package.json");
+  const php = readJSON("packages/php/composer.json");
+  const actual = {
+    typescript: { name: ts.name, version: ts.version },
+    go: {
+      name: match("packages/go/go.mod", /^module (.+)$/m),
+      version: match("packages/go/transport.go", /const Version = "([^"]+)"/),
+    },
+    python: {
+      name: match("packages/python/pyproject.toml", /^name = "([^"]+)"/m),
+      version: match("packages/python/pyproject.toml", /^version = "([^"]+)"/m),
+    },
+    php: {
+      name: php.name,
+      version: match(
+        "packages/php/src/HttpTransport.php",
+        /const SDK_VERSION = '([^']+)'/,
+      ),
+    },
+    dotnet: {
+      name: match(
+        "packages/dotnet/src/Polymorfa.Sdk/Polymorfa.Sdk.csproj",
+        /<PackageId>([^<]+)<\/PackageId>/,
+      ),
+      version: match(
+        "packages/dotnet/src/Polymorfa.Sdk/Polymorfa.Sdk.csproj",
+        /<Version>([^<]+)<\/Version>/,
+      ),
+    },
+    rust: {
+      name: match("packages/rust/Cargo.toml", /^name = "([^"]+)"/m),
+      version: match("packages/rust/Cargo.toml", /^version = "([^"]+)"/m),
+    },
+  };
+  if (JSON.stringify(metadata) !== JSON.stringify(actual))
+    throw new Error(
+      "Stale package metadata: use the source manifests/constants",
+    );
+  for (const [path, pattern] of [
+    ["packages/typescript/src/version.ts", /NATIVE_API_VERSION = "([^"]+)"/],
+    ["packages/go/transport.go", /const APIVersion = "([^"]+)"/],
+    ["packages/python/src/polymorfa/transport.py", /API_VERSION = "([^"]+)"/],
+    ["packages/php/src/HttpTransport.php", /const API_VERSION = '([^']+)'/],
+    [
+      "packages/dotnet/src/Polymorfa.Sdk/Configuration.cs",
+      /NativeApiVersion = "([^"]+)"/,
+    ],
+    ["packages/rust/src/lib.rs", /NATIVE_API_VERSION: &str = "([^"]+)"/],
+  ])
+    if (match(path, pattern) !== apiVersion)
+      throw new Error(`Stale default API version: ${path}`);
+}
 export function inputs() {
   const source = readJSON("contracts/source.json");
   const specs = Object.fromEntries(
@@ -80,6 +149,14 @@ export function inputs() {
   const coverage = readJSON("contracts/coverage.json");
   if (coverage.sourceCommit !== source.commit)
     throw new Error("Stale API coverage sourceCommit");
+  compareCoverage(
+    Object.entries(specs).flatMap(([family, spec]) =>
+      extractOperations(family, spec),
+    ),
+    coverage,
+    true,
+  );
+  validatePackageMetadata(packages);
   return { source, specs, coverage };
 }
 function validator() {
@@ -282,4 +359,5 @@ export async function generate() {
     { checkSource: false },
   );
 }
-export const serialize = (catalog) => `${JSON.stringify(catalog, null, 2)}\n`;
+export const serialize = (catalog) =>
+  format(JSON.stringify(catalog), { parser: "json" });

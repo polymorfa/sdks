@@ -58,6 +58,8 @@ jobs:
       matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v6
         with:
           node-version: 24
@@ -96,6 +98,12 @@ jobs:
         run: |
           npm ci
           npm run build:workspaces
+      - name: Check every exported documentation program and checker rejection
+        env:
+          SDK_LANGUAGE: ${{ matrix.language }}
+          SDK_PYTHON_VERSION: ${{ matrix.runtime }}
+          DOTNET_ROLL_FORWARD: Major
+        run: node scripts/verify-doc-snippets.mjs "$SDK_LANGUAGE" --negative-test
       - name: Verify handwritten SDK and build its package
         env:
           SDK_LANGUAGE: ${{ matrix.language }}

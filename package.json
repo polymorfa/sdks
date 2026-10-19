@@ -34,7 +34,11 @@
     "lint": "eslint \"packages/**/*.{ts,tsx}\" vitest.config.ts",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "check:functions": "node scripts/check-functions.mjs"
+    "check:functions": "node scripts/check-functions.mjs",
+    "generate:doc-snippets": "node scripts/generate-doc-snippets.mjs",
+    "check:doc-snippets": "node scripts/generate-doc-snippets.mjs --check",
+    "test:doc-snippets": "node --test scripts/doc-snippets.test.mjs",
+    "verify:doc-snippets": "node scripts/verify-doc-snippets.mjs"
   },
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "^3.1149.0",

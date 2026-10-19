@@ -41,7 +41,7 @@ export async function verify(language, { negativeTest = false } = {}) {
   if (!languages.includes(language))
     throw new Error(`Choose ${languages.join(", ")}`);
   const catalog = validateCatalog(readJSON("contracts/doc-snippets.json"));
-  if (serialize(catalog) !== serialize(await generate()))
+  if ((await serialize(catalog)) !== (await serialize(await generate())))
     throw new Error("Exported catalog drifted from recipes");
   const scratch = resolve(
     homedir(),
@@ -234,7 +234,7 @@ export async function verify(language, { negativeTest = false } = {}) {
     );
     writeFileSync(
       join(work, "NuGet.Config"),
-      `<configuration><packageSources><clear/><add key="local" value="${join(work, "feed")}"/></packageSources><config><add key="globalPackagesFolder" value="${join(work, "nuget")}"/></config></configuration>\n`,
+      `<configuration><packageSources><clear/><add key="local" value="${join(work, "feed")}"/><add key="nuget" value="https://api.nuget.org/v3/index.json"/></packageSources><packageSourceMapping><packageSource key="local"><package pattern="Polymorfa.Sdk"/></packageSource><packageSource key="nuget"><package pattern="Microsoft.*"/></packageSource></packageSourceMapping><config><add key="globalPackagesFolder" value="${join(work, "nuget")}"/></config></configuration>\n`,
     );
     const projects = [];
     for (const [id, entry] of entries) {
@@ -263,18 +263,37 @@ export async function verify(language, { negativeTest = false } = {}) {
         { DOTNET_ROLL_FORWARD: "Major" },
       );
   } else {
+    // Cargo's unpublished dependency patch can annotate its source lockfile.
+    // Package an exact archived source tree so verification never edits checkout
+    // inputs or consumes a developer's ignored files.
+    const archive = join(work, "rust-source.tar"),
+      source = join(work, "source");
+    mkdirSync(source);
+    run(
+      "git",
+      [
+        "archive",
+        "--format=tar",
+        `--output=${archive}`,
+        catalog.sourceCommit,
+        "packages/rust",
+      ],
+      root,
+    );
+    run("tar", ["-xf", archive, "-C", source], work);
+    const sdkSource = join(source, "packages/rust");
     const target = join(work, "packed");
     run(
       "cargo",
       [
         "package",
         "--manifest-path",
-        join(root, "packages/rust/storage-core/Cargo.toml"),
+        join(sdkSource, "storage-core/Cargo.toml"),
         "--target-dir",
         target,
         "--allow-dirty",
       ],
-      work,
+      sdkSource,
     );
     const version = catalog.packages.rust.version;
     const core = join(target, "package", `polymorfa-storage-core-${version}`);
@@ -283,19 +302,19 @@ export async function verify(language, { negativeTest = false } = {}) {
       [
         "package",
         "--manifest-path",
-        join(root, "packages/rust/Cargo.toml"),
+        join(sdkSource, "Cargo.toml"),
         "--target-dir",
         target,
         "--allow-dirty",
         "--config",
         `patch.crates-io.polymorfa-storage-core.path=${JSON.stringify(core)}`,
       ],
-      work,
+      sdkSource,
     );
     const pkg = join(target, "package", `polymorfa-sdk-${version}`);
     writeFileSync(
       join(work, "Cargo.toml"),
-      `[package]\nname = "doc-snippets"\nversion = "0.0.0"\nedition = "2021"\n[dependencies]\npolymorfa-sdk = { path = ${JSON.stringify(pkg)} }\ntokio = { version = "1", features = ["rt", "macros"] }\n[patch.crates-io]\npolymorfa-storage-core = { path = ${JSON.stringify(core)} }\n`,
+      `[package]\nname = "doc-snippets"\nversion = "0.0.0"\nedition = "2021"\nrust-version = "1.85"\n[dependencies]\npolymorfa-sdk = { path = ${JSON.stringify(pkg)} }\ntokio = { version = "1", features = ["rt", "macros"] }\n[patch.crates-io]\npolymorfa-storage-core = { path = ${JSON.stringify(core)} }\n`,
     );
     const bins = join(work, "src/bin");
     mkdirSync(bins, { recursive: true });
@@ -304,6 +323,11 @@ export async function verify(language, { negativeTest = false } = {}) {
       writeFileSync(file, substitute(entry[language].code));
       files.push(file);
     }
+    mkdirSync(join(work, ".cargo"));
+    copyFileSync(
+      join(root, "packages/rust/.cargo/config.toml"),
+      join(work, ".cargo/config.toml"),
+    );
     run("cargo", ["generate-lockfile"], work);
     check = () => run("cargo", ["check", "--locked", "--bins"], work);
   }
@@ -344,6 +368,8 @@ export async function verify(language, { negativeTest = false } = {}) {
     if (!rejected)
       throw new Error(`${language}: checker accepted invalid exported call`);
   }
+  // Builds and package tools must also leave the verified checkout inputs intact.
+  validateCatalog(catalog);
   return { language, count: entries.length, work };
 }
 if (

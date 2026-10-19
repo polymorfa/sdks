@@ -56,3 +56,12 @@ registry publication, deployment and customer availability as separate facts.
 Nightlies require matching staging API acceptance; stable releases require
 matching production acceptance. Never publish or claim installability from a
 local package build alone.
+
+## Documentation snippet maintenance
+
+Public signature, request, export, package or coverage changes must revisit
+`contracts/doc-snippets.json` and its explicit recipes. Follow
+`contracts/doc-snippets.md`: bind the exact SDK source and API/spec inputs,
+regenerate, check every emitted program with its actual native checker, and
+retain cURL fallback for missing or mismatched entries. Source/package builds
+are not registry publication or API acceptance evidence.

@@ -683,3 +683,11 @@ an explicit empty slice. Python, PHP and Rust expose the reserved regional
 action spellings in their request types; Go and C# retain their existing string
 lists. Server-only mint guards remain in every language. This extends the
 existing mint request, with no added operation or coverage-ledger claim.
+
+## Verified documentation snippets
+
+[`doc-snippets.json`](doc-snippets.json) exports checked programs for all six
+server SDKs. Read [the consumer and maintenance contract](doc-snippets.md) before
+using it: pin the export commit, match API/spec provenance, preserve exact
+placeholders and key scope, and use cURL for absent or mismatched entries.
+Current metadata describes source packages and omits registry install commands.
