@@ -11,16 +11,31 @@ export {
 } from "./hooks.js";
 export {
   ChatDrawer,
+  ChatWindow,
+  ChatDetails,
+  ContentUnavailable,
+  MessageFilterToolbar,
+  OrderCartView,
   ComposeBox,
   MessageList,
   TemplateBuilder,
   type ChatDrawerProps,
+  type ChatWindowProps,
+  type ChatDetailsProps,
+  type ContentUnavailableProps,
+  type MessageFilterToolbarProps,
+  type OrderCartViewProps,
   type ComposeBoxProps,
   type MessageListProps,
   type RenderAttachment,
   type TemplateBuilderProps,
 } from "./components.js";
-export type { QuickReplyOption } from "@polymorfa/ui";
+export type {
+  AttachmentKind,
+  QuickReplyOption,
+  InboxRowAction,
+  InboxFilter,
+} from "@polymorfa/ui";
 export {
   CALLS_STYLES,
   CallControls,
@@ -55,12 +70,14 @@ export {
   ConnectWhatsAppButton,
   ContactPanel,
   ConversationList,
+  ConversationListView,
   Inbox,
   SessionStatus,
   TemplateManager,
   type ConnectWhatsAppButtonProps,
   type ContactPanelProps,
   type ConversationListProps,
+  type ConversationListViewProps,
   type InboxProps,
   type SessionStatusProps,
   type TemplateManagerProps,

@@ -4,13 +4,30 @@ export {
   type ConversationDataSource,
   type ConversationEvent,
   type ConversationMessage,
+  type ConversationMessageKind,
+  type MessageContentState,
+  type MessageOrder,
+  type OrderItem,
   type ConversationPage,
   type ConversationSnapshot,
+  type LinkPreview,
+  type MediaQuality,
+  type MediaThumbnail,
+  type MediaVariant,
   type MessageAttachment,
   type MessageDirection,
   type MessageStatus,
   type OutgoingMessage,
 } from "./conversation.js";
+export {
+  MessageFilterController,
+  DEFAULT_MESSAGE_FILTERS,
+  conversationMessageKind,
+  messageMatchesFilters,
+  orderSearchText,
+  type MessageFilters,
+  type MessageFilterSnapshot,
+} from "./message-filter.js";
 export {
   MessageComposerController,
   createConversationComposerActions,
@@ -31,3 +48,8 @@ export {
   type VoiceNoteRecorderSnapshot,
   type VoiceNoteStatus,
 } from "./voice-recorder.js";
+export {
+  createConversationSession,
+  type ConversationSession,
+  type ConversationSessionOptions,
+} from "./session.js";

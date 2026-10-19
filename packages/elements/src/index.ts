@@ -6,6 +6,7 @@ export {
 } from "./base.js";
 export {
   PolymorfaChatDrawerElement,
+  PolymorfaChatWindowElement,
   PolymorfaComposeBoxElement,
   PolymorfaMessageListElement,
   defineChatElements,

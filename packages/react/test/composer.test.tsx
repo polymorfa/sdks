@@ -1,7 +1,8 @@
 // @vitest-environment happy-dom
 import { act } from "react";
 import { createRoot } from "react-dom/client";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { Storage as BrowserStorage } from "happy-dom";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MessageComposerController } from "@polymorfa/browser";
 import { ComposeBox, PolymorfaProvider } from "../src/index.js";
 
@@ -64,9 +65,14 @@ function key(target: Element, name: string, init: KeyboardEventInit = {}) {
   });
 }
 
+beforeEach(() => {
+  // Use the browser fixture, not Node's optional file-backed Web Storage.
+  vi.stubGlobal("localStorage", new BrowserStorage());
+});
+
 afterEach(() => {
-  vi.unstubAllGlobals();
   localStorage.clear();
+  vi.unstubAllGlobals();
 });
 
 const replies = [
@@ -340,5 +346,107 @@ describe("ComposeBox toolbar", () => {
     ).toBe("4");
     view.unmount();
     controller.dispose();
+  });
+});
+
+describe("ComposeBox attachment kinds", () => {
+  it("opens a localized picker and applies each selected file type without sending", () => {
+    const controller = composer();
+    const view = mount(
+      <ComposeBox
+        controller={controller}
+        attachmentKinds={["image", "video", "audio", "document"]}
+        voiceNotes={false}
+      />,
+    );
+    try {
+      const attach = view.host.querySelector<HTMLButtonElement>(
+        '[data-slot="composerAttach"]',
+      )!;
+      const input =
+        view.host.querySelector<HTMLInputElement>('input[type="file"]')!;
+      const click = vi
+        .spyOn(input, "click")
+        .mockImplementation(() => undefined);
+      for (const [label, accept] of [
+        ["Photos", "image/*"],
+        ["Videos", "video/*"],
+        ["Audio", "audio/*"],
+        ["Documents", ""],
+      ]) {
+        act(() => attach.click());
+        const menu = view.host.querySelector('[role="dialog"]')!;
+        const button = [
+          ...menu.querySelectorAll<HTMLButtonElement>("button"),
+        ].find((x) => x.textContent === label)!;
+        act(() => button.click());
+        expect(input.accept).toBe(accept);
+        expect(view.host.querySelector(".pmfa-attachment-menu")).toBeNull();
+      }
+      expect(click).toHaveBeenCalledTimes(4);
+      act(() => attach.click());
+      const choices = view.host.querySelectorAll<HTMLButtonElement>(
+        ".pmfa-attachment-menu button",
+      );
+      act(() => choices[1]!.focus());
+      expect(attach.getAttribute("aria-expanded")).toBe("true");
+      act(() => view.host.querySelector("textarea")!.focus());
+      expect(view.host.querySelector(".pmfa-attachment-menu")).toBeNull();
+      expect(attach.getAttribute("aria-expanded")).toBe("false");
+      expect(document.activeElement).toBe(view.host.querySelector("textarea"));
+      act(() => attach.click());
+      key(view.host.querySelector(".pmfa-attachment-menu")!, "Escape");
+      expect(document.activeElement).toBe(attach);
+      expect(controller.getSnapshot().attachments).toEqual([]);
+    } finally {
+      view.unmount();
+      controller.dispose();
+    }
+  });
+
+  it("previews uploaded images and voice audio and rejects unsafe preview schemes", async () => {
+    const controller = new MessageComposerController({
+      upload: async (file) => ({
+        ...file,
+        url:
+          file.id === "unsafe"
+            ? "javascript:alert(1)"
+            : "https://media.example/" + file.name,
+      }),
+      send: async () => undefined,
+    });
+    const view = mount(
+      <ComposeBox controller={controller} voiceNotes={false} />,
+    );
+    try {
+      await act(async () => {
+        await controller.addAttachment({
+          id: "image",
+          name: "order.jpg",
+          contentType: "image/jpeg",
+          size: 10,
+        });
+        await controller.addAttachment({
+          id: "audio",
+          name: "voice.webm",
+          contentType: "audio/webm",
+          size: 10,
+        });
+        await controller.addAttachment({
+          id: "unsafe",
+          name: "unsafe.jpg",
+          contentType: "image/jpeg",
+          size: 10,
+        });
+      });
+      expect(view.host.querySelectorAll("img")).toHaveLength(1);
+      expect(view.host.querySelector("audio")?.getAttribute("src")).toBe(
+        "https://media.example/voice.webm",
+      );
+      expect(view.host.querySelector("audio")?.autoplay).toBe(false);
+    } finally {
+      view.unmount();
+      controller.dispose();
+    }
   });
 });
