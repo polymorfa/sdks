@@ -1274,7 +1274,11 @@ const MessageItem = memo(function MessageItem({
                     ))}
                   </div>
                 )}
-                {message.text !== "" && (
+                {/* An available message with no text and nothing else
+                    still needs a line: the time takes no space. */}
+                {(message.text !== "" ||
+                  (message.linkPreview === undefined &&
+                    (message.attachments?.length ?? 0) === 0)) && (
                   <span className="pmfa-text">
                     {message.text}
                     {/* Reserves the width of the time and receipt on the last line. */}

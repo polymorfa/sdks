@@ -228,6 +228,15 @@ it("renders typed carts and missing-content states through ChatWindow without Co
       '[data-message-id="empty"] [data-slot="contentUnavailable"]',
     ),
   ).toBeNull();
+  // An empty available body still gets a line that reserves the time's width,
+  // so the time stays inside the bubble.
+  const emptyLine = host.querySelector('[data-message-id="empty"] .pmfa-text');
+  expect(
+    emptyLine?.querySelector(".pmfa-meta-space")?.getAttribute("aria-hidden"),
+  ).toBe("true");
+  expect(emptyLine?.firstChild).toBe(
+    emptyLine?.querySelector(".pmfa-meta-space"),
+  );
 });
 
 it("bounds cart lines, preserves expansion focus and uses the SDK Portuguese bundle", () => {

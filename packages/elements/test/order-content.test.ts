@@ -1,6 +1,9 @@
 // @vitest-environment happy-dom
 import { expect, it, vi } from "vitest";
-import { ConversationController } from "@polymorfa/browser";
+import {
+  ConversationController,
+  type ConversationMessage,
+} from "@polymorfa/browser";
 import {
   defineChatElements,
   type PolymorfaChatWindowElement,
@@ -87,6 +90,62 @@ it("renders bounded received carts and hides unavailable bodies and quote snippe
       root.querySelector('[data-message-id="reply"] .pmfa-quote-text')
         ?.textContent,
     ).toBe("Message content was not retained");
+  } finally {
+    node.remove();
+    conversation.dispose();
+  }
+});
+
+function mountWindow(messages: ConversationMessage[]) {
+  defineChatElements();
+  const conversation = new ConversationController({
+    load: async () => ({ messages }),
+    subscribe: () => () => undefined,
+    send: vi.fn(),
+  });
+  const node = document.createElement(
+    "pmfa-chat-window",
+  ) as PolymorfaChatWindowElement;
+  node.controller = conversation;
+  return { conversation, node };
+}
+
+it("gives an empty available body a line for its time without relabelling it", async () => {
+  const { conversation, node } = mountWindow([
+    {
+      id: "empty",
+      text: "",
+      createdAt: 1,
+      direction: "inbound",
+      status: "sent",
+    },
+    {
+      id: "gone",
+      text: "",
+      createdAt: 2,
+      direction: "inbound",
+      status: "sent",
+      contentState: "deleted",
+    },
+  ]);
+  await conversation.load();
+  document.body.append(node);
+  try {
+    const root = node.shadowRoot!;
+    // Empty and available: no label, but a line that reserves the time.
+    const empty = root.querySelector('[data-message-id="empty"]')!;
+    expect(empty.querySelector(".pmfa-content-unavailable")).toBeNull();
+    const line = empty.querySelector(".pmfa-text");
+    expect(line?.firstChild).toBe(line?.querySelector(".pmfa-meta-space"));
+    expect(
+      line?.querySelector(".pmfa-meta-space")?.getAttribute("aria-hidden"),
+    ).toBe("true");
+    // Unavailable bodies keep their label and get no text line.
+    const gone = root.querySelector('[data-message-id="gone"]')!;
+    expect(gone.querySelector(".pmfa-content-unavailable")?.textContent).toBe(
+      "This message was deleted",
+    );
+    expect(gone.querySelector(".pmfa-text")).toBeNull();
   } finally {
     node.remove();
     conversation.dispose();

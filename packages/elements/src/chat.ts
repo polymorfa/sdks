@@ -549,7 +549,13 @@ class MessageListView {
           attachments.append(this.#attachmentNode(attachment));
         bubble.append(attachments);
       }
-      if (message.text !== "") {
+      // An available message with no text and nothing else still needs a
+      // line: the time is positioned over the bubble and takes no space.
+      const empty =
+        message.text === "" &&
+        (message.attachments?.length ?? 0) === 0 &&
+        bubble.querySelector(".pmfa-link-preview") === null;
+      if (message.text !== "" || empty) {
         const textNode = span("pmfa-text", message.text);
         // Reserves the width of the time and receipt on the last line.
         const space = span(
