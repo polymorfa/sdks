@@ -146,6 +146,8 @@ function snippet(host: ViewHost, message: ConversationMessage): string {
     : (message.attachments?.[0]?.name ?? host.text("chat.attachment"));
 }
 
+let orderHeadings = 0;
+
 /** Same received-cart semantics as React, with bounded initial DOM and stable controls. */
 function orderCartNode(host: ViewHost, order: MessageOrder): HTMLElement {
   const root = host.decorate(element("section"), "orderCart");
@@ -154,12 +156,13 @@ function orderCartNode(host: ViewHost, order: MessageOrder): HTMLElement {
     root.textContent = host.text("order.unavailable");
     return root;
   }
-  root.setAttribute("aria-label", host.text("order.title"));
   const count = new Intl.NumberFormat(host.localeCode()).format(
     order.items.length,
   );
-  const header = host.decorate(element("div"), "orderHeader");
+  const header = host.decorate(element("h3"), "orderHeader");
   header.className += " pmfa-order-header";
+  header.id = `pmfa-order-${++orderHeadings}`;
+  root.setAttribute("aria-labelledby", header.id);
   header.append(
     span("", host.text("order.title")),
     span(
@@ -374,7 +377,13 @@ class MessageListView {
       if (!seen.has(id)) this.#cache.delete(id);
     for (const key of this.#dates.keys())
       if (!seenDates.has(key)) this.#dates.delete(key);
-    if (entries.length === 0) nodes.push(this.#emptyNode());
+    if (entries.length === 0) {
+      const empty = this.#emptyNode();
+      empty.textContent = this.host.text(
+        messages.length > 0 ? "chat.noMatches" : "chat.empty",
+      );
+      nodes.push(empty);
+    }
     const pinned = this.#pinned || !this.scroller.isConnected;
     const offset = this.scroller.scrollTop;
     const anchor = [

@@ -7,6 +7,7 @@ export const PT_BR_MESSAGES = {
   "common.retry": "Tentar novamente",
   "chat.title": "Mensagens",
   "chat.empty": "Nenhuma mensagem",
+  "chat.noMatches": "Nenhuma mensagem carregada corresponde",
   "chat.loadMore": "Carregar mensagens anteriores",
   "chat.sending": "Enviando",
   "chat.sent": "Enviada",

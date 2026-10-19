@@ -1579,7 +1579,7 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
 .pmfa-message-filters label { display: flex; flex: 1 1 160px; flex-direction: column; gap: 5px; min-width: 0; font-size: 0.8125em; color: var(--pmfa-c-muted); }
 .pmfa-content-unavailable { color: var(--pmfa-c-muted); font-style: italic; }
 .pmfa-order { display: grid; gap: 8px; min-width: min(240px, 100%); padding-bottom: 4px; }
-.pmfa-order-header { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 0.875em; font-weight: 600; }
+.pmfa-order-header { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 0.875em; font-weight: 600; }
 .pmfa-order-header > :last-child { color: var(--pmfa-c-muted); font-weight: 400; }
 .pmfa-order-items { display: grid; gap: 6px; padding: 0; margin: 0; list-style: none; }
 .pmfa-order-item { padding: 8px 10px; border: 1px solid var(--pmfa-c-border); border-radius: var(--pmfa-r-s); background: var(--pmfa-c-surface); }

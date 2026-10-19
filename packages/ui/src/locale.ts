@@ -8,6 +8,7 @@ export const ENGLISH_MESSAGES = {
   "common.save": "Save",
   "chat.title": "Messages",
   "chat.empty": "No messages yet",
+  "chat.noMatches": "No loaded messages match",
   "chat.loadMore": "Load earlier messages",
   "chat.sending": "Sending",
   "chat.sent": "Sent",

@@ -274,7 +274,11 @@ export function MessageFilterToolbar({
             ref={searchButton}
             aria-expanded={searchOpen}
             aria-controls={searchId}
-            onClick={() => setSearchOpen((open) => !open)}
+            onClick={() => {
+              // A closed search must not keep hiding messages.
+              if (searchOpen) controller.setQuery("");
+              setSearchOpen(!searchOpen);
+            }}
           >
             <Icon name="search" />
             {text(configuration, "chat.searchMessages")}
@@ -295,8 +299,11 @@ export function MessageFilterToolbar({
         {active && (
           <button
             type="button"
-            className="pmfa-btn pmfa-btn-ghost"
-            onClick={() => controller.clear()}
+            className="pmfa-btn pmfa-message-clear"
+            onClick={() => {
+              controller.clear();
+              setSearchOpen(false);
+            }}
           >
             {text(configuration, "chat.clearFilters")}
           </button>
@@ -314,6 +321,7 @@ export function MessageFilterToolbar({
           onChange={(event) => controller.setQuery(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Escape") {
+              controller.setQuery("");
               setSearchOpen(false);
               searchButton.current?.focus();
             }
@@ -460,8 +468,8 @@ function OrderCartContent({
   );
   return (
     <section {...root} aria-labelledby={title}>
-      <div {...slots("orderHeader", "pmfa-order-header")}>
-        <span id={title}>{text(configuration, "order.title")}</span>
+      <h3 {...slots("orderHeader", "pmfa-order-header")} id={title}>
+        <span>{text(configuration, "order.title")}</span>
         <span>
           {text(
             configuration,
@@ -469,7 +477,7 @@ function OrderCartContent({
             { count },
           )}
         </span>
-      </div>
+      </h3>
       <ul {...slots("orderItems", "pmfa-order-items")}>
         {(expanded ? order.items : order.items.slice(0, 20)).map(
           (item, index) => {
@@ -1528,7 +1536,10 @@ function ConversationLog({
         )}
         {entries.length === 0 ? (
           <li {...slots("empty", "pmfa-empty")}>
-            {text(configuration, "chat.empty")}
+            {text(
+              configuration,
+              snapshot.messages.length > 0 ? "chat.noMatches" : "chat.empty",
+            )}
           </li>
         ) : (
           entries.map((entry) =>

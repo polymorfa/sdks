@@ -104,11 +104,35 @@ it("filters the loaded thread by query, type and direction without reloading his
   expect(messages()).toEqual(["out"]);
   act(() => filter.setDirection("inbound"));
   expect(messages()).toEqual([]);
+  expect(host.querySelector('[data-slot="empty"]')?.textContent).toBe(
+    "No loaded messages match",
+  );
   click(
     [...host.querySelectorAll("button")].find(
       (node) => node.textContent === "Clear filters",
     ) ?? null,
   );
+  expect(messages()).toEqual(["in", "out"]);
+  expect(host.querySelector('input[type="search"]')).toBeNull();
+  // Closing search drops its query so no hidden filter keeps hiding messages.
+  click(host.querySelector('[aria-controls][aria-expanded="false"]'));
+  const reopened = host.querySelector(
+    'input[type="search"]',
+  ) as HTMLInputElement;
+  act(() => {
+    Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value",
+    )!.set!.call(reopened, "receipt");
+    reopened.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+  expect(messages()).toEqual(["out"]);
+  act(() =>
+    reopened.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    ),
+  );
+  expect(filter.getSnapshot().query).toBe("");
   expect(messages()).toEqual(["in", "out"]);
   expect(source.load).toHaveBeenCalledOnce();
   expect(source.send).not.toHaveBeenCalled();
@@ -219,7 +243,11 @@ it("bounds cart lines, preserves expansion focus and uses the SDK Portuguese bun
       <OrderCartView order={order} />
     </PolymorfaProvider>,
   );
-  expect(host.textContent).toContain("Pedido");
+  const heading = host.querySelector("h3");
+  expect(heading?.textContent).toContain("Pedido");
+  expect(host.querySelector("section")?.getAttribute("aria-labelledby")).toBe(
+    heading?.id,
+  );
   expect(host.textContent).toContain("Não informado");
   expect(host.querySelectorAll('[data-slot="orderItem"]')).toHaveLength(20);
   const toggle = host.querySelector("button")!;

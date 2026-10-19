@@ -69,6 +69,11 @@ it("renders bounded received carts and hides unavailable bodies and quote snippe
     expect(root.textContent).not.toContain("private-catalog");
     expect(root.textContent).not.toContain("stale body");
     expect(root.querySelector("img")).toBeNull();
+    const heading = root.querySelector("h3.pmfa-order-header");
+    expect(heading?.textContent).toContain("Order");
+    expect(
+      root.querySelector("section.pmfa-order")?.getAttribute("aria-labelledby"),
+    ).toBe(heading?.id);
     expect(root.querySelectorAll('[part~="order-item"]')).toHaveLength(20);
     const toggle = root.querySelector<HTMLButtonElement>(
       '[part~="order-toggle"]',
