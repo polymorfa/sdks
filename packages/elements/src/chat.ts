@@ -2634,6 +2634,7 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
     "heading",
     ...COMPOSER_ATTRIBUTES,
     "replyable",
+    "replies",
     "autofocus",
   ];
   #quickReplies: readonly QuickReplyOption[] = [];
@@ -2796,10 +2797,12 @@ export class PolymorfaChatDrawerElement extends ChatElement<ConversationSnapshot
       () => {
         const controller = this.configuredController<ConversationController>();
         const composer = this.#composer;
+        // `replies="false"` marks a data source that cannot send replies.
         const replyable =
-          composer !== undefined ||
-          this.#onReply !== undefined ||
-          this.hasAttribute("replyable");
+          this.getAttribute("replies") !== "false" &&
+          (composer !== undefined ||
+            this.#onReply !== undefined ||
+            this.hasAttribute("replyable"));
         return {
           loadMore: () => void controller?.loadMore(),
           retry:

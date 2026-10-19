@@ -69,7 +69,9 @@ drawer.addEventListener("pmfa-close", () => drawer.remove());
   Failed outbound messages offer Retry.
 - Reply appears when the element has the `replyable` attribute, an `onReply`
   handler, or (for the drawer) a `composerController`. Each click dispatches
-  a composed `pmfa-reply` event whose `detail` is the message.
+  a composed `pmfa-reply` event whose `detail` is the message. On the drawer
+  and chat window, `replies="false"` removes Reply for a send path that cannot
+  quote a message.
 - `pmfa-chat-drawer` renders a built-in composer when `composerController` is
   set, and Reply sets that composer's reply target. Slotted children still
   render in the footer, so a `pmfa-compose-box` placed inside works as

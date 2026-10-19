@@ -2855,6 +2855,12 @@ export interface ChatWindowProps extends MessageListProps {
     ComposeBoxProps,
     "controller" | "createController" | "conversation"
   >;
+  /**
+   * Whether this conversation's data source accepts replies. Set `false` when
+   * the authorized send path cannot quote a message: Reply is then not offered
+   * anywhere in the thread, including by an `onReply` handler. Defaults to `true`.
+   */
+  readonly replies?: boolean;
   readonly header?: ReactNode;
   readonly footer?: ReactNode;
   /** Read-only until the host confirms sending is available. */
@@ -2870,6 +2876,7 @@ export function ChatWindow({
   header,
   footer,
   disabled = false,
+  replies = true,
   search = false,
   filters = false,
   filterController,
@@ -2900,12 +2907,13 @@ export function ChatWindow({
   const [dropping, setDropping] = useState(false);
   const accepts = (event: DragEvent<HTMLElement>) =>
     !disabled && drop.current !== undefined && hasFiles(event);
-  const reply =
-    onReply ??
-    (composerController && !disabled
-      ? (message: ConversationMessage) =>
-          composerController.setReplyTo(message.id)
-      : undefined);
+  const reply = !replies
+    ? undefined
+    : (onReply ??
+      (composerController && !disabled
+        ? (message: ConversationMessage) =>
+            composerController.setReplyTo(message.id)
+        : undefined));
   return (
     <section
       {...root}
@@ -3011,6 +3019,12 @@ export interface ChatDrawerProps extends MessageListProps {
    * Move focus into the drawer when it first mounts open. Defaults to
    * `false`; focus always moves when `open` changes to `true`.
    */
+  /**
+   * Whether this conversation's data source accepts replies. Set `false` when
+   * the authorized send path cannot quote a message: Reply is then not offered
+   * anywhere in the thread, including by an `onReply` handler. Defaults to `true`.
+   */
+  readonly replies?: boolean;
   readonly autoFocus?: boolean;
   /** Props for the built-in composer. */
   readonly composerProps?: Omit<
@@ -3043,6 +3057,7 @@ export function ChatDrawer({
   composerProps,
   onReply,
   autoFocus = false,
+  replies = true,
   ...viewProps
 }: ChatDrawerProps) {
   const configuration = usePolymorfa();
@@ -3098,7 +3113,7 @@ export function ChatDrawer({
 
   const reply = useMemo(
     () =>
-      onReply === undefined && composing === undefined
+      !replies || (onReply === undefined && composing === undefined)
         ? undefined
         : (message: ConversationMessage) => {
             onReply?.(message);
@@ -3107,7 +3122,7 @@ export function ChatDrawer({
               panel.current?.querySelector("textarea")?.focus();
             }
           },
-    [onReply, composing],
+    [onReply, composing, replies],
   );
 
   if (!open) return null;

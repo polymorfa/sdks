@@ -121,3 +121,46 @@ it("keeps the reader position on resize and disconnects its observer", async () 
   }
   expect(disconnect).toHaveBeenCalledOnce();
 });
+
+it("hides Reply when replies is false, even with a composer", async () => {
+  defineChatElements();
+  const conversation = new ConversationController({
+    load: async () => ({
+      messages: [
+        {
+          id: "one",
+          text: "Hello",
+          createdAt: 1,
+          direction: "inbound",
+          status: "sent",
+        },
+      ],
+    }),
+    subscribe: () => () => undefined,
+    send: vi.fn(),
+  });
+  await conversation.load();
+  const composer = new MessageComposerController(
+    createConversationComposerActions(conversation, async () => {
+      throw new Error("no uploads");
+    }),
+  );
+  const node = document.createElement(
+    "pmfa-chat-window",
+  ) as PolymorfaChatWindowElement;
+  node.controller = conversation;
+  node.composerController = composer;
+  document.body.append(node);
+  try {
+    const replies = () =>
+      node.shadowRoot!.querySelectorAll('[part~="reply"]').length;
+    expect(replies()).toBe(1);
+    node.setAttribute("replies", "false");
+    expect(replies()).toBe(0);
+    expect(node.shadowRoot!.querySelector("textarea")).not.toBeNull();
+  } finally {
+    node.remove();
+    composer.dispose();
+    conversation.dispose();
+  }
+});

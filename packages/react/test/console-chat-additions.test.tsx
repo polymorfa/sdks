@@ -4,7 +4,9 @@ import { createRoot } from "react-dom/client";
 import { afterEach, expect, it, vi } from "vitest";
 import {
   ConversationController,
+  MessageComposerController,
   MessageFilterController,
+  createConversationComposerActions,
   type ConversationMessage,
 } from "@polymorfa/browser";
 import {
@@ -278,4 +280,50 @@ it("renders customer details and a host extension without requiring a client or 
     2,
   );
   expect(host.textContent).toContain("Developer details");
+});
+
+it("offers Reply only when the data source accepts replies, even with a composer", async () => {
+  const messages: ConversationMessage[] = [
+    {
+      id: "m1",
+      text: "Hello",
+      createdAt: 1,
+      direction: "inbound",
+      status: "sent",
+    },
+  ];
+  const conversation = new ConversationController({
+    load: async () => ({ messages }),
+    subscribe: () => () => undefined,
+    send: vi.fn(),
+  });
+  await conversation.load();
+  const composer = new MessageComposerController(
+    createConversationComposerActions(conversation, async () => {
+      throw new Error("no uploads");
+    }),
+  );
+  const onReply = vi.fn();
+  cleanups.push(() => {
+    composer.dispose();
+    conversation.dispose();
+  });
+  const replyButtons = (host: HTMLElement) =>
+    host.querySelectorAll('button[aria-label="Reply"]');
+  const supported = mount(
+    <ChatWindow controller={conversation} composerController={composer} />,
+  );
+  expect(replyButtons(supported)).toHaveLength(1);
+  const regional = mount(
+    <ChatWindow
+      controller={conversation}
+      composerController={composer}
+      replies={false}
+      onReply={onReply}
+    />,
+  );
+  expect(replyButtons(regional)).toHaveLength(0);
+  expect(regional.querySelector("textarea")).not.toBeNull();
+  expect(composer.getSnapshot().replyTo).toBeUndefined();
+  expect(onReply).not.toHaveBeenCalled();
 });

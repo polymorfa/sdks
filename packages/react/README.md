@@ -353,6 +353,11 @@ Search matches text, attachment names and order product identifiers in messages
 already loaded by the conversation. It does not fetch or search all history.
 Supply a `MessageFilterController` as `filterController` to control these filters
 outside the component. The existing `messageFilter` predicate combines with them.
+When no loaded message matches, the list says so instead of showing the empty-thread state.
+
+A composer wires Reply automatically. Set `replies={false}` on `ChatWindow` or
+`ChatDrawer` when your send path cannot quote a message; Reply is then not offered,
+even with an `onReply` handler.
 
 `ConversationMessage.order` renders received cart lines with reported quantities
 and unit prices. Large carts initially show 20 lines. The SDK infers no totals,
