@@ -356,8 +356,9 @@ outside the component. The existing `messageFilter` predicate combines with them
 When no loaded message matches, the list says so instead of showing the empty-thread state.
 
 A composer wires Reply automatically. Set `replies={false}` on `ChatWindow` or
-`ChatDrawer` when your send path cannot quote a message; Reply is then not offered,
-even with an `onReply` handler.
+`ChatDrawer` when your send path cannot quote a message: the thread then shows no
+Reply action, and an `onReply` handler is not called. Messages that already carry
+`replyTo` still render their quoted snippet.
 
 `ConversationMessage.order` renders received cart lines with reported quantities
 and unit prices. Large carts initially show 20 lines. The SDK infers no totals,
@@ -382,4 +383,5 @@ still win. Appearance slots include `messageToolbar`, `messageSearch`,
 `orderItem`, `orderToggle`, `chatDetails` and `chatDetailsField`.
 
 These additions do not provide private Console transports or imply that regional
-retained-contact CRUD, browser streaming, replies or uploads are publicly available.
+retained-contact CRUD, browser streaming, or replies and uploads from retained
+regional chats are publicly available.

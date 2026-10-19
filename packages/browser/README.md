@@ -320,7 +320,8 @@ list. [See the list contract](../../docs/chat-components.md#controlled-conversat
 
 ### Conversation sessions and loaded-message filters
 
-`createConversationSession(source, { upload, draft })` owns a
+`createConversationSession(source, { upload, draft, sendUnavailable, conversation, composer })`
+owns a
 `ConversationController` and its `MessageComposerController`. `source` is the
 public `ConversationDataSource` interface. The host supplies authorized reads,
 subscriptions and sends; an optional upload adapter handles picked file bytes.
@@ -329,7 +330,8 @@ Keep the session while switching threads to preserve its draft, reply and retry
 identity, then call `dispose()` when its scope or authority closes. Disposal
 cancels history reads, sends and uploads together. Pass `sendUnavailable` with a
 message while the host cannot send: submitting then fails with that message, keeps
-the draft and adds no failed message to the thread.
+the draft and never calls `source.send`, so no failed message joins the thread.
+Without an `upload` adapter, attaching a file fails instead of uploading.
 
 `MessageFilterController` has `setQuery`, `setType`, `setDirection`, `clear` and
 `matches` methods. It filters loaded messages without fetching history or changing
