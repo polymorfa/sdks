@@ -327,3 +327,28 @@ it("offers Reply only when the data source accepts replies, even with a composer
   expect(composer.getSnapshot().replyTo).toBeUndefined();
   expect(onReply).not.toHaveBeenCalled();
 });
+
+it("says messages are loading instead of empty while the first page loads", async () => {
+  let resolve!: (page: { messages: ConversationMessage[] }) => void;
+  const conversation = new ConversationController({
+    load: () => new Promise((done) => (resolve = done)),
+    subscribe: () => () => undefined,
+    send: vi.fn(),
+  });
+  cleanups.push(() => conversation.dispose());
+  const host = mount(<ChatWindow controller={conversation} />);
+  let loading!: Promise<void>;
+  act(() => {
+    loading = conversation.load();
+  });
+  expect(host.querySelector('[data-slot="empty"]')?.textContent).toBe(
+    "Loading messages…",
+  );
+  await act(async () => {
+    resolve({ messages: [] });
+    await loading;
+  });
+  expect(host.querySelector('[data-slot="empty"]')?.textContent).toBe(
+    "No messages yet",
+  );
+});

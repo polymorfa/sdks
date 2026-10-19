@@ -1549,7 +1549,11 @@ function ConversationLog({
           <li {...slots("empty", "pmfa-empty")}>
             {text(
               configuration,
-              snapshot.messages.length > 0 ? "chat.noMatches" : "chat.empty",
+              snapshot.messages.length > 0
+                ? "chat.noMatches"
+                : snapshot.status === "loading"
+                  ? "chat.loading"
+                  : "chat.empty",
             )}
           </li>
         ) : (

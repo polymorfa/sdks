@@ -386,7 +386,11 @@ class MessageListView {
     if (entries.length === 0) {
       const empty = this.#emptyNode();
       empty.textContent = this.host.text(
-        messages.length > 0 ? "chat.noMatches" : "chat.empty",
+        messages.length > 0
+          ? "chat.noMatches"
+          : snapshot?.status === "loading"
+            ? "chat.loading"
+            : "chat.empty",
       );
       nodes.push(empty);
     }

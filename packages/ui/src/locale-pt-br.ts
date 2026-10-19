@@ -8,6 +8,7 @@ export const PT_BR_MESSAGES = {
   "chat.title": "Mensagens",
   "chat.empty": "Nenhuma mensagem",
   "chat.noMatches": "Nenhuma mensagem carregada corresponde",
+  "chat.loading": "Carregando mensagens…",
   "chat.loadMore": "Carregar mensagens anteriores",
   "chat.sending": "Enviando",
   "chat.sent": "Enviada",

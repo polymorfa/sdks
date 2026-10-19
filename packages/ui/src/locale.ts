@@ -9,6 +9,7 @@ export const ENGLISH_MESSAGES = {
   "chat.title": "Messages",
   "chat.empty": "No messages yet",
   "chat.noMatches": "No loaded messages match",
+  "chat.loading": "Loading messages…",
   "chat.loadMore": "Load earlier messages",
   "chat.sending": "Sending",
   "chat.sent": "Sent",
