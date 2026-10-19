@@ -191,7 +191,7 @@ function phonePath(projectId: string, session: string): string {
 function assertServerCredential(type: MessagingCredential["type"]): void {
   if (type === "clientToken")
     throw new PolymorfaConfigurationError(
-      "Onboarding management requires an organization API key or project token.",
+      "Onboarding management requires an team key or project token.",
       "credential",
     );
 }

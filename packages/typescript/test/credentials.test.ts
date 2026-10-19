@@ -84,7 +84,7 @@ describe("credential validation", () => {
     ).toThrow(/Messaging project token/);
   });
 
-  it("rejects client, project, and listener tokens as organization keys", () => {
+  it("rejects client, project, and listener tokens as team keys", () => {
     expect(() => validateOrganizationApiKey("pmfa_ct_ZXhhbXBsZQ")).toThrow(
       PolymorfaConfigurationError,
     );
@@ -151,7 +151,7 @@ describe("credential validation", () => {
     ).toThrow();
   });
 
-  it("rejects malformed and non-canonical organization keys", () => {
+  it("rejects malformed and non-canonical team keys", () => {
     for (const value of [
       `pmfa_${"A".repeat(71)}`,
       `pmfa_${"A".repeat(73)}`,

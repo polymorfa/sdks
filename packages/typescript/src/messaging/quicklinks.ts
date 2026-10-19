@@ -245,7 +245,7 @@ export class QuickLinksResource {
   private assertServerCredential(): void {
     if (this.credentialType === "clientToken") {
       throw new PolymorfaConfigurationError(
-        "QuickLink management requires an organization API key or project token.",
+        "QuickLink management requires an team key or project token.",
         "credential",
       );
     }

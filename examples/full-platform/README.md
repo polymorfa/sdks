@@ -232,11 +232,11 @@ Polymorfa.
 | -------------------------------------------------- | --------------------------------------------------------- |
 | `app/api/desk/*`                                   | Project token through `MessagingClient` (or demo data)    |
 | `app/api/messaging/*`                              | Project token through `MessagingClient`                   |
-| `app/api/messaging/media` upload action            | Organization API key (`Client.media`), admin role only    |
-| `app/api/admin/*` except the rows below            | Organization API key through `Client`                     |
+| `app/api/messaging/media` upload action            | Team key (`Client.media`), admin role only    |
+| `app/api/admin/*` except the rows below            | Team key through `Client`                     |
 | `app/api/admin/events`, `webhooks`                 | Project token through `Client<"project">`                 |
-| `app/api/admin/webhooks` `GET ?owner=organization` | Organization API key through `Client`                     |
-| `app/api/admin/settings`                           | Organization API key and project token views              |
+| `app/api/admin/webhooks` `GET ?owner=organization` | Team key through `Client`                     |
+| `app/api/admin/settings`                           | Team key and project token views              |
 | `app/api/admin/bridge`                             | Project token (`BridgeClient`), no key for `SystemClient` |
 | Browser pages                                      | Short-lived `pmfa_ct_` client tokens minted by the server |
 

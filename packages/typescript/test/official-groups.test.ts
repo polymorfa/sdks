@@ -25,10 +25,10 @@ describe("Official groups (beta)", () => {
       baseUrl: server.url,
     }).officialGroups;
     expect(() => groups.list("support")).toThrow(
-      /organization API key or project token/,
+      /team key or project token/,
     );
     expect(() => groups.create("support", { subject: "Orders" })).toThrow(
-      /organization API key/,
+      /team key/,
     );
     expect(server.requests).toHaveLength(0);
   });

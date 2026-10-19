@@ -34,7 +34,7 @@ The history handler exposes an empty application-owned store and retains no
 WhatsApp content. Connect it to your authorized history source to display
 conversations. Before hosting publicly, integrate your application's actual
 authentication, live membership and number authorization, HTTPS origin and
-durable sessions. Keep project and organization credentials in the server.
+durable sessions. Keep project and team keys in the server.
 
 `packages/python/tests/test_browser_hosts.py` runs both ASGI applications over
 real HTTP. It verifies the upstream credential and API version, server-selected

@@ -22,7 +22,7 @@ println!("{}", result.data.data.receipt.id);
 # }
 ```
 
-Use `OrganizationClient` with an organization API key for Platform operations;
+Use `OrganizationClient` with an team key for Platform operations;
 `organization.project("project-id")` creates an immutable project view. Project
 tokens cannot bind to another project. Credentials are validated before network
 requests. The crate refuses compilation for WASM: Rust frontend applications use
@@ -270,7 +270,7 @@ when an intermediate page is empty.
 `cloud_graph::graph_transport_headers(models::MessageTransport)` returns the
 Graph route-choice header for raw requests. It does not grant access to a transport.
 
-Call placement accepts optional `session`, `to` and `video`. Group/participant calls omit `to`; client-token calls omit `session`. Omitting `video` preserves the server default. Streamed API downloads enforce the configured timeout while reading the response body. Organization keys reject every reserved special-purpose token prefix, including padded values.
+Call placement accepts optional `session`, `to` and `video`. Group/participant calls omit `to`; client-token calls omit `session`. Omitting `video` preserves the server default. Streamed API downloads enforce the configured timeout while reading the response body. Team keys reject every reserved special-purpose token prefix, including padded values.
 
 ### Contact frequency caps, audience segments and drips (beta)
 

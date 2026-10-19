@@ -167,7 +167,7 @@ export class DirectMediaApi {
   assertServerCredential(): void {
     if (this.credentialType === "clientToken")
       throw new PolymorfaConfigurationError(
-        "This operation requires an organization API key or project token.",
+        "This operation requires an team key or project token.",
         "credential",
       );
   }

@@ -162,7 +162,7 @@ def test_types_match_pinned_supplements():
         assert set(get_type_hints(model)) == set(schemas[name]["properties"]), name
         required = set(schemas[name].get("required", []))
         if model is C.EnrollPlatformContact:
-            # Organization API keys must select the owning project explicitly.
+            # Team keys must select the owning project explicitly.
             required |= {"projectId"}
         assert model.__required_keys__ == required, name
     step = SEG["sources"]["messaging"]["schemas"]["CampaignDripStepStats"]

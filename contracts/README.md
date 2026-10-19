@@ -138,7 +138,7 @@ public operations retain their typed SDK methods and unchanged fingerprints.
 Usage insights require dashboard identity; no server SDK method grants access
 to that Console route. The three Console-only setup operations also remain
 excluded from SDK authority.
-Reads require organization credentials with `billing:read`; writes require
+Reads require team keys with `billing:read`; writes require
 `billing:manage`, live team authority and Pay-As-You-Go. Existing credential masks
 do not gain these permissions. Paid service continues through its window when a
 limit is reached. The older Graph and test-event supplements keep their independent
@@ -213,7 +213,7 @@ participants add optional `handRaised`.
 moving a launched campaign that is waiting to start. The Messaging update is
 sent once after an uncertain response because its route has no replay key;
 reschedule uses the API's idempotency key. The Platform reschedule request names
-`projectId` for an organization credential. The other refreshed operation
+`projectId` for an team key. The other refreshed operation
 fingerprints were checked against their existing method paths and types.
 files at API `dev` merge commit `e818ba62830d3727a7822379bb46c1fece90ef1b`
 (API PR #433, which corrects the payment order amount and status schemas from
@@ -318,7 +318,7 @@ all 15 Functions routes already merged to API `dev`.
 
 HMS history adds four server-only Messaging reads under
 `MessagingClient.chats`: `list`, `retrieve`, `listMessages`, and
-`retrieveMessage`. All four are covered; they require an organization key or
+`retrieveMessage`. All four are covered; they require an team key or
 project token, their respective `chats:read` or `messages:read` scope, HMS on
 the Number, and `messaging.history` beta enrollment. Client tokens are refused
 locally. Pagination retains both cursors and the data-region response header.
@@ -353,7 +353,7 @@ object. No routes were added or removed by this schema refresh.
 This revision also covers `GET /platform/usage`, `/platform/usage/records`,
 and `/platform/gates` through `Client.usage.summary`, `listRecords`, and
 `listGates`. `iterateRecords` follows record-page cursors. Usage is measured
-but not charged; gate state requires an organization credential.
+but not charged; gate state requires an team key.
 
 The Campaigns P0 revision added these operations. Audiences gain member
 management (`POST`/`GET /platform/audiences/{listId}/members` and

@@ -2,7 +2,7 @@
 
 Handwritten server SDK for .NET 8 and later. This package is in development and has not been published to NuGet. It uses the API contract revision `2026-09-22` pinned in this repository.
 
-Create a messaging client with an organization API key or a project token. Keep server credentials in your server process.
+Create a messaging client with an team key or a project token. Keep server credentials in your server process.
 
 ```csharp
 using Polymorfa.Sdk;
@@ -103,7 +103,7 @@ bound `SignalCustody` methods unwrap the data envelope once and retain metadata.
 The equivalent organization `Projects` and `Customers` aliases retain
 `DataEnvelope<SignalCustodyDefault>`. Disposing a borrowed Project view does not
 close its owner's transport. Project tokens cannot rebind to another project;
-organization credentials retain their existing rebind behavior.
+team keys retain their existing rebind behavior.
 
 Profile and consent lists return one `AudienceProfilePage<T>` with
 `Page.NextCursor` and `Page.HasMore`. Exports return one

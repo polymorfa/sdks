@@ -19,7 +19,7 @@ public sealed class Credential
         if (value is null || !(kind == CredentialKind.ClientToken ? ClientShape(value) : OpaqueShape(value, pattern)))
             throw new PolymorfaConfigurationException("Invalid credential.");
         if (kind == CredentialKind.OrganizationApiKey && new[] { "pmfa_pt_", "pmfa_ct_", "pmfa_ls_", "pmfa_at_", "pmfa_wst_", "pmfa_sd_" }.Any(prefix => value.StartsWith(prefix, StringComparison.Ordinal)))
-            throw new PolymorfaConfigurationException("Special-purpose credentials cannot be used as organization API keys.");
+            throw new PolymorfaConfigurationException("Special-purpose credentials cannot be used as team keys.");
         if (kind != CredentialKind.ClientToken && OperatingSystem.IsBrowser())
             throw new PolymorfaConfigurationException("Server credentials cannot be used in browser/WASM applications.");
         return new Credential(kind, value);

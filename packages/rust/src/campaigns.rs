@@ -1595,7 +1595,7 @@ pub struct EnrollCampaignContactRequest {
     )]
     pub variables: Option<BTreeMap<String, CampaignVariableValue>>,
 }
-/// Organization API keys select the owning project explicitly.
+/// Team keys select the owning project explicitly.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EnrollPlatformCampaignContactRequest {
@@ -1620,7 +1620,7 @@ fn sent_once(mut options: RequestOptions) -> RequestOptions {
 }
 const FREQUENCY_CAP: &str = "/platform/campaign-settings/frequency-cap";
 impl PlatformCampaigns<'_> {
-    /// Team cap. Organization API key with campaigns:read.
+    /// Team cap. Team key with campaigns:read.
     pub async fn get_frequency_cap(
         &self,
         options: RequestOptions,

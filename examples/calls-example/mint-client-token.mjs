@@ -16,7 +16,7 @@ if (!key || !session || !ephemeralId) {
   process.exitCode = 1;
 } else if (!credentialType) {
   process.stderr.write(
-    "Enter a canonical organization key or project token.\n",
+    "Enter a canonical team key or project token.\n",
   );
   process.exitCode = 1;
 } else {

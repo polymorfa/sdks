@@ -15,7 +15,7 @@
 - Contract source is the Polymorfa source monorepo at `f156af2dda13e62b6b106a542fdedb39524bdb66`, path `apps/api/docs/openapi.management.json`.
 - Graph-compatible APIs remain excluded.
 - Runtime client code is handwritten; OpenAPI does not generate runtime source.
-- `PlatformClient` accepts only organization server API keys.
+- `PlatformClient` accepts only team keys.
 - Dashboard-only templates and flows are excluded from this server client.
 - Open request and response objects remain `Readonly<Record<string, unknown>>`; do not invent fields absent from the contract.
 - Unsafe methods retry only when a caller supplies an idempotency key.
@@ -238,7 +238,7 @@ expect(mapping("createFlow").typescript.status).toBe("excluded");
 ```
 
 - [ ] **Step 2: Run the focused coverage test and verify it fails with the old 32/249/50 totals**
-- [ ] **Step 3: Change the 27 API-key operations to exact covered mappings and the ten dashboard-only operations to exclusions with this reason: `This dashboard-only route does not accept the organization server API key used by PlatformClient.`**
+- [ ] **Step 3: Change the 27 API-key operations to exact covered mappings and the ten dashboard-only operations to exclusions with this reason: `This dashboard-only route does not accept the team key used by PlatformClient.`**
 - [ ] **Step 4: Extend root export type assertions for `PlatformPayload` and each resource class**
 - [ ] **Step 5: Run `npm run check:coverage`, focused coverage/export tests, and `npm run check:names`**
 - [ ] **Step 6: Commit with `chore: record Platform automation coverage`**

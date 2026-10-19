@@ -136,7 +136,7 @@ The handwritten Messaging resources in this milestone are:
 
 - `banSafe`: retrieve and update project Safe Mode, warm-up, Ban Insurance
   evidence, and Health policy settings, and one number's Safe Mode override,
-  with an organization API key or project token
+  with an team key or project token
 - `sessions`: list, retrieve, update, delete, start, stop, restart,
   logout, account, and entitlement-gated direct JSON QR or phone pairing
 - `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing sessions
@@ -218,7 +218,7 @@ console.log(indexed.highWatermark, indexed.nextOffset);
 `Client` binds its ownership context when you construct it. An organization
 API key without `projectId` creates an organization client. Call
 `client.project(projectId)` to create an immutable project view, or construct a
-project view directly with an organization key or a `pmfa_pt_` project token:
+project view directly with an team key or a `pmfa_pt_` project token:
 
 ```ts
 const project = new Client({
@@ -280,7 +280,7 @@ project clients see only their project.
 The organization view also exposes these management resources:
 
 - `organizations`: retrieve the organization visible to the API key
-- `apiKeys`: list key metadata and deactivate an organization API key
+- `apiKeys`: list key metadata and deactivate an team key
 - `members`: list organization members
 - `auditLogs`: list the organization audit trail with live action, resource,
   and limit filters
@@ -475,7 +475,7 @@ request ID and the W3C trace ID returned in `X-Trace-Id`. See
 ## Call consent
 
 Polymorfa checks every call against the team's call policy before the
-destination rings. The policy is team-wide and needs an organization key;
+destination rings. The policy is team-wide and needs an team key;
 project tokens and client tokens receive `403`.
 
 ```ts
@@ -767,7 +767,7 @@ used by `Client`, `MessagingClient`, or their raw request helpers.
 `MessagingClient.quickLinks.create()`, `retrieve()`, and `cancel()` map the
 authenticated hosted lifecycle at `/messaging/quicklinks`. They accept organization
 API keys or project tokens with `quicklink:manage`; browser client tokens fail
-before transport. Organization keys can set `projectId` on creation, while a
+before transport. Team keys can set `projectId` on creation, while a
 project token remains bound by the server.
 
 These methods expose the short-lived connection URL and status record. They do

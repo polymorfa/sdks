@@ -158,7 +158,7 @@ func validateCredential(c Credential, messaging bool) error {
 	switch c.Kind {
 	case OrganizationAPIKey:
 		if !opaqueShape(c.Value, "pmfa_") || strings.HasPrefix(c.Value, "pmfa_pt_") || strings.HasPrefix(c.Value, "pmfa_ct_") || strings.HasPrefix(c.Value, "pmfa_ls_") || strings.HasPrefix(c.Value, "pmfa_at_") || strings.HasPrefix(c.Value, "pmfa_wst_") || strings.HasPrefix(c.Value, "pmfa_sd_") {
-			return configuration("credential", "Organization API keys require the canonical pmfa_ opaque format.")
+			return configuration("credential", "Team keys require the canonical pmfa_ opaque format.")
 		}
 	case ProjectToken:
 		if !opaqueShape(c.Value, "pmfa_pt_") {

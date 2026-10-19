@@ -38,7 +38,7 @@ describe("Cloud templates", () => {
       () => resource.delete("support", "delivery"),
     ];
     for (const request of requests) {
-      expect(request).toThrow(/organization API key or project token/);
+      expect(request).toThrow(/team key or project token/);
     }
     expect(server.requests).toHaveLength(0);
   });

@@ -14,7 +14,7 @@ $messageId = $response->data['data']['id'];
 $requestId = $response->metadata->requestId;
 ```
 
-`Client` manages Platform resources; `Client::project($projectId)` returns an immutable project view. `ProjectClient` accepts an organization API key or project token and cannot rebind to another project. `MessagingClient` also accepts constrained client tokens for supported messaging actions; server-only operations reject them before a request.
+`Client` manages Platform resources; `Client::project($projectId)` returns an immutable project view. `ProjectClient` accepts an team key or project token and cannot rebind to another project. `MessagingClient` also accepts constrained client tokens for supported messaging actions; server-only operations reject them before a request.
 
 Response array shapes have handwritten PHPStan types. Responses retain metadata, including status, attempts, version and request ID. Errors use status-specific exception classes and retain safe server error fields. Raw access is an explicit escape hatch, and project raw access remains confined to its project. Request options include per-request version, timeout, idempotency key, headers and cooperative cancellation. Reserved authentication headers cannot be overridden.
 
@@ -117,7 +117,7 @@ A usage record or configured gate does not establish a customer charge.
 `sipTrunks` provides typed trunk configuration, endpoint discovery and credential
 rotation. For organization clients, `list($projectId)` and
 `create($input, $projectId)` select a project. Project views use their own project.
-When a project view uses an organization key, writes first verify the trunk's
+When a project view uses an team key, writes first verify the trunk's
 project using a read without the write's idempotency key. An environment without
 SIP hosting returns the `sip_not_hosted` endpoint variant.
 
@@ -683,7 +683,7 @@ These additions are unpublished and do not establish feature availability.
 
 Messaging campaign helpers include `links`, `testSend`, `createReplyFlow`,
 `getReplyFlow`, `setReplyFlow` and `exportRecipients`. They require an
-organization API key or Project token. Platform `campaigns` exposes the
+team key or Project token. Platform `campaigns` exposes the
 matching helpers plus `listLaunchApprovals` and organization-only `getSettings`.
 A Project view exposes exactly the seven Project campaign helpers, with the
 Project captured by its readonly resource. It rejects caller-supplied Project

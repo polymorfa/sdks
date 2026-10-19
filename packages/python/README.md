@@ -159,7 +159,7 @@ the endpoint's signing secret and timestamp tolerance. It preserves the timestam
 text when constructing the signed input. `FLOW_FORWARD_SIGNATURE_HEADER` names
 its header. `parse_content_disposition_filename` decodes RFC 8187 filenames,
 removes directory segments and control characters, and returns a display name.
-`AsyncCallRetentionClient` reads the team-wide setting using an organization key
+`AsyncCallRetentionClient` reads the team-wide setting using an team key
 or a project token without requiring a project ID. Updates retain server-side
 team-key authorization. `POLYMORFA_ERROR_CODES` and `is_known_error_code` expose
 documented codes while errors preserve unknown future codes.
@@ -247,7 +247,7 @@ Official API groups expose typed join decisions and force every provider change
 to one attempt. Onboarding continuation and Testing methods require a server
 credential; Testing phone methods expose simulated device and message results.
 SIP trunks provide typed credentials and endpoint variants, with ownership checks
-before an organization key acts through a project client.
+before an team key acts through a project client.
 
 Retained events, webhook signing generations and delivery attempts expose typed
 metadata and payload-availability states. Indexed event pages preserve offsets

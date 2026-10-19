@@ -40,7 +40,7 @@ records both CSS viewport and PNG dimensions and SHA-256 hashes.
 The first navigation raced FastAPI startup (`ERR_CONNECTION_REFUSED`); retry
 after server readiness passed. The first Rust fixture rejected its legitimate
 server-generated UUID identity; correcting that fixture passed without an SDK
-edit. The first ASP.NET fixture used an invalid synthetic organization key;
+edit. The first ASP.NET fixture used an invalid synthetic team key;
 the documented credential shape corrected it. Reusing a loopback origin also
 cached Yew's static page: a cache reload and distinct URL selected ASP.NET and
 passed. These setup failures are not SDK runtime regressions.

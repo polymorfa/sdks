@@ -116,7 +116,7 @@ final class Campaigns extends Resource
     }
 
 
-    /** Team cap. Organization API key with campaigns:read.
+    /** Team cap. Team key with campaigns:read.
      * @return ApiResponse<array{data:FrequencyCapSettings}> */
     public function getFrequencyCap(?RequestOptions $options = null): ApiResponse
     { /** @var ApiResponse<array{data:FrequencyCapSettings}> */ return ExistingContract::request($this->transport, 'GET', '/platform/campaign-settings/frequency-cap', options:$options, model:'frequencyCap');

@@ -26,7 +26,7 @@ implementation. The token endpoint must authenticate your application user,
 derive their authorized session or customer from server state, and use
 `MessagingClient.client_tokens().mint()` to issue a short-lived token. Never
 accept the session/customer target or ephemeral identity as trusted browser
-input, and never send a project token or organization API key to WASM.
+input, and never send a project token or team key to WASM.
 
 The runnable [Yew + Axum example](yew/README.md) builds a browser WASM application
 with the existing Web Components and a server-owned authenticated token route.

@@ -349,7 +349,7 @@ class EnrollContact(TypedDict):
 
 
 class EnrollPlatformContact(EnrollContact):
-    # Organization API keys select the owning project explicitly.
+    # Team keys select the owning project explicitly.
     projectId: str
 
 

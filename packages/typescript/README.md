@@ -43,7 +43,7 @@ Node.js applications that need its file helpers.
 ## Management client and project views
 
 `Client` has one ownership context for its lifetime. Construct an organization
-client with an organization API key, then derive immutable project views with
+client with an team key, then derive immutable project views with
 `project(projectId)`:
 
 ```ts
@@ -88,7 +88,7 @@ have a different authorization boundary.
 Messaging credentials are explicit: `apiKey` for an organization server key,
 `projectToken` for the single opaque project-token format, and `clientToken`
 for the browser action allowlist. Server credentials fail in browser runtimes.
-An organization key is exactly `pmfa_` plus 72 unpadded base64url characters;
+An team key is exactly `pmfa_` plus 72 unpadded base64url characters;
 a project token is exactly `pmfa_pt_` plus 94. The SDK checks only this public
 v1 grammar and never decodes or decrypts the credential.
 
@@ -311,7 +311,7 @@ console.log(
 Use `platform.projects` for project Safe Mode, warm-up, Ban Insurance evidence,
 and Health policy settings. Use `platform.sessions` for one number's Safe Mode
 override. `MessagingClient.banSafe` exposes the same settings on the Messaging
-API for organization API keys and project tokens; its responses carry
+API for team keys and project tokens; its responses carry
 `success: true` beside `data`. Browser client tokens fail before any request.
 
 Claim `measuredCents`, `capCents`, and `amountCents` are credit quantities with
@@ -496,7 +496,7 @@ browser code.
 
 `messaging.cloudTemplates` lists, retrieves, creates, edits and deletes Meta templates
 for a Number. It is separate from `messaging.templates`, which manages project
-drafts. Use an organization API key or project token; the SDK rejects browser
+drafts. Use an team key or project token; the SDK rejects browser
 client tokens before sending any of these requests. The native template API
 requires an enabled Official API connection. For a Hybrid Number it uses that
 exact connection and its WABA; a retired or disabled
@@ -532,7 +532,7 @@ ID and invite link arrive in a `group.update` event with action `created`.
 Send to a group with `messages.send` and the group's conversation ID (text,
 media and templates only). Every change makes one attempt even with a retry
 override and passes your `idempotencyKey` to the API. Read the group before
-repeating an uncertain change. Use an organization API key or project token.
+repeating an uncertain change. Use an team key or project token.
 
 ```ts
 const { data } = await messaging.officialGroups.create("support", {
@@ -549,7 +549,7 @@ await messaging.officialGroups.approveJoinRequests("support", groupId, [
 reads catalog IDs and names visible to the connected WABA credentials. It
 requires `sessions:read` and Graph access. The response retains opaque cursors;
 it does not expose upstream pagination URLs or grant merchant ownership. Use
-an organization API key or project token, with the latter confined to its project.
+an team key or project token, with the latter confined to its project.
 
 `messaging.cloudCatalogs.listProducts(wabaId, catalogId, { version: "v26.0", limit: 25, after })`
 reads a page of product IDs, optional retailer IDs, names, and availability
@@ -721,7 +721,7 @@ Calls clients send these reports for you.
 ## Call consent
 
 Every call is checked against the team's call policy before the destination
-rings. Reading and changing the policy needs an organization key; project
+rings. Reading and changing the policy needs an team key; project
 tokens and client tokens receive `403`.
 
 ```ts
@@ -1364,7 +1364,7 @@ if (page.data.nextCursor) {
 console.log(page.metadata.headers["polymorfa-data-region"]);
 ```
 
-These conversation and message reads require an organization key or project token, a visible
+These conversation and message reads require an team key or project token, a visible
 Number with hosted message storage enabled, team enrollment in
 `messaging.history`, and `chats:read` or `messages:read` as appropriate. The
 feature is an unreleased enrolled beta; an SDK method does not grant access.
@@ -2575,7 +2575,7 @@ not reach a browser.
 
 ## Platform automation
 
-Organization API keys can use handwritten campaign, audience, opt-out, and
+Team keys can use handwritten campaign, audience, opt-out, and
 media resources:
 
 ```ts
@@ -2605,7 +2605,7 @@ open `PlatformPayload` objects. Launch, pause, resume, and stop generate one
 idempotency key per call unless you pass one. Archive, duplicate, and requeue
 do not generate keys because their contracts do not declare replay. Templates
 and Flows are not methods on `Client`:
-their endpoints require a dashboard bearer and reject the organization API key
+their endpoints require a dashboard bearer and reject the team key
 used by the server client.
 
 ## Metered call usage and gates
@@ -2613,7 +2613,7 @@ used by the server client.
 `Client.usage` reads the merged usage API. It needs `sessions:read`.
 Organization clients can read team usage or filter by project and session;
 project clients read only their bound project's usage. Gate state is team-wide:
-`listGates()` requires an organization credential, and the API returns 403 for
+`listGates()` requires an team key, and the API returns 403 for
 project credentials.
 
 ```ts
@@ -2829,9 +2829,9 @@ const status = await messaging.quickLinks.retrieve(quickLink.data.data.id);
 console.log(quickLink.data.data.url, status.data.data.status);
 ```
 
-The resource accepts organization API keys or project tokens with
+The resource accepts team keys or project tokens with
 `quicklink:manage`. It rejects browser client tokens before transport. An
-organization key can select `projectId` when creating a link; a project token
+team key can select `projectId` when creating a link; a project token
 is bound by the server. `cancel()` invalidates a pending link and removes its
 pending session. Connected links cannot be cancelled. The source exposes no
 list, recover, or history operation.
@@ -3035,7 +3035,7 @@ const { data } = await messaging.testing.listEventFixtures(projectId);
 Set `fromSession` on a `message.received` request to send a simulated text
 from another connected Test number in the same project instead; the response
 has `delivery: "simulated"` and the event arrives as ordinary Test number
-activity. Both methods require an organization API key or project token with
+activity. Both methods require an team key or project token with
 `sandbox:write` (trigger) or `sandbox:read` (list) and Test numbers access.
 
 Use `session.restriction_updated` with `{ restrictionActive: false }` to
@@ -3072,7 +3072,7 @@ await messaging.testing.unlinkPhoneDevice(projectId, "my-test-number", 74);
 ```
 
 `getPhone` needs `sandbox:read`; `sendPhoneMessage` and `unlinkPhoneDevice`
-need `sandbox:write`. All three need an organization API key or project token
+need `sandbox:write`. All three need an team key or project token
 and Test numbers access. Real numbers, an offline phone and recipients outside
 the project are refused with a `PolymorfaValidationError`. Phone messages share
 the 30-per-minute project limit with test events. Device 0 is the phone and

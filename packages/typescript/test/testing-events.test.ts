@@ -181,9 +181,9 @@ it("rejects client tokens before transport", () => {
       session: "test-a",
       event: "session.status",
     }),
-  ).toThrow("requires an organization API key or project token");
+  ).toThrow("requires an team key or project token");
   expect(() => messaging.testing.listEventFixtures("project-a")).toThrow(
-    "requires an organization API key or project token",
+    "requires an team key or project token",
   );
   expect(fetcher).not.toHaveBeenCalled();
 });

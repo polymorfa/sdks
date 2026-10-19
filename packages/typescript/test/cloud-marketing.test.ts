@@ -35,7 +35,7 @@ describe("Official API marketing status", () => {
     });
     expect(() =>
       browser.cloudMarketing.status("123", { version: "v26.0" }),
-    ).toThrow("organization API key or project token");
+    ).toThrow("team key or project token");
     const server = new MessagingClient({
       credential: { type: "projectToken", value: PROJECT_TOKEN },
     });

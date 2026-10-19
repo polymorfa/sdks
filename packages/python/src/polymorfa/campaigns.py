@@ -414,7 +414,7 @@ class Campaigns(Resource):
     async def get_frequency_cap(
         self, *, options: RequestOptions = O
     ) -> ApiResponse[DataEnvelope[C.FrequencyCapSettings]]:
-        """Team cap. Organization API key with campaigns:read."""
+        """Team cap. Team key with campaigns:read."""
         return await self._request(
             "GET", "/platform/campaign-settings/frequency-cap", options=options
         )

@@ -88,7 +88,7 @@ export function validateOrganizationApiKey(value: string): string {
   rejectNonOrganizationCredential(value);
   if (!isServerApiKey(value)) {
     throw new PolymorfaConfigurationError(
-      "Organization server API keys must use the canonical pmfa_ opaque format.",
+      "Team keys must use the canonical pmfa_ opaque format.",
       "credential",
     );
   }
@@ -107,7 +107,7 @@ function rejectListenerCredential(value: string): void {
 function rejectNonOrganizationCredential(value: string): void {
   if (value.startsWith("pmfa_ct_") || value.startsWith("pmfa_pt_")) {
     throw new PolymorfaConfigurationError(
-      "Client and project tokens cannot be used as organization server API keys.",
+      "Client and project tokens cannot be used as team keys.",
       "credential",
     );
   }
@@ -117,7 +117,7 @@ function rejectNonOrganizationCredential(value: string): void {
     value.startsWith("pmfa_sd_")
   ) {
     throw new PolymorfaConfigurationError(
-      "Special-purpose tickets and capabilities cannot be used as organization server API keys.",
+      "Special-purpose tickets and capabilities cannot be used as team keys.",
       "credential",
     );
   }

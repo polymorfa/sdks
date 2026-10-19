@@ -55,9 +55,9 @@ it("rejects client-token fixture upload and Meta continuation before transport",
   });
   expect(() =>
     client.testing.createHistoryFixture("project-a", { messages: [] }),
-  ).toThrow("requires an organization API key or project token");
+  ).toThrow("requires an team key or project token");
   expect(() =>
     client.cloudOnboarding.advance({ quicklinkId: "ql_test" }),
-  ).toThrow("requires an organization API key or project token");
+  ).toThrow("requires an team key or project token");
   expect(fetcher).not.toHaveBeenCalled();
 });

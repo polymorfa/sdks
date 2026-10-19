@@ -199,7 +199,7 @@ export interface CreatePlatformCampaignRequest {
 
   readonly segmentId?: string;
   readonly drip?: CampaignDripInput | null;
-  /** Owning project; organization API keys are not bound to one project. */
+  /** Owning project; team keys are not bound to one project. */
   readonly projectId: string;
   /** Trimmed by the API; 1 to 200 characters and must not be blank. */
   readonly name: string;
@@ -517,7 +517,7 @@ export interface DeleteAudienceMemberResult {
 }
 
 /**
- * Organization keyword capture. When enabled, a reply matching an opt-out
+ * Team keyword capture. When enabled, a reply matching an opt-out
  * keyword suppresses the contact and emits `contact.opted_out`.
  */
 export interface OptOutSettings {
@@ -587,7 +587,7 @@ export interface TierPricing {
   readonly features: readonly string[];
 }
 
-/** Metadata for an organization server API key. Raw key material is never returned. */
+/** Metadata for an team key. Raw key material is never returned. */
 export interface ApiKey {
   readonly _id: string;
   readonly _creationTime: number;

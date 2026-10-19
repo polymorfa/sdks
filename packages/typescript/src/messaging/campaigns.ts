@@ -71,7 +71,7 @@ export class MessagingCampaignsResource {
   private requireServerCredential(): void {
     if (this.credentialType === "clientToken") {
       throw new PolymorfaConfigurationError(
-        "Campaign operations require an organization API key or project token.",
+        "Campaign operations require an team key or project token.",
         "credential",
       );
     }

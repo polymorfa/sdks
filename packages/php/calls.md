@@ -1,7 +1,7 @@
 # Server Calls
 
 Install `phrity/websocket:^4.0` alongside `polymorfa/sdk` to use the native
-WebSocket transport. Use a project token, organization key, or server-minted
+WebSocket transport. Use a project token, team key, or server-minted
 client token. Server credentials belong in the PHP process. Browser applications
 reuse Polymorfa Web Components and receive short-lived client tokens from their
 application backend.
