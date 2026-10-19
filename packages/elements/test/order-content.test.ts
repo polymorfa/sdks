@@ -151,3 +151,55 @@ it("gives an empty available body a line for its time without relabelling it", a
     conversation.dispose();
   }
 });
+
+it("keeps the cart toggle in place inside the message list when items change above it", async () => {
+  const { conversation, node } = mountWindow([
+    {
+      id: "cart",
+      text: "",
+      createdAt: 1,
+      direction: "inbound",
+      status: "sent",
+      order: {
+        catalogId: "c",
+        items: Array.from({ length: 23 }, (_, index) => ({
+          productRetailerId: `product-${index}`,
+          quantity: 1,
+          itemPrice: null,
+          currency: null,
+        })),
+      },
+    },
+  ]);
+  await conversation.load();
+  document.body.append(node);
+  try {
+    const root = node.shadowRoot!;
+    const scroller = root.querySelector<HTMLElement>(".pmfa-list")!;
+    scroller.style.overflowY = "auto";
+    scroller.scrollTop = 1000;
+    const toggle = root.querySelector<HTMLButtonElement>(
+      '[part~="order-toggle"]',
+    )!;
+    // Layout: three added items push the toggle 284px down, then back up.
+    const tops = [400, 684, 684, 400];
+    vi.spyOn(toggle, "getBoundingClientRect").mockImplementation(
+      () => ({ top: tops.shift() ?? 400 }) as DOMRect,
+    );
+    const pageScroll = vi
+      .spyOn(window, "scrollTo")
+      .mockImplementation(() => undefined);
+    toggle.focus();
+    toggle.click();
+    expect(root.querySelectorAll('[part~="order-item"]')).toHaveLength(23);
+    expect(scroller.scrollTop).toBe(1284);
+    expect(root.activeElement).toBe(toggle);
+    toggle.click();
+    expect(scroller.scrollTop).toBe(1000);
+    expect(root.activeElement).toBe(toggle);
+    expect(pageScroll).not.toHaveBeenCalled();
+  } finally {
+    node.remove();
+    conversation.dispose();
+  }
+});

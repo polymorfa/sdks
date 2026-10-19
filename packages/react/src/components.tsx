@@ -454,6 +454,15 @@ export function OrderCartView({
   );
 }
 
+/** The nearest ancestor that scrolls vertically. */
+function scrollingAncestor(node: Element): HTMLElement | undefined {
+  for (let parent = node.parentElement; parent; parent = parent.parentElement) {
+    const { overflowY } = getComputedStyle(parent);
+    if (overflowY === "auto" || overflowY === "scroll") return parent;
+  }
+  return undefined;
+}
+
 function OrderCartContent({
   order,
   configuration,
@@ -467,6 +476,19 @@ function OrderCartContent({
 }) {
   const title = useId();
   const [expanded, setExpanded] = useState(false);
+  const toggle = useRef<HTMLButtonElement>(null);
+  // The toggle's position before items change above it.
+  const toggleTop = useRef<number | undefined>(undefined);
+  useIsomorphicLayoutEffect(() => {
+    const node = toggle.current;
+    const before = toggleTop.current;
+    toggleTop.current = undefined;
+    if (node === null || before === undefined) return;
+    // Keep the toggle in view inside its own scroller; the page never scrolls.
+    const scroller = scrollingAncestor(node);
+    if (scroller !== undefined)
+      scroller.scrollTop += node.getBoundingClientRect().top - before;
+  }, [expanded]);
   if (order === "unreadable")
     return <span {...root}>{text(configuration, "order.unavailable")}</span>;
   const count = new Intl.NumberFormat(configuration.locale.code).format(
@@ -521,7 +543,11 @@ function OrderCartContent({
           {...slots("orderToggle", "pmfa-btn pmfa-order-toggle")}
           type="button"
           aria-expanded={expanded}
-          onClick={() => setExpanded((value) => !value)}
+          ref={toggle}
+          onClick={(event) => {
+            toggleTop.current = event.currentTarget.getBoundingClientRect().top;
+            setExpanded((value) => !value);
+          }}
         >
           {text(configuration, expanded ? "order.showFewer" : "order.showAll", {
             count,

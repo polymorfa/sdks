@@ -271,6 +271,43 @@ it("bounds cart lines, preserves expansion focus and uses the SDK Portuguese bun
   expect(host.querySelectorAll('[data-slot="orderItem"]')).toHaveLength(20);
 });
 
+it("keeps the cart toggle in place inside its own scroller when items change above it", () => {
+  const order = {
+    catalogId: "internal",
+    items: Array.from({ length: 23 }, (_, i) => ({
+      productRetailerId: `product-${i}`,
+      quantity: 1,
+      itemPrice: null,
+      currency: null,
+    })),
+  };
+  const host = mount(
+    <div style={{ overflowY: "auto" }}>
+      <OrderCartView order={order} />
+    </div>,
+  );
+  const scroller = host.firstElementChild as HTMLElement;
+  scroller.scrollTop = 1000;
+  const toggle = host.querySelector("button")!;
+  // Layout: three added items push the toggle 284px down, then back up.
+  const tops = [400, 684, 684, 400];
+  vi.spyOn(toggle, "getBoundingClientRect").mockImplementation(
+    () => ({ top: tops.shift() ?? 400 }) as DOMRect,
+  );
+  const pageScroll = vi
+    .spyOn(window, "scrollTo")
+    .mockImplementation(() => undefined);
+  toggle.focus();
+  click(toggle);
+  expect(host.querySelectorAll('[data-slot="orderItem"]')).toHaveLength(23);
+  expect(scroller.scrollTop).toBe(1284);
+  expect(document.activeElement).toBe(toggle);
+  click(toggle);
+  expect(scroller.scrollTop).toBe(1000);
+  expect(document.activeElement).toBe(toggle);
+  expect(pageScroll).not.toHaveBeenCalled();
+});
+
 it("renders customer details and a host extension without requiring a client or exposing technical fields", () => {
   const host = mount(
     <ChatDetails

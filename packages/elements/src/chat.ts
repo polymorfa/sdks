@@ -148,6 +148,27 @@ function snippet(host: ViewHost, message: ConversationMessage): string {
 
 let orderHeadings = 0;
 
+/** The nearest ancestor that scrolls vertically, inside the same tree. */
+function scrollingAncestor(node: Element): HTMLElement | undefined {
+  for (let parent = node.parentElement; parent; parent = parent.parentElement) {
+    const { overflowY } = getComputedStyle(parent);
+    if (overflowY === "auto" || overflowY === "scroll") return parent;
+  }
+  return undefined;
+}
+
+/**
+ * Runs `change`, then scrolls `node`'s own scroller so `node` stays where it
+ * was. The page never scrolls and focus does not move.
+ */
+function keepInPlace(node: Element, change: () => void): void {
+  const scroller = scrollingAncestor(node);
+  const before = node.getBoundingClientRect().top;
+  change();
+  if (scroller !== undefined)
+    scroller.scrollTop += node.getBoundingClientRect().top - before;
+}
+
 /** Same received-cart semantics as React, with bounded initial DOM and stable controls. */
 function orderCartNode(host: ViewHost, order: MessageOrder): HTMLElement {
   const root = host.decorate(element("section"), "orderCart");
@@ -214,12 +235,15 @@ function orderCartNode(host: ViewHost, order: MessageOrder): HTMLElement {
     const toggle = host.decorate(
       button(host.text("order.showAll", { count }), "order-toggle", () => {
         expanded = !expanded;
-        renderItems();
-        toggle.textContent = host.text(
-          expanded ? "order.showFewer" : "order.showAll",
-          { count },
-        );
-        toggle.setAttribute("aria-expanded", String(expanded));
+        // Items change above the toggle; keep it in view inside the list.
+        keepInPlace(toggle, () => {
+          renderItems();
+          toggle.textContent = host.text(
+            expanded ? "order.showFewer" : "order.showAll",
+            { count },
+          );
+          toggle.setAttribute("aria-expanded", String(expanded));
+        });
       }),
       "orderToggle",
     );
