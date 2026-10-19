@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "clock": "UTC wall clock of the local host",
+  "events": [
+    { "at": "2026-10-19T13:40:07Z", "source": "agent", "event": "slot run 2 started (pnpm slot up, slot 1)" },
+    { "at": "2026-10-19T13:41:00Z", "source": "slot", "event": "next start launched after awaited next build --webpack" },
+    { "at": "2026-10-19T13:41:25.253Z", "source": "native", "event": "native-recorder-started" },
+    { "at": "2026-10-19T13:41:26.225Z", "source": "native", "event": "greeting-native-and-captured" },
+    { "at": "2026-10-19T13:43:28.383Z", "source": "console", "event": "console recording started (Chats, after sign-in)" },
+    { "at": "2026-10-19T13:43:40.398Z", "source": "console", "event": "message sent with Enter" },
+    { "at": "2026-10-19T13:43:45.466Z", "source": "native", "event": "console-send-native-received (decrypted as incoming)" },
+    { "at": "2026-10-19T13:43:45.844Z", "source": "native", "event": "backend-send-persisted (own copy exact text; summary observedName with outbound latest)" },
+    { "at": "2026-10-19T13:43:52.745Z", "source": "console", "event": "hard reload 1 (navigation type reload)" },
+    { "at": "2026-10-19T13:44:19.251Z", "source": "native", "event": "native-reply-acked (ack 2)" },
+    { "at": "2026-10-19T13:44:19.479Z", "source": "native", "event": "native-reply-captured" },
+    { "at": "2026-10-19T13:44:27.422Z", "source": "console", "event": "hard reload 2 (navigation type reload)" },
+    { "at": "2026-10-19T13:44:59.837Z", "source": "console", "event": "console recording stopped" },
+    { "at": "2026-10-19T13:45:07.937Z", "source": "native", "event": "native-recorder-stopped" }
+  ]
+}
