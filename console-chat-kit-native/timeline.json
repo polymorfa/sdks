@@ -1,0 +1,57 @@
+{
+  "consoleRecording": {
+    "start": "2026-10-19T12:53:28.881Z",
+    "durationSeconds": 65.172
+  },
+  "nativeFrames": {
+    "first": "2026-10-19T12:51:49.340Z",
+    "last": "2026-10-19T12:54:40.967Z",
+    "count": 344,
+    "source": "webContents.capturePage",
+    "intervalMs": 500
+  },
+  "consoleActions": [
+    {
+      "at": "2026-10-19T12:53:44.477Z",
+      "action": "send clicked (time recorded right after the click)"
+    },
+    {
+      "at": "2026-10-19T12:54:02.923Z",
+      "action": "first hard reload checked (outbound message latest); native reply released at this time"
+    },
+    {
+      "at": "2026-10-19T12:54:13.043Z",
+      "action": "second hard reload after the reply"
+    }
+  ],
+  "scenarioEvents": [
+    {
+      "at": "2026-10-19T12:51:49.337Z",
+      "event": "native-recorder-started"
+    },
+    {
+      "at": "2026-10-19T12:51:50.931Z",
+      "event": "greeting-native-and-captured"
+    },
+    {
+      "at": "2026-10-19T12:53:45.174Z",
+      "event": "console-send-native-received"
+    },
+    {
+      "at": "2026-10-19T12:53:45.812Z",
+      "event": "backend-send-persisted"
+    },
+    {
+      "at": "2026-10-19T12:54:04.382Z",
+      "event": "native-reply-acked"
+    },
+    {
+      "at": "2026-10-19T12:54:04.724Z",
+      "event": "native-reply-captured"
+    },
+    {
+      "at": "2026-10-19T12:54:41.469Z",
+      "event": "native-recorder-stopped"
+    }
+  ]
+}
