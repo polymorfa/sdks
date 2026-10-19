@@ -1,0 +1,62 @@
+{
+  "note": "Wall-clock milliseconds since the Unix epoch, local synthetic run on 2026-10-19 UTC. Console times are the agent actions that drove the browser; native times come from the Inspector scenario.",
+  "consoleRecording": {
+    "startedAt": 1792421439901,
+    "stoppedAt": 1792421743904,
+    "durationSeconds": 304.015
+  },
+  "nativeFrames": {
+    "count": 715,
+    "source": "capturePage",
+    "skipped": 0,
+    "pendingAtStop": false,
+    "first": 1792421386785,
+    "last": 1792421744035,
+    "intervalMs": 500
+  },
+  "videoAlignment": {
+    "nativeOffsetSeconds": 53.116,
+    "durationSeconds": 304.033,
+    "cuts": 0
+  },
+  "consoleActions": {
+    "send": 1792421574068,
+    "replyReleased": 1792421606299,
+    "replySeenInConsole": 1792421619138,
+    "recordingEnded": 1792421743761
+  },
+  "nativeEvents": [
+    {
+      "at": 1792421386783,
+      "event": "native-recorder-started"
+    },
+    {
+      "at": 1792421387746,
+      "event": "greeting-native-and-captured",
+      "greeting": "Hi, I need help with my order (f755)"
+    },
+    {
+      "at": 1792421574281,
+      "event": "console-send-native-received",
+      "text": "Your order 7314 ships today from the Support line (c985)"
+    },
+    {
+      "at": 1792421574860,
+      "event": "backend-send-persisted",
+      "observedName": "Inspector customer"
+    },
+    {
+      "at": 1792421607342,
+      "event": "native-reply-acked",
+      "text": "Thanks, that fixed it (6dbc)"
+    },
+    {
+      "at": 1792421607822,
+      "event": "native-reply-captured"
+    },
+    {
+      "at": 1792421744537,
+      "event": "native-recorder-stopped"
+    }
+  ]
+}
