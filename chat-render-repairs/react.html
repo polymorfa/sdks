@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Polymorfa React chat smoke (fixture transport)</title>
+    <style>
+      body { margin: 0; font: 14px/1.4 system-ui, sans-serif; background: #f4f4f5; }
+      body.dark { background: #18181b; color: #f4f4f5; }
+      .fixture { background: #fef3c7; color: #78350f; padding: 8px 12px; font-weight: 600; }
+      #app { height: calc(100vh - 52px); margin: 8px 12px; display: flex; }
+      #app > * { flex: 1; min-height: 0; }
+    </style>
+  </head>
+  <body>
+    <div class="fixture" role="note">Fixture transport: in-memory synthetic messages, no Polymorfa API. React ChatWindow. Query: ?pt=1 for pt-BR, ?dark=1 for dark.</div>
+    <div id="app"></div>
+    <script type="module" src="./react-main.tsx"></script>
+  </body>
+</html>
