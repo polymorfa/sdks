@@ -1,6 +1,6 @@
 import { key, literal, p } from "./recipes.mjs";
 // Evidence: packages/python/src/polymorfa/{client,messaging,business,platform}.py
-// and tests/test_{operations,business,collection_wire}.py.
+// and tests/test_{wire,platform_core,business,business_catalog}.py.
 export function render(id, { client, request }) {
   const s = p("session"),
     sid = p("sessionId");

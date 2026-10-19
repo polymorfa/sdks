@@ -1,6 +1,6 @@
 import { key, literal, p } from "./recipes.mjs";
 // Evidence: packages/typescript/src/messaging/{messages,sessions,business}.ts,
-// src/client.ts, src/platform/events.ts and the native wire tests.
+// src/client.ts, src/platform/developer-resources.ts and the native wire tests.
 export function render(id, { client, request }) {
   const s = p("session"),
     sid = p("sessionId");
