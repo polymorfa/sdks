@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Polymorfa Web Components chat smoke (fixture transport)</title>
+    <style>
+      body { margin: 0; font: 14px/1.4 system-ui, sans-serif; background: #f4f4f5; color: #18181b; }
+      body.dark { background: #18181b; color: #f4f4f5; }
+      .fixture { background: #fef3c7; color: #78350f; padding: 8px 12px; font-weight: 600; }
+      .host { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 12px; align-items: center; }
+      .host label { display: flex; gap: 4px; align-items: center; }
+      .host input, .host select { font: inherit; padding: 4px 6px; }
+      pmfa-chat-window { display: block; height: calc(100vh - 120px); margin: 0 12px 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="fixture" role="note">Fixture transport: in-memory synthetic messages, no Polymorfa API. Controls in the bar below are this host page, not SDK UI.</div>
+    <form class="host" aria-label="Host page controls" onsubmit="return false">
+      <label>Search loaded <input id="q" type="search" /></label>
+      <label>Type <select id="type"><option>all</option><option>text</option><option>order</option><option>image</option></select></label>
+      <label>Direction <select id="dir"><option>all</option><option>inbound</option><option>outbound</option></select></label>
+      <label><input id="replies" type="checkbox" checked /> Data source cannot reply (replies="false")</label>
+      <label><input id="pt" type="checkbox" /> pt-BR</label>
+      <label><input id="dark" type="checkbox" /> Dark</label>
+    </form>
+    <pmfa-chat-window heading="Ana (fixture)" replies="false"></pmfa-chat-window>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
