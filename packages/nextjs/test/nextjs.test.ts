@@ -11,7 +11,7 @@ import {
 describe("createClientTokenRoute", () => {
   it("authorizes before minting and returns a non-cacheable browser token", async () => {
     const mint = vi.fn(async () => ({
-      value: "pmfa_ct_fixture",
+      value: "pmfa_ct_Zml4dHVyZQ",
       audience: "browser" as const,
       expiresAt: Date.now() + 60_000,
     }));
@@ -51,7 +51,7 @@ describe("createMessagingClientTokenMint", () => {
       data: {
         success: true as const,
         data: {
-          token: "pmfa_ct_fixture",
+          token: "pmfa_ct_Zml4dHVyZQ",
           expiresAt: "2026-08-19T20:00:00.000Z",
         },
       },
@@ -67,7 +67,7 @@ describe("createMessagingClientTokenMint", () => {
     const request = new Request("https://app.test/token", { method: "POST" });
     await expect(adapter({ userId: "user-1" }, request)).resolves.toMatchObject(
       {
-        value: "pmfa_ct_fixture",
+        value: "pmfa_ct_Zml4dHVyZQ",
       },
     );
     expect(mint).toHaveBeenCalledWith(
@@ -114,7 +114,7 @@ describe("createMessagingClientTokenMint", () => {
       data: {
         success: true as const,
         data: {
-          token: "pmfa_ct_fixture",
+          token: "pmfa_ct_Zml4dHVyZQ",
           expiresAt: "2026-08-19T20:00:00.000Z",
         },
       },
@@ -131,7 +131,7 @@ describe("createMessagingClientTokenMint", () => {
     const request = new Request("https://app.test/token", { method: "POST" });
 
     await expect(adapter({ userId: "user-1" }, request)).resolves.toEqual({
-      value: "pmfa_ct_fixture",
+      value: "pmfa_ct_Zml4dHVyZQ",
       audience: "browser",
       expiresAt: Date.parse("2026-08-19T20:00:00.000Z"),
     });
@@ -178,7 +178,7 @@ describe("createMessagingClientTokenMint", () => {
       Response.json({
         success: true,
         data: {
-          token: "pmfa_ct_calls",
+          token: "pmfa_ct_Y2FsbHM",
           expiresAt: "2099-01-01T00:00:00.000Z",
         },
       }),
@@ -208,7 +208,7 @@ describe("createMessagingClientTokenMint", () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
-      value: "pmfa_ct_calls",
+      value: "pmfa_ct_Y2FsbHM",
       audience: "browser",
       expiresAt: Date.parse("2099-01-01T00:00:00.000Z"),
     });

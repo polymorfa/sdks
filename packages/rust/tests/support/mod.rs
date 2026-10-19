@@ -7,7 +7,7 @@ use tokio::{
 };
 
 pub fn credential() -> Credential {
-    Credential::organization_api_key("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string()).unwrap()
+    Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()).unwrap()
 }
 pub fn messaging(base: String) -> MessagingClient {
     MessagingClient::new(
@@ -43,7 +43,7 @@ pub async fn wire(
         path,
         body,
         response,
-        Some("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string()),
+        Some("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()),
     )
     .await
 }
@@ -60,7 +60,7 @@ pub async fn wire_status(
         path,
         body,
         response,
-        Some("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string()),
+        Some("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()),
         status,
     )
     .await

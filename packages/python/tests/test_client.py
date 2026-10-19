@@ -26,7 +26,7 @@ from polymorfa import (
 
 KEY = Credential(
     "organization_api_key",
-    "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
 )
 RECEIPT = {
     "success": True,
@@ -369,13 +369,13 @@ async def test_project_binding_and_raw_confinement() -> None:
         AsyncClient(
             Credential(
                 "project_token",
-                "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
             )
         )
     AsyncProjectClient(
         Credential(
             "project_token",
-            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         "project_1",
     )

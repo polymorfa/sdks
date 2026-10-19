@@ -56,8 +56,7 @@ export async function runEdgeRuntimeSmoke() {
     throw new Error("Fetch transport did not decode the response.");
   }
 
-  const fakeKey =
-    "pmfa_AlsicmZjODAzMi10ZXN0LW9ubHkiLCJ0ZXN0IiwiaHR0cHM6Ly9wbGF0Zm9ybS5leGFtcGxlLnRlc3QiLCJwb2x5bW9yZmEtYXBpIiwia2V5IiwiMTExMTExMTEtMTExMS00MTExLTgxMTEtMTExMTExMTExMTExIixudWxsXbjN-6gasxNDFbo2VaQINFS9h-9IDV4h2FAnK4ji8ByM53uN7XQ6MPjmBq13cVl96c-KYIU14G-UZynW-8KxGw8";
+  const fakeKey = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
   const platform = new Client({
     credential: { type: "organizationApiKey", value: fakeKey },
     baseUrl: "https://example.invalid",

@@ -29,7 +29,7 @@ function sdk() {
             data: {
               success: true as const,
               data: {
-                token: "pmfa_ct_fixture",
+                token: "pmfa_ct_Zml4dHVyZQ",
                 expiresAt: new Date(Date.now() + 600_000).toISOString(),
               },
             },
@@ -151,7 +151,7 @@ describe("POST /token", () => {
     );
     const body = await response.json();
     expect(body).toMatchObject({
-      value: "pmfa_ct_fixture",
+      value: "pmfa_ct_Zml4dHVyZQ",
       audience: "browser",
       scopes: grant.allow,
       grant: {

@@ -338,7 +338,7 @@ async fn actual_minio_official_driver_verified_spool_and_etag_pinned_uploads() {
         puts
     );
     let messaging = MessagingClient::new(
-        Credential::organization_api_key("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string()).unwrap(),
+        Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()).unwrap(),
         ClientOptions {
             base_url: format!(
                 "http://127.0.0.1:{}",
@@ -565,7 +565,7 @@ async fn invalid_keys_metadata_and_cancellation_fail_before_any_customer_request
         ErrorKind::Cancelled
     );
     let messaging = MessagingClient::new(
-        Credential::organization_api_key("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string()).unwrap(),
+        Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()).unwrap(),
         ClientOptions::default(),
     )
     .unwrap();

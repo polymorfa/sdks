@@ -136,7 +136,7 @@ async def test_typed_business_methods(method, suffix, body, data, invoke, accept
     async with AsyncMessagingClient(
         Credential(
             "project_token",
-            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:

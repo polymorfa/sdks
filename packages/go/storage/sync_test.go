@@ -155,7 +155,7 @@ func TestSyncActualNativeAPIStreamPersistsBeforeACK(t *testing.T) {
 		<-r.Context().Done()
 	}))
 	defer server.Close()
-	key := polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
+	key := polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}
 	client, err := polymorfa.NewOrganizationClient(polymorfa.Config{Credential: key, BaseURL: server.URL})
 	if err != nil {
 		t.Fatal(err)

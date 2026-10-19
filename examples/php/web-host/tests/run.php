@@ -15,7 +15,7 @@ $state = getenv('EXAMPLE_STATE_DIR');
 check(is_string($state) && str_starts_with($state, '/') && !str_starts_with($state, '/tmp/'), 'persistent test state directory');
 foreach (['laravel','symfony'] as $framework) {
     $env = getenv();
-    $env = array_replace($env, ['EXAMPLE_APP_USERNAME' => 'example-user','EXAMPLE_APP_PASSWORD' => 'test-only-password','POLYMORFA_PROJECT_TOKEN' => 'pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA','POLYMORFA_SESSION' => 'authorized-support']);
+    $env = array_replace($env, ['EXAMPLE_APP_USERNAME' => 'example-user','EXAMPLE_APP_PASSWORD' => 'test-only-password','POLYMORFA_PROJECT_TOKEN' => 'pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k','POLYMORFA_SESSION' => 'authorized-support']);
     $env['EXAMPLE_STATE_DIR'] = $state.'/'.$framework;
     $env['EXAMPLE_FRAMEWORK'] = $framework;
     $env['EXAMPLE_APP_ORIGIN'] = 'http://127.0.0.1:31306';
@@ -60,7 +60,7 @@ foreach (['laravel','symfony'] as $framework) {
         check(str_contains($response->getHeaderLine('Set-Cookie'), 'httponly') && str_contains($response->getHeaderLine('Set-Cookie'), 'samesite=strict'), 'opaque private cookie');
         $response = $send('POST', '/api/polymorfa/token', $origin, ['session' => 'attacker','ephemeralId' => 'attacker']);
         $token = json_decode((string)$response->getBody(), true);
-        check($response->getStatusCode() === 200 && ($token['value'] ?? null) === 'pmfa_ct_browser_fixture' && ($token['audience'] ?? null) === 'browser' && ($token['expiresAt'] ?? 0) > time() * 1000 && str_contains($response->getHeaderLine('Cache-Control'), 'no-store'), 'native SDK token mint');
+        check($response->getStatusCode() === 200 && ($token['value'] ?? null) === 'pmfa_ct_YnJvd3Nlcl9maXh0dXJl' && ($token['audience'] ?? null) === 'browser' && ($token['expiresAt'] ?? 0) > time() * 1000 && str_contains($response->getHeaderLine('Cache-Control'), 'no-store'), 'native SDK token mint');
         check((int)file_get_contents($counter) === 1, 'one real upstream request');
         $response = $send('POST', '/api/polymorfa/connect', $origin, ['session' => 'attacker','purpose' => 'initial']);
         $raw = (string)$response->getBody(); $link = json_decode($raw, true);

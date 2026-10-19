@@ -186,12 +186,12 @@ func TestGo41MessagingPrincipalMatrix(t *testing.T) {
 					io.WriteString(w, r.result)
 				}))
 				defer s.Close()
-				token := "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+				token := "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
 				if kind == sdk.ProjectToken {
-					token = "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+					token = "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
 				}
 				if kind == sdk.ClientToken {
-					token = "pmfa_ct_scoped"
+					token = "pmfa_ct_c2NvcGVk"
 				}
 				m, e := sdk.NewMessagingClient(sdk.Config{BaseURL: s.URL, Credential: sdk.Credential{Kind: kind, Value: token}})
 				if e != nil {
@@ -284,7 +284,7 @@ func TestGo41ProjectTokenRequestLogsAndCursor(t *testing.T) {
 		io.WriteString(w, go41Logs)
 	}))
 	defer s.Close()
-	p, e := sdk.NewProjectClient(sdk.Config{BaseURL: s.URL, Credential: sdk.Credential{Kind: sdk.ProjectToken, Value: "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}}, "project /x")
+	p, e := sdk.NewProjectClient(sdk.Config{BaseURL: s.URL, Credential: sdk.Credential{Kind: sdk.ProjectToken, Value: "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}}, "project /x")
 	if e != nil {
 		t.Fatal(e)
 	}

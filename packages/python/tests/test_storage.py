@@ -537,8 +537,8 @@ async def test_d1_never_advertises_atomicity_before_trusted_handshake(changed):
     "secret",
     [
         "short",
-        "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-        "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         "pmfa_ct_" + "a" * 40,
     ],
 )

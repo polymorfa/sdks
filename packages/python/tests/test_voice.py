@@ -250,12 +250,12 @@ async def test_voice_public_typed_methods_and_project_ownership(scope, case):
     credential = (
         Credential(
             "project_token",
-            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
         if scope == "project-token"
         else Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     )
     cls = AsyncProjectClient if scope == "project-token" else AsyncClient
@@ -291,7 +291,7 @@ async def test_foreign_voice_resource_never_exposes_or_changes(resource, method)
     async with AsyncClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
@@ -312,7 +312,7 @@ async def test_project_can_read_team_provider_key_but_never_manage_it():
     async with AsyncClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
@@ -341,7 +341,7 @@ async def test_team_wide_credentials_and_unknown_server_enum_preservation():
     async with AsyncClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
@@ -387,7 +387,7 @@ async def test_upload_capability_isolation_and_followup_key():
     async with AsyncClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
@@ -428,7 +428,7 @@ async def test_storage_errors_sanitized_never_retry_or_complete(kind):
     async with AsyncClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
@@ -453,7 +453,7 @@ async def test_upload_preflight_and_project_rebinding_guard():
     async with AsyncClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(lambda request: requests.append(request)),
     ) as client:
@@ -494,7 +494,7 @@ async def test_wait_ready_failed_deadline_and_task_cancellation():
     async with AsyncClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
@@ -513,7 +513,7 @@ async def test_wait_ready_failed_deadline_and_task_cancellation():
     async with AsyncClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(pending),
     ) as client:
@@ -549,7 +549,7 @@ async def test_upload_stream_requires_declared_size_and_transmits_once():
     async with AsyncClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:

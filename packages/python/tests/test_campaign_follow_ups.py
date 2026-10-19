@@ -113,7 +113,7 @@ async def test_native_follow_up_requests_responses_and_removal(surface, configur
         seen.append((request.method, request.path, dict(request.query), body))
         assert (
             request.headers["authorization"]
-            == "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            == "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
         )
         if request.path.endswith("/analytics"):
             data = {"campaignId": "campaign_1", "followUps": REPORT}
@@ -146,7 +146,7 @@ async def test_native_follow_up_requests_responses_and_removal(surface, configur
         async with cls(
             Credential(
                 "organization_api_key",
-                "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
             ),
             base_url=base_url,
         ) as client:
@@ -220,7 +220,7 @@ async def test_follow_up_enrollment_refusal_preserves_api_error(surface):
     async with cls(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:

@@ -17,9 +17,9 @@ PROJECT = "11111111-1111-4111-8111-111111111111"
 ID = "22222222-2222-4222-8222-222222222222"
 KEY = Credential(
     "organization_api_key",
-    "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
 )
-CLIENT = Credential("client_token", "pmfa_ct_fixture")
+CLIENT = Credential("client_token", "pmfa_ct_Zml4dHVyZQ")
 
 
 @asynccontextmanager
@@ -882,7 +882,7 @@ async def test_whatsapp_analytics_reports_and_retained_owners_over_tcp():
         AsyncProjectClient(
             Credential(
                 "project_token",
-                "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
             ),
             PROJECT,
             base_url=url,

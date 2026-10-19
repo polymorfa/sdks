@@ -24,7 +24,7 @@ describe("Calls example Number credential boundaries", () => {
       {
         session: "support",
         label: "Support",
-        token: "pmfa_ct_support",
+        token: "pmfa_ct_c3VwcG9ydA",
         baseUrl: "https://api.example",
       },
       {},
@@ -34,21 +34,21 @@ describe("Calls example Number credential boundaries", () => {
       {
         session: "sales",
         label: "Sales",
-        token: "pmfa_ct_sales",
+        token: "pmfa_ct_c2FsZXM",
         baseUrl: "https://api.example",
       },
       {},
       create,
     );
     expect(options.map(({ session }) => session)).toEqual(["support", "sales"]);
-    expect(await options[0]!.getClientToken()).toBe("pmfa_ct_support");
-    expect(await options[1]!.getClientToken()).toBe("pmfa_ct_sales");
+    expect(await options[0]!.getClientToken()).toBe("pmfa_ct_c3VwcG9ydA");
+    expect(await options[1]!.getClientToken()).toBe("pmfa_ct_c2FsZXM");
     expect(hasActiveCall([first, second])).toBe(false);
     await first.dispose();
     await expect(options[0]!.getClientToken()).rejects.toThrow(
       "Number disconnected",
     );
-    expect(await options[1]!.getClientToken()).toBe("pmfa_ct_sales");
+    expect(await options[1]!.getClientToken()).toBe("pmfa_ct_c2FsZXM");
     expect(second.calls.dispose).not.toHaveBeenCalled();
   });
   it("refuses server keys before constructing a Calls client", () => {

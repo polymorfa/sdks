@@ -2,7 +2,7 @@ using Polymorfa.Sdk;
 
 internal static class RequestLogTests
 {
-    private const string Key = "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    private const string Key = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
     private const string Item = "{\"id\":\"log1\",\"projectId\":\"p1\",\"createdAt\":\"2026-10-11T00:00:00Z\",\"method\":\"POST\",\"route\":\"/messaging/:session/messages\",\"status\":200,\"durationMs\":1.234567,\"result\":\"success\",\"source\":\"api\",\"requestId\":\"request1\",\"traceId\":null,\"errorCode\":null,\"mcpTool\":null,\"credential\":{\"type\":\"team_key\",\"id\":\"key1\",\"last4\":\"aaaa\"}}";
     private static string Page(string items = Item, string follow = "follow1") => "{\"data\":[" + items + "],\"page\":{\"hasMore\":false,\"nextCursor\":null,\"followCursor\":\"" + follow + "\"}}";
     public static async Task RunAsync()

@@ -162,14 +162,14 @@ async def test_typed_onboarding_methods(method, path, body, fixture, invoke):
     async with AsyncMessagingClient(
         Credential(
             "project_token",
-            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(client)
         assert result.data == fixture and result.metadata.request_id == "req_onboarding"
         assert result.metadata.status == (202 if path.endswith("/phone/messages") else 200)
-    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_local")) as client:
+    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_bG9jYWw")) as client:
         with pytest.raises(ConfigurationError):
             await invoke(client)
 
@@ -178,7 +178,7 @@ async def test_unlink_companion_bounds_and_keyed_fixture_retry():
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     ) as client:
         for device_id in [0, 100, True, 1.5]:
@@ -209,7 +209,7 @@ async def test_unlink_companion_bounds_and_keyed_fixture_retry():
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:

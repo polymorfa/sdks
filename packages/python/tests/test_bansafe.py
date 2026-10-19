@@ -159,7 +159,7 @@ async def test_typed_project_bansafe(method, setting, body, data, messaging, pla
     async with client_class(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
@@ -170,7 +170,7 @@ async def test_typed_project_bansafe(method, setting, body, data, messaging, pla
         )
         assert response.data == fixture and response.metadata.request_id == "req_bansafe"
     if family == "messaging":
-        async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_fixture")) as browser:
+        async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_Zml4dHVyZQ")) as browser:
             with pytest.raises(ConfigurationError):
                 await messaging(browser.ban_safe)
 
@@ -189,7 +189,7 @@ async def test_typed_session_bansafe(method):
     async with AsyncMessagingClient(
         Credential(
             "project_token",
-            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
@@ -215,7 +215,7 @@ async def test_health_policy_stale_version_preserves_conflict_metadata():
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
@@ -243,7 +243,7 @@ async def test_platform_session_bansafe(method):
     async with AsyncClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:

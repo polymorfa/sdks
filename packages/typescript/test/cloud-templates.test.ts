@@ -21,7 +21,7 @@ describe("Cloud templates", () => {
     const server = await startTestServer(() => ({ body: "{}" }));
     servers.push(server);
     const resource = new MessagingClient({
-      credential: { type: "clientToken", value: "pmfa_ct_browser" },
+      credential: { type: "clientToken", value: "pmfa_ct_YnJvd3Nlcg" },
       baseUrl: server.url,
     }).cloudTemplates;
     const body = {

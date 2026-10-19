@@ -36,9 +36,9 @@ internal static class MessagingUtilityTests
         await Messaging("POST", "/messaging/support/chats/peer/archive", null, Success, async c => ResourceTests.True((await c.Chats.ArchiveAsync("support", "peer")).Data.Success));
         await Messaging("POST", "/messaging/support/chats/peer/unarchive", null, Success, async c => ResourceTests.True((await c.Chats.UnarchiveAsync("support", "peer")).Data.Success));
         await Messaging("PUT", "/messaging/support/chats/peer/disappearing", """{"durationSeconds":0}""", Success, async c => ResourceTests.True((await c.Chats.SetDisappearingTimerAsync("support", "peer", new(0))).Data.Success));
-        using var token = new MessagingClient(Credential.ClientToken("pmfa_ct_fixture"));
+        using var token = new MessagingClient(Credential.ClientToken("pmfa_ct_Zml4dHVyZQ"));
         try { await token.Chats.ListAsync("support"); throw new Exception("Client read HMS"); } catch (PolymorfaConfigurationException) { }
-        using var server = new MessagingClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        using var server = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"));
         try { await server.QuickLinks.CreateAsync(new(Purpose: "add_connection")); throw new Exception("Link missing session"); } catch (PolymorfaValidationException) { }
         try { await server.QuickLinks.CreateAsync(new(Configuration: new(Testing: new()), BillingControls: new(null, 0))); throw new Exception("Testing billing accepted"); } catch (PolymorfaValidationException) { }
         Console.WriteLine("PASS Messaging webhook CRUD, QuickLink controls, observed labels/presence and hosted history CRUD");

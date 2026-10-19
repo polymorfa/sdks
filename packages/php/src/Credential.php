@@ -12,9 +12,9 @@ final readonly class Credential
             throw new ConfigurationException('credential');
         }
         $valid = match ($kind) {
-            'organization_api_key' => self::signedV2Shape($value, 'pmfa_'),
-            'project_token' => self::signedV2Shape($value, 'pmfa_pt_'),
-            'client_token' => (bool) preg_match('/^pmfa_ct_.+$/D', $value),
+            'organization_api_key' => self::opaqueShape($value, 'pmfa_'),
+            'project_token' => self::opaqueShape($value, 'pmfa_pt_'),
+            'client_token' => self::clientShape($value),
             default => false,
         };
         if (!$valid) {
@@ -25,10 +25,19 @@ final readonly class Credential
         }
     }
 
-    // Framing only; the API authenticates this credential.
-    private static function signedV2Shape(string $value, string $prefix): bool
+    private static function clientShape(string $value): bool
     {
-        if (strlen($value) > 16384 || !str_starts_with($value, $prefix)) {
+        if (!str_starts_with($value, 'pmfa_ct_')) return false;
+        $body = substr($value, 8);
+        if (!preg_match('/^[A-Za-z0-9_-]+$/D', $body)) return false;
+        $raw = base64_decode(strtr($body, '-_', '+/'), true);
+        return $raw !== false && rtrim(strtr(base64_encode($raw), '+/', '-_'), '=') === $body;
+    }
+
+    // Framing only; the API authenticates this credential.
+    private static function opaqueShape(string $value, string $prefix): bool
+    {
+        if (!str_starts_with($value, $prefix)) {
             return false;
         }
         $body = substr($value, strlen($prefix));
@@ -36,7 +45,7 @@ final readonly class Credential
             return false;
         }
         $raw = base64_decode(strtr($body, '-_', '+/'), true);
-        return $raw !== false && strlen($raw) >= 66 && ord($raw[0]) === 2
+        return $raw !== false && strlen($raw) >= 24 && pack('N', crc32(substr($raw, 0, -4))) === substr($raw, -4)
             && rtrim(strtr(base64_encode($raw), '+/', '-_'), '=') === $body;
     }
 

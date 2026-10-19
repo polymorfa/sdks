@@ -22,7 +22,7 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 			var connected atomic.Int32
 			upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.URL.Path == "/messaging/quicklinks" {
-					if r.Method != "POST" || r.Header.Get("Authorization") != "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" || r.Header.Get("Polymorfa-Version") != "2026-09-22" {
+					if r.Method != "POST" || r.Header.Get("Authorization") != "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k" || r.Header.Get("Polymorfa-Version") != "2026-09-22" {
 						t.Error("QuickLink upstream auth/version")
 					}
 					var body map[string]any
@@ -39,7 +39,7 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 				if r.Method != "POST" || r.URL.Path != "/platform/client-tokens" {
 					t.Errorf("upstream route %s %s", r.Method, r.URL.Path)
 				}
-				if r.Header.Get("Authorization") != "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" || r.Header.Get("Polymorfa-Version") != "2026-09-22" {
+				if r.Header.Get("Authorization") != "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k" || r.Header.Get("Polymorfa-Version") != "2026-09-22" {
 					t.Error("upstream auth/version")
 				}
 				var body map[string]any
@@ -49,10 +49,10 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 				}
 				minted.Add(1)
 				w.Header().Set("Content-Type", "application/json")
-				w.Write([]byte(`{"success":true,"data":{"token":"pmfa_ct_browser_fixture","expiresAt":"2030-01-01T00:00:00Z"}}`))
+				w.Write([]byte(`{"success":true,"data":{"token":"pmfa_ct_YnJvd3Nlcl9maXh0dXJl","expiresAt":"2030-01-01T00:00:00Z"}}`))
 			}))
 			defer upstream.Close()
-			sdk, err := polymorfa.NewMessagingClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}, BaseURL: upstream.URL})
+			sdk, err := polymorfa.NewMessagingClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: upstream.URL})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -111,7 +111,7 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 			var token map[string]any
 			_ = json.NewDecoder(response.Body).Decode(&token)
 			response.Body.Close()
-			if response.StatusCode != 200 || token["audience"] != "browser" || token["value"] != "pmfa_ct_browser_fixture" || response.Header.Get("Cache-Control") != "no-store" || minted.Load() != 1 {
+			if response.StatusCode != 200 || token["audience"] != "browser" || token["value"] != "pmfa_ct_YnJvd3Nlcl9maXh0dXJl" || response.Header.Get("Cache-Control") != "no-store" || minted.Load() != 1 {
 				t.Fatal("token result", token, response.Status)
 			}
 			response = send("POST", "/api/polymorfa/connect", server.URL, "session=attacker&purpose=initial")

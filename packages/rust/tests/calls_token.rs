@@ -7,13 +7,25 @@ use std::{
     time::{Duration, SystemTime},
 };
 use tokio_util::sync::CancellationToken;
+fn opaque_fixture(ch: char) -> String {
+    use base64::Engine as _;
+    let mut raw = vec![ch as u8; 20];
+    let mut crc = 0xffffffff_u32;
+    for byte in &raw {
+        crc ^= u32::from(*byte);
+        for _ in 0..8 {
+            crc = (crc >> 1) ^ if crc & 1 != 0 { 0xedb88320 } else { 0 };
+        }
+    }
+    raw.extend_from_slice(&(crc ^ 0xffffffff).to_be_bytes());
+    format!(
+        "pmfa_{}",
+        base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(raw)
+    )
+}
 fn token(value: char, expiry: Option<SystemTime>) -> CallsToken {
     CallsToken {
-        credential: Credential::organization_api_key(format!(
-            "pmfa_Ag{}",
-            value.to_string().repeat(86)
-        ))
-        .unwrap(),
+        credential: Credential::organization_api_key(opaque_fixture(value)).unwrap(),
         expires_at: expiry,
     }
 }
@@ -52,7 +64,9 @@ async fn provider_singleflight_expiry_and_explicit_refresh() {
         source.get(Default::default()),
         source.get(Default::default())
     );
-    assert!(matches!(a.unwrap().credential,Credential::OrganizationApiKey(v) if v.ends_with('a')));
+    assert!(
+        matches!(a.unwrap().credential,Credential::OrganizationApiKey(v) if v == opaque_fixture('a'))
+    );
     assert!(b.is_ok());
     assert_eq!(hits.load(Ordering::SeqCst), 1);
     source.get(Default::default()).await.unwrap();
@@ -172,10 +186,12 @@ async fn refresh_overtakes_old_fetch_and_invalidation_prevents_stale_cache() {
         })
         .await
         .unwrap();
-    assert!(matches!(fresh.credential,Credential::OrganizationApiKey(v) if v.ends_with('b')));
+    assert!(
+        matches!(fresh.credential,Credential::OrganizationApiKey(v) if v == opaque_fixture('b'))
+    );
     old.await.unwrap().unwrap();
     assert!(
-        matches!(source.get(Default::default()).await.unwrap().credential,Credential::OrganizationApiKey(v) if v.ends_with('b'))
+        matches!(source.get(Default::default()).await.unwrap().credential,Credential::OrganizationApiKey(v) if v == opaque_fixture('b'))
     );
     assert_eq!(requests.load(Ordering::SeqCst), 2);
     source.invalidate().await;

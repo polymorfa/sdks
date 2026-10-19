@@ -16,7 +16,7 @@ public sealed class Credential
     public static Credential ClientToken(string value) => Create(CredentialKind.ClientToken, value, "^pmfa_ct_[^\\r\\n]+$");
     private static Credential Create(CredentialKind kind, string value, string pattern)
     {
-        if (value is null || !(kind == CredentialKind.ClientToken ? Regex.IsMatch(value, pattern, RegexOptions.CultureInvariant) : SignedV2Shape(value, pattern)))
+        if (value is null || !(kind == CredentialKind.ClientToken ? ClientShape(value) : OpaqueShape(value, pattern)))
             throw new PolymorfaConfigurationException("Invalid credential.");
         if (kind == CredentialKind.OrganizationApiKey && new[] { "pmfa_pt_", "pmfa_ct_", "pmfa_ls_", "pmfa_at_", "pmfa_wst_", "pmfa_sd_" }.Any(prefix => value.StartsWith(prefix, StringComparison.Ordinal)))
             throw new PolymorfaConfigurationException("Special-purpose credentials cannot be used as organization API keys.");
@@ -24,16 +24,29 @@ public sealed class Credential
             throw new PolymorfaConfigurationException("Server credentials cannot be used in browser/WASM applications.");
         return new Credential(kind, value);
     }
-    // Shape validation only; the API authenticates signatures and records.
-    private static bool SignedV2Shape(string value, string prefix)
+    private static bool ClientShape(string value)
     {
-        if (value.Length > 16384 || !value.StartsWith(prefix, StringComparison.Ordinal)) return false;
+        if (!value.StartsWith("pmfa_ct_", StringComparison.Ordinal)) return false;
+        var body = value[8..];
+        if (!Regex.IsMatch(body, "^[A-Za-z0-9_-]+$", RegexOptions.CultureInvariant)) return false;
+        try {
+            var raw = Convert.FromBase64String(body.Replace('-', '+').Replace('_', '/') + new string('=', (4-body.Length%4)%4));
+            return Convert.ToBase64String(raw).TrimEnd('=').Replace('+','-').Replace('/','_') == body;
+        } catch (FormatException) { return false; }
+    }
+    // Shape validation only; the API authenticates signatures and records.
+    private static bool OpaqueShape(string value, string prefix)
+    {
+        if (!value.StartsWith(prefix, StringComparison.Ordinal)) return false;
         var body = value[prefix.Length..];
         if (!Regex.IsMatch(body, "^[A-Za-z0-9_-]+$", RegexOptions.CultureInvariant)) return false;
         try
         {
             var raw = Convert.FromBase64String(body.Replace('-', '+').Replace('_', '/') + new string('=', (4 - body.Length % 4) % 4));
-            return raw.Length >= 66 && raw[0] == 2 && Convert.ToBase64String(raw).TrimEnd('=').Replace('+', '-').Replace('/', '_') == body;
+            if (raw.Length < 24 || Convert.ToBase64String(raw).TrimEnd('=').Replace('+', '-').Replace('/', '_') != body) return false;
+            uint crc = 0xffffffff;
+            foreach (var b in raw.AsSpan(0, raw.Length-4)) { crc ^= b; for(int i=0;i<8;i++) crc=(crc>>1)^((crc&1)!=0?0xedb88320u:0u); }
+            return (crc ^ 0xffffffff) == System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(raw.AsSpan(raw.Length-4));
         }
         catch (FormatException) { return false; }
     }

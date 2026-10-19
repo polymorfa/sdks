@@ -20,7 +20,7 @@ import (
 )
 
 func orgConfig(base string) Config {
-	return Config{Credential: Credential{OrganizationAPIKey, "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}, BaseURL: base}
+	return Config{Credential: Credential{OrganizationAPIKey, "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: base}
 }
 func mustMessaging(t *testing.T, base string) *MessagingClient {
 	t.Helper()
@@ -36,7 +36,7 @@ func TestCredentialBoundaries(t *testing.T) {
 		c         Credential
 		messaging bool
 		valid     bool
-	}{{"org", Credential{OrganizationAPIKey, "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}, false, true}, {"project", Credential{ProjectToken, "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}, false, true}, {"client", Credential{ClientToken, "pmfa_ct_x"}, true, true}, {"client platform", Credential{ClientToken, "pmfa_ct_x"}, false, false}, {"listener", Credential{OrganizationAPIKey, "pmfa_ls_" + strings.Repeat("a", 69)}, false, false}, {"special", Credential{OrganizationAPIKey, "pmfa_at_" + strings.Repeat("a", 69)}, false, false}, {"project invalid tail", Credential{ProjectToken, "pmfa_pt_" + strings.Repeat("a", 93) + "B"}, false, false}, {"project as org", Credential{OrganizationAPIKey, "pmfa_pt_" + strings.Repeat("a", 69)}, false, false}} {
+	}{{"org", Credential{OrganizationAPIKey, "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, false, true}, {"project", Credential{ProjectToken, "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, false, true}, {"client", Credential{ClientToken, "pmfa_ct_eA"}, true, true}, {"client platform", Credential{ClientToken, "pmfa_ct_eA"}, false, false}, {"listener", Credential{OrganizationAPIKey, "pmfa_ls_" + strings.Repeat("a", 69)}, false, false}, {"special", Credential{OrganizationAPIKey, "pmfa_at_" + strings.Repeat("a", 69)}, false, false}, {"project invalid tail", Credential{ProjectToken, "pmfa_pt_" + strings.Repeat("a", 93) + "B"}, false, false}, {"project as org", Credential{OrganizationAPIKey, "pmfa_pt_" + strings.Repeat("a", 69)}, false, false}} {
 		t.Run(test.name, func(t *testing.T) {
 			err := validateCredential(test.c, test.messaging)
 			if (err == nil) != test.valid {
@@ -88,7 +88,7 @@ func TestBaseURLAndProjectRawConfinement(t *testing.T) {
 		t.Fatal(calls)
 	}
 	c := orgConfig(s.URL)
-	c.Credential = Credential{ProjectToken, "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
+	c.Credential = Credential{ProjectToken, "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}
 	project, err := NewProjectClient(c, "a")
 	if err != nil {
 		t.Fatal(err)

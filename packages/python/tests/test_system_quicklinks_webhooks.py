@@ -70,7 +70,7 @@ async def test_credential_free_typed_system_methods(method, path, data):
 async def test_bridge_route_project_token_only():
     token = Credential(
         "project_token",
-        "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
     )
     data = {
         "wsUrl": "wss://example.invalid/bridge",
@@ -92,7 +92,7 @@ async def test_bridge_route_project_token_only():
         AsyncBridgeClient(
             Credential(
                 "organization_api_key",
-                "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
             )
         )
     async with AsyncBridgeClient(token, http_transport=httpx.MockTransport(handler)) as client:
@@ -297,7 +297,7 @@ async def test_full_quicklink_webhook_and_session_call_public_contract(case):
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
@@ -316,7 +316,7 @@ async def test_reject_session_call_documented_response_variants(value):
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(lambda r: httpx.Response(200, json=value)),
     ) as client:
@@ -347,7 +347,7 @@ async def test_quicklink_testing_configuration_shape():
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:

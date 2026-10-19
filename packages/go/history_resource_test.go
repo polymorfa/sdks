@@ -69,7 +69,7 @@ func TestHistoryCommandsNoAutomaticRetriesAndLocalValidation(t *testing.T) {
 	if calls != 2 {
 		t.Fatal("invalid history command reached network")
 	}
-	browser := &MessagingClient{t: &transport{config: Config{Credential: Credential{Kind: ClientToken, Value: "pmfa_ct_fixture"}}}}
+	browser := &MessagingClient{t: &transport{config: Config{Credential: Credential{Kind: ClientToken, Value: "pmfa_ct_Zml4dHVyZQ"}}}}
 	_, err = browser.HistorySync().RequestChunkRetry(context.Background(), "session", HistorySyncChunkRetryRequest{SyncType: HistoryFull})
 	var typed *Error
 	if !errors.As(err, &typed) || typed.Kind != ConfigurationError {

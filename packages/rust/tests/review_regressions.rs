@@ -29,7 +29,7 @@ fn specialized_secrets_cannot_impersonate_organization_keys_even_when_padded() {
         )
         .is_err());
     }
-    assert!(Credential::organization_api_key("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string()).is_ok());
+    assert!(Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()).is_ok());
 }
 #[tokio::test]
 async fn download_stream_deadline_covers_a_body_that_stalls_after_headers() {
@@ -111,11 +111,11 @@ async fn participant_group_and_client_calls_need_no_dummy_fields_and_preserve_vi
         "/messaging/voip/calls",
         Some(json!({"to":"+15551234567"})),
         json!({"data":{"callId":"call"}}),
-        Some("pmfa_ct_fixture".into()),
+        Some("pmfa_ct_Zml4dHVyZQ".into()),
     )
     .await;
     let client = MessagingClient::new(
-        Credential::client_token("pmfa_ct_fixture").unwrap(),
+        Credential::client_token("pmfa_ct_Zml4dHVyZQ").unwrap(),
         ClientOptions {
             base_url: base,
             max_network_retries: 0,

@@ -173,7 +173,7 @@ async def test_real_tls_cdn_public_media_helper_and_verified_atomic_file(vector)
         client = AsyncMessagingClient(
             Credential(
                 "organization_api_key",
-                "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
             )
         )
         try:
@@ -306,7 +306,7 @@ async def test_api_media_to_file_retains_metadata_and_bounds_bytes():
         async with AsyncMessagingClient(
             Credential(
                 "organization_api_key",
-                "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
             ),
             base_url=f"http://127.0.0.1:{site._server.sockets[0].getsockname()[1]}",
         ) as client:

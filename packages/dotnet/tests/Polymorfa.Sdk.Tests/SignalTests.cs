@@ -34,7 +34,7 @@ internal static class SignalTests
     {
         using var fixture = new WireFixture();
         // Synthetic values shaped like Polymorfa credentials. None is a real secret.
-        foreach (var reserved in new[] { "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "pmfa_ct_synthetic-client-token-value", "pmfa_ls_synthetic-link-session-value", "pmfa_at_synthetic-special-purpose-value", "pmfa_wst_synthetic-socket-ticket-value", "pmfa_sd_synthetic-session-device-value", "pmfa_independent_looking_but_reserved" })
+        foreach (var reserved in new[] { "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k", "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k", "pmfa_ct_synthetic-client-token-value", "pmfa_ls_synthetic-link-session-value", "pmfa_at_synthetic-special-purpose-value", "pmfa_wst_synthetic-socket-ticket-value", "pmfa_sd_synthetic-session-device-value", "pmfa_independent_looking_but_reserved" })
         {
             try { using var rejected = new SignalClient(new(fixture.Url, reserved)); throw new Exception("Reserved Signal application secret accepted"); }
             catch (PolymorfaConfigurationException error) { ResourceTests.True(!error.Message.Contains(reserved, StringComparison.Ordinal)); }

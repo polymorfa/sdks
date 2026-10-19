@@ -17,7 +17,7 @@ pub enum Credential {
 impl Credential {
     pub fn organization_api_key(value: impl Into<String>) -> Result<Self> {
         let value = value.into();
-        if !signed_v2_shape(&value, "pmfa_")
+        if !opaque_shape(&value, "pmfa_")
             || [
                 "pmfa_pt_",
                 "pmfa_ct_",
@@ -35,14 +35,14 @@ impl Credential {
     }
     pub fn project_token(value: impl Into<String>) -> Result<Self> {
         let value = value.into();
-        if !signed_v2_shape(&value, "pmfa_pt_") {
+        if !opaque_shape(&value, "pmfa_pt_") {
             return Err(configuration("credential"));
         }
         Ok(Self::ProjectToken(value))
     }
     pub fn client_token(value: impl Into<String>) -> Result<Self> {
         let value = value.into();
-        if !value.starts_with("pmfa_ct_") || value.len() <= 8 || value.contains(['\r', '\n']) {
+        if !client_shape(&value) {
             return Err(configuration("credential"));
         }
         Ok(Self::ClientToken(value))
@@ -70,15 +70,31 @@ impl Credential {
         }
     }
 }
-// Framing only; the API verifies signatures and issuance records.
-fn signed_v2_shape(value: &str, prefix: &str) -> bool {
-    if value.len() > 16384 {
-        return false;
-    }
+// Framing only; the API verifies issuance records.
+fn client_shape(value: &str) -> bool {
+    use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
+    value.strip_prefix("pmfa_ct_").is_some_and(|body| {
+        !body.is_empty()
+            && URL_SAFE_NO_PAD
+                .decode(body)
+                .is_ok_and(|raw| URL_SAFE_NO_PAD.encode(raw) == body)
+    })
+}
+fn opaque_shape(value: &str, prefix: &str) -> bool {
     value.strip_prefix(prefix).is_some_and(|body| {
-        URL_SAFE_NO_PAD
-            .decode(body)
-            .is_ok_and(|raw| raw.len() >= 66 && raw[0] == 2 && URL_SAFE_NO_PAD.encode(&raw) == body)
+        URL_SAFE_NO_PAD.decode(body).is_ok_and(|raw| {
+            if raw.len() < 24 || URL_SAFE_NO_PAD.encode(&raw) != body {
+                return false;
+            }
+            let mut crc = 0xffffffff_u32;
+            for byte in &raw[..raw.len() - 4] {
+                crc ^= u32::from(*byte);
+                for _ in 0..8 {
+                    crc = (crc >> 1) ^ if crc & 1 != 0 { 0xedb88320 } else { 0 };
+                }
+            }
+            raw[raw.len() - 4..] == (crc ^ 0xffffffff).to_be_bytes()
+        })
     })
 }
 pub(crate) fn configuration(field: &str) -> Error {

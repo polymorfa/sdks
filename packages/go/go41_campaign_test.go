@@ -14,7 +14,7 @@ func go41Client(t *testing.T, handler http.HandlerFunc) (*sdk.MessagingClient, *
 	t.Helper()
 	s := httptest.NewServer(handler)
 	t.Cleanup(s.Close)
-	cfg := sdk.Config{BaseURL: s.URL, Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}}
+	cfg := sdk.Config{BaseURL: s.URL, Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}}
 	m, e := sdk.NewMessagingClient(cfg)
 	if e != nil {
 		t.Fatal(e)

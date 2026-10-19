@@ -147,7 +147,7 @@ def test_call_pcm_and_annexb_frames_exact_binary_wire():
     assert decode_media_frame(b"\x01\x00") is None
     with pytest.raises(ConfigurationError):
         MediaSocket(
-            Credential("client_token", "pmfa_ct_local"),
+            Credential("client_token", "pmfa_ct_bG9jYWw"),
             "call_1",
             "connection_1",
             participant="server",
@@ -161,7 +161,7 @@ async def test_real_calls_websocket_native_handshake_auth_and_binary_media():
         seen.append(websocket.request.path)
         assert websocket.subprotocol == "pmfa.calls.v2"
         auth = json.loads(await websocket.recv())
-        assert auth == {"type": "auth", "token": "pmfa_ct_local", "connectionId": "connection_1"}
+        assert auth == {"type": "auth", "token": "pmfa_ct_bG9jYWw", "connectionId": "connection_1"}
         await websocket.send(json.dumps({"type": "ready", "sampleRate": 16000, "video": True}))
         assert await websocket.recv() == b"\x01\x01\x00\xff\xff"
         await websocket.send(b"\x01\x02\x00\xfe\xff")
@@ -170,7 +170,7 @@ async def test_real_calls_websocket_native_handshake_auth_and_binary_media():
     async with serve(handler, "127.0.0.1", 0, subprotocols=["pmfa.calls.v2"]) as server:
         port = server.sockets[0].getsockname()[1]
         async with MediaSocket(
-            Credential("client_token", "pmfa_ct_local"),
+            Credential("client_token", "pmfa_ct_bG9jYWw"),
             "call_1",
             "connection_1",
             base_url=f"http://127.0.0.1:{port}",
@@ -192,7 +192,7 @@ async def test_media_close_cleans_socket_after_native_heartbeat_send_failure():
     async with serve(handler, "127.0.0.1", 0, subprotocols=["pmfa.calls.v2"]) as server:
         port = server.sockets[0].getsockname()[1]
         socket = MediaSocket(
-            Credential("client_token", "pmfa_ct_local"),
+            Credential("client_token", "pmfa_ct_bG9jYWw"),
             "call_1",
             "connection_1",
             base_url=f"http://127.0.0.1:{port}",
@@ -224,14 +224,14 @@ async def test_media_close_cleans_socket_after_native_heartbeat_send_failure():
 )
 async def test_native_media_handshake_semantic_refusal_errors(code, error_type):
     async def handler(websocket):
-        assert json.loads(await websocket.recv())["token"] == "pmfa_ct_local"
+        assert json.loads(await websocket.recv())["token"] == "pmfa_ct_bG9jYWw"
         await websocket.send(json.dumps({"type": "error", "code": code}))
         await websocket.wait_closed()
 
     async with serve(handler, "127.0.0.1", 0, subprotocols=["pmfa.calls.v2"]) as server:
         port = server.sockets[0].getsockname()[1]
         socket = MediaSocket(
-            Credential("client_token", "pmfa_ct_local"),
+            Credential("client_token", "pmfa_ct_bG9jYWw"),
             "call_1",
             "connection_1",
             base_url=f"http://127.0.0.1:{port}",

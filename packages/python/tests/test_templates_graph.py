@@ -248,7 +248,7 @@ async def test_typed_templates_and_graph(method, path, body, query, fixture, inv
     async with AsyncMessagingClient(
         Credential(
             "project_token",
-            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
@@ -281,7 +281,7 @@ async def test_provider_write_never_retries_even_with_key(invoke):
     async with AsyncMessagingClient(
         Credential(
             "project_token",
-            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
@@ -293,7 +293,7 @@ async def test_provider_write_never_retries_even_with_key(invoke):
 
 
 async def test_graph_server_scope_and_required_identifiers():
-    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_local")) as client:
+    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_bG9jYWw")) as client:
         for invoke in [
             lambda: client.cloud_templates.list("support"),
             lambda: client.cloud_catalogs.list("123", {"version": "v26.0"}),
@@ -305,7 +305,7 @@ async def test_graph_server_scope_and_required_identifiers():
     async with AsyncMessagingClient(
         Credential(
             "project_token",
-            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     ) as client:
         for invoke in [

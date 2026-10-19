@@ -31,7 +31,7 @@ async def test_native_borrowed_project_lifetime_and_owner_failure(close_failure)
             raw = await reader.readuntil(b"\r\n\r\n")
             request = raw.decode()
             assert (
-                "Authorization: Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                "Authorization: Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
                 in request
             )
             requests.append(request.split("\r\n")[0])
@@ -55,7 +55,7 @@ async def test_native_borrowed_project_lifetime_and_owner_failure(close_failure)
     root = AsyncClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",
         http_transport=native,
@@ -110,7 +110,7 @@ async def test_independently_owned_project_closes_its_native_transport_once():
     async with AsyncProjectClient(
         Credential(
             "project_token",
-            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         "project-one",
         http_transport=transport,

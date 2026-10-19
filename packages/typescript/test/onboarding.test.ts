@@ -49,7 +49,7 @@ it("uploads fixture content separately and advances an existing QuickLink withou
 it("rejects client-token fixture upload and Meta continuation before transport", () => {
   const fetcher = vi.fn<typeof globalThis.fetch>();
   const client = new MessagingClient({
-    credential: { type: "clientToken", value: "pmfa_ct_browser" },
+    credential: { type: "clientToken", value: "pmfa_ct_YnJvd3Nlcg" },
     baseUrl: "https://api.example",
     fetch: fetcher,
   });

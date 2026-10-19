@@ -273,7 +273,7 @@ async def test_descriptor_http_sse_ack_and_resume():
                         return AsyncProjectClient(
                             Credential(
                                 "project_token",
-                                "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                                "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
                             ),
                             project_id="018f0000-0000-7000-8000-000000000077",
                             base_url=url,

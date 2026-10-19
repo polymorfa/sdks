@@ -64,7 +64,7 @@ $server->onText(function (Server $server, Connection $connection, Text $message)
             }
             $mediaHandles[$id] = $connection;
             $connectionIds[$id] = $frame['connectionId'];
-            if ($attempt > 1 && $frame['token'] !== 'pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ') {
+            if ($attempt > 1 && $frame['token'] !== 'pmfa_pt_YmJiYmJiYmJiYmJiYmJiYmJiYmKK0GQs') {
                 throw new RuntimeException('Reconnect failed to refresh credential.');
             }
             $connection->text('{"type":"ready","sampleRate":16000,"video":true}');

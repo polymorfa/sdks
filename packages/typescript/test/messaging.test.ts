@@ -557,7 +557,7 @@ describe("MessagingClient webhooks", () => {
     }));
     servers.push(server);
     const client = new MessagingClient({
-      credential: { type: "clientToken", value: "pmfa_ct_widget" },
+      credential: { type: "clientToken", value: "pmfa_ct_d2lkZ2V0" },
       baseUrl: server.url,
     });
     expect(() => client.sessions.list()).toThrow(/server API key/);

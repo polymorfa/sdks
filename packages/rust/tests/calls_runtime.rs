@@ -22,8 +22,24 @@ use tokio_tungstenite::{
         Message,
     },
 };
+fn opaque_fixture(ch: char) -> String {
+    use base64::Engine as _;
+    let mut raw = vec![ch as u8; 20];
+    let mut crc = 0xffffffff_u32;
+    for byte in &raw {
+        crc ^= u32::from(*byte);
+        for _ in 0..8 {
+            crc = (crc >> 1) ^ if crc & 1 != 0 { 0xedb88320 } else { 0 };
+        }
+    }
+    raw.extend_from_slice(&(crc ^ 0xffffffff).to_be_bytes());
+    format!(
+        "pmfa_{}",
+        base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(raw)
+    )
+}
 fn credential(ch: char) -> Credential {
-    Credential::organization_api_key(format!("pmfa_Ag{}", ch.to_string().repeat(86))).unwrap()
+    Credential::organization_api_key(opaque_fixture(ch)).unwrap()
 }
 fn options(base: String) -> CallsClientOptions {
     let mut o = CallsClientOptions::new("support");
@@ -87,10 +103,10 @@ async fn lifecycle_refresh_reconnect_bounded_pending_and_duplicate_received() {
             let (stream, _) = listener.accept().await.unwrap();
             let mut socket = accept_hdr_async(stream, lifecycle_protocol).await.unwrap();
             let value = auth(&mut socket).await;
-            assert!(value["token"]
-                .as_str()
-                .unwrap()
-                .ends_with(if index == 0 { 'a' } else { 'b' }));
+            assert_eq!(
+                value["token"].as_str().unwrap(),
+                opaque_fixture(if index == 0 { 'a' } else { 'b' })
+            );
             socket
                 .send(Message::Text(
                     json!({"type":"ready","session":"support","participant":"server:default"})
@@ -458,10 +474,7 @@ async fn lifecycle_http_connect_proxy_keeps_bearer_out_of_tunnel_and_handshake()
             .await
             .unwrap();
         let mut socket = accept_async(stream).await.unwrap();
-        assert_eq!(
-            auth(&mut socket).await["token"],
-            format!("pmfa_Ag{}", "a".repeat(86))
-        );
+        assert_eq!(auth(&mut socket).await["token"], opaque_fixture('a'));
         socket
             .send(Message::Text(json!({"type":"ready"}).to_string().into()))
             .await

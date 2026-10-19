@@ -3,7 +3,7 @@ const state={requests:0,followed:0,valid:true};
 const server=createServer(async(req,res)=>{
  if(req.url==='/state'){res.setHeader('content-type','application/json');res.end(JSON.stringify(state));return;}
  state.requests++;if(req.url.startsWith('/credential-leak'))state.followed++;
- state.valid&&=req.headers.authorization==='Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'&&!req.headers.cookie;
+ state.valid&&=req.headers.authorization==='Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'&&!req.headers.cookie;
  let raw='';for await(const part of req)raw+=part;
  if(req.method==='POST')state.valid&&=req.headers['idempotency-key']==='status-key'&&raw==='{"synthetic":true}';
  const match=req.url.match(/(?:case-|status\/)(\d{3})/);const status=match?Number(match[1]):200;

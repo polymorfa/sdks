@@ -112,7 +112,7 @@ internal static class MediaStreamTests
             {
                 var kind = vector.GetProperty("kind").GetString()!;
                 var message = new LinkedDeviceMessagePayload("message", new(null, null), new("conversation"), false, 0, "", false, kind, Media: vector.GetProperty("descriptor").GetString()!);
-                using var messaging = new MessagingClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+                using var messaging = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"));
                 await using var download = await messaging.Media.DownloadFromWhatsAppStreamAsync(message, options);
                 var result = await download.ToBufferedAsync(); Bytes(result.Bytes, Convert.FromHexString(vector.GetProperty("plaintext").GetString()!));
             }

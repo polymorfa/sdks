@@ -166,13 +166,13 @@ async def test_typed_chat_methods(method, suffix, query, body, fixture, server, 
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(client.chats)
         assert result.data == fixture and result.metadata.request_id == "req_chat"
     if server:
-        async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_fixture")) as browser:
+        async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_Zml4dHVyZQ")) as browser:
             with pytest.raises(ConfigurationError):
                 await invoke(browser.chats)

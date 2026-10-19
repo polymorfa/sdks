@@ -134,7 +134,7 @@ it("refuses Client direct upload before reading input, keeps relay and custom tr
       ),
     );
   const m = new MessagingClient({
-    credential: { type: "clientToken", value: "pmfa_ct_synthetic" },
+    credential: { type: "clientToken", value: "pmfa_ct_c3ludGhldGlj" },
     fetch,
   });
   const open = vi.fn(
@@ -207,7 +207,7 @@ it("validates canonical history success and server credentials", async () => {
     }),
   ).rejects.toBeInstanceOf(PolymorfaServerError);
   const browser = new MessagingClient({
-    credential: { type: "clientToken", value: "pmfa_ct_synthetic" },
+    credential: { type: "clientToken", value: "pmfa_ct_c3ludGhldGlj" },
     baseUrl: server.url,
   });
   expect(

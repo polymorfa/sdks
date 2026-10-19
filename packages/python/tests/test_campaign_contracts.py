@@ -68,7 +68,7 @@ async def wire(
             AsyncClient(
                 Credential(
                     "organization_api_key",
-                    "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                    "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
                 ),
                 base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",
             ) as client,
@@ -407,7 +407,7 @@ async def test_messaging_server_operations_refuse_client_before_http(operation):
     async with (
         wire() as (owner, requests),
         AsyncMessagingClient(
-            Credential("client_token", "pmfa_ct_fixture"), base_url=owner._transport._base_url
+            Credential("client_token", "pmfa_ct_Zml4dHVyZQ"), base_url=owner._transport._base_url
         ) as client,
     ):
         args = {
@@ -446,7 +446,7 @@ async def test_messaging_routes_escape_slug_and_keep_envelope(operation, tail, b
         async with AsyncMessagingClient(
             Credential(
                 "project_token",
-                "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
             ),
             base_url=owner._transport._base_url,
         ) as client:
@@ -485,7 +485,7 @@ async def test_csv_is_one_exact_page_and_keeps_safe_metadata(resource):
             async with AsyncMessagingClient(
                 Credential(
                     "project_token",
-                    "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                    "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
                 ),
                 base_url=client._transport._base_url,
             ) as messaging:
@@ -658,7 +658,7 @@ async def test_invalid_response_shapes_fail_without_outbound_revalidation(change
         async with AsyncMessagingClient(
             Credential(
                 "project_token",
-                "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
             ),
             base_url=owner._transport._base_url,
         ) as client:
@@ -790,7 +790,7 @@ async def test_cancelling_csv_body_wait_settles_request_and_does_not_fetch_next_
             AsyncClient(
                 Credential(
                     "organization_api_key",
-                    "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                    "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
                 ),
                 base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",
             ) as client,
@@ -831,7 +831,7 @@ async def test_cancelling_import_wait_is_not_a_durable_cancel():
             AsyncClient(
                 Credential(
                     "organization_api_key",
-                    "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                    "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
                 ),
                 base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",
             ) as client,

@@ -297,7 +297,7 @@ func TestCampaignContractPublicExposure(t *testing.T) {
 			t.Fatal("bound input exposes project")
 		}
 	}
-	c, e := NewProjectClient(Config{Credential: Credential{ProjectToken, "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}}, contractProject)
+	c, e := NewProjectClient(Config{Credential: Credential{ProjectToken, "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}}, contractProject)
 	if e != nil {
 		t.Fatal(e)
 	}

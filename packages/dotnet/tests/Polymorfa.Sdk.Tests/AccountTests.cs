@@ -24,9 +24,9 @@ internal static class AccountTests
         await Messaging("POST", "/messaging/support/messages/react", """{"conversation":{"id":"peer"},"id":"m1","reaction":"🐈","transport":"official_api"}""", """{"success":true,"data":{"id":"r1","whatsapp_ids":{"official_api":"wa1"},"whatsapp_id":"wa1","conversation":{"id":"peer"},"timestamp":"2026-09-22T00:00:00Z","status":"pending","transport":"official_api","routingReason":"cloud_preferred","operationId":"op1"}}""", async c => { var r = (await c.Messages.ReactAsync("support", new(new(Id: "peer"), "m1", "🐈", "official_api"))).Data.Data; ResourceTests.Equal(r.WhatsAppId, "wa1"); ResourceTests.Equal(r.OperationId, "op1"); });
         await Messaging("POST", "/messaging/support/messages/star", """{"conversation":{"id":"peer"},"id":"m1","star":false}""", """{"success":true,"data":{"status":"OK"}}""", async c => ResourceTests.Equal((await c.Messages.StarAsync("support", new(new(Id: "peer"), "m1", false))).Data.Data.Status, "OK"));
         await Messaging("GET", "/messaging/support/operations/op1", null, """{"success":true,"data":{"operationId":"op1","status":"unknown","transport":"official_api","rejectionCode":null,"receipt":null}}""", async c => ResourceTests.Equal((await c.Messages.OperationStatusAsync("support", "op1")).Data.Data.Status, "unknown"));
-        using var client = new MessagingClient(Credential.ClientToken("pmfa_ct_fixture"));
+        using var client = new MessagingClient(Credential.ClientToken("pmfa_ct_Zml4dHVyZQ"));
         try { await client.ClientTokens.MintAsync(new("visitor1", Session: "support")); throw new Exception("Client minted server token"); } catch (PolymorfaConfigurationException) { }
-        using var server = new MessagingClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"));
+        using var server = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"));
         try { await server.ClientTokens.MintAsync(new("visitor1", Session: "support", Customer: "cu1")); throw new Exception("Conflicting targets accepted"); } catch (PolymorfaConfigurationException) { }
         Console.WriteLine("PASS typed account metadata, security, client token rules, identity and message controls");
     }

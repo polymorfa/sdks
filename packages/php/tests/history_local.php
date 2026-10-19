@@ -100,7 +100,7 @@ raises(fn () => $api->historySync->deleteChunk('session', 'https://evil.invalid'
 raises(fn () => $api->historySync->deleteChunk('session', '/fixture', str_repeat('x', 31)), ConfigurationException::class);
 echo "Local history golden, three compression formats, lossless protobuf/uint64/unknown fields, bounds, native TLS verification-before-decode and explicit API retry/delete passed.\n";
 
-$browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_fixture'));
+$browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_Zml4dHVyZQ'));
 raises(fn () => $browser->historySync->requestChunkRetry('session', ['syncType' => 'FULL','chunkOrder' => 0]), ConfigurationException::class);
 raises(fn () => $browser->historySync->deleteChunk('session', '/fixture', str_repeat('x', 32)), ConfigurationException::class);
 

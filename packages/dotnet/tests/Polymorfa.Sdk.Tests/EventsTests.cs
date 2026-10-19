@@ -3,7 +3,7 @@ using static BillingTests;
 
 internal static class EventsTests
 {
-    private const string Key = "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    private const string Key = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
     private const string Event = "{\"id\":\"evt\",\"organizationId\":\"team\",\"projectId\":\"p\",\"type\":\"message.received\",\"source\":\"runtime\",\"environment\":\"development\",\"createdAt\":\"2026-09-22\",\"payloadAvailability\":\"not_retained\",\"payload\":null,\"replayableUntil\":null,\"metadataExpiresAt\":\"2026-10-22\"}";
     private const string Replay = "{\"data\":{\"eventId\":\"evt\",\"deliveryId\":\"delivery\",\"operationId\":\"op\",\"idempotency\":{\"id\":\"idem\",\"key\":\"key\",\"replayed\":false,\"createdAt\":\"2026-09-22\",\"expiresAt\":\"2026-09-23\"}}}";
     public static async Task RunAsync()

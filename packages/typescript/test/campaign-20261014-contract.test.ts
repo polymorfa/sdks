@@ -724,7 +724,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
   it("refuses client tokens on all six new Messaging methods before fetch", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     const base = clients("http://127.0.0.1:1");
-    const token = "pmfa_ct_synthetic_campaign_client";
+    const token = "pmfa_ct_c3ludGhldGljX2NhbXBhaWduX2NsaWVudA";
     const messaging = new MessagingClient({
       credential: { type: "clientToken", value: token },
       baseUrl: "http://127.0.0.1:1",

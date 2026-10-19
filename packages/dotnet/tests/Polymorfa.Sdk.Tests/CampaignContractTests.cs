@@ -11,7 +11,7 @@ internal static class CampaignContractTests
     internal const string B = "22222222-2222-4222-8222-222222222222";
     internal const string C = "33333333-3333-4333-8333-333333333333";
     internal const string Phone = "+15551234567";
-    internal static Credential OrganizationKey() => Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+    internal static Credential OrganizationKey() => Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k");
     internal const string Profile = "{\"id\":\"" + A + "\",\"phone\":\"+15551234567\",\"revision\":1,\"tags\":[\"lead\"],\"attributes\":{\"empty\":null,\"ok\":false,\"score\":1.5},\"provenance\":null,\"createdAt\":0,\"updatedAt\":1}";
     internal const string Consent = "{\"id\":\"" + B + "\",\"profileRevision\":1,\"createdAt\":0,\"purpose\":\"campaigns\",\"allowed\":false,\"source\":\"api\",\"reference\":\"supplied\",\"assertedAt\":0}";
     internal const string Job = "{\"id\":\"" + A + "\",\"state\":\"queued\",\"totalValid\":1,\"invalidCount\":1,\"invalidSamples\":[{\"row\":2,\"reason\":\"invalid_phone\"}],\"conflictSamples\":[{\"row\":3,\"reason\":\"quota\"}],\"processedValid\":0,\"createdCount\":0,\"updatedCount\":0,\"conflictCount\":1,\"createdAt\":0,\"updatedAt\":1,\"completedAt\":null}";
@@ -31,7 +31,7 @@ internal static class CampaignContractTests
     private static int checks;
     private static async Task Wire<T>(string method, string path, string? body, string response, Func<OrganizationClient, MessagingClient, Task<ApiResponse<T>>> call, Action<T> verify, IReadOnlyDictionary<string, string>? headers = null, int status = 200, string version = "2026-10-14")
     {
-        using var fixture = new WireFixture { Authorization = "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", ExpectedHeaders = new Dictionary<string, string> { ["polymorfa-version"] = version } };
+        using var fixture = new WireFixture { Authorization = "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k", ExpectedHeaders = new Dictionary<string, string> { ["polymorfa-version"] = version } };
         var serving = fixture.ServeAsync(method, path, body, response, status, headers);
         using var org = new OrganizationClient(OrganizationKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
         using var messaging = new MessagingClient(OrganizationKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
@@ -116,7 +116,7 @@ internal static class CampaignContractTests
     private static async Task BoundViewsAsync()
     {
         // Each alias retains its captured owner, including after a borrowed view is disposed.
-        foreach (var credential in new[] { OrganizationKey(), Credential.ProjectToken("pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") })
+        foreach (var credential in new[] { OrganizationKey(), Credential.ProjectToken("pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k") })
         {
             using var fixture = new WireFixture { ExpectedHeaders = new Dictionary<string, string> { ["polymorfa-version"] = "2026-10-14" } };
             using var owning = new ProjectClient(credential, A, new() { BaseUrl = fixture.Url });

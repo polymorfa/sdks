@@ -35,7 +35,7 @@ from polymorfa.s3 import S3MediaStore
 
 KEY = Credential(
     "organization_api_key",
-    "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
 )
 
 

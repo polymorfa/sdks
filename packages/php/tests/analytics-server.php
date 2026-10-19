@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_URI'] === '/ready') {
 }
 $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
 $project = '11111111-1111-1111-1111-111111111111';
-$valid = (($_SERVER['REQUEST_URI'] === '/platform/analytics/metrics?windowHours=24&segments=false&format=prometheus' && $accept === 'text/plain') || ($_SERVER['REQUEST_URI'] === '/platform/projects/'.$project.'/analytics/metrics?format=openmetrics' && $accept === 'application/openmetrics-text')) && ($_SERVER['HTTP_AUTHORIZATION'] ?? '') === 'Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
+$valid = (($_SERVER['REQUEST_URI'] === '/platform/analytics/metrics?windowHours=24&segments=false&format=prometheus' && $accept === 'text/plain') || ($_SERVER['REQUEST_URI'] === '/platform/projects/'.$project.'/analytics/metrics?format=openmetrics' && $accept === 'application/openmetrics-text')) && ($_SERVER['HTTP_AUTHORIZATION'] ?? '') === 'Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k';
 if (!$valid) {
     http_response_code(422);
     header('content-type:application/json');

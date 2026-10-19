@@ -172,7 +172,7 @@ it("surfaces a real-session refusal as an invalid request", async () => {
 it("rejects client tokens before transport", () => {
   const fetcher = vi.fn<typeof globalThis.fetch>();
   const messaging = new MessagingClient({
-    credential: { type: "clientToken", value: "pmfa_ct_browser" },
+    credential: { type: "clientToken", value: "pmfa_ct_YnJvd3Nlcg" },
     baseUrl: "https://api.example",
     fetch: fetcher,
   });

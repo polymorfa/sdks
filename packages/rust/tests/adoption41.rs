@@ -713,7 +713,7 @@ fn all_history_delivery_variants_narrow_after_verification_and_dual_or_null_fail
 }
 fn client41(base: String) -> MessagingClient {
     MessagingClient::new(
-        Credential::client_token("pmfa_ct_synthetic-only").unwrap(),
+        Credential::client_token("pmfa_ct_c3ludGhldGljLW9ubHk").unwrap(),
         ClientOptions {
             base_url: base,
             max_network_retries: 0,

@@ -11,6 +11,25 @@ import { PolymorfaConfigurationError } from "../src/errors.js";
 import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 
 describe("credential validation", () => {
+  it("accepts varying canonical client bodies and rejects malformed encoding", () => {
+    for (const length of [100, 200, 512]) {
+      const value = "pmfa_ct_" + Buffer.alloc(length).toString("base64url");
+      expect(
+        validateMessagingCredential({ type: "clientToken", value }).value,
+      ).toBe(value);
+    }
+    for (const value of [
+      "pmfa_ct_A",
+      "pmfa_ct_AA=",
+      "pmfa_ct_++",
+      "pmfa_ct_A A",
+      "pmfa_ct_AA\n",
+    ]) {
+      expect(() =>
+        validateMessagingCredential({ type: "clientToken", value }),
+      ).toThrow(PolymorfaConfigurationError);
+    }
+  });
   it("accepts an explicit Messaging server API key", () => {
     expect(
       validateMessagingCredential({
@@ -27,11 +46,11 @@ describe("credential validation", () => {
     expect(
       validateMessagingCredential({
         type: "clientToken",
-        value: "pmfa_ct_example",
+        value: "pmfa_ct_ZXhhbXBsZQ",
       }),
     ).toEqual({
       type: "clientToken",
-      value: "pmfa_ct_example",
+      value: "pmfa_ct_ZXhhbXBsZQ",
     });
   });
 
@@ -46,7 +65,10 @@ describe("credential validation", () => {
 
   it("rejects a mismatched Messaging credential discriminator", () => {
     expect(() =>
-      validateMessagingCredential({ type: "apiKey", value: "pmfa_ct_example" }),
+      validateMessagingCredential({
+        type: "apiKey",
+        value: "pmfa_ct_ZXhhbXBsZQ",
+      }),
     ).toThrow(/Client and project tokens/);
     expect(() =>
       validateMessagingCredential({
@@ -63,7 +85,7 @@ describe("credential validation", () => {
   });
 
   it("rejects client, project, and listener tokens as organization keys", () => {
-    expect(() => validateOrganizationApiKey("pmfa_ct_example")).toThrow(
+    expect(() => validateOrganizationApiKey("pmfa_ct_ZXhhbXBsZQ")).toThrow(
       PolymorfaConfigurationError,
     );
     expect(() => validateOrganizationApiKey("pmfa_pt_example")).toThrow(
@@ -82,10 +104,16 @@ describe("credential validation", () => {
       }),
     ).toEqual({ type: "projectToken", value: PROJECT_TOKEN });
 
-    // Length varies with framing; canonical version 2 is the local shape gate.
-    for (const length of [66, 67, 68, 200]) {
-      const raw = Buffer.alloc(length);
-      raw[0] = 2;
+    // Future secret lengths remain acceptable to shape validation when CRC is valid.
+    for (const length of [20, 21, 32, 200]) {
+      const raw = Buffer.alloc(length + 4);
+      let crc = 0xffffffff;
+      for (const byte of raw.subarray(0, length)) {
+        crc ^= byte;
+        for (let i = 0; i < 8; i++)
+          crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
+      }
+      raw.writeUInt32BE((crc ^ 0xffffffff) >>> 0, length);
       const value = "pmfa_pt_" + raw.toString("base64url");
       expect(validateClientCredential({ type: "projectToken", value })).toEqual(
         { type: "projectToken", value },
@@ -108,7 +136,7 @@ describe("credential validation", () => {
     }
   });
 
-  it("rejects v1 and padded v2 credentials before transport", () => {
+  it("rejects legacy and padded credentials before transport", () => {
     expect(() =>
       validateOrganizationApiKey(`pmfa_${"A".repeat(72)}`),
     ).toThrow();

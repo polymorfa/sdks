@@ -57,7 +57,7 @@ internal static class IdempotencyHeaderTests
                 await stream.WriteAsync(Encoding.UTF8.GetBytes($"HTTP/1.1 {status} Fixture\r\ncontent-type: application/json\r\nretry-after: 0\r\ncontent-length: {body.Length}\r\nconnection: close\r\n\r\n{body}"), timeout.Token);
             }
         });
-        using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), new() { BaseUrl = new Uri($"http://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}"), MaxNetworkRetries = 1, Timeout = TimeSpan.FromSeconds(3) });
+        using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = new Uri($"http://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}"), MaxNetworkRetries = 1, Timeout = TimeSpan.FromSeconds(3) });
         try
         {
             for (var call = 0; call < 2; call++) await client.Campaigns.LaunchAsync("support", "campaign", options: options);
@@ -71,7 +71,7 @@ internal static class IdempotencyHeaderTests
     private static async Task Rejected(RequestOptions options)
     {
         using var listener = new TcpListener(IPAddress.Loopback, 0); listener.Start();
-        using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), new() { BaseUrl = new Uri($"http://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}"), Timeout = TimeSpan.FromMilliseconds(200) });
+        using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = new Uri($"http://127.0.0.1:{((IPEndPoint)listener.LocalEndpoint).Port}"), Timeout = TimeSpan.FromMilliseconds(200) });
         try { await client.Campaigns.LaunchAsync("support", "campaign", options: options); throw new Exception("Expected invalid key rejection."); }
         catch (PolymorfaConfigurationException error) { if (error.ToString().Contains("private", StringComparison.Ordinal)) throw new Exception("Invalid key leaked."); }
         if (listener.Pending()) throw new Exception("Invalid idempotency key reached the network.");
@@ -80,7 +80,7 @@ internal static class IdempotencyHeaderTests
     private static async Task RawPolicyAndBodySnapshot()
     {
         using (var fixture = new WireFixture { ExpectedHeaders = new Dictionary<string, string> { ["idempotency-key"] = "raw-caller" } })
-        using (var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 1 }))
+        using (var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 1 }))
         {
             var serving = Task.Run(async () => { await fixture.ServeAsync("POST", "/messaging/raw", "{}", "{\"error\":{\"code\":\"service_unavailable\",\"message\":\"retry\"}}", 503); await fixture.ServeAsync("POST", "/messaging/raw", "{}", "{}"); });
             try
@@ -94,7 +94,7 @@ internal static class IdempotencyHeaderTests
         }
         using var body = JsonDocument.Parse("{\"value\":\"original\"}"); var replies = 0;
         using (var fixture = new WireFixture { BeforeResponse = () => { if (replies++ == 0) body.Dispose(); return Task.CompletedTask; }, ExpectedHeaders = new Dictionary<string, string> { ["idempotency-key"] = "body-snapshot" } })
-        using (var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 1 }))
+        using (var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 1 }))
         {
             var serving = Task.Run(async () => { await fixture.ServeAsync("POST", "/messaging/raw", "{\"value\":\"original\"}", "{\"error\":{\"code\":\"service_unavailable\",\"message\":\"retry\"}}", 503, new Dictionary<string, string> { ["retry-after"] = "0" }); await fixture.ServeAsync("POST", "/messaging/raw", "{\"value\":\"original\"}", "{}"); });
             try { Equal((await client.RawAsync<JsonElement>(HttpMethod.Post, "/messaging/raw", body.RootElement, new() { IdempotencyKey = "body-snapshot", MaxNetworkRetries = 1 })).Metadata.Attempts, 2); }

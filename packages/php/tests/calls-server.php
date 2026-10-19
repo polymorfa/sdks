@@ -23,7 +23,7 @@ $server->onHandshake(function (Server $server, Connection $connection, RequestIn
 $server->onText(function (Server $server, Connection $connection, Text $message) use (&$handshake, &$authenticated, &$pcm): void {
     $frame = json_decode($message->getContent(), true, flags:JSON_THROW_ON_ERROR);
     if (!$authenticated) {
-        if (!$handshake || $frame !== ['type' => 'auth','token' => 'pmfa_ct_fixture','connectionId' => 'connection_fixture']) {
+        if (!$handshake || $frame !== ['type' => 'auth','token' => 'pmfa_ct_Zml4dHVyZQ','connectionId' => 'connection_fixture']) {
             throw new RuntimeException('Invalid Calls authentication frame.');
         }
         $authenticated = true;

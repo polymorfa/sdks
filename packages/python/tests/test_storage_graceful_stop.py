@@ -429,7 +429,7 @@ async def test_native_platform_sse_storage_held_manual_ack_and_idle_headers(mode
             requests.append(lines[0])
             assert (
                 headers["authorization"]
-                == "Bearer pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                == "Bearer pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
             )
             assert headers["polymorfa-version"] == "2026-09-22"
             if lines[0].startswith("POST "):
@@ -537,7 +537,7 @@ async def test_native_platform_sse_storage_held_manual_ack_and_idle_headers(mode
         async with AsyncProjectClient(
             Credential(
                 "project_token",
-                "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
             ),
             project,
             base_url=f"http://127.0.0.1:{port}",

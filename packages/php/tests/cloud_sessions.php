@@ -20,7 +20,7 @@ foreach ($cases as [$method,$suffix,$query,$data,$invoke]) {
     check($request->getMethod() === $method && $request->getUri()->getPath() === '/messaging/support'.$suffix, 'Cloud session route');
     check($actual === $query && (string)$request->getBody() === '', 'Cloud session query and body');
     check($response->data === $fixture && $response->metadata->requestId === 'req_test', 'Cloud session result and metadata');
-    $browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_fixture'));
+    $browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_Zml4dHVyZQ'));
     raises(fn () => $invoke($browser->sessions), Polymorfa\ConfigurationException::class);
 }
 $history = [];

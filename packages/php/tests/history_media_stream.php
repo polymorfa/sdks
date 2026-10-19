@@ -15,7 +15,7 @@ $readHistory = static function (Polymorfa\MessagingClient $client): Polymorfa\Ap
         $download->close();
     }
 };
-foreach ([$credential, Polymorfa\Credential::projectToken('pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')] as $historyCredential) {
+foreach ([$credential, Polymorfa\Credential::projectToken('pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k')] as $historyCredential) {
     nativeCases([
         ['GET', $historyPath, null, "\x00ABC\x00", $readHistory, "\x00ABC\x00", [
             'requestHeaders' => ['X-History-Proof' => 'stream', 'Accept' => 'application/octet-stream'],
@@ -56,7 +56,7 @@ nativeCases([
     }, 'body_failure', ['bodyDelaySeconds' => 3, 'responseHeaders' => ['X-Polymorfa-Operation-Id' => 'history_operation']]],
 ], static fn ($provided, $url) => new Polymorfa\MessagingClient($provided, baseUrl: $url));
 
-foreach ([Polymorfa\Credential::clientToken('pmfa_ct_fixture'), $credential] as $historyCredential) {
+foreach ([Polymorfa\Credential::clientToken('pmfa_ct_Zml4dHVyZQ'), $credential] as $historyCredential) {
     $history = [];
     $client = new Polymorfa\MessagingClient($historyCredential, http: mocked([], $history));
     if ($historyCredential->kind === 'client_token') {

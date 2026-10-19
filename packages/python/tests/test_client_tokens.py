@@ -17,7 +17,7 @@ RULES = {
     "allowedNumber": "",
     "enabled": True,
 }
-TOKEN = {"success": True, "data": {"token": "pmfa_ct_fixture", "expiresAt": "2026-10-11T12:00:00Z"}}
+TOKEN = {"success": True, "data": {"token": "pmfa_ct_Zml4dHVyZQ", "expiresAt": "2026-10-11T12:00:00Z"}}
 CASES = [
     (
         "POST",
@@ -69,13 +69,13 @@ async def test_typed_client_token_methods(method, path, body, fixture, invoke):
     async with AsyncMessagingClient(
         Credential(
             "project_token",
-            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = await invoke(client.client_tokens)
         assert response.data == fixture and response.metadata.request_id == "req_tokens"
-    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_fixture")) as client:
+    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_Zml4dHVyZQ")) as client:
         with pytest.raises(ConfigurationError):
             await invoke(client.client_tokens)
 
@@ -84,7 +84,7 @@ async def test_mint_target_guards_before_network():
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     ) as client:
         for body in (

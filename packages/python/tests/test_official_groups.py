@@ -179,7 +179,7 @@ async def test_typed_official_group_methods(method, path, body, query, data, inv
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
@@ -188,7 +188,7 @@ async def test_typed_official_group_methods(method, path, body, query, data, inv
         )
         assert result.data == {"success": True, "data": data}
         assert result.metadata.request_id == "req_group" and result.metadata.status == 200
-    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_local")) as client:
+    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_bG9jYWw")) as client:
         with pytest.raises(ConfigurationError):
             await invoke(client.official_groups, RequestOptions())
 
@@ -210,7 +210,7 @@ async def test_every_official_group_mutation_is_single_attempt(
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:

@@ -5,10 +5,12 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash/crc32"
 	"io"
 	"math"
 	"math/big"
@@ -130,14 +132,23 @@ func validation(message string) error {
 	return &Error{Kind: ValidationError, Code: "invalid_parameter", Message: message}
 }
 
-// signedV2Shape checks framing only. The API authenticates the signature.
-func signedV2Shape(value, prefix string) bool {
-	if len(value) > 16384 || !strings.HasPrefix(value, prefix) {
+// opaqueShape checks framing only. The API authenticates the issuance record.
+func opaqueShape(value, prefix string) bool {
+	if !strings.HasPrefix(value, prefix) {
 		return false
 	}
 	body := strings.TrimPrefix(value, prefix)
 	raw, err := base64.RawURLEncoding.Strict().DecodeString(body)
-	return err == nil && len(raw) >= 66 && raw[0] == 2 && base64.RawURLEncoding.EncodeToString(raw) == body
+	return err == nil && len(raw) >= 24 && crc32.ChecksumIEEE(raw[:len(raw)-4]) == binary.BigEndian.Uint32(raw[len(raw)-4:]) && base64.RawURLEncoding.EncodeToString(raw) == body
+}
+
+func clientShape(value string) bool {
+	if !strings.HasPrefix(value, "pmfa_ct_") {
+		return false
+	}
+	body := strings.TrimPrefix(value, "pmfa_ct_")
+	raw, err := base64.RawURLEncoding.Strict().DecodeString(body)
+	return len(raw) > 0 && err == nil && base64.RawURLEncoding.EncodeToString(raw) == body
 }
 
 func validateCredential(c Credential, messaging bool) error {
@@ -146,15 +157,15 @@ func validateCredential(c Credential, messaging bool) error {
 	}
 	switch c.Kind {
 	case OrganizationAPIKey:
-		if !signedV2Shape(c.Value, "pmfa_") || strings.HasPrefix(c.Value, "pmfa_pt_") || strings.HasPrefix(c.Value, "pmfa_ct_") || strings.HasPrefix(c.Value, "pmfa_ls_") || strings.HasPrefix(c.Value, "pmfa_at_") || strings.HasPrefix(c.Value, "pmfa_wst_") || strings.HasPrefix(c.Value, "pmfa_sd_") {
-			return configuration("credential", "Organization API keys require the canonical pmfa_ v2 format.")
+		if !opaqueShape(c.Value, "pmfa_") || strings.HasPrefix(c.Value, "pmfa_pt_") || strings.HasPrefix(c.Value, "pmfa_ct_") || strings.HasPrefix(c.Value, "pmfa_ls_") || strings.HasPrefix(c.Value, "pmfa_at_") || strings.HasPrefix(c.Value, "pmfa_wst_") || strings.HasPrefix(c.Value, "pmfa_sd_") {
+			return configuration("credential", "Organization API keys require the canonical pmfa_ opaque format.")
 		}
 	case ProjectToken:
-		if !signedV2Shape(c.Value, "pmfa_pt_") {
-			return configuration("credential", "Project tokens require the canonical pmfa_pt_ v2 format.")
+		if !opaqueShape(c.Value, "pmfa_pt_") {
+			return configuration("credential", "Project tokens require the canonical pmfa_pt_ opaque format.")
 		}
 	case ClientToken:
-		if !messaging || !strings.HasPrefix(c.Value, "pmfa_ct_") || len(c.Value) <= 8 {
+		if !messaging || !clientShape(c.Value) {
 			return configuration("credential", "Client tokens are accepted only by Messaging and require the pmfa_ct_ prefix.")
 		}
 	default:

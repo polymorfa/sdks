@@ -51,7 +51,7 @@ async fn credential_free_system_probes_native_request_response_contracts() {
 }
 #[tokio::test]
 async fn project_token_bridge_route_discovery_native_wire_and_principal_guards() {
-    let token = "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string();
+    let token = "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string();
     let expected = json!({"wsUrl":"wss://bridge.example.com/connect","region":"BR","kind":"sandbox","signal":"bartender","tokenKind":"project","expiresAt":1800000000000u64});
     let (base, server) = support::wire_authorization(
         "GET",
@@ -82,7 +82,7 @@ async fn project_token_bridge_route_discovery_native_wire_and_principal_guards()
     server.await.unwrap();
     assert!(BridgeClient::new(support::credential(), Default::default()).is_err());
     assert!(BridgeClient::new(
-        Credential::client_token("pmfa_ct_client").unwrap(),
+        Credential::client_token("pmfa_ct_Y2xpZW50").unwrap(),
         Default::default()
     )
     .is_err());

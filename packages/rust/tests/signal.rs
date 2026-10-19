@@ -406,8 +406,8 @@ async fn client_rejects_reserved_polymorfa_secrets_before_requests() {
     let url = format!("http://{}", listener.local_addr().unwrap());
     // Synthetic values shaped like Polymorfa credentials. None is a real secret.
     for secret in [
-        "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string(),
-        "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA".to_string(),
+        "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string(),
+        "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string(),
         "pmfa_ct_synthetic-client-token-value".to_owned(),
         "pmfa_ls_synthetic-link-session-value".to_owned(),
         "pmfa_at_synthetic-special-purpose-value".to_owned(),

@@ -96,13 +96,13 @@ async def test_all_typed_session_management_methods(method, suffix, body, fixtur
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(client.sessions)
         assert result.data == fixture
         assert result.metadata.status == 200 and result.metadata.request_id == "req_session"
-    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_local")) as client:
+    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_bG9jYWw")) as client:
         with pytest.raises(ConfigurationError):
             await invoke(client.sessions)

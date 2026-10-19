@@ -415,7 +415,7 @@ async def test_bansafe_observation_native_wire(name, method, path, body, query, 
             assert (json.loads(raw) if raw else None) == body
             assert (
                 headers["authorization"]
-                == "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                == "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
             )
             assert headers["polymorfa-version"] == "2026-09-22"
             assert headers["idempotency-key"] == "proof-key"
@@ -436,7 +436,7 @@ async def test_bansafe_observation_native_wire(name, method, path, body, query, 
     client = AsyncClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",
         max_network_retries=0,

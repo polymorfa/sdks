@@ -41,7 +41,7 @@ final readonly class TestEncryptedTransport implements WhatsAppMediaUploadTransp
 $http = new GuzzleHttp\Client(['handler' => static function () {
     throw new RuntimeException('unexpected API dispatch');
 }]);
-$resource = (new MessagingClient(Credential::organizationApiKey('pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'), http:$http))->whatsappMedia;
+$resource = (new MessagingClient(Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'), http:$http))->whatsappMedia;
 $plain = str_repeat('synthetic-data', 12000);
 $key = str_repeat('k', 32);
 $location = new WhatsAppUploadLocation('/synthetic', 'https://cdn.whatsapp.net/synthetic');
@@ -160,7 +160,7 @@ foreach (['relay','direct'] as $mode) {
         [$host,$port] = explode(':', $fixture['address']);
         $handler = GuzzleHttp\HandlerStack::create();
         $http = new GuzzleHttp\Client(['handler' => static fn ($request, $options) => $handler($request->withUri($request->getUri()->withHost($host)->withPort((int)$port), true), $options), 'verify' => $fixture['ca'],'proxy' => '']);
-        $resource = (new MessagingClient(Credential::organizationApiKey('pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'), baseUrl:'https://api.fixture.invalid', http:$http))->whatsappMedia;
+        $resource = (new MessagingClient(Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'), baseUrl:'https://api.fixture.invalid', http:$http))->whatsappMedia;
         $options = new UploadWhatsAppMediaOptions('image', mediaKey:$key, http:$http);
         $builtin = $resource->uploadTransport($mode, $options);
         $wrapper = new TestEncryptedTransport(static fn (string $session, WhatsAppEncryptedUploadBody $body): WhatsAppUploadLocation => $builtin->upload($session, $body));

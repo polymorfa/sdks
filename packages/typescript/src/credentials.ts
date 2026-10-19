@@ -1,6 +1,6 @@
 import { PolymorfaConfigurationError } from "./errors.js";
 
-import { isSignedCredentialV2 } from "./credential-shape.js";
+import { isOpaqueCredential, isClientCredential } from "./credential-shape.js";
 
 export type MessagingCredential =
   | { readonly type: "apiKey"; readonly value: string }
@@ -46,17 +46,14 @@ export function validateMessagingCredential(
   if (credential.type === "projectToken") {
     if (!isProjectToken(credential.value)) {
       throw new PolymorfaConfigurationError(
-        "Messaging project tokens must use the canonical pmfa_pt_ v2 format.",
+        "Messaging project tokens must use the canonical pmfa_pt_ opaque format.",
         "credential",
       );
     }
     return credential;
   }
   if (credential.type === "clientToken") {
-    if (
-      !credential.value.startsWith("pmfa_ct_") ||
-      credential.value.length <= "pmfa_ct_".length
-    ) {
+    if (!isClientCredential(credential.value)) {
       throw new PolymorfaConfigurationError(
         "Messaging client token must use the pmfa_ct_ prefix.",
         "credential",
@@ -76,7 +73,7 @@ export function validateClientCredential(
   if (credential.type === "projectToken") {
     if (!isProjectToken(credential.value)) {
       throw new PolymorfaConfigurationError(
-        "Project tokens must use the canonical pmfa_pt_ v2 format.",
+        "Project tokens must use the canonical pmfa_pt_ opaque format.",
         "credential",
       );
     }
@@ -91,7 +88,7 @@ export function validateOrganizationApiKey(value: string): string {
   rejectNonOrganizationCredential(value);
   if (!isServerApiKey(value)) {
     throw new PolymorfaConfigurationError(
-      "Organization server API keys must use the canonical pmfa_ v2 format.",
+      "Organization server API keys must use the canonical pmfa_ opaque format.",
       "credential",
     );
   }
@@ -165,9 +162,9 @@ export function assertServerRuntime(
 }
 
 function isServerApiKey(value: string): boolean {
-  return isSignedCredentialV2(value, "pmfa_");
+  return isOpaqueCredential(value, "pmfa_");
 }
 
 function isProjectToken(value: string): boolean {
-  return isSignedCredentialV2(value, "pmfa_pt_");
+  return isOpaqueCredential(value, "pmfa_pt_");
 }

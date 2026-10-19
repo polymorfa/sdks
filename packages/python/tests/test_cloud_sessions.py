@@ -72,13 +72,13 @@ async def test_typed_cloud_session_observations(method, suffix, query, data, inv
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = await invoke(client.sessions)
         assert response.data == fixture and response.metadata.request_id == "req_cloud"
-    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_fixture")) as browser:
+    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_Zml4dHVyZQ")) as browser:
         with pytest.raises(ConfigurationError):
             await invoke(browser.sessions)
 
@@ -93,7 +93,7 @@ async def test_reauthorization_never_retries_even_with_idempotency_key():
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:

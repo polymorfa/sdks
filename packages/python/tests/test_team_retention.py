@@ -29,11 +29,11 @@ RETENTION = {
     [
         (
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         (
             "project_token",
-            "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
     ],
 )
@@ -93,7 +93,7 @@ async def test_native_team_retention_facade_needs_no_project_id_and_keeps_metada
 
 def test_client_token_refused_and_known_error_codes_match_pinned_contract():
     with pytest.raises(ConfigurationError):
-        AsyncCallRetentionClient(Credential("client_token", "pmfa_ct_fixture"))
+        AsyncCallRetentionClient(Credential("client_token", "pmfa_ct_Zml4dHVyZQ"))
     source = (Path(__file__).resolve().parents[3] / "packages/typescript/src/errors.ts").read_text()
     block = source.split("export const POLYMORFA_ERROR_CODES = [", 1)[1].split("] as const", 1)[0]
     assert POLYMORFA_ERROR_CODES == set(re.findall('"([a-z_]+)"', block))

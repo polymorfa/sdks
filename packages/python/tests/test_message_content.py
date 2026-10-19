@@ -262,7 +262,7 @@ async def test_public_send_all_composed_variants_context_and_response(content, c
         if client_token
         else Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     )
     async with AsyncMessagingClient(

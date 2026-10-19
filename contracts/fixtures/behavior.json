@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9",
   "apiVersion": "2026-09-22",
-  "organizationCredential": "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-  "projectCredential": "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  "organizationCredential": "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+  "projectCredential": "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
   "scenarios": [
     {
       "id": "sessions-list",
@@ -11,7 +11,7 @@
         "method": "GET",
         "path": "/platform/sessions",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         },
         "query": {}
@@ -56,7 +56,7 @@
         "method": "GET",
         "path": "/platform/sessions",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         },
         "query": {
@@ -91,7 +91,7 @@
         "method": "POST",
         "path": "/messaging/support/messages/send",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22",
           "idempotency-key": "send-fixture"
         },
@@ -139,7 +139,7 @@
         "method": "GET",
         "path": "/platform/sessions",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         },
         "query": {}
@@ -182,7 +182,7 @@
         "method": "GET",
         "path": "/platform/sessions",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         },
         "query": {}
@@ -226,7 +226,7 @@
         "method": "POST",
         "path": "/messaging/fixtures/mutation",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         },
         "body": {
@@ -272,7 +272,7 @@
         "method": "POST",
         "path": "/messaging/fixtures/mutation",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22",
           "idempotency-key": "fixture-stable-key"
         },
@@ -319,7 +319,7 @@
         "method": "POST",
         "path": "/messaging/fixtures/mutation",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22",
           "idempotency-key": "fixture-stable-key"
         },
@@ -367,7 +367,7 @@
         "method": "GET",
         "path": "/messaging/fixtures/error",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         }
       },
@@ -406,7 +406,7 @@
         "method": "GET",
         "path": "/messaging/fixtures/error",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         }
       },
@@ -445,7 +445,7 @@
         "method": "GET",
         "path": "/messaging/fixtures/error",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         }
       },
@@ -484,7 +484,7 @@
         "method": "GET",
         "path": "/messaging/fixtures/error",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         }
       },
@@ -523,7 +523,7 @@
         "method": "GET",
         "path": "/messaging/fixtures/error",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         }
       },
@@ -562,7 +562,7 @@
         "method": "GET",
         "path": "/messaging/fixtures/error",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         }
       },
@@ -601,7 +601,7 @@
         "method": "GET",
         "path": "/messaging/fixtures/error",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         }
       },
@@ -640,7 +640,7 @@
         "method": "GET",
         "path": "/messaging/fixtures/error",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         }
       },
@@ -679,7 +679,7 @@
         "method": "GET",
         "path": "/messaging/fixtures/error",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         }
       },
@@ -718,7 +718,7 @@
         "method": "GET",
         "path": "/messaging/fixtures/error",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         }
       },
@@ -744,7 +744,7 @@
         "method": "GET",
         "path": "/platform/sessions",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         },
         "query": {}
@@ -778,7 +778,7 @@
         "method": "GET",
         "path": "/platform/sessions",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         },
         "query": {}
@@ -812,7 +812,7 @@
         "method": "DELETE",
         "path": "/messaging/fixtures/item",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22"
         }
       },
@@ -835,7 +835,7 @@
         "method": "GET",
         "path": "/platform/sessions",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-10-01"
         },
         "query": {}
@@ -865,7 +865,7 @@
         "method": "POST",
         "path": "/messaging/fixtures/mutation",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22",
           "idempotency-key": "fixture-stable-key"
         },
@@ -915,7 +915,7 @@
         "method": "POST",
         "path": "/messaging/fixtures/mutation",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22",
           "idempotency-key": "fixture-stable-key"
         },
@@ -955,7 +955,7 @@
         "method": "POST",
         "path": "/messaging/fixtures/mutation",
         "headers": {
-          "authorization": "Bearer pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "authorization": "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
           "polymorfa-version": "2026-09-22",
           "idempotency-key": "fixture-stable-key"
         },
@@ -1087,21 +1087,21 @@
       "id": "organization-valid",
       "client": "platform",
       "credentialType": "organizationApiKey",
-      "credential": "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "credential": "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
       "valid": true
     },
     {
       "id": "messaging-org-valid",
       "client": "messaging",
       "credentialType": "apiKey",
-      "credential": "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "credential": "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
       "valid": true
     },
     {
       "id": "project-valid",
       "client": "platform",
       "credentialType": "projectToken",
-      "credential": "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "credential": "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
       "projectId": "project_fixture",
       "valid": true
     },
@@ -1109,7 +1109,7 @@
       "id": "project-missing-id",
       "client": "platform",
       "credentialType": "projectToken",
-      "credential": "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "credential": "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
       "valid": false,
       "field": "projectId"
     },
@@ -1134,7 +1134,7 @@
       "id": "organization-wrong-principal",
       "client": "platform",
       "credentialType": "organizationApiKey",
-      "credential": "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "credential": "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
       "valid": false,
       "field": "credential"
     },
@@ -1142,7 +1142,7 @@
       "id": "project-wrong-principal",
       "client": "platform",
       "credentialType": "projectToken",
-      "credential": "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "credential": "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
       "projectId": "project_fixture",
       "valid": false,
       "field": "credential"
@@ -1159,7 +1159,7 @@
       "id": "client-token-refused-platform",
       "client": "platform",
       "credentialType": "projectToken",
-      "credential": "pmfa_ct_fixture",
+      "credential": "pmfa_ct_Zml4dHVyZQ",
       "projectId": "project_fixture",
       "valid": false,
       "field": "credential"
@@ -1168,14 +1168,14 @@
       "id": "client-token-valid-messaging",
       "client": "messaging",
       "credentialType": "clientToken",
-      "credential": "pmfa_ct_fixture",
+      "credential": "pmfa_ct_Zml4dHVyZQ",
       "valid": true
     },
     {
       "id": "invalid-base-url",
       "client": "platform",
       "credentialType": "organizationApiKey",
-      "credential": "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "credential": "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
       "baseUrl": "https://user:password@example.invalid",
       "valid": false,
       "field": "baseUrl"
@@ -1184,7 +1184,7 @@
       "id": "negative-retries",
       "client": "platform",
       "credentialType": "organizationApiKey",
-      "credential": "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "credential": "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
       "maxNetworkRetries": -1,
       "valid": false
     },
@@ -1192,7 +1192,7 @@
       "id": "zero-timeout",
       "client": "platform",
       "credentialType": "organizationApiKey",
-      "credential": "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "credential": "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
       "timeoutMs": 0,
       "valid": false
     }

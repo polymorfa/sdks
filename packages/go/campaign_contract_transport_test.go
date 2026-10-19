@@ -43,7 +43,7 @@ func TestCampaignContractBoundAliasesAndMessagingCredentials(t *testing.T) {
 					defer s.Close()
 					cfg := orgConfig(s.URL)
 					if kind == ProjectToken {
-						cfg.Credential = Credential{ProjectToken, "pmfa_pt_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}
+						cfg.Credential = Credential{ProjectToken, "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}
 					}
 					expected = cfg.Credential.Value
 					p, e := NewProjectClient(cfg, contractProject)
@@ -64,7 +64,7 @@ func TestCampaignContractBoundAliasesAndMessagingCredentials(t *testing.T) {
 	var calls atomic.Int64
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls.Add(1) }))
 	defer s.Close()
-	m, e := NewMessagingClient(Config{Credential: Credential{ClientToken, "pmfa_ct_synthetic"}, BaseURL: s.URL})
+	m, e := NewMessagingClient(Config{Credential: Credential{ClientToken, "pmfa_ct_c3ludGhldGlj"}, BaseURL: s.URL})
 	if e != nil {
 		t.Fatal(e)
 	}
@@ -74,7 +74,7 @@ func TestCampaignContractBoundAliasesAndMessagingCredentials(t *testing.T) {
 			if e == nil {
 				t.Fatal(row.id)
 			}
-			if strings.Contains(e.Error(), "pmfa_ct_synthetic") {
+			if strings.Contains(e.Error(), "pmfa_ct_c3ludGhldGlj") {
 				t.Fatal("token in error")
 			}
 		}

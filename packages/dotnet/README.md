@@ -938,10 +938,14 @@ Media downloads retain the successful API request deadline through body EOF. Eac
 
 Signal finite JSON requests share one header/body deadline. Event streams enforce a requested session and report incomplete lines or frames at EOF; they retain their idle timeout and manual acknowledgment policy. ACK success requires exactly HTTP 204. Usage iteration preserves a starting cursor and rejects its repetition. Native HTTP fixtures verify these local consumer rules; they do not establish service deployment or registry availability.
 
-## Signed credential shapes
+## Credential handling
 
-Organization keys (`pmfa_`) and project tokens (`pmfa_pt_`) use variable-length
-signed v2 credentials. Pass the complete value from the Console. Local shape
-validation does not authenticate a credential; the API verifies its signature
-and live permissions. This source change is held for the coordinated v2 release;
-do not install it against a deployment that still issues v1 credentials.
+Treat every Polymorfa credential as an opaque string. Pass the complete value
+from the Console. Never parse credentials or assume a fixed length. Store at
+least 512 characters, preferably unrestricted text. Client-token length varies
+with its bindings, Customer block and signing key ID.
+
+The SDK checks server-credential prefixes, canonical base64url and the checksum.
+These checks do not authenticate a credential. The API checks the issuance record
+and live permissions. Test keys use the same project-token format; their test-only
+restriction is enforced by the service.

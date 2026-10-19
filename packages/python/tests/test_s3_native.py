@@ -65,7 +65,7 @@ async def test_actual_s3_two_pass_native_reads_and_borrowed_client_ownership(nat
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     ) as messaging:
         result = await store.upload_to_whatsapp(
@@ -101,7 +101,7 @@ async def test_actual_s3_etag_change_refuses_second_pass(native_s3):
     async with AsyncMessagingClient(
         Credential(
             "organization_api_key",
-            "pmfa_AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     ) as messaging:
         with pytest.raises(ClientError) as failure:

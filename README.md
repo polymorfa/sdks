@@ -1042,3 +1042,5 @@ or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
 ## License
 
 MIT
+
+Treat every Polymorfa credential as an opaque string. Never parse it or assume a fixed length. Credential storage must support at least 512 characters, preferably unrestricted text. Client-token length varies with its bindings and Customer scope.
