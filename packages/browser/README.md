@@ -327,7 +327,9 @@ subscriptions and sends; an optional upload adapter handles picked file bytes.
 The factory does not discover routes, mint credentials or persist browser data.
 Keep the session while switching threads to preserve its draft, reply and retry
 identity, then call `dispose()` when its scope or authority closes. Disposal
-cancels history reads, sends and uploads together.
+cancels history reads, sends and uploads together. Pass `sendUnavailable` with a
+message while the host cannot send: submitting then fails with that message, keeps
+the draft and adds no failed message to the thread.
 
 `MessageFilterController` has `setQuery`, `setType`, `setDirection`, `clear` and
 `matches` methods. It filters loaded messages without fetching history or changing

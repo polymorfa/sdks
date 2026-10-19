@@ -1571,9 +1571,15 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
 @keyframes pmfa-pulse { 50% { opacity: 0.35; } }
 
 /* Loaded-message search, received carts and customer details */
-.pmfa-message-toolbar { display: flex; flex-direction: column; gap: 10px; padding: 10px 16px; background: var(--pmfa-c-panel); border-block-end: 1px solid var(--pmfa-c-border); }
+.pmfa-message-toolbar { container-type: inline-size; display: flex; flex-direction: column; gap: 10px; padding: 10px 16px; background: var(--pmfa-c-panel); border-block-end: 1px solid var(--pmfa-c-border); }
 .pmfa-message-toolbar-actions { display: flex; flex-wrap: wrap; gap: 4px; }
 .pmfa-message-toolbar-actions .pmfa-btn { padding-inline: 10px; }
+.pmfa-message-toolbar-actions .pmfa-btn-ghost[aria-expanded="true"] { color: var(--pmfa-c-fg); background: var(--pmfa-c-field); }
+/* Narrow threads keep one toolbar row; labels stay as accessible names. */
+@container (max-width: 420px) {
+  .pmfa-message-toolbar-label { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .pmfa-message-toolbar-actions .pmfa-btn:has(.pmfa-message-toolbar-label) { width: 40px; padding: 0; }
+}
 .pmfa-message-search { width: 100%; }
 .pmfa-message-filters { display: flex; flex-wrap: wrap; gap: 12px; }
 .pmfa-message-filters label { display: flex; flex: 1 1 160px; flex-direction: column; gap: 5px; min-width: 0; font-size: 0.8125em; color: var(--pmfa-c-muted); }

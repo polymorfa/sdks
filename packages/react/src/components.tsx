@@ -272,6 +272,7 @@ export function MessageFilterToolbar({
             type="button"
             className="pmfa-btn pmfa-btn-ghost"
             ref={searchButton}
+            title={text(configuration, "chat.searchMessages")}
             aria-expanded={searchOpen}
             aria-controls={searchId}
             onClick={() => {
@@ -281,19 +282,24 @@ export function MessageFilterToolbar({
             }}
           >
             <Icon name="search" />
-            {text(configuration, "chat.searchMessages")}
+            <span className="pmfa-message-toolbar-label">
+              {text(configuration, "chat.searchMessages")}
+            </span>
           </button>
         )}
         {filters && (
           <button
             type="button"
             className="pmfa-btn pmfa-btn-ghost"
+            title={text(configuration, "chat.filters")}
             aria-expanded={filtersOpen}
             aria-controls={filtersId}
             onClick={() => setFiltersOpen((open) => !open)}
           >
             <Icon name="filter" />
-            {text(configuration, "chat.filters")}
+            <span className="pmfa-message-toolbar-label">
+              {text(configuration, "chat.filters")}
+            </span>
           </button>
         )}
         {active && (
@@ -1424,6 +1430,11 @@ function useStickToBottom(dependency: unknown) {
     if (node === null || typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(() => {
       if (pinned.current) node.scrollTop = node.scrollHeight;
+      // Filtering can shrink the list until it no longer scrolls.
+      else if (node.scrollHeight - node.scrollTop - node.clientHeight < 32) {
+        pinned.current = true;
+        setAtEnd(true);
+      }
     });
     observer.observe(node);
     if (node.firstElementChild) observer.observe(node.firstElementChild);

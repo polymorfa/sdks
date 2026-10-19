@@ -310,7 +310,13 @@ class MessageListView {
       typeof ResizeObserver !== "undefined"
     ) {
       this.#resizeObserver = new ResizeObserver(() => {
-        if (this.#pinned) this.scroller.scrollTop = this.scroller.scrollHeight;
+        const node = this.scroller;
+        if (this.#pinned) node.scrollTop = node.scrollHeight;
+        // Filtering can shrink the list until it no longer scrolls.
+        else if (node.scrollHeight - node.scrollTop - node.clientHeight < 32) {
+          this.#pinned = true;
+          this.#latest.hidden = true;
+        }
       });
       this.#resizeObserver.observe(this.scroller);
       this.#resizeObserver.observe(this.list);

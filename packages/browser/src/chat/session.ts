@@ -14,6 +14,12 @@ export interface ConversationSessionOptions {
   /** The host supplies an authorized public upload adapter, or leaves attachments disabled. */
   readonly upload?: ComposerActions["upload"];
   readonly draft?: string;
+  /**
+   * Set when this session cannot send, such as before send access is granted.
+   * Submitting then fails with this message, keeps the draft and adds no
+   * failed message to the thread.
+   */
+  readonly sendUnavailable?: string;
   readonly conversation?: ConversationControllerOptions;
   readonly composer?: MessageComposerOptions;
 }
@@ -29,14 +35,23 @@ export function createConversationSession(
   options: ConversationSessionOptions = {},
 ) {
   const conversation = new ConversationController(source, options.conversation);
+  const actions = createConversationComposerActions(
+    conversation,
+    options.upload ??
+      (async () => {
+        throw new Error("An upload adapter is required for attachments.");
+      }),
+  );
+  const unavailable = options.sendUnavailable;
   const composer = new MessageComposerController(
-    createConversationComposerActions(
-      conversation,
-      options.upload ??
-        (async () => {
-          throw new Error("An upload adapter is required for attachments.");
-        }),
-    ),
+    unavailable === undefined
+      ? actions
+      : {
+          ...actions,
+          send: async () => {
+            throw new Error(unavailable);
+          },
+        },
     options.composer,
   );
   if (options.draft !== undefined) composer.setText(options.draft);

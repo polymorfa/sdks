@@ -79,3 +79,22 @@ it("aborts an in-flight history read and upload together when the owning scope c
   expect(readSignal?.aborted).toBe(true);
   expect(uploadSignal?.aborted).toBe(true);
 });
+
+it("refuses to send while unavailable, keeping the draft and adding no failed message", async () => {
+  const send = vi.fn();
+  const session = createConversationSession(
+    {
+      load: async () => ({ messages: [] }),
+      subscribe: () => () => undefined,
+      send,
+    },
+    { draft: "Keep this draft", sendUnavailable: "Sending is not available" },
+  );
+  await session.conversation.load();
+  await session.composer.submit();
+  expect(session.composer.getSnapshot().error).toBe("Sending is not available");
+  expect(session.composer.getSnapshot().text).toBe("Keep this draft");
+  expect(session.conversation.getSnapshot().messages).toHaveLength(0);
+  expect(send).not.toHaveBeenCalled();
+  session.dispose();
+});
