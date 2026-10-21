@@ -1,5 +1,17 @@
 # Contract coverage
 
+## Number-scoped Test phone and events
+
+`test-number-dropin-routes.json`, `testing-phone.json` and `testing-events.json`
+pin the six moved operations to API `79e62733b1b3d523618232a3794e26df64b7f486`
+(see the full source commit in each JSON). The six coverage entries carry
+`sourceCommit` overrides; the global baseline remains unchanged. Collision
+schemas in the merged snapshot are namespaced `TestDropin*` so unrelated
+operations retain their baseline fingerprints. The focused snapshots preserve
+the authoritative schema names. No native language SDK packages implement
+these methods in this repository. This is an unpublished breaking contract
+change, coordinated with polymorfa/polymorfa#792.
+
 ## Request log supplement
 
 `request-logs.json` pins `GET /platform/projects/{projectId}/request-logs` and
@@ -407,8 +419,8 @@ reads described at the end of this document.
 | Total               |        558 |
 
 This revision adds test event triggering
-(`POST /messaging/testing/{projectId}/events`) and fixture listing
-(`GET /messaging/testing/{projectId}/events/fixtures`), covered by
+(`POST /messaging/{session}/test-events`) and fixture listing
+(`GET /messaging/test-events/fixtures`), covered by
 `MessagingClient.testing.triggerEvent` (with the optional `Idempotency-Key`
 header through `options.idempotencyKey`) and
 `MessagingClient.testing.listEventFixtures`.

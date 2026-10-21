@@ -693,6 +693,18 @@
     {
       "family": "messaging",
       "method": "GET",
+      "path": "/messaging/{session}/phone",
+      "operationId": "getTestingPhone",
+      "fingerprint": "c637abc2946a96ab1d7a2fc6b86941dc29dd224c402487ba6b1ba12a11f62801",
+      "sourceCommit": "79e62733b1b3d523618232a3794e26df64b7f486",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.testing.getPhone"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
       "path": "/messaging/{session}/presence",
       "operationId": "getPresence",
       "fingerprint": "ee4ea717ae0016d6a6dfd53f6cd373786e144d5d943831f588eee948a73156ff",
@@ -990,13 +1002,14 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/testing/{projectId}/events/fixtures",
+      "path": "/messaging/test-events/fixtures",
       "operationId": "listTestEventFixtures",
-      "fingerprint": "0a1482d5fd5a365c0ba2e241d1f45ed0d5c88615c871ea97af442c8f26f3d22d",
+      "fingerprint": "a5de9ee23e1311ae016d0a939e85e47e1e893075d168fc8934a24607a262e72c",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.testing.listEventFixtures"
-      }
+      },
+      "sourceCommit": "79e62733b1b3d523618232a3794e26df64b7f486"
     },
     {
       "family": "messaging",
@@ -1641,6 +1654,30 @@
     {
       "family": "messaging",
       "method": "POST",
+      "path": "/messaging/{session}/phone/devices/{deviceId}/unlink",
+      "operationId": "unlinkTestingPhoneDevice",
+      "fingerprint": "e2bf4a4710e39c69e1e8fc6470463de52a6dace45590f30c2dc4743dcffe5ff0",
+      "sourceCommit": "79e62733b1b3d523618232a3794e26df64b7f486",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.testing.unlinkPhoneDevice"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/phone/messages",
+      "operationId": "sendTestingPhoneMessage",
+      "fingerprint": "beba9148848a654eefe1e4825b3ee134556f05c705219eef5361a79a867fbdfb",
+      "sourceCommit": "79e62733b1b3d523618232a3794e26df64b7f486",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.testing.sendPhoneMessage"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
       "path": "/messaging/{session}/presence",
       "operationId": "setPresence",
       "fingerprint": "184e5642e0d56f2f9da4c01d76b2dc8a655c7944e30d8d618351d5869e6609cd",
@@ -1674,6 +1711,18 @@
     {
       "family": "messaging",
       "method": "POST",
+      "path": "/messaging/{session}/test-events",
+      "operationId": "triggerTestEvent",
+      "fingerprint": "84b132cf4d9f8838d939836d6387692eb9b5a803bad4fc992c57196bfc42d078",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.testing.triggerEvent"
+      },
+      "sourceCommit": "79e62733b1b3d523618232a3794e26df64b7f486"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
       "path": "/messaging/cloud-api/embedded-signup",
       "operationId": "embeddedSignup",
       "fingerprint": "8fa663a365c745cf62d7c6bdce11dfe5a9d3a6f93a13494bd5fb44a2fde3cd29",
@@ -1703,6 +1752,18 @@
         "status": "covered",
         "method": "MessagingClient.media.persist"
       }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectId}/test-history-fixtures",
+      "operationId": "createTestingHistoryFixture",
+      "fingerprint": "b5327fa44a7c347ad90c67c25b4c2afa3cf568d835472611879c5dd0d0f4c70c",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.testing.createHistoryFixture"
+      },
+      "sourceCommit": "79e62733b1b3d523618232a3794e26df64b7f486"
     },
     {
       "family": "messaging",
@@ -1834,28 +1895,6 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.quickLinks.create"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/testing/{projectId}/events",
-      "operationId": "triggerTestEvent",
-      "fingerprint": "c2d5c723923084c9fcca1be246f046b23d6a613eae5b6e25b71c2e6df462ec55",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.testing.triggerEvent"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/testing/{projectId}/history-fixtures",
-      "operationId": "createTestingHistoryFixture",
-      "fingerprint": "8941f260e0e4156976fe76ca2ce3545dbf2ff0a0a909bee938687e201cdfac65",
-      "typescript": {
-        "status": "covered",
-        "method": "MessagingClient.testing.createHistoryFixture"
       }
     },
     {
@@ -3020,6 +3059,17 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/console/insights/vitals",
+      "operationId": "getConsoleErrorVitals",
+      "fingerprint": "4c3c1667cc5f2feb631064100976c3e399cd917cb29e4f336b85baf81335e217",
+      "typescript": {
+        "status": "excluded",
+        "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority."
+      }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/console/notifications",
       "operationId": "listNotificationInbox",
       "fingerprint": "f4f3c4f5cd1f9e583f7230a9424db5f0331627b0ed30632ccb1e205594fbb376",
@@ -3236,6 +3286,34 @@
         "status": "excluded",
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
       }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/analytics",
+      "operationId": "getWhatsAppAnalytics",
+      "fingerprint": "1ac8b2438ef13263289d71f0d956fd3f7b60b44ac0999151bc96f30d31798b91",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.analytics.get"
+      },
+      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
+      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/analytics/metrics",
+      "operationId": "exportWhatsAppAnalyticsMetrics",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.analytics.metrics"
+      },
+      "fingerprint": "520ce37bc6a198e313d9495ddd968ebb54cbbe5cc84f4d6bea636c43a4ea62c5",
+      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99"
     },
     {
       "family": "platform",
@@ -4006,6 +4084,34 @@
         "status": "covered",
         "method": "Client.projects.list"
       }
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/analytics",
+      "operationId": "getProjectWhatsAppAnalytics",
+      "fingerprint": "dc6ab3ff0e56d2e97c26fb64c2090b8b8f900a0f09c86e221f84932e9fb0a36f",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.analytics.get"
+      },
+      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
+      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/analytics/metrics",
+      "operationId": "exportProjectWhatsAppAnalyticsMetrics",
+      "typescript": {
+        "status": "covered",
+        "method": "Client.analytics.metrics"
+      },
+      "fingerprint": "56e2540bc5d78c3f458fbd363d63b101df49fcd273b7cc81e1fa9318d69b30b6",
+      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99"
     },
     {
       "family": "platform",
@@ -6334,73 +6440,6 @@
       "typescript": {
         "status": "covered",
         "method": "Client.sessions.updateSafeMode"
-      }
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/analytics",
-      "operationId": "getWhatsAppAnalytics",
-      "fingerprint": "1ac8b2438ef13263289d71f0d956fd3f7b60b44ac0999151bc96f30d31798b91",
-      "typescript": {
-        "status": "covered",
-        "method": "Client.analytics.get"
-      },
-      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
-      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/projects/{projectId}/analytics",
-      "operationId": "getProjectWhatsAppAnalytics",
-      "fingerprint": "dc6ab3ff0e56d2e97c26fb64c2090b8b8f900a0f09c86e221f84932e9fb0a36f",
-      "typescript": {
-        "status": "covered",
-        "method": "Client.analytics.get"
-      },
-      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
-      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/analytics/metrics",
-      "operationId": "exportWhatsAppAnalyticsMetrics",
-      "typescript": {
-        "status": "covered",
-        "method": "Client.analytics.metrics"
-      },
-      "fingerprint": "520ce37bc6a198e313d9495ddd968ebb54cbbe5cc84f4d6bea636c43a4ea62c5",
-      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/projects/{projectId}/analytics/metrics",
-      "operationId": "exportProjectWhatsAppAnalyticsMetrics",
-      "typescript": {
-        "status": "covered",
-        "method": "Client.analytics.metrics"
-      },
-      "fingerprint": "56e2540bc5d78c3f458fbd363d63b101df49fcd273b7cc81e1fa9318d69b30b6",
-      "sourceContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sdkContractSha256": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
-      "sourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/console/insights/vitals",
-      "operationId": "getConsoleErrorVitals",
-      "fingerprint": "4c3c1667cc5f2feb631064100976c3e399cd917cb29e4f336b85baf81335e217",
-      "typescript": {
-        "status": "excluded",
-        "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority."
       }
     }
   ]
