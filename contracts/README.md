@@ -635,6 +635,12 @@ SDK PR #349 already owns the campaign follow-up supplement, and the open Calls,
 interactive-message, campaign pause and native SDK PRs own their respective
 changes. This supplement adds no runtime consumer and leaves those pins intact.
 
+The October 22 reconciliation against API dev `e95d02da674da8242453c2a41efd48883fa04734`
+also retains it. The stored `evaluateFeatures` operation is identical there.
+The three account routes change only description wording. The resolved `evaluateFeatures` fingerprint changes only because the shared
+`PublicError` code enum gained unrelated codes. Those belong to the next full
+repin, not this supplement.
+
 PR #561 changes two fingerprints. `evaluateFeatures` and
 `evaluateAccountFeatures` accept an optional `locale` (`en` or `pt-BR`), and
 each returned feature adds `state` (`off`, `opt_in` or `on`), `terms` and
