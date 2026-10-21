@@ -69,6 +69,7 @@ export function expectedContract() {
   assert.equal(source.repository, "polymorfa/polymorfa");
   assert.match(source.commit, /^[a-f0-9]{40}$/);
   validateFeatureContractPins(source, [
+    JSON.parse(readFileSync(join(root, "contracts/official-api-round2.json"))),
     JSON.parse(
       readFileSync(join(root, "contracts/analytics-device-signals.json")),
     ),

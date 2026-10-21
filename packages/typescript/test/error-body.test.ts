@@ -189,7 +189,14 @@ describe("error codes", () => {
     for (const code of documentedInProse) {
       expect(platformText).toContain(`code \`${code}\``);
     }
+    const round2 = JSON.parse(
+      await readFile(
+        new URL("../../../contracts/official-api-round2.json", import.meta.url),
+        "utf8",
+      ),
+    ) as { errorCodes: string[] };
     const published = new Set([
+      ...round2.errorCodes,
       ...messaging.components.schemas.PublicError!.properties.error.properties
         .code.enum,
       ...platform.components.schemas.PlatformAccessPublicError!.properties.error
