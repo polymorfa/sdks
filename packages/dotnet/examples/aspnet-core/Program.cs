@@ -10,7 +10,10 @@ using Polymorfa.Sdk;
 var applicationSessions = new ConcurrentDictionary<string, DateTimeOffset>();
 var builder = WebApplication.CreateBuilder(args);
 var session = builder.Configuration["POLYMORFA_SESSION"] ?? throw new InvalidOperationException("POLYMORFA_SESSION is required.");
-builder.Services.AddSingleton(new MessagingClient(Credential.OrganizationApiKey(builder.Configuration["POLYMORFA_API_KEY"] ?? throw new InvalidOperationException("POLYMORFA_API_KEY is required.")), new() { BaseUrl = new(builder.Configuration["POLYMORFA_API_BASE_URL"] ?? "https://api.polymorfa.com") }));
+var peer = builder.Configuration["POLYMORFA_RECIPIENT"] ?? throw new InvalidOperationException("POLYMORFA_RECIPIENT is required.");
+if (string.IsNullOrWhiteSpace(peer)) throw new InvalidOperationException("An assigned recipient is required.");
+var conversation = new NativeConversation(session, peer, builder.Configuration["POLYMORFA_EXAMPLE_TRANSPORT"] == "local-test-number");
+builder.Services.AddSingleton(new MessagingClient(builder.Configuration["POLYMORFA_PROJECT_TOKEN"] is { Length: > 0 } projectToken ? Credential.ProjectToken(projectToken) : Credential.OrganizationApiKey(builder.Configuration["POLYMORFA_API_KEY"] ?? throw new InvalidOperationException("Configure a server project token or organization API key.")), new() { BaseUrl = new(builder.Configuration["POLYMORFA_API_BASE_URL"] ?? "https://api.polymorfa.com") }));
 // Replace this application's cookie sign-in with your own identity provider.
 builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
@@ -65,7 +68,17 @@ app.MapPost("/api/polymorfa/token", async (HttpContext context, MessagingClient 
     }
     catch (PolymorfaException error) { return Results.StatusCode(error.Status is >= 400 and < 500 ? 403 : 502); }
 }).RequireAuthorization("PolymorfaSession");
-// Replace the valid empty application-owned source with your authorized store when needed.
+app.MapGet("/api/polymorfa/conversation", (HttpContext context) => { context.Response.Headers.CacheControl = "no-store"; return Results.Json(conversation.Snapshot()); }).RequireAuthorization("PolymorfaSession");
+app.MapPost("/api/polymorfa/send", async (HttpContext context, MessagingClient client) =>
+{
+    if (context.Request.Headers.Origin.ToString() != $"{context.Request.Scheme}://{context.Request.Host}") return Results.StatusCode(403);
+    if (context.Request.ContentLength > 16384) return Results.StatusCode(413);
+    using var body = new MemoryStream(); var buffer = new byte[4096];
+    while (true) { var count = await context.Request.Body.ReadAsync(buffer, context.RequestAborted); if (count == 0) break; if (body.Length + count > 16384) return Results.StatusCode(413); await body.WriteAsync(buffer.AsMemory(0, count), context.RequestAborted); }
+    context.Response.Headers.CacheControl = "no-store";
+    return await conversation.SendAsync(client, body.ToArray(), context.Request.Headers["Idempotency-Key"].ToString(), context.RequestAborted);
+}).RequireAuthorization("PolymorfaSession");
+// Separate browser-grant examples retain their original empty source. The native inbox uses /conversation.
 app.MapGet("/api/polymorfa/history/conversations", (HttpContext context) => { context.Response.Headers.CacheControl = "no-store"; return Results.Json(new { data = Array.Empty<object>(), nextCursor = (string?)null }); }).RequireAuthorization("PolymorfaSession");
 app.MapPost("/api/polymorfa/connect", async (HttpContext context, MessagingClient client) =>
 {
@@ -76,13 +89,14 @@ app.MapPost("/api/polymorfa/connect", async (HttpContext context, MessagingClien
 }).RequireAuthorization("PolymorfaSession");
 app.MapPost("/webhooks/polymorfa", async (HttpContext context) =>
 {
-    if (context.Request.ContentLength > 1024 * 1024) return Results.StatusCode(413);
+    if (context.Request.ContentLength > 65536) return Results.StatusCode(413);
     using var body = new MemoryStream(); var buffer = new byte[16384];
-    while (true) { var count = await context.Request.Body.ReadAsync(buffer, context.RequestAborted); if (count == 0) break; if (body.Length + count > 1024 * 1024) return Results.StatusCode(413); await body.WriteAsync(buffer.AsMemory(0, count), context.RequestAborted); }
+    while (true) { var count = await context.Request.Body.ReadAsync(buffer, context.RequestAborted); if (count == 0) break; if (body.Length + count > 65536) return Results.StatusCode(413); await body.WriteAsync(buffer.AsMemory(0, count), context.RequestAborted); }
     var secret = app.Configuration["POLYMORFA_WEBHOOK_SECRET"];
     if (string.IsNullOrEmpty(secret)) return Results.StatusCode(503);
-    try { var verified = Webhooks.ConstructEvent(body.ToArray(), context.Request.Headers["x-webhook-signature"].ToString(), secret); /* Persist and deduplicate verified.Envelope.Id before enqueueing application work. */ return Results.NoContent(); }
+    try { var verified = Webhooks.ConstructEvent(body.ToArray(), context.Request.Headers["x-webhook-signature"].ToString(), secret); conversation.Receive(verified); return Results.NoContent(); }
     catch (WebhookSignatureException) { return Results.StatusCode(401); }
     catch (PolymorfaValidationException) { return Results.BadRequest(); }
+    catch (OverflowException) { return Results.BadRequest(); }
 });
 app.Run();

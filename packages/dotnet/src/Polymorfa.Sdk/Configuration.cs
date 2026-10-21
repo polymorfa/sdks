@@ -5,7 +5,7 @@ namespace Polymorfa.Sdk;
 
 public enum CredentialKind { OrganizationApiKey, ProjectToken, ClientToken }
 
-/// <summary>A validated principal. Its string representation never contains the secret.</summary>
+/// <summary>A principal with locally checked framing. Its string representation never contains the secret.</summary>
 public sealed class Credential
 {
     internal string Value { get; }
@@ -29,10 +29,12 @@ public sealed class Credential
         if (!value.StartsWith("pmfa_ct_", StringComparison.Ordinal)) return false;
         var body = value[8..];
         if (!Regex.IsMatch(body, "^[A-Za-z0-9_-]+$", RegexOptions.CultureInvariant)) return false;
-        try {
-            var raw = Convert.FromBase64String(body.Replace('-', '+').Replace('_', '/') + new string('=', (4-body.Length%4)%4));
-            return Convert.ToBase64String(raw).TrimEnd('=').Replace('+','-').Replace('/','_') == body;
-        } catch (FormatException) { return false; }
+        try
+        {
+            var raw = Convert.FromBase64String(body.Replace('-', '+').Replace('_', '/') + new string('=', (4 - body.Length % 4) % 4));
+            return Convert.ToBase64String(raw).TrimEnd('=').Replace('+', '-').Replace('/', '_') == body;
+        }
+        catch (FormatException) { return false; }
     }
     // Shape validation only; the API authenticates signatures and records.
     private static bool OpaqueShape(string value, string prefix)
@@ -45,8 +47,8 @@ public sealed class Credential
             var raw = Convert.FromBase64String(body.Replace('-', '+').Replace('_', '/') + new string('=', (4 - body.Length % 4) % 4));
             if (raw.Length < 24 || Convert.ToBase64String(raw).TrimEnd('=').Replace('+', '-').Replace('/', '_') != body) return false;
             uint crc = 0xffffffff;
-            foreach (var b in raw.AsSpan(0, raw.Length-4)) { crc ^= b; for(int i=0;i<8;i++) crc=(crc>>1)^((crc&1)!=0?0xedb88320u:0u); }
-            return (crc ^ 0xffffffff) == System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(raw.AsSpan(raw.Length-4));
+            foreach (var b in raw.AsSpan(0, raw.Length - 4)) { crc ^= b; for (int i = 0; i < 8; i++) crc = (crc >> 1) ^ ((crc & 1) != 0 ? 0xedb88320u : 0u); }
+            return (crc ^ 0xffffffff) == System.Buffers.Binary.BinaryPrimitives.ReadUInt32BigEndian(raw.AsSpan(raw.Length - 4));
         }
         catch (FormatException) { return false; }
     }

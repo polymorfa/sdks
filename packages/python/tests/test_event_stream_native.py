@@ -215,3 +215,139 @@ async def test_stream_revocation_is_terminal():
             await anext(client.project("project_1").events.stream().__aiter__())
         assert caught.value.code == "stream_revoked"
     assert len(requests) == 1
+
+
+@pytest.mark.parametrize("malformed", ["%%%", "e30="])
+async def test_invalid_payload_keeps_reconnect_and_storage_checkpoint(malformed):
+    from polymorfa.storage import Storage, memory_adapter, sync_to_storage
+
+    storage = Storage(memory_adapter())
+    requests, acknowledgements = [], []
+    good = {
+        "type": "event",
+        "cursor": "good",
+        "streamId": "stream",
+        "sequence": 1,
+        "event": EVENT | {"payload": PAYLOAD},
+    }
+    bad = {
+        **good,
+        "cursor": "bad",
+        "sequence": 2,
+        "event": EVENT | {"payload": {**PAYLOAD, "data": malformed}},
+    }
+
+    async def handler(request):
+        if request.method == "POST":
+            acknowledgements.append(json.loads(request.content))
+            assert (await storage.get_checkpoint("*", "events")).cursor == "good"
+            return httpx.Response(
+                200,
+                json={
+                    "data": {
+                        "streamId": "stream",
+                        "acknowledgedCursor": "good",
+                        "sequence": 1,
+                        "replayed": False,
+                    }
+                },
+            )
+        requests.append(request)
+        assert request.url.params["ack"] == "manual"
+        if len(requests) == 1:
+            frames = [good, bad]
+        else:
+            assert len(requests) == 2
+            assert request.headers["last-event-id"] == "good"
+            assert (await storage.get_checkpoint("*", "events")).cursor == "good"
+            frames = [{"type": "revoked"}]
+        return httpx.Response(
+            200,
+            content=b"".join(b"data: " + json.dumps(frame).encode() + b"\n\n" for frame in frames),
+            headers={"content-type": "text/event-stream"},
+        )
+
+    async with AsyncClient(
+        Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        http_transport=httpx.MockTransport(handler),
+    ) as client:
+        events = client.project("project").events
+
+        class Source:
+            def stream(self, **kwargs):
+                return events.stream(**kwargs, reconnect_initial=0, reconnect_max=0)
+
+            async def acknowledge_stream(self, *args, **kwargs):
+                return await events.acknowledge_stream(*args, **kwargs)
+
+        sync = sync_to_storage(Source(), storage)
+        with pytest.raises(AuthorizationError):
+            await sync.done
+    assert len(requests) == 2
+    assert acknowledgements == [{"cursor": "good", "sequence": 1}]
+    assert (await storage.get_checkpoint("*", "events")).cursor == "good"
+
+
+class FrameChunks(httpx.AsyncByteStream):
+    def __init__(self, wire):
+        self.wire = wire
+
+    async def __aiter__(self):
+        for offset in range(0, len(self.wire), 4093):
+            yield self.wire[offset : offset + 4093]
+
+
+@pytest.mark.parametrize(
+    "segment", [b"x", "🦀".encode(), b"data: " + b" " * 1024 + b"\n", b": " + b"x" * 1024 + b"\n"]
+)
+async def test_event_stream_frame_byte_bounds(segment):
+    limit = 4 * 1024 * 1024
+    wire = segment * (limit // len(segment) + 1)
+    failures = []
+
+    def handler(request):
+        return httpx.Response(
+            200, stream=FrameChunks(wire), headers={"content-type": "text/event-stream"}
+        )
+
+    async with AsyncClient(
+        Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        http_transport=httpx.MockTransport(handler),
+    ) as client:
+        stream = client.project("project").events.stream(
+            since="safe", on_reconnect=lambda error, delay: (failures.append(error), stream.close())
+        )
+        assert [item async for item in stream] == []
+        assert stream.cursor == "safe"
+    assert len(failures) == 1 and failures[0].code == "invalid_response"
+
+
+async def test_event_stream_utf8_boundary_and_frame_reset():
+    frame = {
+        "type": "event",
+        "cursor": "boundary",
+        "streamId": "stream",
+        "sequence": 1,
+        "event": EVENT | {"payload": PAYLOAD},
+    }
+    tail = b"\ndata: " + json.dumps(frame).encode() + b"\n\n"
+    padding = 4 * 1024 * 1024 - len(tail) - 1
+    wire = b":" + "🦀".encode() * (padding // 4) + b"x" * (padding % 4) + tail
+    assert len(wire) == 4 * 1024 * 1024
+
+    def handler(request):
+        return httpx.Response(
+            200, stream=FrameChunks(wire + wire), headers={"content-type": "text/event-stream"}
+        )
+
+    async with AsyncClient(
+        Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        http_transport=httpx.MockTransport(handler),
+    ) as client:
+        stream = client.project("project").events.stream()
+        items = []
+        async for item in stream:
+            items.append(item)
+            if len(items) == 2:
+                stream.close()
+        assert [item.cursor for item in items] == ["boundary", "boundary"]

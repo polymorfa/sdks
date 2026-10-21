@@ -66,8 +66,9 @@ impl Error {
         }
     }
     pub(crate) fn response(data: &serde_json::Value, metadata: ResponseMetadata) -> Self {
+        let data = redact_error(data.clone());
         let status = metadata.status;
-        let object = data.get("error").filter(|v| v.is_object()).unwrap_or(data);
+        let object = data.get("error").filter(|v| v.is_object()).unwrap_or(&data);
         let text = |name: &str| object.get(name).and_then(|v| v.as_str()).map(str::to_owned);
         let kind = match status {
             400 | 413 | 422 => ErrorKind::Validation,
@@ -241,3 +242,73 @@ pub const CAMPAIGN_CONTRACT_ERROR_CODES: &[&str] = &[
     "campaign_variables_missing",
     "zero_knowledge_session",
 ];
+
+fn redact_text(value: &str) -> String {
+    let mut result = String::new();
+    let mut rest = value;
+    while let Some(start) = rest.find("pmfa_") {
+        result.push_str(&rest[..start]);
+        let tail = &rest[start + 5..];
+        let len = tail
+            .bytes()
+            .take_while(|b| b.is_ascii_alphanumeric() || *b == b'_' || *b == b'-')
+            .count();
+        if len == 0 {
+            result.push_str("pmfa_");
+            rest = tail;
+        } else {
+            result.push_str("[REDACTED]");
+            rest = &tail[len..];
+        }
+    }
+    result.push_str(rest);
+    result
+}
+fn redact_error(mut value: serde_json::Value) -> serde_json::Value {
+    match &mut value {
+        serde_json::Value::String(text) => *text = redact_text(text),
+        serde_json::Value::Array(items) => {
+            for item in items {
+                *item = redact_error(item.take());
+            }
+        }
+        serde_json::Value::Object(items) => {
+            for (key, item) in items {
+                let normalized: String = key
+                    .to_ascii_lowercase()
+                    .chars()
+                    .filter(|c| c.is_ascii_alphanumeric())
+                    .collect();
+                *item = if matches!(
+                    normalized.as_str(),
+                    "authorization"
+                        | "apikey"
+                        | "projecttoken"
+                        | "clienttoken"
+                        | "credential"
+                        | "token"
+                        | "secret"
+                ) {
+                    serde_json::Value::String("[REDACTED]".into())
+                } else {
+                    redact_error(item.take())
+                };
+            }
+        }
+        _ => {}
+    }
+    value
+}
+#[cfg(test)]
+mod credential_diagnostics {
+    #[test]
+    fn long_reflection() {
+        let secret = format!("pmfa_ct_{}", "A".repeat(17000));
+        let result = super::redact_error(
+            serde_json::json!({"message":secret,"details":{"apiKey":"synthetic","projectToken":secret,"nested":[secret]}}),
+        );
+        let text = result.to_string();
+        assert!(!text.contains(&secret));
+        assert!(!text.contains("synthetic"));
+    }
+}

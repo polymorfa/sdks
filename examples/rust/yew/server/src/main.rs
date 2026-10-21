@@ -21,7 +21,13 @@ use std::{
 };
 use subtle::ConstantTimeEq;
 use tower_http::services::ServeDir;
+mod conversation;
 struct App {
+    peer: String,
+    webhook_secret: String,
+    local_test: bool,
+    conversation: Mutex<conversation::Conversation>,
+    send_gate: tokio::sync::Mutex<()>,
     client: MessagingClient,
     username_hash: [u8; 32],
     password_hash: [u8; 32],
@@ -62,7 +68,12 @@ fn router(app: Arc<App>) -> Router {
         .route("/api/login", post(login))
         .route("/api/logout", post(logout))
         .route("/api/polymorfa/token", post(token))
-        .route("/api/polymorfa/history/conversations", get(conversations))
+        .route("/api/polymorfa/conversation", get(conversation::snapshot))
+        .route("/api/polymorfa/send", post(conversation::send))
+        .route(
+            "/webhooks/polymorfa",
+            post(conversation::webhook).layer(DefaultBodyLimit::max(65536)),
+        )
         .route("/api/polymorfa/connect", post(connect))
         .layer(DefaultBodyLimit::max(16 * 1024))
         .fallback_service(ServeDir::new(concat!(
@@ -137,19 +148,6 @@ async fn logout(State(app): State<Arc<App>>, headers: HeaderMap) -> Response {
     )
         .into_response()
 }
-// Empty application-owned history is a valid state. This example stores no
-// WhatsApp content. Replace this source with your authorized webhook store or
-// explicitly enabled HMS source when your application needs retained history.
-async fn conversations(State(app): State<Arc<App>>, headers: HeaderMap) -> Response {
-    if authenticated(&app, &headers).is_none() {
-        return StatusCode::UNAUTHORIZED.into_response();
-    }
-    (
-        [(header::CACHE_CONTROL, "no-store")],
-        Json(serde_json::json!({"data":[],"nextCursor":null})),
-    )
-        .into_response()
-}
 async fn connect(State(app): State<Arc<App>>, headers: HeaderMap) -> Response {
     if !trusted_origin(&app, &headers) {
         return StatusCode::FORBIDDEN.into_response();
@@ -196,6 +194,7 @@ async fn token(
                 ttl_seconds: Some(600),
                 target: ClientTokenTarget::Session {
                     session: app.session.clone(),
+                    allow: None,
                 },
             },
             Default::default(),
@@ -241,7 +240,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let username = std::env::var("EXAMPLE_APP_USERNAME")?;
     let password = std::env::var("EXAMPLE_APP_PASSWORD")?;
     let session = std::env::var("POLYMORFA_SESSION")?;
-    if username.is_empty() || password.is_empty() || session.is_empty() {
+    let peer = std::env::var("POLYMORFA_RECIPIENT")?;
+    let webhook_secret = std::env::var("POLYMORFA_WEBHOOK_SECRET")?;
+    if username.is_empty()
+        || password.is_empty()
+        || session.is_empty()
+        || peer.is_empty()
+        || webhook_secret.is_empty()
+    {
         return Err("Set a nonempty example username, password, and authorized session".into());
     }
     let credential = Credential::project_token(std::env::var("POLYMORFA_PROJECT_TOKEN")?)?;
@@ -261,6 +267,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         session,
         origin: format!("http://127.0.0.1:{port}"),
         users: Mutex::new(HashMap::new()),
+        peer,
+        webhook_secret,
+        local_test: std::env::var("POLYMORFA_EXAMPLE_TRANSPORT").as_deref()
+            == Ok("local-test-number"),
+        conversation: Mutex::new(Default::default()),
+        send_gate: tokio::sync::Mutex::new(()),
     });
     let listener = tokio::net::TcpListener::bind(("127.0.0.1", port)).await?;
     axum::serve(listener, router(app)).await?;

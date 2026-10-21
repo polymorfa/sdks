@@ -65,13 +65,13 @@ func TestSyncEventCheckpointManualACKAndDurableResume(t *testing.T) {
 		}
 		return nil
 	}
-	if err := SyncToStorage(ctx, s, e, SyncOptions{}); err != nil {
+	if err := SyncToStorage(ctx, s, e, SyncOptions{Params: polymorfa.EventStreamParams{Since: "initial"}}); err != nil {
 		t.Fatal(err)
 	}
-	if s.acked != 1 || s.params.Ack != "manual" || s.params.Since != "" {
+	if s.acked != 1 || s.params.Ack != "manual" || s.params.Since != "initial" {
 		t.Fatal("initial manual source")
 	}
-	if err := SyncToStorage(ctx, s, e, SyncOptions{}); err != nil {
+	if err := SyncToStorage(ctx, s, e, SyncOptions{Params: polymorfa.EventStreamParams{Since: "ignored"}}); err != nil {
 		t.Fatal(err)
 	}
 	if s.params.Since != "c1" || s.acked != 2 {
@@ -170,5 +170,53 @@ func TestSyncActualNativeAPIStreamPersistsBeforeACK(t *testing.T) {
 	err = SyncToStorage(bounded, APIEventSource{project.Events()}, e, options)
 	if !errors.Is(err, context.Canceled) || acked.Load() != 1 {
 		t.Fatal("native event storage ACK", err, acked.Load())
+	}
+}
+
+func TestSyncInvalidStreamPayloadNeverPassesDurableCursor(t *testing.T) {
+	for _, malformed := range []string{"%%%", base64.StdEncoding.EncodeToString([]byte(`{}`))} {
+		t.Run(malformed, func(t *testing.T) {
+			ctx := context.Background()
+			e := engineFor(t, memoryFor(t, 3), EngineOptions{})
+			item := streamFixtureItem()
+			raw, _ := json.Marshal(item.Webhook)
+			requests, acknowledgements := 0, 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method == "POST" {
+					acknowledgements++
+					saved, _ := e.GetCheckpoint(ctx, "*", "events")
+					has, _ := e.HasEvent(ctx, "session", "event")
+					if saved == nil || saved.Cursor != "c1" || !has {
+						t.Error("ACK before durable event and checkpoint")
+					}
+					w.Header().Set("Content-Type", "application/json")
+					fmt.Fprint(w, `{"data":{"streamId":"stream","acknowledgedCursor":"c1","sequence":1}}`)
+					return
+				}
+				requests++
+				w.Header().Set("Content-Type", "text/event-stream")
+				if requests == 1 {
+					if r.Header.Get("Last-Event-ID") != "initial" {
+						t.Error("lost initial cursor")
+					}
+					fmt.Fprintf(w, "data: {\"type\":\"event\",\"cursor\":\"c1\",\"streamId\":\"stream\",\"sequence\":1,\"event\":{\"payload\":{\"data\":%q}}}\n\n", base64.StdEncoding.EncodeToString(raw))
+					fmt.Fprintf(w, "data: {\"type\":\"event\",\"cursor\":\"bad\",\"streamId\":\"stream\",\"sequence\":2,\"event\":{\"payload\":{\"data\":%q}}}\n\n", malformed)
+				} else {
+					saved, _ := e.GetCheckpoint(ctx, "*", "events")
+					if requests != 2 || r.Header.Get("Last-Event-ID") != "c1" || saved == nil || saved.Cursor != "c1" {
+						t.Error("invalid payload advanced resume/checkpoint", r.Header, saved)
+					}
+					fmt.Fprint(w, "data: {\"type\":\"revoked\"}\n\n")
+				}
+			}))
+			defer server.Close()
+			client, _ := polymorfa.NewOrganizationClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_" + strings.Repeat("a", 72)}, BaseURL: server.URL})
+			project, _ := client.Project("p")
+			err := SyncToStorage(ctx, APIEventSource{project.Events()}, e, SyncOptions{Params: polymorfa.EventStreamParams{Since: "initial", InitialDelay: time.Millisecond, MaxDelay: time.Millisecond}})
+			saved, _ := e.GetCheckpoint(ctx, "*", "events")
+			if err == nil || requests != 2 || acknowledgements != 1 || saved == nil || saved.Cursor != "c1" {
+				t.Fatal(err, requests, acknowledgements, saved)
+			}
+		})
 	}
 }

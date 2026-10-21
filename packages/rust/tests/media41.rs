@@ -110,7 +110,10 @@ async fn actual_six_type_encryption_public_relay_and_stored_ciphertext_round_tri
                         "2026-09-22"
                     }
                 );
-                assert_eq!(headers["authorization"], "Bearer pmfa_ct_c3ludGhldGljLW9ubHk");
+                assert_eq!(
+                    headers["authorization"],
+                    "Bearer pmfa_ct_c3ludGhldGljLW9ubHk"
+                );
                 assert_eq!(headers["content-length"], stored_expected.len().to_string());
                 assert_eq!(body, stored_expected);
                 assert_eq!(Sha256::digest(&body).as_slice(), hash);

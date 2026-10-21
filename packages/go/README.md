@@ -752,3 +752,14 @@ The SDK checks server-credential prefixes, canonical base64url and the checksum.
 These checks do not authenticate a credential. The API checks the issuance record
 and live permissions. Test keys use the same project-token format; their test-only
 restriction is enforced by the service.
+
+### Event-stream validation and limits
+
+Project event streams retain the previous resume cursor until an event's base64
+payload and webhook envelope validate. Malformed server data follows the existing
+reconnect policy. A frame has a 4 MiB UTF-8 wire-byte budget, including incomplete
+lines, all `data:` lines, field syntax and comments. A terminating blank line
+resets the budget. Oversized frames reconnect from the previous validated cursor.
+Storage synchronization preserves `Params.Since` when no durable checkpoint
+exists; a saved checkpoint overrides it. Event commit, checkpoint CAS and manual
+ACK keep that order. These changes are unreleased source behavior.

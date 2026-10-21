@@ -66,7 +66,7 @@ public sealed class ClientTokens : Resource
     public Task<ApiResponse<SuccessEnvelope<ClientTokenValue>>> MintAsync(MintClientTokenRequest body, RequestOptions? options = null)
     {
         Http.Credential.RequireServer();
-        if (string.IsNullOrEmpty(body.Session) == string.IsNullOrEmpty(body.Customer) || body.Allow is not null && string.IsNullOrEmpty(body.Customer)) throw new PolymorfaConfigurationException("Specify exactly one session or customer. allow requires a customer target.");
+        if (string.IsNullOrEmpty(body.Session) == string.IsNullOrEmpty(body.Customer)) throw new PolymorfaConfigurationException("Specify exactly one session or customer.");
         return Post<SuccessEnvelope<ClientTokenValue>>("/platform/client-tokens", body, options);
     }
     public Task<ApiResponse<SuccessEnvelope<ClientRules>>> RetrieveRulesAsync(string session, RequestOptions? options = null) { Http.Credential.RequireServer(); return Get<SuccessEnvelope<ClientRules>>(Path(session), options); }

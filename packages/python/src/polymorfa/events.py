@@ -67,6 +67,44 @@ class StreamedEvent:
     sequence: int
 
 
+async def _bounded_sse_lines(response: httpx.Response) -> AsyncIterator[str]:
+    # Bound incomplete lines and the whole frame, including ignored comments.
+    # CRLF is one line terminator, even when split across network chunks.
+    line = bytearray()
+    frame_bytes = 0
+    carriage_return = False
+    async for chunk in response.aiter_bytes():
+        for byte in chunk:
+            if carriage_return:
+                carriage_return = False
+                if byte == 10:
+                    continue
+            frame_bytes += 1
+            if frame_bytes > 4 * 1024 * 1024:
+                raise ServerError(
+                    "Event stream frame exceeds its size limit.", code="invalid_response"
+                )
+            if byte in (10, 13):
+                carriage_return = byte == 13
+                try:
+                    value = line.decode("utf-8")
+                except UnicodeDecodeError:
+                    raise ServerError(
+                        "Invalid event stream UTF-8.", code="invalid_response"
+                    ) from None
+                line.clear()
+                if not value:
+                    frame_bytes = 0
+                yield value
+            else:
+                line.append(byte)
+    if line:
+        try:
+            yield line.decode("utf-8")
+        except UnicodeDecodeError:
+            raise ServerError("Invalid event stream UTF-8.", code="invalid_response") from None
+
+
 class EventStream:
     def __init__(
         self,
@@ -152,7 +190,7 @@ class EventStream:
                         raise ServerError(
                             "Expected an event stream.", code="invalid_response", metadata=metadata
                         )
-                    lines = response.aiter_lines().__aiter__()
+                    lines = _bounded_sse_lines(response).__aiter__()
                     data: list[str] = []
                     heartbeat = 15.0
                     while not self._closed:
@@ -208,7 +246,6 @@ class EventStream:
                                     raise ServerError(
                                         "Invalid streamed event.", code="invalid_response"
                                     )
-                                self.cursor = cursor
                                 payload = event.get("payload")
                                 webhook = None
                                 if payload is not None:
@@ -229,6 +266,7 @@ class EventStream:
                                             code="invalid_response",
                                             metadata=metadata,
                                         ) from None
+                                self.cursor = cursor
                                 attempt = 0
                                 yield StreamedEvent(
                                     cast(StreamEvent, event),

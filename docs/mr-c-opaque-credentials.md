@@ -1,6 +1,6 @@
 # Opaque credentials and the coordinated API cutover
 
-Source contract: polymorfa/polymorfa #647, checkpoint 39509cea91a48d8f85bcbb792e702d0f4c30028a.
+Source contract: polymorfa/polymorfa #647, checkpoint e95d02da674da8242453c2a41efd48883fa04734.
 This SDK PR updates all six languages to validate server credential prefixes,
 canonical base64url and CRC-32/ISO-HDLC. It never authenticates a credential and
 contains no signing key. Shape validation permits growth and asserts no exact
@@ -20,3 +20,5 @@ authority; clients do not infer the restriction from the string.
 Publication and CLI dependency pinning must follow accepted API deployment and
 source/package verification. Source merge alone does not establish availability.
 The native SDK foundation #348 remains a stack dependency until merged to main.
+
+The shared fixture is `contracts/machine-credentials.v1.json`; its exact producer, blob and SHA-256 are recorded in `contracts/machine-credentials.source.json`. This separately pinned supplement does not advance the baseline API version. SDK framing acceptance never verifies issuance, signatures, claims or server policy.

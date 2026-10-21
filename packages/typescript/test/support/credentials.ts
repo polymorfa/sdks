@@ -1,3 +1,13 @@
-// Public test credentials from polymorfa MR-C vectors at 47d34d0a1fe29579611b3296ca61ab2bd5eefcf9.
-export const ORGANIZATION_API_KEY = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
-export const PROJECT_TOKEN = "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
+import { readFileSync } from "node:fs";
+// API-owned public test vectors; source metadata lives beside the shared fixture.
+export const MACHINE_CREDENTIALS = JSON.parse(
+  readFileSync(
+    new URL(
+      "../../../../contracts/machine-credentials.v1.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+);
+export const ORGANIZATION_API_KEY: string = MACHINE_CREDENTIALS.opaque[0].token;
+export const PROJECT_TOKEN: string = MACHINE_CREDENTIALS.opaque[1].token;

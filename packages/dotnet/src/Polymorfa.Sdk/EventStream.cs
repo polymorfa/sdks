@@ -78,8 +78,7 @@ public sealed class EventStream : IAsyncEnumerable<EventStreamItem>
         using var opened = await http.OpenAsync(HttpMethod.Get, path, null, new RequestOptions { Headers = headers, Timeout = options.Timeout, MaxNetworkRetries = 0, CancellationToken = cancellation }, "text/event-stream", query).ConfigureAwait(false);
         if (opened.Response.Content.Headers.ContentType?.MediaType != "text/event-stream") throw new PolymorfaServerException("Expected an event stream.", "invalid_stream", opened.Metadata);
         await using var stream = await opened.Response.Content.ReadAsStreamAsync(cancellation).ConfigureAwait(false);
-        using var reader = new StreamReader(stream, new UTF8Encoding(false, true));
-        var lines = new BoundedSseLines(reader);
+        var lines = new EventSseLines(stream);
         var data = new StringBuilder();
         var heartbeat = TimeSpan.FromSeconds(30);
         using var watchdog = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
@@ -91,7 +90,6 @@ public sealed class EventStream : IAsyncEnumerable<EventStreamItem>
             if (line.Length != 0)
             {
                 if (line.StartsWith("data:", StringComparison.Ordinal)) { if (data.Length != 0) data.Append('\n'); data.Append(line[5..].TrimStart(' ')); }
-                if (data.Length > 4 * 1024 * 1024) throw new PolymorfaServerException("Event stream frame exceeds its size limit.", "invalid_stream");
                 continue;
             }
             if (data.Length == 0) continue;
@@ -105,14 +103,16 @@ public sealed class EventStream : IAsyncEnumerable<EventStreamItem>
                     break;
                 case "event":
                     var record = frame.GetProperty("event").Deserialize<EventRecord>(HttpTransport.Json) ?? throw new PolymorfaServerException("Invalid event stream envelope.", "invalid_stream");
-                    Cursor = frame.GetProperty("cursor").GetString() ?? throw new PolymorfaServerException("Missing stream cursor.", "invalid_stream");
+                    var cursor = frame.GetProperty("cursor").GetString() ?? throw new PolymorfaServerException("Missing stream cursor.", "invalid_stream");
                     WebhookEvent? webhook = null;
                     if (record.Payload is { } payload)
                     {
                         if (payload.Encoding != "base64") throw new PolymorfaServerException("Unsupported event payload encoding.", "invalid_stream");
                         webhook = Webhooks.ParseVerifiedEvent(Convert.FromBase64String(payload.Data));
                     }
-                    yield return new(record, frame.GetProperty("streamId").GetString()!, frame.GetProperty("sequence").GetInt64(), webhook, Cursor);
+                    var item = new EventStreamItem(record, frame.GetProperty("streamId").GetString()!, frame.GetProperty("sequence").GetInt64(), webhook, cursor);
+                    Cursor = cursor;
+                    yield return item;
                     break;
                 case "checkpoint": if (frame.TryGetProperty("cursor", out var checkpoint) && checkpoint.ValueKind == JsonValueKind.String) Cursor = checkpoint.GetString(); break;
                 case "gap":
@@ -124,6 +124,47 @@ public sealed class EventStream : IAsyncEnumerable<EventStreamItem>
                 case "dropped": throw new StreamReconnect(false);
             }
         }
+    }
+}
+
+// This parser belongs only to project event streams; Signal retains its own policy.
+internal sealed class EventSseLines(Stream stream)
+{
+    private readonly byte[] buffer = new byte[4096];
+    private readonly MemoryStream line = new();
+    private static readonly UTF8Encoding Utf8 = new(false, true);
+    private int position;
+    private int length;
+    private int frameBytes;
+    private bool skipLineFeed;
+    private bool firstLine = true;
+    internal async ValueTask<string?> ReadAsync(CancellationToken cancellation)
+    {
+        while (true)
+        {
+            if (position == length)
+            {
+                length = await stream.ReadAsync(buffer.AsMemory(), cancellation).ConfigureAwait(false); position = 0;
+                if (length == 0) return line.Length == 0 ? null : TakeLine();
+            }
+            var character = buffer[position++];
+            if (skipLineFeed) { skipLineFeed = false; if (character == 10) continue; }
+            if (++frameBytes > 4 * 1024 * 1024) throw new PolymorfaServerException("Event stream frame exceeds its size limit.", "invalid_stream");
+            if (character is 13 or 10)
+            {
+                skipLineFeed = character == 13;
+                var value = TakeLine();
+                if (value.Length == 0) frameBytes = 0;
+                return value;
+            }
+            line.WriteByte(character);
+        }
+    }
+    private string TakeLine()
+    {
+        var value = Utf8.GetString(line.GetBuffer(), 0, (int)line.Length); line.SetLength(0);
+        if (firstLine) { firstLine = false; value = value.TrimStart('\ufeff'); }
+        return value;
     }
 }
 

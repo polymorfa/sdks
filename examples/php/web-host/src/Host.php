@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PolymorfaExample;
 
-use Polymorfa\{Credential,MessagingClient};
+use Polymorfa\{Credential,MessagingClient,Webhooks};
 use Symfony\Component\HttpFoundation\{Cookie,JsonResponse,RedirectResponse,Request,Response};
 
 /** Loopback demonstration account. Replace with live application authorization before deployment. */
@@ -12,6 +12,8 @@ final class Host
 {
     private MessagingClient $client;
     private string $state;
+    private Conversation $conversation;
+    private string $webhookSecret;
     private string $origin;
     private string $session;
     private string $username;
@@ -31,7 +33,9 @@ final class Host
             throw new \RuntimeException('Configure a persistent, private application state directory.');
         }
         self::directory($this->state.'/sessions');
+        $this->webhookSecret = self::setting('POLYMORFA_WEBHOOK_SECRET');
         $this->client = new MessagingClient(Credential::projectToken(self::setting('POLYMORFA_PROJECT_TOKEN')), getenv('POLYMORFA_API_BASE_URL') ?: 'https://api.polymorfa.com');
+        $this->conversation = new Conversation($this->state,$this->session,self::setting('POLYMORFA_RECIPIENT'),$this->client);
     }
 
     public static function directory(string $path): void
@@ -67,12 +71,12 @@ final class Host
         if ($request->headers->get('HX-Request') !== 'true' && $request->getPathInfo() !== '/') {
             return new RedirectResponse('/');
         }
-        return new Response(($this->render)($authenticated, $request->headers->get('HX-Request') === 'true'), 200, ['Cache-Control' => 'no-store, private']);
+        return new Response(($this->render)($authenticated, $request->headers->get('HX-Request') === 'true', getenv('POLYMORFA_EXAMPLE_TRANSPORT') === 'local-test-number'), 200, ['Cache-Control' => 'no-store, private']);
     }
     public function handle(Request $request): Response
     {
         $path = $request->getPathInfo();
-        $methods = ['/' => 'GET','/api/login' => 'POST','/api/logout' => 'POST','/api/polymorfa/token' => 'POST','/api/polymorfa/connect' => 'POST','/api/polymorfa/history/conversations' => 'GET'];
+        $methods = ['/' => 'GET','/api/login' => 'POST','/api/logout' => 'POST','/api/polymorfa/token' => 'POST','/api/polymorfa/connect' => 'POST','/api/polymorfa/conversation' => 'GET','/api/polymorfa/send' => 'POST','/webhooks/polymorfa' => 'POST'];
         if (!isset($methods[$path])) {
             return $this->json(['error' => 'not_found'], 404);
         }
@@ -80,6 +84,13 @@ final class Host
             $response = $this->json(['error' => 'method_not_allowed'], 405);
             $response->headers->set('Allow', $methods[$path]);
             return $response;
+        }
+        if ($path === '/webhooks/polymorfa') {
+            $stream=$request->getContent(true);$raw=stream_get_contents($stream,65537);
+            if ($raw===false || strlen($raw)>65536) { return $this->json(['error'=>'body_too_large'],413); }
+            try { $this->conversation->receive(Webhooks::constructEvent($raw,$request->headers->get('x-webhook-signature',''),$this->webhookSecret)); }
+            catch (\Throwable) { return $this->json(['error'=>'invalid_webhook'],400); }
+            return $this->json(['received'=>true]);
         }
         if ($request->getMethod() === 'POST' && $request->headers->get('Origin') !== $this->origin) {
             return $this->json(['error' => 'invalid_origin'], 403);
@@ -134,8 +145,11 @@ final class Host
         if (!$this->authenticated($request)) {
             return $this->json(['error' => 'sign_in_required'], 401);
         }
-        if ($path === '/api/polymorfa/history/conversations') {
-            return $this->json(['data' => [],'nextCursor' => null]);
+        if ($path === '/api/polymorfa/conversation') { return $this->json($this->conversation->snapshot()); }
+        if ($path === '/api/polymorfa/send') {
+            $raw=stream_get_contents($request->getContent(true),16385);
+            [$status,$data]=$this->conversation->send($raw===false?'':$raw,$request->headers->get('Idempotency-Key',''));
+            return $this->json($data,$status);
         }
         try {
             if ($path === '/api/polymorfa/connect') {

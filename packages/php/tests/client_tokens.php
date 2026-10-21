@@ -6,6 +6,8 @@ $rules = ['recipientMode' => 'conversation','allowedActions' => 'send_message,re
 $token = ['success' => true, 'data' => ['token' => 'pmfa_ct_Zml4dHVyZQ','expiresAt' => '2026-10-11T12:00:00Z']];
 $cases = [
  ['POST','/platform/client-tokens',['ephemeralId' => 'browser_1','session' => 'support','ttlSeconds' => 600],$token,fn ($r) => $r->mint(['ephemeralId' => 'browser_1','session' => 'support','ttlSeconds' => 600])],
+ ['POST','/platform/client-tokens',['ephemeralId' => 'browser_1','session' => 'support','allow' => []],$token,fn ($r) => $r->mint(['ephemeralId' => 'browser_1','session' => 'support','allow' => []])],
+ ['POST','/platform/client-tokens',['ephemeralId' => 'browser_1','session' => 'support','allow' => ['chats_read','chats_manage','contact_write','contact_delete','mcp','voip_place','voip_answer','voip_signal']],$token,fn ($r) => $r->mint(['ephemeralId' => 'browser_1','session' => 'support','allow' => ['chats_read','chats_manage','contact_write','contact_delete','mcp','voip_place','voip_answer','voip_signal']])],
  ['POST','/platform/client-tokens',['ephemeralId' => 'browser_1','customer' => 'cust_1','allow' => ['send_message']],$token,fn ($r) => $r->mint(['ephemeralId' => 'browser_1','customer' => 'cust_1','allow' => ['send_message']])],
  ['GET','/platform/sessions/support/client-rules',null,['success' => true,'data' => $rules],fn ($r) => $r->retrieveRules('support')],
  ['PUT','/platform/sessions/support/client-rules',['recipientMode' => 'none','enabled' => false],['success' => true],fn ($r) => $r->updateRules('support', ['recipientMode' => 'none','enabled' => false])],
@@ -23,7 +25,7 @@ foreach ($cases as [$method,$path,$body,$fixture,$invoke]) {
     raises(fn () => $invoke($browser->clientTokens), Polymorfa\ConfigurationException::class);
 }
 $client = new Polymorfa\MessagingClient($credential);
-foreach ([['ephemeralId' => 'browser_1'], ['ephemeralId' => 'browser_1','session' => 'support','customer' => 'cust_1'], ['ephemeralId' => 'browser_1','session' => 'support','allow' => []]] as $bad) {
+foreach ([['ephemeralId' => 'browser_1'], ['ephemeralId' => 'browser_1','session' => 'support','customer' => 'cust_1']] as $bad) {
     raises(fn () => $client->clientTokens->mint($bad), Polymorfa\ConfigurationException::class);
 }
 echo count($cases)." client token fixtures and principal/target guards passed.\n";

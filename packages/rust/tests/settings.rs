@@ -138,7 +138,8 @@ async fn owner_bound_quicklink_settings_sparse_nulls_and_call_retention_native_w
 }
 #[tokio::test]
 async fn standalone_team_retention_requires_server_principal_without_project_id() {
-    let token = Credential::project_token("pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()).unwrap();
+    let token =
+        Credential::project_token("pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()).unwrap();
     assert!(TeamCallRetentionClient::new(token, ClientOptions::default()).is_ok());
     let token = Credential::client_token("pmfa_ct_Y2xpZW50").unwrap();
     assert!(TeamCallRetentionClient::new(token, ClientOptions::default()).is_err());

@@ -16,6 +16,7 @@ import (
 	"math/big"
 	"net/http"
 	"net/url"
+	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
@@ -283,6 +284,11 @@ func (t *transport) request(ctx context.Context, method, path string, q url.Valu
 func (t *transport) open(ctx context.Context, method, path string, q url.Values, body any, o RequestOptions, streaming bool) (*http.Response, Metadata, error) {
 	var data []byte
 	var err error
+	once, single := body.(singleSubmission)
+	if single {
+		body = once.body
+		o = noRetry(o)
+	}
 	binary, isBinary := body.(*binaryRequest)
 	if body != nil && !isBinary {
 		data, err = json.Marshal(body)
@@ -351,6 +357,11 @@ func (t *transport) open(ctx context.Context, method, path string, q url.Values,
 				closer.Close()
 			}
 			return nil, Metadata{}, validation("Invalid HTTP request.")
+		}
+		if single {
+			// net/http treats Idempotency-Key as replay permission on reused
+			// connections. These routes have no ledger, so do not offer rewind.
+			req.GetBody = nil
 		}
 		req.Header.Set("Accept", "application/json")
 		if body != nil {
@@ -543,7 +554,7 @@ func decodeError(r *http.Response, md Metadata) error {
 		e.Code = v.Error.Code
 		e.Field = v.Error.Param
 		if v.Error.Message != "" {
-			e.Message = v.Error.Message
+			e.Message = credentialDiagnosticPattern.ReplaceAllString(v.Error.Message, "[REDACTED]")
 		}
 		if v.Error.RequestID != "" {
 			e.RequestID = v.Error.RequestID
@@ -553,7 +564,12 @@ func decodeError(r *http.Response, md Metadata) error {
 		if e.DocURL == "" {
 			e.DocURL = v.Docs
 		}
-		e.Details = v.Error.Details
+		if len(v.Error.Details) > 0 {
+			var details any
+			if json.Unmarshal(v.Error.Details, &details) == nil {
+				e.Details, _ = json.Marshal(redactCredentialDiagnostic(details))
+			}
+		}
 	}
 	return e
 }
@@ -630,4 +646,28 @@ func responseBodyError(ctx context.Context, r *http.Response, md Metadata, cause
 		}
 	}
 	return e
+}
+
+var credentialDiagnosticPattern = regexp.MustCompile(`pmfa_[A-Za-z0-9_-]+`)
+
+func redactCredentialDiagnostic(value any) any {
+	switch v := value.(type) {
+	case string:
+		return credentialDiagnosticPattern.ReplaceAllString(v, "[REDACTED]")
+	case []any:
+		for i, c := range v {
+			v[i] = redactCredentialDiagnostic(c)
+		}
+	case map[string]any:
+		for k, c := range v {
+			normalized := strings.ToLower(strings.NewReplacer("_", "", "-", "").Replace(k))
+			switch normalized {
+			case "authorization", "apikey", "projecttoken", "clienttoken", "credential", "token", "secret":
+				v[k] = "[REDACTED]"
+			default:
+				v[k] = redactCredentialDiagnostic(c)
+			}
+		}
+	}
+	return value
 }

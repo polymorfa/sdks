@@ -1,3 +1,23 @@
+function redactCredentialText(value: string): string {
+  return value.replace(/pmfa_[A-Za-z0-9_-]+/g, "[REDACTED]");
+}
+function redactErrorDetails(value: unknown): unknown {
+  if (typeof value === "string") return redactCredentialText(value);
+  if (Array.isArray(value)) return value.map(redactErrorDetails);
+  if (value && typeof value === "object")
+    return Object.fromEntries(
+      Object.entries(value).map(([key, child]) => [
+        key,
+        /^(authorization|apikey|projecttoken|clienttoken|credential|token|secret)$/i.test(
+          key.replace(/[^a-z0-9]/gi, ""),
+        )
+          ? "[REDACTED]"
+          : redactErrorDetails(child),
+      ]),
+    );
+  return value;
+}
+
 import type { ResponseMetadata } from "./transport/types.js";
 
 /**
@@ -160,7 +180,7 @@ export class PolymorfaError extends Error {
 
   constructor(message: string, options: PolymorfaErrorOptions = {}) {
     super(
-      message,
+      redactCredentialText(message),
       options.cause === undefined ? undefined : { cause: options.cause },
     );
     this.name = new.target.name;
@@ -171,7 +191,7 @@ export class PolymorfaError extends Error {
     this.requestLogUrl = options.requestLogUrl;
     this.docUrl = options.docUrl;
     this.rateLimitReason = options.rateLimitReason;
-    this.details = options.details;
+    this.details = redactErrorDetails(options.details);
     this.metadata = options.metadata;
   }
 }

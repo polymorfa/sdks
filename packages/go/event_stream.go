@@ -169,8 +169,8 @@ func (s *EventStream) consume(ctx context.Context, yield func(EventStreamItem, e
 	watch := newStreamWatchdog(resp.Body, cancel)
 	defer watch.close()
 	scanner := bufio.NewScanner(watch)
-	scanner.Split(splitSSELines)
-	scanner.Buffer(make([]byte, 4096), 1<<20)
+	scanner.Split(boundedEventSSELines())
+	scanner.Buffer(make([]byte, 4096), (4<<20)+1)
 	var data []string
 	for scanner.Scan() {
 		line := strings.TrimPrefix(scanner.Text(), "\ufeff")
@@ -201,7 +201,6 @@ func (s *EventStream) consume(ctx context.Context, yield func(EventStreamItem, e
 				}
 			case "event":
 				item := EventStreamItem{Event: frame.Event, StreamID: frame.StreamID, Sequence: frame.Sequence, Cursor: frame.Cursor}
-				s.setCursor(frame.Cursor)
 				if frame.Event.Payload != nil {
 					bytes, e := base64.StdEncoding.DecodeString(frame.Event.Payload.Data)
 					if e != nil {
@@ -213,6 +212,7 @@ func (s *EventStream) consume(ctx context.Context, yield func(EventStreamItem, e
 					}
 					item.Webhook = &event
 				}
+				s.setCursor(frame.Cursor)
 				s.mu.Lock()
 				s.delivered++
 				s.mu.Unlock()
@@ -256,10 +256,39 @@ func (s *EventStream) consume(ctx context.Context, yield func(EventStreamItem, e
 		return cause, false
 	}
 	if err := scanner.Err(); err != nil {
+		var failure *Error
+		if errors.As(err, &failure) {
+			return failure, false
+		}
 		return &Error{Kind: ConnectionError, Message: "Event stream connection closed."}, false
 	}
 	return io.EOF, false
 }
+
+// Count all UTF-8 wire bytes in a frame, including ignored fields and comments.
+// The scanner also calls this split while a line is incomplete, so heartbeats
+// cannot keep an unbounded line or many short data lines alive.
+func boundedEventSSELines() bufio.SplitFunc {
+	frameBytes := 0
+	return func(data []byte, atEOF bool) (int, []byte, error) {
+		advance, token, err := splitSSELines(data, atEOF)
+		size := advance
+		if advance == 0 {
+			size = len(data)
+		}
+		if frameBytes+size > 4*1024*1024 {
+			return 0, nil, &Error{Kind: ServerError, Code: "invalid_response", Message: "Event stream frame exceeds its size limit."}
+		}
+		if advance > 0 {
+			frameBytes += advance
+			if len(token) == 0 {
+				frameBytes = 0
+			}
+		}
+		return advance, token, err
+	}
+}
+
 func splitSSELines(data []byte, atEOF bool) (advance int, token []byte, err error) {
 	for i, b := range data {
 		if b == '\n' {

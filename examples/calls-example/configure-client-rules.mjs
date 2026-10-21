@@ -14,9 +14,7 @@ if (!key || !session || !testCallee) {
   );
   process.exitCode = 1;
 } else if (!credentialType) {
-  process.stderr.write(
-    "Enter a canonical team key or project token.\n",
-  );
+  process.stderr.write("Enter a canonical team key or project token.\n");
   process.exitCode = 1;
 } else {
   try {

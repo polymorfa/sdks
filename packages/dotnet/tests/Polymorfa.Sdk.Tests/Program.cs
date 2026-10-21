@@ -4,7 +4,11 @@ using System.Text.Json;
 using Polymorfa.Sdk;
 
 OpaqueCredentialTests.Run();
+await OpaqueCredentialTests.WireAsync();
 if (args.Contains("--credential-opaque-only")) { Console.WriteLine("PASS opaque credential shapes"); return; }
+
+if (args.Contains("--unledgered-retry-only")) { await UnledgeredRetryTests.RunAsync(); return; }
+if (args.Contains("--stream-repairs-only")) { await StreamRepairTests.RunAsync(); return; }
 if (args.Contains("--consumer-media-only")) { await ConsumerRepairTests.MediaAsync(); return; }
 if (args.Contains("--consumer-calls-only")) { await ConsumerRepairTests.CallsAsync(); return; }
 if (args.Contains("--consumer-cursor-only")) { await ConsumerRepairTests.CursorAsync(); return; }
@@ -39,6 +43,7 @@ if (args.Contains("--idempotency-only")) { await IdempotencyHeaderTests.RunAsync
 var directory = new DirectoryInfo(AppContext.BaseDirectory);
 while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "contracts/fixtures/behavior.json"))) directory = directory.Parent;
 var root = directory?.FullName ?? throw new Exception("SDK repository root not found.");
+if (args.Contains("--aspnet-example-only")) { await AspNetExampleTests.RunAsync(root); return; }
 using var fixtures = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "contracts/fixtures/behavior.json")));
 var start = new ProcessStartInfo(Environment.GetEnvironmentVariable("SDK_NODE") ?? "node") { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
 start.ArgumentList.Add("scripts/sdk-fixture-server.mjs"); start.ArgumentList.Add("--port"); start.ArgumentList.Add("0");
@@ -188,6 +193,7 @@ try
     await FlowTests.RunAsync();
     await SipTests.RunAsync();
     await EventsTests.RunAsync();
+    await StreamRepairTests.RunAsync();
     await OperationsTests.RunAsync();
     await ReviewRegressionTests.RunAsync();
     await SignalTests.RunAsync();
@@ -218,3 +224,5 @@ static string Kind(PolymorfaException error) => error switch
 };
 
 await StorageD1Tests.RunAsync();
+
+await UnledgeredRetryTests.RunAsync();

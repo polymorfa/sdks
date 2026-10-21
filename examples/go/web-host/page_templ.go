@@ -8,7 +8,7 @@ package main
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-func page(authenticated bool) templ.Component {
+func page(authenticated bool, transportLabel string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -29,11 +29,11 @@ func page(authenticated bool) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Go Polymorfa workspace</title><script src=\"/assets/htmx.js\" defer></script><script type=\"module\" src=\"/assets/elements.js\"></script><style>body{font:16px system-ui;margin:0;background:#f6f7f9;color:#17212d}main{max-width:900px;margin:48px auto;padding:24px}button,input{font:inherit;padding:12px;border:1px solid #6e7e91;border-radius:8px}button{cursor:pointer;background:#184a80;color:white}label{display:block;margin:16px 0}input{display:block;max-width:100%;margin-top:8px}pmfa-inbox{height:540px;display:block}button:focus-visible,input:focus-visible{outline:3px solid #48a5ed;outline-offset:3px}@media(max-width:600px){main{margin:0;padding:16px}}</style></head><body>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Go Polymorfa workspace</title><script src=\"/assets/htmx.js\" defer></script><script type=\"module\" src=\"/assets/elements.js\"></script><style>body{font:16px system-ui;margin:0;background:#f6f7f9;color:#17212d}main{max-width:1100px;margin:16px auto;padding:16px}h1{font-size:26px;margin:0 0 12px}p,form{margin:10px 0}button,input{font:inherit;padding:12px;border:1px solid #6e7e91;border-radius:8px}button{cursor:pointer;background:#184a80;color:white}label{display:block;margin:16px 0}input{display:block;max-width:100%;margin-top:8px}pmfa-inbox{height:calc(100dvh - 280px);min-height:360px;display:block}button:focus-visible,input:focus-visible{outline:3px solid #48a5ed;outline-offset:3px}@media(max-width:600px){main{margin:0;padding:16px}}</style></head><body>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = workspace(authenticated).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = workspace(authenticated, transportLabel).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -45,7 +45,7 @@ func page(authenticated bool) templ.Component {
 	})
 }
 
-func workspace(authenticated bool) templ.Component {
+func workspace(authenticated bool, transportLabel string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -71,17 +71,36 @@ func workspace(authenticated bool) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if authenticated {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<p>Your application assigns this workspace's number and browser grant.</p><form method=\"post\" action=\"/api/logout\" hx-post=\"/api/logout\" hx-target=\"#app\" hx-swap=\"outerHTML\"><button type=\"submit\">Sign out</button></form><pmfa-session-status></pmfa-session-status><pmfa-connect-whatsapp></pmfa-connect-whatsapp><pmfa-inbox></pmfa-inbox>")
+			if transportLabel != "" {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<p><strong>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var3 string
+				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(transportLabel)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `page.templ`, Line: 15, Col: 30}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</strong></p>")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, " <p>Go SDK. Text messages use the server-assigned number and recipient. Conversation state lasts until this example server stops.</p><p id=\"native-status\" role=\"status\">Waiting for the native SDK conversation.</p><form method=\"post\" action=\"/api/logout\" hx-post=\"/api/logout\" hx-target=\"#app\" hx-swap=\"outerHTML\"><button type=\"submit\">Sign out</button></form><pmfa-inbox></pmfa-inbox>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<p>Sign in with the local example application's configured account.</p><form method=\"post\" action=\"/api/login\" hx-post=\"/api/login\" hx-target=\"#app\" hx-swap=\"outerHTML\"><label>Username<input name=\"username\" autocomplete=\"username\" required></label> <label>Password<input name=\"password\" type=\"password\" autocomplete=\"current-password\" required></label> <button type=\"submit\">Sign in</button></form>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<p>Sign in with the local example application's configured account.</p><form method=\"post\" action=\"/api/login\" hx-post=\"/api/login\" hx-target=\"#app\" hx-swap=\"outerHTML\"><label>Username<input name=\"username\" autocomplete=\"username\" required></label> <label>Password<input name=\"password\" type=\"password\" autocomplete=\"current-password\" required></label> <button type=\"submit\">Sign in</button></form>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<p role=\"alert\" id=\"error\"></p></main>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<p role=\"alert\" id=\"error\"></p></main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

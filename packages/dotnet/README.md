@@ -949,3 +949,18 @@ The SDK checks server-credential prefixes, canonical base64url and the checksum.
 These checks do not authenticate a credential. The API checks the issuance record
 and live permissions. Test keys use the same project-token format; their test-only
 restriction is enforced by the service.
+
+### Project event-stream validation and limits
+
+`EventStream.Cursor` advances after the base64 payload, webhook envelope and
+stream delivery fields parse. Invalid base64 follows the existing reconnect
+policy. An invalid decoded webhook remains terminal; after correcting the source,
+resume explicitly from the retained cursor or durable storage checkpoint.
+Project event frames have a 4 MiB UTF-8 byte budget, including incomplete lines,
+all `data:` lines, field syntax and comments. CRLF counts as one line terminator;
+a blank line resets the budget. Oversized frames follow the existing reconnect
+policy. Signal parsing is unchanged.
+
+Storage synchronization uses `StreamOptions.Since` when no checkpoint exists and
+the saved cursor otherwise. Event commit, checkpoint CAS and manual ACK keep that
+order. These changes are unreleased source behavior.

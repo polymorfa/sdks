@@ -82,8 +82,8 @@ func TestEventStreamLiveSourceErrorsAndPayloadRecovery(t *testing.T) {
 		case 1:
 			io.WriteString(w, "data: {\"type\":\"event\",\"cursor\":\"bad\",\"event\":{\"payload\":{\"data\":\"%%%\"}}}\n\n")
 		case 2:
-			if r.Header.Get("Last-Event-ID") != "bad" {
-				t.Error("bad cursor not resumed")
+			if r.Header.Get("Last-Event-ID") != "" {
+				t.Error("malformed event advanced the resume cursor")
 			}
 			io.WriteString(w, "data: {\"type\":\"revoked\"}\n\n")
 		default:

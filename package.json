@@ -34,7 +34,12 @@
     "lint": "eslint \"packages/**/*.{ts,tsx}\" vitest.config.ts",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "check:functions": "node scripts/check-functions.mjs"
+    "check:functions": "node scripts/check-functions.mjs",
+    "generate:doc-snippets": "node scripts/generate-doc-snippets.mjs",
+    "check:doc-snippets": "node scripts/generate-doc-snippets.mjs --check",
+    "test:doc-snippets": "node --test scripts/doc-snippets.test.mjs",
+    "verify:doc-snippets": "node scripts/verify-doc-snippets.mjs",
+    "check:machine-credentials": "node scripts/check-machine-credentials.mjs"
   },
   "devDependencies": {
     "@aws-sdk/client-dynamodb": "^3.1149.0",
@@ -47,10 +52,12 @@
     "@types/pg": "^8.23.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
-    "esbuild": "^0.25.12",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
     "convex": "^1.46.0",
     "convex-test": "^0.0.61",
     "drizzle-orm": "^0.45.4",
+    "esbuild": "^0.25.12",
     "eslint": "^9.39.5",
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.11.2",

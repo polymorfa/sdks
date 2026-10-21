@@ -18,7 +18,7 @@ foreach (['framework/views','framework/cache','logs'] as $directory) {
 $application = Application::configure(basePath:dirname(__DIR__))
     ->withRouting(using:function (): void {
         Route::any('/{path?}', function (Illuminate\Http\Request $request): Response {
-            $host = new Host(fn (bool $authenticated, bool $partial): string => view('workspace', compact('authenticated', 'partial'))->render());
+            $host = new Host(fn (bool $authenticated, bool $partial, bool $localTest): string => view('workspace', compact('authenticated', 'partial', 'localTest'))->render());
             return $host->handle($request);
         })->where('path', '.*');
     })

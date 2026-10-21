@@ -74,7 +74,7 @@ pub async fn wire_authorization(
 ) -> (String, JoinHandle<()>) {
     wire_authorization_status(method, path, body, response, authorization, 200).await
 }
-async fn wire_authorization_status(
+pub async fn wire_authorization_status(
     method: &str,
     path: &str,
     body: Option<Value>,

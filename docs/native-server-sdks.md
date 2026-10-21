@@ -81,3 +81,31 @@ Do not add a release changelog or public Mintlify installation guide until the
 package exists for the stated audience. Language documentation in this repo
 describes source development; the release checklist must publish the matching
 Mintlify guides and navigation with the packages.
+
+## Direct media and history submissions
+
+The held API source `f97ad78b172e80788c33bdc0fcf28f75db9283ec` has no
+route-specific Messaging idempotency ledger for these four POST operations:
+
+- `/messaging/{session}/media/upload-grants`
+- `/messaging/{session}/media/uploads`
+- `/messaging/{session}/history/chunks/retry`
+- `/messaging/{session}/history/media/delete`
+
+Each operation submits at most once per invocation in TypeScript, Go, Python,
+PHP, .NET and Rust, even with a nonempty caller idempotency key and an explicit
+positive retry count. The key, caller headers, credentials, timeout and
+cancellation still apply. A connection failure may mean the effect occurred;
+inspect authoritative state before deciding whether to invoke the operation
+again. A key or identical request bytes do not prove server deduplication.
+The explicit history retry asks the phone for another chunk; it does not enable
+automatic HTTP retries. Delete only after durable local processing.
+
+Ordinary established idempotent sends and GET requests keep their retry policy.
+Direct WhatsApp CDN resumable uploads, chunk recovery and grant refresh retain
+their separate provider protocol. Each grant request itself submits once.
+
+These operations remain held, source-only functionality. They are absent from
+the accepted `9bb1e2e` API source and are not a new accepted producer or release.
+The global API baseline remains `171a9683ff45d11a4b5d3917dc428ad2722b0d99`,
+version `2026-09-22`. Signal producer/interface acceptance remains unassigned.

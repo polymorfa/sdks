@@ -38,7 +38,8 @@ internal static class RawPaginationTests
         try { await client.PaginateRawAsync(new(HttpMethod.Get, "/raw", Options: new() { Headers = new Dictionary<string, string> { ["Authorization"] = "Bearer replacement" } }), Decode); throw new Exception("Authorization override accepted"); } catch (PolymorfaException) { }
         using var errorFixture = new WireFixture(); using var organizationClient = new OrganizationClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = errorFixture.Url });
         var errorServe = errorFixture.ServeAsync("GET", "/raw", null, "{}");
-        try { await organizationClient.PaginateRawAsync<int>(new(HttpMethod.Get, "/raw"), (_, _) => throw new FormatException("Caller decoder rejected the page.")); throw new Exception("Decoder error lost"); } catch (FormatException) { } await errorServe;
+        try { await organizationClient.PaginateRawAsync<int>(new(HttpMethod.Get, "/raw"), (_, _) => throw new FormatException("Caller decoder rejected the page.")); throw new Exception("Decoder error lost"); } catch (FormatException) { }
+        await errorServe;
         using var cancellation = new CancellationTokenSource(); var cancellationServe = errorFixture.ServeAsync("GET", "/raw", null, """{"records":[],"resume":"next"}""");
         var cancelledPage = await organizationClient.PaginateRawAsync(new(HttpMethod.Get, "/raw", Options: new() { CancellationToken = cancellation.Token }), Decode); await cancellationServe; cancellation.Cancel();
         try { await cancelledPage.NextPageAsync(); throw new Exception("Next page ignored original cancellation"); } catch (PolymorfaCancelledException) { }

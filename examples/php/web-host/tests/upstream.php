@@ -7,6 +7,13 @@ if ($_SERVER['REQUEST_URI'] === '/__state') {
     return;
 }
 $body = json_decode(file_get_contents('php://input'), true);
+if ($_SERVER['REQUEST_URI'] === '/messaging/authorized-support/messages/send') {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || ($_SERVER['HTTP_AUTHORIZATION'] ?? '') !== 'Bearer pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k' || ($_SERVER['HTTP_IDEMPOTENCY_KEY'] ?? '') !== 'ad87d91a-32fc-48ab-aa00-5973d1e9f98d' || $body !== ['conversation'=>['phoneNumber'=>'+15550001234'],'content'=>['text'=>'Native send']]) { http_response_code(422); echo '{"error":"fixture_mismatch"}'; return; }
+    $counter = getenv('EXAMPLE_STATE_DIR').'/native-sends';
+    file_put_contents($counter,(string)((is_file($counter)?(int)file_get_contents($counter):0)+1));
+    echo json_encode(['success'=>true,'data'=>['id'=>'message-out','timestamp'=>'2026-10-18T10:00:00.750Z','status'=>'sent','conversation'=>['id'=>'canonical-peer'],'whatsapp_ids'=>['linked_devices'=>'wire-out']]]);return;
+}
+
 if ($_SERVER['REQUEST_URI'] === '/messaging/quicklinks') {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || ($_SERVER['HTTP_AUTHORIZATION'] ?? '') !== 'Bearer pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k' || ($_SERVER['HTTP_POLYMORFA_VERSION'] ?? '') !== '2026-09-22' || $body !== ['purpose' => 'add_connection','session' => 'authorized-support','addConnection' => 'linked_devices','connectionGoal' => 'hybrid']) { http_response_code(422); echo '{"error":"fixture_mismatch"}'; return; }
     $links = getenv('EXAMPLE_STATE_DIR').'/native-links';

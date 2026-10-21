@@ -1,7 +1,15 @@
 <main id="app">
   <h1>Messaging workspace</h1>
-  {% if authenticated %}
-  <p>Your application assigns this workspace's number and browser grant.</p>
+  {% if authenticated %} {% if transport == "local-test-number" %}
+  <p><strong>Local test numbers. Simulated WhatsApp transport.</strong></p>
+  {% endif %}
+  <p>
+    Python SDK. Text messages use the server-assigned number and recipient.
+    Conversation state lasts until this example server stops.
+  </p>
+  <p id="native-status" role="status">
+    Waiting for the native SDK conversation.
+  </p>
   <form
     method="post"
     action="/api/logout"
@@ -11,8 +19,7 @@
   >
     <button type="submit">Sign out</button>
   </form>
-  <pmfa-session-status></pmfa-session-status
-  ><pmfa-connect-whatsapp></pmfa-connect-whatsapp><pmfa-inbox></pmfa-inbox>
+  <pmfa-inbox></pmfa-inbox>
   {% else %}
   <p>Sign in with the local example application's configured account.</p>
   <form

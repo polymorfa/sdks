@@ -2,26 +2,38 @@
 <html lang="en">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Polymorfa ASP.NET example</title>
-<style>body{font:16px system-ui;max-width:1000px;margin:2rem auto;padding:1rem}button,input{min-height:44px;font:inherit;border:1px solid #707070;border-radius:6px;padding:0 12px}button{cursor:pointer;background:#f6f6f6}button:focus-visible,input:focus-visible{outline:3px solid #1464e8;outline-offset:2px}form{display:flex;gap:12px;align-items:center;flex-wrap:wrap}label{display:flex;gap:8px;align-items:center;flex-wrap:wrap}pmfa-inbox{display:block}a{display:inline-block;padding:12px}</style>
+<style>body{font:16px system-ui;max-width:1100px;margin:16px auto;padding:16px;background:#f6f7f9;color:#17212d}h1{font-size:26px;margin:0 0 12px}p,form{margin:10px 0}button,input{min-height:44px;font:inherit;border:1px solid #707070;border-radius:6px;padding:0 12px}button{cursor:pointer;background:#184a80;color:white}button:focus-visible,input:focus-visible{outline:3px solid #1464e8;outline-offset:2px}form{display:flex;gap:12px;align-items:center;flex-wrap:wrap}label{display:flex;gap:8px;align-items:center;flex-wrap:wrap}pmfa-inbox{display:block;height:calc(100dvh - 280px);min-height:360px}a{display:inline-block;padding:12px}[hidden]{display:none!important}</style>
 <body><main>
-<h1>Messaging</h1>
+<h1>Messaging workspace</h1>
 <form id="login" method="post" action="/example/login"><label>Local example password <input name="password" type="password" autocomplete="current-password" required></label><button>Sign in</button><p id="login-status" role="status"></p></form>
-<button id="logout" type="button">Sign out</button> <a href="/blazor/">Open Blazor WebAssembly example</a>
-<pmfa-session-status></pmfa-session-status><pmfa-connect-whatsapp></pmfa-connect-whatsapp><pmfa-inbox style="height:640px"></pmfa-inbox>
+<section id="workspace" hidden>
+<p id="transport-label"></p>
+<p>C# SDK. Text messages use the server-assigned number and recipient. Conversation state lasts until this example server stops.</p>
+<p id="native-status" role="status"></p>
+<button id="logout" type="button">Sign out</button>
+<pmfa-inbox></pmfa-inbox>
+</section>
 </main>
 <script type="module">
 import {mount} from './elements.js';
-let client = await mount();
-document.querySelector('#login').addEventListener('submit', async event => {
+let client;
+const form=document.querySelector('#login'),workspace=document.querySelector('#workspace');
+async function restore() {
+  client?.dispose();client=undefined;
+  const authenticated=(await fetch('/api/polymorfa/conversation',{credentials:'same-origin'})).ok;
+  form.hidden=authenticated;workspace.hidden=!authenticated;
+  if(authenticated)client=await mount();
+}
+await restore();
+form.addEventListener('submit', async event => {
   event.preventDefault();
-  const form = event.currentTarget;
-  const response = await fetch('/example/login', { method:'POST', credentials:'same-origin', body:new URLSearchParams(new FormData(form)) });
+  const response = await fetch('/example/login', {method:'POST',credentials:'same-origin',body:new URLSearchParams(new FormData(form))});
   document.querySelector('#login-status').textContent = response.ok ? 'Signed in' : 'Sign-in unavailable or refused';
-  if (response.ok) { form.reset(); client.dispose(); client = await mount(); }
+  if(response.ok) {form.reset();await restore();}
 });
 document.querySelector('#logout').addEventListener('click', async () => {
-  const response = await fetch('/example/logout', { method:'POST', credentials:'same-origin' });
-  if (response.ok) { client.dispose(); client = await mount(); document.querySelector('#login-status').textContent = 'Signed out'; }
+  const response=await fetch('/example/logout',{method:'POST',credentials:'same-origin'});
+  if(response.ok) {await restore();document.querySelector('#login-status').textContent='Signed out';}
 });
 </script>
 </body>

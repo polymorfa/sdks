@@ -155,7 +155,6 @@ func SyncToStorage(ctx context.Context, source EventSource, target *Engine, opti
 	if params.Types == nil {
 		params.Types = append([]string{}, StoredEventTypes...)
 	}
-	params.Since = ""
 	if saved != nil {
 		expected.Value = strValue(saved.Cursor)
 		params.Since = saved.Cursor

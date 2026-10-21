@@ -22,8 +22,7 @@ use tokio_tungstenite::{
 };
 use tokio_util::sync::CancellationToken;
 
-const KEY: &str =
-    "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
+const KEY: &str = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
 const SECRET: &str = "application-fixture-secret";
 async fn listener() -> (TcpListener, String) {
     let peer = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -112,7 +111,11 @@ async fn calls_base_prefix_and_first_frame_authority_are_retained() {
                 let (peer, base) = listener().await;
                 let target = Arc::new(Mutex::new(String::new()));
                 let seen = target.clone();
-                let secret = if client_token { "pmfa_ct_Zml4dHVyZQ" } else { KEY };
+                let secret = if client_token {
+                    "pmfa_ct_Zml4dHVyZQ"
+                } else {
+                    KEY
+                };
                 let task = tokio::spawn(async move {
                     let (socket, _) = peer.accept().await.unwrap();
                     let mut ws =

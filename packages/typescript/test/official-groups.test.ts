@@ -24,9 +24,7 @@ describe("Official groups (beta)", () => {
       credential: { type: "clientToken", value: "pmfa_ct_YnJvd3Nlcg" },
       baseUrl: server.url,
     }).officialGroups;
-    expect(() => groups.list("support")).toThrow(
-      /team key or project token/,
-    );
+    expect(() => groups.list("support")).toThrow(/team key or project token/);
     expect(() => groups.create("support", { subject: "Orders" })).toThrow(
       /team key/,
     );

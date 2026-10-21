@@ -867,6 +867,22 @@ original Customer action set. `chats_read`, `chats_manage`, `contact_write`, and
 `contact_delete` are reserved for enrolled regional beta access. These types do
 not establish regional availability or enable access by themselves.
 
+An explicit empty session list seals zero actions. Keep it distinct from
+omission when constructing the server-side mint request:
+
+| SDK        | Omit the session ceiling                              | Seal zero session actions |
+| ---------- | ----------------------------------------------------- | ------------------------- |
+| TypeScript | Omit `allow`                                          | `allow: []`               |
+| Go         | `Allow: nil`                                          | `Allow: []string{}`       |
+| Python     | Omit the `allow` key                                  | `"allow": []`             |
+| PHP        | Omit the `allow` key                                  | `'allow' => []`           |
+| Rust       | `ClientTokenTarget::Session { session, allow: None }` | Set `allow: Some(vec![])` |
+| C#         | Omit `Allow` or use `null`                            | `Allow: []`               |
+
+Rust uses `SessionClientAction` for session ceilings and `CustomerClientAction`
+for Customer ceilings. Customer lists remain non-empty. The API validates
+actions, enrollment and live rules; these request types grant no authority.
+
 ### Calls
 
 `createBrowserCalls` connects the shared `@polymorfa/sdk/calls` model to the

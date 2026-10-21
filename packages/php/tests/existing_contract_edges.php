@@ -206,20 +206,16 @@ foreach (['logs','grant','relay'] as $route) {
     $e = ecRaises($invoke, Polymorfa\AuthorizationException::class);
     ecCheck($e->errorCode === 'future_nine_code' && $e->param === 'scope' && $e->metadata->headers['x-trace-id'] === 'trace' && !isset($e->metadata->headers['set-cookie']), 'Nine route authority errors preserved');
 }
-// Explicit keyed relay retries replay the same Node-authored ciphertext; the default remains once.
+// Identical ciphertext and a caller key do not prove replay safety without a producer ledger.
 $relayCase = ['method' => 'POST','path' => '/messaging/s/media/uploads?type=image&fileEncSha256='.rawurlencode($hashUrl),'authorization' => $ecPrincipals[2]->authorization(),'version' => '2026-10-14','bodySha256' => hash('sha256', $cipher),'maxBodyBytes' => strlen($cipher),'statuses' => [503,200],'response' => '{"data":{"directPath":"/relay","url":"https://mmg.whatsapp.net/relay"}}','headers' => ['Retry-After' => '0']];
 foreach ([null,0,1] as $retries) {
     $ecConfigure($relayCase);
     $policy = new Polymorfa\UploadWhatsAppMediaOptions('image', mediaKey:hex2bin($v['mediaKey']), requestOptions:new Polymorfa\RequestOptions(maxNetworkRetries:$retries, idempotencyKey:'relay-key'));
-    if ($retries !== 1) {
-        ecRaises(fn () => $ecBrowser->whatsappMedia->uploadBytes('s', hex2bin($v['plaintext']), $policy), Polymorfa\ServerException::class);
-        ecCheck(count($ecObserved()) === 1, 'Relay unsafe default once');
-    } else {
-        $r = $ecBrowser->whatsappMedia->uploadBytes('s', hex2bin($v['plaintext']), $policy);
-        $seen = $ecObserved();
-        ecCheck(count($seen) === 2 && $seen[0]['bodySha256'] === $seen[1]['bodySha256'] && $seen[0]['idempotencyKey'] === 'relay-key' && $seen[1]['idempotencyKey'] === 'relay-key', 'Caller-keyed relay stable ciphertext');
-        ++$ecCount;
-    }
+    $error = ecRaises(fn () => $ecBrowser->whatsappMedia->uploadBytes('s', hex2bin($v['plaintext']), $policy), Polymorfa\ServerException::class);
+    $seen = $ecObserved();
+    ecCheck(count($seen) === 1 && $seen[0]['bodySha256'] === hash('sha256', $cipher) && $seen[0]['idempotencyKey'] === 'relay-key', 'Unledgered relay submits exact ciphertext once');
+    ecCheck($error->status === 503 && $error->metadata->attempts === 1, 'Unledgered relay failure metadata');
+    ++$ecCount;
 }
 // Descriptor sends capture referenced recipient and descriptor before retry callbacks.
 $recipient = ['id' => 'chat'];

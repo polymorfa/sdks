@@ -15,7 +15,7 @@ $state = getenv('EXAMPLE_STATE_DIR');
 check(is_string($state) && str_starts_with($state, '/') && !str_starts_with($state, '/tmp/'), 'persistent test state directory');
 foreach (['laravel','symfony'] as $framework) {
     $env = getenv();
-    $env = array_replace($env, ['EXAMPLE_APP_USERNAME' => 'example-user','EXAMPLE_APP_PASSWORD' => 'test-only-password','POLYMORFA_PROJECT_TOKEN' => 'pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k','POLYMORFA_SESSION' => 'authorized-support']);
+    $env = array_replace($env, ['EXAMPLE_APP_USERNAME' => 'example-user','EXAMPLE_APP_PASSWORD' => 'test-only-password','POLYMORFA_PROJECT_TOKEN' => 'pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k','POLYMORFA_SESSION' => 'authorized-support','POLYMORFA_RECIPIENT' => '+15550001234','POLYMORFA_WEBHOOK_SECRET' => 'local-test-signing-key']);
     $env['EXAMPLE_STATE_DIR'] = $state.'/'.$framework;
     $env['EXAMPLE_FRAMEWORK'] = $framework;
     $env['EXAMPLE_APP_ORIGIN'] = 'http://127.0.0.1:31306';
@@ -24,6 +24,8 @@ foreach (['laravel','symfony'] as $framework) {
         mkdir($env['EXAMPLE_STATE_DIR'], 0700, true);
     }
     $counter = $env['EXAMPLE_STATE_DIR'].'/native-mints';
+    @unlink($env['EXAMPLE_STATE_DIR'].'/conversation.json');
+    @unlink($env['EXAMPLE_STATE_DIR'].'/native-sends');
     $linkCounter = $env['EXAMPLE_STATE_DIR'].'/native-links';
     if (is_file($linkCounter)) { unlink($linkCounter); }
     if (is_file($counter)) {
@@ -68,7 +70,27 @@ foreach (['laravel','symfony'] as $framework) {
         check((int)file_get_contents($linkCounter) === 1, 'one QuickLink upstream request');
         check($send('POST', '/api/polymorfa/connect', 'https://foreign.invalid')->getStatusCode() === 403, 'QuickLink origin guard');
         check($send('POST', '/api/polymorfa/token', 'https://foreign.invalid')->getStatusCode() === 403, 'mint origin guard');
+        $key = 'ad87d91a-32fc-48ab-aa00-5973d1e9f98d';
+        $message = fn(array $body) => $client->post('/api/polymorfa/send', ['headers'=>['Origin'=>$origin,'Idempotency-Key'=>$key],'json'=>$body]);
+        check($message(['text'=>'Native send','recipient'=>'foreign'])->getStatusCode() === 400, 'fixed target');
+        $sent = $message(['text'=>'Native send']);
+        check($sent->getStatusCode() === 200 && json_decode((string)$sent->getBody(),true)['id'] === 'message-out', 'native send');
+        check($message(['text'=>'Native send'])->getStatusCode() === 200, 'same key replay');
+        check($message(['text'=>'Changed'])->getStatusCode() === 409, 'changed text rejected');
+        check((int)file_get_contents($env['EXAMPLE_STATE_DIR'].'/native-sends') === 1, 'no duplicate upstream send');
+        $envelope = ['id'=>'event-1','timestamp'=>'2026-10-18T10:00:01Z','session'=>'authorized-support','event'=>'message.received','payload'=>[
+            'id'=>'message-in','conversation'=>['id'=>'canonical-peer'],'fromMe'=>false,'isGroup'=>false,'timestamp'=>1792317601,'text'=>'Independent reply','type'=>'text','pushName'=>'Test peer','whatsapp_ids'=>['linked_devices'=>'wire-in']
+        ]];
+        $body = json_encode($envelope,JSON_THROW_ON_ERROR);
+        $webhook = fn(string $signature) => $client->post('/webhooks/polymorfa',['headers'=>['x-webhook-signature'=>$signature],'body'=>$body]);
+        check($webhook('bad')->getStatusCode() === 400, 'invalid webhook signature');
+        for ($i=0;$i<2;$i++) { check($webhook(hash_hmac('sha256',$body,'local-test-signing-key'))->getStatusCode() === 200, 'signed receiver'); }
+        $snapshot = json_decode((string)$client->get('/api/polymorfa/conversation')->getBody(),true);
+        check(array_column($snapshot['messages'],'text') === ['Native send','Independent reply'] && $snapshot['receivedEvents'] === 1, 'signed reply deduplicated');
+        $client->get('/');
+        check(json_decode((string)$client->get('/api/polymorfa/conversation')->getBody(),true) === $snapshot, 'reload preserves conversation');
         check($send('POST', '/api/logout', $origin)->getStatusCode() === 200, 'logout');
+        check($client->get('/api/polymorfa/conversation')->getStatusCode() === 401 && $message(['text'=>'Native send'])->getStatusCode() === 401,'logout revokes conversation and send');
         check($send('POST', '/api/polymorfa/token', $origin)->getStatusCode() === 401, 'revoked application session');
         check((int)file_get_contents($counter) === 1, 'no unauthorized upstream requests');
         check($send('POST', '/api/polymorfa/connect', $origin)->getStatusCode() === 401 && (int)file_get_contents($linkCounter) === 1, 'revoked QuickLink access');

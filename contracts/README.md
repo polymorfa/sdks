@@ -661,9 +661,14 @@ settled skips. `contracts/campaign-frequency-cap.json` pins the merged API sourc
 package publication and API availability remain separate release gates.
 
 `campaign-segments-drip.json` pins the merged audience segment and drip additions
-at API dev `f46ebd5162453e812dafa76ce02b420ddabe6921`, including source hashes,
-focused schemas, fields and operations. The full baseline snapshots keep their
-independent pins. This file records source adoption, not release availability.
+at accepted API source `9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f`, including
+source hashes, focused schemas, fields and operations. The frequency-cap
+supplement uses that same source. All 21 frequency-cap and 48 segment/drip
+fragments are exactly unchanged at this revision. Their native campaign manifest
+references match the two full source hashes. The full baseline snapshots and
+mixed campaign/custody supplement keep their independent pins. This reconciliation
+records source provenance; package publication, deployed acceptance and release
+holds remain separate.
 
 ## Client-token ceilings
 
@@ -676,3 +681,29 @@ Session `allow` requires the action-ceilings beta; an empty session list seals
 zero actions, while Customer lists remain non-empty. Reserved regional actions
 remain gated. The Next.js handler forwards only the grant's API actions and does
 not turn a wrapper-only grant into the session's broader API action set.
+
+All five native mint helpers preserve omitted, empty and populated session
+ceilings. Go uses the minimum Go 1.24 `omitzero` encoding to distinguish nil from
+an explicit empty slice. Python, PHP and Rust expose the reserved regional
+action spellings in their request types; Go and C# retain their existing string
+lists. Server-only mint guards remain in every language. This extends the
+existing mint request, with no added operation or coverage-ledger claim.
+
+## Verified documentation snippets
+
+[`doc-snippets.json`](doc-snippets.json) exports checked programs for all six
+server SDKs. Read [the consumer and maintenance contract](doc-snippets.md) before
+using it: pin the export commit, match API/spec provenance, preserve exact
+placeholders and key scope, and use cURL for absent or mismatched entries.
+Current metadata describes source packages and omits registry install commands.
+
+## Machine-credential fixture supplement
+
+`machine-credentials.v1.json` is the byte-identical API #647 fixture from merged
+source `e95d02da674da8242453c2a41efd48883fa04734`. Its producer path, blob and hash
+are in `machine-credentials.source.json`. `npm run check:machine-credentials`
+checks provenance and shared consumption in all six languages. Native credential
+tests check framing, growth, unchanged wire transport and diagnostic redaction.
+Signed negative-claim vectors are locally accepted as opaque strings; the API
+authenticates them. This supplement does not repin the baseline OpenAPI snapshots,
+change scopes, or establish package publication or deployed acceptance.

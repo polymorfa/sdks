@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import zlib
-
 import asyncio
 import base64
 import binascii
@@ -13,6 +11,7 @@ import random
 import re
 import sys
 import time
+import zlib
 from collections.abc import AsyncIterable, AsyncIterator, Mapping
 from dataclasses import dataclass, field, replace
 from email.utils import parsedate_to_datetime

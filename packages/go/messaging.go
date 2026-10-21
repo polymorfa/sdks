@@ -260,11 +260,12 @@ func (r *QuickLinks) Cancel(ctx context.Context, id string, o ...RequestOptions)
 }
 
 type MintClientTokenRequest struct {
-	EphemeralID string   `json:"ephemeralId"`
-	TTLSeconds  *int     `json:"ttlSeconds,omitempty"`
-	Session     string   `json:"session,omitempty"`
-	Customer    string   `json:"customer,omitempty"`
-	Allow       []string `json:"allow,omitempty"`
+	EphemeralID string `json:"ephemeralId"`
+	TTLSeconds  *int   `json:"ttlSeconds,omitempty"`
+	Session     string `json:"session,omitempty"`
+	Customer    string `json:"customer,omitempty"`
+	// A nil ceiling is omitted; an explicit empty slice seals zero actions.
+	Allow []string `json:"allow,omitzero"`
 }
 type ClientTokenValue struct {
 	Token     string `json:"token"`
@@ -304,9 +305,6 @@ func (r *ClientTokens) Mint(ctx context.Context, b MintClientTokenRequest, o ...
 	}
 	if (b.Session == "") == (b.Customer == "") {
 		return Response[Envelope[ClientTokenValue]]{}, configuration("session", "Provide exactly one of session or customer.")
-	}
-	if b.Allow != nil && b.Customer == "" {
-		return Response[Envelope[ClientTokenValue]]{}, configuration("allow", "allow is only supported for customer-scoped tokens.")
 	}
 	return request[Envelope[ClientTokenValue]](ctx, r.t, "POST", "/platform/client-tokens", nil, b, options(o))
 }

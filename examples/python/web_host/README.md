@@ -14,7 +14,7 @@ uv run --project packages/python --extra fastapi uvicorn \
 ```
 
 Set `EXAMPLE_APP_USERNAME`, `EXAMPLE_APP_PASSWORD`, `POLYMORFA_PROJECT_TOKEN` and
-`POLYMORFA_SESSION` in the server environment before starting the host. Open
+`POLYMORFA_SESSION`, `POLYMORFA_RECIPIENT` and `POLYMORFA_WEBHOOK_SECRET` in the server environment before starting the host. Open
 `http://127.0.0.1:8080`. Use the `django` extra and `django_app:application` to
 run Django. `EXAMPLE_APP_ORIGIN` changes the exact allowed loopback origin;
 `POLYMORFA_API_BASE_URL` optionally changes the API origin. Asset building
@@ -30,18 +30,38 @@ Sign-out revokes the application session and disposes the browser client.
 The connection indicator describes the browser grant; it does not establish
 a connected WhatsApp number.
 
-The history handler exposes an empty application-owned store and retains no
-WhatsApp content. Connect it to your authorized history source to display
-conversations. Before hosting publicly, integrate your application's actual
-authentication, live membership and number authorization, HTTPS origin and
-durable sessions. Keep project and team keys in the server.
+The inbox reads an authenticated, application-owned in-memory conversation. Text
+sends call the native Python SDK with a caller UUID idempotency key and the
+server-assigned Number and recipient. Unknown outcomes retain that key for a
+retry; a changed body with the same key is rejected. The example keeps at most
+128 send attempts and 100 messages until the process stops. It does not enable HMS.
+
+Register `/webhooks/polymorfa` as a native webhook for the assigned Number with
+`message.received` and `message.ack`, using the same signing secret. Both frameworks
+verify the original bounded request bytes through the Python SDK before updating
+the inbox. Display timestamps use whole seconds, matching native message events, so a
+same-second reply retains arrival order rather than sorting before its send.
+Incoming events must match the Number and canonical conversation ID
+from the send receipt. Phone matching is only a fallback before that ID is known.
+Duplicate event IDs are ignored within a bounded 1024-event window.
+`POLYMORFA_EXAMPLE_TRANSPORT=local-test-number` labels simulated transport in the UI.
+
+Before public hosting, integrate live application membership, authorization,
+HTTPS, durable sessions and durable conversation/deduplication storage. Keep
+project and organization credentials in the server. The separate token and
+supplementary connection routes remain examples; this inbox does not use them.
 
 `packages/python/tests/test_browser_hosts.py` runs both ASGI applications over
 real HTTP. It verifies the upstream credential and API version, server-selected
 mint fields, POST-only sign-in, invalid credentials, foreign origins and
 revocation after sign-out. Both hosts were also exercised in a browser with a
 synthetic upstream: sign-in mounted the real components, one mint served the
-browser session, the empty inbox rendered, and sign-out removed the components.
+browser session, the inbox rendered, and sign-out removed the components.
 No real number, customer credentials or live provider was used.
 
 The Connect number endpoint creates a hosted supplementary linked-device invitation for the server-assigned `POLYMORFA_SESSION`. Assign an eligible Official Number that can add linked devices. The API still checks assignment, eligibility, consent and funding. Browser fields cannot choose another Number or change custody. This does not create an initial Number or establish live WhatsApp pairing.
+
+The host HTTP tests also verify native sends, fixed targets, idempotent replay,
+signed replies, event deduplication, reload and logout for both frameworks.
+Local native Inspector video acceptance is recorded separately from these HTTP
+tests and does not establish staging, production or registry availability.

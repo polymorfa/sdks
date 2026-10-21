@@ -90,6 +90,10 @@ impl Wire {
                     headers: headers_in,
                     bytes: raw[end..end + length].to_vec(),
                 });
+                // An uncertain effect: consume the request, then close without a response.
+                if status == 0 {
+                    continue;
+                }
                 let mut extra = String::new();
                 for (k, v) in headers {
                     write!(extra, "{k}: {v}\r\n").unwrap();

@@ -229,7 +229,7 @@ func TestGo41StickerIndependentWireAndRetrySnapshot(t *testing.T) {
 	}
 }
 
-func TestGo41RelayExplicitRetryCapturesEncryptedBody(t *testing.T) {
+func TestGo41RelayExplicitRetryStillSubmitsOnce(t *testing.T) {
 	var bodies [][]byte
 	m, _ := go41Client(t, func(w http.ResponseWriter, r *http.Request) {
 		b, _ := io.ReadAll(r.Body)
@@ -248,7 +248,8 @@ func TestGo41RelayExplicitRetryCapturesEncryptedBody(t *testing.T) {
 	})
 	one := 1
 	_, e := m.WhatsAppMedia().UploadBytes(context.Background(), "session /x", []byte("retry body"), sdk.UploadWhatsAppMediaOptions{EncryptMediaOptions: sdk.EncryptMediaOptions{MediaType: sdk.UploadImage, MediaKey: bytes.Repeat([]byte{4}, 32)}, RequestOptions: sdk.RequestOptions{IdempotencyKey: "relay-key", MaxNetworkRetries: &one}})
-	if e != nil || len(bodies) != 2 || !bytes.Equal(bodies[0], bodies[1]) {
-		t.Fatalf("explicit encrypted relay retry %v attempts=%d", e, len(bodies))
+	// Identical bytes do not prove server deduplication for this held route.
+	if e == nil || len(bodies) != 1 || len(bodies[0]) != 26 {
+		t.Fatalf("unledgered encrypted relay submission %v attempts=%d", e, len(bodies))
 	}
 }

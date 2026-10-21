@@ -4,12 +4,12 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from host import COOKIE, ROOT, Host
+
 from polymorfa import PolymorfaError
+from polymorfa.integrations import fastapi_webhook_event
 
 app, host = FastAPI(), Host()
-app.mount(
-    "/assets", StaticFiles(directory=ROOT / "assets", check_dir=False), name="assets"
-)
+app.mount("/assets", StaticFiles(directory=ROOT / "assets", check_dir=False), name="assets")
 
 
 def workspace(request: Request, authenticated: bool):
@@ -64,6 +64,16 @@ async def browser_action(operation: str, request: Request):
         return JSONResponse({"error": "invalid_origin"}, status_code=403)
     if not host.authenticated(request.cookies.get(COOKIE)):
         return JSONResponse({"error": "sign_in_required"}, status_code=401)
+    if operation == "send":
+        body = bytearray()
+        async for chunk in request.stream():
+            if len(body) + len(chunk) > 16384:
+                return JSONResponse({"error": "body_too_large"}, status_code=413)
+            body.extend(chunk)
+        reply = await host.send_message(bytes(body), request.headers.get("idempotency-key", ""))
+        return JSONResponse(
+            reply.data, status_code=reply.status, headers={"cache-control": "no-store"}
+        )
     try:
         result = (
             await host.mint()
@@ -81,10 +91,18 @@ async def browser_action(operation: str, request: Request):
     )
 
 
-@app.get("/api/polymorfa/history/conversations")
+@app.get("/api/polymorfa/conversation")
 async def history(request: Request):
     if not host.authenticated(request.cookies.get(COOKIE)):
         return JSONResponse({"error": "sign_in_required"}, status_code=401)
-    return JSONResponse(
-        {"data": [], "nextCursor": None}, headers={"cache-control": "no-store"}
-    )
+    return JSONResponse(host.snapshot(), headers={"cache-control": "no-store"})
+
+
+@app.post("/webhooks/polymorfa")
+async def webhook(request: Request):
+    try:
+        event = await fastapi_webhook_event(request, host.webhook_secret, max_body_bytes=65536)
+        host.receive(event)
+    except (PolymorfaError, ValueError, TypeError, KeyError, OverflowError):
+        return JSONResponse({"error": "invalid_webhook"}, status_code=400)
+    return JSONResponse({"received": True})

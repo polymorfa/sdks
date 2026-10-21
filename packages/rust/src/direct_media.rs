@@ -89,6 +89,8 @@ pub struct WhatsAppMediaResource<'a>(pub(crate) &'a HttpTransport);
 pub struct HistorySyncResource<'a>(pub(crate) &'a HttpTransport);
 pub const CUSTOMER_OWNED_API_VERSION: &str = "2026-10-14";
 fn version(mut options: RequestOptions) -> RequestOptions {
+    // Held API routes have no replay ledger, even with a caller key.
+    options.max_network_retries = Some(0);
     if options.api_version.is_none() {
         options.api_version = Some(CUSTOMER_OWNED_API_VERSION.into());
     }

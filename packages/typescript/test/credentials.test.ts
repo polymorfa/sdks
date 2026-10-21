@@ -8,7 +8,11 @@ import {
 } from "../src/credentials.js";
 import { PolymorfaConfigurationError } from "../src/errors.js";
 
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import {
+  MACHINE_CREDENTIALS,
+  ORGANIZATION_API_KEY,
+  PROJECT_TOKEN,
+} from "./support/credentials.js";
 
 describe("credential validation", () => {
   it("accepts varying canonical client bodies and rejects malformed encoding", () => {
@@ -105,7 +109,7 @@ describe("credential validation", () => {
     ).toEqual({ type: "projectToken", value: PROJECT_TOKEN });
 
     // Future secret lengths remain acceptable to shape validation when CRC is valid.
-    for (const length of [20, 21, 32, 200]) {
+    for (const length of [20, 21, 32, 400, 13000]) {
       const raw = Buffer.alloc(length + 4);
       let crc = 0xffffffff;
       for (const byte of raw.subarray(0, length)) {
@@ -114,6 +118,9 @@ describe("credential validation", () => {
           crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
       }
       raw.writeUInt32BE((crc ^ 0xffffffff) >>> 0, length);
+      expect(
+        validateOrganizationApiKey("pmfa_" + raw.toString("base64url")),
+      ).toBe("pmfa_" + raw.toString("base64url"));
       const value = "pmfa_pt_" + raw.toString("base64url");
       expect(validateClientCredential({ type: "projectToken", value })).toEqual(
         { type: "projectToken", value },
@@ -223,4 +230,95 @@ describe("credential validation", () => {
       /server credentials cannot be used in browser runtimes/,
     );
   });
+});
+
+it("carries every shared signed vector without authenticating claims or signatures", () => {
+  for (const entry of [
+    ...MACHINE_CREDENTIALS.client.cases,
+    ...MACHINE_CREDENTIALS.client.rejections,
+  ]) {
+    if (!entry.token) continue;
+    expect(
+      validateMessagingCredential({ type: "clientToken", value: entry.token })
+        .value,
+    ).toBe(entry.token);
+  }
+});
+
+it("redacts reflected credentials without changing semantic codes", async () => {
+  const { PolymorfaError } = await import("../src/errors.js");
+  const secret = "pmfa_ct_" + "A".repeat(17000);
+  const error = new PolymorfaError(secret, {
+    code: "unauthorized",
+    details: { apiKey: "synthetic", projectToken: secret, nested: [secret] },
+  });
+  expect(error.message).not.toContain(secret);
+  expect(JSON.stringify(error.details)).not.toContain(secret);
+  expect(JSON.stringify(error.details)).not.toContain("synthetic");
+  expect(error.code).toBe("unauthorized");
+});
+
+it("native constructors carry shared credentials unchanged and redact reflected errors", async () => {
+  const { MessagingClient } = await import("../src/index.js");
+  const { startTestServer } = await import("./support/http-server.js");
+  const values = [
+    { type: "apiKey" as const, value: ORGANIZATION_API_KEY },
+    { type: "projectToken" as const, value: PROJECT_TOKEN },
+    ...MACHINE_CREDENTIALS.client.cases.map((v: { token: string }) => ({
+      type: "clientToken" as const,
+      value: v.token,
+    })),
+    {
+      type: "clientToken" as const,
+      value: "pmfa_ct_" + Buffer.alloc(600).toString("base64url"),
+    },
+  ];
+  for (const credential of values) {
+    const server = await startTestServer(() => ({
+      status: 401,
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        error: {
+          code: "unauthorized",
+          message: credential.value,
+          details: { apiKey: "synthetic", projectToken: credential.value },
+        },
+      }),
+    }));
+    try {
+      const client = new MessagingClient({
+        credential,
+        baseUrl: server.url,
+        maxNetworkRetries: 0,
+      });
+      await expect(client.profile.get("s")).rejects.toMatchObject({
+        code: "unauthorized",
+        message: "[REDACTED]",
+        details: {
+          error: {
+            details: { apiKey: "[REDACTED]", projectToken: "[REDACTED]" },
+          },
+        },
+      });
+      expect(server.requests[0]?.headers.authorization).toBe(
+        "Bearer " + credential.value,
+      );
+    } finally {
+      await server.close();
+    }
+  }
+});
+
+it("rejects checksum corruption in canonical opaque bodies", () => {
+  expect(() =>
+    validateOrganizationApiKey(
+      ORGANIZATION_API_KEY.replace("pmfa_A", "pmfa_B"),
+    ),
+  ).toThrow();
+  expect(() =>
+    validateClientCredential({
+      type: "projectToken",
+      value: PROJECT_TOKEN.replace("pmfa_pt_A", "pmfa_pt_B"),
+    }),
+  ).toThrow();
 });

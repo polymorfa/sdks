@@ -105,6 +105,61 @@ async fn hybrid_link_native_wire_contracts() {
 }
 
 #[tokio::test]
+async fn session_client_token_ceiling_survives_native_json_and_http() {
+    for allow in [
+        json!([]),
+        json!([
+            "chats_read",
+            "chats_manage",
+            "contact_write",
+            "contact_delete",
+            "mcp",
+            "voip_place",
+            "voip_answer",
+            "voip_signal"
+        ]),
+    ] {
+        let expected = json!({"ephemeralId":"visitor","session":"s","allow":allow});
+        let body: MintClientTokenRequest = serde_json::from_value(expected.clone()).unwrap();
+        wire_messaging!(
+            client,
+            "POST",
+            "/platform/client-tokens",
+            Some(expected),
+            json!({"success":true,"data":{"token":"pmfa_ct_fixture","expiresAt":"2026-10-11T12:05:00Z"}}),
+            client
+                .client_tokens()
+                .mint(&body, RequestOptions::default())
+        );
+    }
+}
+
+#[test]
+fn session_client_token_ceiling_has_public_typed_actions() {
+    let body = MintClientTokenRequest {
+        ephemeral_id: "visitor".into(),
+        ttl_seconds: None,
+        target: ClientTokenTarget::Session {
+            session: "s".into(),
+            allow: Some(vec![
+                SessionClientAction::ChatsRead,
+                SessionClientAction::ChatsManage,
+                SessionClientAction::ContactWrite,
+                SessionClientAction::ContactDelete,
+                SessionClientAction::Mcp,
+                SessionClientAction::VoipPlace,
+                SessionClientAction::VoipAnswer,
+                SessionClientAction::VoipSignal,
+            ]),
+        },
+    };
+    assert_eq!(
+        serde_json::to_value(body).unwrap(),
+        json!({"ephemeralId":"visitor","session":"s","allow":["chats_read","chats_manage","contact_write","contact_delete","mcp","voip_place","voip_answer","voip_signal"]})
+    );
+}
+
+#[tokio::test]
 async fn client_token_mint_and_rules_native_wire_contracts() {
     wire_messaging!(
         client,
@@ -117,7 +172,8 @@ async fn client_token_mint_and_rules_native_wire_contracts() {
                 ephemeral_id: "visitor".into(),
                 ttl_seconds: Some(300),
                 target: ClientTokenTarget::Session {
-                    session: "s".into()
+                    session: "s".into(),
+                    allow: None
                 }
             },
             RequestOptions::default()
@@ -128,7 +184,7 @@ async fn client_token_mint_and_rules_native_wire_contracts() {
         "POST",
         "/platform/client-tokens",
         Some(
-            json!({"ephemeralId":"visitor","customer":"customer","allow":["send_message","read_contact"]})
+            json!({"ephemeralId":"visitor","customer":"customer","allow":["send_message","read_contact","chats_read","chats_manage","contact_write","contact_delete"]})
         ),
         json!({"success":true,"data":{"token":"pmfa_ct_Zml4dHVyZQ","expiresAt":"2026-10-11T12:05:00Z"}}),
         client.client_tokens().mint(
@@ -139,7 +195,11 @@ async fn client_token_mint_and_rules_native_wire_contracts() {
                     customer: "customer".into(),
                     allow: Some(vec![
                         CustomerClientAction::SendMessage,
-                        CustomerClientAction::ReadContact
+                        CustomerClientAction::ReadContact,
+                        CustomerClientAction::ChatsRead,
+                        CustomerClientAction::ChatsManage,
+                        CustomerClientAction::ContactWrite,
+                        CustomerClientAction::ContactDelete
                     ])
                 }
             },

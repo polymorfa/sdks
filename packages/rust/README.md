@@ -838,3 +838,14 @@ The SDK checks server-credential prefixes, canonical base64url and the checksum.
 These checks do not authenticate a credential. The API checks the issuance record
 and live permissions. Test keys use the same project-token format; their test-only
 restriction is enforced by the service.
+
+### Project event-stream validation and limits
+
+The existing project event parser bounds frames to 4 MiB of UTF-8 wire bytes,
+including incomplete lines, all `data:` lines, field syntax and comments.
+A blank line resets the budget. Invalid base64 or a malformed webhook envelope
+terminates the stream before delivery or cursor advancement. Reopen from the
+last processed event cursor or durable storage checkpoint after correcting the
+source. Storage commits the event, saves its checkpoint with CAS, then manually
+acknowledges it. Regression coverage for these existing rules is unreleased;
+it does not establish registry publication or service acceptance.

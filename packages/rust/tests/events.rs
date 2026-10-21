@@ -441,3 +441,43 @@ async fn live_source_pushes_retained_bodies_with_cursor_and_isolates_unsubscribe
     assert!(!parent_cancel.is_cancelled());
     server.await.unwrap();
 }
+
+#[test]
+fn project_sse_frames_bound_utf8_incomplete_lines_multiline_and_comments() {
+    const LIMIT: usize = 4 * 1024 * 1024;
+    for segment in ["x", "🦀", "data: \n", ": beat\n"] {
+        let wire = segment.repeat(LIMIT / segment.len() + 1);
+        let mut parser = SseParser::default();
+        let mut failure = None;
+        for chunk in wire.as_bytes().chunks(4093) {
+            match parser.feed(chunk) {
+                Ok(_) => {}
+                Err(error) => {
+                    failure = Some(error);
+                    break;
+                }
+            }
+        }
+        assert_eq!(failure.unwrap().code.as_deref(), Some("invalid_response"));
+    }
+    let tail = "\ndata: boundary\n\n";
+    let padding = LIMIT - tail.len() - 1;
+    let wire = format!(
+        ":{}{}{tail}",
+        "🦀".repeat(padding / 4),
+        "x".repeat(padding % 4)
+    );
+    assert_eq!(wire.len(), LIMIT);
+    let mut parser = SseParser::default();
+    let mut frames = Vec::new();
+    for chunk in format!("{wire}{wire}").as_bytes().chunks(4093) {
+        frames.extend(parser.feed(chunk).unwrap());
+    }
+    assert_eq!(
+        frames
+            .iter()
+            .map(|frame| frame.data.as_str())
+            .collect::<Vec<_>>(),
+        ["boundary", "boundary"]
+    );
+}
