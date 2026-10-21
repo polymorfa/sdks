@@ -3409,3 +3409,14 @@ ordinary sequences) and must be a whole multiple of `delayUnit` when supplied.
 Tracked-link GETs, including scanner/preview requests, trigger enabled exits;
 HEAD requests do not. Server beta, sender, consent, opt-out and funding checks
 remain authoritative. These additions are not proof of registry availability.
+
+### Event-stream validation and limits
+
+Project event streams retain the previous resume cursor until the base64 payload
+and webhook envelope validate. Malformed server data follows the existing
+reconnect policy. A frame has a 4 MiB UTF-8 byte budget, including incomplete
+lines, all `data:` lines, field syntax and comments. CRLF counts as one line
+terminator; a blank line resets the budget. Oversized frames reconnect from the
+previous validated cursor. Storage still commits the event, saves its checkpoint
+with CAS, then manually acknowledges it. These changes are unreleased source
+behavior.

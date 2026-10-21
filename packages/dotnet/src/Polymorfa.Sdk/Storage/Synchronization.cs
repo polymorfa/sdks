@@ -49,7 +49,7 @@ public sealed class StorageSynchronization : IAsyncDisposable, IDisposable
             var parameters = options.StreamOptions with
             {
                 Types = options.StreamOptions.Types?.ToArray() ?? StorageReducers.StoredEventTypes,
-                Since = saved?.Cursor,
+                Since = saved?.Cursor ?? options.StreamOptions.Since,
                 ManualAcknowledgement = true,
                 CancellationToken = stop.Token,
                 OnGap = value => { gap = true; stop.Cancel(); options.StreamOptions.OnGap?.Invoke(value); }

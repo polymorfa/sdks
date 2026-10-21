@@ -937,3 +937,18 @@ environment acceptance remain separate release gates.
 Media downloads retain the successful API request deadline through body EOF. Each approved storage redirect hop has its own request deadline, retained through the final body. Async and synchronous body reads distinguish the request deadline from caller cancellation. Disposing a download releases its response, timer and owned storage transport; it does not dispose the API client. Body failures do not replay the download. Calls WebSockets retain the configured base-path prefix and authenticate in the first frame. Raw cursor pages reject repeated cursors before requesting them again, including cycles across manually requested pages.
 
 Signal finite JSON requests share one header/body deadline. Event streams enforce a requested session and report incomplete lines or frames at EOF; they retain their idle timeout and manual acknowledgment policy. ACK success requires exactly HTTP 204. Usage iteration preserves a starting cursor and rejects its repetition. Native HTTP fixtures verify these local consumer rules; they do not establish service deployment or registry availability.
+
+### Project event-stream validation and limits
+
+`EventStream.Cursor` advances after the base64 payload, webhook envelope and
+stream delivery fields parse. Invalid base64 follows the existing reconnect
+policy. An invalid decoded webhook remains terminal; after correcting the source,
+resume explicitly from the retained cursor or durable storage checkpoint.
+Project event frames have a 4 MiB UTF-8 byte budget, including incomplete lines,
+all `data:` lines, field syntax and comments. CRLF counts as one line terminator;
+a blank line resets the budget. Oversized frames follow the existing reconnect
+policy. Signal parsing is unchanged.
+
+Storage synchronization uses `StreamOptions.Since` when no checkpoint exists and
+the saved cursor otherwise. Event commit, checkpoint CAS and manual ACK keep that
+order. These changes are unreleased source behavior.

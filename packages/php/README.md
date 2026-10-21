@@ -898,3 +898,14 @@ raw HTTP framing and conflicting Transfer-Encoding/Content-Length rejection.
 Synchronous adapters cannot preempt an arbitrary blocking third-party read.
 Local HttpKernel/Laravel route and chunk-decoding ingress tests establish these
 fixture boundaries, without claiming deployed receiver configuration.
+
+### Event-stream validation and limits
+
+Project event streams retain the previous resume cursor until the base64 payload
+and webhook envelope validate. Malformed server data follows the existing
+reconnect policy. A frame has a 4 MiB UTF-8 byte budget, including incomplete
+lines, all `data:` lines, field syntax and comments. CRLF counts as one line
+terminator; a blank line resets the budget. Oversized frames reconnect from the
+previous validated cursor. Storage still commits the event, saves its checkpoint
+with CAS, then manually acknowledges it. These changes are unreleased source
+behavior.

@@ -158,3 +158,48 @@ $subscription = $client->project('project')->events->liveSource()->subscribe(fun
 $subscription->close();
 $subscription->pump();
 check($history === [], 'Closed unstarted live source opens no connection');
+
+foreach (['%%%', base64_encode('{}')] as $invalidPayload) {
+    $history = [];
+    $bad = $frame;
+    $bad['cursor'] = 'bad';
+    $bad['event']['payload']['data'] = $invalidPayload;
+    $good = $frame;
+    $good['cursor'] = 'good';
+    $failures = [];
+    $client = new Polymorfa\Client($credential, http:mocked([
+        new GuzzleHttp\Psr7\Response(200, ['content-type' => 'text/event-stream'], 'data: '.json_encode($good)."\n\ndata: ".json_encode($bad)."\n\n"),
+        new GuzzleHttp\Psr7\Response(200, ['content-type' => 'text/event-stream'], "data: {\"type\":\"revoked\"}\n\n"),
+    ], $history));
+    $stream = $client->project('project')->events->stream(since:'initial', manualAck:true, streamOptions:new Polymorfa\EventStreamOptions(0, 0, onReconnect:function ($error, $delay) use (&$failures): void {
+        $failures[] = $error->errorCode;
+    }));
+    $delivered = [];
+    raises(function () use ($stream, &$delivered): void {
+        foreach ($stream as $item) {
+            $delivered[] = $item['cursor'];
+        }
+    }, Polymorfa\AuthorizationException::class);
+    check($failures === ['invalid_response'] && $delivered === ['good'] && $stream->cursor === 'good', 'Invalid payload cannot advance delivered/resume cursor');
+    check(count($history) === 2 && $history[1]['request']->getHeaderLine('Last-Event-ID') === 'good', 'Invalid base64/envelope reconnects from valid cursor');
+}
+$limit = 4 * 1024 * 1024;
+foreach (['x', '🦀', 'data: '.str_repeat(' ', 1024)."\n", ': '.str_repeat('x', 1024)."\n"] as $segment) {
+    $parser = new Polymorfa\SseParser();
+    $wire = str_repeat($segment, intdiv($limit, strlen($segment)) + 1);
+    raises(function () use ($parser, $wire): void {
+        foreach (str_split($wire, 4093) as $chunk) {
+            $parser->feed($chunk);
+        }
+    }, Polymorfa\ServerException::class);
+}
+$tail = "\ndata: boundary\n\n";
+$padding = $limit - strlen($tail) - 1;
+$wire = ':'.str_repeat('🦀', intdiv($padding, 4)).str_repeat('x', $padding % 4).$tail;
+check(strlen($wire) === $limit, 'UTF-8 frame boundary fixture');
+$parser = new Polymorfa\SseParser();
+$frames = [];
+foreach (str_split($wire.$wire, 4093) as $chunk) {
+    $frames = [...$frames, ...$parser->feed($chunk)];
+}
+check($frames === ['boundary', 'boundary'], 'Frame byte boundary accepted and reset at blank line');

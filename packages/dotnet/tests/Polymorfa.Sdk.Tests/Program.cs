@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Polymorfa.Sdk;
 
+if (args.Contains("--stream-repairs-only")) { await StreamRepairTests.RunAsync(); return; }
 if (args.Contains("--consumer-media-only")) { await ConsumerRepairTests.MediaAsync(); return; }
 if (args.Contains("--consumer-calls-only")) { await ConsumerRepairTests.CallsAsync(); return; }
 if (args.Contains("--consumer-cursor-only")) { await ConsumerRepairTests.CursorAsync(); return; }
@@ -187,6 +188,7 @@ try
     await FlowTests.RunAsync();
     await SipTests.RunAsync();
     await EventsTests.RunAsync();
+    await StreamRepairTests.RunAsync();
     await OperationsTests.RunAsync();
     await ReviewRegressionTests.RunAsync();
     await SignalTests.RunAsync();

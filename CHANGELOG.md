@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Project event streams in TypeScript, Go, Python, PHP and .NET retain their
+  resume cursor until the event payload validates. TypeScript now validates the
+  decoded webhook envelope. Their parsers enforce 4 MiB UTF-8 frame budgets
+  across incomplete lines, multiline data and comments. Rust's existing cursor
+  validation and frame bound gain regression coverage. Native malformed-payload
+  error and reconnect policies remain unchanged.
+- Go and .NET storage synchronization preserve the configured initial cursor
+  when no checkpoint exists. A saved checkpoint still takes precedence; event
+  commit, checkpoint CAS and manual ACK retain their order. These repairs are
+  source-only and unreleased.
+
 - Webhook phone offline start day. Platform and Messaging webhook create,
   update and read types gain `phoneOfflineStartDay` (7-13, default 10): the
   first day without the phone on which the webhook receives

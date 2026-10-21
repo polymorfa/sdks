@@ -826,3 +826,14 @@ remain separate release gates.
 
 HTTP API requests, media request bases and Calls sockets retain configured base-path prefixes. Raw pages reject repeated cursors before another request, including cycles across manual pages. Signal finite JSON requests share one header/body deadline; event streams retain their idle timeout, enforce a requested session and report incomplete frames at EOF. Signal acknowledgments require exactly HTTP 204 and never replay automatically. These are local SDK consumer guarantees against the pinned service contract, not evidence of a deployed service or package publication.
 Usage record iteration preserves a supplied starting cursor and rejects a response that returns it again.
+
+### Project event-stream validation and limits
+
+The existing project event parser bounds frames to 4 MiB of UTF-8 wire bytes,
+including incomplete lines, all `data:` lines, field syntax and comments.
+A blank line resets the budget. Invalid base64 or a malformed webhook envelope
+terminates the stream before delivery or cursor advancement. Reopen from the
+last processed event cursor or durable storage checkpoint after correcting the
+source. Storage commits the event, saves its checkpoint with CAS, then manually
+acknowledges it. Regression coverage for these existing rules is unreleased;
+it does not establish registry publication or service acceptance.

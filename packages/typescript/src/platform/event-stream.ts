@@ -7,6 +7,7 @@ import {
   PolymorfaServerError,
   PolymorfaValidationError,
 } from "../errors.js";
+import { parseVerifiedWebhookEvent } from "../webhooks/verify.js";
 import type { HttpTransport } from "../transport/http.js";
 import type { EncodedEventPayload, JsonValue } from "./developer-types.js";
 
@@ -123,14 +124,32 @@ class SseParser {
   #id: string | undefined;
   #carriageReturn = false;
 
+  #frameBytes = 0;
+
   feed(chunk: string): SseMessage[] {
-    if (this.#carriageReturn && chunk.startsWith("\n")) chunk = chunk.slice(1);
-    this.#carriageReturn = chunk.endsWith("\r");
-    const lines = (this.#buffer + chunk).split(/\r\n|\r|\n/);
-    this.#buffer = lines.pop() ?? "";
     const messages: SseMessage[] = [];
-    for (const line of lines) {
+    for (const character of chunk) {
+      if (this.#carriageReturn) {
+        this.#carriageReturn = false;
+        if (character === "\n") continue;
+      }
+      const point = character.codePointAt(0)!;
+      this.#frameBytes +=
+        point <= 0x7f ? 1 : point <= 0x7ff ? 2 : point <= 0xffff ? 3 : 4;
+      if (this.#frameBytes > 4 * 1024 * 1024)
+        throw new PolymorfaServerError(
+          "Event stream frame exceeds its size limit.",
+          { code: "invalid_response" },
+        );
+      if (character !== "\r" && character !== "\n") {
+        this.#buffer += character;
+        continue;
+      }
+      this.#carriageReturn = character === "\r";
+      const line = this.#buffer;
+      this.#buffer = "";
       if (line === "") {
+        this.#frameBytes = 0;
         if (this.#data.length > 0) {
           messages.push({
             event: this.#event === "" ? "message" : this.#event,
@@ -169,10 +188,22 @@ function decodeWebhook(
   payload: EncodedEventPayload | null | undefined,
 ): WebhookEnvelope | null {
   if (payload === null || payload === undefined) return null;
-  const bytes = Uint8Array.from(atob(payload.data), (char) =>
-    char.charCodeAt(0),
-  );
-  return JSON.parse(new TextDecoder().decode(bytes)) as WebhookEnvelope;
+  try {
+    if (
+      payload.encoding !== "base64" ||
+      payload.contentType !== "application/json"
+    )
+      throw new Error("Invalid encoded payload.");
+    const bytes = Uint8Array.from(atob(payload.data), (char) =>
+      char.charCodeAt(0),
+    );
+    return parseVerifiedWebhookEvent(bytes) as WebhookEnvelope;
+  } catch (cause) {
+    throw new PolymorfaServerError("Invalid streamed webhook payload.", {
+      code: "invalid_response",
+      cause,
+    });
+  }
 }
 
 /** Parses `Retry-After` as delta-seconds or an HTTP-date. Blank values are ignored. */
@@ -356,11 +387,22 @@ export class EventStream implements AsyncIterable<EventStreamItem> {
               break;
             case "event": {
               const event = frame.event as StreamedEvent;
-              const cursor = String(frame.cursor);
+              if (
+                event === null ||
+                typeof event !== "object" ||
+                typeof frame.cursor !== "string" ||
+                typeof frame.streamId !== "string" ||
+                !Number.isSafeInteger(frame.sequence)
+              )
+                throw new PolymorfaServerError("Invalid streamed event.", {
+                  code: "invalid_response",
+                });
+              const cursor = frame.cursor;
+              const webhook = decodeWebhook(event.payload);
               this.#cursor = cursor;
               yield Object.freeze({
                 event,
-                webhook: decodeWebhook(event.payload),
+                webhook,
                 cursor,
                 streamId: String(frame.streamId),
                 sequence: Number(frame.sequence),

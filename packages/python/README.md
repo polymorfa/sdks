@@ -765,3 +765,14 @@ These methods run on the owning asyncio loop.
 Project views returned by `client.project(id)` borrow the root transport.
 Closing a view or leaving its context does not close that transport. The root,
 or an independently constructed project client, owns its transport lifetime.
+
+### Event-stream validation and limits
+
+Project event streams advance the resume cursor only after the base64 payload and
+webhook envelope validate. Malformed server data follows the existing reconnect
+policy. The parser has a 4 MiB UTF-8 byte budget per frame, including incomplete
+lines, all `data:` lines, field syntax and comments. CRLF counts as one line
+terminator; a blank line resets the budget. An oversized frame reconnects from
+the previous validated cursor. Storage still commits the event, saves its
+checkpoint with CAS, then manually acknowledges it. These changes are unreleased
+source behavior.

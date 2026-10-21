@@ -740,3 +740,14 @@ integers and nearest-even binary64 rounding beyond uint64. Generic row numbers,
 safe revisions, leases and CAS remain strict. Shared producer vectors and local
 physical-module consumers verify this compatibility; registry publication and
 matching environment acceptance remain separate release gates.
+
+### Event-stream validation and limits
+
+Project event streams retain the previous resume cursor until an event's base64
+payload and webhook envelope validate. Malformed server data follows the existing
+reconnect policy. A frame has a 4 MiB UTF-8 wire-byte budget, including incomplete
+lines, all `data:` lines, field syntax and comments. A terminating blank line
+resets the budget. Oversized frames reconnect from the previous validated cursor.
+Storage synchronization preserves `Params.Since` when no durable checkpoint
+exists; a saved checkpoint overrides it. Event commit, checkpoint CAS and manual
+ACK keep that order. These changes are unreleased source behavior.

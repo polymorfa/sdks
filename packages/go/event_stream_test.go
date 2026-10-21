@@ -3,9 +3,13 @@ package polymorfa
 import (
 	"context"
 	"encoding/base64"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
+	"strings"
 	"testing"
 	"time"
 )
@@ -143,4 +147,86 @@ var streamAckFixtures = []operationFixture{
 	{"OrganizationClient.Events.AcknowledgeStream", "POST", "/platform/projects/p/events/stream/stream/ack", "", `{"cursor":"next","sequence":2}`, `{"data":{"streamId":"stream","acknowledgedCursor":"next","sequence":2,"replayed":true}}`, "replayed", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(o.Events().AcknowledgeStream(ctx, "stream", EventStreamAcknowledgement{"next", 2}, "p"))
 	}},
+}
+
+func TestEventStreamInvalidPayloadRetainsResumeCursor(t *testing.T) {
+	for _, payload := range []string{"%%%", base64.StdEncoding.EncodeToString([]byte(`{}`))} {
+		t.Run(payload, func(t *testing.T) {
+			requests := 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				requests++
+				w.Header().Set("Content-Type", "text/event-stream")
+				if requests == 1 {
+					io.WriteString(w, "data: {\"type\":\"event\",\"cursor\":\"good\",\"streamId\":\"stream\",\"sequence\":1,\"event\":{}}\n\n")
+					fmt.Fprintf(w, "data: {\"type\":\"event\",\"cursor\":\"bad\",\"streamId\":\"stream\",\"sequence\":2,\"event\":{\"payload\":{\"data\":%q}}}\n\n", payload)
+				} else {
+					if requests != 2 || r.Header.Get("Last-Event-ID") != "good" || r.URL.Query().Get("ack") != "manual" {
+						t.Error("invalid payload advanced reconnect", requests, r.Header, r.URL)
+					}
+					io.WriteString(w, "data: {\"type\":\"event\",\"cursor\":\"recovered\",\"streamId\":\"stream\",\"sequence\":3,\"event\":{}}\n\n")
+				}
+			}))
+			defer server.Close()
+			org, _ := NewOrganizationClient(orgConfig(server.URL))
+			project, _ := org.Project("p")
+			stream, _ := project.Events().Stream(EventStreamParams{Since: "initial", Ack: "manual", InitialDelay: time.Millisecond, MaxDelay: time.Millisecond})
+			var cursors []string
+			for item, err := range stream.Items(context.Background()) {
+				if err != nil {
+					t.Fatal(err)
+				}
+				cursors = append(cursors, item.Cursor)
+				if len(cursors) == 2 {
+					break
+				}
+			}
+			if !reflect.DeepEqual(cursors, []string{"good", "recovered"}) || requests != 2 {
+				t.Fatal(cursors, requests)
+			}
+		})
+	}
+}
+
+func TestEventStreamFrameByteBounds(t *testing.T) {
+	const limit = 4 * 1024 * 1024
+	for _, segment := range []string{"x", "🦀", "data: \n", ": beat\n"} {
+		t.Run(fmt.Sprintf("segment-%x", segment), func(t *testing.T) {
+			wire := strings.Repeat(segment, limit/len(segment)+1)
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "text/event-stream")
+				io.WriteString(w, wire)
+			}))
+			defer server.Close()
+			org, _ := NewOrganizationClient(orgConfig(server.URL))
+			project, _ := org.Project("p")
+			stream, _ := project.Events().Stream(EventStreamParams{Since: "safe"})
+			err, stopped := stream.consume(context.Background(), func(EventStreamItem, error) bool { t.Error("oversized frame delivered"); return false })
+			var failure *Error
+			if !errors.As(err, &failure) || failure.Code != "invalid_response" || stopped || stream.Cursor() != "safe" {
+				t.Fatal("unbounded frame", err, stopped, stream.Cursor())
+			}
+		})
+	}
+	tail := "\ndata: {\"type\":\"event\",\"cursor\":\"boundary\",\"event\":{}}\n\n"
+	padding := limit - len(tail) - 1
+	wire := ":" + strings.Repeat("🦀", padding/4) + strings.Repeat("x", padding%4) + tail
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		io.WriteString(w, wire+wire)
+	}))
+	defer server.Close()
+	org, _ := NewOrganizationClient(orgConfig(server.URL))
+	project, _ := org.Project("p")
+	stream, _ := project.Events().Stream(EventStreamParams{})
+	delivered := 0
+	_, stopped := stream.consume(context.Background(), func(item EventStreamItem, err error) bool {
+		if err != nil {
+			t.Fatal(err)
+		}
+		delivered++
+		return delivered < 2
+	})
+	if !stopped || delivered != 2 {
+		t.Fatal("byte boundary or reset rejected", delivered)
+	}
 }

@@ -125,3 +125,34 @@ $handler = new WebhookHandler($engine, static function (WebhookEvent $event) use
 storageCheck($handler($historyEvent)->applied && !$handler($historyEvent)->applied && $called === 1, 'history replay never downloads/decodes twice');
 
 echo "PHP storage sync: event commit then checkpoint CAS then manual ACK; gap/missing/conflict fail closed; saved cursor, close, cancellation, replaced/expired lease and history replay checks passed.\n";
+
+foreach (['%%%', base64_encode('{}')] as $invalidPayload) {
+    $engine = new Engine(new StorageEngineMemory());
+    $envelope = $fixture['events'][0];
+    $good = ['type' => 'event', 'cursor' => 'good', 'streamId' => 'stream', 'sequence' => 1, 'event' => ['payload' => ['encoding' => 'base64', 'contentType' => 'application/json', 'data' => base64_encode(json_encode($envelope, JSON_THROW_ON_ERROR))]]];
+    $bad = $good;
+    $bad['cursor'] = 'bad';
+    $bad['sequence'] = 2;
+    $bad['event']['payload']['data'] = $invalidPayload;
+    $history = [];
+    $http = mocked([
+        new GuzzleHttp\Psr7\Response(200, ['content-type' => 'text/event-stream'], 'data: '.json_encode($good)."\n\ndata: ".json_encode($bad)."\n\n"),
+        new GuzzleHttp\Psr7\Response(200, ['content-type' => 'application/json'], '{"data":{"streamId":"stream","acknowledgedCursor":"good","sequence":1,"replayed":false}}'),
+        new GuzzleHttp\Psr7\Response(200, ['content-type' => 'text/event-stream'], "data: {\"type\":\"revoked\"}\n\n"),
+    ], $history);
+    $requestCount = 0;
+    $http->getConfig('handler')->push(GuzzleHttp\Middleware::mapRequest(function ($request) use ($engine, $envelope, &$requestCount) {
+        ++$requestCount;
+        if ($request->getMethod() === 'POST') {
+            storageCheck($engine->hasEvent($envelope['session'], $envelope['id']) && $engine->getCheckpoint('*', 'events')['cursor'] === 'good', 'Payload committed and checkpoint saved before native ACK');
+            storageCheck(json_decode((string)$request->getBody(), true) === ['cursor' => 'good', 'sequence' => 1], 'Only valid event is acknowledged');
+        } elseif ($requestCount > 1) {
+            storageCheck($request->getHeaderLine('Last-Event-ID') === 'good' && $engine->getCheckpoint('*', 'events')['cursor'] === 'good', 'Bad cursor never reaches storage or reconnect header');
+        }
+        return $request;
+    }));
+    $client = new Polymorfa\Client(Polymorfa\Credential::organizationApiKey('pmfa_'.str_repeat('a', 72)), http:$http);
+    $sync = new Sync(new Polymorfa\Storage\ApiEventSource($client->project('project')->events), $engine);
+    raises(fn () => $sync->pump(), Polymorfa\AuthorizationException::class);
+    storageCheck(count($history) === 3 && $engine->getCheckpoint('*', 'events')['cursor'] === 'good', 'Malformed base64/envelope cannot advance durable cursor');
+}

@@ -113,8 +113,6 @@ final class EventStream implements \IteratorAggregate
                                 if (!isset($frame['event'], $frame['cursor'], $frame['sequence'], $frame['streamId']) || !is_array($frame['event']) || !is_string($frame['cursor']) || !is_int($frame['sequence']) || !is_string($frame['streamId'])) {
                                     throw new ServerException('Invalid streamed event.', 'invalid_response', metadata: $metadata);
                                 }
-                                $this->cursor = $frame['cursor'];
-                                $attempt = 0;
                                 $webhook = null;
                                 if (($frame['event']['payload'] ?? null) !== null) {
                                     try {
@@ -128,6 +126,8 @@ final class EventStream implements \IteratorAggregate
                                         throw new ServerException('Invalid streamed webhook payload.', 'invalid_response', metadata: $metadata);
                                     }
                                 }
+                                $this->cursor = $frame['cursor'];
+                                $attempt = 0;
                                 /** @var StreamedEvent $event */ $event = $frame['event'];
                                 yield $index++ => ['event' => $event, 'webhook' => $webhook, 'cursor' => $frame['cursor'], 'streamId' => $frame['streamId'], 'sequence' => $frame['sequence']];
                             } elseif ($kind === 'gap' && ($frame['reason'] ?? '') === 'retention_exceeded') {
