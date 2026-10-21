@@ -170,7 +170,9 @@ async def test_typed_project_bansafe(method, setting, body, data, messaging, pla
         )
         assert response.data == fixture and response.metadata.request_id == "req_bansafe"
     if family == "messaging":
-        async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_Zml4dHVyZQ")) as browser:
+        async with AsyncMessagingClient(
+            Credential("client_token", "pmfa_ct_Zml4dHVyZQ")
+        ) as browser:
             with pytest.raises(ConfigurationError):
                 await messaging(browser.ban_safe)
 

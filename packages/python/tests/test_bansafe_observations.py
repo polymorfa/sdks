@@ -413,10 +413,7 @@ async def test_bansafe_observation_native_wire(name, method, path, body, query, 
             assert got_method == method and urlsplit(target).path == path
             assert {k: v[0] for k, v in parse_qs(urlsplit(target).query).items()} == query
             assert (json.loads(raw) if raw else None) == body
-            assert (
-                headers["authorization"]
-                == "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
-            )
+            assert headers["authorization"] == "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
             assert headers["polymorfa-version"] == "2026-09-22"
             assert headers["idempotency-key"] == "proof-key"
             encoded = json.dumps(payload).encode()

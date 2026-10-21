@@ -390,7 +390,8 @@ async def test_history_recovery_commands_wire_and_client_token_refusal():
         "/messaging/support/history/media/delete",
     ]
     async with AsyncMessagingClient(
-        Credential("client_token", "pmfa_ct_Zml4dHVyZQ"), http_transport=httpx.MockTransport(handler)
+        Credential("client_token", "pmfa_ct_Zml4dHVyZQ"),
+        http_transport=httpx.MockTransport(handler),
     ) as client:
         with pytest.raises(ConfigurationError):
             await client.history_sync.request_chunk_retry(

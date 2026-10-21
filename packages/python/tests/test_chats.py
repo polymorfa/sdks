@@ -173,6 +173,8 @@ async def test_typed_chat_methods(method, suffix, query, body, fixture, server, 
         result = await invoke(client.chats)
         assert result.data == fixture and result.metadata.request_id == "req_chat"
     if server:
-        async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_Zml4dHVyZQ")) as browser:
+        async with AsyncMessagingClient(
+            Credential("client_token", "pmfa_ct_Zml4dHVyZQ")
+        ) as browser:
             with pytest.raises(ConfigurationError):
                 await invoke(browser.chats)

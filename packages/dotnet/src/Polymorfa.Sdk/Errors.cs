@@ -28,11 +28,14 @@ public class PolymorfaException : Exception
     {
         JsonNode? Clean(JsonNode? node)
         {
-            if (node is JsonObject obj) foreach (var key in obj.Select(pair => pair.Key).ToArray())
+            if (node is JsonObject obj)
+            {
+                foreach (var key in obj.Select(pair => pair.Key).ToArray())
                 {
                     var normalized = Regex.Replace(key.ToLowerInvariant(), "[^a-z0-9]", "");
                     obj[key] = new[] { "authorization", "apikey", "projecttoken", "clienttoken", "credential", "token", "secret" }.Contains(normalized) ? JsonValue.Create("[REDACTED]") : Clean(obj[key]?.DeepClone());
                 }
+            }
             else if (node is JsonArray array) for (var i = 0; i < array.Count; i++) array[i] = Clean(array[i]?.DeepClone());
             else if (node is JsonValue scalar && scalar.TryGetValue<string>(out var text)) return JsonValue.Create(RedactText(text));
             return node;

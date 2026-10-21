@@ -256,7 +256,9 @@ async def test_typed_voip_controls(method, path, body, fixture, server, invoke):
         response = await invoke(client.voip)
         assert response.data == fixture and response.metadata.request_id == "req_calls"
     if server:
-        async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_Zml4dHVyZQ")) as browser:
+        async with AsyncMessagingClient(
+            Credential("client_token", "pmfa_ct_Zml4dHVyZQ")
+        ) as browser:
             with pytest.raises(ConfigurationError):
                 await invoke(browser.voip)
 

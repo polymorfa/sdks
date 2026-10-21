@@ -111,10 +111,7 @@ async def test_native_follow_up_requests_responses_and_removal(surface, configur
     async def handler(request):
         body = await request.json() if request.can_read_body else None
         seen.append((request.method, request.path, dict(request.query), body))
-        assert (
-            request.headers["authorization"]
-            == "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
-        )
+        assert request.headers["authorization"] == "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
         if request.path.endswith("/analytics"):
             data = {"campaignId": "campaign_1", "followUps": REPORT}
         elif request.path.endswith("/recipients"):

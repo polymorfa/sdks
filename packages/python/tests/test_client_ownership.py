@@ -30,10 +30,7 @@ async def test_native_borrowed_project_lifetime_and_owner_failure(close_failure)
         try:
             raw = await reader.readuntil(b"\r\n\r\n")
             request = raw.decode()
-            assert (
-                "Authorization: Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
-                in request
-            )
+            assert "Authorization: Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k" in request
             requests.append(request.split("\r\n")[0])
             body = json.dumps({"data": {"id": "event"}}).encode()
             writer.write(

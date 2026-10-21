@@ -427,10 +427,7 @@ async def test_native_platform_sse_storage_held_manual_ack_and_idle_headers(mode
                 if ":" in line
             }
             requests.append(lines[0])
-            assert (
-                headers["authorization"]
-                == "Bearer pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
-            )
+            assert headers["authorization"] == "Bearer pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
             assert headers["polymorfa-version"] == "2026-09-22"
             if lines[0].startswith("POST "):
                 body = json.loads(await reader.readexactly(int(headers["content-length"])))

@@ -17,7 +17,10 @@ RULES = {
     "allowedNumber": "",
     "enabled": True,
 }
-TOKEN = {"success": True, "data": {"token": "pmfa_ct_Zml4dHVyZQ", "expiresAt": "2026-10-11T12:00:00Z"}}
+TOKEN = {
+    "success": True,
+    "data": {"token": "pmfa_ct_Zml4dHVyZQ", "expiresAt": "2026-10-11T12:00:00Z"},
+}
 CASES = [
     (
         "POST",

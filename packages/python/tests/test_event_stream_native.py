@@ -25,10 +25,7 @@ async def test_actual_http_stream_encoded_webhook_resume_gap_and_manual_ack():
                 if ":" in line
             }
             requests.append((lines[0], headers))
-            assert (
-                headers["authorization"]
-                == "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
-            )
+            assert headers["authorization"] == "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
             if lines[0].startswith("POST "):
                 length = int(headers.get("content-length", "0"))
                 body = json.loads(await reader.readexactly(length))

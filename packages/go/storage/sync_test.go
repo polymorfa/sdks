@@ -210,9 +210,15 @@ func TestSyncInvalidStreamPayloadNeverPassesDurableCursor(t *testing.T) {
 				}
 			}))
 			defer server.Close()
-			client, _ := polymorfa.NewOrganizationClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_" + strings.Repeat("a", 72)}, BaseURL: server.URL})
-			project, _ := client.Project("p")
-			err := SyncToStorage(ctx, APIEventSource{project.Events()}, e, SyncOptions{Params: polymorfa.EventStreamParams{Since: "initial", InitialDelay: time.Millisecond, MaxDelay: time.Millisecond}})
+			client, err := polymorfa.NewOrganizationClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: server.URL})
+			if err != nil {
+				t.Fatal(err)
+			}
+			project, err := client.Project("p")
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = SyncToStorage(ctx, APIEventSource{project.Events()}, e, SyncOptions{Params: polymorfa.EventStreamParams{Since: "initial", InitialDelay: time.Millisecond, MaxDelay: time.Millisecond}})
 			saved, _ := e.GetCheckpoint(ctx, "*", "events")
 			if err == nil || requests != 2 || acknowledgements != 1 || saved == nil || saved.Cursor != "c1" {
 				t.Fatal(err, requests, acknowledgements, saved)
