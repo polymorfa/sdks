@@ -223,7 +223,9 @@ it("validates canonical history success and server credentials", async () => {
   expect(server.requests).toHaveLength(1);
 });
 
-it("captures history command wire bytes through an explicitly keyed retry", async () => {
+it("submits keyed history commands once with call-time wire bytes", async () => {
+  // These routes have no server replay ledger, so a caller key and retry
+  // option must not repeat an uncertain phone command.
   const retry = {
     syncType: "RECENT" as const,
     chunkOrder: 0,
@@ -233,24 +235,12 @@ it("captures history command wire bytes through an explicitly keyed retry", asyn
     directPath: "/original",
     fileEncSha256: "A".repeat(43) + "=",
   };
-  const server = await startTestServer((request, index) => {
+  const server = await startTestServer((_request, index) => {
     if (index === 0) {
       retry.chunkOrder = 9;
       retry.regenerate = true;
-      return { status: 503, body: '{"error":{"code":"service_unavailable"}}' };
-    }
-    if (index === 2) {
-      deletion.directPath = "/changed";
-      return { status: 503, body: '{"error":{"code":"service_unavailable"}}' };
-    }
-    return {
-      body: JSON.stringify({
-        success: true,
-        data: request.path.endsWith("/retry")
-          ? { requestId: "request", status: "requested" }
-          : { status: "deleted" },
-      }),
-    };
+    } else deletion.directPath = "/changed";
+    return { status: 503, body: '{"error":{"code":"service_unavailable"}}' };
   });
   servers.push(server);
   const m = new MessagingClient({
@@ -262,21 +252,27 @@ it("captures history command wire bytes through an explicitly keyed retry", asyn
     maxNetworkRetries: 1,
     apiVersion: "2026-10-14",
   };
-  expect(await m.historySync.requestChunkRetry("s", retry, options)).toEqual({
-    requestId: "request",
-    status: "requested",
-  });
-  await m.historySync.deleteChunk("s", deletion, options);
-  expect(server.requests[0]!.body).toBe(server.requests[1]!.body);
-  expect(server.requests[2]!.body).toBe(server.requests[3]!.body);
+  const failure = { status: 503, metadata: { attempts: 1 } };
+  const retried = m.historySync.requestChunkRetry("s", retry, options);
+  await expect(retried).rejects.toBeInstanceOf(PolymorfaServerError);
+  await expect(retried).rejects.toMatchObject(failure);
+  expect(server.requests).toHaveLength(1);
+  const deleted = m.historySync.deleteChunk("s", deletion, options);
+  await expect(deleted).rejects.toBeInstanceOf(PolymorfaServerError);
+  await expect(deleted).rejects.toMatchObject(failure);
+  expect(server.requests).toHaveLength(2);
   expect(JSON.parse(server.requests[0]!.body)).toEqual({
     syncType: "RECENT",
     chunkOrder: 0,
     regenerate: false,
   });
-  expect(JSON.parse(server.requests[2]!.body).directPath).toBe("/original");
+  expect(JSON.parse(server.requests[1]!.body).directPath).toBe("/original");
   expect(
-    server.requests.every((r) => r.headers["idempotency-key"] === "caller-key"),
+    server.requests.every(
+      (r) =>
+        r.headers["idempotency-key"] === "caller-key" &&
+        r.headers["polymorfa-version"] === "2026-10-14",
+    ),
   ).toBe(true);
 });
 
