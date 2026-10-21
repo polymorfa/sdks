@@ -1,16 +1,18 @@
 #[allow(dead_code)]
+mod support;
+#[allow(dead_code)]
 mod support41;
 use polymorfa_sdk::{
     direct_media::{HistoryChunkDelete, HistoryChunkRetry, HistorySyncType},
     media_encrypt::UploadMediaType,
     models::{ConversationReference, SendMessageRequest},
-    ClientOptions, Credential, ErrorKind, MessagingClient, RequestOptions,
+    ClientOptions, ErrorKind, MessagingClient, RequestOptions,
 };
 use serde_json::json;
 
 fn client(base: String) -> MessagingClient {
     MessagingClient::new(
-        Credential::organization_api_key(format!("pmfa_{}", "a".repeat(72))).unwrap(),
+        support::credential(),
         ClientOptions {
             base_url: base,
             max_network_retries: 1,
@@ -99,7 +101,7 @@ async fn unledgered_submissions() {
                 assert_eq!(headers["x-caller"], "retained");
                 assert_eq!(
                     headers["authorization"],
-                    format!("Bearer pmfa_{}", "a".repeat(72))
+                    format!("Bearer {}", support::credential_token())
                 );
                 assert_eq!(headers["polymorfa-version"], "2026-10-14");
                 assert_eq!(

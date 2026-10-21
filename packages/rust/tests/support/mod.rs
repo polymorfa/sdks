@@ -6,8 +6,28 @@ use tokio::{
     task::JoinHandle,
 };
 
+pub fn credential_token() -> String {
+    let fixture: Value = serde_json::from_slice(
+        &std::fs::read(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../contracts/machine-credentials.v1.json"
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+    fixture["opaque"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|entry| entry["kind"] == "key")
+        .unwrap()["token"]
+        .as_str()
+        .unwrap()
+        .to_owned()
+}
+
 pub fn credential() -> Credential {
-    Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()).unwrap()
+    Credential::organization_api_key(credential_token()).unwrap()
 }
 pub fn messaging(base: String) -> MessagingClient {
     MessagingClient::new(
