@@ -661,9 +661,14 @@ settled skips. `contracts/campaign-frequency-cap.json` pins the merged API sourc
 package publication and API availability remain separate release gates.
 
 `campaign-segments-drip.json` pins the merged audience segment and drip additions
-at API dev `f46ebd5162453e812dafa76ce02b420ddabe6921`, including source hashes,
-focused schemas, fields and operations. The full baseline snapshots keep their
-independent pins. This file records source adoption, not release availability.
+at accepted API source `9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f`, including
+source hashes, focused schemas, fields and operations. The frequency-cap
+supplement uses that same source. All 21 frequency-cap and 48 segment/drip
+fragments are exactly unchanged at this revision. Their native campaign manifest
+references match the two full source hashes. The full baseline snapshots and
+mixed campaign/custody supplement keep their independent pins. This reconciliation
+records source provenance; package publication, deployed acceptance and release
+holds remain separate.
 
 ## Client-token ceilings
 

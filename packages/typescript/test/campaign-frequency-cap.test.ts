@@ -34,7 +34,7 @@ const contract = JSON.parse(
   ),
 );
 it("pins bounds, fields, errors and reason filters to the merged contract", () => {
-  expect(contract.commit).toBe("e404a727ddb4abf42a8df768a5336fad922cc99a");
+  expect(contract.commit).toBe("9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f");
   for (const source of Object.values(contract.sources) as {
     sourceSha256: string;
     fields: Record<string, unknown>;
