@@ -3168,3 +3168,50 @@ configuration changes that do not change capabilities produce no event. Treat
 the event ID as the deduplication key. Eligibility is checked before publication
 and delivery; withdrawn events wait for re-enablement and expire after seven days.
 These additions require an API and SDK release containing this contract.
+
+## Campaign contact frequency caps (beta)
+
+`client.campaigns.getFrequencyCap()` reads team limits and their revision.
+`client.campaigns.updateFrequencyCap({ maxPer24Hours: 2, maxPer7Days: 5, revision })`
+replaces both windows. Send both limits as null to remove them. A stale revision
+raises `PolymorfaConflictError`; read and reconcile before trying again. A new
+limit requires beta access and can return `403 feature_unavailable`.
+Campaign create/update accepts `frequencyCap`; null removes a campaign cap.
+Recipient reads expose `failureReason` and accept `reason: "frequency_cap"`.
+Analytics adds `frequencyCap.skippedRecipientCount`. Raising limits never retries
+settled skips. `contracts/campaign-frequency-cap.json` pins the merged API source;
+package publication and API availability remain separate release gates.
+
+### Audience segments and drip sequences (source support, publication pending)
+
+`platform.audienceSegments` supports `list`, `retrieve`, `create`, `update`,
+`delete`, `preview` (saved rules) and `previewRules` (unsaved rules). Updates
+and deletion require the observed `expectedRevision`. Team API keys require
+`campaigns:read` for reads and saved previews, or `campaigns:manage` for writes
+and unsaved previews. Project tokens cannot manage segments. Both audience
+betas must be available for create, update and previews (`403 feature_unavailable`).
+Missing authority returns `403 permission_denied`. Choose a segment with
+`platform.campaigns.create({ projectId, name, segmentId })`; launch freezes
+`segmentSnapshot` (revision, evaluation time, matched count). A deleted segment
+cannot relaunch an already launched campaign (`409 state_conflict`). A bounded
+segment evaluation timeout also returns `409 state_conflict`: simplify the
+rules and retry. Revision conflicts require a fresh read and reconciliation.
+No mutation is automatically retried by the segment resource.
+
+Both campaign APIs accept nullable `drip` create settings and a partial drip
+PATCH. Omitted PATCH fields preserve stored values. To close continuous enrollment,
+patch only `{ drip: { enrollment: "audience" } }`; unchanged exit flags are
+preserved, including after beta withdrawal. `enrollmentOpen` and `pauseReason`
+are nullable read fields; enrollment additionally requires running/paused state.
+`campaigns.enroll` posts one phone and optional variables; a previously enrolled
+phone returns `created: false`, including contacts who finished or exited.
+Closed or non-drip enrollment returns `409 state_conflict`.
+
+Analytics exposes `drip.steps` counters. Recipient `sequenceError` includes
+`replied`, `link_clicked`, `opted_out` and open-ended send failure codes.
+Later messages accept a step `sendWindow` with one to seven weekdays and one
+to four hour ranges. `delayAfterSec` is at most 2,592,000 for drips (86,400 for
+ordinary sequences) and must be a whole multiple of `delayUnit` when supplied.
+Tracked-link GETs, including scanner/preview requests, trigger enabled exits;
+HEAD requests do not. Server beta, sender, consent, opt-out and funding checks
+remain authoritative. These additions are not proof of registry availability.

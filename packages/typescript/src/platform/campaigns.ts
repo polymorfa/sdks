@@ -1,3 +1,7 @@
+import type {
+  CampaignEnrollment,
+  EnrollCampaignContactRequest,
+} from "../messaging/campaign-drip.js";
 import { HttpTransport } from "../transport/http.js";
 import {
   withIdempotencyKey,
@@ -8,6 +12,8 @@ import type {
   AddPlatformCampaignRecipientsRequest,
   AddPlatformCampaignRecipientsResult,
   CampaignConversion,
+  CampaignFrequencyCapSettings,
+  UpdateCampaignFrequencyCapInput,
   CampaignConversionReport,
   CreatePlatformCampaignRequest,
   DataEnvelope,
@@ -35,6 +41,53 @@ type CampaignRead = "analytics" | "events";
 
 export class CampaignsResource {
   constructor(private readonly transport: HttpTransport) {}
+
+  /** Team API key with campaigns:read. Project tokens are not accepted. */
+  getFrequencyCap(
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignFrequencyCapSettings> {
+    return this.transport.request({
+      method: "GET",
+      path: "/platform/campaign-settings/frequency-cap",
+      ...options,
+    });
+  }
+
+  /**
+   * Team API key with campaigns:manage. Both limits and the last read revision
+   * are required. A stale revision raises PolymorfaConflictError; read again
+   * and reconcile before retrying. Limits require beta access (403
+   * feature_unavailable). Both null removes limits without beta access.
+   * Sent once: a lost response must be reconciled with a fresh read.
+   */
+  updateFrequencyCap(
+    body: UpdateCampaignFrequencyCapInput,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignFrequencyCapSettings> {
+    return this.transport.request({
+      method: "PUT",
+      path: "/platform/campaign-settings/frequency-cap",
+      body,
+      ...options,
+      maxNetworkRetries: 0,
+    });
+  }
+
+  /** Continuous drip enrollment is idempotent per phone, including exited contacts.
+   * Beta and campaigns:manage required; 409 state_conflict when closed. */
+  enroll(
+    campaignId: string,
+    body: EnrollCampaignContactRequest & { readonly projectId: string },
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignEnrollment> {
+    return this.transport.request({
+      method: "POST",
+      path: `${campaignPath(campaignId)}/enrollments`,
+      body,
+      ...options,
+      maxNetworkRetries: 0,
+    });
+  }
 
   list(
     params: ListCampaignsParams,
@@ -226,6 +279,7 @@ export class CampaignsResource {
       query: {
         projectId: params.projectId,
         ...(params.status === undefined ? {} : { status: params.status }),
+        ...(params.reason === undefined ? {} : { reason: params.reason }),
         ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
         ...(params.limit === undefined ? {} : { limit: params.limit }),
       },

@@ -854,6 +854,17 @@ API permissions or change approvals. Both methods make one request and refuse
 are `VoipCreateCallLinkRequest`, `VoipPreviewCallLinkRequest`,
 `VoipCreatedCallLink`, and `VoipPreviewedCallLink`.
 
+### Client-token action ceilings
+
+Client tokens accept an immutable `allow` ceiling for a session or Customer.
+Every request still requires live Number rules and current ownership. Session
+`allow` requires the action-ceilings beta. Until it is enabled, session `allow`
+is refused and omission keeps the existing token format. After enabling it,
+omitting `allow` snapshots a session's configured actions; Customer omission selects the
+original Customer action set. `chats_read`, `chats_manage`, `contact_write`, and
+`contact_delete` are reserved for enrolled regional beta access. These types do
+not establish regional availability or enable access by themselves.
+
 ### Calls
 
 `createBrowserCalls` connects the shared `@polymorfa/sdk/calls` model to the

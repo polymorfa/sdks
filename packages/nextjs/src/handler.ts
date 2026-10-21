@@ -25,6 +25,10 @@ export type PolymorfaPermission =
   | "read_presence"
   | "subscribe_presence"
   | "read_contact"
+  | "chats_read"
+  | "chats_manage"
+  | "contact_write"
+  | "contact_delete"
   | "voip_place"
   | "voip_answer"
   | "voip_signal"
@@ -41,6 +45,10 @@ const PERMISSIONS: ReadonlySet<string> = new Set<PolymorfaPermission>([
   "read_presence",
   "subscribe_presence",
   "read_contact",
+  "chats_read",
+  "chats_manage",
+  "contact_write",
+  "contact_delete",
   "voip_place",
   "voip_answer",
   "voip_signal",
@@ -57,6 +65,10 @@ const CUSTOMER_TOKEN_ACTIONS: ReadonlySet<string> = new Set([
   "read_presence",
   "subscribe_presence",
   "read_contact",
+  "chats_read",
+  "chats_manage",
+  "contact_write",
+  "contact_delete",
 ]);
 
 /**
@@ -478,6 +490,12 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
     if (grant.session !== undefined)
       body = {
         session: grant.session,
+        // Wrapper-only permissions stay on this handler. An empty API action
+        // set is an explicit zero ceiling, never omission/follow-live-rules.
+        allow: grant.allow.filter(
+          (action) =>
+            CUSTOMER_TOKEN_ACTIONS.has(action) || action.startsWith("voip_"),
+        ),
         ephemeralId: grant.ephemeralId,
         ttlSeconds: grant.ttlSeconds,
       };

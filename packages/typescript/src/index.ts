@@ -1105,6 +1105,7 @@ export {
 } from "./system.js";
 export {
   KNOWN_WEBHOOK_EVENT_TYPES,
+  PHONE_OFFLINE_START_DAY,
   WebhookSignatureError,
   constructWebhookEvent,
   isEvent,
@@ -1325,3 +1326,15 @@ export type {
   BillingPriorities,
   ReorderBillingPrioritiesInput,
 } from "./platform/billing-controls.js";
+
+export type {
+  CampaignFrequencyCap,
+  CampaignRecipientFailureReason,
+} from "./messaging/types.js";
+export type {
+  CampaignFrequencyCapSettings,
+  UpdateCampaignFrequencyCapInput,
+} from "./platform/types.js";
+
+export * from "./platform/audience-segments.js";
+export * from "./messaging/campaign-drip.js";

@@ -1,5 +1,12 @@
 import type {
+  CampaignDripInput,
+  CampaignDripPatch,
+  CampaignSequenceMessage,
+} from "../messaging/campaign-drip.js";
+import type {
   Campaign,
+  CampaignFrequencyCap,
+  CampaignRecipientFailureReason,
   CampaignRecipient,
   CampaignRecipientInput,
   CampaignRecipientStatus,
@@ -183,6 +190,8 @@ export interface TransferCustomerNumberRequest {
 
 /** Create a campaign through the organization client's Platform resource. */
 export interface CreatePlatformCampaignRequest {
+  readonly segmentId?: string;
+  readonly drip?: CampaignDripInput | null;
   /** Owning project; organization API keys are not bound to one project. */
   readonly projectId: string;
   /** Trimmed by the API; 1 to 200 characters and must not be blank. */
@@ -194,13 +203,14 @@ export interface CreatePlatformCampaignRequest {
   readonly scheduledAt?: number;
   /** When the campaign may send; null or omitted sends at any time. */
   readonly sendWindow?: CampaignSendWindowRequest | null;
+  readonly frequencyCap?: CampaignFrequencyCap | null;
   /** At most 1,000 recipients. */
   readonly recipients?: readonly CampaignRecipientInput[];
   /** Ignored when inline recipients are supplied. */
   readonly recipientCount?: number;
   // The API deliberately leaves these JSON values opaque.
   readonly composerBlueprint?: unknown;
-  readonly messagesArray?: unknown;
+  readonly messagesArray?: readonly CampaignSequenceMessage[];
   readonly audienceRef?: unknown;
   readonly complianceConfig?: unknown;
   /** Two to four A/B variants (beta); requires `variantStrategy`. */
@@ -253,6 +263,9 @@ export interface ReschedulePlatformCampaignRequest extends PlatformCampaignParam
  * not been copied into recipients. After that the API refuses the change.
  */
 export interface UpdatePlatformCampaignRequest {
+  readonly segmentId?: string | null;
+  readonly drip?: CampaignDripPatch | null;
+  readonly messagesArray?: readonly CampaignSequenceMessage[];
   /** 1 to 200 characters. */
   readonly name?: string;
   readonly recipientListId?: string | null;
@@ -261,6 +274,7 @@ export interface UpdatePlatformCampaignRequest {
   readonly scheduledAt?: number | null;
   /** Null removes the window. Only while the campaign is a draft or paused. */
   readonly sendWindow?: CampaignSendWindowRequest | null;
+  readonly frequencyCap?: CampaignFrequencyCap | null;
   /** Replaces the weighted alternatives; null clears them. Only an unlaunched draft. */
   readonly messageVariations?: readonly CampaignMessageVariation[] | null;
   /** Replaces the A/B variants; null with a null strategy makes a broadcast. Only an unlaunched draft. */
@@ -282,6 +296,7 @@ export interface PlatformCampaignAnalytics extends CampaignAnalytics {
 }
 
 export interface ListPlatformCampaignRecipientsParams {
+  readonly reason?: CampaignRecipientFailureReason;
   /** Owning project for this organization-client request. */
   readonly projectId: string;
   readonly status?: CampaignRecipientStatus;
@@ -1594,4 +1609,16 @@ export interface UpdateProjectHealthPolicyRequest {
   readonly slowDownMps: number | null;
   readonly emailNotification: boolean;
   readonly webhookNotification: boolean;
+}
+
+/** Team settings. Revision 0 and updatedAt null until first saved. */
+export interface CampaignFrequencyCapSettings extends CampaignFrequencyCap {
+  readonly teamId: string;
+  readonly revision: number;
+  readonly updatedAt: number | null;
+}
+
+/** Complete replacement. A stale revision returns PolymorfaConflictError (409). */
+export interface UpdateCampaignFrequencyCapInput extends CampaignFrequencyCap {
+  readonly revision: number;
 }

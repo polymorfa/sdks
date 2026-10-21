@@ -121,6 +121,13 @@ interface WebhookBase {
   readonly enabled: boolean;
   readonly format: "native" | "meta";
   readonly retryPolicy: WebhookRetryPolicy;
+  /**
+   * First day without the phone on which this webhook receives
+   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * device out on day 14. To stop the warning, leave the event out of
+   * the webhook's events.
+   */
+  readonly phoneOfflineStartDay: number;
   readonly headers: readonly WebhookHeaderMetadata[];
   readonly secret: WebhookSigningSecretMetadata;
   readonly createdAt: string;
@@ -140,6 +147,13 @@ interface CreateWebhookInputBase {
   readonly enabled?: boolean;
   readonly format?: "native" | "meta";
   readonly retryPolicy?: WebhookRetryPolicyInput;
+  /**
+   * First day without the phone on which this webhook receives
+   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * device out on day 14. To stop the warning, leave the event out of
+   * the webhook's events.
+   */
+  readonly phoneOfflineStartDay?: number;
   readonly headers?: readonly WebhookHeaderInput[];
 }
 export type CreateOrganizationWebhookInput = CreateWebhookInputBase;
@@ -150,6 +164,13 @@ interface UpdateWebhookInputBase {
   readonly enabled?: boolean;
   readonly format?: "native" | "meta";
   readonly retryPolicy?: WebhookRetryPolicyInput;
+  /**
+   * First day without the phone on which this webhook receives
+   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * device out on day 14. To stop the warning, leave the event out of
+   * the webhook's events.
+   */
+  readonly phoneOfflineStartDay?: number;
   readonly headers?: readonly WebhookHeaderInput[];
 }
 export type UpdateOrganizationWebhookInput = UpdateWebhookInputBase;
