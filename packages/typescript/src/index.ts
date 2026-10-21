@@ -1355,4 +1355,4 @@ export * from "./platform/audience-segments.js";
 export * from "./messaging/campaign-drip.js";
 
 export type { IncomingOrderCart } from "./messaging/order-cart.js";
-export type { CloudReadinessFailureCode } from "./messaging/quicklinks.js";
+export type { CloudReadinessFailureCode } from "./messaging/cloud-readiness.js";

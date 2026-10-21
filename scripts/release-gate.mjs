@@ -69,7 +69,6 @@ export function expectedContract() {
   assert.equal(source.repository, "polymorfa/polymorfa");
   assert.match(source.commit, /^[a-f0-9]{40}$/);
   validateFeatureContractPins(source, [
-    JSON.parse(readFileSync(join(root, "contracts/official-api-round2.json"))),
     JSON.parse(
       readFileSync(join(root, "contracts/analytics-device-signals.json")),
     ),
@@ -78,6 +77,9 @@ export function expectedContract() {
     JSON.parse(
       readFileSync(join(root, "contracts/client-token-ceilings.json")),
     ),
+  ]);
+  validateFeatureContractPins(source, [
+    JSON.parse(readFileSync(join(root, "contracts/official-api-round2.json"))),
   ]);
   const apiVersion = /NATIVE_API_VERSION = "([^"]+)"/.exec(
     readFileSync(join(root, "packages/typescript/src/version.ts"), "utf8"),
