@@ -105,6 +105,11 @@ def owned_options(options: RequestOptions) -> RequestOptions:
     )
 
 
+def submission_options(options: RequestOptions) -> RequestOptions:
+    # The four held API routes have no replay ledger, even with a caller key.
+    return replace(owned_options(options), max_network_retries=0)
+
+
 def base64url_unpadded(value: bytes) -> str:
     return base64.urlsafe_b64encode(value).rstrip(b"=").decode("ascii")
 
@@ -214,7 +219,7 @@ class DirectMediaApi:
             "POST",
             f"/messaging/{segment(session)}/media/upload-grants",
             body=_upload_fields(info),
-            options=owned_options(options),
+            options=submission_options(options),
         )
         data = _acknowledgement(response)
         host, url, expiry = data.get("host"), data.get("uploadUrl"), data.get("expiresAt")
@@ -252,7 +257,7 @@ class DirectMediaApi:
                 source,
                 body.info.encrypted_length,
                 query=query,
-                options=owned_options(options),
+                options=submission_options(options),
             )
             data = _acknowledgement(response)
             try:
@@ -295,7 +300,7 @@ class HistorySync:
             "POST",
             f"/messaging/{segment(session)}/history/chunks/retry",
             body=V.capture(body),
-            options=owned_options(options),
+            options=submission_options(options),
         )
         data = _acknowledgement(response)
         if (
@@ -330,7 +335,7 @@ class HistorySync:
             "POST",
             f"/messaging/{segment(session)}/history/media/delete",
             body=V.capture(body),
-            options=owned_options(options),
+            options=submission_options(options),
         )
 
         data = _acknowledgement(response)

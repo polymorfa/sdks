@@ -71,7 +71,8 @@ final class WhatsAppMedia extends Resource
         if (isset($query['ptt'])) {
             $query['ptt'] = $query['ptt'] ? 'true' : 'false';
         }
-        $response = $this->request('POST', '/messaging/'.self::segment($session).'/media/uploads', new BinaryRequestBody($open, $info->encryptedLength), $query, \Polymorfa\ExistingContract::options($options, true)->withoutAutomaticRetry());
+        // This held route has no replay ledger, even with a caller key.
+        $response = $this->request('POST', '/messaging/'.self::segment($session).'/media/uploads', new BinaryRequestBody($open, $info->encryptedLength), $query, \Polymorfa\ExistingContract::options($options, true)->withoutRetries());
         $data = self::unwrap($response->data);
         return self::location($data, false);
     }

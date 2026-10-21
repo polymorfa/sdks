@@ -178,7 +178,8 @@ export class DirectMediaApi {
     options: RequestOptions = {},
   ): Promise<WhatsAppUploadGrant> {
     this.assertServerCredential();
-    options = existingOptions(options);
+    // These source-only routes have no server replay ledger, even with a key.
+    options = { ...existingOptions(options), maxNetworkRetries: 0 };
     contractString(session, "session");
     const response = await this.transport.request<unknown>({
       method: "POST",
@@ -225,7 +226,8 @@ export class DirectMediaApi {
     },
     options: RequestOptions = {},
   ): Promise<WhatsAppRelayUploadResponse> {
-    options = existingOptions(options);
+    // These source-only routes have no server replay ledger, even with a key.
+    options = { ...existingOptions(options), maxNetworkRetries: 0 };
     const { body } = request;
     const grant = uploadRequest(request.mediaType, request.fileEncSha256);
     const query = {
@@ -302,7 +304,8 @@ export class DirectMediaApi {
         "Invalid regenerate flag.",
         "regenerate",
       );
-    options = existingOptions(options);
+    // These source-only routes have no server replay ledger, even with a key.
+    options = { ...existingOptions(options), maxNetworkRetries: 0 };
     const response = await this.transport.request<unknown>({
       method: "POST",
       path: DIRECT_MEDIA_PATHS.historyChunkRetries(session),
@@ -351,7 +354,8 @@ export class DirectMediaApi {
           "Invalid history deletion token.",
           "history",
         );
-    options = existingOptions(options);
+    // These source-only routes have no server replay ledger, even with a key.
+    options = { ...existingOptions(options), maxNetworkRetries: 0 };
     const response = await this.transport.request<unknown>({
       method: "POST",
       path: DIRECT_MEDIA_PATHS.historyChunkDeletions(session),

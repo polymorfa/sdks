@@ -265,6 +265,11 @@ func (t *transport) request(ctx context.Context, method, path string, q url.Valu
 func (t *transport) open(ctx context.Context, method, path string, q url.Values, body any, o RequestOptions, streaming bool) (*http.Response, Metadata, error) {
 	var data []byte
 	var err error
+	once, single := body.(singleSubmission)
+	if single {
+		body = once.body
+		o = noRetry(o)
+	}
 	binary, isBinary := body.(*binaryRequest)
 	if body != nil && !isBinary {
 		data, err = json.Marshal(body)
@@ -333,6 +338,11 @@ func (t *transport) open(ctx context.Context, method, path string, q url.Values,
 				closer.Close()
 			}
 			return nil, Metadata{}, validation("Invalid HTTP request.")
+		}
+		if single {
+			// net/http treats Idempotency-Key as replay permission on reused
+			// connections. These routes have no ledger, so do not offer rewind.
+			req.GetBody = nil
 		}
 		req.Header.Set("Accept", "application/json")
 		if body != nil {

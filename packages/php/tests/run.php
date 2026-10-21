@@ -263,3 +263,5 @@ $s3Process = proc_open([
 ], [0 => STDIN, 1 => STDOUT, 2 => STDERR], $s3Pipes);
 check(is_resource($s3Process), 'S3 suite process starts');
 check(proc_close($s3Process) === 0, 'S3 suite process passes');
+
+require __DIR__.'/unledgered_retry.php';

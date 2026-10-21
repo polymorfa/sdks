@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- All six server SDKs submit each direct media grant, API relay upload, history
+  chunk retry and history media deletion at most once per invocation, including
+  when a caller supplies an idempotency key and a positive retry option. These
+  held routes have no server replay ledger. Errors retain their metadata;
+  established message-send/GET retries and direct CDN recovery are unchanged.
+  This correction is source-only and does not release the held API routes.
+
 - Project event streams in TypeScript, Go, Python, PHP and .NET retain their
   resume cursor until the event payload validates. TypeScript now validates the
   decoded webhook envelope. Their parsers enforce 4 MiB UTF-8 frame budgets

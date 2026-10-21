@@ -43,10 +43,12 @@ export async function verify(language, { negativeTest = false } = {}) {
   const catalog = validateCatalog(readJSON("contracts/doc-snippets.json"));
   if ((await serialize(catalog)) !== (await serialize(await generate())))
     throw new Error("Exported catalog drifted from recipes");
-  const scratch = resolve(
-    homedir(),
-    ".polymorfa-agent-work/sdk-doc-snippets-20261019/checks",
-  );
+  const scratch = process.env.SDK_DOC_SNIPPETS_WORK_DIR
+    ? resolve(process.env.SDK_DOC_SNIPPETS_WORK_DIR)
+    : resolve(
+        homedir(),
+        ".polymorfa-agent-work/sdk-doc-snippets-20261019/checks",
+      );
   mkdirSync(scratch, { recursive: true, mode: 0o700 });
   const work = mkdtempSync(join(scratch, `${language}-`));
   const entries = Object.entries(catalog.operations).filter(

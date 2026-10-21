@@ -12,12 +12,17 @@ import (
 
 const CustomerOwnedAPIVersion = "2026-10-14"
 
+// These held routes have no replay ledger. Caller keys cannot authorize retries.
 func customerOwnedOptions(options RequestOptions) RequestOptions {
 	if options.APIVersion == "" {
 		options.APIVersion = CustomerOwnedAPIVersion
 	}
 	return noRetry(options)
 }
+
+// singleSubmission also prevents net/http from replaying a keyed JSON body on
+// a reused connection. Only the four unledgered API operations use this marker.
+type singleSubmission struct{ body any }
 
 // binaryRequest is internal: ordinary request bodies retain JSON serialization.
 type binaryRequest struct {
@@ -99,7 +104,7 @@ func (r *WhatsAppMediaResource) CreateUploadGrant(ctx context.Context, session s
 		FileEncSHA256 string `json:"fileEncSha256"`
 		PTT           *bool  `json:"ptt,omitempty"`
 	}{mediaType, hash, ptt}
-	result, err := request[json.RawMessage](ctx, r.t, "POST", "/messaging/"+escaped(session)+"/media/upload-grants", nil, body, appendOnce(deliveryOptions(optionsOrDefault(options), true)))
+	result, err := request[json.RawMessage](ctx, r.t, "POST", "/messaging/"+escaped(session)+"/media/upload-grants", nil, singleSubmission{body}, noRetry(deliveryOptions(optionsOrDefault(options), true)))
 	if err != nil {
 		return WhatsAppUploadGrant{}, err
 	}
@@ -136,7 +141,7 @@ func (r *WhatsAppMediaResource) RelayUpload(ctx context.Context, session string,
 	if ptt != nil {
 		query.Set("ptt", strconv.FormatBool(*ptt))
 	}
-	resp, err := request[json.RawMessage](ctx, r.t, "POST", "/messaging/"+escaped(session)+"/media/uploads", query, &binaryRequest{open, info.EncryptedLength}, appendOnce(deliveryOptions(optionsOrDefault(opts), true)))
+	resp, err := request[json.RawMessage](ctx, r.t, "POST", "/messaging/"+escaped(session)+"/media/uploads", query, singleSubmission{&binaryRequest{open, info.EncryptedLength}}, noRetry(deliveryOptions(optionsOrDefault(opts), true)))
 	if err != nil {
 		return WhatsAppUploadLocation{}, err
 	}

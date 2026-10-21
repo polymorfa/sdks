@@ -117,6 +117,8 @@ Composer, .NET a local NuGet package, and Rust packaged SDK/core crates. The Rus
 unpublished storage-core dependency is patched to the packaged local core,
 matching existing package verification. This does not prove registry resolution.
 Check artifacts stay under `~/.polymorfa-agent-work/sdk-doc-snippets-20261019/checks/`.
+Set `SDK_DOC_SNIPPETS_WORK_DIR` to a task-specific directory when retaining
+checker artifacts with a task receipt. The default path above remains available.
 CI fetches history so `sourceCommit` exists and verifies the actual merge tree
 against it. A later main change to bound inputs correctly requires rebinding
 and rerunning verification.

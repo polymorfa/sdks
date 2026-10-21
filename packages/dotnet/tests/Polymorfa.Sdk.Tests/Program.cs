@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Polymorfa.Sdk;
 
+if (args.Contains("--unledgered-retry-only")) { await UnledgeredRetryTests.RunAsync(); return; }
 if (args.Contains("--stream-repairs-only")) { await StreamRepairTests.RunAsync(); return; }
 if (args.Contains("--consumer-media-only")) { await ConsumerRepairTests.MediaAsync(); return; }
 if (args.Contains("--consumer-calls-only")) { await ConsumerRepairTests.CallsAsync(); return; }
@@ -219,3 +220,5 @@ static string Kind(PolymorfaException error) => error switch
 };
 
 await StorageD1Tests.RunAsync();
+
+await UnledgeredRetryTests.RunAsync();
