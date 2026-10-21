@@ -110,9 +110,9 @@ export class CloudTemplatesResource {
 
   /**
    * Sends one request; the SDK never retries this provider write. Pass
-   * `options.idempotencyKey` so a manual retry after an unknown outcome returns
-   * `409 idempotency_completed` instead of submitting again, and list templates
-   * before resubmitting.
+   * `options.idempotencyKey` so a manual retry after a lost response returns the
+   * original response instead of submitting again, and list templates before
+   * resubmitting after an unknown outcome.
    */
   create(
     session: string,

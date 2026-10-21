@@ -316,7 +316,8 @@ export class CampaignsResource {
    * recipient was sent; the decision is made once and never recalculated.
    * `eventId` deduplicates per project, so a retry with the same body returns
    * the original conversion with `replayed: true`, and a different body is
-   * refused with `409 idempotency_conflict`. Retries are therefore safe.
+   * refused with `422 idempotency_conflict` (`PolymorfaValidationError`).
+   * Retries are therefore safe.
    */
   recordConversion(
     campaignId: string,
