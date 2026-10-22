@@ -12,6 +12,48 @@
   `simultaneous_calls`; `BanSafeClaimEvidence` adds `simultaneousCalls`. Not
   usable until the API release that adds the setting is deployed. API
   contract: polymorfa/polymorfa#559.
+- Official API round-2 betas now have native source counterparts in all six
+  server SDKs: Number catalog-cache operations, marketing status and lifecycle
+  events, parent/previous identity fields, incoming carts, multipart Official
+  group pictures, Platform batching settings and whole-body signed batch
+  receivers. Graph resources and Linked Devices groups retain their own routes.
+  These changes are source-only. Exact combined-source hosted qualification,
+  accepted downstream source, API acceptance and publication remain required.
+
+- All six server SDKs submit each direct media grant, API relay upload, history
+  chunk retry and history media deletion at most once per invocation, including
+  when a caller supplies an idempotency key and a positive retry option. These
+  held routes have no server replay ledger. Errors retain their metadata;
+  established message-send/GET retries and direct CDN recovery are unchanged.
+  This correction is source-only and does not release the held API routes.
+
+- Project event streams in TypeScript, Go, Python, PHP and .NET retain their
+  resume cursor until the event payload validates. TypeScript now validates the
+  decoded webhook envelope. Their parsers enforce 4 MiB UTF-8 frame budgets
+  across incomplete lines, multiline data and comments. Rust's existing cursor
+  validation and frame bound gain regression coverage. Native malformed-payload
+  error and reconnect policies remain unchanged.
+- Go and .NET storage synchronization preserve the configured initial cursor
+  when no checkpoint exists. A saved checkpoint still takes precedence; event
+  commit, checkpoint CAS and manual ACK retain their order. These repairs are
+  source-only and unreleased.
+
+- Webhook phone offline start day. Platform and Messaging webhook create,
+  update and read types gain `phoneOfflineStartDay` (7-13, default 10): the
+  first day without the phone on which the webhook receives
+  `session.phone_offline`. Platform webhooks always return it. To stop the
+  warning, leave the event out of `eventTypes` (Platform) or `events`
+  (Messaging). `PHONE_OFFLINE_START_DAY` exports the bounds. Not usable until
+  the API release that adds the field is deployed. API contract:
+  polymorfa/polymorfa#631.
+- Receipt-timed campaign follow-ups (beta). Messaging and Platform campaign
+  create and update accept `followUp` (`CampaignFollowUp`): one text or
+  template message sent from the first message's number, timed from its first
+  delivery or read. Campaigns return the stored follow-up, recipients return
+  `followUp` (`CampaignFollowUpSummary`), and campaign analytics return
+  `followUps` (`CampaignFollowUpReport`). `null` removes the follow-up on an
+  unlaunched draft. A team that is not enrolled receives
+  `403 feature_unavailable`. API contract: polymorfa/polymorfa#503.
 - Campaign A/B tests (beta). Messaging and Platform campaign create and
   update accept `variants` (`CampaignVariant`, two to four) and
   `variantStrategy` (`CampaignVariantStrategy`); campaigns return them with
@@ -161,7 +203,7 @@
 - Call consent. `Client.callPolicy` (`retrieve`, `update`) reads and replaces
   the team's blocked country codes with an optional `expectedRevision` guard,
   and `Client.callOptOuts` (`list`, `create`, `import`, `delete`) manages the
-  team's do-not-call list. Both need an organization key. `list` returns a
+  team's do-not-call list. Both need an team key. `list` returns a
   `CursorPage` that follows `page.nextCursor`; `create` answers `201` for a new
   entry and `200` for one already listed, told apart by `metadata.status`.
   `MessagingClient.voip.retrieveCallPermission()` reads a person's call
@@ -189,7 +231,7 @@
 
 - Added `Client.usage` to read monthly metered usage, page or iterate usage
   records, and inspect team usage gates. Project clients can read only their
-  own usage; gate state requires an organization key. The `usage.recorded`
+  own usage; gate state requires an team key. The `usage.recorded`
   webhook has a typed payload, and enforced limits use the
   `gate_limit_reached` error code. Usage is measured but not charged.
 
@@ -713,7 +755,7 @@
   incidents, claims, and Health action reads to `Client.banSafe`.
   Project and session resources now cover Safe Mode, warm-up, Ban Insurance
   evidence, and Health policy settings, and `MessagingClient.banSafe` covers
-  the same settings on the Messaging API for organization API keys and project
+  the same settings on the Messaging API for team keys and project
   tokens. Claim credit amounts are decimal quantities. Dashboard-only finding
   acknowledgement and appeals remain outside the server SDK.
 - Breaking: saved QuickLink settings drop `allowedRedirectUris` and add
@@ -886,3 +928,24 @@
 - Aligned call signaling and media behavior with the `voip-v2` implementation.
 
 This is a Git development channel. No npm package has been published.
+
+## Campaign contact frequency caps (beta)
+
+`client.campaigns.getFrequencyCap()` reads team limits and their revision.
+`client.campaigns.updateFrequencyCap({ maxPer24Hours: 2, maxPer7Days: 5, revision })`
+replaces both windows. Send both limits as null to remove them. A stale revision
+raises `PolymorfaConflictError`; read and reconcile before trying again. A new
+limit requires beta access and can return `403 feature_unavailable`.
+Campaign create/update accepts `frequencyCap`; null removes a campaign cap.
+Recipient reads expose `failureReason` and accept `reason: "frequency_cap"`.
+Analytics adds `frequencyCap.skippedRecipientCount`. Raising limits never retries
+settled skips. `contracts/campaign-frequency-cap.json` pins the merged API source;
+package publication and API availability remain separate release gates.
+
+## Unreleased: audience segments and drip sequences
+
+- Add organization-only audience segment CRUD, observed revisions and count previews.
+- Add segment campaign selection and frozen snapshot reads.
+- Add partial drip settings, enrollment, pause/enrollment reads and step analytics types.
+- Bind focused contracts to merged API `f46ebd5162453e812dafa76ce02b420ddabe6921`.
+  Package publication and matching environment acceptance remain pending.

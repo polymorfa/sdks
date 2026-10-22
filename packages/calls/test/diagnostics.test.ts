@@ -131,7 +131,7 @@ describe("HttpCallsApi.report", () => {
       error: { code: "media_timeout" },
     };
     for (const [token, expected] of [
-      ["pmfa_ct_browser", { ...report, participant: undefined }],
+      ["pmfa_ct_YnJvd3Nlcg", { ...report, participant: undefined }],
       ["pmfa_sk_server", report],
     ] as const) {
       fetch.mockClear();

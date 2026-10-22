@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { Client, MessagingClient } from "../src/index.js";
 import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import {
@@ -151,22 +151,36 @@ describe("operations", () => {
     }
   });
 
-  it("stops waiting once the sequence passes afterSequence", async () => {
-    const server = await serve(() => json({ data: operation("running", 5) }));
-    const client = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
-      baseUrl: server.url,
-      maxNetworkRetries: 0,
-    });
-    const result = await client.operations.wait(OPERATION_ID, {
-      afterSequence: 4,
-      maxWaitMs: 10_000,
-    });
-    expect(result.data.sequence).toBe(5);
-    expect(server.requests.map((r) => r.path)).toEqual([
-      `/platform/operations/${OPERATION_ID}?wait=10&afterSequence=4`,
-    ]);
-  });
+  it.each([
+    { elapsed: 0, wait: 10 },
+    { elapsed: 1, wait: 9 },
+  ])(
+    "stops waiting once the sequence passes afterSequence after $elapsed ms",
+    async ({ elapsed, wait }) => {
+      const server = await serve(() => json({ data: operation("running", 5) }));
+      const client = new Client({
+        credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+        baseUrl: server.url,
+        maxNetworkRetries: 0,
+      });
+      const clock = vi
+        .spyOn(Date, "now")
+        .mockReturnValue(1000 + elapsed)
+        .mockReturnValueOnce(1000);
+      try {
+        const result = await client.operations.wait(OPERATION_ID, {
+          afterSequence: 4,
+          maxWaitMs: 10_000,
+        });
+        expect(result.data.sequence).toBe(5);
+        expect(server.requests.map((r) => r.path)).toEqual([
+          `/platform/operations/${OPERATION_ID}?wait=${wait}&afterSequence=4`,
+        ]);
+      } finally {
+        clock.mockRestore();
+      }
+    },
+  );
 
   it("returns the current state when the wait budget is spent", async () => {
     const server = await serve(() => json({ data: operation("running", 2) }));

@@ -1,0 +1,62 @@
+{
+  "sourceCommit": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f",
+  "published": false,
+  "readinessCodes": [
+    "meta_credentials_invalid",
+    "meta_phone_not_registered",
+    "meta_webhook_not_subscribed",
+    "meta_payment_method_missing",
+    "meta_quality_flagged",
+    "meta_readiness_unknown"
+  ],
+  "contact": {
+    "id": "new",
+    "bsuid": "new-b",
+    "parentBsuid": "new-p",
+    "identityChange": {
+      "reason": "user_id_changed",
+      "messageId": "m",
+      "previous": {
+        "id": "old",
+        "bsuid": "old-b",
+        "parentBsuid": "old-p"
+      }
+    }
+  },
+  "order": {
+    "catalogId": "123",
+    "items": [
+      {
+        "productRetailerId": "p",
+        "quantity": 2,
+        "itemPrice": 0.1,
+        "currency": "USD"
+      }
+    ]
+  },
+  "batch": {
+    "object": "event_batch",
+    "version": 1,
+    "id": "00000000-0000-4000-8000-000000000001",
+    "events": [
+      {
+        "id": "e",
+        "session": "",
+        "timestamp": "2026-10-22T00:00:00Z",
+        "event": "future.event",
+        "payload": {
+          "future": true
+        }
+      }
+    ]
+  },
+  "picture": {
+    "path": "contracts/fixtures/official-group-picture.jpg",
+    "width": 192,
+    "height": 192,
+    "format": "jpeg",
+    "bytes": 1171,
+    "sha256": "ac170354f2f91e79b66affabed5d344ae943350b83ae52dc3850e413bd2504bf",
+    "source": "Synthetic solid image encoded with Go image/jpeg; no customer or provider data."
+  }
+}

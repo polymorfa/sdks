@@ -1,3 +1,6 @@
+import { campaignContractBody } from "../campaign-contract-validation.js";
+import { configurationIntent } from "../session-delivery-validation.js";
+import { existingOptions } from "../campaign-existing-validation.js";
 import { HttpTransport } from "../transport/http.js";
 import { PolymorfaValidationError } from "../errors.js";
 import type {
@@ -38,7 +41,7 @@ export class PlatformSessionsResource {
       ...(params.projectId === undefined
         ? {}
         : { query: { projectId: params.projectId } }),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -49,7 +52,7 @@ export class PlatformSessionsResource {
     return this.transport.request({
       method: "GET",
       path: sessionPath(sessionId),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -58,11 +61,12 @@ export class PlatformSessionsResource {
     body: UpdateSessionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UpdateSessionResponse>> {
+    options = existingOptions(options, configurationIntent(body));
     return this.transport.request({
       method: "PUT",
       path: sessionPath(sessionId),
-      body,
-      ...options,
+      body: campaignContractBody(body),
+      ...existingOptions(options),
     });
   }
 
@@ -75,7 +79,7 @@ export class PlatformSessionsResource {
       method: "POST",
       path: `${sessionPath(sessionId)}/start`,
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -88,7 +92,7 @@ export class PlatformSessionsResource {
       method: "POST",
       path: `${sessionPath(sessionId)}/stop`,
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -101,7 +105,7 @@ export class PlatformSessionsResource {
       method: "POST",
       path: "/platform/sessions/stop",
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -113,7 +117,7 @@ export class PlatformSessionsResource {
     return this.transport.request({
       method: "DELETE",
       path: sessionPath(sessionId),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -129,7 +133,7 @@ export class PlatformSessionsResource {
       method: "POST",
       path: "/platform/sessions/delete",
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -159,7 +163,7 @@ export class PlatformSessionsResource {
       method: "POST",
       path: `${sessionPath(sessionId)}/tier-quotes`,
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -171,7 +175,7 @@ export class PlatformSessionsResource {
     return this.transport.request({
       method: "GET",
       path: `${sessionPath(sessionId)}/tier-quotes/${encodeURIComponent(quoteId)}`,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -190,7 +194,7 @@ export class PlatformSessionsResource {
       method: "PATCH",
       path: sessionPath(sessionId),
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -205,7 +209,7 @@ export class PlatformSessionsResource {
     return this.transport.request({
       method: "GET",
       path: `${sessionPath(sessionId)}/capabilities`,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -216,7 +220,7 @@ export class PlatformSessionsResource {
     return this.transport.request({
       method: "GET",
       path: `${sessionPath(sessionId)}/safe-mode`,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -229,7 +233,7 @@ export class PlatformSessionsResource {
       method: "PUT",
       path: `${sessionPath(sessionId)}/safe-mode`,
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 }

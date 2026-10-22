@@ -1,3 +1,4 @@
+import type { IncomingOrderCart } from "./order-cart.js";
 import type { ConversationIdentity, WhatsAppMessageIds } from "./types.js";
 
 /** Hosted message history is an enrolled beta and requires HMS on the Number. */
@@ -41,6 +42,7 @@ export interface HistoryMediaRetrieval {
 }
 
 export interface HistoryMessage extends HistoryMessageSummary {
+  readonly order?: IncomingOrderCart;
   readonly conversation: ConversationIdentity & {
     readonly sender?: ConversationIdentity;
   };

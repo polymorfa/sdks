@@ -6,6 +6,7 @@ export interface RecordedRequest {
   readonly path: string;
   readonly headers: IncomingHttpHeaders;
   readonly body: string;
+  readonly rawBody: Uint8Array;
 }
 
 export interface TestResponse {
@@ -35,6 +36,7 @@ export async function startTestServer(
         path: request.url ?? "/",
         headers: request.headers,
         body: Buffer.concat(chunks).toString("utf8"),
+        rawBody: Buffer.concat(chunks),
       };
       const index = requests.push(recorded) - 1;
       const result = respond(recorded, index);
@@ -45,6 +47,7 @@ export async function startTestServer(
           result.headers ?? { "content-type": "application/json" },
         );
         if (result.bodyDelayMs !== undefined) {
+          response.flushHeaders();
           setTimeout(sendBody, result.bodyDelayMs);
         } else {
           sendBody();

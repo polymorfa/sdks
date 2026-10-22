@@ -1,7 +1,10 @@
+import { campaignContractBody } from "../campaign-contract-validation.js";
 import type { MessagingCredential } from "../credentials.js";
 import { PolymorfaConfigurationError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import { withIdempotencyKey } from "../transport/idempotency.js";
+import { validateStickerContent } from "../media/send-descriptor.js";
+import { existingOptions } from "../campaign-existing-validation.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   ReactRequest,
@@ -45,7 +48,30 @@ export class MessagesResource {
     body: SendMessageRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SendMessageResponse>> {
-    return this.post(session, "send", body, withIdempotencyKey(options));
+    options = existingOptions(options);
+    if (
+      body.content !== null &&
+      typeof body.content === "object" &&
+      Object.hasOwn(body.content, "sticker")
+    )
+      validateStickerContent((body.content as { sticker: unknown }).sticker);
+    const descriptor =
+      typeof body.content === "object" &&
+      body.content !== null &&
+      Object.values(body.content).some(
+        (value) =>
+          typeof value === "object" && value !== null && "descriptor" in value,
+      );
+    return this.post(
+      session,
+      "send",
+      descriptor ? campaignContractBody(body) : body,
+      withIdempotencyKey(
+        descriptor
+          ? { ...options, apiVersion: options.apiVersion ?? "2026-10-14" }
+          : options,
+      ),
+    );
   }
 
   markSeen(

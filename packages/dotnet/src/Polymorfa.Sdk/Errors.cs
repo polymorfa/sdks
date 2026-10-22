@@ -1,0 +1,79 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
+
+namespace Polymorfa.Sdk;
+
+public class PolymorfaException : Exception
+{
+    public string? Code { get; }
+    public string? Param { get; }
+    public int? Status { get; }
+    public string? RequestId { get; }
+    public string? RequestLogUrl { get; }
+    public string? DocUrl { get; internal set; }
+    public string? RateLimitReason { get; }
+    public JsonElement? Details { get; }
+    public ResponseMetadata? Metadata { get; internal set; }
+    public PolymorfaException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? error = null) : base(RedactText(message))
+    {
+        Code = code; Param = String(error, "param"); Metadata = metadata; Status = metadata?.Status;
+        RequestId = String(error, "request_id") ?? metadata?.RequestId;
+        RequestLogUrl = String(error, "request_log_url"); DocUrl = String(error, "docs");
+        RateLimitReason = metadata?.Headers.GetValueOrDefault("polymorfa-ratelimit-reason");
+        Details = error is { ValueKind: JsonValueKind.Object } value && value.TryGetProperty("details", out var detail) ? RedactDetails(detail) : null;
+    }
+    private static string RedactText(string value) => Regex.Replace(value, "pmfa_[A-Za-z0-9_-]+", "[REDACTED]");
+    private static JsonElement RedactDetails(JsonElement value)
+    {
+        JsonNode? Clean(JsonNode? node)
+        {
+            if (node is JsonObject obj)
+            {
+                foreach (var key in obj.Select(pair => pair.Key).ToArray())
+                {
+                    var normalized = Regex.Replace(key.ToLowerInvariant(), "[^a-z0-9]", "");
+                    obj[key] = new[] { "authorization", "apikey", "projecttoken", "clienttoken", "credential", "token", "secret" }.Contains(normalized) ? JsonValue.Create("[REDACTED]") : Clean(obj[key]?.DeepClone());
+                }
+            }
+            else if (node is JsonArray array) for (var i = 0; i < array.Count; i++) array[i] = Clean(array[i]?.DeepClone());
+            else if (node is JsonValue scalar && scalar.TryGetValue<string>(out var text)) return JsonValue.Create(RedactText(text));
+            return node;
+        }
+        return JsonSerializer.SerializeToElement(Clean(JsonNode.Parse(value.GetRawText())));
+    }
+    private static string? String(JsonElement? value, string name) => value is { ValueKind: JsonValueKind.Object } element && element.TryGetProperty(name, out var property) && property.ValueKind == JsonValueKind.String ? property.GetString() : null;
+    internal static PolymorfaException FromResponse(JsonElement body, ResponseMetadata metadata)
+    {
+        var error = body.ValueKind == JsonValueKind.Object && body.TryGetProperty("error", out var nested) && nested.ValueKind == JsonValueKind.Object ? nested : body;
+        var message = String(error, "message") ?? $"Polymorfa returned HTTP {metadata.Status}.";
+        var code = String(error, "code");
+        var exception = metadata.Status switch
+        {
+            400 or 413 or 422 => new PolymorfaValidationException(message, code, metadata, error),
+            401 => new PolymorfaAuthenticationException(message, code, metadata, error),
+            402 => new PolymorfaPaymentRequiredException(message, code, metadata, error),
+            403 => new PolymorfaAuthorizationException(message, code, metadata, error),
+            404 => new PolymorfaNotFoundException(message, code, metadata, error),
+            409 => new PolymorfaConflictException(message, code, metadata, error),
+            429 => new PolymorfaRateLimitException(message, code, metadata, error),
+            >= 500 => new PolymorfaServerException(message, code, metadata, error),
+            _ => new PolymorfaException(message, code, metadata, error)
+        };
+        exception.DocUrl = String(body, "docs") ?? exception.DocUrl;
+        return exception;
+    }
+}
+public sealed class PolymorfaConfigurationException(string message) : PolymorfaException(message, "invalid_configuration");
+public sealed class PolymorfaAuthenticationException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? details = null) : PolymorfaException(message, code, metadata, details);
+public sealed class PolymorfaAuthorizationException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? details = null) : PolymorfaException(message, code, metadata, details);
+public sealed class PolymorfaPaymentRequiredException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? details = null) : PolymorfaException(message, code, metadata, details);
+public sealed class PolymorfaValidationException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? details = null) : PolymorfaException(message, code, metadata, details);
+public sealed class PolymorfaNotFoundException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? details = null) : PolymorfaException(message, code, metadata, details);
+public sealed class PolymorfaConflictException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? details = null) : PolymorfaException(message, code, metadata, details);
+public sealed class PolymorfaRateLimitException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? details = null) : PolymorfaException(message, code, metadata, details);
+public sealed class PolymorfaServerException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? details = null) : PolymorfaException(message, code, metadata, details);
+public sealed class PolymorfaConnectionException(string message, ResponseMetadata? metadata = null) : PolymorfaException(message, "connection_error", metadata);
+public sealed class PolymorfaTimeoutException(string message, ResponseMetadata? metadata = null) : PolymorfaException(message, "request_timeout", metadata);
+public sealed class PolymorfaCancelledException(ResponseMetadata? metadata = null) : PolymorfaException("Request cancelled by caller.", "request_cancelled", metadata);
+public sealed class WebhookSignatureException() : PolymorfaException("Webhook signature verification failed.", "invalid_webhook_signature");

@@ -1,11 +1,24 @@
 import type {
+  CampaignTrackedLink,
+  CampaignVariableMapping,
+  CampaignRecipientFailureReason,
+} from "../campaign-contracts.js";
+import type {
+  CampaignDripInput,
+  CampaignDripPatch,
+  CampaignSequenceMessage,
+} from "../messaging/campaign-drip.js";
+import type {
   Campaign,
+  CampaignFrequencyCap,
   CampaignRecipient,
   CampaignRecipientInput,
   CampaignRecipientStatus,
   CampaignAnalytics,
   CampaignExperimentResults,
   CampaignMessageVariation,
+  CampaignFollowUp,
+  CampaignFollowUpReport,
   CampaignSendWindowRequest,
   CampaignVariant,
   CampaignVariantStrategy,
@@ -181,7 +194,12 @@ export interface TransferCustomerNumberRequest {
 
 /** Create a campaign through the organization client's Platform resource. */
 export interface CreatePlatformCampaignRequest {
-  /** Owning project; organization API keys are not bound to one project. */
+  readonly variableMapping?: CampaignVariableMapping;
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
+
+  readonly segmentId?: string;
+  readonly drip?: CampaignDripInput | null;
+  /** Owning project; team keys are not bound to one project. */
   readonly projectId: string;
   /** Trimmed by the API; 1 to 200 characters and must not be blank. */
   readonly name: string;
@@ -192,13 +210,14 @@ export interface CreatePlatformCampaignRequest {
   readonly scheduledAt?: number;
   /** When the campaign may send; null or omitted sends at any time. */
   readonly sendWindow?: CampaignSendWindowRequest | null;
+  readonly frequencyCap?: CampaignFrequencyCap | null;
   /** At most 1,000 recipients. */
   readonly recipients?: readonly CampaignRecipientInput[];
   /** Ignored when inline recipients are supplied. */
   readonly recipientCount?: number;
   // The API deliberately leaves these JSON values opaque.
   readonly composerBlueprint?: unknown;
-  readonly messagesArray?: unknown;
+  readonly messagesArray?: readonly CampaignMessage[];
   readonly audienceRef?: unknown;
   readonly complianceConfig?: unknown;
   /** Two to four A/B variants (beta); requires `variantStrategy`. */
@@ -209,6 +228,8 @@ export interface CreatePlatformCampaignRequest {
    * be combined with a template, composed messages or A/B variants.
    */
   readonly messageVariations?: readonly CampaignMessageVariation[];
+  /** One receipt-timed follow-up (beta). Requires a single first message. */
+  readonly followUp?: CampaignFollowUp | null;
 }
 
 /**
@@ -249,6 +270,17 @@ export interface ReschedulePlatformCampaignRequest extends PlatformCampaignParam
  * not been copied into recipients. After that the API refuses the change.
  */
 export interface UpdatePlatformCampaignRequest {
+  /** Select the owning project in request params. */
+  readonly projectId?: never;
+  /** Select the campaign in the request path. */
+  readonly id?: never;
+  readonly templateId?: string | null;
+  readonly variableMapping?: CampaignVariableMapping | null;
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
+
+  readonly segmentId?: string | null;
+  readonly drip?: CampaignDripPatch | null;
+  readonly messagesArray?: readonly CampaignMessage[];
   /** 1 to 200 characters. */
   readonly name?: string;
   readonly recipientListId?: string | null;
@@ -257,11 +289,14 @@ export interface UpdatePlatformCampaignRequest {
   readonly scheduledAt?: number | null;
   /** Null removes the window. Only while the campaign is a draft or paused. */
   readonly sendWindow?: CampaignSendWindowRequest | null;
+  readonly frequencyCap?: CampaignFrequencyCap | null;
   /** Replaces the weighted alternatives; null clears them. Only an unlaunched draft. */
   readonly messageVariations?: readonly CampaignMessageVariation[] | null;
   /** Replaces the A/B variants; null with a null strategy makes a broadcast. Only an unlaunched draft. */
   readonly variants?: readonly CampaignVariant[] | null;
   readonly variantStrategy?: CampaignVariantStrategy | null;
+  /** Replaces the follow-up (beta); null removes it. Only an unlaunched draft. */
+  readonly followUp?: CampaignFollowUp | null;
   readonly [field: string]: unknown;
 }
 
@@ -272,9 +307,11 @@ export interface PlatformCampaignAnalytics extends CampaignAnalytics {
   readonly minResponseTimeMs: number | null;
   readonly maxResponseTimeMs: number | null;
   readonly experiment: CampaignExperimentResults | null;
+  readonly followUps: CampaignFollowUpReport;
 }
 
 export interface ListPlatformCampaignRecipientsParams {
+  readonly reason?: CampaignRecipientFailureReason;
   /** Owning project for this organization-client request. */
   readonly projectId: string;
   readonly status?: CampaignRecipientStatus;
@@ -480,7 +517,7 @@ export interface DeleteAudienceMemberResult {
 }
 
 /**
- * Organization keyword capture. When enabled, a reply matching an opt-out
+ * Team keyword capture. When enabled, a reply matching an opt-out
  * keyword suppresses the contact and emits `contact.opted_out`.
  */
 export interface OptOutSettings {
@@ -550,7 +587,7 @@ export interface TierPricing {
   readonly features: readonly string[];
 }
 
-/** Metadata for an organization server API key. Raw key material is never returned. */
+/** Metadata for an team key. Raw key material is never returned. */
 export interface ApiKey {
   readonly _id: string;
   readonly _creationTime: number;
@@ -1598,4 +1635,47 @@ export interface UpdateProjectHealthPolicyRequest {
   readonly slowDownMps: number | null;
   readonly emailNotification: boolean;
   readonly webhookNotification: boolean;
+}
+
+/** Open composed draft objects, distinct from weighted variation blueprints. */
+export interface CampaignMessage extends CampaignSequenceMessage {
+  readonly version?: 2;
+  readonly source?: string;
+  readonly media?: {
+    readonly kind: "image" | "video" | "audio" | "document";
+    readonly url: string;
+    readonly filename?: string;
+    readonly caption?: string;
+    readonly [key: string]: unknown;
+  };
+  readonly buttons?: readonly {
+    readonly kind: "reply" | "link" | "call";
+    readonly label: string;
+    readonly url?: string;
+    readonly phone?: string;
+    readonly [key: string]: unknown;
+  }[];
+  readonly footer?: string;
+  readonly delayAfterSec?: number;
+  readonly [key: string]: unknown;
+}
+export interface LaunchPlatformCampaignRequest {
+  readonly projectId: string;
+  readonly scheduledAt?: number;
+  readonly skipMissingVariables?: boolean;
+}
+export interface PlatformCampaignLaunchResult extends PlatformCampaign {
+  readonly operationId: string;
+}
+
+/** Team settings. Revision 0 and updatedAt null until first saved. */
+export interface CampaignFrequencyCapSettings extends CampaignFrequencyCap {
+  readonly teamId: string;
+  readonly revision: number;
+  readonly updatedAt: number | null;
+}
+
+/** Complete replacement. A stale revision returns PolymorfaConflictError (409). */
+export interface UpdateCampaignFrequencyCapInput extends CampaignFrequencyCap {
+  readonly revision: number;
 }

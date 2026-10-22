@@ -398,7 +398,7 @@ export class PolymorfaDesk implements DeskData {
     );
   }
 
-  /** BanSafe Health needs the organization key; without it health is unknown. */
+  /** BanSafe Health needs the team key; without it health is unknown. */
   async #health(): Promise<Map<string, number | null>> {
     const scores = new Map<string, number | null>();
     if (optionalEnv("POLYMORFA_ORGANIZATION_API_KEY") === undefined)

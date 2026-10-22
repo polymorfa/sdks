@@ -469,7 +469,7 @@ describe("VoipResource", () => {
       json({ success: true }, 202),
       json({ success: true }, 202),
     ]);
-    const sdk = client(server, { type: "clientToken", value: "pmfa_ct_web" });
+    const sdk = client(server, { type: "clientToken", value: "pmfa_ct_d2Vi" });
     const quality = {
       kind: "quality",
       connectionId: "conn_0123456789",
@@ -557,7 +557,7 @@ describe("VoipResource", () => {
         201,
       ),
     ]);
-    const sdk = client(server, { type: "clientToken", value: "pmfa_ct_web" });
+    const sdk = client(server, { type: "clientToken", value: "pmfa_ct_d2Vi" });
     expect(() => sdk.voip.accept("call-1", { participant: "desk-1" })).toThrow(
       PolymorfaConfigurationError,
     );

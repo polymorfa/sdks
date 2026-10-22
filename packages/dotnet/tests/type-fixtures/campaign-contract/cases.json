@@ -1,0 +1,136 @@
+[
+  {
+    "fixture": "ProjectProfiles",
+    "line": 8,
+    "code": "CS1061",
+    "symbols": [
+      "ProjectClient",
+      "AudienceProfiles"
+    ]
+  },
+  {
+    "fixture": "ProjectAudiences",
+    "line": 8,
+    "code": "CS1061",
+    "symbols": [
+      "ProjectClient",
+      "Audiences"
+    ]
+  },
+  {
+    "fixture": "ProjectOptOuts",
+    "line": 8,
+    "code": "CS1061",
+    "symbols": [
+      "ProjectClient",
+      "OptOuts"
+    ]
+  },
+  {
+    "fixture": "ProjectSettings",
+    "line": 8,
+    "code": "CS1061",
+    "symbols": [
+      "ProjectCampaigns",
+      "GetSettingsAsync"
+    ]
+  },
+  {
+    "fixture": "BoundSelector",
+    "line": 8,
+    "code": "CS1739",
+    "symbols": [
+      "GetReplyFlowAsync",
+      "projectId"
+    ]
+  },
+  {
+    "fixture": "BodySelector",
+    "line": 8,
+    "code": "CS0117",
+    "symbols": [
+      "CreateCampaignReplyFlowRequest",
+      "ProjectId"
+    ]
+  },
+  {
+    "fixture": "OwnerMutation",
+    "line": 8,
+    "code": "CS0200",
+    "symbols": [
+      "ProjectClient.ProjectId"
+    ]
+  },
+  {
+    "fixture": "OptionSelector",
+    "line": 8,
+    "code": "CS0117",
+    "symbols": [
+      "RequestOptions",
+      "ProjectId"
+    ]
+  },
+  {
+    "fixture": "VariableArray",
+    "line": 8,
+    "code": "CS1503",
+    "symbols": [
+      "int[]",
+      "CampaignVariableValue"
+    ]
+  },
+  {
+    "fixture": "AttributeArray",
+    "line": 8,
+    "code": "CS1503",
+    "symbols": [
+      "int[]",
+      "AudienceProfileAttributeValue"
+    ]
+  },
+  {
+    "fixture": "AttributeObject",
+    "line": 8,
+    "code": "CS1503",
+    "symbols": [
+      "Dictionary<string, string>",
+      "AudienceProfileAttributeValue"
+    ]
+  },
+  {
+    "fixture": "ProjectNullMode",
+    "line": 8,
+    "code": "CS1503",
+    "symbols": [
+      "<null>",
+      "SignalCustodyMode"
+    ]
+  },
+  {
+    "fixture": "ModeString",
+    "line": 8,
+    "code": "CS0029",
+    "symbols": [
+      "string",
+      "SignalCustodyMode"
+    ]
+  },
+  {
+    "fixture": "BoundEnvelope",
+    "line": 8,
+    "code": "CS0029",
+    "symbols": [
+      "ApiResponse<Polymorfa.Sdk.SignalCustodyDefault>",
+      "DataEnvelope"
+    ]
+  },
+  {
+    "fixture": "SealedRequest",
+    "line": 2,
+    "code": "CS0509",
+    "symbols": [
+      "CreateCampaignReplyFlowRequest",
+      "ExtendedRequest"
+    ]
+  }
+]

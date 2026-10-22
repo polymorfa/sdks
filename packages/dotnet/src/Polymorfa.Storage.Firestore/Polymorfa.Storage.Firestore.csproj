@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <PackageId>Polymorfa.Storage.Firestore</PackageId>
+    <Version>0.1.0-dev.0</Version>
+    <Description>Customer-owned Google Cloud Firestore storage for Polymorfa.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/polymorfa/sdks</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Polymorfa.Sdk/Polymorfa.Sdk.csproj" />
+    <PackageReference Include="Google.Cloud.Firestore" Version="[4.5.0]" />
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+  <ItemGroup Condition="Exists('../../release-contract.json')">
+    <None Include="../../release-contract.json" Pack="true" PackagePath="/" />
+  </ItemGroup>
+</Project>

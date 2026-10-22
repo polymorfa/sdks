@@ -70,13 +70,13 @@ describe("@polymorfa/browser package", () => {
         'import { BrowserMessagingClient, BrowserTransport, ClientTokenManager, createSameOriginTemplateBuilderTransport } from "@polymorfa/browser";',
         'import { CallsSignalingClient } from "@polymorfa/browser/internal";',
         'import { CallsDisabledError } from "@polymorfa/sdk/calls";',
-        'const token = await new ClientTokenManager(async () => "pmfa_ct_fixture").get();',
+        'const token = await new ClientTokenManager(async () => "pmfa_ct_Zml4dHVyZQ").get();',
         'const client = new BrowserMessagingClient({ session: "support", getClientToken: async () => token });',
         "const templates = createSameOriginTemplateBuilderTransport();",
         // A browser request refused because calling is off raises the one
         // CallsDisabledError class applications import from the SDK.
         "const transport = new BrowserTransport({",
-        '  getClientToken: async () => "pmfa_ct_fixture",',
+        '  getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",',
         '  baseUrl: "https://api.polymorfa.test",',
         "  maxNetworkRetries: 0,",
         '  fetch: async () => new Response(JSON.stringify({ error: { code: "calls_disabled", message: "Calling is off" } }), { status: 403, headers: { "content-type": "application/json" } }),',
@@ -92,7 +92,7 @@ describe("@polymorfa/browser package", () => {
     });
     expect(imported.status, imported.stderr).toBe(0);
     expect(imported.stdout.trim()).toBe(
-      "pmfa_ct_fixture function function true",
+      "pmfa_ct_Zml4dHVyZQ function function true",
     );
     const manifest = JSON.parse(
       readFileSync(
