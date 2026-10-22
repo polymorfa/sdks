@@ -18395,5 +18395,17 @@
       }
     }
   ],
-  "languages": ["typescript", "go", "python", "php", "dotnet", "rust"]
+  "languages": ["typescript", "go", "python", "php", "dotnet", "rust"],
+  "supplements": {
+    "officialApiRound2": {
+      "inventory": "contracts/native-official-round2.json",
+      "baselineUnchanged": true,
+      "published": false
+    },
+    "simultaneousCalls": {
+      "inventory": "contracts/native-calls-simultaneous-calls.json",
+      "baselineUnchanged": true,
+      "published": false
+    }
+  }
 }

@@ -19,16 +19,18 @@ try {
     $control = new GuzzleHttp\Client(['base_uri' => $url, 'timeout' => 3]);
     $credential = Polymorfa\Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
     $client = new Polymorfa\MessagingClient($credential, baseUrl:$url, maxNetworkRetries:1);
-    foreach (['grant','relay','retry','delete'] as $operation) {
+    foreach (['grant','relay','retry','delete','catalog-sync','official-picture'] as $operation) {
         foreach (['drop','429','503'] as $outcome) {
             foreach (['keyed','unkeyed','default'] as $policy) {
                 $control->get('/__reset');
-                $options = new Polymorfa\RequestOptions(maxNetworkRetries:$policy === 'default' ? null : 1, idempotencyKey:$policy === 'keyed' ? 'caller-key' : null, headers:['x-caller' => 'retained', 'x-outcome' => $outcome]);
+                $options = new Polymorfa\RequestOptions(apiVersion:'2026-10-14',maxNetworkRetries:$policy === 'default' ? null : 1, idempotencyKey:$policy === 'keyed' ? 'caller-key' : null, headers:['x-caller' => 'retained', 'x-outcome' => $outcome]);
                 $error = null;
                 $opens = 0;
                 $streams = [];
                 try {
                     match ($operation) {
+                        'catalog-sync' => $client->catalogs->sync('s', '123', $options),
+                        'official-picture' => $client->officialGroups->setPicture('s', 'g', file_get_contents(__DIR__.'/../../../contracts/fixtures/official-group-picture.jpg'), $options),
                         'grant' => $client->whatsappMedia->createUploadGrant('s', 'image', str_repeat("\0", 32), $options),
                         'relay' => $client->whatsappMedia->relayUpload('s', new Polymorfa\EncryptedMediaInfo('image', str_repeat("\0", 32), str_repeat("\0", 32), str_repeat("\0", 32), 0, 26), function () use (&$opens, &$streams) {
                             $opens++;
@@ -47,6 +49,7 @@ try {
                 $headers = $records[0]['headers'];
                 check($headers['authorization'] === $credential->authorization() && $headers['x-caller'] === 'retained' && $headers['polymorfa-version'] === '2026-10-14', 'Caller headers retained');
                 check(($headers['idempotency-key'] ?? null) === ($policy === 'keyed' ? 'caller-key' : null), 'Caller key retained');
+                if ($operation === 'catalog-sync') { check($records[0]['length'] === 0, 'Catalog sync wire body remains empty'); }
                 if ($operation === 'relay') {
                     check($records[0]['length'] === 26 && $opens === 1 && !$streams[0]->isReadable(), 'Relay ciphertext opened and closed once');
                 }
@@ -69,7 +72,7 @@ try {
         $records = json_decode($control->get('/__state')->getBody()->getContents(), true, flags:JSON_THROW_ON_ERROR);
         check(count($records) === 2, 'Established '.$operation.' retry retained');
     }
-    echo "PASS 36 unledgered submissions and established send/GET retry controls\n";
+    echo "PASS 54 unledgered submissions and established send/GET retry controls\n";
 } finally {
     proc_terminate($process);
     foreach ($pipes as $pipe) {

@@ -540,6 +540,9 @@ class Events(PlatformResource):
         )
 
 
+from .webhook_batching import validate_webhook_batching
+
+
 class PlatformWebhooks(PlatformResource):
     async def list(
         self, params: D.ListWebhooks | None = None, *, options: RequestOptions = O
@@ -551,6 +554,7 @@ class PlatformWebhooks(PlatformResource):
     async def create(
         self, body: D.CreateWebhook, *, options: RequestOptions = O
     ) -> ApiResponse[D.WebhookCreated]:
+        validate_webhook_batching(body)
         return await self._unwrapped("POST", self._prefix + "/webhooks", body=body, options=options)
 
     async def retrieve(
@@ -563,6 +567,7 @@ class PlatformWebhooks(PlatformResource):
     async def update(
         self, webhook_id: str, body: D.UpdateWebhook, *, options: RequestOptions = O
     ) -> ApiResponse[D.WebhookUpdated]:
+        validate_webhook_batching(body)
         return await self._unwrapped(
             "PATCH", self._prefix + "/webhooks/" + segment(webhook_id), body=body, options=options
         )

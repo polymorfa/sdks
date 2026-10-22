@@ -14,6 +14,7 @@ type webhookPayloadBase struct{}
 func (webhookPayloadBase) knownWebhookPayload() {}
 
 type WebhookIdentity struct {
+	ParentBSUID string `json:"parentBsuid,omitempty"`
 	ID          string `json:"id"`
 	PhoneNumber string `json:"phoneNumber,omitempty"`
 	BSUID       string `json:"bsuid,omitempty"`
@@ -78,6 +79,7 @@ type CloudMessageReferral struct {
 	Extra      PlatformPayload `json:"-"`
 }
 type CloudMessagePayload struct {
+	Order *CloudOrder `json:"order,omitempty"`
 	webhookPayloadBase
 	ID                 string                `json:"id"`
 	WhatsAppIDs        WhatsAppMessageIDs    `json:"whatsapp_ids"`
@@ -307,6 +309,8 @@ type ContactOptPayload struct {
 	ProjectID string `json:"projectId,omitempty"`
 }
 type ContactUpdatePayload struct {
+	IdentityChange *ContactIdentityChange `json:"identityChange,omitempty"`
+	ParentBSUID    string                 `json:"parentBsuid,omitempty"`
 	webhookPayloadBase
 	ID              string `json:"id"`
 	PhoneNumber     string `json:"phoneNumber,omitempty"`
@@ -669,6 +673,8 @@ type CallPermissionChangedPayload struct {
 	ChangedAt      string          `json:"changedAt"`
 }
 type OrderPaymentConversation struct {
+	BSUID       string `json:"bsuid,omitempty"`
+	ParentBSUID string `json:"parentBsuid,omitempty"`
 	ID          string `json:"id,omitempty"`
 	PhoneNumber string `json:"phoneNumber,omitempty"`
 }
@@ -982,6 +988,10 @@ func (e WebhookEvent) TypedPayload() (KnownWebhookPayload, bool, error) {
 		v = &ContactOptPayload{}
 	case "contact.sync":
 		v = &ContactsSyncPayload{}
+	case "marketing.onboarding_updated":
+		v = &MarketingOnboardingUpdatedPayload{}
+	case "contact.marketing_preference_updated":
+		v = &ContactMarketingPreferencePayload{}
 	case "contact.update":
 		v = &ContactUpdatePayload{}
 	case "chat.archive":

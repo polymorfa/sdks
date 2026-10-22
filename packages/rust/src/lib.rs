@@ -36,6 +36,7 @@ pub mod messaging;
 pub mod models;
 pub mod observation;
 pub mod official_groups;
+pub mod official_round2;
 pub mod onboarding;
 pub mod operations;
 pub mod organization;

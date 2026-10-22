@@ -46,6 +46,8 @@ public static partial class Webhooks
         "command.result" => Typed<CommandResultPayload>(envelope),
         "contact.opted_in" or "contact.opted_out" => Typed<ContactOptPayload>(envelope),
         "contact.sync" => Typed<ContactsSyncPayload>(envelope),
+        "marketing.onboarding_updated" => Typed<MarketingOnboardingUpdatedPayload>(envelope),
+        "contact.marketing_preference_updated" => Typed<ContactMarketingPreferencePayload>(envelope),
         "contact.update" => Typed<ContactUpdatePayload>(envelope),
         "customer.created" or "customer.archived" or "customer.restored" => Typed<CustomerEventPayload>(envelope),
         "customer.updated" => Typed<CustomerUpdatedPayload>(envelope),

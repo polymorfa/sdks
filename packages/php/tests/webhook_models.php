@@ -8,6 +8,8 @@ $cloud = ['id' => 'message','whatsapp_ids' => ['official_api' => 'wamid.fixture'
 $customer = ['eventId' => 'event','occurredAt' => 'now','organizationId' => 'org','projectId' => 'project','customerId' => 'customer','actorKind' => 'org_key'];
 $payment = ['reportedBy' => 'whatsapp','providerEventId' => 'provider','referenceId' => 'order','conversation' => ['phoneNumber' => '+15555555555']];
 $cases = [
+ ['marketing.onboarding_updated',['kind'=>'terms_signed','wabaId'=>'w','metaEvent'=>'MM_LITE_TERMS_SIGNED']],
+ ['contact.marketing_preference_updated',['waId'=>'opaque','preference'=>'stop','category'=>'marketing_messages']],
  ['message.received',$linked],['message.received',$cloud],['message.reaction',$linked],
  ['message.ack',['messages' => [['id' => 'message','whatsapp_ids' => ['official_api' => 'wamid.fixture']]],'conversation' => $identity,'type' => 'delivered','timestamp' => 1,'pricing' => ['category' => 'utility','type' => 'free_customer_service']]],
  ['message.vote',['conversation' => $identity,'pollMessageId' => 'message','voter' => $identity,'selectedHashes' => ['hash'],'timestamp' => 1]],
@@ -50,7 +52,7 @@ $source = file_get_contents(__DIR__.'/../src/WebhookModels.php');
 foreach (Polymorfa\Webhooks::KNOWN_TYPES as $name) {
     check(str_contains($source, "'".$name."'"), 'Every known name has a typed union variant: '.$name);
 }
-check(count(Polymorfa\Webhooks::KNOWN_TYPES) === 84, 'Pinned known event catalog');
+check(count(Polymorfa\Webhooks::KNOWN_TYPES) === 86, 'Pinned known event catalog');
 $raw = '{"id":"event","session":"","timestamp":"now","event":"future.event","payload":null}';
 $flow = 't=1000,v1='.strtoupper(hash_hmac('sha256', '1000.'.$raw, 'secret'));
 check(Polymorfa\Webhooks::verifyFlowForwardSignature($raw, $flow, 'secret', nowUnixSeconds:1000.5), 'Flow raw HMAC and uppercase signature');
@@ -62,6 +64,14 @@ $signature = 't=0001000,v1='.hash_hmac('sha256', '1000.'.$raw, $key);
 check(Polymorfa\Webhooks::verifyLocal($raw, $signature, $local, nowUnixSeconds:1000)->event === 'future.event', 'Local signature normalizes numeric timestamp and decodes byte key');
 raises(fn () => Polymorfa\Webhooks::verifyLocal($raw, $signature, $local, nowUnixSeconds:1301), Polymorfa\WebhookSignatureException::class);
 raises(fn () => Polymorfa\Webhooks::verifyLocal($raw, strtoupper($signature), $local, nowUnixSeconds:1000), Polymorfa\WebhookSignatureException::class);
-check(count(Polymorfa\ErrorCodes::KNOWN) === 93 && Polymorfa\ErrorCodes::isKnown('voice_unavailable') && !Polymorfa\ErrorCodes::isKnown('future_api_code'), 'Known API code catalog');
+check(count(Polymorfa\ErrorCodes::KNOWN) === 101 && Polymorfa\ErrorCodes::isKnown('voice_unavailable') && !Polymorfa\ErrorCodes::isKnown('future_api_code'), 'Known API code catalog');
+check(Polymorfa\ErrorCodes::isKnown('catalog_cache_full'), 'Known Official API code: catalog_cache_full');
+check(Polymorfa\ErrorCodes::isKnown('catalog_sync_cooldown'), 'Known Official API code: catalog_sync_cooldown');
+check(Polymorfa\ErrorCodes::isKnown('hybrid_group_linked_devices_unavailable'), 'Known Official API code: hybrid_group_linked_devices_unavailable');
+check(Polymorfa\ErrorCodes::isKnown('marketing_disabled_on_cloud_api'), 'Known Official API code: marketing_disabled_on_cloud_api');
+check(Polymorfa\ErrorCodes::isKnown('parent_bsuid_not_supported'), 'Known Official API code: parent_bsuid_not_supported');
+check(Polymorfa\ErrorCodes::isKnown('whatsapp_authorization_required'), 'Known Official API code: whatsapp_authorization_required');
+check(Polymorfa\ErrorCodes::isKnown('whatsapp_number_not_registered'), 'Known Official API code: whatsapp_number_not_registered');
+check(Polymorfa\ErrorCodes::isKnown('whatsapp_payment_method_required'), 'Known Official API code: whatsapp_payment_method_required');
 check((new Polymorfa\PolymorfaException('Fixture', 'future_api_code'))->errorCode === 'future_api_code', 'Unknown API codes preserved');
 echo count($cases)." signed typed webhook fixtures, 84 union variants and signature utility checks passed.\n";

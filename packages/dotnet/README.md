@@ -964,3 +964,51 @@ policy. Signal parsing is unchanged.
 Storage synchronization uses `StreamOptions.Since` when no checkpoint exists and
 the saved cursor otherwise. Event commit, checkpoint CAS and manual ACK keep that
 order. These changes are unreleased source behavior.
+
+
+## Official API round-2 betas
+
+Native Number catalog-cache reads/sync, marketing status, Official group JPEG
+upload, identity changes, incoming carts and signed webhook batches have source
+counterparts. These additions remain unreleased betas and may return
+`feature_unavailable`. They grant no enrollment or provider authority. See
+[the shared beta guide](../../docs/official-api-round2.md) for ownership, batching,
+whole-body signatures and release gates.
+
+Incoming cart `CloudOrderItem.Quantity` uses `long` to preserve the API's positive
+safe integers through `9007199254740991` in signed deliveries, batches and history.
+`ItemPrice` remains `double`; catalog prices remain strings. The JSON contract is
+unchanged. Callers assigning a quantity to `int` must check their own range before
+converting, and rebuild consumers against the widened DTO. This source correction
+is unreleased.
+
+The following uses an existing server client. Preserve the API's opaque cursor;
+stop when the response omits it. Catalog prices remain exact strings.
+
+```csharp
+var page = await client.Catalogs.ListProductsAsync("number-id", "123", new(100, "opaque_-"), new() { CancellationToken = cancellationToken });
+var nextCursor = page.Data.Data.NextCursor;
+```
+
+## Simultaneous calls source preparation
+
+This counterpart is prepared against API #559 merge `c1a43a1e`. It is not a
+registry availability claim. Use the HTTP API until a matching SDK release is
+published and accepted against the target environment.
+
+Call-settings reads expose `simultaneousCalls`, default false. Updates accept
+`simultaneousCalls` and `acknowledgeRisk`. Omission preserves stored state;
+explicit false disables the setting. Acknowledgment alone changes no setting
+and is rejected. The API requires a team key and `acknowledgeRisk: true` for an
+off-to-on transition. Project tokens may disable it. The SDK forwards values
+without guessing the stored state. Existing `invalid_parameter`,
+`permission_denied` and `state_conflict` errors remain authoritative.
+
+The setting affects linked-device Numbers. Cloud API Numbers ignore it.
+Unlimited concurrent calls differ from WhatsApp's apps and void Ban Insurance
+when the 30-day claim window overlaps an enabled period. Claim verdicts and
+`bansafe.claim` webhook verdicts recognize `simultaneous_calls`. Claim evidence
+includes `simultaneousCalls`; the webhook does not acquire an evidence object.
+
+No browser/client-token authority, call media behavior, automatic state read,
+retry policy or feature availability is added by these SDK fields.

@@ -290,6 +290,12 @@ func (t *transport) open(ctx context.Context, method, path string, q url.Values,
 		o = noRetry(o)
 	}
 	binary, isBinary := body.(*binaryRequest)
+	contentType := "application/octet-stream"
+	if multipart, ok := body.(*multipartRequest); ok {
+		binary = &multipart.binaryRequest
+		isBinary = true
+		contentType = multipart.contentType
+	}
 	if body != nil && !isBinary {
 		data, err = json.Marshal(body)
 		if err != nil {
@@ -341,6 +347,11 @@ func (t *transport) open(ctx context.Context, method, path string, q url.Values,
 		reqCtx, cancel := context.WithCancel(ctx)
 		timer := time.AfterFunc(timeout, cancel)
 		var requestBody io.Reader = bytes.NewReader(data)
+		if single && !isBinary {
+			// An opaque empty body must not become http.NoBody: net/http can
+			// replay a keyed bodyless mutation on a reused connection.
+			requestBody = io.NopCloser(bytes.NewReader(data))
+		}
 		if isBinary {
 			requestBody, err = binary.open(reqCtx)
 			if err != nil {
@@ -387,7 +398,7 @@ func (t *transport) open(ctx context.Context, method, path string, q url.Values,
 			req.Header.Set("Idempotency-Key", key)
 		}
 		if isBinary {
-			req.Header.Set("Content-Type", "application/octet-stream")
+			req.Header.Set("Content-Type", contentType)
 			req.Header.Del("Content-Length")
 			req.ContentLength = binary.length
 		}

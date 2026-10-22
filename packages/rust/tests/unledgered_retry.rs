@@ -22,11 +22,18 @@ fn client(base: String) -> MessagingClient {
     .unwrap()
 }
 
-// The held producer has no replay ledger for these four API operations.
+// The held producer has no replay ledger for these API operations, including Official provider mutations.
 #[tokio::test]
 async fn unledgered_submissions() {
     let mut failures = Vec::new();
-    for operation in ["grant", "relay", "retry", "delete"] {
+    for operation in [
+        "grant",
+        "relay",
+        "retry",
+        "delete",
+        "catalog-sync",
+        "official-picture",
+    ] {
         for status in [0, 429, 503] {
             for policy in ["keyed", "unkeyed", "default"] {
                 let body = json!({"error":{"code":"fixture_failure","message":"unknown outcome"}})
@@ -35,12 +42,30 @@ async fn unledgered_submissions() {
                 let wire = support41::Wire::raw(vec![row.clone(), row]).await;
                 let client = client(wire.base.clone());
                 let options = RequestOptions {
+                    api_version: Some("2026-10-14".into()),
                     max_network_retries: if policy == "default" { None } else { Some(1) },
                     idempotency_key: (policy == "keyed").then(|| "caller-key".into()),
                     headers: [("x-caller".into(), "retained".into())].into(),
                     ..Default::default()
                 };
                 let result = match operation {
+                    "catalog-sync" => client
+                        .catalogs()
+                        .sync("s", "123", options)
+                        .await
+                        .map(|_| ()),
+                    "official-picture" => client
+                        .official_groups()
+                        .set_picture(
+                            "s",
+                            "g",
+                            include_bytes!(
+                                "../../../contracts/fixtures/official-group-picture.jpg"
+                            ),
+                            options,
+                        )
+                        .await
+                        .map(|_| ()),
                     "grant" => client
                         .whatsapp_media()
                         .create_upload_grant("s", UploadMediaType::Image, &[0; 32], options)

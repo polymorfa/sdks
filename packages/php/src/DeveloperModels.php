@@ -14,9 +14,11 @@ namespace Polymorfa;
  * @phpstan-type RetryPolicy array{maximumAttempts:int,backoff:'constant'|'linear'|'exponential',initialDelaySeconds:int|float}
  * @phpstan-type HeaderInput array{name:string,value:string}
  * @phpstan-type SecretMetadata array{version:int,createdAt:string,previousValidUntil:?string}
- * @phpstan-type Webhook array{id:string,organizationId:string,owner:'organization'|'project',projectId:?string,url:string,eventTypes:list<string>,enabled:bool,format:'native'|'meta',retryPolicy:RetryPolicy,headers:list<array{name:string}>,secret:SecretMetadata,createdAt:string,updatedAt:string}
- * @phpstan-type WebhookCreate array{url:string,eventTypes:list<string>,enabled?:bool,format?:'native'|'meta',retryPolicy?:RetryPolicy,headers?:list<HeaderInput>}
- * @phpstan-type WebhookUpdate array{url?:string,eventTypes?:list<string>,enabled?:bool,format?:'native'|'meta',retryPolicy?:RetryPolicy,headers?:list<HeaderInput>}
+ * @phpstan-type BatchingInput array{enabled:bool,maxEvents?:int,windowMs?:int}
+ * @phpstan-type Batching array{enabled:bool,maxEvents:int,windowMs:int}
+ * @phpstan-type Webhook array{batching:Batching,id:string,organizationId:string,owner:'organization'|'project',projectId:?string,url:string,eventTypes:list<string>,enabled:bool,format:'native'|'meta',retryPolicy:RetryPolicy,headers:list<array{name:string}>,secret:SecretMetadata,createdAt:string,updatedAt:string}
+ * @phpstan-type WebhookCreate array{batching?:BatchingInput,url:string,eventTypes:list<string>,enabled?:bool,format?:'native'|'meta',retryPolicy?:RetryPolicy,headers?:list<HeaderInput>}
+ * @phpstan-type WebhookUpdate array{batching?:BatchingInput,url?:string,eventTypes?:list<string>,enabled?:bool,format?:'native'|'meta',retryPolicy?:RetryPolicy,headers?:list<HeaderInput>}
  * @phpstan-type WebhookCreation array{webhook:Webhook,operationId:null,idempotency:IdempotencyReceipt,secret:?string,secretAvailable:bool}
  * @phpstan-type WebhookMutation array{webhook:Webhook,operationId:null,idempotency:IdempotencyReceipt}
  * @phpstan-type WebhookDeletion array{webhookId:string,deleted:true,operationId:null,idempotency:IdempotencyReceipt}

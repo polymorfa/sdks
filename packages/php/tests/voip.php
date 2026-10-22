@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 $vectors = json_decode(file_get_contents(__DIR__.'/fixtures/calls.json'), true, flags:JSON_THROW_ON_ERROR);
 $permission = $vectors['permission'];
-$settings = $vectors['settings'];
+$settings = $vectors['settings'] + ['simultaneousCalls' => false];
 $quality = $vectors['quality'];
 $ok = ['success' => true];
 $cases = [
+ ['PUT','/platform/sessions/support/call-settings',['simultaneousCalls' => true,'acknowledgeRisk' => true],['success' => true,'data' => array_replace($settings,['simultaneousCalls' => true])],true,fn ($r) => $r->updateCallSettings('support',['simultaneousCalls' => true,'acknowledgeRisk' => true])],
+ ['PUT','/platform/sessions/support/call-settings',['simultaneousCalls' => false],['success' => true,'data' => $settings],true,fn ($r) => $r->updateCallSettings('support',['simultaneousCalls' => false])],
+ ['PUT','/platform/sessions/support/call-settings',['simultaneousCalls' => true],['success' => true,'data' => array_replace($settings,['simultaneousCalls' => true])],true,fn ($r) => $r->updateCallSettings('support',['simultaneousCalls' => true])],
+
  ['POST','/messaging/voip/calls',['session' => 'support','to' => '+15551234567','participant' => 'agent_1','video' => true],['success' => true,'data' => ['callId' => 'call_1','session' => 'support','video' => true]],false,fn ($r) => $r->place(['session' => 'support','to' => '+15551234567','participant' => 'agent_1','video' => true])],
  ['POST','/messaging/voip/calls/call_1/accept',['exclusive' => true,'participant' => 'agent_1'],['success' => true,'data' => ['answered' => true,'answeredBy' => 'server:agent_1','exclusive' => true]],false,fn ($r) => $r->accept('call_1', ['exclusive' => true,'participant' => 'agent_1'])],
  ['POST','/messaging/voip/calls/call_1/reject',null,$ok,false,fn ($r) => $r->reject('call_1')],
@@ -41,7 +45,7 @@ foreach ($cases as [$method,$path,$body,$fixture,$server,$invoke]) {
 }
 $history = [];
 $client = new Polymorfa\MessagingClient($credential, http:mocked([], $history));
-foreach ([fn () => $client->voip->createCallLink(['session' => 'support'], new Polymorfa\RequestOptions(idempotencyKey:'bad')),fn () => $client->voip->previewCallLink(['session' => 'support','token' => '?bad']),fn () => $client->voip->updateCallSettings('support', ['expectedRevision' => 1]),fn () => $client->voip->report('call_1', ['kind' => 'quality','connectionId' => 'connection_1','quality' => []]),fn () => $client->voip->report('call_1', ['kind' => 'quality','connectionId' => 'connection_1','quality' => ['rttMs' => 60001]]),fn () => $client->voip->setHandRaised('call_1', ['connectionId' => 'short','raised' => true])] as $invalid) {
+foreach ([fn () => $client->voip->updateCallSettings('support', ['acknowledgeRisk' => true]), fn () => $client->voip->updateCallSettings('support', ['simultaneousCalls' => null]), fn () => $client->voip->createCallLink(['session' => 'support'], new Polymorfa\RequestOptions(idempotencyKey:'bad')),fn () => $client->voip->previewCallLink(['session' => 'support','token' => '?bad']),fn () => $client->voip->updateCallSettings('support', ['expectedRevision' => 1]),fn () => $client->voip->report('call_1', ['kind' => 'quality','connectionId' => 'connection_1','quality' => []]),fn () => $client->voip->report('call_1', ['kind' => 'quality','connectionId' => 'connection_1','quality' => ['rttMs' => 60001]]),fn () => $client->voip->setHandRaised('call_1', ['connectionId' => 'short','raised' => true])] as $invalid) {
     raises($invalid, Polymorfa\ValidationException::class);
 }
 check($history === [], 'Call guards before transport');

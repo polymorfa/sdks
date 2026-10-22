@@ -3,6 +3,12 @@ using System.Text;
 using System.Text.Json;
 using Polymorfa.Sdk;
 
+if (args.Contains("--cloud-order-quantity-only")) { await CloudOrderQuantityTests.RunAsync(); return; }
+
+if (args.Contains("--simultaneous-calls-only")) { await CallsTests.RunAsync(); return; }
+
+if (args.Contains("--official-round2-only")) { await OfficialRound2Tests.RunAsync(); return; }
+
 OpaqueCredentialTests.Run();
 await OpaqueCredentialTests.WireAsync();
 if (args.Contains("--credential-opaque-only")) { Console.WriteLine("PASS opaque credential shapes"); return; }
@@ -226,3 +232,7 @@ static string Kind(PolymorfaException error) => error switch
 await StorageD1Tests.RunAsync();
 
 await UnledgeredRetryTests.RunAsync();
+
+await OfficialRound2Tests.RunAsync();
+
+await CloudOrderQuantityTests.RunAsync();

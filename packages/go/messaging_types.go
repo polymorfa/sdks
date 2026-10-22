@@ -2,6 +2,7 @@ package polymorfa
 
 // ConversationReference accepts public IDs, E.164 phone numbers, or BSUIDs.
 type ConversationReference struct {
+	ParentBSUID string `json:"parentBsuid,omitempty"`
 	ID          string `json:"id,omitempty"`
 	PhoneNumber string `json:"phoneNumber,omitempty"`
 	BSUID       string `json:"bsuid,omitempty"`

@@ -5,6 +5,7 @@ import {
   validateAcceptance,
   releaseVersion,
   validateFeatureContractPins,
+  multiSourcePins,
   campaignSupplementPins,
   expectedContract,
 } from "./release-gate.mjs";
@@ -240,4 +241,58 @@ test("integrated frequency-cap and segment/drip supplements are gate pins that b
   }
   // The current release contract therefore fails closed.
   assert.throws(() => expectedContract(), /reconciled|held from publication/);
+});
+
+test("A two-audience supplement is checked per family and honours its hold", () => {
+  const source = {
+    repository: "polymorfa/polymorfa",
+    commit: "a".repeat(40),
+    contracts: {
+      messaging: {
+        sha256: "b".repeat(64),
+        sourcePath: "apps/api/docs/openapi.json",
+      },
+      platform: {
+        sha256: "c".repeat(64),
+        sourcePath: "apps/api/docs/openapi.management.json",
+      },
+    },
+  };
+  const supplement = {
+    repository: source.repository,
+    commit: source.commit,
+    published: true,
+    sources: {
+      messaging: {
+        sourcePath: source.contracts.messaging.sourcePath,
+        sourceSha256: source.contracts.messaging.sha256,
+      },
+      platform: {
+        sourcePath: source.contracts.platform.sourcePath,
+        sourceSha256: source.contracts.platform.sha256,
+      },
+    },
+  };
+  const pins = multiSourcePins(supplement);
+  assert.deepEqual(
+    pins.map(({ family }) => family),
+    ["messaging", "platform"],
+  );
+  validateFeatureContractPins(source, pins);
+  assert.throws(
+    () =>
+      validateFeatureContractPins(
+        source,
+        multiSourcePins({ ...supplement, published: false }),
+      ),
+    /held from publication/,
+  );
+  assert.throws(
+    () =>
+      validateFeatureContractPins(
+        source,
+        multiSourcePins({ ...supplement, commit: "e".repeat(40) }),
+      ),
+    /not been reconciled/,
+  );
 });

@@ -49,7 +49,7 @@ var banSafeFixtures = []operationFixture{
 	{"OrganizationClient.BanSafe.ListClaims", "GET", "/platform/bansafe/claims", "session=s&status=paid", "", `{"data":[{"id":"c","amountCents":0.123456,"evidence":{"measuredHours":48}}],"page":{"nextCursor":null}}`, "data.0.amountCents", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wirePage(o.BanSafe().ListClaims(ctx, ListBanSafeClaimsParams{Session: "s", Status: "paid"}))
 	}},
-	{"OrganizationClient.BanSafe.GetClaim", "GET", "/platform/bansafe/claims/c", "", "", `{"data":{"id":"c","status":"paid","evidence":{"attributionRuleVersion":1,"sharedConnection":false}}}`, "data.evidence.attributionRuleVersion", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+	{"OrganizationClient.BanSafe.GetClaim", "GET", "/platform/bansafe/claims/c", "", "", `{"data":{"id":"c","status":"paid","evidence":{"attributionRuleVersion":1,"sharedConnection":false,"simultaneousCalls":false}}}`, "data.evidence.attributionRuleVersion", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(o.BanSafe().GetClaim(ctx, "c"))
 	}},
 }

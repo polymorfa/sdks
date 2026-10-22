@@ -336,6 +336,14 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
             json!({"id":"usage","meter":"call.duration","quantity":6.5,"unit":"second","dimensions":{"direction":"outbound","video":false,"participants":1.0},"keySource":"none","sourceKind":"call","sourceId":"call","projectId":"project","session":"s","occurredAt":"2026-10-11","recordedAt":"2026-10-11","revision":1,"pricingState":"unpriced","rateCard":null,"pricedCredits":null}),
         ),
         (
+            "marketing.onboarding_updated",
+            json!({"kind":"terms_signed","wabaId":"w","metaEvent":"MM_LITE_TERMS_SIGNED"}),
+        ),
+        (
+            "contact.marketing_preference_updated",
+            json!({"waId":"opaque","preference":"stop","category":"marketing_messages"}),
+        ),
+        (
             "voice.asset_failed",
             merge(voice.clone(), json!({"failureReason":"future_failure"})),
         ),

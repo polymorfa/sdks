@@ -32,6 +32,7 @@ import { SessionsResource } from "./sessions.js";
 import { TemplatesResource } from "./templates.js";
 import { CloudTemplatesResource } from "./cloud-templates.js";
 import { OfficialGroupsResource } from "./official-groups.js";
+import { CatalogsResource } from "./catalogs.js";
 import { CloudCatalogsResource } from "./cloud-catalogs.js";
 import { CloudMarketingResource } from "./cloud-marketing.js";
 import { FlowEncryptionResource } from "./flow-encryption.js";
@@ -71,6 +72,7 @@ export class MessagingClient {
   readonly cloudTemplates: CloudTemplatesResource;
   /** Beta: WhatsApp groups on an Official API connection (Groups API). */
   readonly officialGroups: OfficialGroupsResource;
+  readonly catalogs: CatalogsResource;
   readonly cloudCatalogs: CloudCatalogsResource;
   readonly cloudMarketing: CloudMarketingResource;
   readonly flowEncryption: FlowEncryptionResource;
@@ -129,6 +131,7 @@ export class MessagingClient {
       transport,
       credential.type,
     );
+    this.catalogs = new CatalogsResource(transport, credential.type);
     this.cloudCatalogs = new CloudCatalogsResource(transport, credential.type);
     this.cloudMarketing = new CloudMarketingResource(
       transport,

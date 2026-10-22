@@ -1,7 +1,14 @@
 import { definePolymorfaElements, type PolymorfaInboxElement } from "@polymorfa/elements";
 import type { ConversationMessage, ConversationEvent, InboxChange, InboxConversation } from "@polymorfa/browser";
 
-interface Message extends ConversationMessage { receipt: string }
+// `receipt` is the C# host's raw status, shown in #native-status. Only receipts observed from
+// message.ack become chat receipts; the send response status is acceptance, never delivery or read.
+interface Message extends Omit<ConversationMessage, "receipt"> { receipt: string }
+const observedReceipts = new Map<string, "delivered" | "read" | "played">([["delivered", "delivered"], ["delivery", "delivered"], ["read", "read"], ["played", "played"]]);
+const view = ({ receipt, ...message }: Message): ConversationMessage => {
+  const state = message.direction === "outbound" ? observedReceipts.get(receipt) : undefined;
+  return state ? { ...message, receipt: { state } } : message;
+};
 interface Snapshot { messages: Message[]; peer: string; session: string; receivedEvents: number; lastEvent: string; localTest: boolean }
 definePolymorfaElements();
 export async function mount() {
@@ -30,7 +37,7 @@ export async function mount() {
       if (serialized !== previous) {
         previous = serialized;
         for (const notify of changes) notify({type:"conversation",conversation:row(snapshot)});
-        for (const message of snapshot.messages) for (const notify of messages) notify({type:"upsert",message});
+        for (const message of snapshot.messages) for (const notify of messages) notify({type:"upsert",message:view(message)});
       }
       const label = document.querySelector("#transport-label");
       if (label) label.textContent = snapshot.localTest ? "Local test numbers. Simulated WhatsApp transport." : "";
@@ -49,11 +56,11 @@ export async function mount() {
     subscribe(notify) {changes.add(notify);return () => changes.delete(notify);},
     conversation() {
       return {
-        async load(_cursor, signal) {return {messages:(await request<Snapshot>("conversation",{...(signal ? {signal} : {})})).messages};},
+        async load(_cursor, signal) {return {messages:(await request<Snapshot>("conversation",{...(signal ? {signal} : {})})).messages.map(view)};},
         subscribe(notify) {messages.add(notify);return () => messages.delete(notify);},
         async send(message, signal) {
           if (message.replyTo || message.attachments?.length) throw new Error("This native example sends text only.");
-          return request<Message>("send", {method:"POST",...(signal ? {signal} : {}),headers:{"Content-Type":"application/json","Idempotency-Key":message.clientId},body:JSON.stringify({text:message.text})});
+          return view(await request<Message>("send", {method:"POST",...(signal ? {signal} : {}),headers:{"Content-Type":"application/json","Idempotency-Key":message.clientId},body:JSON.stringify({text:message.text})}));
         },
       };
     },

@@ -167,6 +167,7 @@ type WebhookSecretMetadata struct {
 	PreviousValidUntil *string `json:"previousValidUntil"`
 }
 type PlatformWebhook struct {
+	Batching       WebhookBatching         `json:"batching"`
 	ID             string                  `json:"id"`
 	OrganizationID string                  `json:"organizationId"`
 	Owner          string                  `json:"owner"`
@@ -182,14 +183,16 @@ type PlatformWebhook struct {
 	UpdatedAt      string                  `json:"updatedAt"`
 }
 type CreateWebhookRequest struct {
-	URL         string               `json:"url"`
-	EventTypes  []string             `json:"eventTypes"`
-	Enabled     *bool                `json:"enabled,omitempty"`
-	Format      string               `json:"format,omitempty"`
-	RetryPolicy *WebhookRetryPolicy  `json:"retryPolicy,omitempty"`
-	Headers     []WebhookHeaderInput `json:"headers,omitempty"`
+	Batching    *WebhookBatchingInput `json:"batching,omitempty"`
+	URL         string                `json:"url"`
+	EventTypes  []string              `json:"eventTypes"`
+	Enabled     *bool                 `json:"enabled,omitempty"`
+	Format      string                `json:"format,omitempty"`
+	RetryPolicy *WebhookRetryPolicy   `json:"retryPolicy,omitempty"`
+	Headers     []WebhookHeaderInput  `json:"headers,omitempty"`
 }
 type UpdateWebhookRequest struct {
+	Batching    *WebhookBatchingInput `json:"batching,omitempty"`
 	URL         string                `json:"url,omitempty"`
 	EventTypes  *[]string             `json:"eventTypes,omitempty"`
 	Enabled     *bool                 `json:"enabled,omitempty"`

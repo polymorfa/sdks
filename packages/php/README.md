@@ -921,3 +921,44 @@ terminator; a blank line resets the budget. Oversized frames reconnect from the
 previous validated cursor. Storage still commits the event, saves its checkpoint
 with CAS, then manually acknowledges it. These changes are unreleased source
 behavior.
+
+
+## Official API round-2 betas
+
+Native Number catalog-cache reads/sync, marketing status, Official group JPEG
+upload, identity changes, incoming carts and signed webhook batches have source
+counterparts. These additions remain unreleased betas and may return
+`feature_unavailable`. They grant no enrollment or provider authority. See
+[the shared beta guide](../../docs/official-api-round2.md) for ownership, batching,
+whole-body signatures and release gates.
+
+The following uses an existing server client. Preserve the API's opaque cursor;
+stop when the response omits it. Catalog prices remain exact strings.
+
+```php
+$page = $client->catalogs->listProducts('number-id', '123', ['limit' => 100, 'cursor' => 'opaque_-']);
+$nextCursor = $page->data['data']['nextCursor'] ?? null;
+```
+
+## Simultaneous calls source preparation
+
+This counterpart is prepared against API #559 merge `c1a43a1e`. It is not a
+registry availability claim. Use the HTTP API until a matching SDK release is
+published and accepted against the target environment.
+
+Call-settings reads expose `simultaneousCalls`, default false. Updates accept
+`simultaneousCalls` and `acknowledgeRisk`. Omission preserves stored state;
+explicit false disables the setting. Acknowledgment alone changes no setting
+and is rejected. The API requires a team key and `acknowledgeRisk: true` for an
+off-to-on transition. Project tokens may disable it. The SDK forwards values
+without guessing the stored state. Existing `invalid_parameter`,
+`permission_denied` and `state_conflict` errors remain authoritative.
+
+The setting affects linked-device Numbers. Cloud API Numbers ignore it.
+Unlimited concurrent calls differ from WhatsApp's apps and void Ban Insurance
+when the 30-day claim window overlaps an enabled period. Claim verdicts and
+`bansafe.claim` webhook verdicts recognize `simultaneous_calls`. Claim evidence
+includes `simultaneousCalls`; the webhook does not acquire an evidence object.
+
+No browser/client-token authority, call media behavior, automatic state read,
+retry policy or feature availability is added by these SDK fields.

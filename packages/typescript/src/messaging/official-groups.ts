@@ -1,5 +1,8 @@
 import type { MessagingCredential } from "../credentials.js";
-import { PolymorfaConfigurationError } from "../errors.js";
+import {
+  PolymorfaConfigurationError,
+  PolymorfaValidationError,
+} from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type { ConversationIdentity, SuccessEnvelope } from "./types.js";
@@ -291,6 +294,37 @@ export class OfficialGroupsResource {
       { joinRequestIds },
       options,
     );
+  }
+
+  /** Beta. Official-only; Hybrid Numbers must use groups.setPicture on Linked Devices.
+   * Upload a square JPEG, at least 192 x 192 pixels, at most 5 MB. The server
+   * validates image bytes and dimensions. An event confirms the applied change.
+   */
+  setPicture(
+    session: string,
+    group: string,
+    file: Blob,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessEnvelope<OfficialGroupChangeAccepted>>> {
+    this.requireServerCredential();
+    if (
+      !(file instanceof Blob) ||
+      file.type !== "image/jpeg" ||
+      file.size === 0 ||
+      file.size > 5 * 1024 * 1024
+    )
+      throw new PolymorfaValidationError(
+        "Provide a nonempty JPEG of at most 5 MB, square and at least 192 x 192 pixels.",
+      );
+    const body = new FormData();
+    body.set("file", file, "picture.jpg");
+    return this.transport.request({
+      method: "PUT",
+      path: `${groupPath(session, group)}/picture`,
+      body,
+      ...options,
+      maxNetworkRetries: 0,
+    });
   }
 
   /** Pins a group message for 1 to 30 days, or unpins it. At most three stay pinned. */

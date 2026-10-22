@@ -11,12 +11,14 @@ from typing import Generic, Literal, TypeVar
 
 from typing_extensions import Never, NotRequired, TypedDict
 
+from .cloud_order import CloudOrder
 from .models import WhatsAppMessageIds
 from .platform_core import SessionCapabilities
 from .transport import Json, JsonObject
 
 
 class IdentityReference(TypedDict):
+    parentBsuid: NotRequired[str]
     id: str
     phoneNumber: NotRequired[str]
     bsuid: NotRequired[str]
@@ -108,6 +110,7 @@ class CloudMessageReferral(TypedDict, total=False):
 
 
 class CloudMessagePayload(TypedDict):
+    order: NotRequired[CloudOrder]
     id: str
     whatsapp_ids: WhatsAppMessageIds
     whatsapp_id: NotRequired[str]
@@ -286,7 +289,35 @@ class ContactOptPayload(TypedDict):
     projectId: NotRequired[str]
 
 
+class ContactPreviousIdentity(TypedDict, total=False):
+    id: str
+    bsuid: str
+    parentBsuid: str
+
+
+class ContactIdentityChange(TypedDict):
+    reason: Literal["phone_number_changed", "user_id_changed"]
+    messageId: str
+    previous: NotRequired[ContactPreviousIdentity]
+
+
+class MarketingOnboardingUpdatedPayload(TypedDict):
+    kind: Literal["terms_signed", "ad_account_linked"]
+    wabaId: str
+    ownerBusinessId: NotRequired[str]
+    metaEvent: Literal["MM_LITE_TERMS_SIGNED", "AD_ACCOUNT_LINKED"]
+
+
+class ContactMarketingPreferencePayload(TypedDict):
+    waId: str
+    preference: Literal["stop", "resume"]
+    category: Literal["marketing_messages"]
+    phoneNumberId: NotRequired[str]
+
+
 class ContactUpdatePayload(TypedDict):
+    identityChange: NotRequired[ContactIdentityChange]
+    parentBsuid: NotRequired[str]
     id: str
     phoneNumber: NotRequired[str]
     bsuid: NotRequired[str]
@@ -712,7 +743,14 @@ class BanSafeClaimPayload(TypedDict):
     incidentId: str
     phoneNumber: str
     status: Literal["filed", "under_review", "approved", "denied", "paid", "reversed"]
-    verdict: Literal["other_device", "customer_conduct", "shared_network", "ours", "inconclusive"]
+    verdict: Literal[
+        "other_device",
+        "customer_conduct",
+        "shared_network",
+        "simultaneous_calls",
+        "ours",
+        "inconclusive",
+    ]
     windowStart: str
     windowEnd: str
     measuredCents: float
@@ -734,6 +772,8 @@ class CallPermissionChangedPayload(TypedDict):
 
 
 class OrderConversation(TypedDict, total=False):
+    bsuid: str
+    parentBsuid: str
     id: str
     phoneNumber: str
 

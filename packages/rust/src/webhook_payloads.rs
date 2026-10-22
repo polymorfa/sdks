@@ -13,7 +13,7 @@ macro_rules! payload {
         pub struct $name { $(pub $field:$kind,)* $(#[serde(skip_serializing_if="Option::is_none")]pub $optional:Option<$option_kind>,)* }
     };
 }
-payload!(EventConversation {id:String} {phone_number:String,bsuid:String,username:String,sender:ConversationIdentity});
+payload!(EventConversation {id:String} {phone_number:String,bsuid:String,parent_bsuid:String,username:String,sender:ConversationIdentity});
 payload!(NativeFlowResponse {name:String,params_json:String} {version:u32});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -120,6 +120,8 @@ pub struct CloudMessageReferral {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CloudMessagePayload {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order: Option<crate::official_round2::CloudOrder>,
     pub id: String,
     #[serde(rename = "whatsapp_ids")]
     pub whatsapp_ids: WhatsAppMessageIds,
@@ -269,7 +271,7 @@ payload!(GroupJoinRequest {join_request_id:String,user:ConversationIdentity,stat
 payload!(GroupParticipantPayload {id:String} {joined:Vec<ConversationIdentity>,left:Vec<ConversationIdentity>,promoted:Vec<ConversationIdentity>,demoted:Vec<ConversationIdentity>,reason:String,initiated_by:GroupInitiatedBy,request_id:String,failed_participants:Vec<FailedGroupParticipant>,errors:Vec<OfficialGroupError>,join_request:GroupJoinRequest});
 payload!(PresenceUpdatePayload {observed_at:u64} {from:ConversationIdentity,sender:ConversationIdentity,state:String,media:String,unavailable:bool,last_seen:u64});
 payload!(ContactOptPayload {phone:String,source:ContactOptSource,keyword:String,session:String} {project_id:String});
-payload!(ContactUpdatePayload {id:String} {phone_number:String,bsuid:String,full_name:String,first_name:String,push_name:String,old_push_name:String,business_name:String,old_business_name:String,picture_id:String,picture_removed:bool,username:String});
+payload!(ContactUpdatePayload {id:String} {parent_bsuid:String,identity_change:crate::official_round2::ContactIdentityChange,phone_number:String,bsuid:String,full_name:String,first_name:String,push_name:String,old_push_name:String,business_name:String,old_business_name:String,picture_id:String,picture_removed:bool,username:String});
 payload!(ChatArchivePayload {from:ConversationIdentity} {archive:bool,pinned:bool});
 payload!(ChatMutePayload {from:ConversationIdentity,muted:bool} {mute_end_timestamp:u64});
 payload!(ChatReadPayload {from:ConversationIdentity,read:bool} {});
@@ -706,7 +708,7 @@ payload!(BanSafeIncidentPayload {id:String,phone_number:String,kind:BanSafeIncid
 payload!(BanSafeClaimPayload {id:String,incident_id:String,phone_number:String,status:BanSafeClaimStatus,verdict:BanSafeClaimVerdict,window_start:String,window_end:String,measured_cents:f64,cap_cents:f64,amount_cents:f64,summary:String,reason:String,decided_at:Option<String>,paid_at:Option<String>} {});
 payload!(CallPermissionChangedPayload {conversation:ConversationIdentity,status:CallPermissionStatus,previous_status:CallPermissionStatus,expires_at:Option<String>,source:CallPermissionSource,changed_at:String} {});
 payload!(PaymentUpdateBase {reported_by:PaymentReportedBy,provider_event_id:String,reference_id:String,conversation:PaymentConversation} {});
-payload!(PaymentConversation {} {id:String,phone_number:String});
+payload!(PaymentConversation {} {id:String,phone_number:String,bsuid:String,parent_bsuid:String});
 payload!(ReportedPaymentAmount {value:f64,offset:f64} {});
 payload!(PaymentTransaction {} {id:String,provider_transaction_id:String,provider:String,status:String,method:String,error_code:String});
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -812,6 +814,12 @@ pub struct SessionCapabilitiesUpdatedPayload {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "event", content = "payload")]
 pub enum KnownWebhookPayload {
+    #[serde(rename = "marketing.onboarding_updated")]
+    MarketingOnboardingUpdated(Box<crate::official_round2::MarketingOnboardingUpdatedPayload>),
+    #[serde(rename = "contact.marketing_preference_updated")]
+    ContactMarketingPreferenceUpdated(
+        Box<crate::official_round2::ContactMarketingPreferencePayload>,
+    ),
     #[serde(rename = "bansafe.action")]
     BanSafeAction(Box<BanSafeActionPayload>),
     #[serde(rename = "bansafe.claim")]
@@ -1125,6 +1133,7 @@ pub enum BanSafeClaimStatus {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum BanSafeClaimVerdict {
+    SimultaneousCalls,
     OtherDevice,
     CustomerConduct,
     SharedNetwork,

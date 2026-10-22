@@ -64,7 +64,7 @@ public sealed record BanSafeEnforcementSummary : BanSafeNumber
 public sealed record BanSafeIncident(string Id, string SessionId, string Session, string PhoneNumber, string ProjectId, string Kind, string Source, string Resolution, bool Ambiguous, string StartedAt, string? EndsAt, string? ClosedAt, string? ClosedBy, string? ClaimId, string? Note, string? ReportedBy, string CreatedAt);
 public sealed record ReportBanSafeIncidentRequest(string Session, string? OccurredAt = null, string? Note = null);
 public sealed record BanSafeIncidentReceipt(string IncidentId, bool Created, string SessionId, string Session, string OccurredAt);
-public sealed record BanSafeClaimEvidence(long? AttributionRuleVersion, int WindowDays, bool DeviceEvidence, long OtherDevices, bool RestrictedInWindow, long CriticalFindingDays, bool SharedConnection, decimal MeasuredHours);
+public sealed record BanSafeClaimEvidence(long? AttributionRuleVersion, int WindowDays, bool DeviceEvidence, long OtherDevices, bool RestrictedInWindow, long CriticalFindingDays, bool SharedConnection, decimal MeasuredHours, bool SimultaneousCalls);
 public sealed record BanSafeClaim(string Id, string IncidentId, string SessionId, string Session, string PhoneNumber, string ProjectId, string Status, string Verdict, string WindowStart, string WindowEnd, decimal MeasuredCents, decimal CapCents, decimal AmountCents, BanSafeClaimEvidence Evidence, string Summary, string Reason, string? DecidedAt, string? PaidAt, string CreatedAt);
 public sealed record BanSafeSignalDefinition(string Key, string Label, string Group, string Kind, string Unit, string Description);
 public sealed record BanSafeCodeCount(long Code, long Count);

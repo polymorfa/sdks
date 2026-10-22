@@ -29,6 +29,7 @@ from .functions import Functions
 from .groups import Groups
 from .observations import Identities, Labels, Privacy
 from .official_groups import OfficialGroups
+from .official_round2 import Catalogs
 from .onboarding import CloudOnboarding, Testing
 from .organization import (
     ApiKeys,
@@ -58,6 +59,7 @@ class AsyncMessagingClient:
     history_sync: HistorySync
     campaigns: MessagingCampaigns
     official_groups: OfficialGroups
+    catalogs: Catalogs
     cloud_onboarding: CloudOnboarding
     testing: Testing
     observation_policies: ObservationPolicies
@@ -98,6 +100,7 @@ class AsyncMessagingClient:
         for name, resource in (
             ("campaigns", MessagingCampaigns),
             ("official_groups", OfficialGroups),
+            ("catalogs", Catalogs),
             ("cloud_onboarding", CloudOnboarding),
             ("testing", Testing),
             ("observation_policies", ObservationPolicies),

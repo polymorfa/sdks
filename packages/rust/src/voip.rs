@@ -122,6 +122,7 @@ pub struct SessionCallSettings {
     pub sip_trunk_id: Option<String>,
     pub sip_claim: bool,
     pub host_cloud_api_calls: bool,
+    pub simultaneous_calls: bool,
     pub revision: u64,
     pub updated_at: Option<String>,
 }
@@ -144,6 +145,10 @@ pub struct UpdateSessionCallSettingsRequest {
     pub sip_claim: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub host_cloud_api_calls: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub simultaneous_calls: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub acknowledge_risk: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub expected_revision: Option<u64>,
 }
@@ -518,6 +523,7 @@ impl Voip<'_> {
             && body.sip_trunk_id.is_none()
             && body.sip_claim.is_none()
             && body.host_cloud_api_calls.is_none()
+            && body.simultaneous_calls.is_none()
         {
             return Err(configuration("call settings: specify a setting"));
         }

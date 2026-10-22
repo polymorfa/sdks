@@ -1,11 +1,15 @@
 import {
   VoiceNoteRecorder,
+  MessageFilterController,
   localAttachmentFromFile,
   type ComposerAttachment,
   type ConversationController,
   type ConversationMessage,
+  type MessageContentState,
+  type MessageOrder,
   type ConversationSnapshot,
   type LocalAttachment,
+  type MediaQuality,
   type MessageAttachment,
   type MessageComposerController,
   type MessageComposerSnapshot,
@@ -15,6 +19,8 @@ import {
   type VoiceNoteRecorderSnapshot,
 } from "@polymorfa/browser";
 import {
+  ATTACHMENT_KINDS,
+  type AttachmentKind,
   CHAT_ICONS,
   EMOJI_CATEGORY_ICONS,
   EMOJI_PICKER_CATEGORIES,
@@ -34,12 +40,20 @@ import {
   type QuickReplyOption,
   ENGLISH_MESSAGES,
   appearanceToCssVariables,
+  attachmentPresentation,
+  fileExtension,
   formatDayLabel,
+  formatDuration,
   formatFileSize,
   formatMessageTime,
+  formatOrderUnitPrice,
   injectComponentStyles,
   isImageAttachment,
+  linkHost,
+  thumbnailDataUrl,
+  waveformBars,
   layoutMessages,
+  messagePresentationStatus,
   safeAttachmentUrl,
   slotClassName,
   themeClassName,
@@ -50,8 +64,10 @@ import {
   type SlotClassNames,
 } from "@polymorfa/ui";
 import {
+  createContext,
   memo,
   useCallback,
+  useContext,
   useEffect,
   useId,
   useLayoutEffect,
@@ -216,6 +232,432 @@ export function Icon({
   );
 }
 
+export interface MessageFilterToolbarProps {
+  readonly controller: MessageFilterController;
+  readonly search?: boolean;
+  readonly filters?: boolean;
+  readonly className?: string;
+  readonly classNames?: SlotClassNames;
+}
+
+/** Search and filter loaded messages without changing history, drafts or sends. */
+export function MessageFilterToolbar({
+  controller,
+  search = true,
+  filters = true,
+  className,
+  classNames,
+}: MessageFilterToolbarProps) {
+  const configuration = usePolymorfa();
+  const slots = useSlots(classNames);
+  const root = useShell(
+    slots,
+    "messageToolbar",
+    "pmfa-message-toolbar",
+    className,
+  );
+  const state = useController(controller);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const searchId = useId(),
+    filtersId = useId();
+  const searchButton = useRef<HTMLButtonElement>(null);
+  const active =
+    state.query !== "" || state.type !== "all" || state.direction !== "all";
+  return (
+    <div {...root}>
+      <div className="pmfa-message-toolbar-actions">
+        {search && (
+          <button
+            type="button"
+            className="pmfa-btn pmfa-btn-ghost"
+            ref={searchButton}
+            title={text(configuration, "chat.searchMessages")}
+            aria-expanded={searchOpen}
+            aria-controls={searchId}
+            onClick={() => {
+              // A closed search must not keep hiding messages.
+              if (searchOpen) controller.setQuery("");
+              setSearchOpen(!searchOpen);
+            }}
+          >
+            <Icon name="search" />
+            <span className="pmfa-message-toolbar-label">
+              {text(configuration, "chat.searchMessages")}
+            </span>
+          </button>
+        )}
+        {filters && (
+          <button
+            type="button"
+            className="pmfa-btn pmfa-btn-ghost"
+            title={text(configuration, "chat.filters")}
+            aria-expanded={filtersOpen}
+            aria-controls={filtersId}
+            onClick={() => setFiltersOpen((open) => !open)}
+          >
+            <Icon name="filter" />
+            <span className="pmfa-message-toolbar-label">
+              {text(configuration, "chat.filters")}
+            </span>
+          </button>
+        )}
+        {active && (
+          <button
+            type="button"
+            className="pmfa-btn pmfa-message-clear"
+            onClick={() => {
+              controller.clear();
+              setSearchOpen(false);
+            }}
+          >
+            {text(configuration, "chat.clearFilters")}
+          </button>
+        )}
+      </div>
+      {search && searchOpen && (
+        <input
+          {...slots("messageSearch", "pmfa-input pmfa-message-search")}
+          id={searchId}
+          type="search"
+          autoFocus
+          aria-label={text(configuration, "chat.searchMessages")}
+          placeholder={text(configuration, "chat.searchMessages")}
+          value={state.query}
+          onChange={(event) => controller.setQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              controller.setQuery("");
+              setSearchOpen(false);
+              searchButton.current?.focus();
+            }
+          }}
+        />
+      )}
+      {filters && filtersOpen && (
+        <div
+          {...slots("messageFilters", "pmfa-message-filters")}
+          id={filtersId}
+        >
+          <label>
+            <span>{text(configuration, "chat.mediaType")}</span>
+            <select
+              className="pmfa-input"
+              value={state.type}
+              onChange={(event) =>
+                controller.setType(event.target.value as typeof state.type)
+              }
+            >
+              <option value="all">
+                {text(configuration, "chat.allTypes")}
+              </option>
+              {(
+                [
+                  "text",
+                  "image",
+                  "video",
+                  "audio",
+                  "document",
+                  "order",
+                ] as const
+              ).map((type) => (
+                <option key={type} value={type}>
+                  {text(configuration, `chat.type.${type}`)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            <span>{text(configuration, "chat.direction")}</span>
+            <select
+              className="pmfa-input"
+              value={state.direction}
+              onChange={(event) =>
+                controller.setDirection(
+                  event.target.value as typeof state.direction,
+                )
+              }
+            >
+              <option value="all">
+                {text(configuration, "chat.bothDirections")}
+              </option>
+              <option value="inbound">
+                {text(configuration, "chat.incoming")}
+              </option>
+              <option value="outbound">
+                {text(configuration, "chat.outgoing")}
+              </option>
+            </select>
+          </label>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export interface ContentUnavailableProps {
+  readonly state?: Exclude<MessageContentState, "available">;
+  readonly className?: string;
+  readonly classNames?: SlotClassNames;
+}
+
+/** Missing content is explicit; an empty text body remains an ordinary message. */
+export function ContentUnavailable({
+  state = "unavailable",
+  className,
+  classNames,
+}: ContentUnavailableProps) {
+  const configuration = usePolymorfa(),
+    slots = useSlots(classNames);
+  const root = useShell(
+    slots,
+    "contentUnavailable",
+    "pmfa-content-unavailable",
+    className,
+  );
+  return (
+    <span {...root}>
+      {text(
+        configuration,
+        state === "not_retained"
+          ? "chat.contentNotRetained"
+          : state === "deleted"
+            ? "chat.contentDeleted"
+            : "chat.contentUnavailable",
+      )}
+    </span>
+  );
+}
+
+export interface OrderCartViewProps {
+  readonly order: MessageOrder;
+  readonly className?: string;
+  readonly classNames?: SlotClassNames;
+}
+
+/** Received cart lines and reported unit prices. No payment state or total is inferred. */
+export function OrderCartView({
+  order,
+  className,
+  classNames,
+}: OrderCartViewProps) {
+  const configuration = usePolymorfa(),
+    slots = useSlots(classNames);
+  const root = useShell(slots, "orderCart", "pmfa-order", className);
+  return (
+    <OrderCartContent
+      order={order}
+      configuration={configuration}
+      slots={slots}
+      root={root}
+    />
+  );
+}
+
+/** The nearest ancestor that scrolls vertically. */
+function scrollingAncestor(node: Element): HTMLElement | undefined {
+  for (let parent = node.parentElement; parent; parent = parent.parentElement) {
+    const { overflowY } = getComputedStyle(parent);
+    if (overflowY === "auto" || overflowY === "scroll") return parent;
+  }
+  return undefined;
+}
+
+function OrderCartContent({
+  order,
+  configuration,
+  slots,
+  root,
+}: {
+  readonly order: MessageOrder;
+  readonly configuration: Configuration;
+  readonly slots: Slots;
+  readonly root: SlotProps;
+}) {
+  const title = useId();
+  const [expanded, setExpanded] = useState(false);
+  const toggle = useRef<HTMLButtonElement>(null);
+  // The toggle's position before items change above it.
+  const toggleTop = useRef<number | undefined>(undefined);
+  useIsomorphicLayoutEffect(() => {
+    const node = toggle.current;
+    const before = toggleTop.current;
+    toggleTop.current = undefined;
+    if (node === null || before === undefined) return;
+    // Keep the toggle in view inside its own scroller; the page never scrolls.
+    const scroller = scrollingAncestor(node);
+    if (scroller !== undefined)
+      scroller.scrollTop += node.getBoundingClientRect().top - before;
+  }, [expanded]);
+  if (order === "unreadable")
+    return <span {...root}>{text(configuration, "order.unavailable")}</span>;
+  const count = new Intl.NumberFormat(configuration.locale.code).format(
+    order.items.length,
+  );
+  return (
+    <section {...root} aria-labelledby={title}>
+      <h3 {...slots("orderHeader", "pmfa-order-header")} id={title}>
+        <span>{text(configuration, "order.title")}</span>
+        <span>
+          {text(
+            configuration,
+            order.items.length === 1 ? "order.oneItem" : "order.items",
+            { count },
+          )}
+        </span>
+      </h3>
+      <ul {...slots("orderItems", "pmfa-order-items")}>
+        {(expanded ? order.items : order.items.slice(0, 20)).map(
+          (item, index) => {
+            const price = formatOrderUnitPrice(item, configuration.locale.code);
+            return (
+              <li
+                {...slots("orderItem", "pmfa-order-item")}
+                key={`${index}:${item.productRetailerId}`}
+              >
+                <dl>
+                  <div className="pmfa-order-product">
+                    <dt>{text(configuration, "order.product")}</dt>
+                    <dd>{item.productRetailerId}</dd>
+                  </div>
+                  <div>
+                    <dt>{text(configuration, "order.quantity")}</dt>
+                    <dd>
+                      {new Intl.NumberFormat(configuration.locale.code).format(
+                        item.quantity,
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{text(configuration, "order.unitPrice")}</dt>
+                    <dd>{price ?? text(configuration, "order.noPrice")}</dd>
+                  </div>
+                </dl>
+              </li>
+            );
+          },
+        )}
+      </ul>
+      {order.items.length > 20 && (
+        <button
+          {...slots("orderToggle", "pmfa-btn pmfa-order-toggle")}
+          type="button"
+          aria-expanded={expanded}
+          ref={toggle}
+          onClick={(event) => {
+            toggleTop.current = event.currentTarget.getBoundingClientRect().top;
+            setExpanded((value) => !value);
+          }}
+        >
+          {text(configuration, expanded ? "order.showFewer" : "order.showAll", {
+            count,
+          })}
+        </button>
+      )}
+      {order.text && <p className="pmfa-text">{order.text}</p>}
+    </section>
+  );
+}
+
+export interface ChatDetailsProps {
+  readonly name: string;
+  readonly phoneNumber?: string;
+  readonly observedName?: string;
+  readonly labels?: readonly string[];
+  readonly sendingNumber?: string;
+  readonly lastActivity?: number;
+  readonly retentionDays?: number | null;
+  readonly onClose?: () => void;
+  readonly onContact?: () => void;
+  readonly children?: ReactNode;
+  readonly className?: string;
+  readonly classNames?: SlotClassNames;
+}
+
+/** Customer details only. Hosts can add developer information through children. */
+export function ChatDetails({
+  name,
+  phoneNumber,
+  observedName,
+  labels,
+  sendingNumber,
+  lastActivity,
+  retentionDays,
+  onClose,
+  onContact,
+  children,
+  className,
+  classNames,
+}: ChatDetailsProps) {
+  const configuration = usePolymorfa(),
+    slots = useSlots(classNames);
+  const root = useShell(slots, "chatDetails", "pmfa-chat-details", className);
+  const field = (label: MessageKey, value: string | undefined) =>
+    value === undefined ? null : (
+      <div {...slots("chatDetailsField", "pmfa-chat-details-field")}>
+        <dt>{text(configuration, label)}</dt>
+        <dd>{value}</dd>
+      </div>
+    );
+  return (
+    <aside {...root} aria-label={text(configuration, "chat.details")}>
+      <header>
+        <h3>{text(configuration, "chat.details")}</h3>
+        {onClose && (
+          <button
+            className="pmfa-btn pmfa-btn-ghost pmfa-btn-icon"
+            type="button"
+            onClick={onClose}
+            aria-label={text(configuration, "common.close")}
+          >
+            <Icon name="close" />
+          </button>
+        )}
+      </header>
+      <div className="pmfa-chat-details-name">
+        <h4>{name}</h4>
+        {phoneNumber && <span>{phoneNumber}</span>}
+      </div>
+      {labels && labels.length > 0 && (
+        <ul className="pmfa-chat-details-labels">
+          {labels.map((label) => (
+            <li key={label}>{label}</li>
+          ))}
+        </ul>
+      )}
+      <dl>
+        {field("chat.observedName", observedName)}
+        {field("chat.sendingNumber", sendingNumber)}
+        {field(
+          "chat.lastActivity",
+          lastActivity === undefined || !Number.isFinite(lastActivity)
+            ? undefined
+            : new Intl.DateTimeFormat(configuration.locale.code, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }).format(lastActivity),
+        )}
+        {field(
+          "chat.retention",
+          retentionDays == null
+            ? undefined
+            : text(configuration, "chat.retentionDays", {
+                count: new Intl.NumberFormat(configuration.locale.code).format(
+                  retentionDays,
+                ),
+              }),
+        )}
+      </dl>
+      {onContact && (
+        <button type="button" className="pmfa-btn" onClick={onContact}>
+          {text(configuration, "chat.contactDetails")}
+        </button>
+      )}
+      {children}
+    </aside>
+  );
+}
+
 /** Subscribe to a controller that may be absent. */
 const NO_SUBSCRIPTION = () => () => undefined;
 const NO_SNAPSHOT = () => undefined;
@@ -257,6 +699,19 @@ function snippet(
   configuration: Configuration,
   message: ConversationMessage,
 ): string {
+  if (message.contentState && message.contentState !== "available")
+    return text(
+      configuration,
+      message.contentState === "not_retained"
+        ? "chat.contentNotRetained"
+        : message.contentState === "deleted"
+          ? "chat.contentDeleted"
+          : "chat.contentUnavailable",
+    );
+  if (message.order)
+    return message.order === "unreadable"
+      ? text(configuration, "order.unavailable")
+      : message.order.text || text(configuration, "order.title");
   return message.text.trim() !== ""
     ? message.text
     : (message.attachments?.[0]?.name ??
@@ -270,6 +725,331 @@ export type RenderAttachment = (
   message: ConversationMessage,
 ) => ReactNode;
 
+const PLAYBACK_RATES = [1, 1.5, 2] as const;
+
+/**
+ * Voice note and audio player. A missing URL renders the same layout with a
+ * disabled control, so retained metadata never looks playable.
+ */
+function AudioAttachment({
+  attachment,
+  url,
+  configuration,
+  slots,
+}: {
+  readonly attachment: MessageAttachment;
+  readonly url: string | undefined;
+  readonly configuration: Configuration;
+  readonly slots: Slots;
+}) {
+  const audio = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [position, setPosition] = useState(0);
+  const [length, setLength] = useState(attachment.durationSeconds);
+  const [rate, setRate] = useState<(typeof PLAYBACK_RATES)[number]>(1);
+  const voice = attachmentPresentation(attachment) === "voice";
+  const bars = useMemo(
+    () => waveformBars(attachment.waveform),
+    [attachment.waveform],
+  );
+  const total = length !== undefined && length > 0 ? length : undefined;
+  const progress = total === undefined ? 0 : Math.min(1, position / total);
+  const label = voice ? text(configuration, "chat.voiceNote") : attachment.name;
+  const toggle = () => {
+    const node = audio.current;
+    if (node === null) return;
+    if (node.paused) void node.play().catch(() => setPlaying(false));
+    else node.pause();
+  };
+  return (
+    <div
+      {...slots(
+        "attachment",
+        `pmfa-att pmfa-att-audio${voice ? " pmfa-att-voice" : ""}`,
+      )}
+      style={{ "--pmfa-progress": String(progress) } as CSSProperties}
+      data-playing={playing ? "" : undefined}
+    >
+      {!voice && (
+        <span className="pmfa-att-tile" aria-hidden="true">
+          <Icon name="headphones" />
+        </span>
+      )}
+      <button
+        type="button"
+        className="pmfa-play"
+        disabled={url === undefined}
+        aria-label={`${text(configuration, playing ? "chat.pause" : "chat.play")}: ${label}`}
+        onClick={toggle}
+      >
+        <Icon
+          name={playing ? "pause" : "play"}
+          className="pmfa-icon pmfa-icon-fill"
+        />
+      </button>
+      <span className="pmfa-track">
+        {bars.length > 0 ? (
+          <span className="pmfa-wave" aria-hidden="true">
+            {bars.map((level, index) => (
+              <span
+                key={index}
+                style={{ height: `${level * 100}%` }}
+                data-played={
+                  (index + 0.5) / bars.length <= progress ? "" : undefined
+                }
+              />
+            ))}
+          </span>
+        ) : (
+          <span className="pmfa-line" aria-hidden="true" />
+        )}
+        <input
+          type="range"
+          className="pmfa-seek"
+          min={0}
+          max={total ?? 0}
+          step="any"
+          value={Math.min(position, total ?? 0)}
+          disabled={url === undefined || total === undefined}
+          aria-label={text(configuration, "chat.position")}
+          aria-valuetext={`${formatDuration(position) ?? "0:00"} / ${formatDuration(total) ?? ""}`}
+          onChange={(event) => {
+            const next = Number(event.currentTarget.value);
+            if (audio.current) audio.current.currentTime = next;
+            setPosition(next);
+          }}
+        />
+        <span className="pmfa-att-time">
+          {playing || position > 0
+            ? formatDuration(position)
+            : (formatDuration(total) ?? "")}
+          {url === undefined && (
+            <span className="pmfa-sr">
+              {" "}
+              {text(configuration, "chat.mediaUnavailable")}
+            </span>
+          )}
+        </span>
+      </span>
+      {voice && url !== undefined && (
+        <button
+          type="button"
+          className="pmfa-rate"
+          aria-label={`${text(configuration, "chat.speed")}: ${rate}×`}
+          onClick={() => {
+            const next =
+              PLAYBACK_RATES[
+                (PLAYBACK_RATES.indexOf(rate) + 1) % PLAYBACK_RATES.length
+              ] ?? 1;
+            if (audio.current) audio.current.playbackRate = next;
+            setRate(next);
+          }}
+        >
+          {rate}×
+        </button>
+      )}
+      {url !== undefined && (
+        <audio
+          ref={audio}
+          preload="none"
+          src={url}
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onEnded={() => {
+            setPlaying(false);
+            setPosition(0);
+          }}
+          onTimeUpdate={(event) => setPosition(event.currentTarget.currentTime)}
+          onLoadedMetadata={(event) => {
+            const value = event.currentTarget.duration;
+            if (Number.isFinite(value) && value > 0) setLength(value);
+            event.currentTarget.playbackRate = rate;
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+/** Keeps a picture's real proportions within the bubble's limits. */
+function pictureRatio(attachment: MessageAttachment): string | undefined {
+  const width = attachment.width ?? attachment.thumbnail?.width;
+  const height = attachment.height ?? attachment.thumbnail?.height;
+  if (!width || !height || width <= 0 || height <= 0) return undefined;
+  const ratio = Math.min(Math.max(width / height, 0.71), 4);
+  return String(ratio);
+}
+
+/**
+ * A picture or video. The embedded thumbnail shows blurred until the file
+ * loads. An HD variant loads only when asked for, then replaces the standard
+ * picture in place; the HD badge switches back.
+ */
+function PictureAttachment({
+  attachment,
+  kind,
+  url,
+  source,
+  configuration,
+  slots,
+}: {
+  readonly attachment: MessageAttachment;
+  readonly kind: "image" | "video";
+  readonly url: string | undefined;
+  readonly source: string | undefined;
+  readonly configuration: Configuration;
+  readonly slots: Slots;
+}) {
+  const thumbnail = thumbnailDataUrl(attachment.thumbnail);
+  const hdUrl = safeAttachmentUrl(attachment.hd?.url);
+  const [loaded, setLoaded] = useState(false);
+  const [hd, setHd] = useState<
+    "idle" | "loading" | "shown" | "standard" | "failed"
+  >("idle");
+  const showingHd = hd === "shown";
+  const ratio = pictureRatio(attachment);
+  const style = (
+    ratio === undefined ? undefined : { "--pmfa-ratio": ratio }
+  ) as CSSProperties | undefined;
+  const duration = formatDuration(attachment.durationSeconds);
+  const loadHd = () => {
+    if (hdUrl === undefined || hd === "loading") return;
+    if (hd === "standard") {
+      setHd("shown");
+      return;
+    }
+    if (kind === "video") {
+      setHd("shown");
+      return;
+    }
+    setHd("loading");
+    const probe = new Image();
+    probe.onload = () => setHd("shown");
+    probe.onerror = () => setHd("failed");
+    probe.src = hdUrl;
+  };
+  const display = kind === "image" ? (showingHd ? hdUrl : source) : undefined;
+  const link = showingHd ? hdUrl : url;
+  const media =
+    kind === "video" ? (
+      (showingHd ? hdUrl : url) !== undefined ? (
+        <video
+          key={showingHd ? "hd" : "standard"}
+          controls
+          preload="none"
+          src={showingHd ? hdUrl : url}
+          {...(thumbnail === undefined ? {} : { poster: thumbnail })}
+          aria-label={attachment.name}
+        />
+      ) : undefined
+    ) : display !== undefined ? (
+      <img
+        key={display}
+        src={display}
+        alt={attachment.name}
+        loading="lazy"
+        decoding="async"
+        data-loaded={loaded ? "" : undefined}
+        onLoad={() => setLoaded(true)}
+      />
+    ) : undefined;
+  const unavailable = media === undefined;
+  const frameClass = [
+    "pmfa-att pmfa-att-media",
+    kind === "video" && !unavailable ? "pmfa-att-player" : "",
+    unavailable ? "pmfa-att-placeholder" : "",
+    thumbnail !== undefined ? "pmfa-att-thumbed" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const content = (
+    <>
+      {thumbnail !== undefined && kind === "image" && !loaded && (
+        <img
+          className="pmfa-att-thumb"
+          src={thumbnail}
+          alt=""
+          aria-hidden="true"
+        />
+      )}
+      {thumbnail !== undefined && unavailable && kind === "video" && (
+        <img
+          className="pmfa-att-thumb"
+          src={thumbnail}
+          alt=""
+          aria-hidden="true"
+        />
+      )}
+      {media}
+      {unavailable && (
+        <>
+          <Icon name={kind === "video" ? "video" : "image"} />
+          {thumbnail === undefined && (
+            <span className="pmfa-att-name">{attachment.name}</span>
+          )}
+          <span className="pmfa-sr">
+            {attachment.name}. {text(configuration, "chat.mediaUnavailable")}
+          </span>
+        </>
+      )}
+      {duration !== undefined && unavailable && kind === "video" && (
+        <span className="pmfa-att-duration">{duration}</span>
+      )}
+    </>
+  );
+  const hdControl =
+    attachment.quality === "hd" ? (
+      <span className="pmfa-hd" title={text(configuration, "chat.hd")}>
+        {text(configuration, "chat.hd")}
+      </span>
+    ) : hdUrl !== undefined ? (
+      <button
+        type="button"
+        className="pmfa-hd"
+        data-state={hd}
+        aria-pressed={showingHd}
+        aria-label={text(
+          configuration,
+          hd === "loading"
+            ? "chat.loadingHd"
+            : hd === "failed"
+              ? "chat.hdFailed"
+              : showingHd
+                ? "chat.showStandard"
+                : hd === "standard"
+                  ? "chat.showHd"
+                  : "chat.loadHd",
+        )}
+        disabled={hd === "loading" || hd === "failed"}
+        onClick={() => (showingHd ? setHd("standard") : loadHd())}
+      >
+        {hd === "loading" ? (
+          <span className="pmfa-hd-spinner" aria-hidden="true" />
+        ) : (
+          !showingHd && hd !== "standard" && <Icon name="download" />
+        )}
+        {text(configuration, "chat.hd")}
+      </button>
+    ) : undefined;
+  return (
+    <div className="pmfa-att-frame" style={style}>
+      {link === undefined || kind === "video" ? (
+        <div {...slots("attachment", frameClass)}>{content}</div>
+      ) : (
+        <a
+          {...slots("attachment", frameClass)}
+          href={link}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {content}
+        </a>
+      )}
+      {hdControl}
+    </div>
+  );
+}
+
 function AttachmentView({
   attachment,
   configuration,
@@ -282,33 +1062,64 @@ function AttachmentView({
   // Unsafe schemes such as `javascript:` never reach `href` or `src`.
   const url = safeAttachmentUrl(attachment.url);
   const source = safeAttachmentUrl(attachment.previewUrl) ?? url;
-  if (isImageAttachment(attachment) && source !== undefined) {
-    const image = (
-      <img src={source} alt={attachment.name} loading="lazy" decoding="async" />
+  const kind = attachmentPresentation(attachment);
+  if (kind === "voice" || kind === "audio")
+    return (
+      <AudioAttachment
+        attachment={attachment}
+        url={url}
+        configuration={configuration}
+        slots={slots}
+      />
     );
-    return url === undefined ? (
-      <div {...slots("attachment", "pmfa-att pmfa-att-media")}>{image}</div>
-    ) : (
-      <a
-        {...slots("attachment", "pmfa-att pmfa-att-media")}
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {image}
-      </a>
+  if (kind === "image" || kind === "video")
+    return (
+      <PictureAttachment
+        attachment={attachment}
+        kind={kind}
+        url={url}
+        source={source}
+        configuration={configuration}
+        slots={slots}
+      />
     );
-  }
+  const details = [
+    fileExtension(attachment.name),
+    attachment.pageCount === undefined
+      ? undefined
+      : attachment.pageCount === 1
+        ? text(configuration, "chat.onePage")
+        : text(configuration, "chat.pages", {
+            count: attachment.pageCount.toLocaleString(
+              configuration.locale.code,
+            ),
+          }),
+    attachment.size > 0
+      ? formatFileSize(attachment.size, configuration.locale.code)
+      : undefined,
+  ].filter((value) => value !== undefined);
+  const documentPreview = thumbnailDataUrl(attachment.thumbnail);
   const body = (
     <>
-      <span className="pmfa-att-icon">
+      {documentPreview !== undefined && (
+        <img
+          className="pmfa-att-doc-preview"
+          src={documentPreview}
+          alt=""
+          decoding="async"
+        />
+      )}
+      <span
+        className="pmfa-att-tile"
+        data-extension={fileExtension(attachment.name)}
+      >
         <Icon name="file" />
       </span>
       <span className="pmfa-att-body">
         <span className="pmfa-att-name">{attachment.name}</span>
-        <span className="pmfa-att-size">
-          {formatFileSize(attachment.size, configuration.locale.code)}
-        </span>
+        {details.length > 0 && (
+          <span className="pmfa-att-size">{details.join(" · ")}</span>
+        )}
       </span>
     </>
   );
@@ -325,6 +1136,41 @@ function AttachmentView({
       })}
     >
       {body}
+    </a>
+  );
+}
+
+function LinkPreviewCard({
+  preview,
+  configuration,
+}: {
+  readonly preview: NonNullable<ConversationMessage["linkPreview"]>;
+  readonly configuration: Configuration;
+}) {
+  const host = linkHost(preview.url);
+  const href = safeAttachmentUrl(preview.url);
+  const thumbnail = thumbnailDataUrl(preview.thumbnail);
+  if (host === undefined || href === undefined) return null;
+  return (
+    <a
+      className="pmfa-link-preview"
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={text(configuration, "chat.openLink", { host })}
+    >
+      {thumbnail !== undefined && (
+        <img className="pmfa-link-thumb" src={thumbnail} alt="" />
+      )}
+      <span className="pmfa-link-body">
+        {preview.title && (
+          <span className="pmfa-link-title">{preview.title}</span>
+        )}
+        {preview.description && (
+          <span className="pmfa-link-description">{preview.description}</span>
+        )}
+        <span className="pmfa-link-host">{host}</span>
+      </span>
     </a>
   );
 }
@@ -363,13 +1209,17 @@ const MessageItem = memo(function MessageItem({
 }: MessageItemProps) {
   const outbound = message.direction === "outbound";
   const time = formatMessageTime(message.createdAt, configuration.locale.code);
+  const presentation = messagePresentationStatus(message);
   const status =
     message.status === "failed"
       ? text(configuration, "chat.failed")
       : message.status === "pending"
         ? text(configuration, "chat.sending")
         : outbound
-          ? text(configuration, "chat.sent")
+          ? text(
+              configuration,
+              `chat.${presentation === "pending" ? "sending" : presentation}`,
+            )
           : undefined;
   const retry =
     canRetry &&
@@ -394,46 +1244,97 @@ const MessageItem = memo(function MessageItem({
       data-message-id={message.id}
       tabIndex={-1}
     >
-      {quoted !== undefined && (
-        <button
-          type="button"
-          {...slots("replyQuote", "pmfa-quote")}
-          onClick={() => onJump(quoted.id)}
-        >
-          <span className="pmfa-sr">
-            {text(configuration, "chat.jumpToReply")}
-          </span>
-          <span className="pmfa-quote-name">
-            {authorName(configuration, quoted)}
-          </span>
-          <span className="pmfa-quote-text">
-            {snippet(configuration, quoted)}
-          </span>
-        </button>
-      )}
       <div className="pmfa-row">
         <div {...slots("bubble", "pmfa-bubble")}>
-          {custom ?? (
-            <>
-              {(message.attachments?.length ?? 0) > 0 && (
-                <div className="pmfa-atts">
-                  {message.attachments?.map((attachment) => (
-                    <AttachmentItem
-                      key={attachment.id}
-                      attachment={attachment}
-                      message={message}
-                      configuration={configuration}
-                      slots={slots}
-                      renderAttachment={renderAttachment}
-                    />
-                  ))}
-                </div>
-              )}
-              {message.text !== "" && (
-                <span className="pmfa-text">{message.text}</span>
-              )}
-            </>
+          {quoted !== undefined && (
+            <button
+              type="button"
+              {...slots("replyQuote", "pmfa-quote")}
+              onClick={() => onJump(quoted.id)}
+            >
+              <span className="pmfa-sr">
+                {text(configuration, "chat.jumpToReply")}
+              </span>
+              <span className="pmfa-quote-name">
+                {authorName(configuration, quoted)}
+              </span>
+              <span className="pmfa-quote-text">
+                {snippet(configuration, quoted)}
+              </span>
+            </button>
           )}
+
+          {custom ??
+            (message.contentState && message.contentState !== "available" ? (
+              <span
+                {...slots("contentUnavailable", "pmfa-content-unavailable")}
+              >
+                {snippet(configuration, message)}
+              </span>
+            ) : message.order ? (
+              <OrderCartContent
+                order={message.order}
+                configuration={configuration}
+                slots={slots}
+                root={slots("orderCart", "pmfa-order")}
+              />
+            ) : (
+              <>
+                {message.linkPreview !== undefined && (
+                  <LinkPreviewCard
+                    preview={message.linkPreview}
+                    configuration={configuration}
+                  />
+                )}
+                {(message.attachments?.length ?? 0) > 0 && (
+                  <div className="pmfa-atts">
+                    {message.attachments?.map((attachment) => (
+                      <AttachmentItem
+                        key={attachment.id}
+                        attachment={attachment}
+                        message={message}
+                        configuration={configuration}
+                        slots={slots}
+                        renderAttachment={renderAttachment}
+                      />
+                    ))}
+                  </div>
+                )}
+                {/* An available message with no text and nothing else
+                    still needs a line: the time takes no space. */}
+                {(message.text !== "" ||
+                  (message.linkPreview === undefined &&
+                    (message.attachments?.length ?? 0) === 0)) && (
+                  <span className="pmfa-text">
+                    {message.text}
+                    {/* Reserves the width of the time and receipt on the last line. */}
+                    <span className="pmfa-meta-space" aria-hidden="true">
+                      {time}
+                      {outbound && <span className="pmfa-meta-space-icon" />}
+                    </span>
+                  </span>
+                )}
+              </>
+            ))}
+          <span {...slots("messageMeta", "pmfa-meta")}>
+            {time !== undefined && (
+              <time dateTime={new Date(message.createdAt).toISOString()}>
+                {time}
+              </time>
+            )}
+            {outbound && (
+              <Icon
+                name={presentation}
+                className={`pmfa-icon pmfa-status pmfa-status-${presentation}`}
+              />
+            )}
+            {status !== undefined &&
+              (message.status === "failed" ? (
+                <span>{status}</span>
+              ) : (
+                <span className="pmfa-sr">{status}</span>
+              ))}
+          </span>
         </div>
         {(canReply || retry) && (
           <div
@@ -472,22 +1373,6 @@ const MessageItem = memo(function MessageItem({
           </div>
         )}
       </div>
-      <span {...slots("messageMeta", "pmfa-meta")}>
-        {time !== undefined && (
-          <time dateTime={new Date(message.createdAt).toISOString()}>
-            {time}
-          </time>
-        )}
-        {outbound && (
-          <Icon name={message.status} className="pmfa-icon pmfa-status" />
-        )}
-        {status !== undefined &&
-          (message.status === "failed" ? (
-            <span>{status}</span>
-          ) : (
-            <span className="pmfa-sr">{status}</span>
-          ))}
-      </span>
       {message.error !== undefined && (
         <span className="pmfa-msg-error" role="alert">
           {message.error}
@@ -522,6 +1407,8 @@ function AttachmentItem({
 }
 
 interface ConversationViewProps {
+  /** Presentation-only: never reloads history or cancels a send. */
+  readonly messageFilter?: (message: ConversationMessage) => boolean;
   readonly renderMessage?: (message: ConversationMessage) => ReactNode;
   readonly renderAttachment?: RenderAttachment;
   /** Show a Reply action on each message. */
@@ -532,17 +1419,66 @@ interface ConversationViewProps {
 function useStickToBottom(dependency: unknown) {
   const ref = useRef<HTMLDivElement>(null);
   const pinned = useRef(true);
+  const [atEnd, setAtEnd] = useState(true);
+  const anchor = useRef<{ id: string; top: number } | undefined>(undefined);
   useIsomorphicLayoutEffect(() => {
     const node = ref.current;
-    if (node !== null && pinned.current) node.scrollTop = node.scrollHeight;
+    if (node === null) return;
+    if (pinned.current) node.scrollTop = node.scrollHeight;
+    else if (anchor.current) {
+      const target = [
+        ...node.querySelectorAll<HTMLElement>("[data-message-id]"),
+      ].find((entry) => entry.dataset.messageId === anchor.current?.id);
+      if (target)
+        node.scrollTop +=
+          target.getBoundingClientRect().top - anchor.current.top;
+    }
   }, [dependency]);
   const onScroll = useCallback(() => {
     const node = ref.current;
-    if (node !== null)
+    if (node !== null) {
       pinned.current =
         node.scrollHeight - node.scrollTop - node.clientHeight < 32;
+      setAtEnd(pinned.current);
+      const visible = [
+        ...node.querySelectorAll<HTMLElement>("[data-message-id]"),
+      ].find(
+        (entry) =>
+          entry.getBoundingClientRect().bottom >
+          node.getBoundingClientRect().top,
+      );
+      anchor.current = visible?.dataset.messageId
+        ? {
+            id: visible.dataset.messageId,
+            top: visible.getBoundingClientRect().top,
+          }
+        : undefined;
+    }
   }, []);
-  return { ref, onScroll };
+  useEffect(() => {
+    const node = ref.current;
+    if (node === null || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      if (pinned.current) node.scrollTop = node.scrollHeight;
+      // Filtering can shrink the list until it no longer scrolls.
+      else if (node.scrollHeight - node.scrollTop - node.clientHeight < 32) {
+        pinned.current = true;
+        setAtEnd(true);
+      }
+    });
+    observer.observe(node);
+    if (node.firstElementChild) observer.observe(node.firstElementChild);
+    return () => observer.disconnect();
+  }, []);
+  const latest = () => {
+    const node = ref.current;
+    if (node) {
+      pinned.current = true;
+      node.scrollTop = node.scrollHeight;
+      setAtEnd(true);
+    }
+  };
+  return { ref, onScroll, atEnd, latest };
 }
 
 function prefersReducedMotion(): boolean {
@@ -559,6 +1495,7 @@ function ConversationLog({
   renderMessage,
   renderAttachment,
   onReply,
+  messageFilter,
 }: ConversationViewProps & {
   readonly controller: ConversationController;
   readonly rootProps: SlotProps & { readonly dir?: "ltr" | "rtl" };
@@ -568,8 +1505,13 @@ function ConversationLog({
   const configuration = usePolymorfa();
   const scroll = useStickToBottom(snapshot.messages);
   const entries = useMemo(
-    () => layoutMessages(snapshot.messages),
-    [snapshot.messages],
+    () =>
+      layoutMessages(
+        messageFilter
+          ? snapshot.messages.filter(messageFilter)
+          : snapshot.messages,
+      ),
+    [snapshot.messages, messageFilter],
   );
   const byId = useMemo(
     () => new Map(snapshot.messages.map((message) => [message.id, message])),
@@ -635,7 +1577,14 @@ function ConversationLog({
         )}
         {entries.length === 0 ? (
           <li {...slots("empty", "pmfa-empty")}>
-            {text(configuration, "chat.empty")}
+            {text(
+              configuration,
+              snapshot.messages.length > 0
+                ? "chat.noMatches"
+                : snapshot.status === "loading"
+                  ? "chat.loading"
+                  : "chat.empty",
+            )}
           </li>
         ) : (
           entries.map((entry) =>
@@ -673,6 +1622,16 @@ function ConversationLog({
           )
         )}
       </ol>
+      {!scroll.atEnd && (
+        <button
+          type="button"
+          {...slots("latestButton", "pmfa-btn pmfa-latest")}
+          onClick={scroll.latest}
+        >
+          <Icon name="down" />
+          <span className="pmfa-sr">{text(configuration, "chat.latest")}</span>
+        </button>
+      )}
     </div>
   );
 }
@@ -731,6 +1690,17 @@ function hasFiles(event: DragEvent<HTMLElement>): boolean {
   return [...(event.dataTransfer?.types ?? [])].includes("Files");
 }
 
+type AddFiles = (files: FileList | readonly File[]) => void;
+
+/**
+ * Lets a chat window accept files dropped anywhere on it. The composer
+ * registers its own add-files path, so uploads keep the composer's adapter,
+ * accepted types and rejection handling.
+ */
+const FileDropContext = createContext<
+  { current: AddFiles | undefined } | undefined
+>(undefined);
+
 function rejectionCleared(
   previous: MessageComposerSnapshot,
   next: MessageComposerSnapshot,
@@ -753,21 +1723,56 @@ function AttachmentChip({
   configuration,
   slots,
   onRemove,
+  onQuality,
 }: {
   readonly attachment: ComposerAttachment;
   readonly configuration: Configuration;
   readonly slots: Slots;
   readonly onRemove: (id: string) => void;
+  readonly onQuality: (id: string, quality: MediaQuality) => void;
 }) {
   const percent = Math.round(attachment.progress * 100);
+  const preview = isImageAttachment(attachment)
+    ? (safeAttachmentUrl(attachment.uploaded?.previewUrl) ??
+      safeAttachmentUrl(attachment.uploaded?.url))
+    : undefined;
+  const playerUrl = /^(audio|video)\//i.test(attachment.contentType)
+    ? safeAttachmentUrl(attachment.uploaded?.url)
+    : undefined;
   return (
     <li
       {...slots("attachmentChip", `pmfa-chip pmfa-chip-${attachment.status}`)}
       data-attachment-id={attachment.id}
     >
-      <Icon name={attachment.status === "failed" ? "failed" : "file"} />
+      {preview ? (
+        <img
+          className="pmfa-chip-preview"
+          src={preview}
+          alt={attachment.name}
+        />
+      ) : (
+        <Icon name={attachment.status === "failed" ? "failed" : "file"} />
+      )}
       <span className="pmfa-chip-body">
         <span className="pmfa-chip-name">{attachment.name}</span>
+        {playerUrl &&
+          (attachment.contentType.toLowerCase().startsWith("audio/") ? (
+            <audio
+              className="pmfa-chip-player"
+              controls
+              preload="none"
+              src={playerUrl}
+              aria-label={attachment.name}
+            />
+          ) : (
+            <video
+              className="pmfa-chip-player"
+              controls
+              preload="none"
+              src={playerUrl}
+              aria-label={attachment.name}
+            />
+          ))}
         {attachment.status === "uploading" && (
           <span
             className="pmfa-progress"
@@ -795,6 +1800,23 @@ function AttachmentChip({
             formatFileSize(attachment.size, configuration.locale.code)
           )}
         </span>
+        {attachment.quality !== undefined && attachment.status !== "failed" && (
+          <button
+            type="button"
+            className="pmfa-quality"
+            aria-pressed={attachment.quality === "hd"}
+            aria-label={text(configuration, "composer.hdQuality")}
+            title={text(configuration, "composer.hdQuality")}
+            onClick={() =>
+              onQuality(
+                attachment.id,
+                attachment.quality === "hd" ? "standard" : "hd",
+              )
+            }
+          >
+            {text(configuration, "chat.hd")}
+          </button>
+        )}
       </span>
       <button
         type="button"
@@ -1209,6 +2231,8 @@ export interface ComposeBoxProps extends ControllerProps<MessageComposerControll
   readonly attachments?: boolean;
   /** File types the attach button offers, as for `<input accept>`. */
   readonly accept?: string;
+  /** Offer named file types. Omit to keep the single file picker. */
+  readonly attachmentKinds?: readonly AttachmentKind[];
   /** Allow picking several files at once. Defaults to `true`. */
   readonly multiple?: boolean;
   /** Resolves the reply banner's quoted message. */
@@ -1245,6 +2269,7 @@ export function ComposeBox({
   classNames,
   attachments = true,
   accept,
+  attachmentKinds,
   multiple = true,
   conversation,
   messages,
@@ -1266,6 +2291,9 @@ export function ComposeBox({
   const root = useShell(slots, "composer", "pmfa-composer", className);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const attachRef = useRef<HTMLDivElement>(null);
+  const attachButton = useRef<HTMLButtonElement>(null);
+  const [attachOpen, setAttachOpen] = useState(false);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
   const micRef = useRef<HTMLButtonElement>(null);
   const pendingCaret = useRef<number | undefined>(undefined);
@@ -1279,6 +2307,18 @@ export function ComposeBox({
   );
   const [activeOption, setActiveOption] = useState(0);
   const [announcement, setAnnouncement] = useState("");
+  useEffect(() => {
+    if (!attachOpen) return;
+    attachRef.current
+      ?.querySelector<HTMLButtonElement>(".pmfa-attachment-menu button")
+      ?.focus();
+    const outside = (event: PointerEvent) => {
+      if (!attachRef.current?.contains(event.target as Node))
+        setAttachOpen(false);
+    };
+    document.addEventListener("pointerdown", outside);
+    return () => document.removeEventListener("pointerdown", outside);
+  }, [attachOpen]);
   // A rejected file's message clears once the text changes, a send
   // succeeds, or the composer resets.
   const [previousSnapshot, setPreviousSnapshot] = useState(snapshot);
@@ -1360,6 +2400,16 @@ export function ComposeBox({
     (id: string) => resolved.cancelAttachment(id),
     [resolved],
   );
+  const windowDrop = useContext(FileDropContext);
+  const latestAddFiles = useLatest(addFiles);
+  useEffect(() => {
+    if (windowDrop === undefined || !attachments) return;
+    const add: AddFiles = (files) => latestAddFiles.current(files);
+    windowDrop.current = add;
+    return () => {
+      if (windowDrop.current === add) windowDrop.current = undefined;
+    };
+  }, [windowDrop, attachments, latestAddFiles]);
 
   const replaceText = (value: string, nextCaret: number) => {
     pendingCaret.current = nextCaret;
@@ -1593,6 +2643,9 @@ export function ComposeBox({
               configuration={configuration}
               slots={slots}
               onRemove={remove}
+              onQuality={(id, quality) =>
+                resolved.setAttachmentQuality(id, quality)
+              }
             />
           ))}
         </ul>
@@ -1634,8 +2687,16 @@ export function ComposeBox({
           </button>
         )}
         {attachments && (
-          <>
+          <div
+            className="pmfa-attachment-picker"
+            ref={attachRef}
+            onBlur={(event) => {
+              if (!event.currentTarget.contains(event.relatedTarget))
+                setAttachOpen(false);
+            }}
+          >
             <button
+              ref={attachButton}
               type="button"
               {...slots(
                 "composerAttach",
@@ -1643,10 +2704,50 @@ export function ComposeBox({
               )}
               aria-label={text(configuration, "composer.attach")}
               title={text(configuration, "composer.attach")}
-              onClick={() => fileRef.current?.click()}
+              aria-haspopup={attachmentKinds?.length ? "dialog" : undefined}
+              aria-expanded={attachmentKinds?.length ? attachOpen : undefined}
+              onClick={() => {
+                if (attachmentKinds?.length) setAttachOpen((open) => !open);
+                else {
+                  if (fileRef.current) fileRef.current.accept = accept ?? "";
+                  fileRef.current?.click();
+                }
+              }}
             >
-              <Icon name="attach" />
+              <Icon name="plus" />
             </button>
+            {attachOpen && attachmentKinds?.length && (
+              <div
+                className="pmfa-attachment-menu"
+                role="dialog"
+                aria-label={text(configuration, "composer.attach")}
+                onKeyDown={(event) => {
+                  if (event.key !== "Escape") return;
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setAttachOpen(false);
+                  attachButton.current?.focus();
+                }}
+              >
+                {attachmentKinds.map((kind) => (
+                  <button
+                    key={kind}
+                    type="button"
+                    className="pmfa-btn pmfa-btn-ghost"
+                    onClick={() => {
+                      if (fileRef.current)
+                        fileRef.current.accept = ATTACHMENT_KINDS[kind].accept;
+                      setAttachOpen(false);
+                      attachButton.current?.focus();
+                      fileRef.current?.click();
+                    }}
+                  >
+                    <Icon name={ATTACHMENT_KINDS[kind].icon} />
+                    {text(configuration, ATTACHMENT_KINDS[kind].label)}
+                  </button>
+                ))}
+              </div>
+            )}
             <input
               ref={fileRef}
               type="file"
@@ -1660,7 +2761,7 @@ export function ComposeBox({
                 event.currentTarget.value = "";
               }}
             />
-          </>
+          </div>
         )}
         <textarea
           ref={inputRef}
@@ -1789,6 +2890,163 @@ function requestAnimationFrameSafe(callback: () => void): void {
   else setTimeout(callback, 0);
 }
 
+export interface ChatWindowProps extends MessageListProps {
+  /** Built-in search applies only to messages already loaded by the controller. */
+  readonly search?: boolean;
+  readonly filters?: boolean;
+  readonly filterController?: MessageFilterController;
+  readonly composerController?: MessageComposerController;
+  readonly composerProps?: Omit<
+    ComposeBoxProps,
+    "controller" | "createController" | "conversation"
+  >;
+  /**
+   * Whether this conversation's data source accepts replies. Set `false` when
+   * the authorized send path cannot quote a message: Reply is then not offered
+   * anywhere in the thread, including by an `onReply` handler. Defaults to `true`.
+   */
+  readonly replies?: boolean;
+  readonly header?: ReactNode;
+  readonly footer?: ReactNode;
+  /** Read-only until the host confirms sending is available. */
+  readonly disabled?: boolean;
+}
+
+/** Inline thread, without a modal, close action, or credential assumptions. */
+export function ChatWindow({
+  controller,
+  createController,
+  composerController,
+  composerProps,
+  header,
+  footer,
+  disabled = false,
+  replies = true,
+  search = false,
+  filters = false,
+  filterController,
+  messageFilter,
+  className,
+  classNames,
+  onReply,
+  ...view
+}: ChatWindowProps) {
+  const conversation = useResolvedController(controller, createController);
+  const slots = useSlots(classNames);
+  const root = useShell(slots, "chatWindow", "pmfa-chat-window", className);
+  const snapshot = useController(conversation);
+  const configuration = usePolymorfa();
+  const filter = useResolvedController(
+    filterController,
+    () => new MessageFilterController(),
+  );
+  const filterState = useController(filter);
+  const filtering = search || filters || filterController !== undefined;
+  const match = useMemo(
+    () => (message: ConversationMessage) =>
+      (!filtering || filter.matches(message, configuration.locale.code)) &&
+      (messageFilter?.(message) ?? true),
+    [filter, filterState, filtering, configuration.locale.code, messageFilter],
+  );
+  const drop = useRef<AddFiles | undefined>(undefined);
+  const [dropping, setDropping] = useState(false);
+  const accepts = (event: DragEvent<HTMLElement>) =>
+    !disabled && drop.current !== undefined && hasFiles(event);
+  const reply = !replies
+    ? undefined
+    : (onReply ??
+      (composerController && !disabled
+        ? (message: ConversationMessage) =>
+            composerController.setReplyTo(message.id)
+        : undefined));
+  return (
+    <section
+      {...root}
+      aria-label={text(configuration, "chat.title")}
+      aria-busy={snapshot.status === "loading"}
+      {...(dropping ? { "data-dropping": "" } : {})}
+      onDragEnter={(event) => {
+        if (!accepts(event)) return;
+        event.preventDefault();
+        setDropping(true);
+      }}
+      onDragOver={(event) => {
+        if (!accepts(event)) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "copy";
+      }}
+      onDragLeave={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null))
+          setDropping(false);
+      }}
+      onDrop={(event) => {
+        setDropping(false);
+        // The composer handles drops on itself and marks them handled.
+        if (event.defaultPrevented || !accepts(event)) return;
+        event.preventDefault();
+        drop.current?.(event.dataTransfer.files);
+      }}
+    >
+      {dropping && (
+        <div className="pmfa-window-drop" aria-hidden="true">
+          <Icon name="attach" />
+          <span>{text(configuration, "composer.dropHint")}</span>
+        </div>
+      )}
+      {header != null && (
+        <div {...slots("chatHeader", "pmfa-chat-header")}>{header}</div>
+      )}
+      {(search || filters) && (
+        <MessageFilterToolbar
+          controller={filter}
+          search={search}
+          filters={filters}
+          {...(classNames ? { classNames } : {})}
+        />
+      )}
+      {snapshot.status === "error" && (
+        <div {...slots("error", "pmfa-error")} role="alert">
+          {snapshot.error ?? text(configuration, "chat.loadError")}
+          <button
+            type="button"
+            className="pmfa-btn"
+            onClick={() =>
+              void (snapshot.cursor
+                ? conversation.loadMore()
+                : conversation.load())
+            }
+          >
+            {text(configuration, "common.retry")}
+          </button>
+        </div>
+      )}
+      <MessageList
+        controller={conversation}
+        {...view}
+        messageFilter={match}
+        {...(classNames ? { classNames } : {})}
+        {...(reply ? { onReply: reply } : {})}
+      />
+      {(composerController || footer != null) && (
+        <div {...slots("chatFooter", "pmfa-chat-footer")}>
+          {composerController && (
+            <fieldset disabled={disabled}>
+              <FileDropContext.Provider value={drop}>
+                <ComposeBox
+                  {...composerProps}
+                  controller={composerController}
+                  conversation={conversation}
+                />
+              </FileDropContext.Provider>
+            </fieldset>
+          )}
+          {footer}
+        </div>
+      )}
+    </section>
+  );
+}
+
 // ── Drawer ────────────────────────────────────────────────────────────
 
 export interface ChatDrawerProps extends MessageListProps {
@@ -1806,6 +3064,12 @@ export interface ChatDrawerProps extends MessageListProps {
    * Move focus into the drawer when it first mounts open. Defaults to
    * `false`; focus always moves when `open` changes to `true`.
    */
+  /**
+   * Whether this conversation's data source accepts replies. Set `false` when
+   * the authorized send path cannot quote a message: Reply is then not offered
+   * anywhere in the thread, including by an `onReply` handler. Defaults to `true`.
+   */
+  readonly replies?: boolean;
   readonly autoFocus?: boolean;
   /** Props for the built-in composer. */
   readonly composerProps?: Omit<
@@ -1838,6 +3102,7 @@ export function ChatDrawer({
   composerProps,
   onReply,
   autoFocus = false,
+  replies = true,
   ...viewProps
 }: ChatDrawerProps) {
   const configuration = usePolymorfa();
@@ -1893,7 +3158,7 @@ export function ChatDrawer({
 
   const reply = useMemo(
     () =>
-      onReply === undefined && composing === undefined
+      !replies || (onReply === undefined && composing === undefined)
         ? undefined
         : (message: ConversationMessage) => {
             onReply?.(message);
@@ -1902,7 +3167,7 @@ export function ChatDrawer({
               panel.current?.querySelector("textarea")?.focus();
             }
           },
-    [onReply, composing],
+    [onReply, composing, replies],
   );
 
   if (!open) return null;

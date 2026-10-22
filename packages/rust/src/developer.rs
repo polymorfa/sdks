@@ -37,6 +37,7 @@ pub struct WebhookSigningSecretMetadata {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlatformWebhook {
+    pub batching: crate::official_round2::WebhookBatching,
     pub id: String,
     pub organization_id: String,
     pub owner: String,
@@ -54,6 +55,8 @@ pub struct PlatformWebhook {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateWebhookRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub batching: Option<crate::official_round2::WebhookBatchingInput>,
     pub url: String,
     pub event_types: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -68,6 +71,8 @@ pub struct CreateWebhookRequest {
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateWebhookRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub batching: Option<crate::official_round2::WebhookBatchingInput>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -183,6 +188,7 @@ impl PlatformWebhooks<'_> {
         body: &CreateWebhookRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<WebhookCreationReceipt>> {
+        crate::official_round2::validate_batching(body.batching.as_ref(), body.format.as_deref())?;
         request(
             self.http,
             Method::POST,
@@ -198,6 +204,7 @@ impl PlatformWebhooks<'_> {
         body: &UpdateWebhookRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<WebhookMutationReceipt>> {
+        crate::official_round2::validate_batching(body.batching.as_ref(), body.format.as_deref())?;
         request(
             self.http,
             Method::PATCH,

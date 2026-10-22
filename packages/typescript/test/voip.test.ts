@@ -634,6 +634,151 @@ describe("VoipResource", () => {
     expect(server.requests).toHaveLength(2);
   });
 
+  it("turns simultaneous calls on only with an explicit risk acknowledgment", async () => {
+    const settings = {
+      callsEnabled: true,
+      conferenceMode: true,
+      inboundRoute: "clients",
+      sipTrunkId: null,
+      sipClaim: true,
+      hostCloudApiCalls: false,
+      simultaneousCalls: true,
+      revision: 4,
+      updatedAt: "2026-10-11T10:00:00.000Z",
+    };
+    const server = await serve([
+      json({ success: true, data: settings }),
+      json({ success: true, data: { ...settings, simultaneousCalls: false } }),
+      json(
+        {
+          success: false,
+          error: {
+            code: "permission_denied",
+            message: "Only a team API key can turn simultaneous calls on.",
+          },
+        },
+        403,
+      ),
+    ]);
+    const sdk = client(server);
+    const on = await sdk.voip.updateCallSettings("support", {
+      simultaneousCalls: true,
+      acknowledgeRisk: true,
+      expectedRevision: 3,
+    });
+    expect(on.data.data.simultaneousCalls).toBe(true);
+    expect(JSON.parse(server.requests[0]?.body ?? "null")).toEqual({
+      simultaneousCalls: true,
+      acknowledgeRisk: true,
+      expectedRevision: 3,
+    });
+    const off = await sdk.voip.updateCallSettings("support", {
+      simultaneousCalls: false,
+    });
+    expect(off.data.data.simultaneousCalls).toBe(false);
+    expect(JSON.parse(server.requests[1]?.body ?? "null")).toEqual({
+      simultaneousCalls: false,
+    });
+    // A project token can turn the setting off but never on.
+    const refused = await client(server, {
+      type: "projectToken",
+      value: PROJECT_TOKEN,
+    })
+      .voip.updateCallSettings("support", {
+        simultaneousCalls: true,
+        acknowledgeRisk: true,
+      })
+      .catch((error: unknown) => error);
+    expect(refused).toBeInstanceOf(PolymorfaAuthorizationError);
+    expect((refused as PolymorfaAuthorizationError).code).toBe(
+      "permission_denied",
+    );
+
+    for (const body of [
+      { acknowledgeRisk: true },
+      { simultaneousCalls: "on" },
+      { simultaneousCalls: false, acknowledgeRisk: "yes" },
+    ])
+      expect(() =>
+        sdk.voip.updateCallSettings(
+          "support",
+          body as unknown as { simultaneousCalls: boolean },
+        ),
+      ).toThrow(PolymorfaValidationError);
+    expect(server.requests).toHaveLength(3);
+  });
+
+  it("leaves stored-state acknowledgment and revision decisions to the API", async () => {
+    const settings = {
+      callsEnabled: true,
+      conferenceMode: false,
+      inboundRoute: "clients",
+      sipTrunkId: null,
+      sipClaim: false,
+      hostCloudApiCalls: false,
+      simultaneousCalls: true,
+      revision: 2,
+      updatedAt: null,
+    };
+    const server = await serve([
+      json({ success: true, data: settings }),
+      json(
+        {
+          success: false,
+          error: {
+            code: "invalid_parameter",
+            message: "Acknowledgment required.",
+            param: "acknowledgeRisk",
+          },
+        },
+        400,
+      ),
+      json(
+        {
+          success: false,
+          error: {
+            code: "state_conflict",
+            message: "Revision changed.",
+            param: "expectedRevision",
+          },
+        },
+        409,
+      ),
+    ]);
+    const sdk = client(server);
+    expect(
+      (
+        await sdk.voip.updateCallSettings("support", {
+          simultaneousCalls: true,
+        })
+      ).data.data.simultaneousCalls,
+    ).toBe(true);
+    await expect(
+      sdk.voip.updateCallSettings("support", {
+        simultaneousCalls: true,
+        acknowledgeRisk: false,
+      }),
+    ).rejects.toMatchObject({
+      code: "invalid_parameter",
+      param: "acknowledgeRisk",
+    });
+    await expect(
+      sdk.voip.updateCallSettings("support", {
+        simultaneousCalls: true,
+        acknowledgeRisk: true,
+        expectedRevision: 1,
+      }),
+    ).rejects.toMatchObject({
+      code: "state_conflict",
+      param: "expectedRevision",
+    });
+    expect(server.requests.map((r) => JSON.parse(r.body))).toEqual([
+      { simultaneousCalls: true },
+      { simultaneousCalls: true, acknowledgeRisk: false },
+      { simultaneousCalls: true, acknowledgeRisk: true, expectedRevision: 1 },
+    ]);
+  });
+
   it("turns calling off and reports calls_disabled refusals", async () => {
     const server = await serve([
       json({

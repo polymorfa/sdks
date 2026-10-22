@@ -2,6 +2,7 @@ parameters:
     level: 8
     paths:
         - src
+        - tests/official_round2_types.php
         - tests/webhook_types.php
         - tests/campaign_followup_types.php
         - tests/campaign_segments_drip_types.php

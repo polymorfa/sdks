@@ -15,7 +15,7 @@ var supplementFixtures = []operationFixture{
 	{"MessagingClient.CloudCatalogs.ListProducts", "GET", "/graph/whatsapp/v26.0/waba/product_catalogs/42/products", "limit=2", "", `{"data":[{"id":"product","retailer_id":"sku","availability":"in stock"}]}`, "data.0.retailer_id", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(m.CloudCatalogs().ListProducts(ctx, "waba", "42", ListCloudCatalogProductsParams{Version: "v26.0", Limit: 2}))
 	}},
-	{"MessagingClient.CloudMarketing.Status", "GET", "/graph/whatsapp/v26.0/waba/marketing_messages/status", "", "", `{"id":"waba","marketing_messages_lite_api_status":"future_status"}`, "marketing_messages_lite_api_status", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.CloudMarketing.Status", "GET", "/graph/whatsapp/v26.0/waba/marketing_messages/status", "", "", `{"id":"waba","marketing_messages_onboarding_status":"future_status"}`, "marketing_messages_onboarding_status", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(m.CloudMarketing().Status(ctx, "waba", CloudGraphVersion{Version: "v26.0"}))
 	}},
 	{"MessagingClient.FlowEncryption.Retrieve", "GET", "/graph/whatsapp/v26.0/phone/whatsapp_business_encryption", "", "", `{"data":[{"business_public_key":"public-key","business_public_key_signature_status":"VALID"}]}`, "data.0.business_public_key_signature_status", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {

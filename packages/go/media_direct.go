@@ -21,7 +21,7 @@ func customerOwnedOptions(options RequestOptions) RequestOptions {
 }
 
 // singleSubmission also prevents net/http from replaying a keyed JSON body on
-// a reused connection. Only the four unledgered API operations use this marker.
+// a reused connection, including bodyless Official mutations.
 type singleSubmission struct{ body any }
 
 // binaryRequest is internal: ordinary request bodies retain JSON serialization.

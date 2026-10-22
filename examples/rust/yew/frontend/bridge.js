@@ -1,6 +1,21 @@
 import { definePolymorfaElements } from "@polymorfa/elements";
 definePolymorfaElements();
 let disposeInbox;
+// Only receipts the host observed from message.ack become chat receipts. The
+// send response status is upstream acceptance, never delivery or read.
+const observedReceipts = new Map([
+  ["delivered", "delivered"],
+  ["delivery", "delivered"],
+  ["read", "read"],
+  ["played", "played"],
+]);
+function chatMessage({ receipt, ...message }) {
+  const state =
+    message.direction === "outbound"
+      ? observedReceipts.get(receipt)
+      : undefined;
+  return state ? { ...message, receipt: { state } } : message;
+}
 // The browser renders shared components. Every send and incoming message is
 // handled by this application's native Rust SDK, not the browser API transport.
 function nativeInbox(inbox) {
@@ -47,7 +62,8 @@ function nativeInbox(inbox) {
         for (const notify of changes)
           notify({ type: "conversation", conversation: row(snapshot) });
         for (const message of snapshot.messages)
-          for (const notify of messages) notify({ type: "upsert", message });
+          for (const notify of messages)
+            notify({ type: "upsert", message: chatMessage(message) });
       }
       const label = document.querySelector("#transport-label");
       if (label)
@@ -84,7 +100,9 @@ function nativeInbox(inbox) {
       return {
         async load(_cursor, signal) {
           return {
-            messages: (await request("conversation", { signal })).messages,
+            messages: (await request("conversation", { signal })).messages.map(
+              chatMessage,
+            ),
           };
         },
         subscribe(notify) {
@@ -94,15 +112,17 @@ function nativeInbox(inbox) {
         async send(message, signal) {
           if (message.replyTo || message.attachments?.length)
             throw new Error("This native example sends text only.");
-          return request("send", {
-            method: "POST",
-            signal,
-            headers: {
-              "Content-Type": "application/json",
-              "Idempotency-Key": message.clientId,
-            },
-            body: JSON.stringify({ text: message.text }),
-          });
+          return chatMessage(
+            await request("send", {
+              method: "POST",
+              signal,
+              headers: {
+                "Content-Type": "application/json",
+                "Idempotency-Key": message.clientId,
+              },
+              body: JSON.stringify({ text: message.text }),
+            }),
+          );
         },
       };
     },

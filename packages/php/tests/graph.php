@@ -3,7 +3,7 @@
 declare(strict_types=1);
 $catalogs = ['data' => [['id' => '123','name' => 'Products']],'paging' => ['cursors' => ['before' => 'before','after' => 'after']]];
 $products = ['data' => [['id' => '456','retailer_id' => 'sku','name' => 'Product','availability' => 'in stock']],'paging' => ['cursors' => ['after' => 'next']]];
-$marketing = ['id' => 'waba','marketing_messages_lite_api_status' => 'IN_REVIEW','marketing_messages_onboarding_status' => 'UNAVAILABLE'];
+$marketing = ['id' => 'waba','marketing_messages_onboarding_status' => 'UNAVAILABLE'];
 $key = ['data' => [['business_public_key' => 'PUBLIC KEY','business_public_key_signature_status' => 'VALID']]];
 nativeCases([
  ['GET','/graph/whatsapp/v26.0/waba/product_catalogs?limit=2&after=cursor',null,$catalogs,fn ($c) => $c->cloudCatalogs->list('waba', ['version' => 'v26.0','limit' => 2,'after' => 'cursor'])],

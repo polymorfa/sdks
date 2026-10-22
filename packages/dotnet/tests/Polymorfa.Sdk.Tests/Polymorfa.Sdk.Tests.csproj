@@ -3,4 +3,5 @@
   <ItemGroup><ProjectReference Include="../../src/Polymorfa.Sdk/Polymorfa.Sdk.csproj" /></ItemGroup>
   <ItemGroup><None Update="fixtures/**" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
   <ItemGroup><None Include="../../../../contracts/machine-credentials.v1.json" Link="machine-credentials.v1.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+<ItemGroup><None Include="../../../../contracts/fixtures/official-group-picture.jpg" Link="official-group-picture.jpg" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
 </Project>

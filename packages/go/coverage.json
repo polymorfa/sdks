@@ -4497,5 +4497,18 @@
       "status": "excluded",
       "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority."
     }
-  ]
+  ],
+  "supplements": {
+    "officialApiRound2": {
+      "inventory": "contracts/native-official-round2.json",
+      "language": "go",
+      "claim": "Source and native wire-fixture attribution, separate from baseline operations and runtime qualification."
+    },
+    "simultaneousCalls": {
+      "inventory": "contracts/native-calls-simultaneous-calls.json",
+      "baselineUnchanged": true,
+      "published": false,
+      "language": "go"
+    }
+  }
 }

@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- Prepare simultaneous-call settings and Ban Insurance evidence in all six
+  server SDKs against accepted API #559 source `c1a43a1e`. Updates preserve
+  omission and explicit false. The API enforces acknowledgment and team-key
+  authority on an off-to-on transition. Claims and webhooks recognize
+  `simultaneous_calls`; claim evidence includes `simultaneousCalls`.
+  Package publication and deployed acceptance remain gated.
+- Official API round-2 betas now have native source counterparts in all six
+  server SDKs: Number catalog-cache operations, marketing status and lifecycle
+  events, parent/previous identity fields, incoming carts, multipart Official
+  group pictures, Platform batching settings and whole-body signed batch
+  receivers. Graph resources and Linked Devices groups retain their own routes.
+  These changes are source-only. Exact combined-source hosted qualification,
+  accepted downstream source, API acceptance and publication remain required.
+
 - All six server SDKs submit each direct media grant, API relay upload, history
   chunk retry and history media deletion at most once per invocation, including
   when a caller supplies an idempotency key and a positive retry option. These
@@ -857,6 +871,18 @@
 - Refreshed the Messaging and Platform contracts and the coverage ledger for
   the `/api/voip/*` signaling routes and the `call.ended` / `call.telemetry`
   webhook events.
+
+- Chat kit (`@polymorfa/browser`, `@polymorfa/ui`, `@polymorfa/react`,
+  `@polymorfa/elements`): search and media-type/direction filters over loaded
+  messages, received carts with reported unit prices and no computed total,
+  distinct not-retained/unavailable/deleted content states, a React
+  `ChatDetails` view, `inboxActionsFor()` row-action eligibility, Brazilian Portuguese chat and inbox strings,
+  `replies={false}` (`replies="false"`) for send paths that cannot quote, and
+  `createConversationSession(source, { sendUnavailable })`.
+  `<QuickLinkButton url/>` and `<pmfa-quicklink-button url>` link to a
+  QuickLink your server already created, with no client token or handler
+  call; `isQuickLinkUrl()` exposes the same URL check. Source-only and
+  unreleased.
 
 ## 0.1.0-dev.0 - 2026-08-19
 

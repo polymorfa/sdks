@@ -104,7 +104,7 @@ final class HttpTransport
                 }
                 $binaryStream = ($body->open)($options->cancellation);
                 $request['body'] = $binaryStream;
-                $request['headers']['Content-Type'] = 'application/octet-stream';
+                $request['headers']['Content-Type'] = $body->contentType;
                 $request['headers']['Content-Length'] = (string) $body->length;
             } elseif ($body instanceof ContractJsonBody) {
                 $request['body'] = $body->json;

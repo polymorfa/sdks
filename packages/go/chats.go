@@ -26,6 +26,7 @@ type HistoryMedia struct {
 	URL        string `json:"url"`
 }
 type HistoryMessage struct {
+	Order *CloudOrder `json:"order,omitempty"`
 	HistoryMessageSummary
 	Conversation struct {
 		ConversationReference

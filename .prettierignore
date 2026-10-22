@@ -22,3 +22,7 @@ packages/typescript/proto/whatsapp.proto
 
 # Preserve the byte-identical API-owned signed-vector fixture.
 contracts/machine-credentials.v1.json
+
+# Exact accepted API fragment bytes, verified by the Calls supplement checker.
+contracts/calls-simultaneous-calls.fragments/messaging.json
+contracts/calls-simultaneous-calls.fragments/platform.json

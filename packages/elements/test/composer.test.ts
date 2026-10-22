@@ -1,6 +1,15 @@
 // @vitest-environment happy-dom
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { MessageComposerController } from "@polymorfa/browser";
+import { Storage as BrowserStorage } from "happy-dom";
 import {
   definePolymorfaElements,
   type PolymorfaChatDrawerElement,
@@ -8,6 +17,10 @@ import {
 } from "../src/index.js";
 
 beforeAll(() => definePolymorfaElements());
+beforeEach(() => {
+  // Use the browser fixture, not Node's optional file-backed Web Storage.
+  vi.stubGlobal("localStorage", new BrowserStorage());
+});
 
 function composer(send = vi.fn(async () => undefined)) {
   return new MessageComposerController({
@@ -54,9 +67,9 @@ function key(target: Element, name: string) {
 
 afterEach(() => {
   document.body.replaceChildren();
+  localStorage.clear();
   vi.unstubAllGlobals();
   delete (navigator as { mediaDevices?: unknown }).mediaDevices;
-  localStorage.clear();
 });
 
 describe("pmfa-compose-box parity", () => {
@@ -210,6 +223,52 @@ describe("pmfa-compose-box parity", () => {
     expect(root.querySelector('[part~="recording-bar"]')).toBeNull();
     expect(root.querySelector('[part~="voice-button"]')).not.toBeNull();
     drawer.remove();
+    controller.dispose();
+  });
+});
+
+describe("attachment type picker", () => {
+  it("offers the same media types and keyboard dismissal as React", () => {
+    const controller = composer();
+    const { box, root } = mount(controller, {
+      "attachment-kinds": "image video audio document",
+    });
+    const attach = root.querySelector<HTMLButtonElement>(
+      '[part~="composer-attach"]',
+    )!;
+    const input = root.querySelector<HTMLInputElement>('input[type="file"]')!;
+    const click = vi.spyOn(input, "click").mockImplementation(() => undefined);
+    for (const [label, accept] of [
+      ["Photos", "image/*"],
+      ["Videos", "video/*"],
+      ["Audio", "audio/*"],
+      ["Documents", ""],
+    ]) {
+      attach.click();
+      const button = [
+        ...root.querySelectorAll<HTMLButtonElement>(
+          ".pmfa-attachment-menu button",
+        ),
+      ].find((x) => x.textContent === label)!;
+      button.click();
+      expect(input.accept).toBe(accept);
+      expect(root.querySelector(".pmfa-attachment-menu")).toBeNull();
+    }
+    expect(click).toHaveBeenCalledTimes(4);
+    attach.click();
+    const choices = root.querySelectorAll<HTMLButtonElement>(
+      ".pmfa-attachment-menu button",
+    );
+    choices[1]!.focus();
+    expect(attach.getAttribute("aria-expanded")).toBe("true");
+    root.querySelector("textarea")!.focus();
+    expect(root.querySelector(".pmfa-attachment-menu")).toBeNull();
+    expect(attach.getAttribute("aria-expanded")).toBe("false");
+    expect(root.activeElement).toBe(root.querySelector("textarea"));
+    attach.click();
+    key(root.querySelector(".pmfa-attachment-menu")!, "Escape");
+    expect(root.activeElement).toBe(attach);
+    box.remove();
     controller.dispose();
   });
 });

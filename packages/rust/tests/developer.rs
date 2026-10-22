@@ -31,7 +31,7 @@ async fn organization_and_project_webhook_public_methods_native_wire_contracts()
         };
         let secret =
             json!({"version":1,"createdAt":"2026-10-11T12:00:00Z","previousValidUntil":null});
-        let webhook = json!({"id":"hook","organizationId":"org","owner":if project { "project" } else { "organization" },"projectId":if project { Some("project") } else { None },"url":"https://example.test/webhook","eventTypes":["message.received"],"enabled":true,"format":"native","retryPolicy":{"maximumAttempts":3,"backoff":"exponential","initialDelaySeconds":5},"headers":[{"name":"x-custom"}],"secret":secret,"createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z"});
+        let webhook = json!({"batching":{"enabled":false,"maxEvents":100,"windowMs":1000},"id":"hook","organizationId":"org","owner":if project { "project" } else { "organization" },"projectId":if project { Some("project") } else { None },"url":"https://example.test/webhook","eventTypes":["message.received"],"enabled":true,"format":"native","retryPolicy":{"maximumAttempts":3,"backoff":"exponential","initialDelaySeconds":5},"headers":[{"name":"x-custom"}],"secret":secret,"createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z"});
         let (base, server) = support::wire(
             "GET",
             &format!("{prefix}/webhooks?enabled=true&eventType=message.received&limit=1"),
@@ -72,6 +72,7 @@ async fn organization_and_project_webhook_public_methods_native_wire_contracts()
             resource.retrieve("hook/one", RequestOptions::default())
         );
         let input = CreateWebhookRequest {
+            batching: None,
             url: "https://example.test/webhook".into(),
             event_types: vec!["message.received".into()],
             enabled: None,

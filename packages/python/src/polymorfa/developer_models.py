@@ -98,7 +98,20 @@ class SigningSecretMetadata(TypedDict):
     previousValidUntil: str | None
 
 
+class WebhookBatchingInput(TypedDict):
+    enabled: bool
+    maxEvents: NotRequired[int]
+    windowMs: NotRequired[int]
+
+
+class WebhookBatching(TypedDict):
+    enabled: bool
+    maxEvents: int
+    windowMs: int
+
+
 class WebhookBase(TypedDict):
+    batching: WebhookBatching
     id: str
     organizationId: str
     url: str
@@ -126,6 +139,7 @@ Webhook = OrganizationWebhook | ProjectWebhook
 
 
 class CreateWebhook(TypedDict):
+    batching: NotRequired[WebhookBatchingInput]
     url: str
     eventTypes: list[str]
     enabled: NotRequired[bool]
@@ -135,6 +149,7 @@ class CreateWebhook(TypedDict):
 
 
 class UpdateWebhook(TypedDict, total=False):
+    batching: WebhookBatchingInput
     url: str
     eventTypes: list[str]
     enabled: bool

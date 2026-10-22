@@ -109,6 +109,7 @@ type PreviewedCallLink struct {
 	IsAdmin          bool                  `json:"isAdmin"`
 }
 type SessionCallSettings struct {
+	SimultaneousCalls bool    `json:"simultaneousCalls"`
 	CallsEnabled      bool    `json:"callsEnabled"`
 	ConferenceMode    bool    `json:"conferenceMode"`
 	InboundRoute      string  `json:"inboundRoute"`
@@ -125,6 +126,8 @@ type NullableString struct{ Value *string }
 func (v NullableString) MarshalJSON() ([]byte, error) { return json.Marshal(v.Value) }
 
 type UpdateCallSettingsRequest struct {
+	SimultaneousCalls *bool           `json:"simultaneousCalls,omitempty"`
+	AcknowledgeRisk   *bool           `json:"acknowledgeRisk,omitempty"`
 	CallsEnabled      *bool           `json:"callsEnabled,omitempty"`
 	ConferenceMode    *bool           `json:"conferenceMode,omitempty"`
 	InboundRoute      string          `json:"inboundRoute,omitempty"`
@@ -296,7 +299,7 @@ func (r *VoIP) UpdateCallSettings(ctx context.Context, s string, b UpdateCallSet
 	if err := serverOnly(r.t); err != nil {
 		return Response[Envelope[SessionCallSettings]]{}, err
 	}
-	if b.CallsEnabled == nil && b.ConferenceMode == nil && b.InboundRoute == "" && b.SIPTrunkID == nil && b.SIPClaim == nil && b.HostCloudAPICalls == nil {
+	if b.CallsEnabled == nil && b.ConferenceMode == nil && b.InboundRoute == "" && b.SIPTrunkID == nil && b.SIPClaim == nil && b.HostCloudAPICalls == nil && b.SimultaneousCalls == nil {
 		return Response[Envelope[SessionCallSettings]]{}, validation("Send at least one call setting.")
 	}
 	if b.InboundRoute != "" && b.InboundRoute != "clients" && b.InboundRoute != "sip_trunk" || b.ExpectedRevision != nil && *b.ExpectedRevision < 0 {

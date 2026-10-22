@@ -211,7 +211,6 @@ CASES = [
         {},
         {
             "id": "123",
-            "marketing_messages_lite_api_status": "AVAILABLE",
             "marketing_messages_onboarding_status": "ONBOARDED",
         },
         lambda c: c.cloud_marketing.status("123", version="v26.0"),

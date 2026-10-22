@@ -146,13 +146,13 @@ final class Voip extends Resource
         return $this->request('GET', '/platform/sessions/' . self::segment($session) . '/call-settings', options: $options);
     }
     /**
- * @param array{callsEnabled?:bool,conferenceMode?:bool,inboundRoute?:'clients'|'sip_trunk',sipTrunkId?:?string,sipClaim?:bool,hostCloudApiCalls?:bool,expectedRevision?:int} $body
+ * @param array{callsEnabled?:bool,conferenceMode?:bool,inboundRoute?:'clients'|'sip_trunk',sipTrunkId?:?string,sipClaim?:bool,hostCloudApiCalls?:bool,simultaneousCalls?:bool,acknowledgeRisk?:bool,expectedRevision?:int} $body
  *
  * @return ApiResponse<array{success:bool,data:CallSettings}> */
     public function updateCallSettings(string $session, array $body, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        if (array_intersect(array_keys($body), ['callsEnabled','conferenceMode','inboundRoute','sipTrunkId','sipClaim','hostCloudApiCalls']) === []) {
+        if (array_intersect(array_keys($body), ['callsEnabled','conferenceMode','inboundRoute','sipTrunkId','sipClaim','hostCloudApiCalls','simultaneousCalls']) === []) {
             throw new ValidationException('Provide a call setting.');
         }
         self::validateSettings($body);
@@ -293,7 +293,7 @@ final class Voip extends Resource
     /** @param array<string,mixed> $body */
     private static function validateSettings(array $body): void
     {
-        foreach (['callsEnabled','conferenceMode','sipClaim','hostCloudApiCalls'] as $name) {
+        foreach (['callsEnabled','conferenceMode','sipClaim','hostCloudApiCalls','simultaneousCalls','acknowledgeRisk'] as $name) {
             if (array_key_exists($name, $body) && !is_bool($body[$name])) {
                 throw new ValidationException('Call switches must be booleans.');
             }

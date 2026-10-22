@@ -17,6 +17,14 @@ definePolymorfa({ tokenEndpoint: "/api/polymorfa/token" });
 <pmfa-inbox style="height: 640px"></pmfa-inbox>
 ```
 
+`<pmfa-quicklink-button url="https://…" target="popup">` links to a QuickLink
+your server already created, styled as the connect button (`connect-button`
+part). It needs no client token and dispatches `pmfa-open` when clicked. It
+accepts only `https` URLs, or `http` on `localhost`/`127.0.0.1` for local
+development, and renders nothing otherwise. Leave `url` unset or empty while
+your server creates the link; nothing renders and no warning is logged. The URL
+is the recipient's only credential.
+
 `definePolymorfa` is the equivalent of `<PolymorfaProvider tokenEndpoint>`:
 one client that refreshes tokens, shared by every element. Elements hide
 controls the grant lacks and warn once in development. `<pmfa-inbox>` has the
@@ -69,7 +77,9 @@ drawer.addEventListener("pmfa-close", () => drawer.remove());
   Failed outbound messages offer Retry.
 - Reply appears when the element has the `replyable` attribute, an `onReply`
   handler, or (for the drawer) a `composerController`. Each click dispatches
-  a composed `pmfa-reply` event whose `detail` is the message.
+  a composed `pmfa-reply` event whose `detail` is the message. On the drawer
+  and chat window, `replies="false"` removes Reply for a send path that cannot
+  quote a message.
 - `pmfa-chat-drawer` renders a built-in composer when `composerController` is
   set, and Reply sets that composer's reply target. Slotted children still
   render in the footer, so a `pmfa-compose-box` placed inside works as
@@ -80,7 +90,7 @@ drawer.addEventListener("pmfa-close", () => drawer.remove());
   leaves focus alone unless it has the `autofocus` attribute. Escape closes
   the drawer only when pressed inside it, and not while an input method is
   composing text.
-- `pmfa-compose-box` attaches files from its paperclip button, a paste, or a
+- `pmfa-compose-box` attaches files from its attachment button, a paste, or a
   drop, shows upload progress and failures with a remove button, and shows a
   reply banner. Set its `conversation` or `messages` property so the banner
   can quote the message. The `accept` and `multiple` attributes apply to the
@@ -203,3 +213,15 @@ controls and state.
 If a reject or hangup request fails, the call stays active and its controls remain
 available for retry. The UI shows a localized failure message and keeps existing
 media connected until the call ends. `snapshot.error` clears when ending succeeds.
+
+## Inline chat workspace
+
+See [chat components](../../docs/chat-components.md) for the inline `ChatWindow` /
+`pmfa-chat-window`, observed receipts, media, presentation filters and failure-preserving
+composer actions. History and sends remain owned by your authorized data source.
+
+Configure `attachment-kinds` to offer a named Photos, Videos, Audio and Documents
+picker. Without that attribute, the composer uses the single picker controlled by
+`accept`. Voice notes and ready-media previews are also available. Supply
+authorized upload/send adapters and disable media
+when uploading is unavailable. See [the chat guide](../../docs/chat-components.md#compose-media).
