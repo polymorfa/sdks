@@ -1,3 +1,4 @@
+import type { IncomingOrderCart } from "../messaging/order-cart.js";
 import type {
   CallPermissionSource,
   CallPermissionStatus,
@@ -63,6 +64,8 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "contact.opted_out",
   "contact.sync",
   "contact.update",
+  "contact.marketing_preference_updated",
+  "marketing.onboarding_updated",
   "customer.archived",
   "customer.archiving",
   "customer.created",
@@ -111,6 +114,8 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
 export type KnownWebhookEventType = (typeof KNOWN_WEBHOOK_EVENT_TYPES)[number];
 
 export interface IdentityReference {
+  /** Metadata only; never a send or block target. */
+  readonly parentBsuid?: string;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;
@@ -161,6 +166,7 @@ export type LinkedDeviceMessageType =
   | "unknown";
 
 export interface LinkedDeviceMessagePayload {
+  readonly order?: IncomingOrderCart;
   readonly id: string;
   readonly whatsapp_ids: WhatsAppMessageIds;
   /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
@@ -207,6 +213,7 @@ export interface CloudMessageReferral {
 }
 
 export interface CloudMessagePayload {
+  readonly order?: IncomingOrderCart;
   readonly id: string;
   readonly whatsapp_ids: WhatsAppMessageIds;
   /** @deprecated Temporary singular reference for older consumers; use `whatsapp_ids`. */
@@ -340,6 +347,16 @@ export interface SessionLoggedOutPayload {
   readonly code: number;
 }
 
+/**
+ * Bounds for a webhook's `phoneOfflineStartDay`. Sent once a day from that
+ * day until the phone is seen again; WhatsApp signs the device out on day 14.
+ */
+export const PHONE_OFFLINE_START_DAY = {
+  min: 7,
+  max: 13,
+  default: 10,
+} as const;
+
 export interface SessionPhoneOfflinePayload {
   readonly daysSinceLastSeen: number;
   readonly daysRemaining: number;
@@ -431,7 +448,34 @@ export interface ContactOptPayload {
   readonly projectId?: string;
 }
 
+export interface ContactPreviousIdentity {
+  readonly id?: string;
+  readonly bsuid?: string;
+  readonly parentBsuid?: string;
+}
+export interface ContactIdentityChange {
+  readonly reason: "phone_number_changed" | "user_id_changed";
+  readonly messageId: string;
+  /** Previous identity stays separate; do not merge contact records automatically. */
+  readonly previous?: ContactPreviousIdentity;
+}
+export interface MarketingOnboardingUpdatedPayload {
+  readonly kind: "terms_signed" | "ad_account_linked";
+  readonly wabaId: string;
+  readonly ownerBusinessId?: string;
+  readonly metaEvent: "MM_LITE_TERMS_SIGNED" | "AD_ACCOUNT_LINKED";
+}
+export interface ContactMarketingPreferencePayload {
+  /** Opaque WhatsApp user ID, not necessarily a phone number. */
+  readonly waId: string;
+  readonly preference: "stop" | "resume";
+  readonly category: "marketing_messages";
+  readonly phoneNumberId?: string;
+}
+
 export interface ContactUpdatePayload {
+  readonly parentBsuid?: string;
+  readonly identityChange?: ContactIdentityChange;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;
@@ -632,7 +676,45 @@ export interface LabelsUpdatePayload {
 }
 
 export type HistorySyncPayload =
-  LinkedHistorySyncPayload | CloudHistorySyncPayload;
+  LinkedHistorySyncPayload | CloudHistorySyncPayload | DirectHistorySyncPayload;
+
+/** Public projection of a descriptor notification, distinct from runner IDs. */
+export interface DirectHistorySyncCommon {
+  readonly delivery: "descriptor";
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  readonly original_whatsapp_ids?: WhatsAppMessageIds;
+  /** @deprecated Use whatsapp_ids. */
+  readonly whatsapp_id?: string;
+  /** @deprecated Use original_whatsapp_ids. */
+  readonly original_whatsapp_id?: string;
+  readonly syncType: string;
+  readonly chunkOrder?: number;
+  readonly progress?: number;
+  readonly fileLength: number;
+  readonly oldestMessageAt?: string;
+  readonly peerDataRequestSessionId?: string;
+}
+export type DirectHistorySyncPayload = DirectHistorySyncCommon &
+  (
+    | {
+        readonly media: {
+          readonly type: "md-msg-hist";
+          readonly directPath: string;
+          readonly mediaKey: string;
+          readonly fileSha256: string;
+          readonly fileEncSha256: string;
+          readonly encHandle?: string;
+        };
+        readonly inline?: never;
+      }
+    | {
+        readonly inline: {
+          readonly encoding: "zlib-base64-protobuf";
+          readonly data: string;
+        };
+        readonly media?: never;
+      }
+  );
 
 export interface CloudHistorySyncPayload {
   readonly kind: "history";
@@ -857,7 +939,9 @@ export interface BanSafeClaimPayload {
     | "customer_conduct"
     | "shared_network"
     | "ours"
-    | "inconclusive";
+    | "inconclusive"
+    /** Simultaneous calls voided Ban Insurance; the claim is denied when filed. */
+    | "simultaneous_calls";
   readonly windowStart: string;
   readonly windowEnd: string;
   /** Decimal cent amounts with up to six fractional digits. */
@@ -894,6 +978,8 @@ interface OrderPaymentUpdateBase {
   readonly conversation: {
     readonly id?: string;
     readonly phoneNumber?: string;
+    readonly bsuid?: string;
+    readonly parentBsuid?: string;
   };
 }
 
@@ -1198,6 +1284,8 @@ export interface WebhookPayloadMap {
   readonly "contact.opted_out": ContactOptPayload;
   readonly "contact.sync": ContactsSyncPayload;
   readonly "contact.update": ContactUpdatePayload;
+  readonly "marketing.onboarding_updated": MarketingOnboardingUpdatedPayload;
+  readonly "contact.marketing_preference_updated": ContactMarketingPreferencePayload;
   readonly "customer.archived": CustomerArchivedPayload;
   readonly "customer.archiving": CustomerArchivingPayload;
   readonly "customer.created": CustomerCreatedPayload;

@@ -1,0 +1,20 @@
+parameters:
+    level: 8
+    paths:
+        - src
+        - tests/official_round2_types.php
+        - tests/webhook_types.php
+        - tests/campaign_followup_types.php
+        - tests/campaign_segments_drip_types.php
+        - tests/raw_parity_types.php
+        - tests/media_send_types.php
+        - tests/history_types.php
+        - tests/storage_types.php
+        - tests/signal_types.php
+        - tests/storage_engine_types.php
+        - tests/storage_provider_types.php
+        - tests/s3_media_types.php
+        - tests/media_upload_transport_types.php
+        - tests/campaign_contract_types.php
+        - tests/existing_contract_types.php
+        - tests/existing_contract_static_limits.php

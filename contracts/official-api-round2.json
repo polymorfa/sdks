@@ -1,0 +1,127 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "sourceCommit": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f",
+  "family": "messaging",
+  "sourcePath": "apps/api/docs/openapi.json",
+  "sourceSha256": "6d5b5477a86a85504f921933bf7b26f2c47506e21380fe73c8a5ff1002163b28",
+  "published": false,
+  "note": "Unreleased beta source and native wire fixtures in all six languages. Historical per-item merges and snapshots remain authoritative. Exact combined-head hosted qualification, actual SDK357 integration, review, staging/production acceptance and publication remain gates. Baseline API171a/2026-09-22 unchanged; private Console routes excluded.",
+  "items": [
+    {
+      "item": "OA-03",
+      "mergeSha": "682b9980a19de784b9ada565a97440a8b7fb05fb",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sourceSha256": "cfa88b9f4aea0cd2d16347d33818f6a3f5870fa0cb376dd6a97103e6b677db2a",
+      "releasePath": "internal/docs/releases/2026-10-11-cloud-onboarding-readiness.md",
+      "releaseSha256": "1cb94749b857cce638b81aecbf34f5dfaf1079fca94bdb1632e24069b47463d0",
+      "snapshotPath": "contracts/official-api-round2/oa-03.json",
+      "snapshotSha256": "62641435f1d670607d5b91e8363f42fdc45dc7d669c2e3a8c461c2a01abe337c",
+      "operationIds": ["getQuickLink", "cancelQuickLink"]
+    },
+    {
+      "item": "OA-16",
+      "mergeSha": "7391c22e50d6e238771f3428c22611e100f9a13e",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sourceSha256": "04644a0e0fd11b81d457a7f5efb55648567e382953aa2cb93fc7f7250aeff16a",
+      "releasePath": "internal/docs/releases/2026-10-11-cloud-catalog-sync.md",
+      "releaseSha256": "dfc1a16d31be23926a1440b5ded807251ba9ca4a7b732c99152ffd0d744aa30f",
+      "snapshotPath": "contracts/official-api-round2/oa-16.json",
+      "snapshotSha256": "2bc4fbba821e9c3c90b7a9f632aace0360edbcaf8a1685b9b6a4d9387b5d305d",
+      "operationIds": [
+        "listCloudCatalogs",
+        "getCloudCatalog",
+        "syncCloudCatalog",
+        "listCloudCatalogProducts"
+      ]
+    },
+    {
+      "item": "OA-17",
+      "mergeSha": "24ac44aad59715a3f32dcbee2f4fe5cb07bbda87",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sourceSha256": "5ce4bfda4d9ac8ca29b72a9eff6cf009cc0ee0a8be0167e820d3c851ca3e6f8e",
+      "releasePath": "internal/docs/releases/2026-10-11-cloud-marketing-messages.md",
+      "releaseSha256": "088feba9c5dbb933f7a8f159ea7f9f1c6489fbcf70da82277c1f3bd7f04695f4",
+      "snapshotPath": "contracts/official-api-round2/oa-17.json",
+      "snapshotSha256": "84f218fa062e92c5792e9f075d1049b26f314634412da2db8b49e195d53d3dee",
+      "operationIds": ["getMarketingMessagesStatus"]
+    },
+    {
+      "item": "OA-18",
+      "mergeSha": "e092ffc559b0bd814931560059e07983c6915f66",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sourceSha256": "7520f63ea6f8b6ca02465b4548c44b5001b0b0b0fadde331d06c4b497bc0153c",
+      "releasePath": "internal/docs/releases/2026-10-16-oa18-parent-bsuid-block.md",
+      "releaseSha256": "aea935f32779f2c4d32ca95427746203b5d51cca63f07e4d5454906d6acbe28a",
+      "snapshotPath": "contracts/official-api-round2/oa-18.json",
+      "snapshotSha256": "a381304c948807df9ec410617e93ac827073978f091708aac134fe23b7c68f0d",
+      "operationIds": ["blockContact", "unblockContact"]
+    },
+    {
+      "item": "OA-21",
+      "mergeSha": "ceb2d0227e5d0aa21e390508d9437e088794da1f",
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sourceSha256": "9d8faf13be970bee800ad15e308c130bc4ae8703865ae99278b9ae315cc27638",
+      "releasePath": "internal/docs/releases/2026-10-01-official-groups.md",
+      "releaseSha256": "72efd0f27256dd1c7ee04a26e325b6a9051c4a8453d0b554dbce14241fb662d4",
+      "snapshotPath": "contracts/official-api-round2/oa-21.json",
+      "snapshotSha256": "ec42f4a70d6d02803eb31864438668f19307b97486a71dcb0c38ac5cc92b13f6",
+      "operationIds": ["setOfficialGroupPicture"]
+    },
+    {
+      "item": "OA-30",
+      "mergeSha": "d1985700bf1738fe2c4fd55b17a1e6d7fd328453",
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "sourceSha256": "e28256daac1e8efd84998d7399b74c3200623c19ac807a4b0730523a667976ff",
+      "releasePath": "internal/docs/releases/2026-10-16-webhook-batching.md",
+      "releaseSha256": "98c411776b87bcbf6fe6a77b7657472ce1ced305a427e939946454a2f8acce37",
+      "snapshotPath": "contracts/official-api-round2/oa-30.json",
+      "snapshotSha256": "b6885a304b5d29d14e06c7b6281f1b55d04041f44a288f6754355b8ae67d01f4",
+      "operationIds": [
+        "listOrganizationWebhooks",
+        "createOrganizationWebhook",
+        "getOrganizationWebhook",
+        "updateOrganizationWebhook",
+        "deleteOrganizationWebhook",
+        "rotateOrganizationWebhookSecret",
+        "testOrganizationWebhook",
+        "listProjectWebhooks",
+        "createProjectWebhook",
+        "getProjectWebhook",
+        "updateProjectWebhook",
+        "deleteProjectWebhook",
+        "rotateProjectWebhookSecret",
+        "testProjectWebhook"
+      ]
+    }
+  ],
+  "errorCodes": [
+    "whatsapp_authorization_required",
+    "whatsapp_payment_method_required",
+    "whatsapp_number_not_registered",
+    "marketing_disabled_on_cloud_api",
+    "parent_bsuid_not_supported",
+    "hybrid_group_linked_devices_unavailable",
+    "catalog_cache_full",
+    "catalog_sync_cooldown"
+  ],
+  "checkedDev": "dafb7cb4e4efbcdcbd04af206f1ef6d47c209379",
+  "nativeInventory": "contracts/native-official-round2.json",
+  "managementSource": {
+    "sourceCommit": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f",
+    "sourcePath": "apps/api/docs/openapi.management.json",
+    "sourceSha256": "bf4c6056b75e2fb0293b48edc5d8c12c36cdcbd194b9d11159f59522d30badc3"
+  },
+  "graphMarketingSource": {
+    "sourceCommit": "24ac44aad59715a3f32dcbee2f4fe5cb07bbda87",
+    "sourcePath": "apps/api/packages/api/src/routes/graph/marketing.ts",
+    "sourceSha256": "f797f502990c8cabd4ee3a6c4da1ffd644ccbf62f45a204f63b9f0d9029b99cb",
+    "accepted9bbIdentical": true,
+    "fields": [
+      "marketing_messages_onboarding_status",
+      "owner_business_info.marketing_messages_onboarding_status.status",
+      "owner_business_info.marketing_messages_onboarding_status.time",
+      "disable_marketing_messages_on_cloud_api"
+    ],
+    "note": "OA17 filtered public Graph status DTO replaces the retired MM Lite field. Existing Graph catalog/encryption pins remain separate."
+  }
+}

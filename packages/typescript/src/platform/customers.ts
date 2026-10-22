@@ -1,4 +1,12 @@
 import { HttpTransport } from "../transport/http.js";
+import {
+  getCustomerSignalCustody,
+  updateCustomerSignalCustody,
+} from "./signal-custody.js";
+import type {
+  CustomerSignalCustodyUpdate,
+  SignalCustodyDefault,
+} from "../campaign-contracts.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   CreateCustomerPairingLinkRequest,
@@ -21,6 +29,34 @@ import type {
 
 export class CustomersResource {
   constructor(private readonly transport: HttpTransport) {}
+
+  getSignalCustody(
+    customerId: string,
+    projectId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SignalCustodyDefault>>> {
+    return getCustomerSignalCustody(
+      this.transport,
+      projectId,
+      customerId,
+      options,
+    );
+  }
+
+  updateSignalCustody(
+    customerId: string,
+    projectId: string,
+    body: CustomerSignalCustodyUpdate,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SignalCustodyDefault>>> {
+    return updateCustomerSignalCustody(
+      this.transport,
+      projectId,
+      customerId,
+      body,
+      options,
+    );
+  }
 
   status(
     projectId: string,

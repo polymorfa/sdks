@@ -21,6 +21,7 @@ export {
   type Locale,
   type MessageKey,
 } from "./locale.js";
+export { PT_BR_MESSAGES } from "./locale-pt-br.js";
 export { redactDiagnostic } from "./redaction.js";
 export {
   COMPONENT_STYLES,
@@ -65,15 +66,31 @@ export {
   type EmojiPickerCategory,
 } from "./emoji.js";
 export {
+  ATTACHMENT_KINDS,
+  type AttachmentKind,
   CHAT_ICONS,
   compareMessageTime,
+  filterInboxRows,
+  inboxActionsFor,
+  formatOrderUnitPrice,
+  inboxDraft,
+  type InboxFilter,
+  type InboxRowAction,
+  attachmentPresentation,
+  fileExtension,
   formatDayLabel,
+  formatDuration,
   formatFileSize,
   formatMessageTime,
   isImageAttachment,
+  linkHost,
   layoutMessages,
   messageDayKey,
+  messagePresentationStatus,
   safeAttachmentUrl,
+  thumbnailDataUrl,
+  waveformBars,
+  type AttachmentPresentation,
   type ChatIconName,
   type ChatLayoutEntry,
   type ChatLayoutMessage,

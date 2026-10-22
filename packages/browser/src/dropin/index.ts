@@ -27,6 +27,8 @@ export {
 } from "./inbox.js";
 export {
   connectWhatsApp,
+  isQuickLinkUrl,
+  warnInvalidQuickLink,
   type ConnectWhatsAppOptions,
   type ConnectWhatsAppResult,
 } from "./connect.js";

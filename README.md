@@ -2,7 +2,7 @@
 
 Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 
-The development branch contains the TypeScript server SDK, a framework-neutral
+The repository contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. The exact Messaging and Platform sources are pinned in
 `contracts/source.json`; the Graph-compatible catalog, marketing status and
@@ -34,29 +34,31 @@ The `@polymorfa/sdk` package root supports Node.js 20+, Cloudflare Workers,
 Deno, and Bun for HTTP clients and native webhook verification. Its `/node`
 entry contains Node.js file helpers.
 
-The public packages are complete development artifacts on `dev`. They
-publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
-Polymorfa npm organization. No mobile-native binding is part of this milestone.
+SDK changes target `main`. Nightly prereleases use npm's `dev` tag after matching
+staging acceptance; stable releases require matching production acceptance and
+the protected release workflow. Source availability does not establish package
+publication or feature availability. See [the release gates](docs/releasing.md).
 
 For a small browser preview against staging, see the [Calls example](examples/calls-example/README.md).
 
 ## TypeScript development install
 
-Each push to `dev` publishes the public packages to npm under the `dev`
-dist-tag, with versions such as `0.1.0-dev.20260919094454`:
+The daily workflow checks `main` at 02:00 UTC and publishes eligible nightly
+packages under the `dev` dist-tag, with versions such as
+`0.1.0-dev.20260919094454`. Missing or mismatched staging acceptance blocks
+publication:
 
 ```bash
 npm install @polymorfa/sdk@dev
 npm install @polymorfa/browser@dev   # browser apps
 ```
 
-Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. No
-stable (`latest`) release exists. Publishing starts once the npm scope and
-trusted publisher are configured; until `npm view @polymorfa/sdk dist-tags`
-shows a `dev` tag, build from source and install the packed tarballs:
+Pin an exact version for reproducible installs. Check
+`npm view @polymorfa/sdk dist-tags` for published channels. To use unpublished
+changes, check out their exact SDK commit and build packed tarballs:
 
 ```bash
-git clone --branch dev https://github.com/polymorfa/sdks.git
+git clone --branch main https://github.com/polymorfa/sdks.git
 cd sdks
 npm ci
 npm run build:workspaces
@@ -67,7 +69,7 @@ npm install /path/to/sdks/polymorfa-sdk-0.1.0-dev.0.tgz   # from your applicatio
 See [docs/releasing.md](docs/releasing.md) for the version scheme and the
 publishing workflow.
 
-`npm install github:polymorfa/sdks#dev` no longer installs the SDK: the
+`npm install github:polymorfa/sdks#main` does not install the SDK: the
 repository root is a private workspace, and `@polymorfa/sdk` lives in
 `packages/typescript`.
 
@@ -134,7 +136,7 @@ The handwritten Messaging resources in this milestone are:
 
 - `banSafe`: retrieve and update project Safe Mode, warm-up, Ban Insurance
   evidence, and Health policy settings, and one number's Safe Mode override,
-  with an organization API key or project token
+  with an team key or project token
 - `sessions`: list, retrieve, update, delete, start, stop, restart,
   logout, account, and entitlement-gated direct JSON QR or phone pairing
 - `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing sessions
@@ -216,7 +218,7 @@ console.log(indexed.highWatermark, indexed.nextOffset);
 `Client` binds its ownership context when you construct it. An organization
 API key without `projectId` creates an organization client. Call
 `client.project(projectId)` to create an immutable project view, or construct a
-project view directly with an organization key or a `pmfa_pt_` project token:
+project view directly with an team key or a `pmfa_pt_` project token:
 
 ```ts
 const project = new Client({
@@ -278,7 +280,7 @@ project clients see only their project.
 The organization view also exposes these management resources:
 
 - `organizations`: retrieve the organization visible to the API key
-- `apiKeys`: list key metadata and deactivate an organization API key
+- `apiKeys`: list key metadata and deactivate an team key
 - `members`: list organization members
 - `auditLogs`: list the organization audit trail with live action, resource,
   and limit filters
@@ -473,7 +475,7 @@ request ID and the W3C trace ID returned in `X-Trace-Id`. See
 ## Call consent
 
 Polymorfa checks every call against the team's call policy before the
-destination rings. The policy is team-wide and needs an organization key;
+destination rings. The policy is team-wide and needs an team key;
 project tokens and client tokens receive `403`.
 
 ```ts
@@ -765,7 +767,7 @@ used by `Client`, `MessagingClient`, or their raw request helpers.
 `MessagingClient.quickLinks.create()`, `retrieve()`, and `cancel()` map the
 authenticated hosted lifecycle at `/messaging/quicklinks`. They accept organization
 API keys or project tokens with `quicklink:manage`; browser client tokens fail
-before transport. Organization keys can set `projectId` on creation, while a
+before transport. Team keys can set `projectId` on creation, while a
 project token remains bound by the server.
 
 These methods expose the short-lived connection URL and status record. They do
@@ -853,6 +855,33 @@ API permissions or change approvals. Both methods make one request and refuse
 `idempotencyKey`; do not retry an unknown creation outcome. The exported types
 are `VoipCreateCallLinkRequest`, `VoipPreviewCallLinkRequest`,
 `VoipCreatedCallLink`, and `VoipPreviewedCallLink`.
+
+### Client-token action ceilings
+
+Client tokens accept an immutable `allow` ceiling for a session or Customer.
+Every request still requires live Number rules and current ownership. Session
+`allow` requires the action-ceilings beta. Until it is enabled, session `allow`
+is refused and omission keeps the existing token format. After enabling it,
+omitting `allow` snapshots a session's configured actions; Customer omission selects the
+original Customer action set. `chats_read`, `chats_manage`, `contact_write`, and
+`contact_delete` are reserved for enrolled regional beta access. These types do
+not establish regional availability or enable access by themselves.
+
+An explicit empty session list seals zero actions. Keep it distinct from
+omission when constructing the server-side mint request:
+
+| SDK        | Omit the session ceiling                              | Seal zero session actions |
+| ---------- | ----------------------------------------------------- | ------------------------- |
+| TypeScript | Omit `allow`                                          | `allow: []`               |
+| Go         | `Allow: nil`                                          | `Allow: []string{}`       |
+| Python     | Omit the `allow` key                                  | `"allow": []`             |
+| PHP        | Omit the `allow` key                                  | `'allow' => []`           |
+| Rust       | `ClientTokenTarget::Session { session, allow: None }` | Set `allow: Some(vec![])` |
+| C#         | Omit `Allow` or use `null`                            | `Allow: []`               |
+
+Rust uses `SessionClientAction` for session ceilings and `CustomerClientAction`
+for Customer ceilings. Customer lists remain non-empty. The API validates
+actions, enrollment and live rules; these request types grant no authority.
 
 ### Calls
 
@@ -1040,3 +1069,5 @@ or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
 ## License
 
 MIT
+
+Treat every Polymorfa credential as an opaque string. Never parse it or assume a fixed length. Credential storage must support at least 512 characters, preferably unrestricted text. Client-token length varies with its bindings and Customer scope.

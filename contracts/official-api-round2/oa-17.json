@@ -1,0 +1,558 @@
+{
+  "paths": {
+    "/messaging/{session}/marketing-messages/status": {
+      "get": {
+        "operationId": "getMarketingMessagesStatus",
+        "tags": ["Marketing Messages"],
+        "summary": "Get Marketing Messages onboarding status",
+        "description": "**Protocols:** Meta Cloud API\n\n**Required scope:** `sessions:read`\n\nReads WhatsApp's Marketing Messages onboarding status, terms of service state and Cloud API marketing setting for the Number's WhatsApp Business Account. The status can change between this read and a send; WhatsApp decides each send. Beta: requires team enrollment and a Number with an Official API connection.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-required-scope": "sessions:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Number ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetMarketingMessagesStatusResponse"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "400": {
+            "description": "The Number ID fails validation (`invalid_parameter`); it must contain 1 to 128 characters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "401": {
+            "description": "The credential is missing or invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "403": {
+            "description": "The credential lacks `sessions:read`, or the team is not enrolled in the beta (`feature_unavailable`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "404": {
+            "description": "The Number is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "409": {
+            "description": "The Number has no connected Official API account, for example a Linked Devices or test Number (`unsupported_for_connection`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "502": {
+            "description": "WhatsApp refused the read or its answer could not be read (`upstream_failure`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          },
+          "503": {
+            "description": "WhatsApp or a required service is unavailable (`service_unavailable`). Repeating the read is safe.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicError"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/X-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/X-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/X-RateLimit-Reset"
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"blue\" icon=\"meta\" iconType=\"brands\">Meta Cloud API</Badge> <Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+        },
+        "x-protocols": ["Meta Cloud API"]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "MarketingOnboardingUpdatedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": ["marketing.onboarding_updated"],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/MarketingOnboardingUpdatedPayload"
+          }
+        },
+        "required": ["id", "session", "timestamp", "event", "payload"]
+      },
+      "ContactMarketingPreferenceUpdatedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp"
+          },
+          "event": {
+            "type": "string",
+            "enum": ["contact.marketing_preference_updated"],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/ContactMarketingPreferencePayload"
+          }
+        },
+        "required": ["id", "session", "timestamp", "event", "payload"]
+      },
+      "ContactMarketingPreferencePayload": {
+        "type": "object",
+        "properties": {
+          "waId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "WhatsApp user ID, preserved unchanged. It is not necessarily a phone number"
+          },
+          "preference": {
+            "type": "string",
+            "enum": ["stop", "resume"],
+            "description": "`stop`: the person stopped marketing messages from your business; later marketing messages to them fail with WhatsApp error 131050 until they resume. Do not resend to them. `resume`: they accept marketing messages again"
+          },
+          "category": {
+            "type": "string",
+            "enum": ["marketing_messages"]
+          },
+          "phoneNumberId": {
+            "type": "string",
+            "description": "WhatsApp phone number ID of your Number"
+          }
+        },
+        "required": ["waId", "preference", "category"]
+      },
+      "MarketingOnboardingUpdatedPayload": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["terms_signed", "ad_account_linked"],
+            "description": "`terms_signed`: the business accepted the Marketing Messages terms for this WhatsApp Business Account. `ad_account_linked`: WhatsApp's older onboarding completion notice, which WhatsApp is retiring"
+          },
+          "wabaId": {
+            "type": "string",
+            "description": "WhatsApp Business Account the notice is about"
+          },
+          "ownerBusinessId": {
+            "type": "string",
+            "description": "Business portfolio that owns the account"
+          },
+          "metaEvent": {
+            "type": "string",
+            "enum": ["MM_LITE_TERMS_SIGNED", "AD_ACCOUNT_LINKED"],
+            "description": "WhatsApp's `account_update` event value"
+          }
+        },
+        "required": ["kind", "wabaId", "metaEvent"]
+      },
+      "PublicError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request_error",
+                  "authentication_error",
+                  "permission_error",
+                  "conflict_error",
+                  "rate_limit_error",
+                  "api_error",
+                  "upstream_error"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "enum": [
+                  "invalid_parameter",
+                  "invalid_credential",
+                  "entitlement_required",
+                  "cloud_template_authority_restricted",
+                  "gate_limit_reached",
+                  "method_not_allowed",
+                  "permission_denied",
+                  "missing_scope",
+                  "resource_not_found",
+                  "hms_not_enabled",
+                  "media_fetch_failed",
+                  "resource_gone",
+                  "feature_unavailable",
+                  "stream_cursor_invalid",
+                  "stream_cursor_expired",
+                  "stream_connection_limit_reached",
+                  "state_conflict",
+                  "team_deletion_scheduled",
+                  "hybrid_routing_paused",
+                  "hybrid_choice_required",
+                  "hybrid_transition_ineligible",
+                  "hybrid_automation_unavailable",
+                  "hybrid_transport_unavailable",
+                  "hybrid_target_reference_unavailable",
+                  "send_outcome_unknown",
+                  "idempotency_conflict",
+                  "idempotency_in_progress",
+                  "idempotency_completed",
+                  "idempotency_outcome_unknown",
+                  "call_claimed",
+                  "call_not_ringing",
+                  "connection_limit",
+                  "unsupported_for_connection",
+                  "call_permission_required",
+                  "invalid_sip_trunk",
+                  "calls_disabled",
+                  "call_recipient_opted_out",
+                  "call_destination_blocked",
+                  "call_permission_request_limited",
+                  "call_permission_granted",
+                  "order_status_transition_invalid",
+                  "order_cancellation_failed",
+                  "call_opt_out_limit",
+                  "number_restricted",
+                  "sip_trunk_in_use",
+                  "sip_trunk_revision_conflict",
+                  "sip_trunk_limit",
+                  "sip_unavailable",
+                  "voice_not_enabled",
+                  "provider_credential_invalid",
+                  "provider_unavailable",
+                  "asset_not_ready",
+                  "voice_asset_in_use",
+                  "voice_asset_revision_conflict",
+                  "voice_unavailable",
+                  "rate_limit_exceeded",
+                  "internal_error",
+                  "operation_not_supported",
+                  "upstream_failure",
+                  "service_unavailable",
+                  "credential_verification_unavailable",
+                  "session_not_ready",
+                  "command_dispatch_failed",
+                  "result_unknown",
+                  "parent_bsuid_not_supported",
+                  "recipient_not_on_whatsapp",
+                  "conversation_window_closed",
+                  "template_not_approved",
+                  "media_too_large",
+                  "whatsapp_rate_limited",
+                  "new_chat_limit_reached",
+                  "marketing_disabled_on_cloud_api",
+                  "whatsapp_account_restricted",
+                  "whatsapp_authorization_required",
+                  "whatsapp_payment_method_required",
+                  "whatsapp_number_not_registered",
+                  "whatsapp_groups_ineligible",
+                  "whatsapp_group_creation_paused",
+                  "whatsapp_group_limit_reached",
+                  "whatsapp_group_full",
+                  "whatsapp_group_suspended",
+                  "whatsapp_group_has_no_participants",
+                  "bansafe_suspended",
+                  "bansafe_org_suspended",
+                  "bansafe_cold_blocked",
+                  "bansafe_cold_held",
+                  "bansafe_throttled",
+                  "bansafe_daily_allowance_reached",
+                  "bansafe_accounting_unavailable",
+                  "bansafe_send_outcome_unknown",
+                  "campaigns_not_entitled",
+                  "campaign_throughput_capped",
+                  "campaign_approval_required",
+                  "campaign_approval_stale",
+                  "campaign_variables_missing"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "param": {
+                "type": "string",
+                "nullable": true
+              },
+              "request_id": {
+                "type": "string",
+                "description": "Matches the X-Request-Id response header. Include it when you contact support."
+              },
+              "request_log_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+              }
+            },
+            "required": ["type", "code", "message", "param", "request_id"]
+          },
+          "data": {
+            "type": "string",
+            "nullable": true,
+            "enum": [null],
+            "description": "Always null for a failed request."
+          },
+          "docs": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": ["error", "data", "docs"]
+      },
+      "GetMarketingMessagesStatusResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [true]
+          },
+          "data": {
+            "$ref": "#/components/schemas/MarketingMessagesStatus"
+          }
+        },
+        "required": ["success", "data"]
+      },
+      "MarketingMessagesStatus": {
+        "type": "object",
+        "properties": {
+          "wabaId": {
+            "type": "string",
+            "description": "WhatsApp Business Account of the Number's Official API connection."
+          },
+          "onboarding": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["onboarded", "eligible", "unknown"],
+                "description": "`onboarded`: WhatsApp reports the account onboarded to Marketing Messages. `eligible`: the account can onboard but has not. `unknown`: WhatsApp returned no status or a value it does not document."
+              },
+              "metaStatus": {
+                "type": "string",
+                "nullable": true,
+                "description": "WhatsApp's `marketing_messages_onboarding_status` value, unchanged.",
+                "example": "ONBOARDED"
+              }
+            },
+            "required": ["status", "metaStatus"]
+          },
+          "terms": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["signed", "requested", "not_started", "unknown"],
+                "description": "Terms of service state of the business portfolio that owns the account."
+              },
+              "metaStatus": {
+                "type": "string",
+                "nullable": true,
+                "description": "WhatsApp's value, unchanged: `TERM_OF_SERVICE_SIGNED`, `REQUEST_SENT` or `NOT_STARTED`.",
+                "example": "TERM_OF_SERVICE_SIGNED"
+              },
+              "date": {
+                "type": "string",
+                "nullable": true,
+                "description": "Date WhatsApp reports for the terms state (YYYY-MM-DD).",
+                "example": "2025-08-13"
+              }
+            },
+            "required": ["status", "metaStatus", "date"]
+          },
+          "cloudApiMarketingDisabled": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "True when the account refuses Marketing templates sent as ordinary messages (`marketing_disabled_on_cloud_api`). Null when WhatsApp did not report it."
+          },
+          "nextAction": {
+            "type": "string",
+            "enum": ["none", "accept_terms", "review_in_whatsapp_manager"],
+            "description": "`accept_terms`: someone with full control of the business portfolio accepts the Marketing Messages terms in WhatsApp Manager (Overview, Alerts). `review_in_whatsapp_manager`: check the account in WhatsApp Manager. There is no API for either step."
+          },
+          "guideUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "WhatsApp's onboarding guide for the terms step."
+          },
+          "observedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "wabaId",
+          "onboarding",
+          "terms",
+          "cloudApiMarketingDisabled",
+          "nextAction",
+          "guideUrl",
+          "observedAt"
+        ]
+      }
+    }
+  }
+}

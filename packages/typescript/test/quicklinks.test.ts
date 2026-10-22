@@ -58,6 +58,7 @@ describe("MessagingClient.quickLinks", () => {
     const supplement = {
       purpose: "add_connection",
       session: "existing/number",
+      addConnection: "official_api",
     } satisfies CreateQuickLinkRequest;
     // @ts-expect-error supplementary setup requires an existing Number session
     const invalid: CreateQuickLinkRequest = { purpose: "add_connection" };
@@ -258,7 +259,7 @@ describe("MessagingClient.quickLinks", () => {
   it("rejects browser client tokens before transport", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     const client = new MessagingClient({
-      credential: { type: "clientToken", value: "pmfa_ct_browser" },
+      credential: { type: "clientToken", value: "pmfa_ct_YnJvd3Nlcg" },
       baseUrl: "https://api.example.com",
       fetch,
     });

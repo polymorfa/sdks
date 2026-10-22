@@ -1,5 +1,19 @@
 # Contract coverage
 
+## Campaign and custody additions
+
+`campaign-custody-20261014.json` pins thirty machine-accessible operations and
+their referenced components to API source
+`f97ad78b172e80788c33bdc0fcf28f75db9283ec`. TypeScript's new typed helpers select
+`2026-10-14` when request options omit a version. The global API default and
+579-operation baseline snapshots remain unchanged.
+
+The supplement is held with `published: false`, and the release gate checks
+both source audiences. The five native ports, remaining 625-operation contract
+reconciliation, accepted staging/production API evidence, and publication are
+separate unfinished gates. `campaign-20261014-contract.test.ts` checks all thirty
+wire operations; it does not establish provider delivery or deployed access.
+
 ## Request log supplement
 
 `request-logs.json` pins `GET /platform/projects/{projectId}/request-logs` and
@@ -8,6 +22,15 @@ its `RequestLog` and `RequestLogPageMetadata` schemas to API merge commit
 `Client.requestLogs` is checked against it in `request-logs-contract.test.ts`.
 The release gate requires this pin to match the global source before
 publication, so the method publishes only with a reconciled, accepted contract.
+
+## Webhook phone offline start day
+
+`webhook-phone-offline.json` pins `phoneOfflineStartDay` on the nine Platform
+and Messaging webhook schemas that carry it to API source commit
+`4380e1113f4b6e5830852f35b13e0ee15b6e340b`, the merge of polymorfa/polymorfa#631
+into dev. `webhook-phone-offline-contract.test.ts` checks the SDK types and
+`PHONE_OFFLINE_START_DAY` against it. Refresh the global snapshots in a later
+snapshot update.
 
 ## Message provider references
 
@@ -66,8 +89,12 @@ compares their paths and fields. The full snapshots are not repinned here.
 The current snapshots are byte-identical copies of the Messaging and Platform
 contracts at API dev merge commit `171a9683ff45d11a4b5d3917dc428ad2722b0d99`.
 The full revision contains the inherited Logs and Usage contracts and all four
-public Analytics reads. The ledger contains 579 operations: 433 covered and
-146 excluded, with no missing, partial or changed fingerprints. Six reviewed
+public Analytics reads. Each language ledger contains 579 operations: 442
+covered and 137 excluded, with no missing, partial or changed fingerprints
+against these pinned snapshots. The three campaign update/reschedule methods
+are verified in the TypeScript, Python and Rust wire suites; their old PR-owner
+exclusions are removed. This baseline does not establish parity with newer API
+contracts or package publication. Six reviewed
 Console changes cover analytics projections, consent preferences, operational
 error vitals and shared drains. They require dashboard identity and remain
 excluded from server SDK authority.
@@ -111,7 +138,7 @@ public operations retain their typed SDK methods and unchanged fingerprints.
 Usage insights require dashboard identity; no server SDK method grants access
 to that Console route. The three Console-only setup operations also remain
 excluded from SDK authority.
-Reads require organization credentials with `billing:read`; writes require
+Reads require team keys with `billing:read`; writes require
 `billing:manage`, live team authority and Pay-As-You-Go. Existing credential masks
 do not gain these permissions. Paid service continues through its window when a
 limit is reached. The older Graph and test-event supplements keep their independent
@@ -186,7 +213,7 @@ participants add optional `handRaised`.
 moving a launched campaign that is waiting to start. The Messaging update is
 sent once after an uncertain response because its route has no replay key;
 reschedule uses the API's idempotency key. The Platform reschedule request names
-`projectId` for an organization credential. The other refreshed operation
+`projectId` for an team key. The other refreshed operation
 fingerprints were checked against their existing method paths and types.
 files at API `dev` merge commit `e818ba62830d3727a7822379bb46c1fece90ef1b`
 (API PR #433, which corrects the payment order amount and status schemas from
@@ -291,7 +318,7 @@ all 15 Functions routes already merged to API `dev`.
 
 HMS history adds four server-only Messaging reads under
 `MessagingClient.chats`: `list`, `retrieve`, `listMessages`, and
-`retrieveMessage`. All four are covered; they require an organization key or
+`retrieveMessage`. All four are covered; they require an team key or
 project token, their respective `chats:read` or `messages:read` scope, HMS on
 the Number, and `messaging.history` beta enrollment. Client tokens are refused
 locally. Pagination retains both cursors and the data-region response header.
@@ -326,7 +353,7 @@ object. No routes were added or removed by this schema refresh.
 This revision also covers `GET /platform/usage`, `/platform/usage/records`,
 and `/platform/gates` through `Client.usage.summary`, `listRecords`, and
 `listGates`. `iterateRecords` follows record-page cursors. Usage is measured
-but not charged; gate state requires an organization credential.
+but not charged; gate state requires an team key.
 
 The Campaigns P0 revision added these operations. Audiences gain member
 management (`POST`/`GET /platform/audiences/{listId}/members` and
@@ -632,3 +659,76 @@ create, update, recipient and analytics schemas from API `dev` merge commit
 `87b25fd9e2494d90f01f7511fb47be6a28845fa1` (polymorfa/polymorfa#503), with both source paths and file
 hashes. `campaign-follow-ups-contract.test.ts` checks the SDK types against it.
 The full snapshots stay pinned to `contracts/source.json` until the next repin.
+
+## Campaign contact frequency caps (beta)
+
+`client.campaigns.getFrequencyCap()` reads team limits and their revision.
+`client.campaigns.updateFrequencyCap({ maxPer24Hours: 2, maxPer7Days: 5, revision })`
+replaces both windows. Send both limits as null to remove them. A stale revision
+raises `PolymorfaConflictError`; read and reconcile before trying again. A new
+limit requires beta access and can return `403 feature_unavailable`.
+Campaign create/update accepts `frequencyCap`; null removes a campaign cap.
+Recipient reads expose `failureReason` and accept `reason: "frequency_cap"`.
+Analytics adds `frequencyCap.skippedRecipientCount`. Raising limits never retries
+settled skips. `contracts/campaign-frequency-cap.json` pins the merged API source;
+package publication and API availability remain separate release gates.
+
+`campaign-segments-drip.json` pins the merged audience segment and drip additions
+at accepted API source `9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f`, including
+source hashes, focused schemas, fields and operations. The frequency-cap
+supplement uses that same source. All 21 frequency-cap and 48 segment/drip
+fragments are exactly unchanged at this revision. Their native campaign manifest
+references match the two full source hashes. The full baseline snapshots and
+mixed campaign/custody supplement keep their independent pins. This reconciliation
+records source provenance; package publication, deployed acceptance and release
+holds remain separate.
+
+## Client-token ceilings
+
+`client-token-ceilings.json` pins API source `02aee1d010c5009401c0b60ab98eafd3dfd69f08`
+and its exact Platform spec hash for session/Customer mint ceilings and rule
+validation. The supplement is held from publication. Reconcile full snapshots,
+feature pins and the exact deployed API acceptance before publication; source
+merge, passing SDK tests and opaque-token transport do not establish availability.
+Session `allow` requires the action-ceilings beta; an empty session list seals
+zero actions, while Customer lists remain non-empty. Reserved regional actions
+remain gated. The Next.js handler forwards only the grant's API actions and does
+not turn a wrapper-only grant into the session's broader API action set.
+
+All five native mint helpers preserve omitted, empty and populated session
+ceilings. Go uses the minimum Go 1.24 `omitzero` encoding to distinguish nil from
+an explicit empty slice. Python, PHP and Rust expose the reserved regional
+action spellings in their request types; Go and C# retain their existing string
+lists. Server-only mint guards remain in every language. This extends the
+existing mint request, with no added operation or coverage-ledger claim.
+
+## Verified documentation snippets
+
+[`doc-snippets.json`](doc-snippets.json) exports checked programs for all six
+server SDKs. Read [the consumer and maintenance contract](doc-snippets.md) before
+using it: pin the export commit, match API/spec provenance, preserve exact
+placeholders and key scope, and use cURL for absent or mismatched entries.
+Current metadata describes source packages and omits registry install commands.
+
+## Machine-credential fixture supplement
+
+`machine-credentials.v1.json` is the byte-identical API #647 fixture from merged
+source `e95d02da674da8242453c2a41efd48883fa04734`. Its producer path, blob and hash
+are in `machine-credentials.source.json`. `npm run check:machine-credentials`
+checks provenance and shared consumption in all six languages. Native credential
+tests check framing, growth, unchanged wire transport and diagnostic redaction.
+Signed negative-claim vectors are locally accepted as opaque strings; the API
+authenticates them. This supplement does not repin the baseline OpenAPI snapshots,
+change scopes, or establish package publication or deployed acceptance.
+
+## Simultaneous calls supplement
+
+`calls-simultaneous-calls.json` pins the exact GET/PUT call-settings operations,
+request/response schemas and Ban Insurance claim/webhook changes to accepted
+API #559 merge `c1a43a1eb409ad57c2b9677c606a3d42d7b5598c`. It records full
+source hashes and canonical fragment hashes for each audience.
+`native-calls-simultaneous-calls.json` attributes the six native counterparts
+and tests. These are scoped supplements; the global `171a9683` baseline is
+unchanged. `published: false` retains the release hold. Accepted API source
+alone does not prove deployment, registry publication or installed-client
+acceptance. PHP and Rust qualification remains pending.

@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -9,7 +9,7 @@ const repositoryRoot = new URL("../../../", import.meta.url).pathname;
 const packageRoot = new URL("../", import.meta.url).pathname;
 
 describe("npm package", () => {
-  it("packs and imports in a clean consumer without runtime dependencies", () => {
+  it("packs portable compression and imports without optional peers", () => {
     const directory = mkdtempSync(join(tmpdir(), "polymorfa-package-"));
     const environment = {
       ...process.env,
@@ -34,6 +34,8 @@ describe("npm package", () => {
     }>;
     const paths = metadata[0]?.files.map(({ path }) => path) ?? [];
     expect(paths).toContain("LICENSE");
+    expect(paths).toContain("THIRD_PARTY_NOTICES");
+    expect(paths).toContain("dist/history/inflate.js");
     expect(paths).toContain("README.md");
     expect(paths).toContain("dist/index.js");
     // The Calls client is compiled into this package, not a dependency.
@@ -42,6 +44,11 @@ describe("npm package", () => {
     expect(paths).toContain("dist/calls/internal.js");
     expect(paths).toContain("dist/node.js");
     expect(paths).toContain("dist/node.d.ts");
+    expect(paths).toContain("dist/history/index.js");
+    expect(paths).toContain("dist/history/gen/whatsapp_pb.js");
+    expect(paths).toContain("dist/history/gen/whatsapp_pb.d.ts");
+    expect(paths).toContain("dist/s3.js");
+    expect(paths).toContain("dist/s3.d.ts");
     expect(paths).toContain("package.json");
     expect(
       paths.some((path) => path.includes("/src/") || path.includes("/test/")),
@@ -55,22 +62,41 @@ describe("npm package", () => {
     });
     expect(initialize.status, initialize.stderr).toBe(0);
     const tarball = join(directory, metadata[0]?.filename ?? "missing.tgz");
-    const install = spawnSync("npm", ["install", "--ignore-scripts", tarball], {
+    // Seed only the accepted runtime dependency, then install the SDK offline.
+    const cached = spawnSync("npm", ["cache", "add", "pako@3.0.2"], {
       cwd: directory,
       encoding: "utf8",
       env: environment,
     });
+    expect(cached.status, cached.stderr).toBe(0);
+    const install = spawnSync(
+      "npm",
+      [
+        "install",
+        "--ignore-scripts",
+        "--offline",
+        "--legacy-peer-deps",
+        "--no-audit",
+        "--no-fund",
+        tarball,
+      ],
+      {
+        cwd: directory,
+        encoding: "utf8",
+        env: environment,
+      },
+    );
     expect(install.status, install.stderr).toBe(0);
     writeFileSync(
       consumer,
       [
         'import * as sdk from "@polymorfa/sdk";',
         "const { MessagingClient, Client, SystemClient, BridgeClient, PRESENCE_STATES, PRIVACY_SETTING_VALUES, SDK_VERSION, webhooks } = sdk;",
-        'const messaging = new MessagingClient({ credential: { type: "apiKey", value: "pmfa_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" } });',
-        'const platform = new Client({ credential: { type: "organizationApiKey", value: "pmfa_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" } });',
+        'const messaging = new MessagingClient({ credential: { type: "apiKey", value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k" } });',
+        'const platform = new Client({ credential: { type: "organizationApiKey", value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k" } });',
         'const project = platform.project("project_123");',
         "const system = new SystemClient();",
-        'const bridge = new BridgeClient({ credential: { type: "projectToken", value: "pmfa_pt_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" } });',
+        'const bridge = new BridgeClient({ credential: { type: "projectToken", value: "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k" } });',
         "let listenerCredentialRejected = false;",
         'try { new Client({ credential: { type: "organizationApiKey", value: "pmfa_ls_fixture" } }); } catch { listenerCredentialRejected = true; }',
         'console.log(JSON.stringify({ version: SDK_VERSION, messaging: !!messaging.raw, business: typeof messaging.business.getCatalog, calls: typeof messaging.calls.reject, campaigns: typeof messaging.campaigns.launch, messagingMedia: typeof messaging.media.download, chats: typeof messaging.chats.editMessage, channels: typeof messaging.channels.listMessageUpdates, contacts: typeof messaging.contacts.list, groups: typeof messaging.groups.list, labels: typeof messaging.labels.list, lids: typeof messaging.identities.resolve, observationPolicies: typeof messaging.observationPolicies.retrieveForProject, profile: typeof messaging.profile.get, privacy: typeof messaging.privacy.set, privacyValues: PRIVACY_SETTING_VALUES.defense, presence: typeof messaging.presence.getForChat, presenceStates: PRESENCE_STATES, quickReplies: typeof messaging.quickReplies.list, pairing: typeof messaging.sessions.requestPairingCode, messagingOperations: typeof messaging.operations, templates: typeof messaging.templates.create, users: typeof messaging.users.getSecurityCode, systemStatus: typeof system.status, systemVersion: typeof system.version, systemHealth: typeof system.health, systemPing: typeof system.ping, bridgeRoutes: typeof bridge.routes.resolve, bridgeListen: typeof bridge.listen, platform: !!platform.raw, platformOwner: platform.owner, projectOwner: project.owner, projectId: project.projectId, apiKeys: typeof platform.apiKeys.deactivate, auditLogs: typeof platform.auditLogs.list, billing: typeof platform.billing.usage, members: typeof platform.members.list, events: typeof project.events.replay, webhooks: typeof project.webhooks.rotateSecret, webhookDeliveries: typeof project.webhookDeliveries.retrieveAttempt, operations: typeof project.operations.wait, projectTokens: typeof platform.projectTokens.list, securityIncidents: typeof platform.securityIncidents.acknowledge, sessionBans: typeof platform.sessionBans.listActive, sessionStart: typeof platform.sessions.start, batchStop: typeof platform.sessions.stopMany, quickLinkSettings: typeof project.quickLinkSettings.update, verifyWebhook: typeof webhooks.verify, createWebhookFixture: typeof webhooks.createFixture, listenerCredentialRejected, platformClientExported: "PlatformClient" in sdk, listenerApiExported: "eventStreams" in sdk, memberInvite: typeof platform.members.invite, organizationUpdate: typeof platform.organizations.update }));',
@@ -144,7 +170,7 @@ describe("npm package", () => {
       [
         'import * as node from "@polymorfa/sdk/node";',
         'import { MessagingClient, decodeWhatsAppMedia } from "@polymorfa/sdk";',
-        'const messaging = new MessagingClient({ credential: { type: "apiKey", value: "pmfa_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" } });',
+        'const messaging = new MessagingClient({ credential: { type: "apiKey", value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k" } });',
         "console.log(JSON.stringify({ exports: Object.keys(node).sort(), stream: typeof messaging.media.downloadStream, url: typeof messaging.media.downloadUrl, blob: typeof messaging.media.downloadBlob, whatsapp: typeof messaging.media.downloadFromWhatsApp, decode: typeof decodeWhatsAppMedia }));",
       ].join("\n"),
     );
@@ -158,6 +184,8 @@ describe("npm package", () => {
         "downloadMediaToFile",
         "downloadWhatsAppMediaToFile",
         "nodeMediaCrypto",
+        "nodeMediaEncryptor",
+        "whatsAppMediaFileSource",
         "writeStreamToFile",
       ],
       stream: "function",
@@ -189,6 +217,18 @@ describe("npm package", () => {
         "utf8",
       ),
     ) as { readonly dependencies?: Readonly<Record<string, string>> };
-    expect(installedManifest.dependencies ?? {}).toEqual({});
+    expect(installedManifest.dependencies).toEqual({ pako: "3.0.2" });
+    expect(existsSync(join(directory, "node_modules/@bufbuild/protobuf"))).toBe(
+      false,
+    );
+    expect(existsSync(join(directory, "node_modules/@aws-sdk/client-s3"))).toBe(
+      false,
+    );
+    const notices = readFileSync(
+      join(directory, "node_modules/@polymorfa/sdk/THIRD_PARTY_NOTICES"),
+      "utf8",
+    );
+    expect(notices).toContain("Permission is hereby granted, free of charge");
+    expect(notices).toContain("This notice may not be removed or altered");
   }, 30_000);
 });

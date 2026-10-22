@@ -41,6 +41,12 @@ const load = (family: "messaging" | "platform") =>
   JSON.parse(
     readFileSync(resolve(root, `contracts/openapi.${family}.json`), "utf8"),
   ) as OpenApiDocument;
+const round2Marketing = JSON.parse(
+  readFileSync(
+    resolve(root, "contracts/official-api-round2/oa-17.json"),
+    "utf8",
+  ),
+) as OpenApiDocument;
 const baselineMessaging = load("messaging");
 const abpropsContract = JSON.parse(
   readFileSync(resolve(root, "contracts/abprops-capabilities.json"), "utf8"),
@@ -63,6 +69,14 @@ const messaging: OpenApiDocument = {
   components: {
     schemas: {
       ...baselineMessaging.components.schemas,
+      ...Object.fromEntries(
+        [
+          "MarketingOnboardingUpdatedEvent",
+          "ContactMarketingPreferenceUpdatedEvent",
+          "MarketingOnboardingUpdatedPayload",
+          "ContactMarketingPreferencePayload",
+        ].map((name) => [name, round2Marketing.components.schemas[name]!]),
+      ),
       SessionCapabilitiesUpdatedPayload:
         abpropsContract.components.schemas.SessionCapabilitiesUpdatedPayload!,
       SessionCapabilitiesUpdatedEvent:

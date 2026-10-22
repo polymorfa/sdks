@@ -88,7 +88,7 @@ export class BillingResource {
       ...options,
     });
   }
-  /** Monthly credit limits. Organization credentials with billing:read only. */
+  /** Monthly credit limits. Team keys with billing:read only. */
   getLimits(
     params: { readonly projectId?: string; readonly scope?: "project" } = {},
     options: RequestOptions = {},

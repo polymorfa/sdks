@@ -249,7 +249,7 @@ describe("fromEventStream", () => {
       fromEventStream({
         url: "https://example.test/events",
         fetch: fetcher as unknown as typeof fetch,
-        headers: () => ({ Authorization: "Bearer pmfa_ct_fixture" }),
+        headers: () => ({ Authorization: "Bearer pmfa_ct_Zml4dHVyZQ" }),
         retryMs: 1,
       }),
     );
@@ -258,7 +258,7 @@ describe("fromEventStream", () => {
     await connection.idle();
     const first = new Headers(fetcher.mock.calls[0]?.[1]?.headers);
     const second = new Headers(fetcher.mock.calls[1]?.[1]?.headers);
-    expect(first.get("authorization")).toBe("Bearer pmfa_ct_fixture");
+    expect(first.get("authorization")).toBe("Bearer pmfa_ct_Zml4dHVyZQ");
     expect(first.get("last-event-id")).toBe("4");
     expect(second.get("last-event-id")).toBe("5");
     expect(await store.messages.get("m1")).toBeDefined();

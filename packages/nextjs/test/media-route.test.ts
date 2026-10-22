@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY } from "../../typescript/test/support/credentials.js";
 import { describe, expect, it, vi } from "vitest";
 
 import { MessagingClient } from "../../typescript/src/index.js";
@@ -41,7 +42,7 @@ const get = () => new Request("https://app.test/media/1");
 describe("createMediaDownloadRoute", () => {
   it("accepts a MessagingClient", () => {
     const client = new MessagingClient({
-      credential: { type: "apiKey", value: `pmfa_${"A".repeat(72)}` },
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
     });
     expect(() =>
       createMediaDownloadRoute({

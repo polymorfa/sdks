@@ -445,7 +445,10 @@ export class HttpTransport {
       "maxNetworkRetries",
       true,
     );
-    const eligible = canRetryRequest(request.method, request.idempotencyKey);
+    // A stream body is consumed by the first attempt and cannot be replayed.
+    const eligible =
+      !(request.body instanceof ReadableStream) &&
+      canRetryRequest(request.method, request.idempotencyKey);
     let attempt = 0;
 
     while (true) {
@@ -617,8 +620,9 @@ export class HttpTransport {
         headers,
         redirect: this.#authorization === undefined ? "follow" : "error",
         ...(encoded.body === undefined ? {} : { body: encoded.body }),
+        ...(encoded.body instanceof ReadableStream ? { duplex: "half" } : {}),
         signal: controller.signal,
-      });
+      } as RequestInit);
     } catch (error) {
       request.signal?.removeEventListener("abort", cancel);
       if (request.signal?.aborted === true) {
@@ -682,8 +686,9 @@ export class HttpTransport {
         headers,
         redirect: this.#authorization === undefined ? "follow" : "error",
         ...(encoded.body === undefined ? {} : { body: encoded.body }),
+        ...(encoded.body instanceof ReadableStream ? { duplex: "half" } : {}),
         signal: controller.signal,
-      });
+      } as RequestInit);
       onResponse(response);
       return { response, data: await decode(response) };
     } catch (error) {
@@ -1003,10 +1008,13 @@ function responseMetadata(
 
 const SAFE_RESPONSE_HEADERS = [
   "content-type",
+  "content-disposition",
   "x-polymorfa-transport",
   "x-polymorfa-routing-reason",
   "x-polymorfa-operation-id",
   "x-request-id",
+  "x-trace-id",
+  "idempotent-replayed",
   "polymorfa-version",
   "retry-after",
   "polymorfa-data-region",
@@ -1034,6 +1042,7 @@ function apiError(
     : (response.headers.get("polymorfa-ratelimit-reason") ?? undefined);
   const options: PolymorfaErrorOptions = {
     status: response.status,
+    ...(fields.param === undefined ? {} : { param: fields.param }),
     ...(requestId === undefined ? {} : { requestId }),
     ...(fields.requestLogUrl === undefined
       ? {}
@@ -1084,6 +1093,7 @@ function errorMessage(body: unknown, status: number): string {
 }
 
 interface ErrorFields {
+  readonly param?: string;
   readonly code?: string;
   readonly requestId?: string;
   readonly requestLogUrl?: string;
@@ -1104,10 +1114,12 @@ function errorFields(body: unknown): ErrorFields {
   const text = (value: unknown) =>
     typeof value === "string" && value.length > 0 ? value : undefined;
   const code = text(error ? error.code : record.code);
+  const param = text(error?.param);
   const requestId = text(error?.request_id);
   const requestLogUrl = text(error?.request_log_url);
   const docUrl = text(record.docs);
   return {
+    ...(param === undefined ? {} : { param }),
     ...(code === undefined ? {} : { code }),
     ...(requestId === undefined ? {} : { requestId }),
     ...(requestLogUrl === undefined ? {} : { requestLogUrl }),

@@ -306,3 +306,37 @@ system audio is not captured. Capture ending stops sharing. Leaving stops saved
 camera and display tracks, and a replacement connection does not reacquire the
 display. The source uses the existing single video publisher, so it cannot
 replace another connection's camera. Display and camera are not sent together.
+
+## Inline chat workspace
+
+See [chat components](../../docs/chat-components.md) for the inline `ChatWindow` /
+`pmfa-chat-window`, observed receipts, media, presentation filters and failure-preserving
+composer actions. History and sends remain owned by your authorized data source.
+
+`InboxConversation` accepts observed pin/archive/marked-unread state, a scope
+subtitle and optional last-message receipts. Rendering this state never performs
+a WhatsApp mutation. Hosts supply authorized adapters to the controlled React
+list. [See the list contract](../../docs/chat-components.md#controlled-conversation-list).
+
+### Conversation sessions and loaded-message filters
+
+`createConversationSession(source, { upload, draft, sendUnavailable, conversation, composer })`
+owns a
+`ConversationController` and its `MessageComposerController`. `source` is the
+public `ConversationDataSource` interface. The host supplies authorized reads,
+subscriptions and sends; an optional upload adapter handles picked file bytes.
+The factory does not discover routes, mint credentials or persist browser data.
+Keep the session while switching threads to preserve its draft, reply and retry
+identity, then call `dispose()` when its scope or authority closes. Disposal
+cancels history reads, sends and uploads together. Pass `sendUnavailable` with a
+message while the host cannot send: submitting then fails with that message, keeps
+the draft and never calls `source.send`, so no failed message joins the thread.
+Without an `upload` adapter, attaching a file fails instead of uploading.
+
+`MessageFilterController` has `setQuery`, `setType`, `setDirection`, `clear` and
+`matches` methods. It filters loaded messages without fetching history or changing
+conversation state. `messageMatchesFilters`, `conversationMessageKind` and
+`orderSearchText` support custom views. An explicit `messageType` preserves known
+media type when bytes were not retained; `contentState` prevents unavailable
+content from appearing in search or default renderers. Received orders use the
+public `MessageOrder` and `OrderItem` types.
