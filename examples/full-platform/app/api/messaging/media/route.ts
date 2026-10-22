@@ -67,7 +67,7 @@ export const POST = route("agent", async ({ body, operator, request }) => {
       return messaging().media.persist(text(body, "mediaId"));
     case "upload": {
       // Upload URLs come from the management API, which accepts only an
-      // organization key, so this action is limited to admins. The payload is
+      // team key, so this action is limited to admins. The payload is
       // built here from validated fields; callers never choose the project.
       // Send the uploaded file afterwards with the messages "send" action.
       if (operator.role !== "admin") {

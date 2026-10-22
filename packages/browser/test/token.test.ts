@@ -33,15 +33,15 @@ describe("ClientTokenManager", () => {
     const second = manager.get();
     expect(provider).toHaveBeenCalledTimes(1);
     resolveToken?.({
-      value: "pmfa_ct_fixture",
+      value: "pmfa_ct_Zml4dHVyZQ",
       audience: "browser",
       expiresAt: 5_000,
     });
     await expect(Promise.all([first, second])).resolves.toEqual([
-      "pmfa_ct_fixture",
-      "pmfa_ct_fixture",
+      "pmfa_ct_Zml4dHVyZQ",
+      "pmfa_ct_Zml4dHVyZQ",
     ]);
-    await expect(manager.get()).resolves.toBe("pmfa_ct_fixture");
+    await expect(manager.get()).resolves.toBe("pmfa_ct_Zml4dHVyZQ");
     expect(provider).toHaveBeenCalledTimes(1);
   });
 
@@ -60,29 +60,29 @@ describe("ClientTokenManager", () => {
     const joined = manager.get();
     expect(provider).toHaveBeenCalledTimes(2);
     pending[1]!({
-      value: "pmfa_ct_fresh",
+      value: "pmfa_ct_ZnJlc2g",
       audience: "browser",
       expiresAt: 90_000,
     });
     await expect(refreshed).resolves.toEqual({
-      value: "pmfa_ct_fresh",
+      value: "pmfa_ct_ZnJlc2g",
       expiresAt: 90_000,
     });
-    await expect(joined).resolves.toBe("pmfa_ct_fresh");
+    await expect(joined).resolves.toBe("pmfa_ct_ZnJlc2g");
     // The older call settling later does not replace the refreshed token.
     pending[0]!({
-      value: "pmfa_ct_revoked",
+      value: "pmfa_ct_cmV2b2tlZA",
       audience: "browser",
       expiresAt: 95_000,
     });
-    await expect(plain).resolves.toBe("pmfa_ct_revoked");
-    await expect(manager.get()).resolves.toBe("pmfa_ct_fresh");
+    await expect(plain).resolves.toBe("pmfa_ct_cmV2b2tlZA");
+    await expect(manager.get()).resolves.toBe("pmfa_ct_ZnJlc2g");
     expect(provider).toHaveBeenCalledTimes(2);
   });
 
   it("lets a plain request share an in-flight forced refresh", async () => {
     const provider = vi.fn(async () => ({
-      value: "pmfa_ct_fresh",
+      value: "pmfa_ct_ZnJlc2g",
       audience: "browser" as const,
       expiresAt: 90_000,
     }));
@@ -91,8 +91,8 @@ describe("ClientTokenManager", () => {
       manager.token({ refresh: true }),
       manager.get(),
     ]);
-    expect(refreshed.value).toBe("pmfa_ct_fresh");
-    expect(plain).toBe("pmfa_ct_fresh");
+    expect(refreshed.value).toBe("pmfa_ct_ZnJlc2g");
+    expect(plain).toBe("pmfa_ct_ZnJlc2g");
     expect(provider).toHaveBeenCalledTimes(1);
   });
 
@@ -101,12 +101,12 @@ describe("ClientTokenManager", () => {
     const provider = vi
       .fn()
       .mockResolvedValueOnce({
-        value: "pmfa_ct_first",
+        value: "pmfa_ct_Zmlyc3Q",
         audience: "browser",
         expiresAt: 1_200,
       })
       .mockResolvedValueOnce({
-        value: "pmfa_ct_second",
+        value: "pmfa_ct_c2Vjb25k",
         audience: "browser",
         expiresAt: 5_000,
       });
@@ -114,21 +114,21 @@ describe("ClientTokenManager", () => {
       now: () => now,
       expirySkewMs: 100,
     });
-    await expect(manager.get()).resolves.toBe("pmfa_ct_first");
+    await expect(manager.get()).resolves.toBe("pmfa_ct_Zmlyc3Q");
     now = 1_101;
-    await expect(manager.get()).resolves.toBe("pmfa_ct_second");
+    await expect(manager.get()).resolves.toBe("pmfa_ct_c2Vjb25k");
   });
 
   it("rejects wrong prefixes, expired tokens, and non-browser audiences", async () => {
     for (const token of [
       { value: "pmfa_server", audience: "browser" as const, expiresAt: 5_000 },
       {
-        value: "pmfa_ct_expired",
+        value: "pmfa_ct_ZXhwaXJlZA",
         audience: "browser" as const,
         expiresAt: 999,
       },
       {
-        value: "pmfa_ct_server",
+        value: "pmfa_ct_c2VydmVy",
         audience: "server" as const,
         expiresAt: 5_000,
       },
@@ -147,7 +147,7 @@ describe("createClientTokenProvider", () => {
   it("posts to a relative application route and returns browser claims", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json({
-        value: "pmfa_ct_route",
+        value: "pmfa_ct_cm91dGU",
         audience: "browser",
         expiresAt: 5_000,
       }),
@@ -158,7 +158,7 @@ describe("createClientTokenProvider", () => {
     });
 
     await expect(provider()).resolves.toEqual({
-      value: "pmfa_ct_route",
+      value: "pmfa_ct_cm91dGU",
       audience: "browser",
       expiresAt: 5_000,
     });

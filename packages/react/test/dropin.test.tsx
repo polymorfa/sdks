@@ -123,7 +123,7 @@ function clientWith(allow: readonly PolymorfaPermission[]) {
         ],
       });
     return Response.json({
-      value: "pmfa_ct_fixture",
+      value: "pmfa_ct_Zml4dHVyZQ",
       audience: "browser",
       expiresAt: Date.now() + 600_000,
       grant: { session: "support", conversations: "all", allow },
@@ -512,7 +512,7 @@ describe("<PolymorfaProvider tokenEndpoint>", () => {
   it("fetches a token from the endpoint and shares its permissions", async () => {
     const fetch = vi.fn(async () =>
       Response.json({
-        value: "pmfa_ct_fixture",
+        value: "pmfa_ct_Zml4dHVyZQ",
         audience: "browser",
         expiresAt: Date.now() + 600_000,
         grant: {
@@ -589,7 +589,7 @@ describe("<ConnectWhatsAppButton/>", () => {
             { status: 500 },
           )
         : Response.json({
-            value: "pmfa_ct_fixture",
+            value: "pmfa_ct_Zml4dHVyZQ",
             audience: "browser",
             expiresAt: Date.now() + 600_000,
             grant: {

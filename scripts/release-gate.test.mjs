@@ -1,9 +1,12 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import {
   validateAcceptance,
   releaseVersion,
   validateFeatureContractPins,
+  campaignSupplementPins,
+  expectedContract,
 } from "./release-gate.mjs";
 const expected = {
   sourceSha: "a".repeat(40),
@@ -30,6 +33,67 @@ const receipt = {
   acceptedAt: "2026-10-04T02:00:00Z",
   runUrl: "https://github.com/polymorfa/polymorfa/actions/runs/123",
 };
+test("campaign supplements bind both audiences to the accepted full contract", () => {
+  const source = {
+    repository: "polymorfa/polymorfa",
+    commit: expected.sourceSha,
+    contracts: expected.contracts,
+  };
+  const supplement = {
+    repository: source.repository,
+    commit: source.commit,
+    sources: Object.fromEntries(
+      Object.entries(source.contracts).map(([family, snapshot]) => [
+        family,
+        { sourcePath: snapshot.sourcePath, sourceSha256: snapshot.sha256 },
+      ]),
+    ),
+  };
+  validateFeatureContractPins(source, campaignSupplementPins(supplement));
+  for (const changed of [
+    { ...supplement, commit: "f".repeat(40) },
+    { ...supplement, published: false },
+    {
+      ...supplement,
+      sources: {
+        ...supplement.sources,
+        messaging: supplement.sources.platform,
+      },
+    },
+  ])
+    assert.throws(() =>
+      validateFeatureContractPins(source, campaignSupplementPins(changed)),
+    );
+  assert.throws(() =>
+    campaignSupplementPins({
+      ...supplement,
+      sources: { messaging: supplement.sources.messaging },
+    }),
+  );
+});
+test("unpublished campaign and custody additions block publication even after source reconciliation", () => {
+  const supplement = JSON.parse(
+    readFileSync(
+      new URL("../contracts/campaign-custody-20261014.json", import.meta.url),
+      "utf8",
+    ),
+  );
+  const source = {
+    repository: supplement.repository,
+    commit: supplement.commit,
+    contracts: Object.fromEntries(
+      Object.entries(supplement.sources).map(([family, snapshot]) => [
+        family,
+        { sourcePath: snapshot.sourcePath, sha256: snapshot.sourceSha256 },
+      ]),
+    ),
+  };
+  assert.throws(
+    () =>
+      validateFeatureContractPins(source, campaignSupplementPins(supplement)),
+    /held from publication/,
+  );
+});
 test("nightly requires exact staging acceptance; stable requires production", () => {
   assert.equal(validateAcceptance(receipt, expected), receipt);
   for (const delta of [
@@ -139,4 +203,41 @@ test("Messaging feature pins cannot borrow Platform acceptance or bypass a publi
     assert.throws(() =>
       validateFeatureContractPins(source, [{ ...pin, ...delta }]),
     );
+});
+test("integrated frequency-cap and segment/drip supplements are gate pins that block until reconciled", () => {
+  const source = JSON.parse(
+    readFileSync(new URL("../contracts/source.json", import.meta.url), "utf8"),
+  );
+  for (const name of [
+    "campaign-frequency-cap.json",
+    "campaign-segments-drip.json",
+  ]) {
+    const supplement = JSON.parse(
+      readFileSync(new URL(`../contracts/${name}`, import.meta.url), "utf8"),
+    );
+    const pins = campaignSupplementPins(supplement);
+    assert.deepEqual(pins.map((pin) => pin.family).sort(), [
+      "messaging",
+      "platform",
+    ]);
+    assert.notEqual(supplement.commit, source.commit);
+    assert.throws(
+      () => validateFeatureContractPins(source, pins),
+      /not been reconciled/,
+    );
+    // Reconciled to its own source, the supplement passes; nothing flips a hold.
+    const reconciled = {
+      repository: supplement.repository,
+      commit: supplement.commit,
+      contracts: Object.fromEntries(
+        Object.entries(supplement.sources).map(([family, snapshot]) => [
+          family,
+          { sourcePath: snapshot.sourcePath, sha256: snapshot.sourceSha256 },
+        ]),
+      ),
+    };
+    validateFeatureContractPins(reconciled, pins);
+  }
+  // The current release contract therefore fails closed.
+  assert.throws(() => expectedContract(), /reconciled|held from publication/);
 });

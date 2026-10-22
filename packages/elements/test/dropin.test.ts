@@ -25,7 +25,7 @@ function tokenFetch(allow: readonly PolymorfaPermission[]) {
         },
       });
     return Response.json({
-      value: "pmfa_ct_fixture",
+      value: "pmfa_ct_Zml4dHVyZQ",
       audience: "browser",
       expiresAt: Date.now() + 600_000,
       grant: { session: "support", conversations: "all", allow },

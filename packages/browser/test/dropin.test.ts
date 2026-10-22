@@ -16,7 +16,7 @@ const grant: PolymorfaGrant = {
 
 function tokenResponse(expiresAt: number, allow = grant.allow): Response {
   return Response.json({
-    value: "pmfa_ct_fixture",
+    value: "pmfa_ct_Zml4dHVyZQ",
     audience: "browser",
     expiresAt,
     grant: { ...grant, allow },
@@ -75,7 +75,7 @@ describe("PolymorfaClient token refresh", () => {
     expect(client.can("voip_place")).toBe(false);
     expect(client.canRead("chat_1")).toBe(true);
     expect(client.handlerPath).toBe("/api/polymorfa");
-    expect((await client.getClientToken()).value).toBe("pmfa_ct_fixture");
+    expect((await client.getClientToken()).value).toBe("pmfa_ct_Zml4dHVyZQ");
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
@@ -174,7 +174,7 @@ describe("PolymorfaClient token refresh", () => {
     const time = clock();
     const fetch = vi.fn(async () =>
       Response.json({
-        value: "pmfa_ct_x",
+        value: "pmfa_ct_eA",
         audience: "browser",
         expiresAt: time.now() + 60_000,
       }),
