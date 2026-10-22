@@ -16,18 +16,25 @@ for ($responseIndex = 0; $responseIndex < 6; ++$responseIndex) {
 check(count(array_unique(array_map(static fn(\Psr\Http\Message\ResponseInterface $response): int => spl_object_id($response), $responses))) === 6, 'independent Official response objects');
 check(count(array_unique(array_map(static fn(\Psr\Http\Message\ResponseInterface $response): int => spl_object_id($response->getBody()), $responses))) === 6, 'independent Official response bodies');
 $officialPictureBody = '';
-$officialPictureResponse = $responses[5];
-$responses[5] = static function (\Psr\Http\Message\RequestInterface $request) use (&$officialPictureBody, $officialPictureResponse): \Psr\Http\Message\ResponseInterface {
-    $body = $request->getBody();
-    $position = $body->tell();
-    try {
-        $officialPictureBody = (string) $body;
-    } finally {
-        $body->seek($position);
-    }
-    return $officialPictureResponse;
-};
 $http = mocked($responses, $history);
+$officialHandler = $http->getConfig('handler');
+if (!$officialHandler instanceof \GuzzleHttp\HandlerStack) {
+    throw new \RuntimeException('Expected Official fixture handler stack.');
+}
+$officialHandler->push(\GuzzleHttp\Middleware::tap(
+    static function (\Psr\Http\Message\RequestInterface $request, array $options) use (&$officialPictureBody): void {
+        if ($request->getMethod() !== 'PUT' || $request->getUri()->getPath() !== '/messaging/n%20%2Fx/official-groups/g%2Fx/picture') {
+            return;
+        }
+        $body = $request->getBody();
+        $position = $body->tell();
+        try {
+            $officialPictureBody = (string) $body;
+        } finally {
+            $body->seek($position);
+        }
+    }
+), 'official-picture-observer');
 $c = new MessagingClient(Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'), http:$http);
 $c->catalogs->list('n /x');
 check($c->catalogs->retrieve('n /x','123')->data['data']['syncedAt'] === null, 'nullable sync');
