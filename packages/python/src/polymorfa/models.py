@@ -7,6 +7,7 @@ from typing import Generic, Literal, TypeVar
 from typing_extensions import NotRequired, TypedDict
 
 from .campaign_contract_models import SignalCustodyMode
+from .cloud_order import CloudOrder
 from .configuration import ConfigurationPatch, ConfigurationView
 from .developer_models import Event as Event  # noqa: PLC0414
 from .developer_models import Operation as Operation  # noqa: PLC0414
@@ -34,6 +35,7 @@ class Success(TypedDict, total=False):
 
 
 class Conversation(TypedDict, total=False):
+    parentBsuid: NotRequired[str]
     id: str
     phoneNumber: str
     username: str
@@ -305,6 +307,7 @@ class Profile(TypedDict):
 
 
 class ConversationIdentity(TypedDict):
+    parentBsuid: NotRequired[str]
     id: str
     phoneNumber: NotRequired[str]
     bsuid: NotRequired[str]
@@ -351,6 +354,7 @@ class HistoryPollOption(TypedDict):
 
 
 class HistoryMessage(HistoryMessageSummary):
+    order: NotRequired[CloudOrder]
     conversation: HistoryConversation
     fromMe: bool
     pushName: NotRequired[str]

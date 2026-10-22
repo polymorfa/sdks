@@ -67,10 +67,18 @@ export {
   type PolymorfaRateLimitReason,
 } from "./errors.js";
 export { MessagingClient } from "./messaging/client.js";
+export { CatalogsResource } from "./messaging/catalogs.js";
+export type {
+  CatalogSync,
+  CatalogProduct,
+  CatalogProductPage,
+  ListCatalogProductsParams,
+} from "./messaging/catalogs.js";
 export { CloudCatalogsResource } from "./messaging/cloud-catalogs.js";
 export { CloudMarketingResource } from "./messaging/cloud-marketing.js";
 export type {
   CloudMarketingStatus,
+  MarketingMessagesStatus,
   GetCloudMarketingStatusParams,
 } from "./messaging/cloud-marketing.js";
 export { FlowEncryptionResource } from "./messaging/flow-encryption.js";
@@ -1157,6 +1165,14 @@ export {
   PHONE_OFFLINE_START_DAY,
   WebhookSignatureError,
   constructWebhookEvent,
+  constructWebhookDelivery,
+  isWebhookEventBatch,
+  type WebhookDelivery,
+  type WebhookEventBatch,
+  type ContactIdentityChange,
+  type ContactPreviousIdentity,
+  type MarketingOnboardingUpdatedPayload,
+  type ContactMarketingPreferencePayload,
   isEvent,
   webhooks,
   verifyWebhookSignature,
@@ -1397,3 +1413,6 @@ export type {
 
 export * from "./platform/audience-segments.js";
 export * from "./messaging/campaign-drip.js";
+
+export type { IncomingOrderCart } from "./messaging/order-cart.js";
+export type { CloudReadinessFailureCode } from "./messaging/cloud-readiness.js";

@@ -266,3 +266,5 @@ check(is_resource($s3Process), 'S3 suite process starts');
 check(proc_close($s3Process) === 0, 'S3 suite process passes');
 
 require __DIR__.'/unledgered_retry.php';
+
+require __DIR__.'/official_round2.php';

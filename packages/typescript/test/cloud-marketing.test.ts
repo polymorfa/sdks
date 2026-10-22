@@ -10,7 +10,14 @@ describe("Official API marketing status", () => {
   it("returns Meta's raw WABA status strings from the exact Graph route", async () => {
     const payload = {
       id: "102290129340398",
-      marketing_messages_lite_api_status: "ELIGIBLE",
+      marketing_messages_onboarding_status: "ELIGIBLE",
+      owner_business_info: {
+        marketing_messages_onboarding_status: {
+          status: "REQUEST_SENT",
+          time: "2026-10-21",
+        },
+      },
+      disable_marketing_messages_on_cloud_api: true,
     };
     const server = await startTestServer(() => ({
       body: JSON.stringify(payload),

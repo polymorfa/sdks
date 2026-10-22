@@ -4634,5 +4634,12 @@
       "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority.",
       "milestone": "excluded-contract"
     }
-  ]
+  ],
+  "supplements": {
+    "officialApiRound2": {
+      "inventory": "contracts/native-official-round2.json",
+      "language": "php",
+      "claim": "Source and native wire-fixture attribution, separate from baseline operations and runtime qualification."
+    }
+  }
 }

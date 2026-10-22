@@ -5,9 +5,10 @@ from typing import Literal
 
 from typing_extensions import NotRequired, TypedDict
 
-from .errors import ConfigurationError
+from .errors import ConfigurationError, ValidationError
 from .messaging import O, Resource, segment
-from .models import DataEnvelope
+from .models import DataEnvelope, Envelope
+from .official_round2 import MarketingMessagesStatus
 from .transport import ApiResponse, RequestOptions
 
 
@@ -48,9 +49,19 @@ class ProductPage(TypedDict):
     paging: NotRequired[Paging]
 
 
+class MarketingTermsObservation(TypedDict, total=False):
+    status: str
+    time: str
+
+
+class MarketingOwnerBusiness(TypedDict, total=False):
+    marketing_messages_onboarding_status: MarketingTermsObservation
+
+
 class MarketingStatus(TypedDict):
+    owner_business_info: NotRequired[MarketingOwnerBusiness]
+    disable_marketing_messages_on_cloud_api: NotRequired[bool]
     id: str
-    marketing_messages_lite_api_status: NotRequired[str]
     marketing_messages_onboarding_status: NotRequired[str]
 
 
@@ -101,6 +112,16 @@ class CloudCatalogs(Resource):
 
 
 class CloudMarketing(Resource):
+    async def get_status(
+        self, session: str, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[MarketingMessagesStatus]]:
+        self._server()
+        if not session.strip() or len(session) > 128:
+            raise ValidationError("Provide a Number ID of 1 to 128 characters.")
+        return await self._request(
+            "GET", f"/messaging/{segment(session)}/marketing-messages/status", options=options
+        )
+
     async def status(
         self, waba_id: str, *, version: str, options: RequestOptions = O
     ) -> ApiResponse[MarketingStatus]:

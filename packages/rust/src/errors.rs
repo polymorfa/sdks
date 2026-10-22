@@ -219,6 +219,14 @@ pub const POLYMORFA_ERROR_CODES: &[&str] = &[
     "voice_not_enabled",
     "voice_unavailable",
     "unsupported_for_connection",
+    "whatsapp_authorization_required",
+    "whatsapp_payment_method_required",
+    "whatsapp_number_not_registered",
+    "marketing_disabled_on_cloud_api",
+    "parent_bsuid_not_supported",
+    "hybrid_group_linked_devices_unavailable",
+    "catalog_cache_full",
+    "catalog_sync_cooldown",
 ];
 
 pub fn is_known_error_code(code: &str) -> bool {

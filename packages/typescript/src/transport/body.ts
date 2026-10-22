@@ -32,6 +32,9 @@ export function encodeRequestBody(body: unknown): {
   if (typeof body === "string" || body instanceof ArrayBuffer) {
     return { body };
   }
+  if (body instanceof FormData) {
+    return { body };
+  }
   if (body instanceof Uint8Array) {
     return { body: Uint8Array.from(body).buffer };
   }

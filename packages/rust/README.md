@@ -849,3 +849,24 @@ last processed event cursor or durable storage checkpoint after correcting the
 source. Storage commits the event, saves its checkpoint with CAS, then manually
 acknowledges it. Regression coverage for these existing rules is unreleased;
 it does not establish registry publication or service acceptance.
+
+
+## Official API round-2 betas
+
+Native Number catalog-cache reads/sync, marketing status, Official group JPEG
+upload, identity changes, incoming carts and signed webhook batches have source
+counterparts. These additions remain unreleased betas and may return
+`feature_unavailable`. They grant no enrollment or provider authority. See
+[the shared beta guide](../../docs/official-api-round2.md) for ownership, batching,
+whole-body signatures and release gates.
+
+The following uses an existing server client. Preserve the API's opaque cursor;
+stop when the response omits it. Catalog prices remain exact strings.
+
+```rust
+use polymorfa_sdk::{official_round2::CatalogProductsParameters, RequestOptions};
+let page = client.catalogs().list_products("number-id", "123", &CatalogProductsParameters {
+    limit: Some(100), cursor: Some("opaque_-".into()),
+}, RequestOptions::default()).await?;
+let next = page.data.data.next_cursor;
+```

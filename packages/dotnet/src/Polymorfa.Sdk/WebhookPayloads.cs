@@ -7,8 +7,8 @@ public sealed record TypedWebhookEvent<T>(WebhookEnvelope Envelope, T Payload) :
 {
     public override string ToString() => Payload is DirectHistorySyncPayload ? "TypedWebhookEvent(descriptor history redacted)" : $"TypedWebhookEvent {{ Envelope = {Envelope}, Payload = {Payload} }}";
 }
-public sealed record IdentityReference(string Id, string? PhoneNumber = null, string? Bsuid = null, string? Username = null);
-public sealed record EventConversation(string Id, string? PhoneNumber = null, string? Bsuid = null, string? Username = null, IdentityReference? Sender = null);
+public sealed record IdentityReference(string Id, string? PhoneNumber = null, string? Bsuid = null, string? Username = null, string? ParentBsuid = null);
+public sealed record EventConversation(string Id, string? PhoneNumber = null, string? Bsuid = null, string? Username = null, IdentityReference? Sender = null, string? ParentBsuid = null);
 public sealed record NativeFlowResponse(string Name, string ParamsJson, int? Version = null);
 public sealed record ReplyChoice(string Kind, string Id);
 public sealed record PollOption(string Name, string Hash);
@@ -20,7 +20,7 @@ public sealed record CloudMessageReferral([property: JsonPropertyName("source_ty
 {
     [JsonExtensionData] public Dictionary<string, JsonElement>? AdditionalFields { get; init; }
 }
-public sealed record CloudMessagePayload(string Id, [property: JsonPropertyName("whatsapp_ids")] WhatsAppMessageIds WhatsAppIds, EventConversation Conversation, string Timestamp, string Type, string? SenderName = null, NativeFlowResponse? NativeFlowResponse = null, ReplyChoice? ReplyChoice = null, string? ParentMessageId = null, IReadOnlyDictionary<string, JsonElement>? Interactive = null, CloudMessageReferral? Referral = null, [property: JsonPropertyName("whatsapp_id")] string? WhatsAppId = null)
+public sealed record CloudMessagePayload(string Id, [property: JsonPropertyName("whatsapp_ids")] WhatsAppMessageIds WhatsAppIds, EventConversation Conversation, string Timestamp, string Type, string? SenderName = null, NativeFlowResponse? NativeFlowResponse = null, ReplyChoice? ReplyChoice = null, string? ParentMessageId = null, IReadOnlyDictionary<string, JsonElement>? Interactive = null, CloudMessageReferral? Referral = null, [property: JsonPropertyName("whatsapp_id")] string? WhatsAppId = null, CloudOrder? Order = null)
 {
     [JsonExtensionData] public Dictionary<string, JsonElement>? AdditionalFields { get; init; }
 }
@@ -43,7 +43,7 @@ public sealed record GroupJoinRequest(string JoinRequestId, IdentityReference Us
 public sealed record GroupParticipantPayload(string Id, IReadOnlyList<IdentityReference>? Joined = null, IReadOnlyList<IdentityReference>? Left = null, IReadOnlyList<IdentityReference>? Promoted = null, IReadOnlyList<IdentityReference>? Demoted = null, string? Reason = null, string? InitiatedBy = null, string? RequestId = null, IReadOnlyList<FailedGroupParticipant>? FailedParticipants = null, IReadOnlyList<OfficialGroupError>? Errors = null, GroupJoinRequest? JoinRequest = null);
 public sealed record PresenceUpdatePayload(long ObservedAt, IdentityReference? From = null, IdentityReference? Sender = null, string? State = null, string? Media = null, bool? Unavailable = null, long? LastSeen = null);
 public sealed record ContactOptPayload(string Phone, string Source, string Keyword, string Session, string? ProjectId = null);
-public sealed record ContactUpdatePayload(string Id, string? PhoneNumber = null, string? Bsuid = null, string? FullName = null, string? FirstName = null, string? PushName = null, string? OldPushName = null, string? BusinessName = null, string? OldBusinessName = null, string? PictureId = null, bool? PictureRemoved = null, string? Username = null);
+public sealed record ContactUpdatePayload(string Id, string? PhoneNumber = null, string? Bsuid = null, string? FullName = null, string? FirstName = null, string? PushName = null, string? OldPushName = null, string? BusinessName = null, string? OldBusinessName = null, string? PictureId = null, bool? PictureRemoved = null, string? Username = null, string? ParentBsuid = null, ContactIdentityChange? IdentityChange = null);
 public sealed record ChatArchivePayload(IdentityReference From, bool? Archive = null, bool? Pinned = null);
 public sealed record ChatMutePayload(IdentityReference From, bool Muted, long? MuteEndTimestamp = null);
 public sealed record ChatReadPayload(IdentityReference From, bool Read);

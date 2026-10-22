@@ -8,6 +8,8 @@ $cloud = ['id' => 'message','whatsapp_ids' => ['official_api' => 'wamid.fixture'
 $customer = ['eventId' => 'event','occurredAt' => 'now','organizationId' => 'org','projectId' => 'project','customerId' => 'customer','actorKind' => 'org_key'];
 $payment = ['reportedBy' => 'whatsapp','providerEventId' => 'provider','referenceId' => 'order','conversation' => ['phoneNumber' => '+15555555555']];
 $cases = [
+ ['marketing.onboarding_updated',['kind'=>'terms_signed','wabaId'=>'w','metaEvent'=>'MM_LITE_TERMS_SIGNED']],
+ ['contact.marketing_preference_updated',['waId'=>'opaque','preference'=>'stop','category'=>'marketing_messages']],
  ['message.received',$linked],['message.received',$cloud],['message.reaction',$linked],
  ['message.ack',['messages' => [['id' => 'message','whatsapp_ids' => ['official_api' => 'wamid.fixture']]],'conversation' => $identity,'type' => 'delivered','timestamp' => 1,'pricing' => ['category' => 'utility','type' => 'free_customer_service']]],
  ['message.vote',['conversation' => $identity,'pollMessageId' => 'message','voter' => $identity,'selectedHashes' => ['hash'],'timestamp' => 1]],
@@ -50,7 +52,7 @@ $source = file_get_contents(__DIR__.'/../src/WebhookModels.php');
 foreach (Polymorfa\Webhooks::KNOWN_TYPES as $name) {
     check(str_contains($source, "'".$name."'"), 'Every known name has a typed union variant: '.$name);
 }
-check(count(Polymorfa\Webhooks::KNOWN_TYPES) === 84, 'Pinned known event catalog');
+check(count(Polymorfa\Webhooks::KNOWN_TYPES) === 86, 'Pinned known event catalog');
 $raw = '{"id":"event","session":"","timestamp":"now","event":"future.event","payload":null}';
 $flow = 't=1000,v1='.strtoupper(hash_hmac('sha256', '1000.'.$raw, 'secret'));
 check(Polymorfa\Webhooks::verifyFlowForwardSignature($raw, $flow, 'secret', nowUnixSeconds:1000.5), 'Flow raw HMAC and uppercase signature');

@@ -10,7 +10,7 @@ use Psr\Http\Message\StreamInterface;
 final readonly class BinaryRequestBody implements \JsonSerializable
 {
     /** @param \Closure(?CancellationToken):StreamInterface $open */
-    public function __construct(#[\SensitiveParameter] public \Closure $open, public int $length)
+    public function __construct(#[\SensitiveParameter] public \Closure $open, public int $length, public string $contentType = 'application/octet-stream')
     {
         if ($length < 26 || $length > 9007199254740991) {
             throw new ConfigurationException('encryptedLength');

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Official API round-2 betas now have native source counterparts in all six
+  server SDKs: Number catalog-cache operations, marketing status and lifecycle
+  events, parent/previous identity fields, incoming carts, multipart Official
+  group pictures, Platform batching settings and whole-body signed batch
+  receivers. Graph resources and Linked Devices groups retain their own routes.
+  These changes are source-only. Exact combined-source hosted qualification,
+  accepted downstream source, API acceptance and publication remain required.
+
 - All six server SDKs submit each direct media grant, API relay upload, history
   chunk retry and history media deletion at most once per invocation, including
   when a caller supplies an idempotency key and a positive retry option. These

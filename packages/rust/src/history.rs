@@ -89,6 +89,8 @@ pub struct HistoryPollOption {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HistoryMessage {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order: Option<crate::official_round2::CloudOrder>,
     #[serde(flatten)]
     pub summary: HistoryMessageSummary,
     pub conversation: HistoryConversation,

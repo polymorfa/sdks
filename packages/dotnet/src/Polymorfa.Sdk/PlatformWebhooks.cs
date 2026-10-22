@@ -7,9 +7,9 @@ public sealed record WebhookHeaderInput(string Name, string Value)
 }
 public sealed record WebhookHeaderMetadata(string Name);
 public sealed record WebhookSigningSecretMetadata(int Version, string CreatedAt, string? PreviousValidUntil);
-public sealed record PlatformWebhook(string Id, string OrganizationId, string Owner, string? ProjectId, string Url, IReadOnlyList<string> EventTypes, bool Enabled, string Format, WebhookRetryPolicy RetryPolicy, IReadOnlyList<WebhookHeaderMetadata> Headers, WebhookSigningSecretMetadata Secret, string CreatedAt, string UpdatedAt);
-public sealed record CreatePlatformWebhookInput(string Url, IReadOnlyList<string> EventTypes, bool? Enabled = null, string? Format = null, WebhookRetryPolicy? RetryPolicy = null, IReadOnlyList<WebhookHeaderInput>? Headers = null);
-public sealed record UpdatePlatformWebhookInput(string? Url = null, IReadOnlyList<string>? EventTypes = null, bool? Enabled = null, string? Format = null, WebhookRetryPolicy? RetryPolicy = null, IReadOnlyList<WebhookHeaderInput>? Headers = null);
+public sealed record PlatformWebhook(string Id, string OrganizationId, string Owner, string? ProjectId, string Url, IReadOnlyList<string> EventTypes, bool Enabled, string Format, WebhookRetryPolicy RetryPolicy, IReadOnlyList<WebhookHeaderMetadata> Headers, WebhookSigningSecretMetadata Secret, string CreatedAt, string UpdatedAt, WebhookBatching Batching);
+public sealed record CreatePlatformWebhookInput(string Url, IReadOnlyList<string> EventTypes, bool? Enabled = null, string? Format = null, WebhookRetryPolicy? RetryPolicy = null, IReadOnlyList<WebhookHeaderInput>? Headers = null, WebhookBatchingInput? Batching = null);
+public sealed record UpdatePlatformWebhookInput(string? Url = null, IReadOnlyList<string>? EventTypes = null, bool? Enabled = null, string? Format = null, WebhookRetryPolicy? RetryPolicy = null, IReadOnlyList<WebhookHeaderInput>? Headers = null, WebhookBatchingInput? Batching = null);
 public sealed record ListPlatformWebhooksParameters(string? EventType = null, bool? Enabled = null, int? Limit = null, string? Cursor = null);
 public sealed record RotateWebhookSecretInput(int? OverlapSeconds = null);
 public record TestPlatformWebhookInput(string? EventType = null);
@@ -44,9 +44,9 @@ public sealed class PlatformWebhooks : Resource
         return new(response.Data.Data, response.Metadata);
     }
     public Task<CursorPage<PlatformWebhook>> ListAsync(ListPlatformWebhooksParameters? parameters = null, RequestOptions? options = null) => CursorPage<PlatformWebhook>.LoadAsync(Http, Path(), Query(parameters), options ?? new());
-    public Task<ApiResponse<WebhookCreationReceipt>> CreateAsync(CreatePlatformWebhookInput body, RequestOptions? options = null) => Unwrap<WebhookCreationReceipt>(HttpMethod.Post, Path(), body, options);
+    public Task<ApiResponse<WebhookCreationReceipt>> CreateAsync(CreatePlatformWebhookInput body, RequestOptions? options = null) { body.Batching?.Validate(body.Format); return Unwrap<WebhookCreationReceipt>(HttpMethod.Post, Path(), body, options); }
     public Task<ApiResponse<PlatformWebhook>> RetrieveAsync(string webhookId, RequestOptions? options = null) => Unwrap<PlatformWebhook>(HttpMethod.Get, Path(webhookId), null, options);
-    public Task<ApiResponse<WebhookMutationReceipt>> UpdateAsync(string webhookId, UpdatePlatformWebhookInput body, RequestOptions? options = null) => Unwrap<WebhookMutationReceipt>(HttpMethod.Patch, Path(webhookId), body, options);
+    public Task<ApiResponse<WebhookMutationReceipt>> UpdateAsync(string webhookId, UpdatePlatformWebhookInput body, RequestOptions? options = null) { body.Batching?.Validate(body.Format); return Unwrap<WebhookMutationReceipt>(HttpMethod.Patch, Path(webhookId), body, options); }
     public Task<ApiResponse<WebhookDeletionReceipt>> DeleteAsync(string webhookId, RequestOptions? options = null) => Unwrap<WebhookDeletionReceipt>(HttpMethod.Delete, Path(webhookId), null, options);
     public Task<ApiResponse<EventReplayReceipt>> TestAsync(string webhookId, TestPlatformWebhookInput? body = null, RequestOptions? options = null)
     {

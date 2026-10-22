@@ -490,6 +490,49 @@ impl HttpTransport {
         })?;
         Ok(ApiResponse { data, metadata })
     }
+    pub(crate) async fn request_multipart<T: DeserializeOwned>(
+        &self,
+        path: &str,
+        content_type: &str,
+        query: &[(&str, String)],
+        body: reqwest::Body,
+        length: u64,
+        mut options: RequestOptions,
+    ) -> Result<ApiResponse<T>> {
+        options.max_network_retries = Some(0);
+        options.headers.retain(|k, _| {
+            !k.eq_ignore_ascii_case("content-length") && !k.eq_ignore_ascii_case("content-type")
+        });
+        options
+            .headers
+            .insert("content-length".into(), length.to_string());
+        let (response, metadata) = self
+            .open_internal(
+                Method::PUT,
+                path,
+                query,
+                Some(body),
+                &options,
+                "application/json",
+                false,
+                content_type,
+            )
+            .await?;
+        let bytes = read_body(
+            response,
+            &options,
+            options.timeout.unwrap_or(self.options.timeout),
+        )
+        .await?;
+        let data = serde_json::from_slice(&bytes).map_err(|_| {
+            Error::local(
+                ErrorKind::Server,
+                "The API returned invalid upload JSON.",
+                "invalid_response",
+            )
+        })?;
+        Ok(ApiResponse { data, metadata })
+    }
     #[allow(clippy::too_many_arguments)]
     async fn open_internal(
         &self,

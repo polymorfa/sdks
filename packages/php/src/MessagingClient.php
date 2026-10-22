@@ -22,6 +22,7 @@ final readonly class MessagingClient
     public Resources\CloudOnboarding $cloudOnboarding;
     public Resources\Testing $testing;
     public Resources\OfficialGroups $officialGroups;
+    public Resources\Catalogs $catalogs;
     public Channels $channels;
     public QuickReplies $quickReplies;
     public Users $users;
@@ -68,6 +69,7 @@ final readonly class MessagingClient
         $this->cloudOnboarding = new Resources\CloudOnboarding($transport);
         $this->testing = new Resources\Testing($transport);
         $this->officialGroups = new Resources\OfficialGroups($transport);
+        $this->catalogs = new Resources\Catalogs($transport);
         $this->channels = new Channels($transport);
         $this->quickReplies = new QuickReplies($transport);
         $this->users = new Users($transport);

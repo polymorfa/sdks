@@ -107,6 +107,9 @@ export function expectedContract() {
       ),
     ),
   ]);
+  validateFeatureContractPins(source, [
+    JSON.parse(readFileSync(join(root, "contracts/official-api-round2.json"))),
+  ]);
   const apiVersion = /NATIVE_API_VERSION = "([^"]+)"/.exec(
     readFileSync(join(root, "packages/typescript/src/version.ts"), "utf8"),
   )?.[1];

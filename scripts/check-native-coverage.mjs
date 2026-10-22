@@ -1,3 +1,4 @@
+import { checkOfficialRound2 } from "./check-official-round2.mjs";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve, relative, isAbsolute } from "node:path";
@@ -86,3 +87,5 @@ if (!requested) {
     `native campaign supplements: ${result.operations} operations and ${result.fields} fields mapped in every language`,
   );
 }
+
+if (!requested) checkOfficialRound2();

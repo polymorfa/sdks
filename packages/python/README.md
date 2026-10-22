@@ -788,3 +788,21 @@ terminator; a blank line resets the budget. An oversized frame reconnects from
 the previous validated cursor. Storage still commits the event, saves its
 checkpoint with CAS, then manually acknowledges it. These changes are unreleased
 source behavior.
+
+
+## Official API round-2 betas
+
+Native Number catalog-cache reads/sync, marketing status, Official group JPEG
+upload, identity changes, incoming carts and signed webhook batches have source
+counterparts. These additions remain unreleased betas and may return
+`feature_unavailable`. They grant no enrollment or provider authority. See
+[the shared beta guide](../../docs/official-api-round2.md) for ownership, batching,
+whole-body signatures and release gates.
+
+The following uses an existing server client. Preserve the API's opaque cursor;
+stop when the response omits it. Catalog prices remain exact strings.
+
+```python
+page = await client.catalogs.list_products("number-id", "123", limit=100, cursor="opaque_-")
+next_cursor = page.data["data"].get("nextCursor")
+```

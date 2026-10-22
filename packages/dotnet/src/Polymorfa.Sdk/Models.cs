@@ -19,7 +19,7 @@ public sealed record PairCode(string Code);
 public sealed record QrCode(string? Qr, string? Event);
 public sealed record WhatsAppAccount(string? Id, string? Bsuid, string? Username, string? PhoneNumber, string PushName, string? BusinessName, string? PhonePlatform, string? AccountType, string? ProfilePicUrl);
 
-public sealed record ConversationReference(string? Id = null, string? PhoneNumber = null, string? Bsuid = null, string? Username = null);
+public sealed record ConversationReference(string? Id = null, string? PhoneNumber = null, string? Bsuid = null, string? Username = null, string? ParentBsuid = null);
 public sealed record QuotedMessage(string Id, string? Type = null, string? Text = null);
 public sealed record SendMessageRequest(ConversationReference Conversation, MessageContent Content, string? Transport = null, bool? IsForwarded = null, IReadOnlyList<string>? Mentions = null, QuotedMessage? QuotedMessage = null);
 public abstract record MessageContent;

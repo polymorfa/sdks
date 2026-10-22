@@ -22,6 +22,15 @@ public sealed record PinOfficialGroupMessageRequest(string Operation, string Mes
 }
 public sealed class OfficialGroups : Resource
 {
+    public async Task<ApiResponse<SuccessEnvelope<OfficialGroupChangeAccepted>>> SetPictureAsync(string session, string group, ReadOnlyMemory<byte> jpeg, RequestOptions? options = null)
+    {
+        Http.Credential.RequireServer();
+        if (jpeg.Length < 3 || jpeg.Length > 5 * 1024 * 1024 || jpeg.Span[0] != 255 || jpeg.Span[1] != 216 || jpeg.Span[2] != 255) throw new PolymorfaValidationException("Provide JPEG bytes up to 5 MiB.", "invalid_parameter");
+        using var body = new MultipartFormDataContent();
+        var file = new ByteArrayContent(jpeg.ToArray()); file.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
+        body.Add(file, "file", "picture.jpg");
+        return await Http.RequestMultipartAsync<SuccessEnvelope<OfficialGroupChangeAccepted>>(Path(session, group) + "/picture", body, (options ?? new()) with { MaxNetworkRetries = 0 }).ConfigureAwait(false);
+    }
     internal OfficialGroups(HttpTransport http) : base(http) { }
     private static string Path(string session) => "/messaging/" + E(session) + "/official-groups";
     private static string Path(string session, string group) => Path(session) + "/" + E(group);
