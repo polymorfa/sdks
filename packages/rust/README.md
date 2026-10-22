@@ -865,10 +865,13 @@ stop when the response omits it. Catalog prices remain exact strings.
 
 ```rust
 use polymorfa_sdk::{official_round2::CatalogProductsParameters, RequestOptions};
+# async fn example(client: &polymorfa_sdk::MessagingClient) -> polymorfa_sdk::Result<()> {
 let page = client.catalogs().list_products("number-id", "123", &CatalogProductsParameters {
     limit: Some(100), cursor: Some("opaque_-".into()),
 }, RequestOptions::default()).await?;
 let next = page.data.data.next_cursor;
+# Ok(())
+# }
 ```
 
 ## Simultaneous calls source preparation
