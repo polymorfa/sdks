@@ -1,5 +1,5 @@
 {
-  "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9",
+  "sourceSdkCommit": "89aafd8293b125ed7c37f9270cf4eea15c455d32",
   "codes": [
     "invalid_parameter",
     "invalid_credential",
@@ -89,6 +89,14 @@
     "voice_asset_revision_conflict",
     "voice_not_enabled",
     "voice_unavailable",
-    "unsupported_for_connection"
+    "unsupported_for_connection",
+    "whatsapp_authorization_required",
+    "whatsapp_payment_method_required",
+    "whatsapp_number_not_registered",
+    "marketing_disabled_on_cloud_api",
+    "parent_bsuid_not_supported",
+    "hybrid_group_linked_devices_unavailable",
+    "catalog_cache_full",
+    "catalog_sync_cooldown"
   ]
 }

@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"sync/atomic"
 	"testing"
 )
 
@@ -257,14 +258,14 @@ func TestOfficialRound2GraphAndHistoryDTOs(t *testing.T) {
 }
 
 func TestOfficialRound2BodylessSyncDoesNotReplay(t *testing.T) {
-	count := 0
+	var count atomic.Int32
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/messaging/n/profile" {
 			w.Header().Set("Content-Type", "application/json")
 			io.WriteString(w, `{"success":true,"data":{}}`)
 			return
 		}
-		count++
+		count.Add(1)
 		body, _ := io.ReadAll(r.Body)
 		if len(body) != 0 {
 			t.Error("sync request must remain bodyless")
@@ -282,7 +283,7 @@ func TestOfficialRound2BodylessSyncDoesNotReplay(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err := c.Catalogs().Sync(context.Background(), "n", "123", RequestOptions{IdempotencyKey: "caller-key"})
-	if err == nil || count != 1 {
-		t.Fatal("uncertain sync replayed", count, err)
+	if err == nil || count.Load() != 1 {
+		t.Fatal("uncertain sync replayed", count.Load(), err)
 	}
 }
