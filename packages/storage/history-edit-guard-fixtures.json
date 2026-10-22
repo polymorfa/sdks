@@ -1,0 +1,6039 @@
+{
+  "producer": "Exported TypeScript reduceHistoryChunk and reduceEvent with memoryAdapter apply; historical MESSAGE_EDIT upserts carry the WebMessageInfo messageTimestamp chat watermark guard",
+  "clearAt": 1791856800000,
+  "cases": [
+    {
+      "name": "no-clear-control",
+      "steps": [
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "base",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "target",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856000000",
+                        "message": {
+                          "conversation": "original"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "fromMe": {
+                  "value": true,
+                  "version": 0
+                },
+                "senderId": {
+                  "value": "self",
+                  "version": 0
+                },
+                "timestamp": {
+                  "value": 1791856000000,
+                  "version": 0
+                },
+                "waMessageId": {
+                  "value": "target",
+                  "version": 0
+                },
+                "type": {
+                  "value": "text",
+                  "version": 0
+                },
+                "text": {
+                  "value": "original",
+                  "version": 0
+                },
+                "caption": {
+                  "value": null,
+                  "version": 0
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 0
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 0
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 0
+                },
+                "title": {
+                  "value": null,
+                  "version": 0
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 0
+                },
+                "extra": {
+                  "value": null,
+                  "version": 0
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856000000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "edit",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856799000",
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "synthetic@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856799001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856799001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856799001,
+                  "version": 1791856799001
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856799000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        }
+      ],
+      "expect": [
+        {
+          "session": "edit-guard",
+          "entity": "messages",
+          "key": {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target"
+          },
+          "text": "edited"
+        }
+      ],
+      "rows": {
+        "chats": [
+          {
+            "sessionId": "edit-guard",
+            "chatId": "wa:synthetic@lid",
+            "jid": "synthetic@lid",
+            "kind": "direct",
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": null,
+            "deletedAt": null
+          }
+        ],
+        "messages": [
+          {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target",
+            "chatId": "wa:synthetic@lid",
+            "waMessageId": "target",
+            "cloudMessageId": null,
+            "fromMe": true,
+            "senderId": "self",
+            "senderJid": null,
+            "pushName": null,
+            "timestamp": 1791856000000,
+            "type": "text",
+            "text": "edited",
+            "caption": null,
+            "mimeType": null,
+            "fileName": null,
+            "latitude": null,
+            "longitude": null,
+            "displayName": null,
+            "title": null,
+            "quotedId": null,
+            "pollOptions": null,
+            "extra": null,
+            "editedAt": 1791856799001,
+            "revokedAt": null,
+            "deletedAt": null,
+            "starred": null,
+            "status": null,
+            "statusAt": null
+          }
+        ],
+        "history_chunks": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "chunkOrder": "1",
+            "progress": null,
+            "conversationCount": 1,
+            "messageCount": 1,
+            "pushnameCount": 0
+          }
+        ],
+        "history_progress": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "progress": null,
+            "lastChunkOrder": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "stale-edit-after-clear",
+      "steps": [
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "base",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "target",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856000000",
+                        "message": {
+                          "conversation": "original"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "fromMe": {
+                  "value": true,
+                  "version": 0
+                },
+                "senderId": {
+                  "value": "self",
+                  "version": 0
+                },
+                "timestamp": {
+                  "value": 1791856000000,
+                  "version": 0
+                },
+                "waMessageId": {
+                  "value": "target",
+                  "version": 0
+                },
+                "type": {
+                  "value": "text",
+                  "version": 0
+                },
+                "text": {
+                  "value": "original",
+                  "version": 0
+                },
+                "caption": {
+                  "value": null,
+                  "version": 0
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 0
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 0
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 0
+                },
+                "title": {
+                  "value": null,
+                  "version": 0
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 0
+                },
+                "extra": {
+                  "value": null,
+                  "version": 0
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856000000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        },
+        {
+          "event": {
+            "id": "edit-guard:chat.clear",
+            "event": "chat.clear",
+            "session": "edit-guard",
+            "timestamp": "2026-10-13T02:00:00.000Z",
+            "payload": {
+              "from": {
+                "id": "wa:synthetic@lid"
+              }
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "clearedAt": {
+                  "value": 1791856800000,
+                  "version": 1791856800000
+                }
+              }
+            },
+            {
+              "kind": "clearChat",
+              "sessionId": "edit-guard",
+              "chatId": "wa:synthetic@lid",
+              "upTo": 1791856800000
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "edit",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856799000",
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "synthetic@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856799001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856799001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856799001,
+                  "version": 1791856799001
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856799000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        }
+      ],
+      "expect": [
+        {
+          "session": "edit-guard",
+          "entity": "messages",
+          "key": {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target"
+          },
+          "text": null
+        }
+      ],
+      "rows": {
+        "chats": [
+          {
+            "sessionId": "edit-guard",
+            "chatId": "wa:synthetic@lid",
+            "jid": "synthetic@lid",
+            "kind": "direct",
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": 1791856800000,
+            "deletedAt": null
+          }
+        ],
+        "history_chunks": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "chunkOrder": "1",
+            "progress": null,
+            "conversationCount": 1,
+            "messageCount": 1,
+            "pushnameCount": 0
+          }
+        ],
+        "history_progress": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "progress": null,
+            "lastChunkOrder": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "equal-edit-after-clear",
+      "steps": [
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "base",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "target",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856000000",
+                        "message": {
+                          "conversation": "original"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "fromMe": {
+                  "value": true,
+                  "version": 0
+                },
+                "senderId": {
+                  "value": "self",
+                  "version": 0
+                },
+                "timestamp": {
+                  "value": 1791856000000,
+                  "version": 0
+                },
+                "waMessageId": {
+                  "value": "target",
+                  "version": 0
+                },
+                "type": {
+                  "value": "text",
+                  "version": 0
+                },
+                "text": {
+                  "value": "original",
+                  "version": 0
+                },
+                "caption": {
+                  "value": null,
+                  "version": 0
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 0
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 0
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 0
+                },
+                "title": {
+                  "value": null,
+                  "version": 0
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 0
+                },
+                "extra": {
+                  "value": null,
+                  "version": 0
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856000000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        },
+        {
+          "event": {
+            "id": "edit-guard:chat.clear",
+            "event": "chat.clear",
+            "session": "edit-guard",
+            "timestamp": "2026-10-13T02:00:00.000Z",
+            "payload": {
+              "from": {
+                "id": "wa:synthetic@lid"
+              }
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "clearedAt": {
+                  "value": 1791856800000,
+                  "version": 1791856800000
+                }
+              }
+            },
+            {
+              "kind": "clearChat",
+              "sessionId": "edit-guard",
+              "chatId": "wa:synthetic@lid",
+              "upTo": 1791856800000
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "edit",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856800000",
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "synthetic@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856800001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856800001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856800001,
+                  "version": 1791856800001
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856800000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        }
+      ],
+      "expect": [
+        {
+          "session": "edit-guard",
+          "entity": "messages",
+          "key": {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target"
+          },
+          "text": null
+        }
+      ],
+      "rows": {
+        "chats": [
+          {
+            "sessionId": "edit-guard",
+            "chatId": "wa:synthetic@lid",
+            "jid": "synthetic@lid",
+            "kind": "direct",
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": 1791856800000,
+            "deletedAt": null
+          }
+        ],
+        "history_chunks": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "chunkOrder": "1",
+            "progress": null,
+            "conversationCount": 1,
+            "messageCount": 1,
+            "pushnameCount": 0
+          }
+        ],
+        "history_progress": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "progress": null,
+            "lastChunkOrder": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "newer-edit-after-clear",
+      "steps": [
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "base",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "target",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856000000",
+                        "message": {
+                          "conversation": "original"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "fromMe": {
+                  "value": true,
+                  "version": 0
+                },
+                "senderId": {
+                  "value": "self",
+                  "version": 0
+                },
+                "timestamp": {
+                  "value": 1791856000000,
+                  "version": 0
+                },
+                "waMessageId": {
+                  "value": "target",
+                  "version": 0
+                },
+                "type": {
+                  "value": "text",
+                  "version": 0
+                },
+                "text": {
+                  "value": "original",
+                  "version": 0
+                },
+                "caption": {
+                  "value": null,
+                  "version": 0
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 0
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 0
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 0
+                },
+                "title": {
+                  "value": null,
+                  "version": 0
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 0
+                },
+                "extra": {
+                  "value": null,
+                  "version": 0
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856000000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        },
+        {
+          "event": {
+            "id": "edit-guard:chat.clear",
+            "event": "chat.clear",
+            "session": "edit-guard",
+            "timestamp": "2026-10-13T02:00:00.000Z",
+            "payload": {
+              "from": {
+                "id": "wa:synthetic@lid"
+              }
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "clearedAt": {
+                  "value": 1791856800000,
+                  "version": 1791856800000
+                }
+              }
+            },
+            {
+              "kind": "clearChat",
+              "sessionId": "edit-guard",
+              "chatId": "wa:synthetic@lid",
+              "upTo": 1791856800000
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "edit",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856801000",
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "synthetic@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856801001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856801001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856801001,
+                  "version": 1791856801001
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856801000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        }
+      ],
+      "expect": [
+        {
+          "session": "edit-guard",
+          "entity": "messages",
+          "key": {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target"
+          },
+          "text": "edited"
+        }
+      ],
+      "rows": {
+        "chats": [
+          {
+            "sessionId": "edit-guard",
+            "chatId": "wa:synthetic@lid",
+            "jid": "synthetic@lid",
+            "kind": "direct",
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": 1791856800000,
+            "deletedAt": null
+          }
+        ],
+        "messages": [
+          {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target",
+            "chatId": "wa:synthetic@lid",
+            "waMessageId": null,
+            "cloudMessageId": null,
+            "fromMe": null,
+            "senderId": null,
+            "senderJid": null,
+            "pushName": null,
+            "timestamp": 0,
+            "type": null,
+            "text": "edited",
+            "caption": null,
+            "mimeType": null,
+            "fileName": null,
+            "latitude": null,
+            "longitude": null,
+            "displayName": null,
+            "title": null,
+            "quotedId": null,
+            "pollOptions": null,
+            "extra": null,
+            "editedAt": 1791856801001,
+            "revokedAt": null,
+            "deletedAt": null,
+            "starred": null,
+            "status": null,
+            "statusAt": null
+          }
+        ],
+        "history_chunks": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "chunkOrder": "1",
+            "progress": null,
+            "conversationCount": 1,
+            "messageCount": 1,
+            "pushnameCount": 0
+          }
+        ],
+        "history_progress": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "progress": null,
+            "lastChunkOrder": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "stale-edit-after-delete",
+      "steps": [
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "base",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "target",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856000000",
+                        "message": {
+                          "conversation": "original"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "fromMe": {
+                  "value": true,
+                  "version": 0
+                },
+                "senderId": {
+                  "value": "self",
+                  "version": 0
+                },
+                "timestamp": {
+                  "value": 1791856000000,
+                  "version": 0
+                },
+                "waMessageId": {
+                  "value": "target",
+                  "version": 0
+                },
+                "type": {
+                  "value": "text",
+                  "version": 0
+                },
+                "text": {
+                  "value": "original",
+                  "version": 0
+                },
+                "caption": {
+                  "value": null,
+                  "version": 0
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 0
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 0
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 0
+                },
+                "title": {
+                  "value": null,
+                  "version": 0
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 0
+                },
+                "extra": {
+                  "value": null,
+                  "version": 0
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856000000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        },
+        {
+          "event": {
+            "id": "edit-guard:chat.delete",
+            "event": "chat.delete",
+            "session": "edit-guard",
+            "timestamp": "2026-10-13T02:00:00.000Z",
+            "payload": {
+              "from": {
+                "id": "wa:synthetic@lid"
+              }
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "deletedAt": {
+                  "value": 1791856800000,
+                  "version": 1791856800000
+                }
+              }
+            },
+            {
+              "kind": "clearChat",
+              "sessionId": "edit-guard",
+              "chatId": "wa:synthetic@lid",
+              "upTo": 1791856800000
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "edit",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856799000",
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "synthetic@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856799001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856799001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856799001,
+                  "version": 1791856799001
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856799000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        }
+      ],
+      "expect": [
+        {
+          "session": "edit-guard",
+          "entity": "messages",
+          "key": {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target"
+          },
+          "text": null
+        }
+      ],
+      "rows": {
+        "chats": [
+          {
+            "sessionId": "edit-guard",
+            "chatId": "wa:synthetic@lid",
+            "jid": "synthetic@lid",
+            "kind": "direct",
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": null,
+            "deletedAt": 1791856800000
+          }
+        ],
+        "history_chunks": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "chunkOrder": "1",
+            "progress": null,
+            "conversationCount": 1,
+            "messageCount": 1,
+            "pushnameCount": 0
+          }
+        ],
+        "history_progress": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "progress": null,
+            "lastChunkOrder": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "newer-edit-after-delete",
+      "steps": [
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "base",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "target",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856000000",
+                        "message": {
+                          "conversation": "original"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "fromMe": {
+                  "value": true,
+                  "version": 0
+                },
+                "senderId": {
+                  "value": "self",
+                  "version": 0
+                },
+                "timestamp": {
+                  "value": 1791856000000,
+                  "version": 0
+                },
+                "waMessageId": {
+                  "value": "target",
+                  "version": 0
+                },
+                "type": {
+                  "value": "text",
+                  "version": 0
+                },
+                "text": {
+                  "value": "original",
+                  "version": 0
+                },
+                "caption": {
+                  "value": null,
+                  "version": 0
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 0
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 0
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 0
+                },
+                "title": {
+                  "value": null,
+                  "version": 0
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 0
+                },
+                "extra": {
+                  "value": null,
+                  "version": 0
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856000000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        },
+        {
+          "event": {
+            "id": "edit-guard:chat.delete",
+            "event": "chat.delete",
+            "session": "edit-guard",
+            "timestamp": "2026-10-13T02:00:00.000Z",
+            "payload": {
+              "from": {
+                "id": "wa:synthetic@lid"
+              }
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "deletedAt": {
+                  "value": 1791856800000,
+                  "version": 1791856800000
+                }
+              }
+            },
+            {
+              "kind": "clearChat",
+              "sessionId": "edit-guard",
+              "chatId": "wa:synthetic@lid",
+              "upTo": 1791856800000
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "edit",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856801000",
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "synthetic@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856801001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856801001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856801001
+                },
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856801001,
+                  "version": 1791856801001
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856801000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        }
+      ],
+      "expect": [
+        {
+          "session": "edit-guard",
+          "entity": "messages",
+          "key": {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target"
+          },
+          "text": "edited"
+        }
+      ],
+      "rows": {
+        "chats": [
+          {
+            "sessionId": "edit-guard",
+            "chatId": "wa:synthetic@lid",
+            "jid": "synthetic@lid",
+            "kind": "direct",
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": null,
+            "deletedAt": 1791856800000
+          }
+        ],
+        "messages": [
+          {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target",
+            "chatId": "wa:synthetic@lid",
+            "waMessageId": null,
+            "cloudMessageId": null,
+            "fromMe": null,
+            "senderId": null,
+            "senderJid": null,
+            "pushName": null,
+            "timestamp": 0,
+            "type": null,
+            "text": "edited",
+            "caption": null,
+            "mimeType": null,
+            "fileName": null,
+            "latitude": null,
+            "longitude": null,
+            "displayName": null,
+            "title": null,
+            "quotedId": null,
+            "pollOptions": null,
+            "extra": null,
+            "editedAt": 1791856801001,
+            "revokedAt": null,
+            "deletedAt": null,
+            "starred": null,
+            "status": null,
+            "statusAt": null
+          }
+        ],
+        "history_chunks": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "chunkOrder": "1",
+            "progress": null,
+            "conversationCount": 1,
+            "messageCount": 1,
+            "pushnameCount": 0
+          }
+        ],
+        "history_progress": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "progress": null,
+            "lastChunkOrder": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "other-chat-unaffected",
+      "steps": [
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "base",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "other@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "target",
+                          "remoteJid": "other@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856000000",
+                        "message": {
+                          "conversation": "original"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:other@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "other@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:other@lid:1::target"
+              },
+              "fields": {
+                "chatId": {
+                  "value": "wa:other@lid",
+                  "version": 0
+                },
+                "fromMe": {
+                  "value": true,
+                  "version": 0
+                },
+                "senderId": {
+                  "value": "self",
+                  "version": 0
+                },
+                "timestamp": {
+                  "value": 1791856000000,
+                  "version": 0
+                },
+                "waMessageId": {
+                  "value": "target",
+                  "version": 0
+                },
+                "type": {
+                  "value": "text",
+                  "version": 0
+                },
+                "text": {
+                  "value": "original",
+                  "version": 0
+                },
+                "caption": {
+                  "value": null,
+                  "version": 0
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 0
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 0
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 0
+                },
+                "title": {
+                  "value": null,
+                  "version": 0
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 0
+                },
+                "extra": {
+                  "value": null,
+                  "version": 0
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:other@lid",
+                "timestamp": 1791856000000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        },
+        {
+          "event": {
+            "id": "edit-guard:chat.clear",
+            "event": "chat.clear",
+            "session": "edit-guard",
+            "timestamp": "2026-10-13T02:00:00.000Z",
+            "payload": {
+              "from": {
+                "id": "wa:synthetic@lid"
+              }
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "clearedAt": {
+                  "value": 1791856800000,
+                  "version": 1791856800000
+                }
+              }
+            },
+            {
+              "kind": "clearChat",
+              "sessionId": "edit-guard",
+              "chatId": "wa:synthetic@lid",
+              "upTo": 1791856800000
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "edit",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "other@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "other@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856799000",
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "other@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856799001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:other@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "other@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:other@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856799001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "chatId": {
+                  "value": "wa:other@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856799001,
+                  "version": 1791856799001
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:other@lid",
+                "timestamp": 1791856799000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        }
+      ],
+      "expect": [
+        {
+          "session": "edit-guard",
+          "entity": "messages",
+          "key": {
+            "sessionId": "edit-guard",
+            "messageId": "wa:other@lid:1::target"
+          },
+          "text": "edited"
+        }
+      ],
+      "rows": {
+        "chats": [
+          {
+            "sessionId": "edit-guard",
+            "chatId": "wa:other@lid",
+            "jid": "other@lid",
+            "kind": "direct",
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": null,
+            "deletedAt": null
+          },
+          {
+            "sessionId": "edit-guard",
+            "chatId": "wa:synthetic@lid",
+            "jid": null,
+            "kind": null,
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": 1791856800000,
+            "deletedAt": null
+          }
+        ],
+        "messages": [
+          {
+            "sessionId": "edit-guard",
+            "messageId": "wa:other@lid:1::target",
+            "chatId": "wa:other@lid",
+            "waMessageId": "target",
+            "cloudMessageId": null,
+            "fromMe": true,
+            "senderId": "self",
+            "senderJid": null,
+            "pushName": null,
+            "timestamp": 1791856000000,
+            "type": "text",
+            "text": "edited",
+            "caption": null,
+            "mimeType": null,
+            "fileName": null,
+            "latitude": null,
+            "longitude": null,
+            "displayName": null,
+            "title": null,
+            "quotedId": null,
+            "pollOptions": null,
+            "extra": null,
+            "editedAt": 1791856799001,
+            "revokedAt": null,
+            "deletedAt": null,
+            "starred": null,
+            "status": null,
+            "statusAt": null
+          }
+        ],
+        "history_chunks": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "chunkOrder": "1",
+            "progress": null,
+            "conversationCount": 1,
+            "messageCount": 1,
+            "pushnameCount": 0
+          }
+        ],
+        "history_progress": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "progress": null,
+            "lastChunkOrder": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "other-session-unaffected",
+      "steps": [
+        {
+          "history": {
+            "sessionId": "edit-guard-other",
+            "chunkId": "base",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "target",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856000000",
+                        "message": {
+                          "conversation": "original"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard-other",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard-other",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "fromMe": {
+                  "value": true,
+                  "version": 0
+                },
+                "senderId": {
+                  "value": "self",
+                  "version": 0
+                },
+                "timestamp": {
+                  "value": 1791856000000,
+                  "version": 0
+                },
+                "waMessageId": {
+                  "value": "target",
+                  "version": 0
+                },
+                "type": {
+                  "value": "text",
+                  "version": 0
+                },
+                "text": {
+                  "value": "original",
+                  "version": 0
+                },
+                "caption": {
+                  "value": null,
+                  "version": 0
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 0
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 0
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 0
+                },
+                "title": {
+                  "value": null,
+                  "version": 0
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 0
+                },
+                "extra": {
+                  "value": null,
+                  "version": 0
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard-other",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856000000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard-other",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard-other",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        },
+        {
+          "event": {
+            "id": "edit-guard:chat.clear",
+            "event": "chat.clear",
+            "session": "edit-guard",
+            "timestamp": "2026-10-13T02:00:00.000Z",
+            "payload": {
+              "from": {
+                "id": "wa:synthetic@lid"
+              }
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "clearedAt": {
+                  "value": 1791856800000,
+                  "version": 1791856800000
+                }
+              }
+            },
+            {
+              "kind": "clearChat",
+              "sessionId": "edit-guard",
+              "chatId": "wa:synthetic@lid",
+              "upTo": 1791856800000
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard-other",
+            "chunkId": "edit",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856799000",
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "synthetic@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856799001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard-other",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard-other",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856799001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856799001,
+                  "version": 1791856799001
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard-other",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856799000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard-other",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard-other",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        }
+      ],
+      "expect": [
+        {
+          "session": "edit-guard-other",
+          "entity": "messages",
+          "key": {
+            "sessionId": "edit-guard-other",
+            "messageId": "wa:synthetic@lid:1::target"
+          },
+          "text": "edited"
+        }
+      ],
+      "rows": {
+        "chats": [
+          {
+            "sessionId": "edit-guard-other",
+            "chatId": "wa:synthetic@lid",
+            "jid": "synthetic@lid",
+            "kind": "direct",
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": null,
+            "deletedAt": null
+          },
+          {
+            "sessionId": "edit-guard",
+            "chatId": "wa:synthetic@lid",
+            "jid": null,
+            "kind": null,
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": 1791856800000,
+            "deletedAt": null
+          }
+        ],
+        "messages": [
+          {
+            "sessionId": "edit-guard-other",
+            "messageId": "wa:synthetic@lid:1::target",
+            "chatId": "wa:synthetic@lid",
+            "waMessageId": "target",
+            "cloudMessageId": null,
+            "fromMe": true,
+            "senderId": "self",
+            "senderJid": null,
+            "pushName": null,
+            "timestamp": 1791856000000,
+            "type": "text",
+            "text": "edited",
+            "caption": null,
+            "mimeType": null,
+            "fileName": null,
+            "latitude": null,
+            "longitude": null,
+            "displayName": null,
+            "title": null,
+            "quotedId": null,
+            "pollOptions": null,
+            "extra": null,
+            "editedAt": 1791856799001,
+            "revokedAt": null,
+            "deletedAt": null,
+            "starred": null,
+            "status": null,
+            "statusAt": null
+          }
+        ],
+        "history_chunks": [
+          {
+            "sessionId": "edit-guard-other",
+            "syncType": "RECENT",
+            "chunkOrder": "1",
+            "progress": null,
+            "conversationCount": 1,
+            "messageCount": 1,
+            "pushnameCount": 0
+          }
+        ],
+        "history_progress": [
+          {
+            "sessionId": "edit-guard-other",
+            "syncType": "RECENT",
+            "progress": null,
+            "lastChunkOrder": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "edit-before-history-after-clear",
+      "steps": [
+        {
+          "event": {
+            "id": "edit-guard:chat.clear",
+            "event": "chat.clear",
+            "session": "edit-guard",
+            "timestamp": "2026-10-13T02:00:00.000Z",
+            "payload": {
+              "from": {
+                "id": "wa:synthetic@lid"
+              }
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "clearedAt": {
+                  "value": 1791856800000,
+                  "version": 1791856800000
+                }
+              }
+            },
+            {
+              "kind": "clearChat",
+              "sessionId": "edit-guard",
+              "chatId": "wa:synthetic@lid",
+              "upTo": 1791856800000
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "edit",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856799000",
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "synthetic@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856799001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856799001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856799001,
+                  "version": 1791856799001
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856799000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "base",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "target",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856000000",
+                        "message": {
+                          "conversation": "original"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "fromMe": {
+                  "value": true,
+                  "version": 0
+                },
+                "senderId": {
+                  "value": "self",
+                  "version": 0
+                },
+                "timestamp": {
+                  "value": 1791856000000,
+                  "version": 0
+                },
+                "waMessageId": {
+                  "value": "target",
+                  "version": 0
+                },
+                "type": {
+                  "value": "text",
+                  "version": 0
+                },
+                "text": {
+                  "value": "original",
+                  "version": 0
+                },
+                "caption": {
+                  "value": null,
+                  "version": 0
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 0
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 0
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 0
+                },
+                "title": {
+                  "value": null,
+                  "version": 0
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 0
+                },
+                "extra": {
+                  "value": null,
+                  "version": 0
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856000000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        }
+      ],
+      "expect": [
+        {
+          "session": "edit-guard",
+          "entity": "messages",
+          "key": {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target"
+          },
+          "text": null
+        }
+      ],
+      "rows": {
+        "chats": [
+          {
+            "sessionId": "edit-guard",
+            "chatId": "wa:synthetic@lid",
+            "jid": "synthetic@lid",
+            "kind": "direct",
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": 1791856800000,
+            "deletedAt": null
+          }
+        ],
+        "history_chunks": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "chunkOrder": "1",
+            "progress": null,
+            "conversationCount": 1,
+            "messageCount": 1,
+            "pushnameCount": 0
+          }
+        ],
+        "history_progress": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "progress": null,
+            "lastChunkOrder": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "edit-before-history-no-clear",
+      "steps": [
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "edit",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856799000",
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "synthetic@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856799001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856799001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856799001,
+                  "version": 1791856799001
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856799000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "base",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "target",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856000000",
+                        "message": {
+                          "conversation": "original"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "fromMe": {
+                  "value": true,
+                  "version": 0
+                },
+                "senderId": {
+                  "value": "self",
+                  "version": 0
+                },
+                "timestamp": {
+                  "value": 1791856000000,
+                  "version": 0
+                },
+                "waMessageId": {
+                  "value": "target",
+                  "version": 0
+                },
+                "type": {
+                  "value": "text",
+                  "version": 0
+                },
+                "text": {
+                  "value": "original",
+                  "version": 0
+                },
+                "caption": {
+                  "value": null,
+                  "version": 0
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 0
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 0
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 0
+                },
+                "title": {
+                  "value": null,
+                  "version": 0
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 0
+                },
+                "extra": {
+                  "value": null,
+                  "version": 0
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856000000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        }
+      ],
+      "expect": [
+        {
+          "session": "edit-guard",
+          "entity": "messages",
+          "key": {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target"
+          },
+          "text": "edited"
+        }
+      ],
+      "rows": {
+        "chats": [
+          {
+            "sessionId": "edit-guard",
+            "chatId": "wa:synthetic@lid",
+            "jid": "synthetic@lid",
+            "kind": "direct",
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": null,
+            "deletedAt": null
+          }
+        ],
+        "messages": [
+          {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target",
+            "chatId": "wa:synthetic@lid",
+            "waMessageId": "target",
+            "cloudMessageId": null,
+            "fromMe": true,
+            "senderId": "self",
+            "senderJid": null,
+            "pushName": null,
+            "timestamp": 1791856000000,
+            "type": "text",
+            "text": "edited",
+            "caption": null,
+            "mimeType": null,
+            "fileName": null,
+            "latitude": null,
+            "longitude": null,
+            "displayName": null,
+            "title": null,
+            "quotedId": null,
+            "pollOptions": null,
+            "extra": null,
+            "editedAt": 1791856799001,
+            "revokedAt": null,
+            "deletedAt": null,
+            "starred": null,
+            "status": null,
+            "statusAt": null
+          }
+        ],
+        "history_chunks": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "chunkOrder": "1",
+            "progress": null,
+            "conversationCount": 1,
+            "messageCount": 1,
+            "pushnameCount": 0
+          }
+        ],
+        "history_progress": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "progress": null,
+            "lastChunkOrder": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "edit-after-history-no-clear",
+      "steps": [
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "base",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "target",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856000000",
+                        "message": {
+                          "conversation": "original"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "fromMe": {
+                  "value": true,
+                  "version": 0
+                },
+                "senderId": {
+                  "value": "self",
+                  "version": 0
+                },
+                "timestamp": {
+                  "value": 1791856000000,
+                  "version": 0
+                },
+                "waMessageId": {
+                  "value": "target",
+                  "version": 0
+                },
+                "type": {
+                  "value": "text",
+                  "version": 0
+                },
+                "text": {
+                  "value": "original",
+                  "version": 0
+                },
+                "caption": {
+                  "value": null,
+                  "version": 0
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 0
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 0
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 0
+                },
+                "title": {
+                  "value": null,
+                  "version": 0
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 0
+                },
+                "extra": {
+                  "value": null,
+                  "version": 0
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856000000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "edit",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856799000",
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "synthetic@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856799001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856799001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856799001,
+                  "version": 1791856799001
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856799000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        }
+      ],
+      "expect": [
+        {
+          "session": "edit-guard",
+          "entity": "messages",
+          "key": {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target"
+          },
+          "text": "edited"
+        }
+      ],
+      "rows": {
+        "chats": [
+          {
+            "sessionId": "edit-guard",
+            "chatId": "wa:synthetic@lid",
+            "jid": "synthetic@lid",
+            "kind": "direct",
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": null,
+            "deletedAt": null
+          }
+        ],
+        "messages": [
+          {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target",
+            "chatId": "wa:synthetic@lid",
+            "waMessageId": "target",
+            "cloudMessageId": null,
+            "fromMe": true,
+            "senderId": "self",
+            "senderJid": null,
+            "pushName": null,
+            "timestamp": 1791856000000,
+            "type": "text",
+            "text": "edited",
+            "caption": null,
+            "mimeType": null,
+            "fileName": null,
+            "latitude": null,
+            "longitude": null,
+            "displayName": null,
+            "title": null,
+            "quotedId": null,
+            "pollOptions": null,
+            "extra": null,
+            "editedAt": 1791856799001,
+            "revokedAt": null,
+            "deletedAt": null,
+            "starred": null,
+            "status": null,
+            "statusAt": null
+          }
+        ],
+        "history_chunks": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "chunkOrder": "1",
+            "progress": null,
+            "conversationCount": 1,
+            "messageCount": 1,
+            "pushnameCount": 0
+          }
+        ],
+        "history_progress": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "progress": null,
+            "lastChunkOrder": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "replay-applied-edit-after-clear",
+      "steps": [
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "base",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "target",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856000000",
+                        "message": {
+                          "conversation": "original"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "fromMe": {
+                  "value": true,
+                  "version": 0
+                },
+                "senderId": {
+                  "value": "self",
+                  "version": 0
+                },
+                "timestamp": {
+                  "value": 1791856000000,
+                  "version": 0
+                },
+                "waMessageId": {
+                  "value": "target",
+                  "version": 0
+                },
+                "type": {
+                  "value": "text",
+                  "version": 0
+                },
+                "text": {
+                  "value": "original",
+                  "version": 0
+                },
+                "caption": {
+                  "value": null,
+                  "version": 0
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 0
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 0
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 0
+                },
+                "title": {
+                  "value": null,
+                  "version": 0
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 0
+                },
+                "extra": {
+                  "value": null,
+                  "version": 0
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856000000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "edit",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856799000",
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "synthetic@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856799001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856799001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856799001,
+                  "version": 1791856799001
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856799000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        },
+        {
+          "event": {
+            "id": "edit-guard:chat.clear",
+            "event": "chat.clear",
+            "session": "edit-guard",
+            "timestamp": "2026-10-13T02:00:00.000Z",
+            "payload": {
+              "from": {
+                "id": "wa:synthetic@lid"
+              }
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "clearedAt": {
+                  "value": 1791856800000,
+                  "version": 1791856800000
+                }
+              }
+            },
+            {
+              "kind": "clearChat",
+              "sessionId": "edit-guard",
+              "chatId": "wa:synthetic@lid",
+              "upTo": 1791856800000
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "edit",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856799000",
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "synthetic@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856799001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856799001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856799001,
+                  "version": 1791856799001
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856799000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": false
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "edit-late",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856799000",
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "synthetic@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856799001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856799001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856799001
+                },
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856799001,
+                  "version": 1791856799001
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856799000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        }
+      ],
+      "expect": [
+        {
+          "session": "edit-guard",
+          "entity": "messages",
+          "key": {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target"
+          },
+          "text": null
+        }
+      ],
+      "rows": {
+        "chats": [
+          {
+            "sessionId": "edit-guard",
+            "chatId": "wa:synthetic@lid",
+            "jid": "synthetic@lid",
+            "kind": "direct",
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": 1791856800000,
+            "deletedAt": null
+          }
+        ],
+        "history_chunks": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "chunkOrder": "1",
+            "progress": null,
+            "conversationCount": 1,
+            "messageCount": 1,
+            "pushnameCount": 0
+          }
+        ],
+        "history_progress": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "progress": null,
+            "lastChunkOrder": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "absent-timestamp-keeps-existing-handling",
+      "steps": [
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "base",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "target",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "messageTimestamp": "1791856000000",
+                        "message": {
+                          "conversation": "original"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "fromMe": {
+                  "value": true,
+                  "version": 0
+                },
+                "senderId": {
+                  "value": "self",
+                  "version": 0
+                },
+                "timestamp": {
+                  "value": 1791856000000,
+                  "version": 0
+                },
+                "waMessageId": {
+                  "value": "target",
+                  "version": 0
+                },
+                "type": {
+                  "value": "text",
+                  "version": 0
+                },
+                "text": {
+                  "value": "original",
+                  "version": 0
+                },
+                "caption": {
+                  "value": null,
+                  "version": 0
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 0
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 0
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 0
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 0
+                },
+                "title": {
+                  "value": null,
+                  "version": 0
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 0
+                },
+                "extra": {
+                  "value": null,
+                  "version": 0
+                }
+              },
+              "guard": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid",
+                "timestamp": 1791856000000
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        },
+        {
+          "event": {
+            "id": "edit-guard:chat.clear",
+            "event": "chat.clear",
+            "session": "edit-guard",
+            "timestamp": "2026-10-13T02:00:00.000Z",
+            "payload": {
+              "from": {
+                "id": "wa:synthetic@lid"
+              }
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "clearedAt": {
+                  "value": 1791856800000,
+                  "version": 1791856800000
+                }
+              }
+            },
+            {
+              "kind": "clearChat",
+              "sessionId": "edit-guard",
+              "chatId": "wa:synthetic@lid",
+              "upTo": 1791856800000
+            }
+          ],
+          "applied": true
+        },
+        {
+          "history": {
+            "sessionId": "edit-guard",
+            "chunkId": "edit",
+            "chunk": {
+              "syncType": 3,
+              "chunkOrder": 1,
+              "conversations": [
+                {
+                  "id": "synthetic@lid",
+                  "messages": [
+                    {
+                      "message": {
+                        "key": {
+                          "id": "edit",
+                          "remoteJid": "synthetic@lid",
+                          "fromMe": true
+                        },
+                        "message": {
+                          "protocolMessage": {
+                            "type": "MESSAGE_EDIT",
+                            "key": {
+                              "id": "target",
+                              "remoteJid": "synthetic@lid",
+                              "fromMe": true
+                            },
+                            "editedMessage": {
+                              "conversation": "edited"
+                            },
+                            "timestampMs": "1791856800001"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "operations": [
+            {
+              "kind": "upsert",
+              "entity": "chats",
+              "key": {
+                "sessionId": "edit-guard",
+                "chatId": "wa:synthetic@lid"
+              },
+              "fields": {
+                "jid": {
+                  "value": "synthetic@lid",
+                  "version": 0
+                },
+                "kind": {
+                  "value": "direct",
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "messages",
+              "key": {
+                "sessionId": "edit-guard",
+                "messageId": "wa:synthetic@lid:1::target"
+              },
+              "fields": {
+                "text": {
+                  "value": "edited",
+                  "version": 1791856800001
+                },
+                "caption": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "mimeType": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "fileName": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "latitude": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "longitude": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "displayName": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "title": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "pollOptions": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "extra": {
+                  "value": null,
+                  "version": 1791856800001
+                },
+                "chatId": {
+                  "value": "wa:synthetic@lid",
+                  "version": 0
+                },
+                "editedAt": {
+                  "value": 1791856800001,
+                  "version": 1791856800001
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_chunks",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT",
+                "chunkOrder": "1"
+              },
+              "fields": {
+                "conversationCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "messageCount": {
+                  "value": 1,
+                  "version": 0
+                },
+                "pushnameCount": {
+                  "value": 0,
+                  "version": 0
+                }
+              }
+            },
+            {
+              "kind": "upsert",
+              "entity": "history_progress",
+              "key": {
+                "sessionId": "edit-guard",
+                "syncType": "RECENT"
+              },
+              "fields": {
+                "lastChunkOrder": {
+                  "value": 1,
+                  "version": 1
+                }
+              }
+            }
+          ],
+          "applied": true
+        }
+      ],
+      "expect": [
+        {
+          "session": "edit-guard",
+          "entity": "messages",
+          "key": {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target"
+          },
+          "text": "edited"
+        }
+      ],
+      "rows": {
+        "chats": [
+          {
+            "sessionId": "edit-guard",
+            "chatId": "wa:synthetic@lid",
+            "jid": "synthetic@lid",
+            "kind": "direct",
+            "phoneNumber": null,
+            "bsuid": null,
+            "username": null,
+            "name": null,
+            "archived": null,
+            "pinned": null,
+            "muted": null,
+            "muteEndAt": null,
+            "markedUnread": null,
+            "unreadCount": null,
+            "readOnly": null,
+            "ephemeralExpiration": null,
+            "lastMessageAt": 0,
+            "clearedAt": 1791856800000,
+            "deletedAt": null
+          }
+        ],
+        "messages": [
+          {
+            "sessionId": "edit-guard",
+            "messageId": "wa:synthetic@lid:1::target",
+            "chatId": "wa:synthetic@lid",
+            "waMessageId": null,
+            "cloudMessageId": null,
+            "fromMe": null,
+            "senderId": null,
+            "senderJid": null,
+            "pushName": null,
+            "timestamp": 0,
+            "type": null,
+            "text": "edited",
+            "caption": null,
+            "mimeType": null,
+            "fileName": null,
+            "latitude": null,
+            "longitude": null,
+            "displayName": null,
+            "title": null,
+            "quotedId": null,
+            "pollOptions": null,
+            "extra": null,
+            "editedAt": 1791856800001,
+            "revokedAt": null,
+            "deletedAt": null,
+            "starred": null,
+            "status": null,
+            "statusAt": null
+          }
+        ],
+        "history_chunks": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "chunkOrder": "1",
+            "progress": null,
+            "conversationCount": 1,
+            "messageCount": 1,
+            "pushnameCount": 0
+          }
+        ],
+        "history_progress": [
+          {
+            "sessionId": "edit-guard",
+            "syncType": "RECENT",
+            "progress": null,
+            "lastChunkOrder": 1
+          }
+        ]
+      }
+    }
+  ]
+}

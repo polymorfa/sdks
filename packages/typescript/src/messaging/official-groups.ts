@@ -135,7 +135,7 @@ export class OfficialGroupsResource {
   private requireServerCredential(): void {
     if (this.credentialType === "clientToken") {
       throw new PolymorfaConfigurationError(
-        "Official groups require an organization API key or project token.",
+        "Official groups require an team key or project token.",
         "credential",
       );
     }

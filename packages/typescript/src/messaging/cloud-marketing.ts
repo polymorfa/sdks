@@ -83,7 +83,7 @@ export class CloudMarketingResource {
   ): Promise<ApiResponse<CloudMarketingStatus>> {
     if (this.credentialType === "clientToken") {
       throw new PolymorfaConfigurationError(
-        "Official API marketing status requires an organization API key or project token.",
+        "Official API marketing status requires an team key or project token.",
         "credential",
       );
     }

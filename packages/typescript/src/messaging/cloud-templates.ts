@@ -74,7 +74,7 @@ export class CloudTemplatesResource {
   private requireServerCredential(): void {
     if (this.credentialType === "clientToken") {
       throw new PolymorfaConfigurationError(
-        "Official API templates require an organization API key or project token.",
+        "Official API templates require an team key or project token.",
         "credential",
       );
     }

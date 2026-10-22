@@ -1,0 +1,13 @@
+@if (!$partial)
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PHP Polymorfa workspace</title><script src="/assets/htmx.js" defer></script><script type="module" src="/assets/elements.js"></script><style>body{font:16px system-ui;margin:0;background:#f6f7f9;color:#17212d}main{max-width:1100px;margin:16px auto;padding:16px}h1{font-size:26px;margin:0 0 12px}p,form{margin:10px 0}button,input{font:inherit;padding:12px;border:1px solid #6e7e91;border-radius:8px}button{cursor:pointer;background:#184a80;color:white}label{display:block;margin:16px 0}input{display:block;max-width:100%;margin-top:8px}pmfa-inbox{height:calc(100dvh - 280px);min-height:360px;display:block}button:focus-visible,input:focus-visible{outline:3px solid #48a5ed;outline-offset:3px}@media(max-width:600px){main{margin:0;padding:16px}}</style></head><body>
+@endif
+<main id="app"><h1>Messaging workspace</h1>
+@if ($authenticated)
+@if($localTest)<p><strong>Local test numbers. Simulated WhatsApp transport.</strong></p>@endif<p>Text messages use the server-assigned number and recipient. Conversation state is kept in this example's private state directory.</p><p id="native-status" role="status">Waiting for the native SDK conversation.</p><form method="post" action="/api/logout" hx-post="/api/logout" hx-target="#app" hx-swap="outerHTML"><button type="submit">Sign out</button></form><pmfa-inbox></pmfa-inbox>
+@else
+<p>Sign in with the local example application's configured account.</p><form method="post" action="/api/login" hx-post="/api/login" hx-target="#app" hx-swap="outerHTML"><label>Username<input name="username" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button type="submit">Sign in</button></form>
+@endif
+<p role="alert" id="error"></p></main>
+@if (!$partial)
+</body></html>
+@endif

@@ -63,7 +63,7 @@ describe("browser call permission messages", () => {
     servers.push(server);
     const client = new BrowserMessagingClient({
       session: "support",
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       baseUrl: server.url,
       maxNetworkRetries: 0,
     });
@@ -79,7 +79,7 @@ describe("browser call permission messages", () => {
       method: "POST",
       path: "/messaging/support/messages/send",
       headers: {
-        authorization: "Bearer pmfa_ct_fixture",
+        authorization: "Bearer pmfa_ct_Zml4dHVyZQ",
         "idempotency-key": "permission-request-1",
       },
     });
@@ -110,7 +110,7 @@ describe("browser call permission messages", () => {
       servers.push(server);
       const client = new BrowserMessagingClient({
         session: "support",
-        getClientToken: async () => "pmfa_ct_fixture",
+        getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
         baseUrl: server.url,
         maxNetworkRetries: 0,
       });

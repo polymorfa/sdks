@@ -1,4 +1,9 @@
 import type {
+  CampaignTrackedLink,
+  CampaignVariableMapping,
+  CampaignRecipientFailureReason,
+} from "../campaign-contracts.js";
+import type {
   CampaignDripInput,
   CampaignDripPatch,
   CampaignSequenceMessage,
@@ -6,7 +11,6 @@ import type {
 import type {
   Campaign,
   CampaignFrequencyCap,
-  CampaignRecipientFailureReason,
   CampaignRecipient,
   CampaignRecipientInput,
   CampaignRecipientStatus,
@@ -190,9 +194,12 @@ export interface TransferCustomerNumberRequest {
 
 /** Create a campaign through the organization client's Platform resource. */
 export interface CreatePlatformCampaignRequest {
+  readonly variableMapping?: CampaignVariableMapping;
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
+
   readonly segmentId?: string;
   readonly drip?: CampaignDripInput | null;
-  /** Owning project; organization API keys are not bound to one project. */
+  /** Owning project; team keys are not bound to one project. */
   readonly projectId: string;
   /** Trimmed by the API; 1 to 200 characters and must not be blank. */
   readonly name: string;
@@ -210,7 +217,7 @@ export interface CreatePlatformCampaignRequest {
   readonly recipientCount?: number;
   // The API deliberately leaves these JSON values opaque.
   readonly composerBlueprint?: unknown;
-  readonly messagesArray?: readonly CampaignSequenceMessage[];
+  readonly messagesArray?: readonly CampaignMessage[];
   readonly audienceRef?: unknown;
   readonly complianceConfig?: unknown;
   /** Two to four A/B variants (beta); requires `variantStrategy`. */
@@ -263,9 +270,17 @@ export interface ReschedulePlatformCampaignRequest extends PlatformCampaignParam
  * not been copied into recipients. After that the API refuses the change.
  */
 export interface UpdatePlatformCampaignRequest {
+  /** Select the owning project in request params. */
+  readonly projectId?: never;
+  /** Select the campaign in the request path. */
+  readonly id?: never;
+  readonly templateId?: string | null;
+  readonly variableMapping?: CampaignVariableMapping | null;
+  readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
+
   readonly segmentId?: string | null;
   readonly drip?: CampaignDripPatch | null;
-  readonly messagesArray?: readonly CampaignSequenceMessage[];
+  readonly messagesArray?: readonly CampaignMessage[];
   /** 1 to 200 characters. */
   readonly name?: string;
   readonly recipientListId?: string | null;
@@ -502,7 +517,7 @@ export interface DeleteAudienceMemberResult {
 }
 
 /**
- * Organization keyword capture. When enabled, a reply matching an opt-out
+ * Team keyword capture. When enabled, a reply matching an opt-out
  * keyword suppresses the contact and emits `contact.opted_out`.
  */
 export interface OptOutSettings {
@@ -572,7 +587,7 @@ export interface TierPricing {
   readonly features: readonly string[];
 }
 
-/** Metadata for an organization server API key. Raw key material is never returned. */
+/** Metadata for an team key. Raw key material is never returned. */
 export interface ApiKey {
   readonly _id: string;
   readonly _creationTime: number;
@@ -1609,6 +1624,37 @@ export interface UpdateProjectHealthPolicyRequest {
   readonly slowDownMps: number | null;
   readonly emailNotification: boolean;
   readonly webhookNotification: boolean;
+}
+
+/** Open composed draft objects, distinct from weighted variation blueprints. */
+export interface CampaignMessage extends CampaignSequenceMessage {
+  readonly version?: 2;
+  readonly source?: string;
+  readonly media?: {
+    readonly kind: "image" | "video" | "audio" | "document";
+    readonly url: string;
+    readonly filename?: string;
+    readonly caption?: string;
+    readonly [key: string]: unknown;
+  };
+  readonly buttons?: readonly {
+    readonly kind: "reply" | "link" | "call";
+    readonly label: string;
+    readonly url?: string;
+    readonly phone?: string;
+    readonly [key: string]: unknown;
+  }[];
+  readonly footer?: string;
+  readonly delayAfterSec?: number;
+  readonly [key: string]: unknown;
+}
+export interface LaunchPlatformCampaignRequest {
+  readonly projectId: string;
+  readonly scheduledAt?: number;
+  readonly skipMissingVariables?: boolean;
+}
+export interface PlatformCampaignLaunchResult extends PlatformCampaign {
+  readonly operationId: string;
 }
 
 /** Team settings. Revision 0 and updatedAt null until first saved. */

@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+- All six server SDKs submit each direct media grant, API relay upload, history
+  chunk retry and history media deletion at most once per invocation, including
+  when a caller supplies an idempotency key and a positive retry option. These
+  held routes have no server replay ledger. Errors retain their metadata;
+  established message-send/GET retries and direct CDN recovery are unchanged.
+  This correction is source-only and does not release the held API routes.
+
+- Project event streams in TypeScript, Go, Python, PHP and .NET retain their
+  resume cursor until the event payload validates. TypeScript now validates the
+  decoded webhook envelope. Their parsers enforce 4 MiB UTF-8 frame budgets
+  across incomplete lines, multiline data and comments. Rust's existing cursor
+  validation and frame bound gain regression coverage. Native malformed-payload
+  error and reconnect policies remain unchanged.
+- Go and .NET storage synchronization preserve the configured initial cursor
+  when no checkpoint exists. A saved checkpoint still takes precedence; event
+  commit, checkpoint CAS and manual ACK retain their order. These repairs are
+  source-only and unreleased.
+
 - Webhook phone offline start day. Platform and Messaging webhook create,
   update and read types gain `phoneOfflineStartDay` (7-13, default 10): the
   first day without the phone on which the webhook receives
@@ -167,7 +185,7 @@
 - Call consent. `Client.callPolicy` (`retrieve`, `update`) reads and replaces
   the team's blocked country codes with an optional `expectedRevision` guard,
   and `Client.callOptOuts` (`list`, `create`, `import`, `delete`) manages the
-  team's do-not-call list. Both need an organization key. `list` returns a
+  team's do-not-call list. Both need an team key. `list` returns a
   `CursorPage` that follows `page.nextCursor`; `create` answers `201` for a new
   entry and `200` for one already listed, told apart by `metadata.status`.
   `MessagingClient.voip.retrieveCallPermission()` reads a person's call
@@ -195,7 +213,7 @@
 
 - Added `Client.usage` to read monthly metered usage, page or iterate usage
   records, and inspect team usage gates. Project clients can read only their
-  own usage; gate state requires an organization key. The `usage.recorded`
+  own usage; gate state requires an team key. The `usage.recorded`
   webhook has a typed payload, and enforced limits use the
   `gate_limit_reached` error code. Usage is measured but not charged.
 
@@ -719,7 +737,7 @@
   incidents, claims, and Health action reads to `Client.banSafe`.
   Project and session resources now cover Safe Mode, warm-up, Ban Insurance
   evidence, and Health policy settings, and `MessagingClient.banSafe` covers
-  the same settings on the Messaging API for organization API keys and project
+  the same settings on the Messaging API for team keys and project
   tokens. Claim credit amounts are decimal quantities. Dashboard-only finding
   acknowledgement and appeals remain outside the server SDK.
 - Breaking: saved QuickLink settings drop `allowedRedirectUris` and add

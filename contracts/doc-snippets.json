@@ -1,0 +1,813 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "1382e62132ad5114685aca3217057cd815b5827d",
+  "sourceFilesSha256": "c84592eb4573695de3ebbd2882e8d329f27a11be47b81f45bba3f1248f2ae967",
+  "apiVersion": "2026-09-22",
+  "apiSourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
+  "specs": {
+    "messaging": "7f6ddab25a673e45da7a209292ddfd7354acccf30c27e2fa651113e321b66d3d",
+    "platform": "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8"
+  },
+  "releaseStatus": "source-only",
+  "packages": {
+    "typescript": { "name": "@polymorfa/sdk", "version": "0.1.0-dev.0" },
+    "go": {
+      "name": "github.com/polymorfa/sdks/packages/go",
+      "version": "0.1.0-dev.0"
+    },
+    "python": { "name": "polymorfa-sdk", "version": "0.1.0.dev0" },
+    "php": { "name": "polymorfa/sdk", "version": "0.1.0-dev.0" },
+    "dotnet": { "name": "Polymorfa.Sdk", "version": "0.1.0-dev.0" },
+    "rust": { "name": "polymorfa-sdk", "version": "0.1.0-dev.0" }
+  },
+  "operations": {
+    "createBusinessCatalog": {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/catalog",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.createCatalog(\"{{session}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().CreateCatalog(ctx, \"{{session}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.create_catalog(\"{{session}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->createCatalog(\"{{session}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.CreateCatalogAsync(\"{{session}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().create_catalog(\"{{session}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "createBusinessCollection": {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/business/collections",
+      "credentialKind": "organization_api_key",
+      "request": {
+        "body": { "name": "Featured", "productIds": ["product-id"] }
+      },
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.createCollection(\"{{session}}\", {\"name\": \"Featured\", \"productIds\": [\"product-id\"]});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().CreateCollection(ctx, \"{{session}}\", sdk.BusinessCollectionCreateRequest{Name: \"Featured\", ProductIDs: []string{\"product-id\"}})\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.create_collection(\"{{session}}\", {\"name\": \"Featured\", \"productIds\": [\"product-id\"]})\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->createCollection(\"{{session}}\", [\"name\" => \"Featured\", \"productIds\" => [\"product-id\"]]);\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.CreateCollectionAsync(\"{{session}}\", new BusinessCollectionCreateRequest(\"Featured\", new[] { \"product-id\" }));\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().create_collection(\"{{session}}\", &polymorfa_sdk::business::BusinessCollectionCreateRequest { name: \"Featured\".into(), product_ids: vec![\"product-id\".into()] }, Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "deleteBusinessCollection": {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.deleteCollection(\"{{session}}\", \"{{collectionId}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().DeleteCollection(ctx, \"{{session}}\", \"{{collectionId}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.delete_collection(\"{{session}}\", \"{{collectionId}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->deleteCollection(\"{{session}}\", \"{{collectionId}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.DeleteCollectionAsync(\"{{session}}\", \"{{collectionId}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().delete_collection(\"{{session}}\", \"{{collectionId}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "deleteBusinessCoverPhoto": {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/profile/cover-photo/{coverPhotoId}",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.deleteCoverPhoto(\"{{session}}\", \"{{coverPhotoId}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().DeleteCoverPhoto(ctx, \"{{session}}\", \"{{coverPhotoId}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.delete_cover_photo(\"{{session}}\", \"{{coverPhotoId}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->deleteCoverPhoto(\"{{session}}\", \"{{coverPhotoId}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.DeleteCoverPhotoAsync(\"{{session}}\", \"{{coverPhotoId}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().delete_cover_photo(\"{{session}}\", \"{{coverPhotoId}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "deleteBusinessProduct": {
+      "family": "messaging",
+      "method": "DELETE",
+      "path": "/messaging/{session}/business/products/{productId}",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.deleteProduct(\"{{session}}\", \"{{productId}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().DeleteProduct(ctx, \"{{session}}\", \"{{productId}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.delete_product(\"{{session}}\", \"{{productId}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->deleteProduct(\"{{session}}\", \"{{productId}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.DeleteProductAsync(\"{{session}}\", \"{{productId}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().delete_product(\"{{session}}\", \"{{productId}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "deletePlatformSession": {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/sessions/{sessionId}",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.sessions.delete(\"{{sessionId}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Sessions().Delete(ctx, \"{{sessionId}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.sessions.delete(\"{{sessionId}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->sessions->delete(\"{{sessionId}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Sessions.DeleteAsync(\"{{sessionId}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.sessions().delete(\"{{sessionId}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "getBusinessCatalog": {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/catalog",
+      "credentialKind": "organization_api_key",
+      "request": { "query": { "id": "42" } },
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.getCatalog(\"{{session}}\", {\"id\": \"42\"});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().GetCatalog(ctx, \"{{session}}\", sdk.BusinessCatalogParams{ID: \"42\"})\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.get_catalog(\"{{session}}\", {\"id\": \"42\"})\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->getCatalog(\"{{session}}\", [\"id\" => \"42\"]);\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.GetCatalogAsync(\"{{session}}\", new BusinessCatalogParameters(\"42\"));\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().get_catalog(\"{{session}}\", &polymorfa_sdk::business::BusinessCatalogParameters { id: \"42\".into(), after: None, limit: None, width: None, height: None }, Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "getBusinessCollection": {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "credentialKind": "organization_api_key",
+      "request": { "query": { "id": "42" } },
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.getCollection(\"{{session}}\", \"{{collectionId}}\", {\"id\": \"42\"});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().GetCollection(ctx, \"{{session}}\", \"{{collectionId}}\", sdk.BusinessCollectionParams{ID: \"42\"})\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.get_collection(\"{{session}}\", \"{{collectionId}}\", {\"id\": \"42\"})\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->getCollection(\"{{session}}\", \"{{collectionId}}\", [\"id\" => \"42\"]);\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.GetCollectionAsync(\"{{session}}\", \"{{collectionId}}\", new BusinessCatalogParameters(\"42\"));\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().get_collection(\"{{session}}\", \"{{collectionId}}\", &polymorfa_sdk::business::BusinessCatalogParameters { id: \"42\".into(), after: None, limit: None, width: None, height: None }, Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "getBusinessCollections": {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/collections",
+      "credentialKind": "organization_api_key",
+      "request": { "query": { "id": "42" } },
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.listCollections(\"{{session}}\", {\"id\": \"42\"});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().ListCollections(ctx, \"{{session}}\", sdk.BusinessCollectionsParams{ID: \"42\"})\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.list_collections(\"{{session}}\", {\"id\": \"42\"})\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->listCollections(\"{{session}}\", [\"id\" => \"42\"]);\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.ListCollectionsAsync(\"{{session}}\", new BusinessCollectionsParameters(\"42\"));\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().list_collections(\"{{session}}\", &polymorfa_sdk::business::BusinessCollectionsParameters { id: \"42\".into(), after: None, collection_limit: None, item_limit: None, width: None, height: None }, Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "getBusinessEligibility": {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/eligibility",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.getEligibility(\"{{session}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().GetEligibility(ctx, \"{{session}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.get_eligibility(\"{{session}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->getEligibility(\"{{session}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.GetEligibilityAsync(\"{{session}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().get_eligibility(\"{{session}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "getBusinessLinkedAccounts": {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/linked-accounts",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.getLinkedAccounts(\"{{session}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().GetLinkedAccounts(ctx, \"{{session}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.get_linked_accounts(\"{{session}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->getLinkedAccounts(\"{{session}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.GetLinkedAccountsAsync(\"{{session}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().get_linked_accounts(\"{{session}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "getBusinessMerchantCompliance": {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/compliance",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.getMerchantCompliance(\"{{session}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().GetMerchantCompliance(ctx, \"{{session}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.get_merchant_compliance(\"{{session}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->getMerchantCompliance(\"{{session}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.GetMerchantComplianceAsync(\"{{session}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().get_merchant_compliance(\"{{session}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "getBusinessProduct": {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/products/{productId}",
+      "credentialKind": "organization_api_key",
+      "request": { "query": { "id": "42" } },
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.getProduct(\"{{session}}\", \"{{productId}}\", {\"id\": \"42\"});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().GetProduct(ctx, \"{{session}}\", \"{{productId}}\", \"42\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.get_product(\"{{session}}\", \"{{productId}}\", {\"id\": \"42\"})\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->getProduct(\"{{session}}\", \"{{productId}}\", [\"id\" => \"42\"]);\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.GetProductAsync(\"{{session}}\", \"{{productId}}\", \"42\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().get_product(\"{{session}}\", \"{{productId}}\", \"42\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "getMessageOperation": {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/operations/{operationId}",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.messages.operationStatus(\"{{session}}\", \"{{operationId}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Messages().OperationStatus(ctx, \"{{session}}\", \"{{operationId}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.messages.operation_status(\"{{session}}\", \"{{operationId}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->messages->operationStatus(\"{{session}}\", \"{{operationId}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Messages.OperationStatusAsync(\"{{session}}\", \"{{operationId}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.messages().operation_status(\"{{session}}\", \"{{operationId}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "getOwnBusinessProfile": {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/business/profile",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.getProfile(\"{{session}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().GetProfile(ctx, \"{{session}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.get_profile(\"{{session}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->getProfile(\"{{session}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.GetProfileAsync(\"{{session}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().get_profile(\"{{session}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "getSession": {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.sessions.retrieve(\"{{sessionId}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Sessions().Retrieve(ctx, \"{{sessionId}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.sessions.retrieve(\"{{sessionId}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->sessions->retrieve(\"{{sessionId}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Sessions.RetrieveAsync(\"{{sessionId}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.sessions().retrieve(\"{{sessionId}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "getSessionAccount": {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions/{sessionId}/me",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.sessions.account(\"{{sessionId}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Sessions().Account(ctx, \"{{sessionId}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.sessions.account(\"{{sessionId}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->sessions->account(\"{{sessionId}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Sessions.AccountAsync(\"{{sessionId}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.sessions().account(\"{{sessionId}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "listPlatformSessions": {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/sessions",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.sessions.list();\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Sessions().List(ctx)\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.sessions.list()\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->sessions->list();\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Sessions.ListAsync();\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.sessions().list(Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "listProjectEvents": {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/events",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { Client } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new Client({ credential: { type: \"organizationApiKey\", value: \"{{POLYMORFA_API_KEY}}\" }, projectId: \"{{projectId}}\" });\n  const result = await sdk.events.list();\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewProjectClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}}, \"{{projectId}}\")\n  if err != nil { log.Fatal(err) }\n  result, err := api.Events().List(ctx, sdk.ListEventsParams{})\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncProjectClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncProjectClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\"), \"{{projectId}}\") as sdk:\n        result = await sdk.events.list()\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\Client;\nuse Polymorfa\\Credential;\n\n$sdk = (new Client(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")))->project(\"{{projectId}}\");\n$result = $sdk->events->list();\necho json_encode($result->items, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new ProjectClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"), \"{{projectId}}\");\nvar result = await sdk.Events.ListAsync();\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{ProjectClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = ProjectClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, \"{{projectId}}\", ClientOptions::default())?;\n    let result = sdk.events().list(&polymorfa_sdk::models::EventListParameters::default(), Default::default()).await?;\n    println!(\"{:?}\", result.items);\n    Ok(())\n}\n"
+      }
+    },
+    "listProjects": {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { Client } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new Client({ credential: { type: \"organizationApiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.projects.list();\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewOrganizationClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Projects().List(ctx)\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.projects.list()\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\Client;\nuse Polymorfa\\Credential;\n\n$sdk = (new Client(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->projects->list();\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new OrganizationClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Projects.ListAsync();\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{OrganizationClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = OrganizationClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.projects().list(Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "logoutSession": {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/logout",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.sessions.logout(\"{{sessionId}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Sessions().Logout(ctx, \"{{sessionId}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.sessions.logout(\"{{sessionId}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->sessions->logout(\"{{sessionId}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Sessions.LogoutAsync(\"{{sessionId}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.sessions().logout(\"{{sessionId}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "restartSession": {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/restart",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.sessions.restart(\"{{sessionId}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Sessions().Restart(ctx, \"{{sessionId}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.sessions.restart(\"{{sessionId}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->sessions->restart(\"{{sessionId}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Sessions.RestartAsync(\"{{sessionId}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.sessions().restart(\"{{sessionId}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "sendMessage": {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/send",
+      "credentialKind": "organization_api_key",
+      "request": {
+        "body": {
+          "conversation": { "phoneNumber": "+15550001111" },
+          "content": { "text": "Hello" }
+        }
+      },
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.messages.send(\"{{session}}\", {\"conversation\": {\"phoneNumber\": \"+15550001111\"}, \"content\": {\"text\": \"Hello\"}});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  text := \"Hello\"\n  result, err := api.Messages().Send(ctx, \"{{session}}\", sdk.SendMessageRequest{Conversation: sdk.ConversationReference{PhoneNumber: \"+15550001111\"}, Content: sdk.MessageContent{Text: &text}})\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.messages.send(\"{{session}}\", {\"conversation\": {\"phoneNumber\": \"+15550001111\"}, \"content\": {\"text\": \"Hello\"}})\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->messages->send(\"{{session}}\", [\"conversation\" => [\"phoneNumber\" => \"+15550001111\"], \"content\" => [\"text\" => \"Hello\"]]);\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Messages.SendAsync(\"{{session}}\", new SendMessageRequest(new ConversationReference(PhoneNumber: \"+15550001111\"), new TextContent(\"Hello\")));\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.messages().send(\"{{session}}\", &polymorfa_sdk::models::SendMessageRequest::text(polymorfa_sdk::models::ConversationReference::phone(\"+15550001111\"), \"Hello\"), Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "sendReaction": {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/react",
+      "credentialKind": "organization_api_key",
+      "request": {
+        "body": { "conversation": { "id": "42" }, "id": "43", "reaction": "👍" }
+      },
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.messages.react(\"{{session}}\", {\"conversation\": {\"id\": \"42\"}, \"id\": \"43\", \"reaction\": \"👍\"});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Messages().React(ctx, \"{{session}}\", sdk.ReactionRequest{Conversation: sdk.ConversationReference{ID: \"42\"}, ID: \"43\", Reaction: \"👍\"})\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.messages.react(\"{{session}}\", {\"conversation\": {\"id\": \"42\"}, \"id\": \"43\", \"reaction\": \"👍\"})\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->messages->react(\"{{session}}\", [\"conversation\" => [\"id\" => \"42\"], \"id\" => \"43\", \"reaction\" => \"👍\"]);\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Messages.ReactAsync(\"{{session}}\", new ReactRequest(new ConversationReference(Id: \"42\"), \"43\", \"👍\"));\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.messages().react(\"{{session}}\", &polymorfa_sdk::models::ReactRequest { conversation: polymorfa_sdk::models::ConversationReference::id(\"42\"), id: \"43\".into(), reaction: \"👍\".into(), transport: None }, Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "sendSeen": {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/seen",
+      "credentialKind": "organization_api_key",
+      "request": { "body": { "conversation": { "id": "42" }, "id": "43" } },
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.messages.markSeen(\"{{session}}\", {\"conversation\": {\"id\": \"42\"}, \"id\": \"43\"});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Messages().MarkSeen(ctx, \"{{session}}\", sdk.SeenRequest{Conversation: sdk.ConversationReference{ID: \"42\"}, ID: \"43\"})\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.messages.mark_seen(\"{{session}}\", {\"conversation\": {\"id\": \"42\"}, \"id\": \"43\"})\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->messages->markSeen(\"{{session}}\", [\"conversation\" => [\"id\" => \"42\"], \"id\" => \"43\"]);\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Messages.MarkSeenAsync(\"{{session}}\", new SeenRequest(new ConversationReference(Id: \"42\"), \"43\"));\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.messages().mark_seen(\"{{session}}\", &polymorfa_sdk::models::SeenRequest { conversation: polymorfa_sdk::models::ConversationReference::id(\"42\"), id: \"43\".into() }, Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "setBusinessCartEnabled": {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/catalog/cart",
+      "credentialKind": "organization_api_key",
+      "request": { "body": { "enabled": true } },
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.setCartEnabled(\"{{session}}\", {\"enabled\": true});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().SetCartEnabled(ctx, \"{{session}}\", true)\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.set_cart_enabled(\"{{session}}\", {\"enabled\": True})\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->setCartEnabled(\"{{session}}\", [\"enabled\" => true]);\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.SetCartEnabledAsync(\"{{session}}\", true);\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().set_cart_enabled(\"{{session}}\", &polymorfa_sdk::business::BusinessCartSettingRequest { enabled: true }, Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "setBusinessProductVisibility": {
+      "family": "messaging",
+      "method": "PATCH",
+      "path": "/messaging/{session}/business/products/{productId}/visibility",
+      "credentialKind": "organization_api_key",
+      "request": { "body": { "hidden": true } },
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.business.setProductVisibility(\"{{session}}\", \"{{productId}}\", {\"hidden\": true});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Business().SetProductVisibility(ctx, \"{{session}}\", \"{{productId}}\", true)\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.business.set_product_visibility(\"{{session}}\", \"{{productId}}\", {\"hidden\": True})\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->business->setProductVisibility(\"{{session}}\", \"{{productId}}\", [\"hidden\" => true]);\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Business.SetProductVisibilityAsync(\"{{session}}\", \"{{productId}}\", true);\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.business().set_product_visibility(\"{{session}}\", \"{{productId}}\", &polymorfa_sdk::business::BusinessProductVisibilityRequest { hidden: true }, Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "setTyping": {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/typing",
+      "credentialKind": "organization_api_key",
+      "request": {
+        "body": { "conversation": { "id": "42" }, "state": "paused" }
+      },
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.messages.setTyping(\"{{session}}\", {\"conversation\": {\"id\": \"42\"}, \"state\": \"paused\"});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Messages().SetTyping(ctx, \"{{session}}\", sdk.TypingRequest{Conversation: sdk.ConversationReference{ID: \"42\"}, State: \"paused\"})\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.messages.set_typing(\"{{session}}\", {\"conversation\": {\"id\": \"42\"}, \"state\": \"paused\"})\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->messages->setTyping(\"{{session}}\", [\"conversation\" => [\"id\" => \"42\"], \"state\" => \"paused\"]);\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Messages.SetTypingAsync(\"{{session}}\", new TypingRequest(new ConversationReference(Id: \"42\"), \"paused\"));\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.messages().set_typing(\"{{session}}\", &polymorfa_sdk::models::TypingRequest { conversation: polymorfa_sdk::models::ConversationReference::id(\"42\"), id: None, state: polymorfa_sdk::models::TypingState::Paused }, Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "starMessage": {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/messages/star",
+      "credentialKind": "organization_api_key",
+      "request": {
+        "body": { "conversation": { "id": "42" }, "id": "43", "star": false }
+      },
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.messages.star(\"{{session}}\", {\"conversation\": {\"id\": \"42\"}, \"id\": \"43\", \"star\": false});\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Messages().Star(ctx, \"{{session}}\", sdk.StarRequest{Conversation: sdk.ConversationReference{ID: \"42\"}, ID: \"43\", Star: false})\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.messages.star(\"{{session}}\", {\"conversation\": {\"id\": \"42\"}, \"id\": \"43\", \"star\": False})\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->messages->star(\"{{session}}\", [\"conversation\" => [\"id\" => \"42\"], \"id\" => \"43\", \"star\" => false]);\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Messages.StarAsync(\"{{session}}\", new StarRequest(new ConversationReference(Id: \"42\"), \"43\", false));\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.messages().star(\"{{session}}\", &polymorfa_sdk::models::StarRequest { conversation: polymorfa_sdk::models::ConversationReference::id(\"42\"), id: \"43\".into(), star: false }, Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "startPlatformSession": {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/start",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.sessions.start(\"{{sessionId}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Sessions().Start(ctx, \"{{sessionId}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.sessions.start(\"{{sessionId}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->sessions->start(\"{{sessionId}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Sessions.StartAsync(\"{{sessionId}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.sessions().start(\"{{sessionId}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    },
+    "stopPlatformSession": {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/stop",
+      "credentialKind": "organization_api_key",
+      "request": {},
+      "typescript": {
+        "code": "import { MessagingClient } from \"@polymorfa/sdk\";\n\nasync function main(): Promise<void> {\n  const sdk = new MessagingClient({ credential: { type: \"apiKey\", value: \"{{POLYMORFA_API_KEY}}\" } });\n  const result = await sdk.sessions.stop(\"{{sessionId}}\");\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n"
+      },
+      "go": {
+        "code": "package main\n\nimport (\n  \"context\"\n  \"fmt\"\n  \"log\"\n  sdk \"github.com/polymorfa/sdks/packages/go\"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: \"{{POLYMORFA_API_KEY}}\"}})\n  if err != nil { log.Fatal(err) }\n  result, err := api.Sessions().Stop(ctx, \"{{sessionId}}\")\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n"
+      },
+      "python": {
+        "code": "import asyncio\nfrom polymorfa import AsyncMessagingClient, Credential\n\n\nasync def main() -> None:\n    async with AsyncMessagingClient(Credential(\"organization_api_key\", \"{{POLYMORFA_API_KEY}}\")) as sdk:\n        result = await sdk.sessions.stop(\"{{sessionId}}\")\n        print(result)\n\n\nif __name__ == \"__main__\":\n    asyncio.run(main())\n"
+      },
+      "php": {
+        "code": "<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . \"/vendor/autoload.php\";\n\nuse Polymorfa\\MessagingClient;\nuse Polymorfa\\Credential;\n\n$sdk = (new MessagingClient(Credential::organizationApiKey(\"{{POLYMORFA_API_KEY}}\")));\n$result = $sdk->sessions->stop(\"{{sessionId}}\");\necho json_encode($result->data, JSON_THROW_ON_ERROR), PHP_EOL;\n"
+      },
+      "dotnet": {
+        "code": "using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new MessagingClient(Credential.OrganizationApiKey(\"{{POLYMORFA_API_KEY}}\"));\nvar result = await sdk.Sessions.StopAsync(\"{{sessionId}}\");\nConsole.WriteLine(result);\n"
+      },
+      "rust": {
+        "code": "use polymorfa_sdk::{MessagingClient, ClientOptions, Credential};\n\n#[tokio::main(flavor = \"current_thread\")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = MessagingClient::new(Credential::organization_api_key(\"{{POLYMORFA_API_KEY}}\")?, ClientOptions::default())?;\n    let result = sdk.sessions().stop(\"{{sessionId}}\", Default::default()).await?;\n    println!(\"{:?}\", result);\n    Ok(())\n}\n"
+      }
+    }
+  }
+}

@@ -872,19 +872,19 @@ describe("browser widget and shared calls client", () => {
     const getClientToken = vi
       .fn()
       .mockResolvedValueOnce({
-        value: "pmfa_ct_first",
+        value: "pmfa_ct_Zmlyc3Q",
         audience: "browser",
         expiresAt: Date.now() + 900_000,
       })
       .mockResolvedValueOnce({
-        value: "pmfa_ct_second",
+        value: "pmfa_ct_c2Vjb25k",
         audience: "browser",
         expiresAt: Date.now() + 900_000,
       });
     const f = fixture({ getClientToken });
     const first = await f.connect();
     expect(first.url).toBe("wss://api.polymorfa.test/voip/ws");
-    expect(first.texts).toEqual([{ type: "auth", token: "pmfa_ct_first" }]);
+    expect(first.texts).toEqual([{ type: "auth", token: "pmfa_ct_Zmlyc3Q" }]);
     expect(f.fetch).not.toHaveBeenCalled();
 
     first.drop(4401, "unauthorized");
@@ -894,7 +894,7 @@ describe("browser widget and shared calls client", () => {
     const second = FakeWebSocket.instances[1]!;
     second.authenticate();
     expect(second.url).toBe("wss://api.polymorfa.test/voip/ws");
-    expect(second.texts).toEqual([{ type: "auth", token: "pmfa_ct_second" }]);
+    expect(second.texts).toEqual([{ type: "auth", token: "pmfa_ct_c2Vjb25k" }]);
     expect(getClientToken).toHaveBeenCalledTimes(2);
     expect(f.fetch).not.toHaveBeenCalled();
   });

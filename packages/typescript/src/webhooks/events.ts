@@ -675,7 +675,45 @@ export interface LabelsUpdatePayload {
 }
 
 export type HistorySyncPayload =
-  LinkedHistorySyncPayload | CloudHistorySyncPayload;
+  LinkedHistorySyncPayload | CloudHistorySyncPayload | DirectHistorySyncPayload;
+
+/** Public projection of a descriptor notification, distinct from runner IDs. */
+export interface DirectHistorySyncCommon {
+  readonly delivery: "descriptor";
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  readonly original_whatsapp_ids?: WhatsAppMessageIds;
+  /** @deprecated Use whatsapp_ids. */
+  readonly whatsapp_id?: string;
+  /** @deprecated Use original_whatsapp_ids. */
+  readonly original_whatsapp_id?: string;
+  readonly syncType: string;
+  readonly chunkOrder?: number;
+  readonly progress?: number;
+  readonly fileLength: number;
+  readonly oldestMessageAt?: string;
+  readonly peerDataRequestSessionId?: string;
+}
+export type DirectHistorySyncPayload = DirectHistorySyncCommon &
+  (
+    | {
+        readonly media: {
+          readonly type: "md-msg-hist";
+          readonly directPath: string;
+          readonly mediaKey: string;
+          readonly fileSha256: string;
+          readonly fileEncSha256: string;
+          readonly encHandle?: string;
+        };
+        readonly inline?: never;
+      }
+    | {
+        readonly inline: {
+          readonly encoding: "zlib-base64-protobuf";
+          readonly data: string;
+        };
+        readonly media?: never;
+      }
+  );
 
 export interface CloudHistorySyncPayload {
   readonly kind: "history";

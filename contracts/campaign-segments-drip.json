@@ -1,10 +1,10 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "f46ebd5162453e812dafa76ce02b420ddabe6921",
+  "commit": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f",
   "sources": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
-      "sourceSha256": "a1e4538d57a47169539d4a3254585df473d23da46fd67e89dfbf8aacaeff8a6b",
+      "sourceSha256": "6d5b5477a86a85504f921933bf7b26f2c47506e21380fe73c8a5ff1002163b28",
       "schemas": {
         "CampaignDrip": {
           "type": "object",
@@ -948,7 +948,7 @@
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
-      "sourceSha256": "ccb468d7e0540f5f1b0b1e881b8965c54cf51cfbc85ad03606a690af0d3b6096",
+      "sourceSha256": "bf4c6056b75e2fb0293b48edc5d8c12c36cdcbd194b9d11159f59522d30badc3",
       "schemas": {
         "AudienceSegment": {
           "type": "object",

@@ -48,7 +48,7 @@ it("serializes scoped routing revisions and pause guards exactly", async () => {
 it("rejects browser control and operation reads before transport", () => {
   const fetch = vi.fn();
   const client = new MessagingClient({
-    credential: { type: "clientToken", value: "pmfa_ct_browser" },
+    credential: { type: "clientToken", value: "pmfa_ct_YnJvd3Nlcg" },
     fetch,
   });
   expect(() => client.hybridLink.state("number")).toThrow(

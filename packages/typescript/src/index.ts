@@ -23,6 +23,13 @@ export {
   type Client as ClientInstance,
 } from "./client.js";
 export type * from "./platform/developer-types.js";
+export type * from "./campaign-contracts.js";
+export { ProjectCampaignsResource } from "./platform/project-campaigns.js";
+export {
+  AudienceProfilesResource,
+  AudienceProfileImportsResource,
+} from "./platform/audience-profiles.js";
+export { SignalCustodyResource } from "./platform/signal-custody.js";
 export {
   EventStream,
   eventStreamSource,
@@ -243,10 +250,52 @@ export {
   type WhatsAppMediaDownloadOptions,
   type WhatsAppMediaInput,
   type WhatsAppMediaKeys,
+  type WhatsAppMediaKeyType,
   type WhatsAppMediaKind,
   type WhatsAppMediaMessage,
   type WhatsAppMediaVerifyMode,
 } from "./media/whatsapp.js";
+export {
+  WHATSAPP_UPLOAD_MEDIA_TYPES,
+  encryptWhatsAppMedia,
+  encryptWhatsAppMediaStream,
+  generateWhatsAppMediaKey,
+  webCryptoMediaEncryptor,
+  whatsAppEncryptedLength,
+  type EncryptWhatsAppMediaOptions,
+  type EncryptedWhatsAppMedia,
+  type EncryptedWhatsAppMediaInfo,
+  type EncryptedWhatsAppMediaStream,
+  type WhatsAppMediaEncryptionDigest,
+  type WhatsAppMediaEncryptor,
+  type WhatsAppMediaPlaintext,
+  type WhatsAppUploadMediaType,
+} from "./media/encrypt.js";
+export {
+  WhatsAppMediaResource,
+  type DirectUploadTransportOptions,
+  type UploadWhatsAppMediaOptions,
+  type WhatsAppEncryptedUploadBody,
+  type WhatsAppMediaEgress,
+  type WhatsAppMediaSource,
+  type WhatsAppMediaUploadResult,
+  type WhatsAppMediaUploadTransport,
+  type WhatsAppUploadLocation,
+} from "./media/upload.js";
+export {
+  toWhatsAppMediaSendDescriptor,
+  type WhatsAppMediaSendDescriptor,
+  type WhatsAppMediaSendMetadata,
+} from "./media/send-descriptor.js";
+export type {
+  HistorySyncChunkDeleteRequest,
+  HistorySyncChunkRetryRequest,
+  HistorySyncChunkRetryResponse,
+  WhatsAppRelayUploadResponse,
+  WhatsAppUploadGrant,
+  WhatsAppUploadGrantRequest,
+} from "./media/direct-api.js";
+export { HistorySyncResource } from "./messaging/history-sync.js";
 export { parseContentDispositionFilename } from "./transport/content-disposition.js";
 export { MessagesResource } from "./messaging/messages.js";
 export { MessagingBanSafeResource } from "./messaging/bansafe.js";
@@ -1168,6 +1217,8 @@ export {
   type LinkedDeviceMessagePayload,
   type LinkedDeviceMessageType,
   type LinkedHistorySyncPayload,
+  type DirectHistorySyncPayload,
+  type DirectHistorySyncCommon,
   type MessageAckPayload,
   type MetaPricingReport,
   type MessageDeletePayload,
@@ -1343,9 +1394,17 @@ export type {
 } from "./platform/billing-controls.js";
 
 export type {
-  CampaignFrequencyCap,
-  CampaignRecipientFailureReason,
-} from "./messaging/types.js";
+  CampaignMessage,
+  LaunchPlatformCampaignRequest,
+  PlatformCampaignLaunchResult,
+} from "./platform/types.js";
+
+export type {
+  HistorySyncDelivery,
+  HistorySyncPolicyPatch,
+} from "./messaging/session-configuration.js";
+
+export type { CampaignFrequencyCap } from "./messaging/types.js";
 export type {
   CampaignFrequencyCapSettings,
   UpdateCampaignFrequencyCapInput,
