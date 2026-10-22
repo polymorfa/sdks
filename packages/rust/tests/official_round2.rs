@@ -195,10 +195,11 @@ fn whole_body_batch_and_previous_identity() {
     };
     assert_eq!(b.events.len(), 2);
     assert_eq!(b.events[0].envelope().id, "e");
-    assert!(matches!(
-        signed(&event).unwrap(),
-        WebhookDelivery::Single(_)
-    ));
+    let WebhookDelivery::Single(single) = signed(&event).unwrap() else {
+        panic!("single delivery")
+    };
+    assert_eq!(single.envelope().id, "e");
+    assert!(std::mem::size_of::<WebhookDelivery>() <= 128);
     for members in [
         json!([]),
         json!([batch.clone()]),

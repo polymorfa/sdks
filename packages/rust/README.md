@@ -893,3 +893,7 @@ includes `simultaneousCalls`; the webhook does not acquire an evidence object.
 
 No browser/client-token authority, call media behavior, automatic state read,
 retry policy or feature availability is added by these SDK fields.
+
+`WebhookDelivery::Single` contains a `Box<WebhookEvent>` to keep the delivery enum
+compact. Pattern matching exposes the box; event methods remain available through
+automatic dereferencing. The signed payload and batch member order are unchanged.

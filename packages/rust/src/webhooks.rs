@@ -454,7 +454,7 @@ pub struct WebhookEventBatch {
 }
 #[derive(Clone, Debug)]
 pub enum WebhookDelivery {
-    Single(WebhookEvent),
+    Single(Box<WebhookEvent>),
     Batch(WebhookEventBatch),
 }
 /// Authenticate the entire original envelope before dispatch. Deduplicate all IDs.
@@ -477,7 +477,7 @@ pub fn parse_verified_delivery(raw: &[u8]) -> Result<WebhookDelivery> {
         )
     })?;
     if value.get("object").and_then(|v| v.as_str()) != Some("event_batch") {
-        return parse_verified_event(raw).map(WebhookDelivery::Single);
+        return parse_verified_event(raw).map(|event| WebhookDelivery::Single(Box::new(event)));
     }
     let fail = || {
         Error::local(
