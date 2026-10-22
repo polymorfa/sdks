@@ -68,6 +68,18 @@ export function parseVerifiedWebhookDelivery(
     object: "event_batch",
     version: 1,
     id: batch.id,
-    events: batch.events.map(parseEventEnvelope),
+    events: batch.events.map((member: unknown) => {
+      if (
+        typeof member === "object" &&
+        member !== null &&
+        "object" in member &&
+        member.object === "event_batch"
+      )
+        throw new PolymorfaValidationError(
+          "Nested webhook batches are invalid.",
+          { code: "invalid_webhook_batch" },
+        );
+      return parseEventEnvelope(member);
+    }),
   };
 }

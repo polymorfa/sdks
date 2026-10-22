@@ -30,6 +30,7 @@ final class PlatformWebhooks extends PlatformResource
  * @return ApiResponse<WebhookCreation> */
     public function create(array $body, ?RequestOptions $options = null): ApiResponse
     {
+        \Polymorfa\WebhookBatching::validate($body);
         /** @var ApiResponse<WebhookCreation> $response */ $response = $this->unwrapped('POST', $this->prefix.'/webhooks', $body, options:$options);
         return $response;
     }
@@ -44,6 +45,7 @@ final class PlatformWebhooks extends PlatformResource
  * @return ApiResponse<WebhookMutation> */
     public function update(string $id, array $body, ?RequestOptions $options = null): ApiResponse
     {
+        \Polymorfa\WebhookBatching::validate($body);
         /** @var ApiResponse<WebhookMutation> $response */ $response = $this->unwrapped('PATCH', $this->prefix.'/webhooks/'.self::segment($id), $body, options:$options);
         return $response;
     }

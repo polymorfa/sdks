@@ -1170,6 +1170,7 @@ export {
   type WebhookDelivery,
   type WebhookEventBatch,
   type ContactIdentityChange,
+  type ContactPreviousIdentity,
   type MarketingOnboardingUpdatedPayload,
   type ContactMarketingPreferencePayload,
   isEvent,

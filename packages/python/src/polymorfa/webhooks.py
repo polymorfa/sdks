@@ -65,6 +65,8 @@ KNOWN_EVENT_TYPES = frozenset(
         "contact.opted_out",
         "contact.sync",
         "contact.update",
+        "marketing.onboarding_updated",
+        "contact.marketing_preference_updated",
         "customer.archived",
         "customer.archiving",
         "customer.created",
@@ -238,3 +240,52 @@ def create_webhook_fixture(
         signature,
         MappingProxyType({"content-type": "application/json", "x-webhook-signature": signature}),
     )
+
+
+@dataclass(frozen=True)
+class WebhookEventBatch:
+    object: str
+    version: int
+    id: str
+    events: tuple[WebhookEvent, ...]
+
+
+WebhookDelivery = WebhookEvent | WebhookEventBatch
+
+
+def construct_webhook_delivery(raw_body: bytes, signature: str, secret: str) -> WebhookDelivery:
+    """Authenticate the original body once before decoding any member."""
+    if not verify_webhook_signature(raw_body, signature, secret):
+        raise WebhookSignatureError(
+            "Webhook signature verification failed.", code="invalid_webhook_signature"
+        )
+    return parse_verified_webhook_delivery(raw_body)
+
+
+def parse_verified_webhook_delivery(raw_body: bytes) -> WebhookDelivery:
+    try:
+        value = json.loads(raw_body.decode("utf-8", errors="strict"))
+    except (ValueError, UnicodeDecodeError):
+        return parse_verified_webhook_event(raw_body)
+    if not isinstance(value, dict) or value.get("object") != "event_batch":
+        return parse_verified_webhook_event(raw_body)
+    if (
+        set(value) != {"object", "version", "id", "events"}
+        or type(value.get("version")) is not int
+        or value["version"] != 1
+        or not isinstance(value.get("id"), str)
+        or re.fullmatch(
+            r"[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}",
+            value["id"],
+        )
+        is None
+        or not isinstance(value.get("events"), list)
+        or not 1 <= len(value["events"]) <= 100
+    ):
+        raise ValidationError("Invalid version 1 event batch.", code="invalid_webhook_batch")
+    events = []
+    for member in value["events"]:
+        if not isinstance(member, dict) or "object" in member:
+            raise ValidationError("Nested or invalid event batch.", code="invalid_webhook_batch")
+        events.append(parse_verified_webhook_event(json.dumps(member, allow_nan=False).encode()))
+    return WebhookEventBatch("event_batch", 1, value["id"], tuple(events))

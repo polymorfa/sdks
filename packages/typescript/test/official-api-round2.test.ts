@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { createHmac } from "node:crypto";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 import {
@@ -152,7 +153,17 @@ describe("round-2 customer routes", () => {
     await client.officialGroups.setPicture(
       "n/eu",
       "g/1",
-      new Blob(["jpeg-fixture"], { type: "image/jpeg" }),
+      new Blob(
+        [
+          readFileSync(
+            new URL(
+              "../../../contracts/fixtures/official-group-picture.jpg",
+              import.meta.url,
+            ),
+          ),
+        ],
+        { type: "image/jpeg" },
+      ),
     );
     const request = server.requests[0]!;
     expect(request.method).toBe("PUT");
@@ -164,7 +175,16 @@ describe("round-2 customer routes", () => {
     );
     expect(request.body).toContain('name="file"; filename="picture.jpg"');
     expect(request.body).toContain("Content-Type: image/jpeg");
-    expect(request.body).toContain("jpeg-fixture");
+    expect(
+      Buffer.from(request.rawBody).includes(
+        readFileSync(
+          new URL(
+            "../../../contracts/fixtures/official-group-picture.jpg",
+            import.meta.url,
+          ),
+        ),
+      ),
+    ).toBe(true);
     expect(() =>
       client.officialGroups.setPicture(
         "n",

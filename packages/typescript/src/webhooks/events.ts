@@ -448,15 +448,16 @@ export interface ContactOptPayload {
   readonly projectId?: string;
 }
 
+export interface ContactPreviousIdentity {
+  readonly id?: string;
+  readonly bsuid?: string;
+  readonly parentBsuid?: string;
+}
 export interface ContactIdentityChange {
   readonly reason: "phone_number_changed" | "user_id_changed";
   readonly messageId: string;
   /** Previous identity stays separate; do not merge contact records automatically. */
-  readonly previous?: {
-    readonly id?: string;
-    readonly bsuid?: string;
-    readonly parentBsuid?: string;
-  };
+  readonly previous?: ContactPreviousIdentity;
 }
 export interface MarketingOnboardingUpdatedPayload {
   readonly kind: "terms_signed" | "ad_account_linked";

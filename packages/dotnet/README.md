@@ -964,3 +964,21 @@ policy. Signal parsing is unchanged.
 Storage synchronization uses `StreamOptions.Since` when no checkpoint exists and
 the saved cursor otherwise. Event commit, checkpoint CAS and manual ACK keep that
 order. These changes are unreleased source behavior.
+
+
+## Official API round-2 betas
+
+Native Number catalog-cache reads/sync, marketing status, Official group JPEG
+upload, identity changes, incoming carts and signed webhook batches have source
+counterparts. These additions remain unreleased betas and may return
+`feature_unavailable`. They grant no enrollment or provider authority. See
+[the shared beta guide](../../docs/official-api-round2.md) for ownership, batching,
+whole-body signatures and release gates.
+
+The following uses an existing server client. Preserve the API's opaque cursor;
+stop when the response omits it. Catalog prices remain exact strings.
+
+```csharp
+var page = await client.Catalogs.ListProductsAsync("number-id", "123", new(100, "opaque_-"), new() { CancellationToken = cancellationToken });
+var nextCursor = page.Data.Data.NextCursor;
+```

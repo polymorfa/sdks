@@ -47,6 +47,10 @@ pub struct ListCloudCatalogsParameters {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CloudMarketingStatus {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub owner_business_info: Option<CloudMarketingOwnerBusiness>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub disable_marketing_messages_on_cloud_api: Option<bool>,
     pub id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub marketing_messages_lite_api_status: Option<String>,
@@ -136,6 +140,34 @@ impl CloudCatalogs<'_> {
     }
 }
 impl CloudMarketing<'_> {
+    pub async fn get_status(
+        &self,
+        session: &str,
+        options: RequestOptions,
+    ) -> Result<
+        ApiResponse<
+            crate::models::SuccessEnvelope<crate::official_round2::MarketingMessagesStatus>,
+        >,
+    > {
+        self.0.server()?;
+        if session.trim().is_empty() || session.len() > 128 {
+            return Err(crate::Error::local(
+                crate::ErrorKind::Validation,
+                "Provide a Number ID of 1 to 128 characters.",
+                "invalid_parameter",
+            ));
+        }
+        self.0
+            .request::<_, ()>(
+                Method::GET,
+                &format!("/messaging/{}/marketing-messages/status", encode(session)),
+                &[],
+                None,
+                options,
+            )
+            .await
+    }
+
     pub async fn status(
         &self,
         waba: &str,
@@ -197,4 +229,14 @@ pub fn graph_transport_headers(
         crate::models::MessageTransport::OfficialApi => "official_api",
     };
     [("X-Polymorfa-Transport".into(), value.into())].into()
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct CloudMarketingTerms {
+    pub status: Option<String>,
+    pub time: Option<String>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct CloudMarketingOwnerBusiness {
+    pub marketing_messages_onboarding_status: Option<CloudMarketingTerms>,
 }

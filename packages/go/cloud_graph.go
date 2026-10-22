@@ -38,10 +38,19 @@ type ListCloudCatalogsParams struct {
 	After   string
 }
 type ListCloudCatalogProductsParams = ListCloudCatalogsParams
+type CloudMarketingTerms struct {
+	Status string `json:"status,omitempty"`
+	Time   string `json:"time,omitempty"`
+}
+type CloudMarketingOwnerBusiness struct {
+	MarketingMessagesOnboardingStatus *CloudMarketingTerms `json:"marketing_messages_onboarding_status,omitempty"`
+}
 type CloudMarketingStatus struct {
-	ID                                string `json:"id"`
-	MarketingMessagesLiteAPIStatus    string `json:"marketing_messages_lite_api_status,omitempty"`
-	MarketingMessagesOnboardingStatus string `json:"marketing_messages_onboarding_status,omitempty"`
+	OwnerBusinessInfo                  *CloudMarketingOwnerBusiness `json:"owner_business_info,omitempty"`
+	DisableMarketingMessagesOnCloudAPI *bool                        `json:"disable_marketing_messages_on_cloud_api,omitempty"`
+	ID                                 string                       `json:"id"`
+	MarketingMessagesLiteAPIStatus     string                       `json:"marketing_messages_lite_api_status,omitempty"`
+	MarketingMessagesOnboardingStatus  string                       `json:"marketing_messages_onboarding_status,omitempty"`
 }
 type CloudGraphVersion struct{ Version string }
 type FlowEncryptionKey struct {

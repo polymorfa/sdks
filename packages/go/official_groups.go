@@ -95,7 +95,7 @@ func serverWriteOnce[T any](ctx context.Context, t *transport, method, path stri
 	if err := serverOnly(t); err != nil {
 		return Response[Envelope[T]]{}, err
 	}
-	return request[Envelope[T]](ctx, t, method, path, nil, body, noRetry(o))
+	return request[Envelope[T]](ctx, t, method, path, nil, singleSubmission{body}, noRetry(o))
 }
 func (r *OfficialGroups) List(ctx context.Context, s string, p ListOfficialGroupsParams, o ...RequestOptions) (Response[Envelope[OfficialGroupList]], error) {
 	q := url.Values{}

@@ -5,7 +5,7 @@
   "sourcePath": "apps/api/docs/openapi.json",
   "sourceSha256": "6d5b5477a86a85504f921933bf7b26f2c47506e21380fe73c8a5ff1002163b28",
   "published": false,
-  "note": "Prepared beta counterparts. Exact merged sources below remain authoritative. No staging/production acceptance or package publication. Reconcile full release source, spec coverage and all feature pins before publication. Private Console routes are excluded.",
+  "note": "Unreleased beta source and native wire fixtures in all six languages. Historical per-item merges and snapshots remain authoritative. Exact combined-head hosted qualification, actual SDK357 integration, review, staging/production acceptance and publication remain gates. Baseline API171a/2026-09-22 unchanged; private Console routes excluded.",
   "items": [
     {
       "item": "OA-03",
@@ -104,5 +104,11 @@
     "catalog_cache_full",
     "catalog_sync_cooldown"
   ],
-  "checkedDev": "dafb7cb4e4efbcdcbd04af206f1ef6d47c209379"
+  "checkedDev": "dafb7cb4e4efbcdcbd04af206f1ef6d47c209379",
+  "nativeInventory": "contracts/native-official-round2.json",
+  "managementSource": {
+    "sourceCommit": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f",
+    "sourcePath": "apps/api/docs/openapi.management.json",
+    "sourceSha256": "bf4c6056b75e2fb0293b48edc5d8c12c36cdcbd194b9d11159f59522d30badc3"
+  }
 }

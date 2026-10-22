@@ -204,7 +204,11 @@ pub fn create_fixture(event: &WebhookEvent, secret: &str) -> Result<WebhookFixtu
 }
 pub fn construct_event(raw_body: &[u8], signature: &str, secret: &str) -> Result<WebhookEvent> {
     if !verify_signature(raw_body, signature, secret) {
-        return Err(signature_error());
+        return Err(Error::local(
+            ErrorKind::Authentication,
+            "Webhook signature verification failed.",
+            "invalid_webhook_signature",
+        ));
     }
     parse_verified_event(raw_body)
 }
@@ -297,13 +301,21 @@ pub fn construct_local_event(
         .decode(secret)
         .map_err(|_| signature_error())?;
     if key.len() != 32 || secret.len() != 43 {
-        return Err(signature_error());
+        return Err(Error::local(
+            ErrorKind::Authentication,
+            "Webhook signature verification failed.",
+            "invalid_webhook_signature",
+        ));
     }
     let Some((time, hash)) = signature
         .strip_prefix("t=")
         .and_then(|s| s.split_once(",v1="))
     else {
-        return Err(signature_error());
+        return Err(Error::local(
+            ErrorKind::Authentication,
+            "Webhook signature verification failed.",
+            "invalid_webhook_signature",
+        ));
     };
     if time.is_empty()
         || !time.bytes().all(|b| b.is_ascii_digit())
@@ -311,17 +323,29 @@ pub fn construct_local_event(
             .bytes()
             .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
     {
-        return Err(signature_error());
+        return Err(Error::local(
+            ErrorKind::Authentication,
+            "Webhook signature verification failed.",
+            "invalid_webhook_signature",
+        ));
     }
     let timestamp: u64 = time.parse().map_err(|_| signature_error())?;
     if timestamp > 9_007_199_254_740_991 || now_unix_seconds.abs_diff(timestamp) > tolerance_seconds
     {
-        return Err(signature_error());
+        return Err(Error::local(
+            ErrorKind::Authentication,
+            "Webhook signature verification failed.",
+            "invalid_webhook_signature",
+        ));
     }
     let mut body = format!("{timestamp}.").into_bytes();
     body.extend_from_slice(raw_body);
     if !verify(&body, hash, &key) {
-        return Err(signature_error());
+        return Err(Error::local(
+            ErrorKind::Authentication,
+            "Webhook signature verification failed.",
+            "invalid_webhook_signature",
+        ));
     }
     parse_verified_event(raw_body)
 }
@@ -333,6 +357,8 @@ fn signature_error() -> Error {
     )
 }
 pub const KNOWN_EVENT_TYPES: &[&str] = &[
+    "marketing.onboarding_updated",
+    "contact.marketing_preference_updated",
     "bansafe.action",
     "bansafe.claim",
     "bansafe.health_threshold",
@@ -418,3 +444,76 @@ pub const KNOWN_EVENT_TYPES: &[&str] = &[
     "voice.asset_failed",
     "voice.asset_ready",
 ];
+
+#[derive(Clone, Debug)]
+pub struct WebhookEventBatch {
+    pub object: String,
+    pub version: u32,
+    pub id: String,
+    pub events: Vec<WebhookEvent>,
+}
+#[derive(Clone, Debug)]
+pub enum WebhookDelivery {
+    Single(WebhookEvent),
+    Batch(WebhookEventBatch),
+}
+/// Authenticate the entire original envelope before dispatch. Deduplicate all IDs.
+pub fn construct_delivery(raw: &[u8], signature: &str, secret: &str) -> Result<WebhookDelivery> {
+    if !verify_signature(raw, signature, secret) {
+        return Err(Error::local(
+            ErrorKind::Authentication,
+            "Webhook signature verification failed.",
+            "invalid_webhook_signature",
+        ));
+    }
+    parse_verified_delivery(raw)
+}
+pub fn parse_verified_delivery(raw: &[u8]) -> Result<WebhookDelivery> {
+    let value: serde_json::Value = serde_json::from_slice(raw).map_err(|_| {
+        Error::local(
+            ErrorKind::Validation,
+            "Invalid webhook JSON.",
+            "invalid_webhook_json",
+        )
+    })?;
+    if value.get("object").and_then(|v| v.as_str()) != Some("event_batch") {
+        return parse_verified_event(raw).map(WebhookDelivery::Single);
+    }
+    let fail = || {
+        Error::local(
+            ErrorKind::Validation,
+            "Invalid version 1 event batch.",
+            "invalid_webhook_batch",
+        )
+    };
+    let obj = value.as_object().ok_or_else(fail)?;
+    let id = value.get("id").and_then(|v| v.as_str()).ok_or_else(fail)?;
+    if obj.len() != 4
+        || value.get("version").and_then(|v| v.as_u64()) != Some(1)
+        || id.len() != 36
+        || uuid::Uuid::parse_str(id).is_err()
+    {
+        return Err(fail());
+    }
+    let members = value
+        .get("events")
+        .and_then(|v| v.as_array())
+        .ok_or_else(fail)?;
+    if members.is_empty() || members.len() > 100 {
+        return Err(fail());
+    }
+    let mut events = Vec::with_capacity(members.len());
+    for m in members {
+        if m.get("object").is_some() {
+            return Err(fail());
+        }
+        let bytes = serde_json::to_vec(m).map_err(|_| fail())?;
+        events.push(parse_verified_event(&bytes)?)
+    }
+    Ok(WebhookDelivery::Batch(WebhookEventBatch {
+        object: "event_batch".into(),
+        version: 1,
+        id: id.into(),
+        events,
+    }))
+}

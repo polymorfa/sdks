@@ -10,6 +10,21 @@ from .webhook_models import TypedWebhookEvent
 
 @overload
 def is_event(
+    event: TypedWebhookEvent[str, object], event_type: Literal["marketing.onboarding_updated"]
+) -> TypeGuard[
+    TypedWebhookEvent[Literal["marketing.onboarding_updated"], m.MarketingOnboardingUpdatedPayload]
+]: ...
+@overload
+def is_event(
+    event: TypedWebhookEvent[str, object],
+    event_type: Literal["contact.marketing_preference_updated"],
+) -> TypeGuard[
+    TypedWebhookEvent[
+        Literal["contact.marketing_preference_updated"], m.ContactMarketingPreferencePayload
+    ]
+]: ...
+@overload
+def is_event(
     event: TypedWebhookEvent[str, object], event_type: Literal["bansafe.action"]
 ) -> TypeGuard[TypedWebhookEvent[Literal["bansafe.action"], m.BanSafeActionPayload]]: ...
 @overload

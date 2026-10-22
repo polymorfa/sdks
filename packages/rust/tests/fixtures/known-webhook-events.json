@@ -38,6 +38,7 @@
     "chat.mute",
     "chat.read",
     "command.result",
+    "contact.marketing_preference_updated",
     "contact.opted_in",
     "contact.opted_out",
     "contact.sync",
@@ -61,6 +62,7 @@
     "group.update",
     "history.sync",
     "labels.update",
+    "marketing.onboarding_updated",
     "message.ack",
     "message.delete",
     "message.echo",
@@ -85,5 +87,7 @@
     "usage.recorded",
     "voice.asset_failed",
     "voice.asset_ready"
-  ]
+  ],
+  "supplement": "contracts/official-api-round2.json",
+  "supplementSourceCommit": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f"
 }

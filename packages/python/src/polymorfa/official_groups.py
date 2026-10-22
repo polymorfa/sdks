@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import builtins
+import secrets
 from dataclasses import replace
-from typing import Literal
+from typing import Literal, cast
 
 from typing_extensions import NotRequired, TypedDict
 
+from .errors import ValidationError
 from .messaging import O, Resource, segment
 from .models import Conversation, Envelope
 from .transport import ApiResponse, RequestOptions
@@ -100,6 +102,31 @@ class UnpinMessage(TypedDict):
 
 
 class OfficialGroups(Resource):
+    async def set_picture(
+        self, session: str, group: str, jpeg: bytes, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[AcceptedChange]]:
+        """Send JPEG bytes once. The API validates square dimensions >=192px."""
+        self._server()
+        if not jpeg.startswith(b"\xff\xd8\xff") or len(jpeg) > 5 * 1024 * 1024:
+            raise ValidationError("Provide JPEG bytes up to 5 MiB.")
+        boundary = "polymorfa-" + secrets.token_hex(24)
+        body = (
+            f'--{boundary}\r\nContent-Disposition: form-data; name="file"; filename="picture.jpg"\r\nContent-Type: image/jpeg\r\n\r\n'.encode()
+            + jpeg
+            + f"\r\n--{boundary}--\r\n".encode()
+        )
+        return cast(
+            ApiResponse[Envelope[AcceptedChange]],
+            await self._transport.request_binary_json(
+                "PUT",
+                f"/messaging/{segment(session)}/official-groups/{segment(group)}/picture",
+                body,
+                len(body),
+                options=options,
+                content_type=f"multipart/form-data; boundary={boundary}",
+            ),
+        )
+
     async def list(
         self,
         session: str,

@@ -47,7 +47,7 @@ internal static class WebhookTests
         try { Webhooks.ConstructEvent(invalid, new string('0', 64), "secret"); throw new Exception("signature accepted"); } catch (WebhookSignatureException) { }
         var signature = Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes("secret"), invalid));
         try { Webhooks.ConstructEvent(invalid, signature, "secret"); throw new Exception("invalid JSON accepted"); } catch (PolymorfaValidationException e) { Check(e.Code == "invalid_webhook_json", "JSON failure"); }
-        Check(Webhooks.KnownEventTypes.Count == 84, "known registry count");
+        Check(Webhooks.KnownEventTypes.Count == 86, "known registry count");
         var flow = Encoding.UTF8.GetBytes("{\"action\":\"INIT\",\"data\":{\"selected\":false}}");
         var time = DateTimeOffset.FromUnixTimeSeconds(1726170122);
         var signedFlow = Encoding.UTF8.GetBytes("1726170122.").Concat(flow).ToArray();

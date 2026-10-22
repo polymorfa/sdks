@@ -22,7 +22,7 @@ final class Webhooks
         'message.failed', 'message.reaction', 'message.received', 'message.revoked', 'message.sent', 'message.update', 'message.vote',
         'newsletter.update', 'order.payment_updated', 'presence.update', 'session.capabilities_updated', 'session.connected',
         'session.logged_out', 'session.phone_offline', 'session.restriction_updated', 'session.status', 'template.status',
-        'usage.recorded', 'voice.asset_failed', 'voice.asset_ready',
+        'marketing.onboarding_updated', 'contact.marketing_preference_updated', 'usage.recorded', 'voice.asset_failed', 'voice.asset_ready',
     ];
     public static function verifySignature(string $rawBody, string $signature, #[\SensitiveParameter] string $secret): bool
     {
@@ -31,6 +31,26 @@ final class Webhooks
             return false;
         }
         return hash_equals(hash_hmac('sha256', $rawBody, $secret), strtolower($normalized));
+    }
+    public static function constructDelivery(string $rawBody, string $signature, #[\SensitiveParameter] string $secret): WebhookEvent|WebhookEventBatch
+    {
+        if (!self::verifySignature($rawBody, $signature, $secret)) { throw new WebhookSignatureException('Webhook signature verification failed.', 'invalid_webhook_signature'); }
+        return self::parseVerifiedDelivery($rawBody);
+    }
+    public static function parseVerifiedDelivery(string $rawBody): WebhookEvent|WebhookEventBatch
+    {
+        try { $value = json_decode($rawBody, true, 512, JSON_THROW_ON_ERROR); }
+        catch (\JsonException) { throw new ValidationException('Invalid webhook JSON.', 'invalid_webhook_json'); }
+        if (!is_array($value) || ($value['object'] ?? null) !== 'event_batch') { return self::parseVerifiedEvent($rawBody); }
+        $tree = json_decode($rawBody, false, 512, JSON_THROW_ON_ERROR);
+        if (!$tree instanceof \stdClass || !is_array($tree->events ?? null)) { throw new ValidationException('Invalid event batch array.', 'invalid_webhook_batch'); }
+        if (count($value) !== 4 || ($value['version'] ?? null) !== 1 || !is_string($value['id'] ?? null) || !preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/iD', $value['id']) || !is_array($value['events'] ?? null) || !array_is_list($value['events']) || count($value['events']) < 1 || count($value['events']) > 100) { throw new ValidationException('Invalid version 1 event batch.', 'invalid_webhook_batch'); }
+        $events = [];
+        foreach ($value['events'] as $member) {
+            if (!is_array($member) || array_key_exists('object', $member)) { throw new ValidationException('Nested or invalid event batch.', 'invalid_webhook_batch'); }
+            $events[] = self::parseVerifiedEvent(json_encode($member, JSON_THROW_ON_ERROR));
+        }
+        return new WebhookEventBatch($value['id'], $events);
     }
     public static function constructEvent(string $rawBody, string $signature, #[\SensitiveParameter] string $secret): WebhookEvent
     {

@@ -17,6 +17,18 @@ use Polymorfa\{ApiResponse,RequestOptions,OfficialGroupModels};
  */
 final class OfficialGroups extends Resource
 {
+    /** Send actual JPEG bytes once. The API checks square dimensions >=192px.
+     * @return ApiResponse<array{success:true,data:array{accepted:true}}> */
+    public function setPicture(string $session, string $group, #[\SensitiveParameter] string $jpeg, ?RequestOptions $options = null): ApiResponse
+    {
+        $this->server();
+        if (!str_starts_with($jpeg, "\xff\xd8\xff") || strlen($jpeg) > 5 * 1024 * 1024) { throw new \Polymorfa\ValidationException('Provide JPEG bytes up to 5 MiB.'); }
+        $boundary = 'polymorfa-'.bin2hex(random_bytes(24));
+        $bytes = '--'.$boundary."\r\nContent-Disposition: form-data; name=\"file\"; filename=\"picture.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n".$jpeg."\r\n--".$boundary."--\r\n";
+        $body = new \Polymorfa\BinaryRequestBody(static fn (?\Polymorfa\CancellationToken $cancel) => \GuzzleHttp\Psr7\Utils::streamFor($bytes), strlen($bytes), 'multipart/form-data; boundary='.$boundary);
+        /** @var ApiResponse<array{success:true,data:array{accepted:true}}> */
+        return $this->request('PUT', $this->path($session, $group).'/picture', $body, options:($options ?? new RequestOptions())->withoutRetries());
+    }
     /** @param array{limit?:int,before?:string,after?:string} $params
      * @return ApiResponse<array{success:true,data:GroupList}> */
     public function list(string $session, array $params = [], ?RequestOptions $options = null): ApiResponse

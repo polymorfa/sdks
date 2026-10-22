@@ -40,4 +40,58 @@ order and IDs. Later admitted work may wait behind earlier endpoint deliveries.
 
 The compile-checked example is `examples/official-api-round2/index.ts`.
 Private Console routes in backend #612, #615 and #616 have no SDK surface.
-Go, Python, PHP, Rust and C# additions are coordinated separately with SDK #348.
+The same beta delta now has native source and synthetic wire fixtures in Go,
+Python, PHP, Rust and C#. The baseline coverage ledger remains separately pinned.
+`contracts/native-official-round2.json` attributes the added methods and fields;
+it does not certify test execution or package availability. Exact combined-source
+hosted qualification is still required. PHP and Rust runtime/package checks have
+not run on the constrained local host.
+
+## Native entry points
+
+These calls assume an existing server client with an organization API key or
+project token. Client tokens cannot access the Number catalog/status methods or
+Official groups. Keep the client's normal cancellation and disposal rules.
+
+| Language   | Number cache                                                          | Number marketing status                             | Official picture                        | Verified delivery              |
+| ---------- | --------------------------------------------------------------------- | --------------------------------------------------- | --------------------------------------- | ------------------------------ |
+| TypeScript | `client.catalogs.list/retrieve/listProducts/sync`                     | `client.cloudMarketing.getStatus`                   | `client.officialGroups.setPicture`      | `constructWebhookDelivery`     |
+| Go         | `client.Catalogs().List/Retrieve/ListProducts/Sync`                   | `client.CloudMarketing().GetStatus`                 | `client.OfficialGroups().SetPicture`    | `ConstructWebhookDelivery`     |
+| Python     | `client.catalogs.list/retrieve/list_products/sync`                    | `client.cloud_marketing.get_status`                 | `client.official_groups.set_picture`    | `construct_webhook_delivery`   |
+| PHP        | `$client->catalogs->list/retrieve/listProducts/sync`                  | `$client->cloudMarketing->getStatus`                | `$client->officialGroups->setPicture`   | `Webhooks::constructDelivery`  |
+| Rust       | `client.catalogs().list/retrieve/list_products/sync`                  | `client.cloud_marketing().get_status`               | `client.official_groups().set_picture`  | `webhooks::construct_delivery` |
+| C#         | `client.Catalogs.ListAsync/RetrieveAsync/ListProductsAsync/SyncAsync` | `client.CloudGraph.GetMarketingMessagesStatusAsync` | `client.OfficialGroups.SetPictureAsync` | `Webhooks.ConstructDelivery`   |
+
+Each picture method takes in-memory JPEG bytes, bounds the file to 5 MiB and
+sends a multipart `file` with `image/jpeg`. The API checks square dimensions of
+at least 192 pixels. The SDK owns the multipart boundary and does not replay an
+uncertain upload. The Linked Devices `Groups` picture contract stays separate.
+
+All six Platform webhook resources accept typed `batching` on create/update and
+return saved settings on reads. Use the organization or project resource that
+owns the endpoint. Changing a format without supplying batching leaves the API
+to validate the stored settings. Disabling batching does not require an enabled
+beta. Never infer that omission disables an endpoint's saved batching.
+
+Go's `VerifiedWebhookDelivery` holds either `Event` or `Batch`. Python and PHP
+return their event or `WebhookEventBatch`. Rust returns `WebhookDelivery::Single`
+or `WebhookDelivery::Batch`. C# returns `SingleWebhookDelivery` or
+`WebhookEventBatch`. These parsers authenticate the original request body before
+any JSON/member decoding. A malformed or nested member rejects the delivery.
+Single-only receiver methods keep their existing behavior.
+
+Contact changes keep the new identity on the event and the old identity in
+`identityChange.previous`. `parentBsuid` is metadata, never a send/block target.
+Incoming `order` values in cloud messages and hosted history contain the API's
+validated cart only. They do not imply payment or calculate a total.
+
+QuickLink `errorCode` remains an open nullable string. The named values
+`meta_credentials_invalid`, `meta_phone_not_registered`,
+`meta_webhook_not_subscribed`, `meta_payment_method_missing`,
+`meta_quality_flagged` and `meta_readiness_unknown` belong to that status field.
+They are absent from the public error catalog. Future values remain readable.
+Public send failures use the separately named `whatsapp_*` codes in the pinned
+contract. The shared synthetic fixture is `contracts/fixtures/official-round2.json`.
+
+The native examples under `examples/official-api-round2/` demonstrate explicit
+catalog pagination. They make no registry installation or availability claim.

@@ -53,6 +53,7 @@ export {
   type ContactOptPayload,
   type ContactUpdatePayload,
   type ContactIdentityChange,
+  type ContactPreviousIdentity,
   type MarketingOnboardingUpdatedPayload,
   type ContactMarketingPreferencePayload,
   type ContactsSyncPayload,

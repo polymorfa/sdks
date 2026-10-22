@@ -50,7 +50,7 @@ internal static class UnledgeredRetryTests
     internal static async Task RunAsync()
     {
         var failures = new List<Exception>();
-        foreach (var operation in new[] { "grant", "relay", "retry", "delete" })
+        foreach (var operation in new[] { "grant", "relay", "retry", "delete", "catalog-sync", "official-picture" })
             foreach (var status in new[] { 0, 429, 503 })
                 foreach (var policy in new[] { "keyed", "unkeyed", "default" })
                 {
@@ -72,19 +72,21 @@ internal static class UnledgeredRetryTests
             else await client.Profile.GetAsync("s", options);
             Check(peer.Requests.Count == 2, "Established " + operation + " retry lost");
         }
-        Console.WriteLine("PASS 36 unledgered submissions and established send/GET retry controls");
+        Console.WriteLine("PASS 54 unledgered submissions and established send/GET retry controls");
     }
     private static async Task CaseAsync(string operation, int status, string policy)
     {
         await using var peer = new Peer(status);
         using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = peer.Url, MaxNetworkRetries = 1 });
-        var options = new RequestOptions { IdempotencyKey = policy == "keyed" ? "caller-key" : null, MaxNetworkRetries = policy == "default" ? null : 1, Headers = new Dictionary<string, string> { ["x-caller"] = "retained" } };
+        var options = new RequestOptions { ApiVersion = "2026-10-14", IdempotencyKey = policy == "keyed" ? "caller-key" : null, MaxNetworkRetries = policy == "default" ? null : 1, Headers = new Dictionary<string, string> { ["x-caller"] = "retained" } };
         using var input = new MemoryStream(new byte[26]);
         PolymorfaException? error = null;
         try
         {
             switch (operation)
             {
+                case "catalog-sync": await client.Catalogs.SyncAsync("s", "123", options); break;
+                case "official-picture": await client.OfficialGroups.SetPictureAsync("s", "g", File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "official-group-picture.jpg")), options); break;
                 case "grant": await client.WhatsAppMedia.CreateUploadGrantAsync("s", WhatsAppUploadMediaType.Image, new byte[32], options); break;
                 case "relay": await client.WhatsAppMedia.RelayUploadAsync("s", WhatsAppUploadMediaType.Image, new byte[32], input, 26, options); break;
                 case "retry": await client.HistorySync.RequestChunkRetryAsync("s", new(HistorySyncType.RECENT, 1), options); break;
@@ -97,6 +99,7 @@ internal static class UnledgeredRetryTests
         var record = peer.Requests.Single();
         Check(record.Headers["authorization"] == "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k" && record.Headers["x-caller"] == "retained" && record.Headers["polymorfa-version"] == "2026-10-14", "Caller headers lost");
         Check(record.Headers.GetValueOrDefault("idempotency-key") == options.IdempotencyKey, "Caller key lost");
+        if (operation == "catalog-sync") Check(record.Length == 0, "Catalog sync wire body changed");
         if (operation == "relay") Check(input.CanRead && record.Length == 26, "Borrowed ciphertext ownership/length");
         if (status == 0) Check(error is PolymorfaConnectionException, "Connection failure lost");
         else Check(error!.Code == "fixture_failure" && error.Status == status && error.RequestId == "unledgered" && error.Metadata?.Attempts == 1, "Failure metadata lost");

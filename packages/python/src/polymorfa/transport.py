@@ -356,6 +356,7 @@ class Transport:
         buffer_body: bool = False,
         binary_body: bytes | AsyncIterable[bytes] | None = None,
         binary_length: int | None = None,
+        binary_content_type: str = "application/octet-stream",
     ) -> tuple[httpx.Response, ResponseMetadata]:
         safe = method in ("GET", "HEAD", "OPTIONS") or bool(options.idempotency_key)
         retries = options.max_network_retries
@@ -367,7 +368,7 @@ class Transport:
                 if binary_length is None or binary_length < 0:
                     raise ConfigurationError("binary_length")
                 headers = dict(request.headers)
-                headers["content-type"] = "application/octet-stream"
+                headers["content-type"] = binary_content_type
                 headers["content-length"] = str(binary_length)
                 request = self._http.build_request(
                     method,
@@ -504,6 +505,7 @@ class Transport:
         require_object: bool,
         binary_body: bytes | AsyncIterable[bytes] | None = None,
         binary_length: int | None = None,
+        binary_content_type: str = "application/octet-stream",
     ) -> ApiResponse[Json]:
         response, meta = await self.open_stream(
             method,
@@ -513,6 +515,7 @@ class Transport:
             options=options,
             binary_body=binary_body,
             binary_length=binary_length,
+            binary_content_type=binary_content_type,
         )
         try:
             await self._read_body(response, meta)
@@ -558,6 +561,7 @@ class Transport:
         *,
         query: Mapping[str, QueryValue] | None = None,
         options: RequestOptions = DEFAULT_OPTIONS,
+        content_type: str = "application/octet-stream",
     ) -> ApiResponse[Json]:
         """Authenticated, single-attempt binary upload with the normal JSON/error contract."""
         if isinstance(length, bool) or not isinstance(length, int) or length < 1:
@@ -570,6 +574,7 @@ class Transport:
             require_object=True,
             binary_body=content,
             binary_length=length,
+            binary_content_type=content_type,
         )
 
     async def request(

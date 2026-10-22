@@ -708,6 +708,17 @@ CASES = [
         {**VOICE, "durationMs": 1.5, "contentSha256": "a" * 64, "originalFormat": "ogg"},
     ),
 ]
+CASES += [
+    (
+        ("marketing.onboarding_updated",),
+        {"kind": "terms_signed", "wabaId": "w", "metaEvent": "MM_LITE_TERMS_SIGNED"},
+    ),
+    (
+        ("contact.marketing_preference_updated",),
+        {"waId": "opaque", "preference": "stop", "category": "marketing_messages"},
+    ),
+]
+
 EXPANDED = [(event_type, payload) for types, payload in CASES for event_type in types]
 
 

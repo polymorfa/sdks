@@ -30,6 +30,9 @@ impl MessagingClient {
     pub fn flow_encryption(&self) -> crate::cloud_graph::FlowEncryption<'_> {
         crate::cloud_graph::FlowEncryption(&self.http)
     }
+    pub fn catalogs(&self) -> crate::official_round2::Catalogs<'_> {
+        crate::official_round2::Catalogs(&self.http)
+    }
     pub fn official_groups(&self) -> crate::official_groups::OfficialGroups<'_> {
         crate::official_groups::OfficialGroups(&self.http)
     }

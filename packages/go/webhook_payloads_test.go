@@ -52,6 +52,8 @@ func TestKnownWebhookPayloadFamilies(t *testing.T) {
 		{"command.result", "CommandResultPayload", `{"success":false,"data":{"future":3},"error":"refused"}`, "data.future"},
 		{"contact.opted_in contact.opted_out", "ContactOptPayload", `{"keyword":"STOP","source":"stop-keyword","projectId":"p"}`, "keyword"},
 		{"contact.sync", "ContactsSyncPayload", `{"kind":"contacts","value":{"future":[1,2]}}`, "value.future"},
+		{"marketing.onboarding_updated", "MarketingOnboardingUpdatedPayload", `{"kind":"terms_signed","wabaId":"w","metaEvent":"MM_LITE_TERMS_SIGNED"}`, "wabaId"},
+		{"contact.marketing_preference_updated", "ContactMarketingPreferencePayload", `{"waId":"opaque","preference":"stop","category":"marketing_messages"}`, "waId"},
 		{"contact.update", "ContactUpdatePayload", `{"bsuid":"b","pictureRemoved":false}`, "pictureRemoved"},
 		{"customer.created customer.archived customer.restored", "CustomerEventPayload", `{"customerId":"c","actorKind":"project_token"}`, "actorKind"},
 		{"customer.archiving", "CustomerArchivingPayload", `{"customerId":"c","blockingNumberCount":2}`, "blockingNumberCount"},

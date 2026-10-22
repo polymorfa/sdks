@@ -130,6 +130,42 @@ fn group(session: &str, id: &str) -> String {
     format!("{}/{}", groups(session), encode(id))
 }
 impl OfficialGroups<'_> {
+    pub async fn set_picture(
+        &self,
+        session: &str,
+        group: &str,
+        jpeg: &[u8],
+        options: RequestOptions,
+    ) -> Result<ApiResponse<SuccessEnvelope<OfficialGroupChangeAccepted>>> {
+        self.0.server()?;
+        if !jpeg.starts_with(&[255, 216, 255]) || jpeg.len() > 5 * 1024 * 1024 {
+            return Err(crate::Error::local(
+                crate::ErrorKind::Validation,
+                "Provide JPEG bytes up to 5 MiB.",
+                "invalid_parameter",
+            ));
+        }
+        let boundary = format!("polymorfa-{}", uuid::Uuid::new_v4());
+        let mut bytes=format!("--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"picture.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n").into_bytes();
+        bytes.extend_from_slice(jpeg);
+        bytes.extend_from_slice(format!("\r\n--{boundary}--\r\n").as_bytes());
+        let length = bytes.len() as u64;
+        self.0
+            .request_multipart(
+                &format!(
+                    "/messaging/{}/official-groups/{}/picture",
+                    encode(session),
+                    encode(group)
+                ),
+                &format!("multipart/form-data; boundary={boundary}"),
+                &[],
+                reqwest::Body::from(bytes),
+                length,
+                options,
+            )
+            .await
+    }
+
     pub async fn list(
         &self,
         session: &str,

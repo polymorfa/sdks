@@ -54,12 +54,18 @@ func (r *Webhooks) List(ctx context.Context, p ListWebhooksParams, o ...RequestO
 	return page[PlatformWebhook](ctx, r.t, r.prefix+"/webhooks", p.query(), options(o))
 }
 func (r *Webhooks) Create(ctx context.Context, b CreateWebhookRequest, o ...RequestOptions) (Response[WebhookCreationReceipt], error) {
+	if err := validateWebhookBatching(b.Batching, b.Format); err != nil {
+		return Response[WebhookCreationReceipt]{}, err
+	}
 	return unwrapped[WebhookCreationReceipt](ctx, r.t, "POST", r.prefix+"/webhooks", nil, b, options(o))
 }
 func (r *Webhooks) Retrieve(ctx context.Context, id string, o ...RequestOptions) (Response[PlatformWebhook], error) {
 	return unwrapped[PlatformWebhook](ctx, r.t, "GET", r.prefix+"/webhooks/"+escaped(id), nil, nil, options(o))
 }
 func (r *Webhooks) Update(ctx context.Context, id string, b UpdateWebhookRequest, o ...RequestOptions) (Response[WebhookMutationReceipt], error) {
+	if err := validateWebhookBatching(b.Batching, b.Format); err != nil {
+		return Response[WebhookMutationReceipt]{}, err
+	}
 	return unwrapped[WebhookMutationReceipt](ctx, r.t, "PATCH", r.prefix+"/webhooks/"+escaped(id), nil, b, options(o))
 }
 func (r *Webhooks) Delete(ctx context.Context, id string, o ...RequestOptions) (Response[WebhookDeletionReceipt], error) {

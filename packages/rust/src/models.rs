@@ -166,6 +166,8 @@ impl ConversationReference {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConversationIdentity {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent_bsuid: Option<String>,
     pub id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub phone_number: Option<String>,

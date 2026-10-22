@@ -64,6 +64,19 @@ internal sealed class HttpTransport : IDisposable
         using var opened = await OpenAsync(HttpMethod.Post, path, null, options with { MaxNetworkRetries = 0 }, "application/json", query, binaryContent: body).ConfigureAwait(false);
         return new(await ReadAsync<T>(opened.Response, options, opened.Metadata).ConfigureAwait(false), opened.Metadata);
     }
+    internal async Task<ApiResponse<T>> RequestEmptyMutationAsync<T>(HttpMethod method, string path, RequestOptions options)
+    {
+        // SocketsHttpHandler may replay a bodyless POST on disconnect. Explicit
+        // empty content keeps the wire body empty and marks content submission.
+        using var body = new ByteArrayContent(Array.Empty<byte>());
+        using var opened = await OpenAsync(method, path, null, options with { MaxNetworkRetries = 0 }, "application/json", binaryContent: body).ConfigureAwait(false);
+        return new(await ReadAsync<T>(opened.Response, options, opened.Metadata).ConfigureAwait(false), opened.Metadata);
+    }
+    internal async Task<ApiResponse<T>> RequestMultipartAsync<T>(string path, HttpContent body, RequestOptions options)
+    {
+        using var opened = await OpenAsync(HttpMethod.Put, path, null, options with { MaxNetworkRetries = 0 }, "application/json", binaryContent: body).ConfigureAwait(false);
+        return new(await ReadAsync<T>(opened.Response, options, opened.Metadata).ConfigureAwait(false), opened.Metadata);
+    }
     internal async Task<ApiResponse<string>> RequestTextAsync(string path, string accept, RequestOptions? requestOptions, IReadOnlyList<KeyValuePair<string, string>>? query = null)
     {
         var options = requestOptions ?? new(); var previousAttempts = 0; var maximum = options.MaxNetworkRetries ?? Options.MaxNetworkRetries;
