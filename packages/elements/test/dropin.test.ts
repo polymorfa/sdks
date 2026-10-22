@@ -9,6 +9,7 @@ import {
 import {
   PolymorfaConnectWhatsAppElement,
   PolymorfaInboxElement,
+  PolymorfaQuickLinkButtonElement,
   PolymorfaSessionStatusElement,
   definePolymorfa,
 } from "../src/index.js";
@@ -117,6 +118,53 @@ describe("definePolymorfa", () => {
     expect(connect.shadowRoot!.querySelector("button")).toBeNull();
     expect(warn).toHaveBeenCalledTimes(1);
     expect(String(warn.mock.calls[0]?.[0])).toContain('"connect_whatsapp"');
+  });
+});
+
+describe("<pmfa-quicklink-button>", () => {
+  it("links to a supplied QuickLink without a token or handler call", async () => {
+    const fetch = tokenFetch([]);
+    definePolymorfa({
+      client: new PolymorfaClient({ fetch }),
+      appearance: { elements: { connectButton: { className: "host-link" } } },
+    });
+    const element = document.createElement(
+      "pmfa-quicklink-button",
+    ) as PolymorfaQuickLinkButtonElement;
+    element.setAttribute("url", "https://link.polymorfa.com/ql_1");
+    element.setAttribute("target", "popup");
+    const opened = vi.fn();
+    element.addEventListener("pmfa-open", opened);
+    document.body.append(element);
+    const link = element.shadowRoot!.querySelector("a")!;
+    expect(link.getAttribute("href")).toBe("https://link.polymorfa.com/ql_1");
+    expect(link.target).toBe("_blank");
+    expect(link.rel).toBe("noopener noreferrer");
+    expect(link.classList.contains("pmfa-btn-primary")).toBe(true);
+    expect(link.classList.contains("host-link")).toBe(true);
+    expect(link.getAttribute("part")).toBe("connect-button");
+    expect(link.textContent).toBe("Connect WhatsApp");
+    link.addEventListener("click", (event) => event.preventDefault());
+    link.click();
+    expect(opened).toHaveBeenCalledTimes(1);
+    element.setAttribute("label", "Link your phone");
+    expect(element.shadowRoot!.querySelector("a")!.textContent).toBe(
+      "Link your phone",
+    );
+    expect(
+      fetch.mock.calls.some(([input]) => String(input).endsWith("/connect")),
+    ).toBe(false);
+  });
+
+  it("renders nothing for a non-https URL and never logs the URL", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    definePolymorfa({ client: new PolymorfaClient({ fetch: tokenFetch([]) }) });
+    const element = document.createElement("pmfa-quicklink-button");
+    element.setAttribute("url", "http://example.com/ql_secret");
+    document.body.append(element);
+    expect(element.shadowRoot!.querySelector("a")).toBeNull();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0]?.[0])).not.toContain("ql_secret");
   });
 });
 

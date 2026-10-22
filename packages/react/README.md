@@ -27,9 +27,16 @@ the grant for rendering only. `appearance` and `locale` work as before.
 | `<Inbox/>`                               | `read_messages`    | List, chat and contact panel. Composer needs `send_message`, contact panel `read_contact`, the call button `voip_place` |
 | `<ConversationList/>`, `<ContactPanel/>` |                    | Inbox parts, usable alone                                                                                               |
 | `<ConnectWhatsAppButton/>`               | `connect_whatsapp` | Opens Polymorfa's hosted QuickLink page; never embeds it                                                                |
+| `<QuickLinkButton url/>`                 |                    | Link to a QuickLink your server already created; no token or handler call                                               |
 | `<SessionStatus/>`                       |                    | Connection badge with a Retry button                                                                                    |
 | `<CallButton to/>`                       | `voip_place`       | Places a call with the browser Calls client and shows `CallSurface`                                                     |
 | `<TemplateManager/>`                     | `manage_templates` | Template list plus `<TemplateBuilder/>`                                                                                 |
+
+`<QuickLinkButton url={link.url} target="popup"/>` renders an `<a>` styled as
+the Connect WhatsApp button (`connectButton` slot). It accepts only `https`
+URLs, or `http` on `localhost`/`127.0.0.1` for local development, and renders
+nothing otherwise. The URL is the recipient's only credential: create it on
+your server and render it only for the person who should connect.
 
 When a permission is missing, the control is hidden and development builds
 log one warning, for example

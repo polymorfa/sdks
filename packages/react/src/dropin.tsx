@@ -3,6 +3,8 @@ import {
   MessageComposerController,
   TemplateBuilderController,
   connectWhatsApp,
+  isQuickLinkUrl,
+  warnInvalidQuickLink,
   createConversationComposerActions,
   createHandlerInboxSource,
   createSameOriginTemplateBuilderTransport,
@@ -1089,6 +1091,63 @@ export function ConnectWhatsAppButton({
         </span>
       )}
     </>
+  );
+}
+
+// ── QuickLinkButton ───────────────────────────────────────────────────
+
+export interface QuickLinkButtonProps {
+  /**
+   * A QuickLink URL your server created. The URL is the recipient's only
+   * credential: render it only for the person who should connect.
+   */
+  readonly url: string;
+  /** `redirect` (default) opens it in this tab, `popup` in a new tab. */
+  readonly target?: "redirect" | "popup";
+  readonly children?: ReactNode;
+  readonly onOpen?: () => void;
+  readonly className?: string;
+  readonly classNames?: SlotClassNames;
+}
+
+/**
+ * A link styled as the Connect WhatsApp button for a QuickLink your server
+ * already created. It creates nothing and needs no client token; use
+ * `ConnectWhatsAppButton` to create the link through your handler instead.
+ */
+export function QuickLinkButton({
+  url,
+  target = "redirect",
+  children,
+  onOpen,
+  className,
+  classNames,
+}: QuickLinkButtonProps) {
+  const configuration = usePolymorfa();
+  const slots = useSlots(classNames);
+  const root = useShell(
+    slots,
+    "connectButton",
+    "pmfa-btn pmfa-btn-primary pmfa-connect",
+    className,
+  );
+  const valid = isQuickLinkUrl(url);
+  useEffect(() => {
+    if (!valid) warnInvalidQuickLink("QuickLinkButton");
+  }, [valid]);
+  if (!valid) return null;
+  return (
+    <a
+      {...root}
+      href={url}
+      data-pmfa="quicklink"
+      rel="noopener noreferrer"
+      {...(target === "popup" ? { target: "_blank" } : {})}
+      onClick={onOpen}
+    >
+      <Icon name="link" />
+      {children ?? text(configuration, "connect.button")}
+    </a>
   );
 }
 

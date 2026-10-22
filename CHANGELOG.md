@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Chat kit (`@polymorfa/browser`, `@polymorfa/ui`, `@polymorfa/react`,
+  `@polymorfa/elements`): search and media-type/direction filters over loaded
+  messages, received carts with reported unit prices and no computed total,
+  distinct not-retained/unavailable/deleted content states, a React
+  `ChatDetails` view, `inboxActionsFor()` row-action eligibility, Brazilian Portuguese chat and inbox strings,
+  `replies={false}` (`replies="false"`) for send paths that cannot quote, and
+  `createConversationSession(source, { sendUnavailable })`.
+  `<QuickLinkButton url/>` and `<pmfa-quicklink-button url>` link to a
+  QuickLink your server already created, with no client token or handler
+  call; `isQuickLinkUrl()` exposes the same URL check. Source-only and
+  unreleased.
+
 - All six server SDKs submit each direct media grant, API relay upload, history
   chunk retry and history media deletion at most once per invocation, including
   when a caller supplies an idempotency key and a positive retry option. These

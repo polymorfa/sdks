@@ -3,6 +3,7 @@ import {
   InboxController,
   PolymorfaClient,
   connectWhatsApp,
+  isQuickLinkUrl,
   createHandlerInboxSource,
   type EventSourceLike,
   type PolymorfaGrant,
@@ -401,6 +402,18 @@ describe("createHandlerInboxSource", () => {
     }
     send.mockRestore();
     client.dispose();
+  });
+});
+
+describe("isQuickLinkUrl", () => {
+  it("accepts https and local development URLs only", () => {
+    expect(isQuickLinkUrl("https://link.polymorfa.com/ql_1")).toBe(true);
+    expect(isQuickLinkUrl("http://localhost:3000/connect/t")).toBe(true);
+    expect(isQuickLinkUrl("http://127.0.0.1/connect/t")).toBe(true);
+    expect(isQuickLinkUrl("http://example.com/connect/t")).toBe(false);
+    expect(isQuickLinkUrl("javascript:alert(1)")).toBe(false);
+    expect(isQuickLinkUrl("/connect/t")).toBe(false);
+    expect(isQuickLinkUrl(null)).toBe(false);
   });
 });
 

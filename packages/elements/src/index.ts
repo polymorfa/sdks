@@ -21,6 +21,7 @@ export { PolymorfaCallElement, defineCallElements } from "./calls.js";
 export {
   PolymorfaConnectWhatsAppElement,
   PolymorfaInboxElement,
+  PolymorfaQuickLinkButtonElement,
   PolymorfaSessionStatusElement,
   defineDropInElements,
   definePolymorfa,

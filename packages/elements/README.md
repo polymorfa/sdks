@@ -17,6 +17,12 @@ definePolymorfa({ tokenEndpoint: "/api/polymorfa/token" });
 <pmfa-inbox style="height: 640px"></pmfa-inbox>
 ```
 
+`<pmfa-quicklink-button url="https://…" target="popup">` links to a QuickLink
+your server already created, styled as the connect button (`connect-button`
+part). It needs no client token, accepts only `https` URLs (or `http` on
+`localhost`) and dispatches `pmfa-open` when clicked. The URL is the
+recipient's only credential.
+
 `definePolymorfa` is the equivalent of `<PolymorfaProvider tokenEndpoint>`:
 one client that refreshes tokens, shared by every element. Elements hide
 controls the grant lacks and warn once in development. `<pmfa-inbox>` has the

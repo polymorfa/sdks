@@ -72,6 +72,7 @@ export {
   ConversationList,
   ConversationListView,
   Inbox,
+  QuickLinkButton,
   SessionStatus,
   TemplateManager,
   type ConnectWhatsAppButtonProps,
@@ -79,6 +80,7 @@ export {
   type ConversationListProps,
   type ConversationListViewProps,
   type InboxProps,
+  type QuickLinkButtonProps,
   type SessionStatusProps,
   type TemplateManagerProps,
 } from "./dropin.js";

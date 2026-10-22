@@ -16,6 +16,7 @@ import {
   ConversationListView,
   Inbox,
   PolymorfaProvider,
+  QuickLinkButton,
   SessionStatus,
   TemplateManager,
   usePermissions,
@@ -550,6 +551,61 @@ describe("<PolymorfaProvider tokenEndpoint>", () => {
         ?.getAttribute("data-status"),
     ).toBe("ready");
     vi.unstubAllGlobals();
+  });
+});
+
+describe("<QuickLinkButton/>", () => {
+  it("links to a supplied QuickLink without a client or handler call", () => {
+    const fetch = vi.spyOn(globalThis, "fetch");
+    const onOpen = vi.fn();
+    act(() =>
+      root.render(
+        <QuickLinkButton
+          url="https://link.polymorfa.com/ql_1"
+          target="popup"
+          onOpen={onOpen}
+          classNames={{ connectButton: "host-link" }}
+        />,
+      ),
+    );
+    const link = host.querySelector<HTMLAnchorElement>(
+      '[data-pmfa="quicklink"]',
+    );
+    expect(link?.tagName).toBe("A");
+    expect(link?.getAttribute("href")).toBe("https://link.polymorfa.com/ql_1");
+    expect(link?.getAttribute("target")).toBe("_blank");
+    expect(link?.getAttribute("rel")).toBe("noopener noreferrer");
+    expect(link?.className).toContain("pmfa-btn-primary");
+    expect(link?.className).toContain("host-link");
+    expect(link?.textContent).toBe("Connect WhatsApp");
+    link?.addEventListener("click", (event) => event.preventDefault());
+    click(link);
+    expect(onOpen).toHaveBeenCalledTimes(1);
+    expect(fetch).not.toHaveBeenCalled();
+    fetch.mockRestore();
+  });
+
+  it("opens in this tab by default and accepts a custom label", () => {
+    act(() =>
+      root.render(
+        <QuickLinkButton url="https://link.polymorfa.com/ql_1">
+          Link your phone
+        </QuickLinkButton>,
+      ),
+    );
+    const link = host.querySelector('[data-pmfa="quicklink"]');
+    expect(link?.hasAttribute("target")).toBe(false);
+    expect(link?.textContent).toBe("Link your phone");
+  });
+
+  it("renders nothing for a non-https URL and never logs the URL", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    act(() =>
+      root.render(<QuickLinkButton url="javascript:alert('ql_secret')" />),
+    );
+    expect(host.querySelector('[data-pmfa="quicklink"]')).toBeNull();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0]?.[0])).not.toContain("ql_secret");
   });
 });
 

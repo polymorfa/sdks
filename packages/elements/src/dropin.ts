@@ -4,6 +4,8 @@ import {
   PolymorfaClient,
   connectWhatsApp,
   createConversationComposerActions,
+  isQuickLinkUrl,
+  warnInvalidQuickLink,
   createHandlerInboxSource,
   warnMissingPermission,
   type InboxConversation,
@@ -93,6 +95,8 @@ export function defineDropInElements(
     registry.define("pmfa-connect-whatsapp", PolymorfaConnectWhatsAppElement);
   if (registry.get("pmfa-session-status") === undefined)
     registry.define("pmfa-session-status", PolymorfaSessionStatusElement);
+  if (registry.get("pmfa-quicklink-button") === undefined)
+    registry.define("pmfa-quicklink-button", PolymorfaQuickLinkButtonElement);
 }
 
 function icon(name: ChatIconName): SVGSVGElement {
@@ -251,6 +255,54 @@ export class PolymorfaConnectWhatsAppElement extends ClientElement<object> {
         );
       },
     );
+  }
+}
+
+/**
+ * `<pmfa-quicklink-button url="…">`: a link styled as the Connect WhatsApp
+ * button for a QuickLink your server already created. It creates nothing and
+ * needs no client token. The URL is the recipient's only credential.
+ */
+export class PolymorfaQuickLinkButtonElement extends PolymorfaElement<object> {
+  static readonly observedAttributes = ["url", "target", "label"];
+  #configured = false;
+
+  attributeChangedCallback(): void {
+    if (this.isConnected) this.render();
+  }
+
+  override connectedCallback(): void {
+    if (!this.#configured && defaultConfiguration !== undefined) {
+      this.#configured = true;
+      this.configuration = { ...defaultConfiguration, ...this.configuration };
+    }
+    super.connectedCallback();
+  }
+
+  protected renderContent(): readonly Node[] {
+    const url = this.getAttribute("url") ?? undefined;
+    if (!isQuickLinkUrl(url)) {
+      warnInvalidQuickLink("pmfa-quicklink-button");
+      return [];
+    }
+    const link = document.createElement("a");
+    link.className = this.rootClass("pmfa-btn pmfa-btn-primary pmfa-connect");
+    this.decorate(link, "connectButton");
+    link.href = url;
+    link.rel = "noopener noreferrer";
+    if (this.getAttribute("target") === "popup") link.target = "_blank";
+    link.append(
+      icon("link"),
+      document.createTextNode(
+        this.getAttribute("label") ?? this.text("connect.button"),
+      ),
+    );
+    link.addEventListener("click", () =>
+      this.dispatchEvent(
+        new CustomEvent("pmfa-open", { bubbles: true, composed: true }),
+      ),
+    );
+    return [link];
   }
 }
 

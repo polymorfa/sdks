@@ -43,7 +43,7 @@ export async function connectWhatsApp(
     if (
       link === undefined ||
       typeof link.url !== "string" ||
-      !isHttpsUrl(link.url) ||
+      !isQuickLinkUrl(link.url) ||
       typeof link.id !== "string"
     )
       throw new BrowserConfigurationError(
@@ -67,7 +67,12 @@ export async function connectWhatsApp(
   }
 }
 
-function isHttpsUrl(value: string): boolean {
+/**
+ * Whether a QuickLink button may open `value`: an HTTPS URL, or HTTP on
+ * `localhost`/`127.0.0.1` for local development against a sandbox API.
+ */
+export function isQuickLinkUrl(value: unknown): value is string {
+  if (typeof value !== "string") return false;
   try {
     const url = new URL(value);
     return (
@@ -79,4 +84,21 @@ function isHttpsUrl(value: string): boolean {
   } catch {
     return false;
   }
+}
+
+const warnedQuickLink = new Set<string>();
+
+/**
+ * Warns once per component in development that a supplied QuickLink URL was
+ * rejected. The URL itself is never logged: it is the recipient's credential.
+ */
+export function warnInvalidQuickLink(component: string): void {
+  const env = (
+    globalThis as { process?: { env?: Record<string, string | undefined> } }
+  ).process?.env?.NODE_ENV;
+  if (env === "production" || warnedQuickLink.has(component)) return;
+  warnedQuickLink.add(component);
+  console.warn(
+    `<${component}/>: hidden; url must be an https QuickLink URL your server created.`,
+  );
 }

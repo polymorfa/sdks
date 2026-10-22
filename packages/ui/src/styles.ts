@@ -147,6 +147,7 @@ export const COMPONENT_STYLES = `
   outline-offset: 2px;
 }
 .pmfa-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+a.pmfa-btn { text-decoration: none; }
 .pmfa-btn-primary {
   border-color: transparent;
   background: var(--pmfa-c-primary);
