@@ -598,6 +598,22 @@ describe("<QuickLinkButton/>", () => {
     expect(link?.textContent).toBe("Link your phone");
   });
 
+  it("renders nothing without a warning while the URL is still empty", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    act(() => root.render(<QuickLinkButton url="" />));
+    expect(host.querySelector('[data-pmfa="quicklink"]')).toBeNull();
+    act(() => root.render(<QuickLinkButton url="  " />));
+    expect(host.querySelector('[data-pmfa="quicklink"]')).toBeNull();
+    act(() =>
+      root.render(<QuickLinkButton url="https://link.polymorfa.com/ql_1" />),
+    );
+    expect(
+      host.querySelector('[data-pmfa="quicklink"]')?.getAttribute("href"),
+    ).toBe("https://link.polymorfa.com/ql_1");
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
   it("renders nothing for a non-https URL and never logs the URL", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     act(() =>

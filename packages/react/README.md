@@ -35,7 +35,8 @@ the grant for rendering only. `appearance` and `locale` work as before.
 `<QuickLinkButton url={link.url} target="popup"/>` renders an `<a>` styled as
 the Connect WhatsApp button (`connectButton` slot). It accepts only `https`
 URLs, or `http` on `localhost`/`127.0.0.1` for local development, and renders
-nothing otherwise. The URL is the recipient's only credential: create it on
+nothing otherwise. Pass `url=""` while your server creates the link; nothing
+renders and no warning is logged. The URL is the recipient's only credential: create it on
 your server and render it only for the person who should connect.
 
 When a permission is missing, the control is hidden and development builds

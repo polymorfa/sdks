@@ -91,6 +91,8 @@ const warnedQuickLink = new Set<string>();
 /**
  * Warns once per component in development that a supplied QuickLink URL was
  * rejected. The URL itself is never logged: it is the recipient's credential.
+ * Shared by the React and Web Component QuickLink buttons, which do not call
+ * it for a missing or blank URL.
  */
 export function warnInvalidQuickLink(component: string): void {
   const env = (

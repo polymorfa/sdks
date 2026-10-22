@@ -280,9 +280,11 @@ export class PolymorfaQuickLinkButtonElement extends PolymorfaElement<object> {
   }
 
   protected renderContent(): readonly Node[] {
-    const url = this.getAttribute("url") ?? undefined;
+    const url = this.getAttribute("url");
+    // A missing or blank URL is one the host is still creating.
+    const pending = url === null || url.trim() === "";
     if (!isQuickLinkUrl(url)) {
-      warnInvalidQuickLink("pmfa-quicklink-button");
+      if (!pending) warnInvalidQuickLink("pmfa-quicklink-button");
       return [];
     }
     const link = document.createElement("a");

@@ -1099,7 +1099,8 @@ export function ConnectWhatsAppButton({
 export interface QuickLinkButtonProps {
   /**
    * A QuickLink URL your server created. The URL is the recipient's only
-   * credential: render it only for the person who should connect.
+   * credential: render it only for the person who should connect. Pass `""`
+   * while the link is being created; nothing renders until it arrives.
    */
   readonly url: string;
   /** `redirect` (default) opens it in this tab, `popup` in a new tab. */
@@ -1132,9 +1133,11 @@ export function QuickLinkButton({
     className,
   );
   const valid = isQuickLinkUrl(url);
+  // A blank URL is one the host is still creating, not an invalid one.
+  const pending = typeof url !== "string" || url.trim() === "";
   useEffect(() => {
-    if (!valid) warnInvalidQuickLink("QuickLinkButton");
-  }, [valid]);
+    if (!valid && !pending) warnInvalidQuickLink("QuickLinkButton");
+  }, [valid, pending]);
   if (!valid) return null;
   return (
     <a

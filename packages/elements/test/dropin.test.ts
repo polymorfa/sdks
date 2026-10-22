@@ -156,6 +156,21 @@ describe("<pmfa-quicklink-button>", () => {
     ).toBe(false);
   });
 
+  it("renders nothing without a warning until the URL arrives", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    definePolymorfa({ client: new PolymorfaClient({ fetch: tokenFetch([]) }) });
+    const element = document.createElement("pmfa-quicklink-button");
+    document.body.append(element);
+    expect(element.shadowRoot!.querySelector("a")).toBeNull();
+    element.setAttribute("url", "");
+    expect(element.shadowRoot!.querySelector("a")).toBeNull();
+    element.setAttribute("url", "https://link.polymorfa.com/ql_1");
+    expect(element.shadowRoot!.querySelector("a")?.getAttribute("href")).toBe(
+      "https://link.polymorfa.com/ql_1",
+    );
+    expect(warn).not.toHaveBeenCalled();
+  });
+
   it("renders nothing for a non-https URL and never logs the URL", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     definePolymorfa({ client: new PolymorfaClient({ fetch: tokenFetch([]) }) });

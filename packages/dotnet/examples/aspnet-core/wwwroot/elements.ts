@@ -1,9 +1,14 @@
 import { definePolymorfaElements, type PolymorfaInboxElement } from "@polymorfa/elements";
 import type { ConversationMessage, ConversationEvent, InboxChange, InboxConversation } from "@polymorfa/browser";
 
-// `receipt` is the C# send status shown in #native-status, not the chat kit's observed delivery receipt.
+// `receipt` is the C# host's raw status, shown in #native-status. Only receipts observed from
+// message.ack become chat receipts; the send response status is acceptance, never delivery or read.
 interface Message extends Omit<ConversationMessage, "receipt"> { receipt: string }
-const view = (message: Message): ConversationMessage => { const { receipt, ...rest } = message; void receipt; return rest; };
+const observedReceipts = new Map<string, "delivered" | "read" | "played">([["delivered", "delivered"], ["delivery", "delivered"], ["read", "read"], ["played", "played"]]);
+const view = ({ receipt, ...message }: Message): ConversationMessage => {
+  const state = message.direction === "outbound" ? observedReceipts.get(receipt) : undefined;
+  return state ? { ...message, receipt: { state } } : message;
+};
 interface Snapshot { messages: Message[]; peer: string; session: string; receivedEvents: number; lastEvent: string; localTest: boolean }
 definePolymorfaElements();
 export async function mount() {
