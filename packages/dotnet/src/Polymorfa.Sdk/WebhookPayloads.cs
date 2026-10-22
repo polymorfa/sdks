@@ -99,7 +99,12 @@ public sealed record MessageFailedPayload(IdentityReference To, string Type, str
 public sealed record RuntimeTemplateStatusPayload(string TemplateName, string TemplateId, string Status, string Category, string Reason, string QualityRating);
 public sealed record CloudTemplateStatusPayload(string Kind, string? Event = null, string? TemplateId = null, string? TemplateName = null, string? Language = null, string? Reason = null, string? PreviousQualityScore = null, string? NewQualityScore = null, string? WabaId = null);
 public sealed record CampaignLaunchedPayload(string CampaignId, string Name, int RecipientCount, bool Scheduled, long LaunchedAt);
-public sealed record CampaignPausedPayload(string CampaignId, long SentCount, long RemainingCount, long PausedAt);
+/// <summary>PausedAt is Unix seconds. Automatic metadata uses open string values.</summary>
+public sealed record CampaignPausedPayload(string CampaignId, long SentCount, long RemainingCount, long PausedAt)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? Reason { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? Code { get; init; }
+}
 public sealed record CampaignRescheduledPayload(string CampaignId, long? PreviousScheduledAt, long ScheduledAt, long RescheduledAt);
 public sealed record CampaignResumedPayload(string CampaignId, long SentCount, long RemainingCount, long ResumedAt);
 public sealed record CampaignCompletedPayload(string CampaignId, long SentCount, long DeliveredCount, long ReadCount, long FailedCount, long SkippedCount, long ResponseCount, long CompletedAt, long DurationMs);
@@ -107,7 +112,12 @@ public sealed record CampaignFailedPayload(string CampaignId, string Reason, lon
 public sealed record CampaignStoppedPayload(string CampaignId, long SentCount, long AbandonedCount, long StoppedAt);
 public sealed record CampaignRecipientSentPayload(string CampaignId, string RecipientId, string Phone, string SessionKey, string ExternalMessageId, string VariantKey, int Attempt);
 public sealed record CampaignRecipientFailedPayload(string CampaignId, string RecipientId, string Phone, int Attempts, string Error, long FailedAt);
-public sealed record CampaignRecipientSkippedPayload(string CampaignId, string RecipientId, string Phone, string Reason, long SkippedAt);
+/// <summary>SkippedAt is Unix milliseconds. Optional sequence positions include zero.</summary>
+public sealed record CampaignRecipientSkippedPayload(string CampaignId, string RecipientId, string Phone, string Reason, long SkippedAt)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public long? MessageIndex { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? FollowUpId { get; init; }
+}
 public sealed record CampaignThrottledPayload(string CampaignId, string SessionKey, string Reason, long DeferredCount, long At);
 public sealed record CampaignCapReachedPayload(string CampaignId, string SessionKey, string Phone, string CapType, long CapLimit, long WindowResetsAt, long At);
 public sealed record CampaignColdBlockedPayload(string CampaignId, string RecipientId, string Phone, string Surface, string Reason, long At);

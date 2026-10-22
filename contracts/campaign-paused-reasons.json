@@ -1,0 +1,101 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f",
+  "note": "Scoped accepted pause/recipient-skip metadata, including optional frequency-cap sequence and follow-up fields. Original pause producer is API326. Full baseline snapshots/API version remain unchanged; source acceptance is not environment availability or publication.",
+  "sources": {
+    "messaging": {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sourceSha256": "6d5b5477a86a85504f921933bf7b26f2c47506e21380fe73c8a5ff1002163b28",
+      "schemas": {
+        "CampaignPausedPayload": {
+          "type": "object",
+          "properties": {
+            "campaignId": {
+              "type": "string",
+              "description": "Campaign id",
+              "example": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11"
+            },
+            "sentCount": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Recipients sent so far"
+            },
+            "remainingCount": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Recipients still queued"
+            },
+            "pausedAt": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix timestamp in seconds when the campaign paused",
+              "example": 1757161200
+            },
+            "reason": {
+              "type": "string",
+              "description": "Why Polymorfa paused the campaign. Present only on an automatic pause.",
+              "example": "WhatsApp lowered the messaging limit of a number this campaign sends from."
+            },
+            "code": {
+              "type": "string",
+              "description": "Stable code for an automatic pause: campaigns_not_entitled, bansafe_org_suspended, bansafe_suspended, campaign_throughput_capped, invalid_parameter, hybrid_campaign_unsupported, blocked_by_safety, number_quality_dropped, or messaging_limit_dropped. Present only on an automatic pause.",
+              "example": "messaging_limit_dropped"
+            }
+          },
+          "required": ["campaignId", "sentCount", "remainingCount", "pausedAt"]
+        },
+        "CampaignRecipientSkippedPayload": {
+          "type": "object",
+          "properties": {
+            "campaignId": {
+              "type": "string",
+              "description": "Campaign id",
+              "example": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11"
+            },
+            "recipientId": {
+              "type": "string",
+              "description": "Campaign recipient id",
+              "example": "01936b2e-6a11-7d2e-8f4a-1c2b3d4e5f66"
+            },
+            "phone": {
+              "type": "string",
+              "description": "Recipient phone number in E.164",
+              "example": "+14155550123"
+            },
+            "reason": {
+              "type": "string",
+              "description": "Stable skip reason: optout, frequency_cap_exceeded for a campaign contact cap, or whatsapp_marketing_limit when WhatsApp withheld a marketing message because the person reached their per-user marketing message limit",
+              "example": "whatsapp_marketing_limit"
+            },
+            "messageIndex": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Position from 0 of a capped sequence message. Above 0, the initial send status is preserved and remaining sequence messages stop.",
+              "example": 1
+            },
+            "followUpId": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Receipt-timed follow-up cancelled by the contact frequency cap; the initial send status is preserved.",
+              "example": "0198a2cb-0000-7000-8000-0000000000f1"
+            },
+            "skippedAt": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Unix timestamp in milliseconds when the recipient was skipped",
+              "example": 1757161200000
+            }
+          },
+          "required": [
+            "campaignId",
+            "recipientId",
+            "phone",
+            "reason",
+            "skippedAt"
+          ]
+        }
+      }
+    }
+  },
+  "introducedBy": "a6812f1570814346d5e2a973ed1b855026981793"
+}

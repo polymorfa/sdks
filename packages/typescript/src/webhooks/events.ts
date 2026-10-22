@@ -1071,7 +1071,16 @@ export interface CampaignPausedPayload {
   readonly campaignId: string;
   readonly sentCount: number;
   readonly remainingCount: number;
+  /** Unix seconds. */
   readonly pausedAt: number;
+  /** Why Polymorfa paused the campaign. Present only on an automatic pause. */
+  readonly reason?: string;
+  /**
+   * Stable code for an automatic pause, such as `number_quality_dropped` or
+   * `messaging_limit_dropped`. Present only on an automatic pause; treat
+   * unknown codes as a generic automatic pause.
+   */
+  readonly code?: string;
 }
 
 export interface CampaignRescheduledPayload {
@@ -1150,8 +1159,14 @@ export interface CampaignRecipientSkippedPayload {
   readonly campaignId: string;
   readonly recipientId: string;
   readonly phone: string;
+  /** Open skip reason, including `optout`, `frequency_cap_exceeded` or `whatsapp_marketing_limit`. */
   readonly reason: string;
+  /** Unix milliseconds. */
   readonly skippedAt: number;
+  /** Nonnegative sequence position, including zero. */
+  readonly messageIndex?: number;
+  /** UUID of a capped receipt-timed follow-up. */
+  readonly followUpId?: string;
 }
 
 export interface CampaignThrottledPayload {

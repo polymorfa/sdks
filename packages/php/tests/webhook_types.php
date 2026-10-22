@@ -26,6 +26,14 @@ function typedWebhookConsumer(Polymorfa\WebhookEvent $event): void
                 typedWebhookString($known['payload']['status']);
             }
             break;
+        case 'campaign.paused':
+            if (isset($known['payload']['reason'])) { typedWebhookString($known['payload']['reason']); }
+            if (isset($known['payload']['code'])) { typedWebhookString($known['payload']['code']); }
+            break;
+        case 'campaign.recipient_skipped':
+            if (isset($known['payload']['messageIndex'])) { typedWebhookNumber($known['payload']['messageIndex']); }
+            if (isset($known['payload']['followUpId'])) { typedWebhookString($known['payload']['followUpId']); }
+            break;
         case 'campaign.rescheduled':
             typedWebhookNumber($known['payload']['rescheduledAt']);
             break;

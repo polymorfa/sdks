@@ -900,3 +900,31 @@ retry policy or feature availability is added by these SDK fields.
 `WebhookDelivery::Single` contains a `Box<WebhookEvent>` to keep the delivery enum
 compact. Pattern matching exposes the box; event methods remain available through
 automatic dereferencing. The signed payload and batch member order are unchanged.
+
+## Campaign webhook metadata (unreleased source)
+
+Automatic `campaign.paused` payloads can include open-string `reason` and
+`code`; manual pauses omit both. `pausedAt` is Unix seconds.
+`campaign.recipient_skipped` can include nonnegative `messageIndex` (including
+zero) and a UUID `followUpId`. `skippedAt` is Unix milliseconds. Missing optional
+fields remain absent. Do not infer a pause cause from an unknown future code.
+
+```rust
+use polymorfa_sdk::{webhook_payloads::KnownWebhookPayload, webhooks::WebhookEvent};
+
+// Pass an event verified by construct_delivery.
+fn handle_campaign_event(event: WebhookEvent) {
+if let WebhookEvent::Known { payload, .. } = event {
+    match payload {
+        KnownWebhookPayload::CampaignPaused(p) => println!("{:?} {}", p.code, p.paused_at), // seconds
+        KnownWebhookPayload::CampaignRecipientSkipped(p) => println!("{:?} {:?} {}", p.message_index, p.follow_up_id, p.skipped_at), // milliseconds
+        _ => {}
+    }
+}
+}
+```
+
+These are verified-event handling fragments, not complete receivers. Preserve
+whole-body signature verification before decoding and deduplicate batch members.
+See [the scoped source contract and compatibility notes](../../docs/campaign-webhook-metadata.md).
+Package publication and matching API environment acceptance remain separate gates.

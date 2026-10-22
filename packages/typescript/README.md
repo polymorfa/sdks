@@ -3433,3 +3433,28 @@ terminator; a blank line resets the budget. Oversized frames reconnect from the
 previous validated cursor. Storage still commits the event, saves its checkpoint
 with CAS, then manually acknowledges it. These changes are unreleased source
 behavior.
+
+## Campaign webhook metadata (unreleased source)
+
+Automatic `campaign.paused` payloads can include open-string `reason` and
+`code`; manual pauses omit both. `pausedAt` is Unix seconds.
+`campaign.recipient_skipped` can include nonnegative `messageIndex` (including
+zero) and a UUID `followUpId`. `skippedAt` is Unix milliseconds. Missing optional
+fields remain absent. Do not infer a pause cause from an unknown future code.
+
+```ts
+// event is a verified WebhookEvent from constructWebhookDelivery.
+if (event.event === "campaign.paused")
+  console.log(event.payload.code, event.payload.pausedAt); // seconds
+if (event.event === "campaign.recipient_skipped")
+  console.log(
+    event.payload.messageIndex,
+    event.payload.followUpId,
+    event.payload.skippedAt,
+  ); // milliseconds
+```
+
+These are verified-event handling fragments, not complete receivers. Preserve
+whole-body signature verification before decoding and deduplicate batch members.
+See [the scoped source contract and compatibility notes](../../docs/campaign-webhook-metadata.md).
+Package publication and matching API environment acceptance remain separate gates.

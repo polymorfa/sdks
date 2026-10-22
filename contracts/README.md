@@ -637,6 +637,20 @@ from API `dev` merge commit `8d248b578a7c76034b30a5a97349adcd15ce5c55`
 (polymorfa/polymorfa#406), with both source paths and file hashes.
 `campaign-ab-tests-contract.test.ts` checks the SDK types against it.
 
+## Campaign webhook metadata supplement
+
+`campaign-paused-reasons.json` pins the two accepted webhook schemas at API
+`9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f`, with the exact Messaging spec hash.
+The original pause producer is API326 `a6812f1570814346d5e2a973ed1b855026981793`.
+Pause `reason`/`code` remain optional open strings. The accepted recipient-skip
+schema also includes optional cap `messageIndex`/`followUpId`; the old326 full
+skip schema is not claimed equivalent. Pause timestamps are seconds and skip
+timestamps milliseconds. `webhook-contract.test.ts` overlays only these scoped
+schemas; all-six source/test attribution is in
+`native-campaign-webhook-metadata.json`. Compatibility and source-only package
+examples are in `docs/campaign-webhook-metadata.md`. Full baseline snapshots,
+coverage operation pins and API date remain unchanged.
+
 ## Campaign follow-up supplement
 
 `campaign-follow-ups.json` records the receipt-timed follow-up schemas

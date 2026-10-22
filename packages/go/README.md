@@ -807,3 +807,30 @@ includes `simultaneousCalls`; the webhook does not acquire an evidence object.
 
 No browser/client-token authority, call media behavior, automatic state read,
 retry policy or feature availability is added by these SDK fields.
+
+## Campaign webhook metadata (unreleased source)
+
+Automatic `campaign.paused` payloads can include open-string `reason` and
+`code`; manual pauses omit both. `pausedAt` is Unix seconds.
+`campaign.recipient_skipped` can include nonnegative `messageIndex` (including
+zero) and a UUID `followUpId`. `skippedAt` is Unix milliseconds. Missing optional
+fields remain absent. Do not infer a pause cause from an unknown future code.
+
+```go
+// event is a verified polymorfa.WebhookEvent.
+payload, known, err := event.TypedPayload()
+if err != nil { return err }
+if known {
+    switch p := payload.(type) {
+    case *polymorfa.CampaignPausedPayload:
+        fmt.Println(p.Code, p.PausedAt) // seconds; nil code for a manual pause
+    case *polymorfa.CampaignRecipientSkippedPayload:
+        fmt.Println(p.MessageIndex, p.FollowUpID, p.SkippedAt) // milliseconds; preserve *MessageIndex == 0
+    }
+}
+```
+
+These are verified-event handling fragments, not complete receivers. Preserve
+whole-body signature verification before decoding and deduplicate batch members.
+See [the scoped source contract and compatibility notes](../../docs/campaign-webhook-metadata.md).
+Package publication and matching API environment acceptance remain separate gates.
