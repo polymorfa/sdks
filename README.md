@@ -2,7 +2,7 @@
 
 Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 
-The development branch contains the TypeScript server SDK, a framework-neutral
+The repository contains the TypeScript server SDK, a framework-neutral
 browser runtime, shared UI contracts, Web Components, React bindings, thin
 Next.js server helpers, and a production-gated developer assistant. The exact Messaging and Platform sources are pinned in
 `contracts/source.json`; the Graph-compatible catalog, marketing status and
@@ -34,29 +34,31 @@ The `@polymorfa/sdk` package root supports Node.js 20+, Cloudflare Workers,
 Deno, and Bun for HTTP clients and native webhook verification. Its `/node`
 entry contains Node.js file helpers.
 
-The public packages are complete development artifacts on `dev`. They
-publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
-Polymorfa npm organization. No mobile-native binding is part of this milestone.
+SDK changes target `main`. Nightly prereleases use npm's `dev` tag after matching
+staging acceptance; stable releases require matching production acceptance and
+the protected release workflow. Source availability does not establish package
+publication or feature availability. See [the release gates](docs/releasing.md).
 
 For a small browser preview against staging, see the [Calls example](examples/calls-example/README.md).
 
 ## TypeScript development install
 
-Each push to `dev` publishes the public packages to npm under the `dev`
-dist-tag, with versions such as `0.1.0-dev.20260919094454`:
+The daily workflow checks `main` at 02:00 UTC and publishes eligible nightly
+packages under the `dev` dist-tag, with versions such as
+`0.1.0-dev.20260919094454`. Missing or mismatched staging acceptance blocks
+publication:
 
 ```bash
 npm install @polymorfa/sdk@dev
 npm install @polymorfa/browser@dev   # browser apps
 ```
 
-Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. No
-stable (`latest`) release exists. Publishing starts once the npm scope and
-trusted publisher are configured; until `npm view @polymorfa/sdk dist-tags`
-shows a `dev` tag, build from source and install the packed tarballs:
+Pin an exact version for reproducible installs. Check
+`npm view @polymorfa/sdk dist-tags` for published channels. To use unpublished
+changes, check out their exact SDK commit and build packed tarballs:
 
 ```bash
-git clone --branch dev https://github.com/polymorfa/sdks.git
+git clone --branch main https://github.com/polymorfa/sdks.git
 cd sdks
 npm ci
 npm run build:workspaces
@@ -67,7 +69,7 @@ npm install /path/to/sdks/polymorfa-sdk-0.1.0-dev.0.tgz   # from your applicatio
 See [docs/releasing.md](docs/releasing.md) for the version scheme and the
 publishing workflow.
 
-`npm install github:polymorfa/sdks#dev` no longer installs the SDK: the
+`npm install github:polymorfa/sdks#main` does not install the SDK: the
 repository root is a private workspace, and `@polymorfa/sdk` lives in
 `packages/typescript`.
 
@@ -864,6 +866,22 @@ omitting `allow` snapshots a session's configured actions; Customer omission sel
 original Customer action set. `chats_read`, `chats_manage`, `contact_write`, and
 `contact_delete` are reserved for enrolled regional beta access. These types do
 not establish regional availability or enable access by themselves.
+
+An explicit empty session list seals zero actions. Keep it distinct from
+omission when constructing the server-side mint request:
+
+| SDK        | Omit the session ceiling                              | Seal zero session actions |
+| ---------- | ----------------------------------------------------- | ------------------------- |
+| TypeScript | Omit `allow`                                          | `allow: []`               |
+| Go         | `Allow: nil`                                          | `Allow: []string{}`       |
+| Python     | Omit the `allow` key                                  | `"allow": []`             |
+| PHP        | Omit the `allow` key                                  | `'allow' => []`           |
+| Rust       | `ClientTokenTarget::Session { session, allow: None }` | Set `allow: Some(vec![])` |
+| C#         | Omit `Allow` or use `null`                            | `Allow: []`               |
+
+Rust uses `SessionClientAction` for session ceilings and `CustomerClientAction`
+for Customer ceilings. Customer lists remain non-empty. The API validates
+actions, enrollment and live rules; these request types grant no authority.
 
 ### Calls
 

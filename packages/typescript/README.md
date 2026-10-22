@@ -99,6 +99,125 @@ capabilities as server API keys. `Client.events.stream()` exposes an
 `AsyncIterable` for the separate [server event stream](#stream-events-in-real-time),
 subject to scope and beta access. Live forwarding belongs to `polymorfa listen`.
 
+## Campaign and custody contract additions in source
+
+The development source adds helpers for the `2026-10-14` contract. These
+additions are unpublished until the matching package release passes its API
+acceptance gate. A helper does not grant beta enrollment, permissions, funding,
+or a supported connection type.
+
+| Resource                               | Added methods                                                                                                      |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `MessagingClient.campaigns`            | `getReplyFlow`, `createReplyFlow`, `setReplyFlow`, `testSend`, `links`, `exportRecipients`                         |
+| Organization `Client.campaigns`        | The same six methods, plus `listLaunchApprovals` and `getSettings`                                                 |
+| Project `Client.campaigns`             | The seven project-confined methods; organization settings and approval writes are unavailable                      |
+| Organization `Client.audienceProfiles` | `list`, `retrieve`, `put`, `delete`, `listConsent`, and `imports.create`, `imports.retrieve`, `imports.cancel`     |
+| Organization `Client.audiences`        | `createFromCampaign`                                                                                               |
+| Organization `Client.optOuts`          | `getConfirmationSettings`, `updateConfirmationSettings`, `getConfirmationSummary`                                  |
+| Project `Client.signalCustody`         | `retrieve`, `update`, `retrieveCustomer`, `updateCustomer`; organization aliases are on `projects` and `customers` |
+
+These helpers send `Polymorfa-Version: 2026-10-14` when their request options
+omit `apiVersion`. An explicit request option takes precedence. Unrelated
+methods retain the existing global `2026-09-22` default. Project campaign
+methods derive their project selector from the client; organization campaign
+aliases require an explicit project selector. Messaging methods take a project
+slug, not a Platform project UUID.
+
+```ts
+const project = platform.project("018f0000-0000-7000-8000-000000000001");
+await project.campaigns.setReplyFlow(
+  "018f0000-0000-7000-8000-000000000002",
+  { replyFlowId: null }, // Explicitly detach; omission is invalid.
+);
+const customerId = "018f0000-0000-7000-8000-000000000003";
+const defaults = await project.signalCustody.retrieveCustomer(customerId);
+await project.signalCustody.updateCustomer(customerId, {
+  expectedRevision: defaults.data.revision,
+  signalModeDefault: null,
+});
+```
+
+Read the Customer's own custody revision with `retrieveCustomer(customerId)`
+before updating it. Customer `null` restores inheritance; Project updates
+require an explicit mode. Defaults apply to future reservations and never
+convert existing Numbers or move Signal keys.
+
+`testSend` captures an idempotency key and body for retries. On methods that
+generate a key, the explicit `idempotencyKey` option takes precedence; otherwise
+the SDK preserves a caller's `Idempotency-Key` header regardless of casing.
+Equal case aliases collapse to one key, and conflicting aliases are refused
+before HTTP. Keep the same caller key when reconciling an uncertain response.
+Other new writes default to no automatic retries, even if a header key is
+supplied. An import's
+body `replayKey` is a separate server identity. Explicit retry overrides do not
+create a replay guarantee; reconcile ambiguous writes and revision conflicts
+before submitting another change. HTTP cancellation stops the waiter, not an
+admitted send or import. Cancel an import through `imports.cancel(jobId)`.
+
+`exportRecipients` returns one buffered `{ csv, nextCursor, filename }` page
+with the original response metadata. It preserves server CSV quoting and never
+fetches the next page automatically. A filtered export cannot include a cursor
+or a limit below 1,000. Profiles and imports contain customer-supplied campaign
+data; they do not synchronize WhatsApp contacts. Consent assertions never
+override opt-outs. Error objects expose the server's `param` when supplied.
+
+The supplement's JSON helpers check status 200, `application/json`, envelopes,
+required fields and nullable values before returning typed data. Malformed
+successes raise `invalid_response` with safe response metadata, without the
+response body. Compatible extension fields remain available. A malformed result
+does not cause an admitted write to be replayed. Customer custody methods always
+require a Customer UUID; omission never selects Project defaults.
+
+### Existing methods with 2026-10-14 fields
+
+Campaign returns include `trackedLinks`, nullable `experimentOutcome` and
+`followUp`, and optional nullable `variableMapping`. Create accepts a non-null
+mapping; PATCH accepts `variableMapping: null` or `templateId: null` as a reset.
+Mapping keys and sources use the same variable-name rules, including valid
+numeric keys. Tracked-link keys are unique; different keys may share a URL.
+Recipient pages accept `reason` together with status, cursor and limit, and
+preserve nullable failure/timing fields and `messagesSent: 0`. These are ordinary
+JSON pages; CSV export has its separate filter rules.
+
+Organization `campaigns.launch` requires `{ projectId, scheduledAt?,
+skipMissingVariables? }`. The selected project is explicit and the request is
+closed. Project campaign resources retain only their seven confined supplement
+methods; they do not expose old CRUD or lifecycle methods. Approval, funding,
+consent and feature admission remain API decisions.
+
+```ts
+await messaging.quickLinks.create({
+  signalMode: "zero_knowledge",
+  configuration: {
+    historySync: { consent: "ask", delivery: "descriptor" },
+  },
+});
+await project.sessionConfiguration.update({
+  revision: 0,
+  configuration: { set: { historySync: { delivery: "descriptor" } } },
+});
+```
+
+QuickLink `signalMode` belongs only to initial invitations. Supplementary
+`add_connection` invitations require an existing session and `addConnection`;
+they cannot change custody or Customer ownership. Never put custody aliases in
+generic configuration. New mode or descriptor intent selects 2026-10-14 only
+when request `apiVersion` is absent. Explicit versions are preserved. Ordinary
+retrieves remain on the existing version unless you request 2026-10-14. Read
+delivery is `archive | descriptor`; writes accept only `descriptor`.
+`historySync.delivery` is an explicit reset key. A whole `historySync` reset on
+an older version retains the producer's legacy reset behavior and saved delivery.
+Requested history and consent-limited effective history remain separate.
+
+History retry returns required `{ requestId, status: "requested" }`; deletion
+validates `status: "deleted"` before resolving. Both commands require server
+credentials and preserve safe failure metadata. Direct media upload grants also
+require server credentials; selecting direct refuses a Client token before
+reading the source. Client tokens can use authorized relay upload or a customer
+transport. None of these methods grants scopes, beta enrollment, browser tunnel
+authority, real-device admission or deployed availability. The additions remain
+subject to the unpublished source acceptance gate above.
+
 ## System and Bridge clients
 
 `SystemClient` is credential-free. Its four methods preserve the normal
@@ -1855,10 +1974,16 @@ progress.
 
 ## Channels
 
-`history.sync` payloads distinguish linked-device indexes and their preserved
-WhatsApp archive from Cloud history's `{ kind: "history", value }` envelope.
-Narrow `HistorySyncPayload` with `"kind" in payload` before reading provider-specific
-fields; `LinkedHistorySyncPayload` and `CloudHistorySyncPayload` are exported.
+`history.sync` payloads distinguish linked-device archives, Cloud history's
+`{ kind: "history", value }` envelope and projected descriptor notifications.
+Check `"delivery" in payload` for `DirectHistorySyncPayload`, then narrow its
+exclusive `media` or `inline` branch. Other payloads narrow by `"kind" in payload`
+for Cloud versus `LinkedHistorySyncPayload`. All types are root exports.
+Descriptor identity is `whatsapp_ids`, with optional `original_whatsapp_ids`;
+`oldestMessageAt` is ISO text and media has type `md-msg-hist`. Raw runner
+message IDs and timestamp fields are not the public webhook shape. Never log
+key-bearing media descriptors. Describing a notification does not verify or
+persist its compressed history content.
 
 `MessagingClient.channels` exposes the complete 13-operation Channels tag for
 connected Linked Device sessions. Channels are WhatsApp newsletters in the
@@ -3169,6 +3294,75 @@ the event ID as the deduplication key. Eligibility is checked before publication
 and delivery; withdrawn events wait for re-enablement and expire after seven days.
 These additions require an API and SDK release containing this contract.
 
+### Customer-owned media and history (development contract)
+
+The media upload helpers and `@polymorfa/sdk/history` require the 2026-10-14 API
+contract. Their presence in a development build does not establish deployed
+availability. `messaging.whatsappMedia.upload()` encrypts media locally and
+supports encrypted relay or a short-lived direct upload grant. The direct path
+preserves the exact grant URL and keeps API credentials off the media host.
+`toWhatsAppMediaSendDescriptor()` constructs the standard message descriptor;
+standard descriptor sending includes the media key in the API request. Use the
+customer-owned Signal service for message stanza encryption under customer key
+custody.
+
+`downloadHistoryChunk()` verifies, decrypts, inflates and decodes chunks locally;
+inline notifications skip the download. Set `maxBytes` and `maxInflatedBytes`
+for application limits. Protobuf integer values and unknown fields survive
+processing. The helper does not download a notification automatically.
+
+History decoding accepts exactly one gzip, zlib or raw-deflate stream on Node.js
+20 and later, browsers and Workers. It validates wrapper checksums and rejects
+truncated streams, dictionaries, concatenated streams and trailing bytes,
+including zero padding. It uses the pinned pako runtime dependency and does not
+require `DecompressionStream`. Keep the MIT and Zlib notices from
+`THIRD_PARTY_NOTICES` when bundling the history entry point.
+
+`maxBytes` defaults to 256 MiB for downloads and inline payloads;
+`maxInflatedBytes` defaults to 512 MiB. Both limits must be positive safe
+integers. Inflation uses input windows of at most 8 KiB and output windows of
+at most 64 KiB. It snapshots compressed input before yielding. Joining the
+output temporarily needs another output-sized allocation; these ceilings do
+not promise a small memory footprint.
+
+Pass `signal` to `downloadHistoryChunk()` to cancel downloads and local decoding,
+including inline payloads. Cancellation is checked between bounded calls and
+output copies, with task yields after at most 32 continuing calls or copies.
+It cannot interrupt a synchronous call or protobuf parsing and has no hard
+latency guarantee. `decodeHistorySyncPayload()` retains its existing options
+without a signal. Invalid compressed data reports `media_invalid_ciphertext`,
+size overflow reports `media_too_large` and download cancellation reports
+`request_cancelled`. Internal dependency or allocation failures remain distinct.
+No decoded chunk is returned before full compressed-stream validation.
+
+After verifying and storing a chunk, `messaging.historySync.deleteChunk()` asks
+the linked device to delete its CDN blob. Its `fileEncSha256` is the encrypted
+chunk's 32-byte SHA-256 encoded as standard base64, including the trailing `=`.
+In Node.js, use `Buffer.from(digest).toString("base64")`. The upload grant's
+base64url hash representation does not apply to this deletion request. Deletion
+does not remove your local copy and is never performed automatically by the
+download helper.
+
+The Node-only `@polymorfa/sdk/s3` entry point provides `S3MediaStore`. Its
+`archive()` verifies a private local spool before it writes the plaintext to
+S3-compatible storage, then removes the spool on every outcome. Use
+`scratchDirectory` to select that private directory. `uploadToWhatsApp()` reads
+an object twice with a matching ETag; both passes must see the same object.
+Install the optional `@aws-sdk/client-s3` peer for S3 and `@bufbuild/protobuf`
+for history decoding. Never log media keys or upload-grant URLs.
+
+### Storing projected history descriptors
+
+With `@polymorfa/storage`, use `decodeHistoryDescriptor` for projected media or
+inline notifications. `decodeHistory` handles archives only. The descriptor
+callback must return a non-null storage projection; authorized download,
+full-schema decoding and custody remain application responsibilities. The default
+`historyDescriptorMode: "decode"` refuses undecoded descriptors before persistence,
+checkpoint or ACK. Explicit `"metadata-only"` skips decoders and consumes progress
+and deduplication state, so ordinary replay cannot import content later. See the
+storage package README for the callback example, native fallback identities and
+checkpoint/ACK ordering. Packages remain unpublished by this change.
+
 ## Campaign contact frequency caps (beta)
 
 `client.campaigns.getFrequencyCap()` reads team limits and their revision.
@@ -3215,3 +3409,14 @@ ordinary sequences) and must be a whole multiple of `delayUnit` when supplied.
 Tracked-link GETs, including scanner/preview requests, trigger enabled exits;
 HEAD requests do not. Server beta, sender, consent, opt-out and funding checks
 remain authoritative. These additions are not proof of registry availability.
+
+### Event-stream validation and limits
+
+Project event streams retain the previous resume cursor until the base64 payload
+and webhook envelope validate. Malformed server data follows the existing
+reconnect policy. A frame has a 4 MiB UTF-8 byte budget, including incomplete
+lines, all `data:` lines, field syntax and comments. CRLF counts as one line
+terminator; a blank line resets the budget. Oversized frames reconnect from the
+previous validated cursor. Storage still commits the event, saves its checkpoint
+with CAS, then manually acknowledges it. These changes are unreleased source
+behavior.

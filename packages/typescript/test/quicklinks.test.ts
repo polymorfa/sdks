@@ -58,6 +58,7 @@ describe("MessagingClient.quickLinks", () => {
     const supplement = {
       purpose: "add_connection",
       session: "existing/number",
+      addConnection: "official_api",
     } satisfies CreateQuickLinkRequest;
     // @ts-expect-error supplementary setup requires an existing Number session
     const invalid: CreateQuickLinkRequest = { purpose: "add_connection" };

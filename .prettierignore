@@ -5,3 +5,17 @@ coverage/
 contracts/openapi.messaging.json
 contracts/openapi.platform.json
 package-lock.json
+packages/go/
+packages/python/
+packages/php/
+packages/rust/
+packages/dotnet/
+examples/**/vendor/
+examples/**/target/
+examples/**/assets/
+examples/**/dist/
+examples/**/bin/
+examples/**/obj/
+examples/rust/yew/frontend/public/elements.js
+packages/typescript/src/history/gen/
+packages/typescript/proto/whatsapp.proto
