@@ -56,3 +56,22 @@ var voipFixtures = []operationFixture{
 		return wireData(m.VoIP().PreviewCallLink(ctx, PreviewCallLinkRequest{CreateCallLinkRequest: CreateCallLinkRequest{Session: "s"}, Token: "link"}))
 	}},
 }
+
+func init() {
+	for _, fixture := range []struct {
+		body     UpdateCallSettingsRequest
+		expected string
+	}{
+		{UpdateCallSettingsRequest{SimultaneousCalls: callsBool(true), AcknowledgeRisk: callsBool(true)}, `{"simultaneousCalls":true,"acknowledgeRisk":true}`},
+		{UpdateCallSettingsRequest{SimultaneousCalls: callsBool(false)}, `{"simultaneousCalls":false}`},
+		{UpdateCallSettingsRequest{SimultaneousCalls: callsBool(true)}, `{"simultaneousCalls":true}`},
+		{UpdateCallSettingsRequest{SimultaneousCalls: callsBool(true), AcknowledgeRisk: callsBool(false)}, `{"simultaneousCalls":true,"acknowledgeRisk":false}`},
+	} {
+		b := fixture.body
+		expected := fixture.expected
+		voipFixtures = append(voipFixtures, operationFixture{"MessagingClient.VoIP.UpdateCallSettings.simultaneous", "PUT", "/platform/sessions/s/call-settings", "", string(expected), `{"success":true,"data":{"callsEnabled":true,"conferenceMode":false,"inboundRoute":"clients","sipTrunkId":null,"sipClaim":false,"hostCloudApiCalls":false,"simultaneousCalls":true,"revision":2,"updatedAt":null}}`, "data.simultaneousCalls", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+			return wireData(m.VoIP().UpdateCallSettings(ctx, "s", b))
+		}})
+	}
+}
+func callsBool(v bool) *bool { return &v }

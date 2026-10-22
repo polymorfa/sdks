@@ -1,3 +1,4 @@
+import "./check-calls-simultaneous-calls.mjs";
 import { checkOfficialRound2 } from "./check-official-round2.mjs";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";

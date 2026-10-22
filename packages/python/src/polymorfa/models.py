@@ -455,6 +455,8 @@ class CallAcceptanceResult(TypedDict):
 
 
 class UpdateCallSettings(TypedDict, total=False):
+    simultaneousCalls: bool
+    acknowledgeRisk: bool
     callsEnabled: bool
     conferenceMode: bool
     inboundRoute: Literal["clients", "sip_trunk"]

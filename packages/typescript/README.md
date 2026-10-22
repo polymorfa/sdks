@@ -709,8 +709,8 @@ unlimited concurrent calls, incoming, placed and campaign; Cloud API Numbers
 ignore it. WhatsApp's own apps never hold two calls at once, so this is unusual
 behavior for a WhatsApp account, and it voids Ban Insurance: a ban whose 30-day
 window overlaps any period the setting was on is not refunded. Turning it on
-requires `acknowledgeRisk: true` and a team API key. The SDK rejects the update
-before sending when `acknowledgeRisk` is missing; a project token can turn the
+requires `acknowledgeRisk: true` and a team API key on the off-to-on transition.
+The API checks the stored state; the SDK forwards the supplied fields. A project token can turn the
 setting off but receives `PolymorfaAuthorizationError` (`permission_denied`)
 when it tries to turn it on. An update changes
 only the settings you send. Pass the `revision` you read as

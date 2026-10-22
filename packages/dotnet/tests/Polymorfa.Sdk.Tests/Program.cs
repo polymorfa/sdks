@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.Json;
 using Polymorfa.Sdk;
 
+if (args.Contains("--simultaneous-calls-only")) { await CallsTests.RunAsync(); return; }
+
 if (args.Contains("--official-round2-only")) { await OfficialRound2Tests.RunAsync(); return; }
 
 OpaqueCredentialTests.Run();

@@ -743,7 +743,14 @@ class BanSafeClaimPayload(TypedDict):
     incidentId: str
     phoneNumber: str
     status: Literal["filed", "under_review", "approved", "denied", "paid", "reversed"]
-    verdict: Literal["other_device", "customer_conduct", "shared_network", "ours", "inconclusive"]
+    verdict: Literal[
+        "other_device",
+        "customer_conduct",
+        "shared_network",
+        "simultaneous_calls",
+        "ours",
+        "inconclusive",
+    ]
     windowStart: str
     windowEnd: str
     measuredCents: float

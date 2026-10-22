@@ -20,7 +20,7 @@ fn incident() -> Value {
     json!({"id":"incident","sessionId":"sid","session":"support","phoneNumber":"+1555","projectId":"project","kind":"customer_report","source":"customer","resolution":"open","ambiguous":true,"startedAt":"now","endsAt":null,"closedAt":null,"closedBy":null,"claimId":"claim","note":"reported","reportedBy":"member","createdAt":"now"})
 }
 fn claim() -> Value {
-    json!({"id":"claim","incidentId":"incident","sessionId":"sid","session":"support","phoneNumber":"+1555","projectId":"project","status":"under_review","verdict":"inconclusive","windowStart":"then","windowEnd":"now","measuredCents":2.123456,"capCents":3.0,"amountCents":0.0,"evidence":{"attributionRuleVersion":1,"windowDays":7,"deviceEvidence":true,"otherDevices":2,"restrictedInWindow":true,"criticalFindingDays":1,"sharedConnection":false,"measuredHours":100},"summary":"Review","reason":"evidence","decidedAt":null,"paidAt":null,"createdAt":"now"})
+    json!({"id":"claim","incidentId":"incident","sessionId":"sid","session":"support","phoneNumber":"+1555","projectId":"project","status":"under_review","verdict":"inconclusive","windowStart":"then","windowEnd":"now","measuredCents":2.123456,"capCents":3.0,"amountCents":0.0,"evidence":{"attributionRuleVersion":1,"windowDays":7,"deviceEvidence":true,"otherDevices":2,"restrictedInWindow":true,"criticalFindingDays":1,"sharedConnection":false,"simultaneousCalls":false,"measuredHours":100},"summary":"Review","reason":"evidence","decidedAt":null,"paidAt":null,"createdAt":"now"})
 }
 fn signal() -> Value {
     json!({"key":"delivery","label":"Delivery","group":"delivery","kind":"code_counts","unit":"count","description":"Codes","measured":true,"value":[1.0,2.0],"sampleSize":2,"codes":[{"code":429,"count":2}]})

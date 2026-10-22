@@ -32,7 +32,14 @@ IncidentKind = Literal[
     "customer_report",
 ]
 ClaimStatus = Literal["filed", "under_review", "approved", "denied", "paid", "reversed"]
-ClaimVerdict = Literal["other_device", "customer_conduct", "shared_network", "ours", "inconclusive"]
+ClaimVerdict = Literal[
+    "other_device",
+    "customer_conduct",
+    "shared_network",
+    "simultaneous_calls",
+    "ours",
+    "inconclusive",
+]
 SignalKind = Literal["number", "boolean", "enum", "histogram", "code_counts"]
 SignalUnit = Literal["count", "milliseconds", "unix_milliseconds", "ratio", "none"]
 CollectionState = Literal["fresh", "stale", "not_collected", "unsupported"]
@@ -244,6 +251,7 @@ class IncidentReceipt(TypedDict):
 
 
 class ClaimEvidence(TypedDict):
+    simultaneousCalls: bool
     attributionRuleVersion: int | None
     windowDays: int
     deviceEvidence: bool

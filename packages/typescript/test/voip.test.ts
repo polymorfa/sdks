@@ -695,8 +695,6 @@ describe("VoipResource", () => {
     );
 
     for (const body of [
-      { simultaneousCalls: true },
-      { simultaneousCalls: true, acknowledgeRisk: false },
       { acknowledgeRisk: true },
       { simultaneousCalls: "on" },
       { simultaneousCalls: false, acknowledgeRisk: "yes" },
@@ -708,6 +706,77 @@ describe("VoipResource", () => {
         ),
       ).toThrow(PolymorfaValidationError);
     expect(server.requests).toHaveLength(3);
+  });
+
+  it("leaves stored-state acknowledgment and revision decisions to the API", async () => {
+    const settings = {
+      callsEnabled: true,
+      conferenceMode: false,
+      inboundRoute: "clients",
+      sipTrunkId: null,
+      sipClaim: false,
+      hostCloudApiCalls: false,
+      simultaneousCalls: true,
+      revision: 2,
+      updatedAt: null,
+    };
+    const server = await serve([
+      json({ success: true, data: settings }),
+      json(
+        {
+          success: false,
+          error: {
+            code: "invalid_parameter",
+            message: "Acknowledgment required.",
+            param: "acknowledgeRisk",
+          },
+        },
+        400,
+      ),
+      json(
+        {
+          success: false,
+          error: {
+            code: "state_conflict",
+            message: "Revision changed.",
+            param: "expectedRevision",
+          },
+        },
+        409,
+      ),
+    ]);
+    const sdk = client(server);
+    expect(
+      (
+        await sdk.voip.updateCallSettings("support", {
+          simultaneousCalls: true,
+        })
+      ).data.data.simultaneousCalls,
+    ).toBe(true);
+    await expect(
+      sdk.voip.updateCallSettings("support", {
+        simultaneousCalls: true,
+        acknowledgeRisk: false,
+      }),
+    ).rejects.toMatchObject({
+      code: "invalid_parameter",
+      param: "acknowledgeRisk",
+    });
+    await expect(
+      sdk.voip.updateCallSettings("support", {
+        simultaneousCalls: true,
+        acknowledgeRisk: true,
+        expectedRevision: 1,
+      }),
+    ).rejects.toMatchObject({
+      code: "state_conflict",
+      param: "expectedRevision",
+    });
+    expect(server.requests.map((r) => JSON.parse(r.body))).toEqual([
+      { simultaneousCalls: true },
+      { simultaneousCalls: true, acknowledgeRisk: false },
+      { simultaneousCalls: true, acknowledgeRisk: true, expectedRevision: 1 },
+    ]);
   });
 
   it("turns calling off and reports calls_disabled refusals", async () => {

@@ -710,14 +710,12 @@ change scopes, or establish package publication or deployed acceptance.
 
 ## Simultaneous calls supplement
 
-`calls-simultaneous-calls.json` records the session call settings response and
-update request, `BanSafeClaim`, `BanSafeClaimEvidence` and the Messaging
-`BanSafeClaimPayload` schemas from API source commit
-`2bd4467454d019c67e2f74f0f813744b4c48e5a5`, the head of the unmerged
-polymorfa/polymorfa#559 branch `claude/calls-simultaneous-calls-20261010`, with
-both source paths and file hashes. The supplement is `published: false`, and the
-release gate checks it per audience, so no package that contains these types
-can publish until #559 merges and the full snapshots are repinned to a merged
-API `dev` commit. At that point, replace `commit` with the merge commit,
-refresh both hashes and set `published` to `true`.
-`calls-simultaneous-calls-contract.test.ts` checks the SDK types against it.
+`calls-simultaneous-calls.json` pins the exact GET/PUT call-settings operations,
+request/response schemas and Ban Insurance claim/webhook changes to accepted
+API #559 merge `c1a43a1eb409ad57c2b9677c606a3d42d7b5598c`. It records full
+source hashes and canonical fragment hashes for each audience.
+`native-calls-simultaneous-calls.json` attributes the six native counterparts
+and tests. These are scoped supplements; the global `171a9683` baseline is
+unchanged. `published: false` retains the release hold. Accepted API source
+alone does not prove deployment, registry publication or installed-client
+acceptance. PHP and Rust qualification remains pending.

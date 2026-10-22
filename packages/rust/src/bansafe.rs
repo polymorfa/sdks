@@ -28,7 +28,7 @@ enumeration!(ResolveReason {Clean=>"clean",KeyRetired=>"key_retired",NumberRemov
 enumeration!(IncidentKind {CapWarning=>"cap_warning",CapReached=>"cap_reached",Timelock=>"timelock",TemporaryBan=>"temporary_ban",PermanentBan=>"permanent_ban",ConnectBlocked=>"connect_blocked",CustomerReport=>"customer_report"});
 enumeration!(IncidentSource {Runtime=>"runtime",Customer=>"customer"});
 enumeration!(ClaimStatus {Filed=>"filed",UnderReview=>"under_review",Approved=>"approved",Denied=>"denied",Paid=>"paid",Reversed=>"reversed"});
-enumeration!(ClaimVerdict {OtherDevice=>"other_device",CustomerConduct=>"customer_conduct",SharedNetwork=>"shared_network",Ours=>"ours",Inconclusive=>"inconclusive"});
+enumeration!(ClaimVerdict {OtherDevice=>"other_device",CustomerConduct=>"customer_conduct",SharedNetwork=>"shared_network",SimultaneousCalls=>"simultaneous_calls",Ours=>"ours",Inconclusive=>"inconclusive"});
 enumeration!(SignalKind {Number=>"number",Boolean=>"boolean",Enum=>"enum",Histogram=>"histogram",CodeCounts=>"code_counts"});
 enumeration!(SignalUnit {Count=>"count",Milliseconds=>"milliseconds",UnixMilliseconds=>"unix_milliseconds",Ratio=>"ratio",None=>"none"});
 enumeration!(CollectionState {Fresh=>"fresh",Stale=>"stale",NotCollected=>"not_collected",Unsupported=>"unsupported"});
@@ -134,7 +134,7 @@ model!(IncidentReceipt {
     session: String,
     occurred_at: String
 });
-model!(ClaimEvidence {attribution_rule_version:Option<u32>,window_days:u32,device_evidence:bool,other_devices:u32,restricted_in_window:bool,critical_finding_days:u32,shared_connection:bool,measured_hours:u32});
+model!(ClaimEvidence {attribution_rule_version:Option<u32>,window_days:u32,device_evidence:bool,other_devices:u32,restricted_in_window:bool,critical_finding_days:u32,shared_connection:bool,simultaneous_calls:bool,measured_hours:u32});
 model!(Claim {id:String,incident_id:String,session_id:String,session:String,phone_number:String,project_id:String,status:ClaimStatus,verdict:ClaimVerdict,window_start:String,window_end:String,measured_cents:f64,cap_cents:f64,amount_cents:f64,evidence:ClaimEvidence,summary:String,reason:String,decided_at:Option<String>,paid_at:Option<String>,created_at:String});
 model!(SignalDefinition {
     key: String,

@@ -54,8 +54,8 @@ const VERDICTS: Record<BanSafeClaimVerdict, true> = {
 };
 
 describe("simultaneous calls contract supplement", () => {
-  it("pins both audiences and stays held until the API change merges", () => {
-    expect(contract.commit).toMatch(/^[0-9a-f]{40}$/);
+  it("pins both audiences and keeps publication held after accepted API source integration", () => {
+    expect(contract.commit).toBe("c1a43a1eb409ad57c2b9677c606a3d42d7b5598c");
     expect(contract.published).toBe(false);
     expect(contract.sources.messaging.sourcePath).toBe(
       "apps/api/docs/openapi.json",

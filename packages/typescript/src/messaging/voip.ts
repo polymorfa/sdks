@@ -458,11 +458,6 @@ export class VoipResource {
         throw new PolymorfaValidationError(`${name} must be a boolean.`);
       }
     }
-    if (simultaneousCalls === true && acknowledgeRisk !== true) {
-      throw new PolymorfaValidationError(
-        "Turning simultaneousCalls on requires acknowledgeRisk: true. It voids Ban Insurance for this Number.",
-      );
-    }
     if (
       inboundRoute !== undefined &&
       inboundRoute !== "clients" &&

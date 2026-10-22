@@ -43,6 +43,7 @@ class CallParticipant(TypedDict):
 
 
 class SessionCallSettings(TypedDict):
+    simultaneousCalls: bool
     callsEnabled: bool
     conferenceMode: bool
     inboundRoute: Literal["clients", "sip_trunk"]

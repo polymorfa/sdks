@@ -4640,6 +4640,12 @@
       "inventory": "contracts/native-official-round2.json",
       "language": "rust",
       "claim": "Source and native wire-fixture attribution, separate from baseline operations and runtime qualification."
+    },
+    "simultaneousCalls": {
+      "inventory": "contracts/native-calls-simultaneous-calls.json",
+      "baselineUnchanged": true,
+      "published": false,
+      "language": "rust"
     }
   }
 }
