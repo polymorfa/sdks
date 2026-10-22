@@ -107,7 +107,10 @@ async def test_public_usage_methods_typed_full_responses_and_metadata(case):
         return httpx.Response(200, json={"data": data}, headers={"x-request-id": "req_usage"})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = await getattr(client.usage, method)(
@@ -133,9 +136,15 @@ async def test_project_usage_binding_and_gate_rejection(token):
         )
 
     credential = (
-        Credential("project_token", "pmfa_pt_" + "a" * 93 + "A")
+        Credential(
+            "project_token",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        )
         if token
-        else Credential("organization_api_key", "pmfa_" + "a" * 72)
+        else Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        )
     )
     cls = AsyncProjectClient if token else AsyncClient
     args = (credential, "project_1") if token else (credential,)
@@ -163,7 +172,10 @@ async def test_usage_iteration_preserves_filters_and_does_not_yield_replayed_pag
         )
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         iterator = client.usage.iterate_records(

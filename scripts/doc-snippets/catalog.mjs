@@ -194,7 +194,8 @@ function openapiSchema(value) {
   return result;
 }
 export function synthetic(name) {
-  if (name === "POLYMORFA_API_KEY") return `pmfa_${"A".repeat(72)}`;
+  if (name === "POLYMORFA_API_KEY")
+    return readJSON("contracts/machine-credentials.v1.json").opaque[0].token;
   if (
     /Id$/.test(name) &&
     !["productId", "collectionId", "coverPhotoId", "sessionId"].includes(name)

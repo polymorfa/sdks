@@ -36,7 +36,7 @@ try {
         }
     }
     ccCheck($ccReady, 'Contract fixture becomes ready');
-    $ccCredential = Polymorfa\Credential::organizationApiKey('pmfa_'.str_repeat('a', 72));
+    $ccCredential = Polymorfa\Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
     $ccProject = '11111111-1111-4111-8111-111111111111';
     $ccHttp->post($ccUrl.'/__case', ['json' => ['method' => 'GET', 'path' => '/platform/projects/'.$ccProject.'/signal-custody', 'body' => null, 'authorization' => $ccCredential->authorization(), 'response' => '{"data":{"signalModeDefault":null,"effectiveSignalMode":"standard","revision":0}}']]);
     $ccClient = new Polymorfa\Client($ccCredential, baseUrl: $ccUrl);

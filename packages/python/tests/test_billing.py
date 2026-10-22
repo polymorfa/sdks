@@ -201,7 +201,10 @@ async def test_typed_billing(method, path, body, query, data, invoke):
         return httpx.Response(200, json={"data": data}, headers={"x-request-id": "req_billing"})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(client.billing)
@@ -214,7 +217,10 @@ async def test_billing_guards_reject_before_network():
         pytest.fail("Invalid financial controls reached the network.")
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         b = client.billing

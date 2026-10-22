@@ -10,7 +10,7 @@ internal static class CustomUploadTransportTests
     }
     internal static async Task RunAsync()
     {
-        using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)));
+        using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"));
         var plaintext = "private customer media"u8.ToArray();
         var prepared = await WhatsAppMedia.PrepareUploadAsync(plaintext, new(WhatsAppUploadMediaType.Document));
         var originalKey = prepared.Info.MediaKey.ToArray();

@@ -24,7 +24,7 @@ internal static class FunctionTests
         await Organization("GET", "/platform/functions/" + Id + "/invocations", null, Page(Invocation), async c => ResourceTests.Equal((await c.Project(Id).Functions.Invocations.ListAsync(Id)).Data.Items[0].Outcome, "unknown"));
         await Organization("GET", "/platform/functions/" + Id + "/invocations/" + Id, null, Envelope(Invocation), async c => ResourceTests.Equal((await c.Project(Id).Functions.Invocations.RetrieveAsync(Id, Id)).Data.Attempt, 1));
         await Organization("POST", "/platform/functions/" + Id + "/invocations", "{\"request\":{\"method\":\"POST\",\"url\":\"https://function.polymorfa.invalid/form\",\"headers\":{},\"bodyBase64\":\"e30=\"},\"projectId\":\"" + Id + "\"}", "{\"data\":{\"receipt\":" + Invocation + ",\"replayed\":false,\"responseRetained\":false,\"retryable\":false,\"response\":{\"status\":200,\"headers\":{},\"bodyBase64\":\"e30=\"}}}", async c => ResourceTests.Equal((await c.Project(Id).Functions.Invocations.CreateAsync(Id, new(new("POST", "https://function.polymorfa.invalid/form", new Dictionary<string, string>(), "e30=")), new() { IdempotencyKey = "invoke-key" })).Data.Response!.BodyBase64, "e30="));
-        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72))); var functions = client.Project(Id).Functions;
+        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k")); var functions = client.Project(Id).Functions;
         try { await functions.UpdateAsync(Id, new(0)); throw new Exception("Invalid revision accepted"); } catch (PolymorfaValidationException) { }
         try { await functions.RetrieveAsync(Id.ToUpperInvariant()); throw new Exception("Noncanonical identifier accepted"); } catch (PolymorfaValidationException) { }
         try { await functions.Invocations.CreateAsync(Id, new(new("GET", "https://function.polymorfa.invalid", new Dictionary<string, string>(), "")), new()); throw new Exception("Invocation missing identity"); } catch (PolymorfaValidationException) { }
@@ -42,7 +42,7 @@ internal static class FunctionTests
     }
     private static async Task OneAttempt()
     {
-        using var fixture = new WireFixture(); var serving = fixture.ServeAsync("POST", "/platform/functions", "{\"name\":\"Handler\",\"projectId\":\"" + Id + "\"}", "{\"error\":{\"code\":\"provider_unavailable\",\"message\":\"Unavailable\"}}", 503); using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = fixture.Url });
+        using var fixture = new WireFixture(); var serving = fixture.ServeAsync("POST", "/platform/functions", "{\"name\":\"Handler\",\"projectId\":\"" + Id + "\"}", "{\"error\":{\"code\":\"provider_unavailable\",\"message\":\"Unavailable\"}}", 503); using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url });
         try { await client.Project(Id).Functions.CreateAsync(new("Handler"), new() { IdempotencyKey = "create", MaxNetworkRetries = 3 }); throw new Exception("Expected provider rejection"); } catch (PolymorfaServerException e) { ResourceTests.Equal(e.Metadata!.Attempts, 1); }
         await serving;
     }

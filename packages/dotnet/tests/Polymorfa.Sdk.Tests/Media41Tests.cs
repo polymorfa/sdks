@@ -39,7 +39,7 @@ internal static class Media41Tests
             using var handler = new SocketsHttpHandler(); Configure(handler); using var control = new HttpClient(handler);
             var url = new Uri("http://127.0.0.1:" + value.GetProperty("apiPort").GetInt32());
             using var server = new MessagingClient(Key, new() { BaseUrl = url, MaxNetworkRetries = 0 });
-            using var scoped = new MessagingClient(Credential.ClientToken("pmfa_ct_fixture"), new() { BaseUrl = url, MaxNetworkRetries = 0 });
+            using var scoped = new MessagingClient(Credential.ClientToken("pmfa_ct_Zml4dHVyZQ"), new() { BaseUrl = url, MaxNetworkRetries = 0 });
             foreach (var kind in Enum.GetValues<WhatsAppUploadMediaType>())
             {
                 var plaintext = Enumerable.Range(0, 100).Select(i => (byte)i).ToArray(); using var source = new MemoryStream(plaintext);
@@ -81,7 +81,7 @@ internal static class Media41Tests
         Task<Stream> Open(CancellationToken _) { opens++; return Task.FromResult<Stream>(new OwnedStream(() => disposals++)); }
         var prepared = await WhatsAppMedia.PrepareUploadAsync(Open, new(WhatsAppUploadMediaType.Image));
         Check(opens == 1 && disposals == 1, "Explicit preparation owns initial factory source");
-        using var wire = new WireFixture(); using var c = new MessagingClient(Credential.ClientToken("pmfa_ct_fixture"), Options(wire));
+        using var wire = new WireFixture(); using var c = new MessagingClient(Credential.ClientToken("pmfa_ct_Zml4dHVyZQ"), Options(wire));
         foreach (var call in new Func<Task>[] { async () => { await c.WhatsAppMedia.UploadDirectAsync("s", prepared); }, async () => { var t = c.WhatsAppMedia.DirectTransport(); await c.WhatsAppMedia.UploadAsync("s", prepared, t); }, async () => { await c.WhatsAppMedia.UploadAsync("s", prepared, new Wrapper(async (s, _) => (await c.WhatsAppMedia.UploadDirectAsync(s, prepared)).Location)); } })
         {
             try { await call(); throw new Exception("Client direct accepted"); } catch (PolymorfaConfigurationException) { Check(opens == 1 && disposals == 1 && !wire.Pending, "Client direct no further source/grant/storage"); }

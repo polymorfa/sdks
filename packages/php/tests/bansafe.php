@@ -31,7 +31,7 @@ foreach ($cases as [$method,$setting,$body,$data,$messaging,$platform]) {
         check(json_decode((string)$request->getBody(), true) === $body, 'BanSafe project body');
         check($result->data === $fixture && $result->metadata->requestId === 'req_test', 'BanSafe typed result and metadata');
         if ($family === 'messaging') {
-            $browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_fixture'));
+            $browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_Zml4dHVyZQ'));
             raises(fn () => $messaging($browser->banSafe), Polymorfa\ConfigurationException::class);
         }
     }

@@ -49,15 +49,15 @@ it("uploads fixture content separately and advances an existing QuickLink withou
 it("rejects client-token fixture upload and Meta continuation before transport", () => {
   const fetcher = vi.fn<typeof globalThis.fetch>();
   const client = new MessagingClient({
-    credential: { type: "clientToken", value: "pmfa_ct_browser" },
+    credential: { type: "clientToken", value: "pmfa_ct_YnJvd3Nlcg" },
     baseUrl: "https://api.example",
     fetch: fetcher,
   });
   expect(() =>
     client.testing.createHistoryFixture("project-a", { messages: [] }),
-  ).toThrow("requires an organization API key or project token");
+  ).toThrow("requires an team key or project token");
   expect(() =>
     client.cloudOnboarding.advance({ quicklinkId: "ql_test" }),
-  ).toThrow("requires an organization API key or project token");
+  ).toThrow("requires an team key or project token");
   expect(fetcher).not.toHaveBeenCalled();
 });

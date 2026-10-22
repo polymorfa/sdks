@@ -99,7 +99,7 @@ func TestNativeSendKeepsCallerKeyAndServerAssignment(t *testing.T) {
 		io.WriteString(w, `{"success":true,"data":{"id":"receipt-1","whatsapp_ids":{"linked_devices":"wa-1"},"timestamp":"2026-10-18T06:00:00Z","status":"sent","type":"text"}}`)
 	}))
 	defer upstream.Close()
-	sdk, err := polymorfa.NewMessagingClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_" + strings.Repeat("a", 72)}, BaseURL: upstream.URL})
+	sdk, err := polymorfa.NewMessagingClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: upstream.URL})
 	if err != nil {
 		t.Fatal(err)
 	}

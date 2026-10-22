@@ -92,7 +92,7 @@ export interface EventStreamParams {
 }
 
 export interface OrganizationEventStreamParams extends EventStreamParams {
-  /** Organization credentials stream one project at a time. */
+  /** Team keys stream one project at a time. */
   readonly projectId: string;
 }
 

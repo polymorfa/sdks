@@ -8,7 +8,7 @@ use Polymorfa\{ApiResponse,AudienceSegmentValidation,ConfigurationException,Exis
 
 /**
  * Organization-owned saved audience segments (contracts/campaign-segments-drip.json).
- * Organization API keys only: campaigns:read for reads, campaigns:manage for
+ * Team keys only: campaigns:read for reads, campaigns:manage for
  * writes and unsaved previews. Revision conflicts and bounded evaluation
  * timeouts return 409 state_conflict; re-read, reconcile or simplify the rules.
  * Writes and previews are sent once.

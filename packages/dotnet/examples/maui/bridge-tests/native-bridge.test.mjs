@@ -10,7 +10,7 @@ context.testInstall({ invokeMethodAsync: async (_, action) => { bridged.push(act
 assert.equal((await context.fetch("/api/polymorfa/token", { method: "POST", headers: { Origin: "https://evil.example", Cookie: "stolen" }, body: '{"session":"foreign"}' })).status, 200);
 assert.equal(bridged.join(","), "token");
 assert.equal((await context.fetch("/api/polymorfa/token")).status, 405);
-await context.fetch("https://api.polymorfa.com/messaging/support/status", { headers: { Authorization: "Bearer pmfa_ct_fixture" } });
+await context.fetch("https://api.polymorfa.com/messaging/support/status", { headers: { Authorization: "Bearer pmfa_ct_Zml4dHVyZQ" } });
 assert.equal(forwarded.length, 1);
 await context.fetch("/api/polymorfa/token?session=foreign", { method: "POST" });
 assert.equal(bridged.length, 1);

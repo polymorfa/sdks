@@ -140,7 +140,10 @@ async def test_typed_observation_and_hybrid(method, path, body, query, data, inv
         )
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(client)
@@ -168,7 +171,10 @@ async def test_saved_configuration_owner_context(project_id, write):
         return httpx.Response(200, json={"data": CONFIG}, headers={"x-request-id": "req_config"})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         resource = (client.project(project_id) if project_id else client).session_configuration
@@ -177,7 +183,7 @@ async def test_saved_configuration_owner_context(project_id, write):
 
 
 async def test_hybrid_server_scope_and_graph_header_helper():
-    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_local")) as client:
+    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_bG9jYWw")) as client:
         for invoke in [
             lambda: client.hybrid_link.get_policy({"scope": "team"}),
             lambda: client.hybrid_link.set_policy({"scope": "team"}, UPDATE_POLICY),

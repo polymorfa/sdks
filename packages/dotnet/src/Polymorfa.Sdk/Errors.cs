@@ -1,4 +1,6 @@
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 
 namespace Polymorfa.Sdk;
 
@@ -13,13 +15,32 @@ public class PolymorfaException : Exception
     public string? RateLimitReason { get; }
     public JsonElement? Details { get; }
     public ResponseMetadata? Metadata { get; internal set; }
-    public PolymorfaException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? error = null) : base(message)
+    public PolymorfaException(string message, string? code = null, ResponseMetadata? metadata = null, JsonElement? error = null) : base(RedactText(message))
     {
         Code = code; Param = String(error, "param"); Metadata = metadata; Status = metadata?.Status;
         RequestId = String(error, "request_id") ?? metadata?.RequestId;
         RequestLogUrl = String(error, "request_log_url"); DocUrl = String(error, "docs");
         RateLimitReason = metadata?.Headers.GetValueOrDefault("polymorfa-ratelimit-reason");
-        Details = error is { ValueKind: JsonValueKind.Object } value && value.TryGetProperty("details", out var detail) ? detail.Clone() : null;
+        Details = error is { ValueKind: JsonValueKind.Object } value && value.TryGetProperty("details", out var detail) ? RedactDetails(detail) : null;
+    }
+    private static string RedactText(string value) => Regex.Replace(value, "pmfa_[A-Za-z0-9_-]+", "[REDACTED]");
+    private static JsonElement RedactDetails(JsonElement value)
+    {
+        JsonNode? Clean(JsonNode? node)
+        {
+            if (node is JsonObject obj)
+            {
+                foreach (var key in obj.Select(pair => pair.Key).ToArray())
+                {
+                    var normalized = Regex.Replace(key.ToLowerInvariant(), "[^a-z0-9]", "");
+                    obj[key] = new[] { "authorization", "apikey", "projecttoken", "clienttoken", "credential", "token", "secret" }.Contains(normalized) ? JsonValue.Create("[REDACTED]") : Clean(obj[key]?.DeepClone());
+                }
+            }
+            else if (node is JsonArray array) for (var i = 0; i < array.Count; i++) array[i] = Clean(array[i]?.DeepClone());
+            else if (node is JsonValue scalar && scalar.TryGetValue<string>(out var text)) return JsonValue.Create(RedactText(text));
+            return node;
+        }
+        return JsonSerializer.SerializeToElement(Clean(JsonNode.Parse(value.GetRawText())));
     }
     private static string? String(JsonElement? value, string name) => value is { ValueKind: JsonValueKind.Object } element && element.TryGetProperty(name, out var property) && property.ValueKind == JsonValueKind.String ? property.GetString() : null;
     internal static PolymorfaException FromResponse(JsonElement body, ResponseMetadata metadata)

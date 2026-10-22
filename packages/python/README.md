@@ -159,7 +159,7 @@ the endpoint's signing secret and timestamp tolerance. It preserves the timestam
 text when constructing the signed input. `FLOW_FORWARD_SIGNATURE_HEADER` names
 its header. `parse_content_disposition_filename` decodes RFC 8187 filenames,
 removes directory segments and control characters, and returns a display name.
-`AsyncCallRetentionClient` reads the team-wide setting using an organization key
+`AsyncCallRetentionClient` reads the team-wide setting using an team key
 or a project token without requiring a project ID. Updates retain server-side
 team-key authorization. `POLYMORFA_ERROR_CODES` and `is_known_error_code` expose
 documented codes while errors preserve unknown future codes.
@@ -247,7 +247,7 @@ Official API groups expose typed join decisions and force every provider change
 to one attempt. Onboarding continuation and Testing methods require a server
 credential; Testing phone methods expose simulated device and message results.
 SIP trunks provide typed credentials and endpoint variants, with ownership checks
-before an organization key acts through a project client.
+before an team key acts through a project client.
 
 Retained events, webhook signing generations and delivery attempts expose typed
 metadata and payload-availability states. Indexed event pages preserve offsets
@@ -765,6 +765,18 @@ These methods run on the owning asyncio loop.
 Project views returned by `client.project(id)` borrow the root transport.
 Closing a view or leaving its context does not close that transport. The root,
 or an independently constructed project client, owns its transport lifetime.
+
+## Credential handling
+
+Treat every Polymorfa credential as an opaque string. Pass the complete value
+from the Console. Never parse credentials or assume a fixed length. Store at
+least 512 characters, preferably unrestricted text. Client-token length varies
+with its bindings, Customer block and signing key ID.
+
+The SDK checks server-credential prefixes, canonical base64url and the checksum.
+These checks do not authenticate a credential. The API checks the issuance record
+and live permissions. Test keys use the same project-token format; their test-only
+restriction is enforced by the service.
 
 ### Event-stream validation and limits
 

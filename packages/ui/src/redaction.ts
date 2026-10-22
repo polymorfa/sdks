@@ -1,6 +1,9 @@
 const REDACTED = "[REDACTED]";
 const SENSITIVE_KEYS = new Set([
   "authorization",
+  "apikey",
+  "projecttoken",
+  "credential",
   "accesstoken",
   "clienttoken",
   "refreshtoken",
@@ -15,6 +18,8 @@ const SENSITIVE_KEYS = new Set([
 
 export function redactDiagnostic(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(redactDiagnostic);
+  if (typeof value === "string")
+    return value.replace(/pmfa_[A-Za-z0-9_-]+/g, REDACTED);
   if (typeof value !== "object" || value === null) return value;
   return Object.fromEntries(
     Object.entries(value).map(([key, child]) => [

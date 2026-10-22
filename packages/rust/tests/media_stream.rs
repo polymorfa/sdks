@@ -323,8 +323,10 @@ async fn native_https_cdn_downloads_message_inputs_redirects_without_credentials
         .await
         .is_err());
     let client = polymorfa_sdk::MessagingClient::new(
-        polymorfa_sdk::Credential::organization_api_key(format!("pmfa_{}", "a".repeat(72)))
-            .unwrap(),
+        polymorfa_sdk::Credential::organization_api_key(
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string(),
+        )
+        .unwrap(),
         Default::default(),
     )
     .unwrap();

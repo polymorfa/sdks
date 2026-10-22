@@ -16,7 +16,8 @@ async fn safe_contract_error_metadata_is_preserved() {
         s.write_all(format!("HTTP/1.1 409 Conflict\r\ncontent-type: application/json\r\nx-trace-id: trace-contract\r\nx-ratelimit-limit: 100\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{}",body.len(),body).as_bytes()).await.unwrap();
     });
     let client = OrganizationClient::new(
-        Credential::organization_api_key(format!("pmfa_{}", "a".repeat(72))).unwrap(),
+        Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string())
+            .unwrap(),
         ClientOptions {
             base_url: base,
             max_network_retries: 0,
@@ -159,7 +160,9 @@ impl Wire {
         result
     }
     fn clients(&self) -> (MessagingClient, OrganizationClient, ProjectClient) {
-        let c = Credential::organization_api_key(format!("pmfa_{}", "a".repeat(72))).unwrap();
+        let c =
+            Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string())
+                .unwrap();
         let o = ClientOptions {
             base_url: self.base.clone(),
             max_network_retries: 0,
@@ -938,12 +941,13 @@ async fn server_credentials_and_validation_refuse_before_http() {
         ..Default::default()
     };
     let m = MessagingClient::new(
-        Credential::client_token("pmfa_ct_synthetic-only").unwrap(),
+        Credential::client_token("pmfa_ct_c3ludGhldGljLW9ubHk").unwrap(),
         opts.clone(),
     )
     .unwrap();
     let c = OrganizationClient::new(
-        Credential::organization_api_key(format!("pmfa_{}", "a".repeat(72))).unwrap(),
+        Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string())
+            .unwrap(),
         opts,
     )
     .unwrap();
@@ -1170,7 +1174,8 @@ async fn retained_project_views_and_finite_pages_do_not_retarget_or_autopage() {
     assert!(page.data.page.has_more);
     assert_eq!(page.data.page.next_cursor.as_deref(), Some(ID));
     assert_eq!(w.finish().await.len(), 1);
-    let token = Credential::project_token(format!("pmfa_pt_{}A", "a".repeat(93))).unwrap();
+    let token =
+        Credential::project_token("pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()).unwrap();
     let p = ProjectClient::new(token, PROJECT, ClientOptions::default()).unwrap();
     assert!(p.project(other).is_err());
 }
@@ -1426,7 +1431,8 @@ async fn cancellation_settles_csv_body_without_a_second_request() {
         let _ = release_rx.await;
     });
     let c = OrganizationClient::new(
-        Credential::organization_api_key(format!("pmfa_{}", "a".repeat(72))).unwrap(),
+        Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string())
+            .unwrap(),
         ClientOptions {
             base_url: base,
             max_network_retries: 0,

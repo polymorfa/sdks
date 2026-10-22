@@ -170,7 +170,12 @@ async def test_real_tls_cdn_public_media_helper_and_verified_atomic_file(vector)
 
     value = {"type": vector["kind"], "media": vector["descriptor"]}
     async with native_cdn(handler) as (transport, directory):
-        client = AsyncMessagingClient(Credential("organization_api_key", "pmfa_" + "a" * 72))
+        client = AsyncMessagingClient(
+            Credential(
+                "organization_api_key",
+                "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+            )
+        )
         try:
             async with await client.media.download_from_whatsapp(
                 value, http_transport=transport
@@ -299,7 +304,10 @@ async def test_api_media_to_file_retains_metadata_and_bounds_bytes():
     await site.start()
     try:
         async with AsyncMessagingClient(
-            Credential("organization_api_key", "pmfa_" + "a" * 72),
+            Credential(
+                "organization_api_key",
+                "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+            ),
             base_url=f"http://127.0.0.1:{site._server.sockets[0].getsockname()[1]}",
         ) as client:
             target = directory / "media.bin"

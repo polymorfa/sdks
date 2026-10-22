@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"context"
 	"crypto/rand"
+	"encoding/base64"
+	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash/crc32"
 	"io"
 	"math"
 	"math/big"
@@ -130,8 +133,24 @@ func validation(message string) error {
 	return &Error{Kind: ValidationError, Code: "invalid_parameter", Message: message}
 }
 
-var organizationPattern = regexp.MustCompile(`^pmfa_[A-Za-z0-9_-]{72}$`)
-var projectPattern = regexp.MustCompile(`^pmfa_pt_[A-Za-z0-9_-]{93}[AQgw]$`)
+// opaqueShape checks framing only. The API authenticates the issuance record.
+func opaqueShape(value, prefix string) bool {
+	if !strings.HasPrefix(value, prefix) {
+		return false
+	}
+	body := strings.TrimPrefix(value, prefix)
+	raw, err := base64.RawURLEncoding.Strict().DecodeString(body)
+	return err == nil && len(raw) >= 24 && crc32.ChecksumIEEE(raw[:len(raw)-4]) == binary.BigEndian.Uint32(raw[len(raw)-4:]) && base64.RawURLEncoding.EncodeToString(raw) == body
+}
+
+func clientShape(value string) bool {
+	if !strings.HasPrefix(value, "pmfa_ct_") {
+		return false
+	}
+	body := strings.TrimPrefix(value, "pmfa_ct_")
+	raw, err := base64.RawURLEncoding.Strict().DecodeString(body)
+	return len(raw) > 0 && err == nil && base64.RawURLEncoding.EncodeToString(raw) == body
+}
 
 func validateCredential(c Credential, messaging bool) error {
 	if runtime.GOOS == "js" || runtime.GOOS == "wasip1" {
@@ -139,15 +158,15 @@ func validateCredential(c Credential, messaging bool) error {
 	}
 	switch c.Kind {
 	case OrganizationAPIKey:
-		if !organizationPattern.MatchString(c.Value) || strings.HasPrefix(c.Value, "pmfa_pt_") || strings.HasPrefix(c.Value, "pmfa_ct_") || strings.HasPrefix(c.Value, "pmfa_ls_") || strings.HasPrefix(c.Value, "pmfa_at_") || strings.HasPrefix(c.Value, "pmfa_wst_") || strings.HasPrefix(c.Value, "pmfa_sd_") {
-			return configuration("credential", "Organization API keys require the canonical pmfa_ v1 format.")
+		if !opaqueShape(c.Value, "pmfa_") || strings.HasPrefix(c.Value, "pmfa_pt_") || strings.HasPrefix(c.Value, "pmfa_ct_") || strings.HasPrefix(c.Value, "pmfa_ls_") || strings.HasPrefix(c.Value, "pmfa_at_") || strings.HasPrefix(c.Value, "pmfa_wst_") || strings.HasPrefix(c.Value, "pmfa_sd_") {
+			return configuration("credential", "Team keys require the canonical pmfa_ opaque format.")
 		}
 	case ProjectToken:
-		if !projectPattern.MatchString(c.Value) {
-			return configuration("credential", "Project tokens require the canonical pmfa_pt_ v1 format.")
+		if !opaqueShape(c.Value, "pmfa_pt_") {
+			return configuration("credential", "Project tokens require the canonical pmfa_pt_ opaque format.")
 		}
 	case ClientToken:
-		if !messaging || !strings.HasPrefix(c.Value, "pmfa_ct_") || len(c.Value) <= 8 {
+		if !messaging || !clientShape(c.Value) {
 			return configuration("credential", "Client tokens are accepted only by Messaging and require the pmfa_ct_ prefix.")
 		}
 	default:
@@ -535,7 +554,7 @@ func decodeError(r *http.Response, md Metadata) error {
 		e.Code = v.Error.Code
 		e.Field = v.Error.Param
 		if v.Error.Message != "" {
-			e.Message = v.Error.Message
+			e.Message = credentialDiagnosticPattern.ReplaceAllString(v.Error.Message, "[REDACTED]")
 		}
 		if v.Error.RequestID != "" {
 			e.RequestID = v.Error.RequestID
@@ -545,7 +564,12 @@ func decodeError(r *http.Response, md Metadata) error {
 		if e.DocURL == "" {
 			e.DocURL = v.Docs
 		}
-		e.Details = v.Error.Details
+		if len(v.Error.Details) > 0 {
+			var details any
+			if json.Unmarshal(v.Error.Details, &details) == nil {
+				e.Details, _ = json.Marshal(redactCredentialDiagnostic(details))
+			}
+		}
 	}
 	return e
 }
@@ -622,4 +646,28 @@ func responseBodyError(ctx context.Context, r *http.Response, md Metadata, cause
 		}
 	}
 	return e
+}
+
+var credentialDiagnosticPattern = regexp.MustCompile(`pmfa_[A-Za-z0-9_-]+`)
+
+func redactCredentialDiagnostic(value any) any {
+	switch v := value.(type) {
+	case string:
+		return credentialDiagnosticPattern.ReplaceAllString(v, "[REDACTED]")
+	case []any:
+		for i, c := range v {
+			v[i] = redactCredentialDiagnostic(c)
+		}
+	case map[string]any:
+		for k, c := range v {
+			normalized := strings.ToLower(strings.NewReplacer("_", "", "-", "").Replace(k))
+			switch normalized {
+			case "authorization", "apikey", "projecttoken", "clienttoken", "credential", "token", "secret":
+				v[k] = "[REDACTED]"
+			default:
+				v[k] = redactCredentialDiagnostic(c)
+			}
+		}
+	}
+	return value
 }

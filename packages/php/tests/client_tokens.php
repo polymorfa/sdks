@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 $rules = ['recipientMode' => 'conversation','allowedActions' => 'send_message,read_presence','rateLimit' => 60,'maxDaily' => 0,'allowedOrigins' => 'https://example.com','conversationTtlSeconds' => 86400,'maxConcurrency' => 2,'maxSetupsPerMinute' => 10,'allowedNumber' => '', 'enabled' => true];
-$token = ['success' => true, 'data' => ['token' => 'pmfa_ct_fixture','expiresAt' => '2026-10-11T12:00:00Z']];
+$token = ['success' => true, 'data' => ['token' => 'pmfa_ct_Zml4dHVyZQ','expiresAt' => '2026-10-11T12:00:00Z']];
 $cases = [
  ['POST','/platform/client-tokens',['ephemeralId' => 'browser_1','session' => 'support','ttlSeconds' => 600],$token,fn ($r) => $r->mint(['ephemeralId' => 'browser_1','session' => 'support','ttlSeconds' => 600])],
  ['POST','/platform/client-tokens',['ephemeralId' => 'browser_1','session' => 'support','allow' => []],$token,fn ($r) => $r->mint(['ephemeralId' => 'browser_1','session' => 'support','allow' => []])],
@@ -21,7 +21,7 @@ foreach ($cases as [$method,$path,$body,$fixture,$invoke]) {
     check($request->getMethod() === $method && $request->getUri()->getPath() === $path, 'Client token route');
     check(json_decode((string)$request->getBody(), true) === $body, 'Client token body');
     check($result->data === $fixture && $result->metadata->requestId === 'req_test', 'Token response and metadata');
-    $browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_fixture'));
+    $browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_Zml4dHVyZQ'));
     raises(fn () => $invoke($browser->clientTokens), Polymorfa\ConfigurationException::class);
 }
 $client = new Polymorfa\MessagingClient($credential);

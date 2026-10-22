@@ -380,6 +380,17 @@ final class HttpTransport
         return $location;
     }
 
+    /** @param mixed $value @return mixed */
+    private static function redactError(mixed $value): mixed
+    {
+        if (is_string($value)) return preg_replace('/pmfa_[A-Za-z0-9_-]+/', '[REDACTED]', $value);
+        if (is_array($value)) foreach ($value as $key => $child) {
+            $normalized = strtolower((string) preg_replace('/[^a-z0-9]/i', '', (string) $key));
+            $value[$key] = in_array($normalized, ['authorization','apikey','projecttoken','clienttoken','credential','token','secret'], true) ? '[REDACTED]' : self::redactError($child);
+        }
+        return $value;
+    }
+
     private function raiseError(ResponseInterface $response, ResponseMetadata $metadata): never
     {
         $error = [];
@@ -387,7 +398,7 @@ final class HttpTransport
             if (str_contains(strtolower($response->getHeaderLine('Content-Type')), 'json')) {
                 $value = json_decode($response->getBody()->getContents(), true);
                 if (is_array($value) && isset($value['error']) && is_array($value['error'])) {
-                    $error = $value['error'];
+                    $error = self::redactError($value['error']);
                 }
             }
         } finally {

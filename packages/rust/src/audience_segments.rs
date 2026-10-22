@@ -1,5 +1,5 @@
 //! Organization-owned saved audience segments and count previews, pinned to
-//! `contracts/campaign-segments-drip.json`. Organization API keys only:
+//! `contracts/campaign-segments-drip.json`. Team keys only:
 //! campaigns:read for reads, campaigns:manage for writes and unsaved previews.
 //! Revision conflicts and bounded evaluation timeouts return 409 `state_conflict`;
 //! re-read, reconcile or simplify the rules before trying again. Writes and

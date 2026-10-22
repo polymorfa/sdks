@@ -38,7 +38,7 @@ internal static class ProjectSettingsTests
         await Messaging("PUT", "/messaging/projects/p1/health-policy", HealthInput, MessagingEnvelope(Health), async c => ResourceTests.True((await c.BanSafe.UpdateProjectHealthPolicyAsync("p1", HealthRequest)).Data.Data.SlowDownMps is null));
         await Messaging("GET", "/messaging/s/safe-mode", null, MessagingEnvelope(SessionSafe), async c => ResourceTests.Equal((await c.BanSafe.GetSessionSafeModeAsync("s")).Data.Data.Override.Presence, "inherit"));
         await Messaging("PUT", "/messaging/s/safe-mode", """{"presence":"inherit"}""", MessagingEnvelope(SessionSafe), async c => ResourceTests.True(!(await c.BanSafe.UpdateSessionSafeModeAsync("s", new(Presence: "inherit"))).Data.Data.Mismatch));
-        using var client = new MessagingClient(Credential.ClientToken("pmfa_ct_fixture"));
+        using var client = new MessagingClient(Credential.ClientToken("pmfa_ct_Zml4dHVyZQ"));
         try { await client.BanSafe.GetProjectHealthPolicyAsync("p1"); throw new Exception("Client token allowed"); } catch (PolymorfaConfigurationException) { }
         Console.WriteLine("PASS project settings, Hybrid merge metadata, bound project views and all 10 Messaging BanSafe controls");
     }

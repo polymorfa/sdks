@@ -13,7 +13,7 @@ client, err := polymorfa.NewMessagingClient(polymorfa.Config{
 })
 ```
 
-`NewOrganizationClient` accepts an organization API key. `NewProjectClient` accepts an organization API key or a project token with an explicit project ID. `org.Project(id)` returns a separate view; project tokens cannot rebind to another project. `NewMessagingClient` additionally accepts a scoped client token, with server-only operations rejected before a request. Credential formatting redacts token values. `NewSystemClient` sends no credentials. `NewBridgeClient` accepts only project tokens for regional route discovery.
+`NewOrganizationClient` accepts an team key. `NewProjectClient` accepts an team key or a project token with an explicit project ID. `org.Project(id)` returns a separate view; project tokens cannot rebind to another project. `NewMessagingClient` additionally accepts a scoped client token, with server-only operations rejected before a request. Credential formatting redacts token values. `NewSystemClient` sends no credentials. `NewBridgeClient` accepts only project tokens for regional route discovery.
 
 Pass `context.Context` to each request. Each `Response[T]` includes typed data and safe response metadata. Developer resources unwrap documented `data` envelopes; Messaging resources retain their native success envelope. Errors expose semantic kind, API code, request ID and metadata through `errors.As(err, &apiError)`. API codes remain open strings so new server errors do not break decoding.
 
@@ -537,7 +537,7 @@ An SDK method does not establish deployed beta access or package availability.
 
 `MessagingClient.Campaigns()` adds `GetReplyFlow`, `CreateReplyFlow`,
 `SetReplyFlow`, `TestSend`, `Links` and `ExportRecipients`, using a project slug.
-All six require an organization API key or project token; client tokens fail
+All six require an team key or project token; client tokens fail
 before HTTP. The API still checks live scopes, project ownership, feature access,
 funding and sender eligibility. Test sends require both campaign read and manage
 scopes and send real messages.
@@ -740,6 +740,18 @@ integers and nearest-even binary64 rounding beyond uint64. Generic row numbers,
 safe revisions, leases and CAS remain strict. Shared producer vectors and local
 physical-module consumers verify this compatibility; registry publication and
 matching environment acceptance remain separate release gates.
+
+## Credential handling
+
+Treat every Polymorfa credential as an opaque string. Pass the complete value
+from the Console. Never parse credentials or assume a fixed length. Store at
+least 512 characters, preferably unrestricted text. Client-token length varies
+with its bindings, Customer block and signing key ID.
+
+The SDK checks server-credential prefixes, canonical base64url and the checksum.
+These checks do not authenticate a credential. The API checks the issuance record
+and live permissions. Test keys use the same project-token format; their test-only
+restriction is enforced by the service.
 
 ### Event-stream validation and limits
 

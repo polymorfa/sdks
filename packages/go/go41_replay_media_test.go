@@ -118,7 +118,7 @@ func TestGo41ClientRelayAndDirectPreIOGuard(t *testing.T) {
 				io.WriteString(w, go41Relay)
 			}))
 			defer s.Close()
-			m, e := sdk.NewMessagingClient(sdk.Config{BaseURL: s.URL, Credential: sdk.Credential{Kind: sdk.ClientToken, Value: "pmfa_ct_scoped"}})
+			m, e := sdk.NewMessagingClient(sdk.Config{BaseURL: s.URL, Credential: sdk.Credential{Kind: sdk.ClientToken, Value: "pmfa_ct_c2NvcGVk"}})
 			if e != nil {
 				t.Fatal(e)
 			}

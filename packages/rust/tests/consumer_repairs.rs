@@ -22,7 +22,7 @@ use tokio_tungstenite::{
 };
 use tokio_util::sync::CancellationToken;
 
-const KEY: &str = "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const KEY: &str = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
 const SECRET: &str = "application-fixture-secret";
 async fn listener() -> (TcpListener, String) {
     let peer = TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -39,7 +39,10 @@ async fn headers(socket: &mut TcpStream, secret: &str) -> String {
     }
     let text = String::from_utf8(bytes).unwrap();
     let lower = text.to_lowercase();
-    assert!(lower.contains(&format!("authorization: bearer {secret}\r\n")));
+    assert!(text.lines().any(|line| line
+        .split_once(':')
+        .is_some_and(|(name, value)| name.eq_ignore_ascii_case("authorization")
+            && value.trim() == format!("Bearer {secret}"))));
     assert!(!lower.contains("\r\ncookie:") && !lower.contains("\r\norigin:"));
     text
 }
@@ -108,7 +111,11 @@ async fn calls_base_prefix_and_first_frame_authority_are_retained() {
                 let (peer, base) = listener().await;
                 let target = Arc::new(Mutex::new(String::new()));
                 let seen = target.clone();
-                let secret = if client_token { "pmfa_ct_fixture" } else { KEY };
+                let secret = if client_token {
+                    "pmfa_ct_Zml4dHVyZQ"
+                } else {
+                    KEY
+                };
                 let task = tokio::spawn(async move {
                     let (socket, _) = peer.accept().await.unwrap();
                     let mut ws =

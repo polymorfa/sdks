@@ -24,7 +24,7 @@ foreach ($cases as [$method,$suffix,$body,$fixture,$invoke]) {
     check($request->getMethod() === $method && $request->getUri()->getPath() === '/platform/sessions'.$suffix, 'Session route');
     check(json_decode((string)$request->getBody(), true) === $body, 'Session body');
     check($result->data === $fixture && $result->metadata->requestId === 'req_test', 'Session response and metadata');
-    $browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_local'));
+    $browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_bG9jYWw'));
     raises(fn () => $invoke($browser->sessions), Polymorfa\ConfigurationException::class);
 }
 echo count($cases)." session method fixtures and credential checks passed.\n";

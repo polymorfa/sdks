@@ -68,7 +68,7 @@ describe("call interactions", () => {
           headers: { "content-type": "application/json" },
         }),
     );
-    const api = new HttpCallsApi({ token: "pmfa_ct_token", fetch });
+    const api = new HttpCallsApi({ token: "pmfa_ct_dG9rZW4", fetch });
     await api.sendReaction("call", "connection-1", "", "forged");
     expect(JSON.parse(String(fetch.mock.calls[0]?.[1]?.body))).toEqual({
       connectionId: "connection-1",

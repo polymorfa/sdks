@@ -190,7 +190,7 @@ async fn stored_message_media_download_and_stream_native_http() {
 #[tokio::test]
 async fn hosted_history_and_service_window_refuse_browser_principals_before_http() {
     let client = MessagingClient::new(
-        Credential::client_token("pmfa_ct_client").unwrap(),
+        Credential::client_token("pmfa_ct_Y2xpZW50").unwrap(),
         ClientOptions {
             base_url: "http://127.0.0.1:1".into(),
             ..Default::default()

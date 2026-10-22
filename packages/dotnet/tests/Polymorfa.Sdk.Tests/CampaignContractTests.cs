@@ -11,7 +11,7 @@ internal static class CampaignContractTests
     internal const string B = "22222222-2222-4222-8222-222222222222";
     internal const string C = "33333333-3333-4333-8333-333333333333";
     internal const string Phone = "+15551234567";
-    internal static Credential OrganizationKey() => Credential.OrganizationApiKey("pmfa_" + new string('a', 72));
+    internal static Credential OrganizationKey() => Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k");
     internal const string Profile = "{\"id\":\"" + A + "\",\"phone\":\"+15551234567\",\"revision\":1,\"tags\":[\"lead\"],\"attributes\":{\"empty\":null,\"ok\":false,\"score\":1.5},\"provenance\":null,\"createdAt\":0,\"updatedAt\":1}";
     internal const string Consent = "{\"id\":\"" + B + "\",\"profileRevision\":1,\"createdAt\":0,\"purpose\":\"campaigns\",\"allowed\":false,\"source\":\"api\",\"reference\":\"supplied\",\"assertedAt\":0}";
     internal const string Job = "{\"id\":\"" + A + "\",\"state\":\"queued\",\"totalValid\":1,\"invalidCount\":1,\"invalidSamples\":[{\"row\":2,\"reason\":\"invalid_phone\"}],\"conflictSamples\":[{\"row\":3,\"reason\":\"quota\"}],\"processedValid\":0,\"createdCount\":0,\"updatedCount\":0,\"conflictCount\":1,\"createdAt\":0,\"updatedAt\":1,\"completedAt\":null}";
@@ -31,7 +31,7 @@ internal static class CampaignContractTests
     private static int checks;
     private static async Task Wire<T>(string method, string path, string? body, string response, Func<OrganizationClient, MessagingClient, Task<ApiResponse<T>>> call, Action<T> verify, IReadOnlyDictionary<string, string>? headers = null, int status = 200, string version = "2026-10-14")
     {
-        using var fixture = new WireFixture { Authorization = "Bearer pmfa_" + new string('a', 72), ExpectedHeaders = new Dictionary<string, string> { ["polymorfa-version"] = version } };
+        using var fixture = new WireFixture { Authorization = "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k", ExpectedHeaders = new Dictionary<string, string> { ["polymorfa-version"] = version } };
         var serving = fixture.ServeAsync(method, path, body, response, status, headers);
         using var org = new OrganizationClient(OrganizationKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
         using var messaging = new MessagingClient(OrganizationKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
@@ -116,7 +116,7 @@ internal static class CampaignContractTests
     private static async Task BoundViewsAsync()
     {
         // Each alias retains its captured owner, including after a borrowed view is disposed.
-        foreach (var credential in new[] { OrganizationKey(), Credential.ProjectToken("pmfa_pt_" + new string('a', 93) + "A") })
+        foreach (var credential in new[] { OrganizationKey(), Credential.ProjectToken("pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k") })
         {
             using var fixture = new WireFixture { ExpectedHeaders = new Dictionary<string, string> { ["polymorfa-version"] = "2026-10-14" } };
             using var owning = new ProjectClient(credential, A, new() { BaseUrl = fixture.Url });
@@ -347,30 +347,33 @@ internal static class CampaignContractTests
     private static async Task RetryAsync()
     {
         foreach (var messaging in new[] { false, true }) foreach (var caller in new[] { false, true })
-        {
-            var variables = new Dictionary<string, CampaignVariableValue> { ["name"] = "original" };
-            var headers = new Dictionary<string, string> { ["x-fixture"] = "original" };
-            string? savedKey = null; byte[]? savedBody = null; var replies = 0;
-            WireFixture? fixture = null;
-            using (fixture = new WireFixture { BeforeResponse = () =>
             {
-                var key = fixture!.CapturedHeaders["idempotency-key"];
-                if (caller) Check(key == "caller-fixed", "Caller key changed."); else Check(Guid.TryParse(key, out _), "Generated key missing.");
-                if (replies++ == 0) { savedKey = key; savedBody = fixture.CapturedBody.ToArray(); variables["name"] = "mutated"; headers["x-fixture"] = "mutated"; }
-                else Check(key == savedKey && fixture.CapturedBody.SequenceEqual(savedBody!) && fixture.CapturedHeaders["x-fixture"] == "original", "Retry snapshot changed.");
-                return Task.CompletedTask;
-            } })
-            {
-                var path = messaging ? "/messaging/projects/launch/campaigns/" + C + "/test-send" : "/platform/campaigns/" + C + "/test-send";
-                var body = "{" + (messaging ? "" : "\"projectId\":\"" + A + "\",") + "\"sessionId\":\"" + B + "\",\"to\":\"+15551234567\",\"variables\":{\"name\":\"original\"}}";
-                var serving = Task.Run(async () => { await fixture.ServeAsync("POST", path, body, "{\"error\":{\"code\":\"service_unavailable\",\"message\":\"retry\"}}", 503, new Dictionary<string, string> { ["retry-after"] = "0" }); await fixture.ServeAsync("POST", path, body, Envelope(Test, messaging)); });
-                using var org = new OrganizationClient(OrganizationKey(), new() { BaseUrl = fixture.Url });
-                using var msg = new MessagingClient(OrganizationKey(), new() { BaseUrl = fixture.Url });
-                var options = new RequestOptions { MaxNetworkRetries = 1, Headers = headers, IdempotencyKey = caller ? "caller-fixed" : null };
-                var metadata = messaging ? (await msg.Campaigns.TestSendAsync("launch", C, new(B, Phone, Variables: variables), options)).Metadata : (await org.Project(A).Campaigns.TestSendAsync(C, new(B, Phone, Variables: variables), options)).Metadata;
-                await serving; Check(metadata.Attempts == 2 && replies == 2, "Test-send retry count differs."); checks++;
+                var variables = new Dictionary<string, CampaignVariableValue> { ["name"] = "original" };
+                var headers = new Dictionary<string, string> { ["x-fixture"] = "original" };
+                string? savedKey = null; byte[]? savedBody = null; var replies = 0;
+                WireFixture? fixture = null;
+                using (fixture = new WireFixture
+                {
+                    BeforeResponse = () =>
+                {
+                    var key = fixture!.CapturedHeaders["idempotency-key"];
+                    if (caller) Check(key == "caller-fixed", "Caller key changed."); else Check(Guid.TryParse(key, out _), "Generated key missing.");
+                    if (replies++ == 0) { savedKey = key; savedBody = fixture.CapturedBody.ToArray(); variables["name"] = "mutated"; headers["x-fixture"] = "mutated"; }
+                    else Check(key == savedKey && fixture.CapturedBody.SequenceEqual(savedBody!) && fixture.CapturedHeaders["x-fixture"] == "original", "Retry snapshot changed.");
+                    return Task.CompletedTask;
+                }
+                })
+                {
+                    var path = messaging ? "/messaging/projects/launch/campaigns/" + C + "/test-send" : "/platform/campaigns/" + C + "/test-send";
+                    var body = "{" + (messaging ? "" : "\"projectId\":\"" + A + "\",") + "\"sessionId\":\"" + B + "\",\"to\":\"+15551234567\",\"variables\":{\"name\":\"original\"}}";
+                    var serving = Task.Run(async () => { await fixture.ServeAsync("POST", path, body, "{\"error\":{\"code\":\"service_unavailable\",\"message\":\"retry\"}}", 503, new Dictionary<string, string> { ["retry-after"] = "0" }); await fixture.ServeAsync("POST", path, body, Envelope(Test, messaging)); });
+                    using var org = new OrganizationClient(OrganizationKey(), new() { BaseUrl = fixture.Url });
+                    using var msg = new MessagingClient(OrganizationKey(), new() { BaseUrl = fixture.Url });
+                    var options = new RequestOptions { MaxNetworkRetries = 1, Headers = headers, IdempotencyKey = caller ? "caller-fixed" : null };
+                    var metadata = messaging ? (await msg.Campaigns.TestSendAsync("launch", C, new(B, Phone, Variables: variables), options)).Metadata : (await org.Project(A).Campaigns.TestSendAsync(C, new(B, Phone, Variables: variables), options)).Metadata;
+                    await serving; Check(metadata.Attempts == 2 && replies == 2, "Test-send retry count differs."); checks++;
+                }
             }
-        }
         foreach (var retryExplicit in new[] { false, true })
         {
             using var fixture = new WireFixture { ExpectedHeaders = new Dictionary<string, string> { ["idempotency-key"] = "caller-fixed" } };

@@ -247,13 +247,18 @@ async def test_typed_voip_controls(method, path, body, fixture, server, invoke):
         return httpx.Response(200, json=fixture, headers={"x-request-id": "req_calls"})
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = await invoke(client.voip)
         assert response.data == fixture and response.metadata.request_id == "req_calls"
     if server:
-        async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_fixture")) as browser:
+        async with AsyncMessagingClient(
+            Credential("client_token", "pmfa_ct_Zml4dHVyZQ")
+        ) as browser:
             with pytest.raises(ConfigurationError):
                 await invoke(browser.voip)
 
@@ -266,7 +271,10 @@ async def test_call_control_guards_and_no_retry_boundaries():
         return httpx.Response(503, json={"error": {"code": "service_unavailable"}})
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         for invoke in (
@@ -306,6 +314,6 @@ async def test_call_control_guards_and_no_retry_boundaries():
             with pytest.raises(ServerError):
                 await invoke()
             assert len(attempts) == before + 1
-    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_fixture")) as browser:
+    async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_Zml4dHVyZQ")) as browser:
         with pytest.raises(ConfigurationError):
             await browser.voip.accept("call_1", {"participant": "agent_1"})

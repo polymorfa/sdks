@@ -138,7 +138,7 @@ async fn media_socket_authentication_audio_video_controls_and_cancellation() {
         let auth = ws.next().await.unwrap().unwrap();
         assert_eq!(
             serde_json::from_str::<serde_json::Value>(auth.to_text().unwrap()).unwrap(),
-            json!({"type":"auth","token":format!("pmfa_{}","a".repeat(72)),"connectionId":"connection_01","participant":"bot"})
+            json!({"type":"auth","token":"pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string(),"connectionId":"connection_01","participant":"bot"})
         );
         ws.send(Message::Text(json!({"type":"ready","callId":"call/one","connectionId":"connection_01","sampleRate":48000,"video":true}).to_string().into())).await.unwrap();
         let audio = ws.next().await.unwrap().unwrap().into_data();
@@ -241,7 +241,7 @@ async fn lifecycle_socket_authentication_candidates_events_and_revocation() {
         let auth = ws.next().await.unwrap().unwrap();
         assert_eq!(
             serde_json::from_str::<serde_json::Value>(auth.to_text().unwrap()).unwrap(),
-            json!({"type":"auth","token":format!("pmfa_{}","a".repeat(72))})
+            json!({"type":"auth","token":"pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()})
         );
         ws.send(Message::Text(
             "{\"type\":\"ready\",\"session\":\"s/one\",\"participant\":\"server:bot\"}".into(),

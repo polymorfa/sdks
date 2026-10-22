@@ -34,7 +34,7 @@ foreach ($cases as [$method,$suffix,$query,$body,$fixture,$server,$invoke]) {
         check($request->getHeaderLine('Idempotency-Key') !== '', 'Edit/delete idempotency');
     }
     if ($server) {
-        $browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_fixture'));
+        $browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_Zml4dHVyZQ'));
         raises(fn () => $invoke($browser->chats), Polymorfa\ConfigurationException::class);
     }
 }

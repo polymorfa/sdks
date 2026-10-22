@@ -35,7 +35,7 @@ foreach ($cases as [$method,$path,$body,$fixture,$server,$invoke]) {
     check(json_decode((string)$request->getBody(), true) === $body, 'Calls body');
     check($result->data === $fixture && $result->metadata->requestId === 'req_test', 'Calls typed result and metadata');
     if ($server) {
-        $browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_fixture'));
+        $browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_Zml4dHVyZQ'));
         raises(fn () => $invoke($browser->voip), Polymorfa\ConfigurationException::class);
     }
 }
@@ -51,6 +51,6 @@ foreach ([fn ($r) => $r->createCallLink(['session' => 'support']),fn ($r) => $r-
     raises(fn () => $invoke($client->voip), Polymorfa\ServerException::class);
     check(count($history) === 1, 'Call link and reaction/hand never retry');
 }
-$browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_fixture'));
+$browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_Zml4dHVyZQ'));
 raises(fn () => $browser->voip->accept('call_1', ['participant' => 'agent_1']), Polymorfa\ConfigurationException::class);
 echo count($cases)." typed Calls REST fixtures and validation/retry boundaries passed.\n";

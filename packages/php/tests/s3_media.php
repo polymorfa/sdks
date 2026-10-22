@@ -81,7 +81,7 @@ try {
                 return $handler($request->withUri($request->getUri()->withHost($address)->withPort((int)$port), true), $options);
             };
             $http = new GuzzleHttp\Client(['handler' => $wire,'verify' => $fixture['ca'],'proxy' => '']);
-            $client = new MessagingClient(Credential::organizationApiKey('pmfa_'.str_repeat('a', 72)), baseUrl:'https://api.fixture.invalid', http:$http);
+            $client = new MessagingClient(Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'), baseUrl:'https://api.fixture.invalid', http:$http);
             $plain = str_repeat(chr(56), $kind === 'document' ? 257 : 70003);
             $changeKey = 'media/source-'.$mode;
             $phase = '';
@@ -129,7 +129,7 @@ try {
         $apiCalls++;
         throw new RuntimeException('No API dispatch expected.');
     }]);
-    $messaging = new MessagingClient(Credential::organizationApiKey('pmfa_'.str_repeat('a', 72)), http:$noApi);
+    $messaging = new MessagingClient(Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'), http:$noApi);
     $store = new S3MediaStore($s3, $bucket, 'media/');
     $error = s3Raises(fn () => $store->uploadToWhatsApp($messaging->whatsappMedia, 'session', 'large', new UploadWhatsAppMediaOptions('image', maxBytes:1)), MediaIntegrityException::class);
     storageCheck($error->errorCode === 'media_too_large' && $heads === 1 && $gets === 0 && $apiCalls === 0, 'HEAD length bound prevents source/API dispatch');

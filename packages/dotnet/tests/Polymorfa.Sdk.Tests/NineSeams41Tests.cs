@@ -45,7 +45,7 @@ internal static class NineSeams41Tests
         await ClientGuardsAsync(c => c.Testing.SendPhoneMessageAsync("p", "s", new("to", "text")));
         await ClientGuardsAsync(c => c.Testing.UnlinkPhoneDeviceAsync("p", "s", 1));
         using (var wire = new WireFixture())
-        using (var c = new MessagingClient(Credential.ClientToken("pmfa_ct_fixture"), Options(wire)))
+        using (var c = new MessagingClient(Credential.ClientToken("pmfa_ct_Zml4dHVyZQ"), Options(wire)))
         {
             var serve = wire.ServeAsync("GET", "/messaging/s/groups/g/capabilities", null, caps);
             await c.Groups.GetCapabilitiesAsync("s", "g"); await serve; Check(true, "Scoped Client group allowed");
@@ -62,7 +62,7 @@ internal static class NineSeams41Tests
     }
     private static async Task ClientGuardsAsync(Func<MessagingClient, Task> invoke)
     {
-        using var wire = new WireFixture(); using var c = new MessagingClient(Credential.ClientToken("pmfa_ct_fixture"), Options(wire));
+        using var wire = new WireFixture(); using var c = new MessagingClient(Credential.ClientToken("pmfa_ct_Zml4dHVyZQ"), Options(wire));
         try { await invoke(c); throw new Exception("Client authority accepted"); } catch (PolymorfaConfigurationException) { Check(!wire.Pending, "Client reached HTTP"); }
     }
 }

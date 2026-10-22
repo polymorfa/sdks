@@ -97,7 +97,7 @@ it("keeps supported Client group authority and refuses malformed capability enve
   }));
   servers.push(server);
   const m = new MessagingClient({
-    credential: { type: "clientToken", value: "pmfa_ct_synthetic" },
+    credential: { type: "clientToken", value: "pmfa_ct_c3ludGhldGlj" },
     baseUrl: server.url,
   });
   expect(

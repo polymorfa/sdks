@@ -115,7 +115,7 @@ func (r *RequestLogs) project(requested string) (string, error) {
 		return r.projectID, nil
 	}
 	if requested == "" {
-		return "", configuration("projectId", "projectId is required to read a request log with an organization key.")
+		return "", configuration("projectId", "projectId is required to read a request log with an team key.")
 	}
 	return requested, nil
 }

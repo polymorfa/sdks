@@ -1,4 +1,5 @@
 import asyncio
+import base64
 
 import pytest
 
@@ -11,13 +12,16 @@ async def test_cached_static_credential_and_expiry_skew():
 
     async def provider(request):
         calls.append(request.refresh)
-        return CallsToken("pmfa_ct_" + str(len(calls)), clock[0] + 60)
+        return CallsToken(
+            "pmfa_ct_" + base64.urlsafe_b64encode(str(len(calls)).encode()).rstrip(b"=").decode(),
+            clock[0] + 60,
+        )
 
     source = CallsTokenSource(provider, now=lambda: clock[0])
     first = await source.get()
     assert await source.get() is first
     clock[0] = 131
-    assert (await source.get()).value == "pmfa_ct_2"
+    assert (await source.get()).value == "pmfa_ct_Mg"
     assert calls == [False, False]
     assert "pmfa_ct_" not in repr(first)
     assert (await CallsTokenSource("static").get()).value == "static"

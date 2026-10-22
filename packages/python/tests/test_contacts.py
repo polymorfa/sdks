@@ -234,7 +234,10 @@ async def test_every_observation_contact_profile_method(method, suffix, body, fi
         return httpx.Response(200, json=fixture, headers={"x-request-id": "req_contact"})
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = await invoke(client)
@@ -244,7 +247,10 @@ async def test_every_observation_contact_profile_method(method, suffix, body, fi
 
 async def test_privacy_identity_label_negative_validation():
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72)
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        )
     ) as client:
         with pytest.raises(ValidationError):
             await client.privacy.set("support", "online", "contacts")

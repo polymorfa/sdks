@@ -40,7 +40,7 @@ try {
             usleep(10000);
         }
     }
-    $ecCredential = Polymorfa\Credential::organizationApiKey('pmfa_'.str_repeat('a', 72));
+    $ecCredential = Polymorfa\Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
     $ecOrg = new Polymorfa\Client($ecCredential, baseUrl:$ecUrl);
     $ecMessaging = new Polymorfa\MessagingClient($ecCredential, baseUrl:$ecUrl);
     $ecProject = '11111111-1111-4111-8111-111111111111';

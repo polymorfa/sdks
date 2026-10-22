@@ -49,7 +49,7 @@ export class FlowEncryptionResource {
   private path(phoneNumberId: string, params: FlowEncryptionParams): string {
     if (this.credentialType === "clientToken")
       throw new PolymorfaConfigurationError(
-        "Flow encryption keys require an organization API key or project token.",
+        "Flow encryption keys require an team key or project token.",
         "credential",
       );
     if (!phoneNumberId.trim() || !params.version.trim())

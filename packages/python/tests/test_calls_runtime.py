@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import json
 from contextlib import asynccontextmanager
 
@@ -10,8 +11,8 @@ from polymorfa.calls_lifecycle import LifecycleSocket
 from polymorfa.calls_runtime import CallsClient
 from polymorfa.calls_tokens import CallsError, CallsToken, CallsTokenSource
 
-SERVER = "pmfa_" + "a" * 72
-CLIENT = "pmfa_ct_fixture"
+SERVER = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
+CLIENT = "pmfa_ct_Zml4dHVyZQ"
 
 
 @asynccontextmanager
@@ -347,7 +348,10 @@ async def test_actual_lifecycle_4401_refresh_reconnect_and_4400_stops():
 
     async def provider(request):
         refreshes.append(request.refresh)
-        return "pmfa_ct_" + str(len(refreshes))
+        return (
+            "pmfa_ct_"
+            + base64.urlsafe_b64encode(str(len(refreshes)).encode()).rstrip(b"=").decode()
+        )
 
     async def handler(request):
         assert not request.query
@@ -375,8 +379,8 @@ async def test_actual_lifecycle_4401_refresh_reconnect_and_4400_stops():
         await lifecycle.close()
     assert refreshes == [False, True]
     assert attempts == [
-        {"type": "auth", "token": "pmfa_ct_1"},
-        {"type": "auth", "token": "pmfa_ct_2"},
+        {"type": "auth", "token": "pmfa_ct_MQ"},
+        {"type": "auth", "token": "pmfa_ct_Mg"},
     ]
 
 
@@ -389,7 +393,9 @@ async def test_native_lifecycle_replacement_auth_stays_on_same_socket():
     async def provider(request):
         refreshes.append(request.refresh)
         return CallsToken(
-            "pmfa_ct_" + str(len(refreshes)), time.time() + (1.1 if len(refreshes) == 1 else 120)
+            "pmfa_ct_"
+            + base64.urlsafe_b64encode(str(len(refreshes)).encode()).rstrip(b"=").decode(),
+            time.time() + (1.1 if len(refreshes) == 1 else 120),
         )
 
     async def handler(request):
@@ -414,8 +420,8 @@ async def test_native_lifecycle_replacement_auth_stays_on_same_socket():
             await lifecycle.close()
     assert refreshes == [False, True]
     assert auth_frames == [
-        {"type": "auth", "token": "pmfa_ct_1"},
-        {"type": "auth", "token": "pmfa_ct_2"},
+        {"type": "auth", "token": "pmfa_ct_MQ"},
+        {"type": "auth", "token": "pmfa_ct_Mg"},
     ]
 
 

@@ -20,7 +20,7 @@ func TestRequestLogsTypedWireAndFilters(t *testing.T) {
 	var mu sync.Mutex
 	queries := []url.Values{}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "GET" || r.URL.Path != "/platform/projects/project/request-logs" || r.Header.Get("Authorization") != "Bearer pmfa_"+strings.Repeat("a", 72) || r.Header.Get("Polymorfa-Version") != APIVersion {
+		if r.Method != "GET" || r.URL.Path != "/platform/projects/project/request-logs" || r.Header.Get("Authorization") != "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k" || r.Header.Get("Polymorfa-Version") != APIVersion {
 			t.Errorf("wire %s %s", r.Method, r.URL.Path)
 		}
 		mu.Lock()

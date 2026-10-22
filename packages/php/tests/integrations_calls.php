@@ -38,19 +38,19 @@ $wire = new class () implements CallSocket {
         $this->closed = true;
     }
 };
-$socket = new MediaSocket(Credential::clientToken('pmfa_ct_local'), 'call_1', 'connection_1', connector:function ($url, $protocol, $timeout) use ($wire) {
+$socket = new MediaSocket(Credential::clientToken('pmfa_ct_bG9jYWw'), 'call_1', 'connection_1', connector:function ($url, $protocol, $timeout) use ($wire) {
     check($url === 'wss://api.polymorfa.com/voip/calls/call_1/media' && $protocol === 'pmfa.calls.v2', 'Native transport URI has no credentials');
     return $wire;
 });
 $socket->connect();
 check($socket->sampleRate === 16000 && $socket->video, 'Media ready');
-check(json_decode($wire->sent[0]['data'], true) === ['type' => 'auth','token' => 'pmfa_ct_local','connectionId' => 'connection_1'], 'First frame authentication');
+check(json_decode($wire->sent[0]['data'], true) === ['type' => 'auth','token' => 'pmfa_ct_bG9jYWw','connectionId' => 'connection_1'], 'First frame authentication');
 $socket->sendAudio([1,-1]);
 check($wire->sent[1] === ['data' => "\x01\x01\x00\xff\xff",'binary' => true], 'Sent native PCM');
 check($socket->receive() == new AudioFrame([2,-2]), 'Received native PCM');
 $socket->leave();
 check($wire->closed && !$socket->connected, 'Call leave closes');
-raises(fn () => new MediaSocket(Credential::clientToken('pmfa_ct_local'), 'call_1', 'connection_1', participant:'server'), ConfigurationException::class);
+raises(fn () => new MediaSocket(Credential::clientToken('pmfa_ct_bG9jYWw'), 'call_1', 'connection_1', participant:'server'), ConfigurationException::class);
 echo "Native Symfony/Laravel/PSR webhook and Calls media protocol checks passed.\n";
 
 $process = proc_open([PHP_BINARY,__DIR__.'/calls-server.php'], [['pipe','r'],['pipe','w'],['pipe','w']], $pipes);
@@ -59,7 +59,7 @@ if (!is_resource($process)) {
 }
 try {
     $ready = json_decode(fgets($pipes[1]), true, flags:JSON_THROW_ON_ERROR);
-    $native = new MediaSocket(Credential::clientToken('pmfa_ct_fixture'), 'call_fixture', 'connection_fixture', baseUrl:$ready['url']);
+    $native = new MediaSocket(Credential::clientToken('pmfa_ct_Zml4dHVyZQ'), 'call_fixture', 'connection_fixture', baseUrl:$ready['url']);
     $native->connect();
     check($native->sampleRate === 16000 && $native->video, 'Native phrity media readiness');
     $native->sendAudio([1,-1]);

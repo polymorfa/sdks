@@ -63,9 +63,9 @@ internal static class CampaignFollowUpTests
             catch (JsonException) { }
         }
         // Endpoint response presence is checked by CampaignExistingTests over TCP.
-        using var server = new WireFixture { Authorization = "Bearer pmfa_" + new string('a', 72) };
+        using var server = new WireFixture { Authorization = "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k" };
         var served = server.ServeAsync("POST", "/messaging/projects/support/campaigns", """{"name":"Customers","followUp":{"message":{"type":"text","text":"Hello"}}}""", """{"error":{"code":"feature_unavailable","message":"Follow-ups require enrollment"}}""", 403);
-        using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = server.Url, MaxNetworkRetries = 0 });
+        using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = server.Url, MaxNetworkRetries = 0 });
         try { await client.Campaigns.CreateAsync("support", new("Customers", FollowUp: new CampaignFollowUp(new CampaignFollowUpText("Hello")))); throw new Exception("Unavailable follow-up accepted"); }
         catch (PolymorfaException error) { if (error.Status != 403 || error.Code != "feature_unavailable") throw new Exception($"Expected enrollment denial, received {error.Status} {error.Code}: {error.Message}", error); }
         await served;

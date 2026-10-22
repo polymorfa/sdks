@@ -30,14 +30,14 @@ public sealed record CampaignSegmentSnapshot(long Revision, long EvaluatedAt, lo
 public sealed record CampaignStepWindow(IReadOnlyList<string> Days, IReadOnlyList<CampaignSendWindowRange> Hours);
 /// <summary>A phone already in the drip returns <c>Created = false</c> and never restarts.</summary>
 public sealed record EnrollCampaignContactRequest(string Phone, IReadOnlyDictionary<string, JsonElement>? Variables = null);
-/// <summary>Organization API keys select the owning project explicitly.</summary>
+/// <summary>Team keys select the owning project explicitly.</summary>
 public sealed record EnrollPlatformCampaignContactRequest(string ProjectId, string Phone, IReadOnlyDictionary<string, JsonElement>? Variables = null);
 /// <summary><c>EnrolledAt</c> is Unix milliseconds.</summary>
 public sealed record CampaignEnrollment(string CampaignId, string RecipientId, string Phone, bool Created, string Status, double EnrolledAt);
 
 public sealed partial class PlatformCampaigns
 {
-    /// <summary>Team cap. Organization API key with campaigns:read.</summary>
+    /// <summary>Team cap. Team key with campaigns:read.</summary>
     public Task<ApiResponse<DataEnvelope<CampaignFrequencyCapSettings>>> GetFrequencyCapAsync(RequestOptions? options = null) => ExistingContractCodec.Request<DataEnvelope<CampaignFrequencyCapSettings>>(Http, HttpMethod.Get, "/platform/campaign-settings/frequency-cap", options: options);
     /// <summary>Replaces both limits with the last read revision. A stale revision throws <see cref="PolymorfaConflictException"/>; read again and reconcile. Limits require beta access. Sent once: reconcile a lost response with a fresh read.</summary>
     public Task<ApiResponse<DataEnvelope<CampaignFrequencyCapSettings>>> UpdateFrequencyCapAsync(UpdateCampaignFrequencyCapRequest input, RequestOptions? options = null) => ExistingContractCodec.Request<DataEnvelope<CampaignFrequencyCapSettings>>(Http, HttpMethod.Put, "/platform/campaign-settings/frequency-cap", ExistingContractCodec.Capture(input), SegmentOptions.Once(options));
@@ -160,7 +160,7 @@ public sealed record UpdateAudienceSegmentRequest(long ExpectedRevision)
 public sealed record ListAudienceSegmentsParameters(int? Limit = null, string? Cursor = null);
 public sealed record AudienceSegmentDeletion(bool Deleted, string Id);
 
-/// <summary>Organization-owned saved audience segments (contracts/campaign-segments-drip.json). Organization API keys only: campaigns:read for reads, campaigns:manage for writes and unsaved previews. Revision conflicts and bounded evaluation timeouts return 409 state_conflict; re-read, reconcile or simplify the rules. Writes and previews are sent once.</summary>
+/// <summary>Organization-owned saved audience segments (contracts/campaign-segments-drip.json). Team keys only: campaigns:read for reads, campaigns:manage for writes and unsaved previews. Revision conflicts and bounded evaluation timeouts return 409 state_conflict; re-read, reconcile or simplify the rules. Writes and previews are sent once.</summary>
 public sealed class AudienceSegments : Resource
 {
     internal AudienceSegments(HttpTransport http) : base(http) { }

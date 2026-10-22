@@ -14,7 +14,7 @@ try {
     $adapter = new StorageEngineMemory();
     $engine = new Engine($adapter);
     $engine->apply(new Batch('*', [new Checkpoint('*', 'events', 'old', expectedCursor:null)]));
-    $client = new ProjectClient(Credential::organizationApiKey('pmfa_'.str_repeat('a', 72)), 'project', baseUrl:$wire['url']);
+    $client = new ProjectClient(Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'), 'project', baseUrl:$wire['url']);
     $sync = null;
     $sync = new Sync(new ApiEventSource($client->events), $engine, onApplied:static function (array $item) use (&$sync, $engine): void {
         storageCheck($engine->getCheckpoint('*', 'events')['cursor'] === 'new', 'native cursor committed before return');

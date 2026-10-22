@@ -19,3 +19,6 @@ examples/**/obj/
 examples/rust/yew/frontend/public/elements.js
 packages/typescript/src/history/gen/
 packages/typescript/proto/whatsapp.proto
+
+# Preserve the byte-identical API-owned signed-vector fixture.
+contracts/machine-credentials.v1.json

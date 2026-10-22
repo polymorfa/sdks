@@ -33,7 +33,10 @@ CAP = json.loads((ROOT / "contracts/campaign-frequency-cap.json").read_text())
 SEG = json.loads((ROOT / "contracts/campaign-segments-drip.json").read_text())
 PROJECT = "11111111-1111-4111-8111-111111111111"
 ID = "22222222-2222-4222-8222-222222222222"
-KEY = Credential("organization_api_key", "pmfa_" + "a" * 72)
+KEY = Credential(
+    "organization_api_key",
+    "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+)
 RULES = {
     "match": "all",
     "groups": [
@@ -159,7 +162,7 @@ def test_types_match_pinned_supplements():
         assert set(get_type_hints(model)) == set(schemas[name]["properties"]), name
         required = set(schemas[name].get("required", []))
         if model is C.EnrollPlatformContact:
-            # Organization API keys must select the owning project explicitly.
+            # Team keys must select the owning project explicitly.
             required |= {"projectId"}
         assert model.__required_keys__ == required, name
     step = SEG["sources"]["messaging"]["schemas"]["CampaignDripStepStats"]

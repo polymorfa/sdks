@@ -22,7 +22,7 @@ internal static class CustomerTests
         await Organization("GET", "/platform/customers/cu1/pairing-links?projectId=p1", null, "{\"data\":[" + LinkJson + "]}", async c => ResourceTests.Equal((await c.Customers.ListPairingLinksAsync("cu1", "p1")).Data.Data[0].MaxAttempts, 5));
         await Organization("DELETE", "/platform/customers/cu1/pairing-links/link1?projectId=p1", null, "{\"data\":" + LinkJson + "}", async c => ResourceTests.True((await c.Customers.RevokePairingLinkAsync("cu1", "link1", "p1")).Data.Data.RevokedAt is null));
         await Organization("POST", "/platform/customers/cu1/numbers/s1/transfer", "{\"projectId\":\"p1\",\"sourceCustomerId\":\"cu0\",\"confirm\":true}", "{\"data\":" + NumberJson + "}", async c => ResourceTests.Equal((await c.Customers.TransferNumberAsync("cu1", "s1", new("p1", "cu0", true))).Data.Data.SessionId, "s1"));
-        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)));
+        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"));
         try { await client.Customers.TransferNumberAsync("cu1", "s1", new("p1", "cu0", false)); throw new Exception("Unconfirmed transfer admitted"); } catch (PolymorfaValidationException) { }
         Console.WriteLine("PASS 14 typed Customer routes, nullable patches, masked links, filters and confirmed transfer");
     }

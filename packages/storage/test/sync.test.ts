@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { ORGANIZATION_API_KEY } from "../../typescript/test/support/credentials.js";
 import type { EventStreamItem, EventStreamParams } from "@polymorfa/sdk";
 import { Client, webhooks } from "@polymorfa/sdk";
 import { decodeHistorySyncPayload } from "../../typescript/src/history/index.js";
@@ -249,7 +250,7 @@ describe("durable stream synchronization", () => {
     const client = new Client({
       credential: {
         type: "organizationApiKey",
-        value: `pmfa_${"A".repeat(72)}`,
+        value: ORGANIZATION_API_KEY,
       },
     });
     const actual: EventStreamSource = client.project("fixture-project").events;

@@ -10,8 +10,8 @@ function callsCheck(bool $condition, string $message): void
         throw new RuntimeException($message);
     }
 }
-$old = Credential::projectToken('pmfa_pt_'.str_repeat('a', 93).'A');
-$fresh = Credential::projectToken('pmfa_pt_'.str_repeat('a', 93).'Q');
+$old = Credential::projectToken('pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
+$fresh = Credential::projectToken('pmfa_pt_YmJiYmJiYmJiYmJiYmJiYmJiYmKK0GQs');
 $now = 100.;
 $count = 0;
 $refreshes = [];
@@ -255,7 +255,7 @@ $tokenCalls = [];
 $expiryWire = new CallsTestSocket([['type' => 'ready','participant' => 'client:one']]);
 $expiring = new CallsTokenSource(function (CallsTokenRequest $request) use (&$tokenCalls): CallsToken {
     $tokenCalls[] = $request->refresh;
-    return new CallsToken(Credential::clientToken($request->refresh ? 'pmfa_ct_replaced' : 'pmfa_ct_initial'), $request->refresh ? microtime(true) + 600 : microtime(true) + 0.02);
+    return new CallsToken(Credential::clientToken($request->refresh ? 'pmfa_ct_replaced' : 'pmfa_ct_aW5pdGlhbA'), $request->refresh ? microtime(true) + 600 : microtime(true) + 0.02);
 }, expirySkew:0);
 $expiryClient = new CallsClient($expiring, new CallsOptions(heartbeat:0, refreshBeforeExpiry:0.01, diagnostics:false), connector:static function (string $url, ?string $protocol, float $timeout) use ($expiryWire): CallsTestSocket {
     callsCheck($url === 'wss://api.polymorfa.com/voip/ws' && $protocol === null, 'Client lifecycle has no query identity');
@@ -272,7 +272,7 @@ $claimWire = new CallsTestSocket([
  ['type' => 'event','event' => 'call.accepted','callId' => 'claimed','payload' => ['answeredBy' => 'client:other','exclusive' => true]],
  ['type' => 'event','event' => 'call.received','callId' => 'claimed','payload' => ['direction' => 'incoming','from' => '15550000001']],
 ]);
-$claimed = new CallsClient(new CallsTokenSource(Credential::clientToken('pmfa_ct_one')), new CallsOptions(heartbeat:0, diagnostics:false), connector:static fn (): CallsTestSocket => $claimWire, clientFactory:static function (): never {
+$claimed = new CallsClient(new CallsTokenSource(Credential::clientToken('pmfa_ct_b25l')), new CallsOptions(heartbeat:0, diagnostics:false), connector:static fn (): CallsTestSocket => $claimWire, clientFactory:static function (): never {
     throw new RuntimeException('Claimed call must never be rejected or released.');
 });
 $claimed->connect();

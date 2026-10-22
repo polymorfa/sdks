@@ -110,7 +110,7 @@ describe("Client opt-outs", () => {
     expect(requests[2]?.body).toBe('{"phones":["+1 555","+44 20"]}');
   });
 
-  it("reads and replaces the organization keyword settings", async () => {
+  it("reads and replaces the team keyword settings", async () => {
     const { client, requests } = await platformServer();
     await client.optOuts.getSettings();
     await client.optOuts.updateSettings({

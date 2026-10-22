@@ -19,7 +19,7 @@ impl OrganizationClient {
 
     pub fn new(credential: Credential, options: ClientOptions) -> Result<Self> {
         if !matches!(credential, Credential::OrganizationApiKey(_)) {
-            return Err(configuration("credential: organization API key required"));
+            return Err(configuration("credential: team key required"));
         }
         Ok(Self {
             http: HttpTransport::new(credential, options)?,

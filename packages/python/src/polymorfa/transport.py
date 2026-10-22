@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import binascii
 import json
 import platform
 import random
 import re
 import sys
 import time
+import zlib
 from collections.abc import AsyncIterable, AsyncIterator, Mapping
 from dataclasses import dataclass, field, replace
 from email.utils import parsedate_to_datetime
@@ -46,6 +49,37 @@ QueryValue = str | int | float | bool | list[str | int | float | bool] | None
 T = TypeVar("T")
 
 
+def _client_shape(value: str) -> bool:
+    if not value.startswith("pmfa_ct_"):
+        return False
+    body = value[8:]
+    if re.fullmatch(r"[A-Za-z0-9_-]+", body) is None:
+        return False
+    try:
+        raw = base64.urlsafe_b64decode(body + "=" * (-len(body) % 4))
+        return base64.urlsafe_b64encode(raw).rstrip(b"=").decode("ascii") == body
+    except (ValueError, binascii.Error):
+        return False
+
+
+def _opaque_shape(value: str, prefix: str) -> bool:
+    """Check framing; authentication belongs to the API."""
+    if not value.startswith(prefix):
+        return False
+    body = value[len(prefix) :]
+    if re.fullmatch(r"[A-Za-z0-9_-]+", body) is None:
+        return False
+    try:
+        raw = base64.urlsafe_b64decode(body + "=" * (-len(body) % 4))
+    except (ValueError, binascii.Error):
+        return False
+    return (
+        len(raw) >= 24
+        and zlib.crc32(raw[:-4]) == int.from_bytes(raw[-4:], "big")
+        and base64.urlsafe_b64encode(raw).rstrip(b"=").decode("ascii") == body
+    )
+
+
 @dataclass(frozen=True)
 class Credential:
     kind: Literal["organization_api_key", "project_token", "client_token"]
@@ -56,12 +90,12 @@ class Credential:
             ("pmfa_pt_", "pmfa_ct_", "pmfa_ls_", "pmfa_at_", "pmfa_wst_", "pmfa_sd_")
         ):
             raise ConfigurationError("credential")
-        pattern = {
-            "organization_api_key": r"pmfa_[A-Za-z0-9_-]{72}",
-            "project_token": r"pmfa_pt_[A-Za-z0-9_-]{93}[AQgw]",
-            "client_token": r"pmfa_ct_.+",
-        }.get(self.kind)
-        if pattern is None or re.fullmatch(pattern, self.value) is None:
+        if self.kind == "client_token":
+            valid = _client_shape(self.value)
+        else:
+            prefix = {"organization_api_key": "pmfa_", "project_token": "pmfa_pt_"}.get(self.kind)
+            valid = prefix is not None and _opaque_shape(self.value, prefix)
+        if not valid:
             raise ConfigurationError("credential")
         if sys.platform in ("emscripten", "wasi") and self.kind != "client_token":
             raise ConfigurationError("runtime")

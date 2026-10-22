@@ -1977,7 +1977,7 @@
       "method": "DELETE",
       "path": "/platform/templates/{templateId}",
       "status": "excluded",
-      "reason": "This dashboard-only route does not accept the organization server API key used by Client."
+      "reason": "This dashboard-only route does not accept the team key used by Client."
     },
     {
       "family": "platform",
@@ -2029,7 +2029,7 @@
       "method": "GET",
       "path": "/console/audit",
       "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
+      "reason": "Console-only operation requires dashboard identity; team keys and project tokens are not accepted."
     },
     {
       "family": "platform",
@@ -2106,7 +2106,7 @@
       "method": "GET",
       "path": "/console/insights/log-calendar",
       "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
+      "reason": "Console-only operation requires dashboard identity; team keys and project tokens are not accepted."
     },
     {
       "family": "platform",
@@ -2120,7 +2120,7 @@
       "method": "GET",
       "path": "/console/insights/number-options",
       "status": "excluded",
-      "reason": "Private Console selector requires dashboard identity; organization API keys and project tokens are not accepted."
+      "reason": "Private Console selector requires dashboard identity; team keys and project tokens are not accepted."
     },
     {
       "family": "platform",
@@ -2183,7 +2183,7 @@
       "method": "GET",
       "path": "/console/projects/{projectId}/logging",
       "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
+      "reason": "Console-only operation requires dashboard identity; team keys and project tokens are not accepted."
     },
     {
       "family": "platform",
@@ -3097,14 +3097,14 @@
       "method": "GET",
       "path": "/platform/templates",
       "status": "excluded",
-      "reason": "This dashboard-only route does not accept the organization server API key used by Client."
+      "reason": "This dashboard-only route does not accept the team key used by Client."
     },
     {
       "family": "platform",
       "method": "GET",
       "path": "/platform/templates/{templateId}",
       "status": "excluded",
-      "reason": "This dashboard-only route does not accept the organization server API key used by Client."
+      "reason": "This dashboard-only route does not accept the team key used by Client."
     },
     {
       "family": "platform",
@@ -3328,7 +3328,7 @@
       "method": "PATCH",
       "path": "/platform/templates/{templateId}",
       "status": "excluded",
-      "reason": "This dashboard-only route does not accept the organization server API key used by Client."
+      "reason": "This dashboard-only route does not accept the team key used by Client."
     },
     {
       "family": "platform",
@@ -4141,7 +4141,7 @@
       "method": "POST",
       "path": "/platform/templates",
       "status": "excluded",
-      "reason": "This dashboard-only route does not accept the organization server API key used by Client."
+      "reason": "This dashboard-only route does not accept the team key used by Client."
     },
     {
       "family": "platform",
@@ -4276,14 +4276,14 @@
       "method": "PUT",
       "path": "/console/projects/{projectId}/logging/drains",
       "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
+      "reason": "Console-only operation requires dashboard identity; team keys and project tokens are not accepted."
     },
     {
       "family": "platform",
       "method": "PUT",
       "path": "/console/projects/{projectId}/logging/sampling",
       "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; organization API keys and project tokens are not accepted."
+      "reason": "Console-only operation requires dashboard identity; team keys and project tokens are not accepted."
     },
     {
       "family": "platform",

@@ -3,6 +3,10 @@ using System.Text;
 using System.Text.Json;
 using Polymorfa.Sdk;
 
+OpaqueCredentialTests.Run();
+await OpaqueCredentialTests.WireAsync();
+if (args.Contains("--credential-opaque-only")) { Console.WriteLine("PASS opaque credential shapes"); return; }
+
 if (args.Contains("--unledgered-retry-only")) { await UnledgeredRetryTests.RunAsync(); return; }
 if (args.Contains("--stream-repairs-only")) { await StreamRepairTests.RunAsync(); return; }
 if (args.Contains("--consumer-media-only")) { await ConsumerRepairTests.MediaAsync(); return; }

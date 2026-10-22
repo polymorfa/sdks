@@ -283,7 +283,7 @@ type Campaign struct {
 	// PauseReason is the stored reason while paused, or nil.
 	PauseReason *string `json:"pauseReason,omitempty"`
 	// SegmentID is the saved segment evaluated at launch, or nil. Read-only on
-	// the Messaging API; choose segments with an organization API key.
+	// the Messaging API; choose segments with an team key.
 	SegmentID       *string                  `json:"segmentId,omitempty"`
 	SegmentSnapshot *CampaignSegmentSnapshot `json:"segmentSnapshot,omitempty"`
 }

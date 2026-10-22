@@ -85,7 +85,8 @@ impl Peer {
     }
     fn client(&self) -> MessagingClient {
         MessagingClient::new(
-            Credential::organization_api_key(format!("pmfa_{}", "a".repeat(72))).unwrap(),
+            Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string())
+                .unwrap(),
             ClientOptions {
                 base_url: format!(
                     "http://127.0.0.1:{}",

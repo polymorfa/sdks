@@ -60,7 +60,7 @@ func TestUnledgeredSubmissions(t *testing.T) {
 						}))
 						defer server.Close()
 						one := 1
-						client, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}, BaseURL: server.URL, MaxNetworkRetries: &one})
+						client, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: server.URL, MaxNetworkRetries: &one})
 						if err != nil {
 							t.Fatal(err)
 						}
@@ -139,7 +139,7 @@ func TestUnledgeredEstablishedRetryControls(t *testing.T) {
 			}))
 			defer server.Close()
 			one := 1
-			client, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}, BaseURL: server.URL, MaxNetworkRetries: &one})
+			client, err := sdk.NewMessagingClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: server.URL, MaxNetworkRetries: &one})
 			if err != nil {
 				t.Fatal(err)
 			}

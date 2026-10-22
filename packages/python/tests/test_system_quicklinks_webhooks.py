@@ -68,7 +68,10 @@ async def test_credential_free_typed_system_methods(method, path, data):
 
 
 async def test_bridge_route_project_token_only():
-    token = Credential("project_token", "pmfa_pt_" + "a" * 93 + "A")
+    token = Credential(
+        "project_token",
+        "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+    )
     data = {
         "wsUrl": "wss://example.invalid/bridge",
         "region": "BR",
@@ -86,7 +89,12 @@ async def test_bridge_route_project_token_only():
         return httpx.Response(200, json=data, headers={"x-request-id": "req_bridge"})
 
     with pytest.raises(ConfigurationError):
-        AsyncBridgeClient(Credential("organization_api_key", "pmfa_" + "a" * 72))
+        AsyncBridgeClient(
+            Credential(
+                "organization_api_key",
+                "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+            )
+        )
     async with AsyncBridgeClient(token, http_transport=httpx.MockTransport(handler)) as client:
         result = await client.routes.resolve()
         assert result.data == data and result.metadata.request_id == "req_bridge"
@@ -287,7 +295,10 @@ async def test_full_quicklink_webhook_and_session_call_public_contract(case):
         return httpx.Response(200, json=data, headers={"x-request-id": "req_contract"})
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(client, RequestOptions(headers={"x-proof": "contracts"}))
@@ -303,7 +314,10 @@ async def test_full_quicklink_webhook_and_session_call_public_contract(case):
 )
 async def test_reject_session_call_documented_response_variants(value):
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(lambda r: httpx.Response(200, json=value)),
     ) as client:
         assert (await client.calls.reject("support", "call_1", {"from_": "jid"})).data == value
@@ -331,7 +345,10 @@ async def test_quicklink_testing_configuration_shape():
         return httpx.Response(200, json={"success": True, "data": QLINK})
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         assert (await client.quick_links.create(body)).data["data"]["id"] == "link_1"

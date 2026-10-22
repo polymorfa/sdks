@@ -33,7 +33,7 @@ internal static class MediaApiTests
     }
     private static Task Messaging(string method, string path, string? body, string response, Func<MessagingClient, Task> invoke) => ResourceTests.Messaging(method, path, body, response, invoke);
     private static Task Organization(string method, string path, string? body, string response, Func<OrganizationClient, Task> invoke) => BillingTests.Organization(method, path, body, response, invoke);
-    private static MessagingClient Client(WireFixture fixture) => new(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0, Timeout = TimeSpan.FromSeconds(3) });
+    private static MessagingClient Client(WireFixture fixture) => new(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0, Timeout = TimeSpan.FromSeconds(3) });
     private static async Task DirectMedia()
     {
         using var fixture = new WireFixture(); var serving = fixture.ServeAsync("GET", "/messaging/media/media1", null, "\0\u0001\u0002", responseHeaders: new Dictionary<string, string> { ["content-type"] = "audio/ogg", ["content-disposition"] = "attachment; filename*=UTF-8''voice%20note.ogg" });

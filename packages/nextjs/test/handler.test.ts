@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY } from "../../typescript/test/support/credentials.js";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -28,7 +29,7 @@ function sdk() {
             data: {
               success: true as const,
               data: {
-                token: "pmfa_ct_fixture",
+                token: "pmfa_ct_Zml4dHVyZQ",
                 expiresAt: new Date(Date.now() + 600_000).toISOString(),
               },
             },
@@ -82,7 +83,7 @@ const get = (path: string, init: RequestInit = {}) =>
 describe("createPolymorfaHandler options", () => {
   it("accepts the server MessagingClient", () => {
     const polymorfa = new MessagingClient({
-      credential: { type: "apiKey", value: `pmfa_${"A".repeat(72)}` },
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
     });
     expect(
       createPolymorfaHandler({
@@ -155,7 +156,7 @@ describe("POST /token", () => {
     );
     const body = await response.json();
     expect(body).toMatchObject({
-      value: "pmfa_ct_fixture",
+      value: "pmfa_ct_Zml4dHVyZQ",
       audience: "browser",
       scopes: grant.allow,
       grant: {

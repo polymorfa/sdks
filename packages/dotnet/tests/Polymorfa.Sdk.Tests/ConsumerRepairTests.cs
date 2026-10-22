@@ -10,7 +10,7 @@ using Polymorfa.Sdk;
 
 internal static class ConsumerRepairTests
 {
-    private const string Key = "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    private const string Key = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
     private static void Check(bool value, string message) { if (!value) throw new Exception(message); }
     public static async Task RunAsync() { await MediaAsync(); await CallsAsync(); await CursorAsync(); await UsageAsync(); await SignalSessionAsync(); await SignalTruncationAsync(); await SignalAckAsync(); await SignalDeadlineAsync(); }
     public static async Task UsageAsync()
@@ -138,7 +138,7 @@ internal static class ConsumerRepairTests
             foreach (var media in new[] { false, true })
                 foreach (var clientToken in new[] { false, true })
                 {
-                    var credential = clientToken ? "pmfa_ct_fixture" : Key;
+                    var credential = clientToken ? "pmfa_ct_Zml4dHVyZQ" : Key;
                     var authenticated = new TaskCompletionSource<JsonElement>(TaskCreationOptions.RunContinuationsAsynchronously);
                     await using var peer = new Peer(async (request, stream, stop) =>
                     {

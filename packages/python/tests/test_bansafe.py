@@ -157,7 +157,10 @@ async def test_typed_project_bansafe(method, setting, body, data, messaging, pla
 
     client_class = AsyncMessagingClient if family == "messaging" else AsyncClient
     async with client_class(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = (
@@ -167,7 +170,9 @@ async def test_typed_project_bansafe(method, setting, body, data, messaging, pla
         )
         assert response.data == fixture and response.metadata.request_id == "req_bansafe"
     if family == "messaging":
-        async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_fixture")) as browser:
+        async with AsyncMessagingClient(
+            Credential("client_token", "pmfa_ct_Zml4dHVyZQ")
+        ) as browser:
             with pytest.raises(ConfigurationError):
                 await messaging(browser.ban_safe)
 
@@ -184,7 +189,10 @@ async def test_typed_session_bansafe(method):
         )
 
     async with AsyncMessagingClient(
-        Credential("project_token", "pmfa_pt_" + "a" * 93 + "A"),
+        Credential(
+            "project_token",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = (
@@ -207,7 +215,10 @@ async def test_health_policy_stale_version_preserves_conflict_metadata():
         )
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         with pytest.raises(ConflictError) as error:
@@ -232,7 +243,10 @@ async def test_platform_session_bansafe(method):
         return httpx.Response(200, json=fixture, headers={"x-request-id": "req_platform_safe"})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = (

@@ -15,7 +15,7 @@ from aiohttp import web
 from test_calls_runtime import wire
 
 EXAMPLE = Path(__file__).resolve().parents[3] / "examples/python/web_host"
-PROJECT_TOKEN = "pmfa_pt_" + "a" * 93 + "A"
+PROJECT_TOKEN = "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
 
 
 @asynccontextmanager
@@ -86,7 +86,7 @@ async def test_native_framework_authenticated_token_host_guards_revocation(frame
             {
                 "success": True,
                 "data": {
-                    "token": "pmfa_ct_browser_fixture",
+                    "token": "pmfa_ct_YnJvd3Nlcl9maXh0dXJl",
                     "expiresAt": (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat(),
                 },
             }
@@ -151,7 +151,7 @@ async def test_native_framework_authenticated_token_host_guards_revocation(frame
                     headers={"origin": origin},
                 )
                 assert grant.status_code == 200 and grant.headers["cache-control"] == "no-store"
-                assert grant.json()["value"] == "pmfa_ct_browser_fixture"
+                assert grant.json()["value"] == "pmfa_ct_YnJvd3Nlcl9maXh0dXJl"
                 assert grant.json()["grant"]["session"] == "authorized-support"
                 assert PROJECT_TOKEN not in grant.text and len(mints) == 1
                 assert (await client.get("/api/polymorfa/conversation")).json()["messages"] == []

@@ -22,7 +22,7 @@ println!("{}", result.data.data.receipt.id);
 # }
 ```
 
-Use `OrganizationClient` with an organization API key for Platform operations;
+Use `OrganizationClient` with an team key for Platform operations;
 `organization.project("project-id")` creates an immutable project view. Project
 tokens cannot bind to another project. Credentials are validated before network
 requests. The crate refuses compilation for WASM: Rust frontend applications use
@@ -270,7 +270,7 @@ when an intermediate page is empty.
 `cloud_graph::graph_transport_headers(models::MessageTransport)` returns the
 Graph route-choice header for raw requests. It does not grant access to a transport.
 
-Call placement accepts optional `session`, `to` and `video`. Group/participant calls omit `to`; client-token calls omit `session`. Omitting `video` preserves the server default. Streamed API downloads enforce the configured timeout while reading the response body. Organization keys reject every reserved special-purpose token prefix, including padded values.
+Call placement accepts optional `session`, `to` and `video`. Group/participant calls omit `to`; client-token calls omit `session`. Omitting `video` preserves the server default. Streamed API downloads enforce the configured timeout while reading the response body. Team keys reject every reserved special-purpose token prefix, including padded values.
 
 ### Contact frequency caps, audience segments and drips (beta)
 
@@ -826,6 +826,18 @@ remain separate release gates.
 
 HTTP API requests, media request bases and Calls sockets retain configured base-path prefixes. Raw pages reject repeated cursors before another request, including cycles across manual pages. Signal finite JSON requests share one header/body deadline; event streams retain their idle timeout, enforce a requested session and report incomplete frames at EOF. Signal acknowledgments require exactly HTTP 204 and never replay automatically. These are local SDK consumer guarantees against the pinned service contract, not evidence of a deployed service or package publication.
 Usage record iteration preserves a supplied starting cursor and rejects a response that returns it again.
+
+## Credential handling
+
+Treat every Polymorfa credential as an opaque string. Pass the complete value
+from the Console. Never parse credentials or assume a fixed length. Store at
+least 512 characters, preferably unrestricted text. Client-token length varies
+with its bindings, Customer block and signing key ID.
+
+The SDK checks server-credential prefixes, canonical base64url and the checksum.
+These checks do not authenticate a credential. The API checks the issuance record
+and live permissions. Test keys use the same project-token format; their test-only
+restriction is enforced by the service.
 
 ### Project event-stream validation and limits
 

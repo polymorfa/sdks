@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	sdk "github.com/polymorfa/sdks/packages/go"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"sync/atomic"
 	"testing"
+
+	sdk "github.com/polymorfa/sdks/packages/go"
 )
 
 // Independent fixtures follow API f97ad78 / TS 52f10de; none echo requests.
@@ -185,12 +186,12 @@ func TestGo41MessagingPrincipalMatrix(t *testing.T) {
 					io.WriteString(w, r.result)
 				}))
 				defer s.Close()
-				token := "pmfa_" + strings.Repeat("a", 72)
+				token := "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
 				if kind == sdk.ProjectToken {
-					token = "pmfa_pt_" + strings.Repeat("a", 93) + "A"
+					token = "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
 				}
 				if kind == sdk.ClientToken {
-					token = "pmfa_ct_scoped"
+					token = "pmfa_ct_c2NvcGVk"
 				}
 				m, e := sdk.NewMessagingClient(sdk.Config{BaseURL: s.URL, Credential: sdk.Credential{Kind: kind, Value: token}})
 				if e != nil {
@@ -283,7 +284,7 @@ func TestGo41ProjectTokenRequestLogsAndCursor(t *testing.T) {
 		io.WriteString(w, go41Logs)
 	}))
 	defer s.Close()
-	p, e := sdk.NewProjectClient(sdk.Config{BaseURL: s.URL, Credential: sdk.Credential{Kind: sdk.ProjectToken, Value: "pmfa_pt_" + strings.Repeat("a", 93) + "A"}}, "project /x")
+	p, e := sdk.NewProjectClient(sdk.Config{BaseURL: s.URL, Credential: sdk.Credential{Kind: sdk.ProjectToken, Value: "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}}, "project /x")
 	if e != nil {
 		t.Fatal(e)
 	}

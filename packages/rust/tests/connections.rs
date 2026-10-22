@@ -166,7 +166,7 @@ async fn client_token_mint_and_rules_native_wire_contracts() {
         "POST",
         "/platform/client-tokens",
         Some(json!({"ephemeralId":"visitor","ttlSeconds":300,"session":"s"})),
-        json!({"success":true,"data":{"token":"pmfa_ct_fixture","expiresAt":"2026-10-11T12:05:00Z"}}),
+        json!({"success":true,"data":{"token":"pmfa_ct_Zml4dHVyZQ","expiresAt":"2026-10-11T12:05:00Z"}}),
         client.client_tokens().mint(
             &MintClientTokenRequest {
                 ephemeral_id: "visitor".into(),
@@ -186,7 +186,7 @@ async fn client_token_mint_and_rules_native_wire_contracts() {
         Some(
             json!({"ephemeralId":"visitor","customer":"customer","allow":["send_message","read_contact","chats_read","chats_manage","contact_write","contact_delete"]})
         ),
-        json!({"success":true,"data":{"token":"pmfa_ct_fixture","expiresAt":"2026-10-11T12:05:00Z"}}),
+        json!({"success":true,"data":{"token":"pmfa_ct_Zml4dHVyZQ","expiresAt":"2026-10-11T12:05:00Z"}}),
         client.client_tokens().mint(
             &MintClientTokenRequest {
                 ephemeral_id: "visitor".into(),

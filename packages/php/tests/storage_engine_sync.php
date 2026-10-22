@@ -151,7 +151,7 @@ foreach (['%%%', base64_encode('{}')] as $invalidPayload) {
         }
         return $request;
     }));
-    $client = new Polymorfa\Client(Polymorfa\Credential::organizationApiKey('pmfa_'.str_repeat('a', 72)), http:$http);
+    $client = new Polymorfa\Client(Polymorfa\Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'), http:$http);
     $sync = new Sync(new Polymorfa\Storage\ApiEventSource($client->project('project')->events), $engine);
     raises(fn () => $sync->pump(), Polymorfa\AuthorizationException::class);
     storageCheck(count($history) === 3 && $engine->getCheckpoint('*', 'events')['cursor'] === 'good', 'Malformed base64/envelope cannot advance durable cursor');

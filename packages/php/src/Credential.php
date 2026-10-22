@@ -11,18 +11,42 @@ final readonly class Credential
         if ($kind === 'organization_api_key' && preg_match('/^pmfa_(pt|ct|ls|at|wst|sd)_/', $value)) {
             throw new ConfigurationException('credential');
         }
-        $pattern = match ($kind) {
-            'organization_api_key' => '/^pmfa_[A-Za-z0-9_-]{72}$/D',
-            'project_token' => '/^pmfa_pt_[A-Za-z0-9_-]{93}[AQgw]$/D',
-            'client_token' => '/^pmfa_ct_.+$/D',
-            default => throw new ConfigurationException('credential'),
+        $valid = match ($kind) {
+            'organization_api_key' => self::opaqueShape($value, 'pmfa_'),
+            'project_token' => self::opaqueShape($value, 'pmfa_pt_'),
+            'client_token' => self::clientShape($value),
+            default => false,
         };
-        if (!preg_match($pattern, $value)) {
+        if (!$valid) {
             throw new ConfigurationException('credential');
         }
         if (PHP_OS_FAMILY === 'Unknown' && str_contains(PHP_SAPI, 'wasm') && $kind !== 'client_token') {
             throw new ConfigurationException('runtime');
         }
+    }
+
+    private static function clientShape(string $value): bool
+    {
+        if (!str_starts_with($value, 'pmfa_ct_')) return false;
+        $body = substr($value, 8);
+        if (!preg_match('/^[A-Za-z0-9_-]+$/D', $body)) return false;
+        $raw = base64_decode(strtr($body, '-_', '+/'), true);
+        return $raw !== false && rtrim(strtr(base64_encode($raw), '+/', '-_'), '=') === $body;
+    }
+
+    // Framing only; the API authenticates this credential.
+    private static function opaqueShape(string $value, string $prefix): bool
+    {
+        if (!str_starts_with($value, $prefix)) {
+            return false;
+        }
+        $body = substr($value, strlen($prefix));
+        if (!preg_match('/^[A-Za-z0-9_-]+$/D', $body)) {
+            return false;
+        }
+        $raw = base64_decode(strtr($body, '-_', '+/'), true);
+        return $raw !== false && strlen($raw) >= 24 && pack('N', crc32(substr($raw, 0, -4))) === substr($raw, -4)
+            && rtrim(strtr(base64_encode($raw), '+/', '-_'), '=') === $body;
     }
 
     public static function organizationApiKey(#[\SensitiveParameter] string $value): self

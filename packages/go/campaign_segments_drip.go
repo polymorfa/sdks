@@ -162,7 +162,7 @@ func (r *MessagingCampaigns) Enroll(ctx context.Context, project, id string, b E
 
 const frequencyCapPath = "/platform/campaign-settings/frequency-cap"
 
-// GetFrequencyCap reads the team cap. Organization API key with campaigns:read.
+// GetFrequencyCap reads the team cap. Team key with campaigns:read.
 func (r *Campaigns) GetFrequencyCap(ctx context.Context, o ...RequestOptions) (Response[Envelope[CampaignFrequencyCapSettings]], error) {
 	return request[Envelope[CampaignFrequencyCapSettings]](ctx, r.t, "GET", frequencyCapPath, nil, nil, options(o))
 }
@@ -447,7 +447,7 @@ type AudienceSegmentDeletion struct {
 	ID      string `json:"id"`
 }
 
-// AudienceSegments are organization resources: organization API keys only,
+// AudienceSegments are organization resources: team keys only,
 // campaigns:read for reads and campaigns:manage for writes and unsaved previews.
 // Revision conflicts and bounded evaluation timeouts return 409 state_conflict;
 // re-read, reconcile or simplify rules before trying again. Writes and

@@ -22,14 +22,14 @@ internal static class UsageTests
     private static async Task BoundProject()
     {
         using var fixture = new WireFixture(); var serving = fixture.ServeAsync("GET", "/platform/usage/records?session=support&projectId=p1", null, "{\"data\":{\"records\":[" + Record + "],\"nextCursor\":null}}");
-        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = fixture.Url });
+        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url });
         ResourceTests.Equal((await client.Project("p1").Usage.ListRecordsAsync(new(ProjectId: "p2", Session: "support"))).Data.Records[0].Quantity, 1.123456m); await serving;
     }
     private static async Task RepeatedCursor()
     {
         using var fixture = new WireFixture();
         var serving = Serve();
-        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_" + new string('a', 72)), new() { BaseUrl = fixture.Url });
+        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url });
         var count = 0;
         try { await foreach (var _ in client.Usage.IterateRecordsAsync()) count++; throw new Exception("Repeated cursor accepted"); }
         catch (PolymorfaServerException e) { ResourceTests.Equal(e.Code, "invalid_response"); ResourceTests.Equal(count, 1); ResourceTests.Equal(e.RequestId, "req_native"); }

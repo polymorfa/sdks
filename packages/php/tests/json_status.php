@@ -26,7 +26,7 @@ $process = proc_open(['node',__DIR__.'/fixtures/consumer-repairs/json-status-ser
 jsonStatusCheck(is_resource($process), 'native status fixture');
 try {
     $base = json_decode(fgets($pipes[1]), true, flags:JSON_THROW_ON_ERROR)['url'];
-    $key = Credential::organizationApiKey('pmfa_'.str_repeat('a', 72));
+    $key = Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
     $client = new Client($key, baseUrl:$base, maxNetworkRetries:2);
     $messaging = new MessagingClient($key, baseUrl:$base, maxNetworkRetries:2);
     for ($status = 300; $status < 400; $status++) {

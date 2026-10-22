@@ -88,7 +88,10 @@ async def test_call_policy_typed_methods(method, path, body, data, invoke):
         )
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(client)
@@ -117,7 +120,10 @@ async def test_opt_out_cursor_page_follows_filter_and_metadata():
         )
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         page = await client.call_opt_outs.list(limit=1, phone_number="+15551234567")
@@ -138,7 +144,10 @@ async def test_call_policy_preflight_guards_and_project_retention():
         return httpx.Response(200, json={"data": RETENTION})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72),
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         for invoke in [
@@ -157,7 +166,10 @@ async def test_call_policy_preflight_guards_and_project_retention():
         result = await client.project("project_1").call_retention.retrieve()
         assert result.data["retentionDays"] == 45
     async with AsyncProjectClient(
-        Credential("project_token", "pmfa_pt_" + "a" * 93 + "A"),
+        Credential(
+            "project_token",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
         "project_1",
         http_transport=httpx.MockTransport(handler),
     ) as client:

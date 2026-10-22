@@ -260,7 +260,10 @@ async def test_public_send_all_composed_variants_context_and_response(content, c
     credential = (
         Credential("client_token", "pmfa_ct_fixture_only")
         if client_token
-        else Credential("organization_api_key", "pmfa_" + "a" * 72)
+        else Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        )
     )
     async with AsyncMessagingClient(
         credential, http_transport=httpx.MockTransport(handler)

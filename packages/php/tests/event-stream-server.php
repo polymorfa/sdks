@@ -15,7 +15,7 @@ for ($index = 0;$index < 2;$index++) {
         $lines[] = trim($line);
     }
     $request = implode("\n", $lines);
-    $valid = str_starts_with($request, 'GET /platform/projects/project/events/stream HTTP/1.1') && str_contains(strtolower($request), 'authorization: bearer pmfa_'.str_repeat('a', 72));
+    $valid = str_starts_with($request, 'GET /platform/projects/project/events/stream HTTP/1.1') && str_contains(strtolower($request), 'authorization: bearer pmfa_aaecawqfbgcicqolda0odxarehm73f-k');
     if ($index === 1) {
         $valid = $valid && str_contains(strtolower($request), 'last-event-id: checkpoint');
     }

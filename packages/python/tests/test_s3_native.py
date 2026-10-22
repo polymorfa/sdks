@@ -63,7 +63,10 @@ async def test_actual_s3_two_pass_native_reads_and_borrowed_client_ownership(nat
             return UploadLocation("/media/synthetic", "https://mmg.whatsapp.net/media/synthetic")
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72)
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        )
     ) as messaging:
         result = await store.upload_to_whatsapp(
             messaging.whatsapp_media,
@@ -96,7 +99,10 @@ async def test_actual_s3_etag_change_refuses_second_pass(native_s3):
             pytest.fail("changed source must fail")
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_" + "a" * 72)
+        Credential(
+            "organization_api_key",
+            "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        )
     ) as messaging:
         with pytest.raises(ClientError) as failure:
             await store.upload_to_whatsapp(

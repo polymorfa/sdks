@@ -26,7 +26,7 @@ func TestCallsTokenProviderConcurrencyAndRefresh(t *testing.T) {
 				return CallsToken{}, ctx.Err()
 			}
 		}
-		return CallsToken{Value: "pmfa_ct_current", ExpiresAt: time.Now().Add(time.Hour)}, nil
+		return CallsToken{Value: "pmfa_ct_Y3VycmVudA", ExpiresAt: time.Now().Add(time.Hour)}, nil
 	})
 	var wg sync.WaitGroup
 	results := make(chan error, 8)
@@ -78,23 +78,23 @@ func TestCallsTokenRefreshCannotUseStaleFetch(t *testing.T) {
 	oldStarted := make(chan struct{})
 	source, _ := NewCallsTokenSource(func(ctx context.Context, r CallsTokenRequest) (CallsToken, error) {
 		if r.Refresh {
-			return CallsToken{Value: "pmfa_ct_fresh"}, nil
+			return CallsToken{Value: "pmfa_ct_ZnJlc2g"}, nil
 		}
 		close(oldStarted)
 		<-release
-		return CallsToken{Value: "pmfa_ct_stale"}, nil
+		return CallsToken{Value: "pmfa_ct_c3RhbGU"}, nil
 	})
 	old := make(chan CallsToken, 1)
 	go func() { v, _ := source.Get(context.Background(), false); old <- v }()
 	<-oldStarted
 	fresh, err := source.Get(context.Background(), true)
-	if err != nil || fresh.Value != "pmfa_ct_fresh" {
+	if err != nil || fresh.Value != "pmfa_ct_ZnJlc2g" {
 		t.Fatal(fresh, err)
 	}
 	close(release)
 	<-old
 	cached, _ := source.Get(context.Background(), false)
-	if cached.Value != "pmfa_ct_fresh" {
+	if cached.Value != "pmfa_ct_ZnJlc2g" {
 		t.Fatal("stale fetch replaced cache")
 	}
 }
@@ -119,7 +119,7 @@ func TestCallsFollowNativeOrchestration(t *testing.T) {
 			if wsjson.Read(r.Context(), conn, &auth) != nil {
 				return
 			}
-			if auth["token"] != "pmfa_ct_initial" && auth["token"] != "pmfa_ct_refreshed" {
+			if auth["token"] != "pmfa_ct_aW5pdGlhbA" && auth["token"] != "pmfa_ct_cmVmcmVzaGVk" {
 				t.Error("auth token", auth)
 			}
 			lifecycleMu.Lock()
@@ -197,9 +197,9 @@ func TestCallsFollowNativeOrchestration(t *testing.T) {
 	client, err := NewCallsClient(CallsClientConfig{Config: Config{BaseURL: s.URL}, Session: "support", TokenProvider: func(ctx context.Context, r CallsTokenRequest) (CallsToken, error) {
 		if r.Refresh {
 			refreshes.Add(1)
-			return CallsToken{Value: "pmfa_ct_refreshed"}, nil
+			return CallsToken{Value: "pmfa_ct_cmVmcmVzaGVk"}, nil
 		}
-		return CallsToken{Value: "pmfa_ct_initial"}, nil
+		return CallsToken{Value: "pmfa_ct_aW5pdGlhbA"}, nil
 	}})
 	if err != nil {
 		t.Fatal(err)
@@ -347,7 +347,7 @@ func TestCallsFollowRefreshesLifecycleOn4401(t *testing.T) {
 			refreshes.Add(1)
 			return CallsToken{Value: "pmfa_ct_new"}, nil
 		}
-		return CallsToken{Value: "pmfa_ct_old"}, nil
+		return CallsToken{Value: "pmfa_ct_b2xk"}, nil
 	}})
 	session, err := c.Follow(ctx, CallsFollowOptions{MinBackoff: time.Millisecond, MaxBackoff: 2 * time.Millisecond, Heartbeat: time.Second})
 	if err != nil {

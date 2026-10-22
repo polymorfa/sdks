@@ -2,7 +2,7 @@
 
 Handwritten server SDK for .NET 8 and later. This package is in development and has not been published to NuGet. It uses the API contract revision `2026-09-22` pinned in this repository.
 
-Create a messaging client with an organization API key or a project token. Keep server credentials in your server process.
+Create a messaging client with an team key or a project token. Keep server credentials in your server process.
 
 ```csharp
 using Polymorfa.Sdk;
@@ -103,7 +103,7 @@ bound `SignalCustody` methods unwrap the data envelope once and retain metadata.
 The equivalent organization `Projects` and `Customers` aliases retain
 `DataEnvelope<SignalCustodyDefault>`. Disposing a borrowed Project view does not
 close its owner's transport. Project tokens cannot rebind to another project;
-organization credentials retain their existing rebind behavior.
+team keys retain their existing rebind behavior.
 
 Profile and consent lists return one `AudienceProfilePage<T>` with
 `Page.NextCursor` and `Page.HasMore`. Exports return one
@@ -937,6 +937,18 @@ environment acceptance remain separate release gates.
 Media downloads retain the successful API request deadline through body EOF. Each approved storage redirect hop has its own request deadline, retained through the final body. Async and synchronous body reads distinguish the request deadline from caller cancellation. Disposing a download releases its response, timer and owned storage transport; it does not dispose the API client. Body failures do not replay the download. Calls WebSockets retain the configured base-path prefix and authenticate in the first frame. Raw cursor pages reject repeated cursors before requesting them again, including cycles across manually requested pages.
 
 Signal finite JSON requests share one header/body deadline. Event streams enforce a requested session and report incomplete lines or frames at EOF; they retain their idle timeout and manual acknowledgment policy. ACK success requires exactly HTTP 204. Usage iteration preserves a starting cursor and rejects its repetition. Native HTTP fixtures verify these local consumer rules; they do not establish service deployment or registry availability.
+
+## Credential handling
+
+Treat every Polymorfa credential as an opaque string. Pass the complete value
+from the Console. Never parse credentials or assume a fixed length. Store at
+least 512 characters, preferably unrestricted text. Client-token length varies
+with its bindings, Customer block and signing key ID.
+
+The SDK checks server-credential prefixes, canonical base64url and the checksum.
+These checks do not authenticate a credential. The API checks the issuance record
+and live permissions. Test keys use the same project-token format; their test-only
+restriction is enforced by the service.
 
 ### Project event-stream validation and limits
 

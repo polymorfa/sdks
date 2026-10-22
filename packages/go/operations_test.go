@@ -90,7 +90,7 @@ var operationFixtures = []operationFixture{
 	{"MessagingClient.Messages.Star", "POST", "/messaging/s/messages/star", "", `{"conversation":{"id":"42"},"id":"x","star":false}`, `{"success":true,"data":{"status":"OK"}}`, "data.status", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(m.Messages().Star(ctx, "s", StarRequest{Conversation: ConversationReference{ID: "42"}, ID: "x"}))
 	}},
-	{"MessagingClient.ClientTokens.Mint", "POST", "/platform/client-tokens", "", `{"ephemeralId":"user","customer":"customer","allow":["send_message"]}`, `{"success":true,"data":{"token":"pmfa_ct_example","expiresAt":"2026-10-11"}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.ClientTokens.Mint", "POST", "/platform/client-tokens", "", `{"ephemeralId":"user","customer":"customer","allow":["send_message"]}`, `{"success":true,"data":{"token":"pmfa_ct_ZXhhbXBsZQ","expiresAt":"2026-10-11"}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(m.ClientTokens().Mint(ctx, MintClientTokenRequest{EphemeralID: "user", Customer: "customer", Allow: []string{"send_message"}}))
 	}},
 	{"MessagingClient.ClientTokens.Mint", "POST", "/platform/client-tokens", "", `{"ephemeralId":"user","session":"s"}`, `{"success":true,"data":{"token":"pmfa_ct_example","expiresAt":"2026-10-11"}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {

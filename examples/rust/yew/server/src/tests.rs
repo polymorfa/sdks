@@ -38,14 +38,14 @@ async fn real_app_login_uses_opaque_cookie_and_server_assignment_for_native_toke
             serde_json::from_slice::<serde_json::Value>(&bytes[end..]).unwrap(),
             json!({"ephemeralId":"example:app-user-id","session":"authorized-support","ttlSeconds":600})
         );
-        let body=json!({"success":true,"data":{"token":"pmfa_ct_browser_fixture","expiresAt":"2030-01-01T00:00:00Z"}}).to_string();
+        let body=json!({"success":true,"data":{"token":"pmfa_ct_YnJvd3Nlcl9maXh0dXJl","expiresAt":"2030-01-01T00:00:00Z"}}).to_string();
         stream.write_all(format!("HTTP/1.1 200 OK\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{body}",body.len()).as_bytes()).await.unwrap();
     });
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let origin = format!("http://{}", listener.local_addr().unwrap());
     let app = Arc::new(App {
         client: MessagingClient::new(
-            Credential::organization_api_key(format!("pmfa_{}", "a".repeat(72))).unwrap(),
+            Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k").unwrap(),
             ClientOptions {
                 base_url: api_url,
                 max_network_retries: 0,
@@ -137,7 +137,7 @@ async fn real_app_login_uses_opaque_cookie_and_server_assignment_for_native_toke
     assert_eq!(minted.headers()["cache-control"], "no-store");
     assert_eq!(
         minted.json::<serde_json::Value>().await.unwrap(),
-        json!({"value":"pmfa_ct_browser_fixture","audience":"browser","expiresAt":1893456000000i64,"scopes":["read_messages","connect_whatsapp"],"grant":{"session":"authorized-support","conversations":[],"allow":["read_messages","connect_whatsapp"]}})
+        json!({"value":"pmfa_ct_YnJvd3Nlcl9maXh0dXJl","audience":"browser","expiresAt":1893456000000i64,"scopes":["read_messages","connect_whatsapp"],"grant":{"session":"authorized-support","conversations":[],"allow":["read_messages","connect_whatsapp"]}})
     );
     upstream.await.unwrap();
     assert_eq!(
@@ -204,7 +204,7 @@ async fn connect_and_conversation_require_app_session_and_keep_assignment_on_ser
     let origin = format!("http://{}", listener.local_addr().unwrap());
     let app = Arc::new(App {
         client: MessagingClient::new(
-            Credential::organization_api_key(format!("pmfa_{}", "a".repeat(72))).unwrap(),
+            Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k").unwrap(),
             ClientOptions {
                 base_url: api_url,
                 max_network_retries: 0,
@@ -304,7 +304,7 @@ async fn native_inbox_sends_once_and_consumes_signed_peer_reply_after_reload() {
     let origin = format!("http://{}", listener.local_addr().unwrap());
     let app = Arc::new(App {
         client: MessagingClient::new(
-            Credential::project_token(format!("pmfa_pt_{}A", "a".repeat(93))).unwrap(),
+            Credential::project_token("pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k").unwrap(),
             ClientOptions {
                 base_url: api_url,
                 max_network_retries: 0,

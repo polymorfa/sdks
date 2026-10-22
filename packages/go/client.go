@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// MessagingClient accepts an organization API key, project token, or scoped
+// MessagingClient accepts an team key, project token, or scoped
 // client token. Resource-specific restrictions are enforced before HTTP.
 type MessagingClient struct{ t *transport }
 
@@ -30,7 +30,7 @@ func (c *MessagingClient) Media() *MessagingMedia       { return &MessagingMedia
 func (c *MessagingClient) Chats() *Chats                { return &Chats{c.t} }
 func serverOnly(t *transport) error {
 	if t.config.Credential.Kind == ClientToken {
-		return configuration("credential", "This operation requires an organization API key or project token.")
+		return configuration("credential", "This operation requires an team key or project token.")
 	}
 	return nil
 }
@@ -45,7 +45,7 @@ type ProjectClient struct {
 
 func NewOrganizationClient(c Config) (*OrganizationClient, error) {
 	if c.Credential.Kind != OrganizationAPIKey {
-		return nil, configuration("credential", "Organization clients require an organization API key.")
+		return nil, configuration("credential", "Organization clients require an team key.")
 	}
 	if err := validateCredential(c.Credential, false); err != nil {
 		return nil, err

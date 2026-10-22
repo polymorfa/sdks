@@ -99,7 +99,7 @@ try {
 }
 ccCheck($ccCancelled, 'CSV cancellation is checked during finite body consumption');
 
-$ccProjectCredential = Polymorfa\Credential::projectToken('pmfa_pt_'.str_repeat('a', 93).'A');
+$ccProjectCredential = Polymorfa\Credential::projectToken('pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
 foreach ([$ccCredential, $ccProjectCredential] as $ccPrincipal) {
     $ccBound = new Polymorfa\ProjectClient($ccPrincipal, $ccProject, baseUrl: $ccUrl);
     $ccBoundCases = [
@@ -146,7 +146,7 @@ function ccThrows(callable $invoke, string $expected): Throwable
 }
 
 $ccHttp->post($ccUrl.'/__case', ['json' => []]);
-$ccBrowser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_fixture'), baseUrl: $ccUrl);
+$ccBrowser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_Zml4dHVyZQ'), baseUrl: $ccUrl);
 foreach ([
     fn () => $ccBrowser->campaigns->links('slug', $ccCampaign),
     fn () => $ccBrowser->campaigns->testSend('slug', $ccCampaign, $ccSendBody),

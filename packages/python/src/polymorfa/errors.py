@@ -8,6 +8,33 @@ if TYPE_CHECKING:
     from .transport import ResponseMetadata
 
 
+def redact_error(value: object) -> object:
+    """Sanitize diagnostics only; successful credential responses stay usable."""
+    import re
+
+    if isinstance(value, str):
+        return re.sub(r"pmfa_[A-Za-z0-9_-]+", "[REDACTED]", value)
+    if isinstance(value, list):
+        return [redact_error(item) for item in value]
+    if isinstance(value, dict):
+        return {
+            key: "[REDACTED]"
+            if re.sub(r"[^a-z0-9]", "", str(key).lower())
+            in {
+                "authorization",
+                "apikey",
+                "projecttoken",
+                "clienttoken",
+                "credential",
+                "token",
+                "secret",
+            }
+            else redact_error(child)
+            for key, child in value.items()
+        }
+    return value
+
+
 class PolymorfaError(Exception):
     def __init__(
         self,
@@ -23,14 +50,14 @@ class PolymorfaError(Exception):
         param: str | None = None,
         metadata: ResponseMetadata | None = None,
     ) -> None:
-        super().__init__(message)
+        super().__init__(redact_error(message))
         self.code = code
         self.status = status
         self.request_id = request_id
         self.request_log_url = request_log_url
         self.doc_url = doc_url
         self.rate_limit_reason = rate_limit_reason
-        self.details = details
+        self.details = redact_error(details)
         self.param = param
         self.metadata = metadata
 

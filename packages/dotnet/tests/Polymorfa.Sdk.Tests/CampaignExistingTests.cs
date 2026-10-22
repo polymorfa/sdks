@@ -6,12 +6,12 @@ using static Adoption41Fixtures;
 internal static class CampaignExistingTests
 {
     internal static int Checks { get; private set; }
-    internal static readonly Credential Key = Credential.OrganizationApiKey("pmfa_" + new string('0', 72));
+    internal static readonly Credential Key = Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k");
     internal static void Check(bool value, string label) { if (!value) throw new Exception(label); Checks++; }
     internal static ClientOptions Options(WireFixture wire) => new() { BaseUrl = wire.Url, MaxNetworkRetries = 0, Timeout = TimeSpan.FromSeconds(2) };
     internal static async Task Messaging(string method, string path, string? body, string response, Func<MessagingClient, Task> invoke, int status = 200, string version = "2026-09-22", IReadOnlyDictionary<string, string>? headers = null)
     {
-        using var wire = new WireFixture { Authorization = "Bearer " + "pmfa_" + new string('0', 72), ExpectedHeaders = new Dictionary<string, string> { ["polymorfa-version"] = version } };
+        using var wire = new WireFixture { Authorization = "Bearer " + "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k", ExpectedHeaders = new Dictionary<string, string> { ["polymorfa-version"] = version } };
         using var client = new MessagingClient(Key, Options(wire));
         var serve = wire.ServeAsync(method, path, body, response, status, headers);
         await invoke(client); await serve; Checks++;
