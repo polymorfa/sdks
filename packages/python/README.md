@@ -843,7 +843,11 @@ fields remain absent. Do not infer a pause cause from an unknown future code.
 if event.event == "campaign.paused":
     print(event.payload.get("code"), event.payload["pausedAt"])  # seconds
 elif event.event == "campaign.recipient_skipped":
-    print(event.payload.get("messageIndex"), event.payload.get("followUpId"), event.payload["skippedAt"])  # milliseconds
+    print(
+        event.payload.get("messageIndex"),
+        event.payload.get("followUpId"),
+        event.payload["skippedAt"],
+    )  # milliseconds
 ```
 
 These are verified-event handling fragments, not complete receivers. Preserve
