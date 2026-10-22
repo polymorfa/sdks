@@ -975,6 +975,13 @@ counterparts. These additions remain unreleased betas and may return
 [the shared beta guide](../../docs/official-api-round2.md) for ownership, batching,
 whole-body signatures and release gates.
 
+Incoming cart `CloudOrderItem.Quantity` uses `long` to preserve the API's positive
+safe integers through `9007199254740991` in signed deliveries, batches and history.
+`ItemPrice` remains `double`; catalog prices remain strings. The JSON contract is
+unchanged. Callers assigning a quantity to `int` must check their own range before
+converting, and rebuild consumers against the widened DTO. This source correction
+is unreleased.
+
 The following uses an existing server client. Preserve the API's opaque cursor;
 stop when the response omits it. Catalog prices remain exact strings.
 

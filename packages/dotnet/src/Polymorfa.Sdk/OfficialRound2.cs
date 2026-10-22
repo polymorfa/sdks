@@ -31,7 +31,8 @@ public sealed class Catalogs : Resource
 public sealed record MarketingOnboarding(string Status, string? MetaStatus);
 public sealed record MarketingTerms(string Status, string? MetaStatus, string? Date);
 public sealed record MarketingMessagesStatus(string WabaId, MarketingOnboarding Onboarding, MarketingTerms Terms, bool? CloudApiMarketingDisabled, string NextAction, string GuideUrl, string ObservedAt);
-public sealed record CloudOrderItem(string ProductRetailerId, int Quantity, double ItemPrice, string Currency);
+/// <summary>Incoming cart quantity covers the API positive safe-integer range through 9007199254740991.</summary>
+public sealed record CloudOrderItem(string ProductRetailerId, long Quantity, double ItemPrice, string Currency);
 public sealed record CloudOrder(string CatalogId, IReadOnlyList<CloudOrderItem> Items, string? Text = null);
 public sealed record ContactPreviousIdentity(string? Id = null, string? Bsuid = null, string? ParentBsuid = null);
 public sealed record ContactIdentityChange(string Reason, string MessageId, ContactPreviousIdentity? Previous = null);
