@@ -156,6 +156,7 @@ CLAIM = {
         "restrictedInWindow": True,
         "criticalFindingDays": 1,
         "sharedConnection": False,
+        "simultaneousCalls": False,
         "measuredHours": 100,
     },
     "summary": "Review",

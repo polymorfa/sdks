@@ -36,6 +36,7 @@ SETTINGS = {
     "sipTrunkId": None,
     "sipClaim": True,
     "hostCloudApiCalls": False,
+    "simultaneousCalls": False,
     "revision": 1,
     "updatedAt": "2026-10-11T00:00:00Z",
 }
@@ -317,3 +318,62 @@ async def test_call_control_guards_and_no_retry_boundaries():
     async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_Zml4dHVyZQ")) as browser:
         with pytest.raises(ConfigurationError):
             await browser.voip.accept("call_1", {"participant": "agent_1"})
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"simultaneousCalls": True, "acknowledgeRisk": True},
+        {"simultaneousCalls": False},
+        {"simultaneousCalls": True},
+        {"simultaneousCalls": True, "acknowledgeRisk": False},
+    ],
+)
+async def test_simultaneous_calls_presence(body):
+    def handler(request):
+        assert request.method == "PUT"
+        assert request.url.path == "/platform/sessions/support/call-settings"
+        assert json.loads(request.content) == body
+        return httpx.Response(
+            200, json={"success": True, "data": {**SETTINGS, "simultaneousCalls": True}}
+        )
+
+    async with AsyncMessagingClient(
+        Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        http_transport=httpx.MockTransport(handler),
+    ) as client:
+        result = await client.voip.update_call_settings("support", body)
+        assert result.data["data"]["simultaneousCalls"] is True
+        with pytest.raises(ValidationError):
+            await client.voip.update_call_settings("support", {"acknowledgeRisk": True})
+
+
+@pytest.mark.parametrize(
+    "status,code,param",
+    [
+        (400, "invalid_parameter", "acknowledgeRisk"),
+        (403, "permission_denied", None),
+        (409, "state_conflict", "expectedRevision"),
+    ],
+)
+async def test_simultaneous_calls_server_decisions(status, code, param):
+    from polymorfa.errors import PolymorfaError
+
+    attempts = []
+
+    def handler(request):
+        attempts.append(request)
+        assert json.loads(request.content) == {"simultaneousCalls": True}
+        return httpx.Response(
+            status, json={"error": {"code": code, "message": "Server decision", "param": param}}
+        )
+
+    async with AsyncMessagingClient(
+        Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        http_transport=httpx.MockTransport(handler),
+    ) as client:
+        with pytest.raises(PolymorfaError) as result:
+            await client.voip.update_call_settings("support", {"simultaneousCalls": True})
+        assert result.value.code == code
+        assert result.value.param == param
+        assert len(attempts) == 1

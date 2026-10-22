@@ -64,6 +64,17 @@ export function validateFeatureContractPins(source, pins) {
     );
   }
 }
+// Expands a supplement that pins both audiences into one pin per family.
+export function multiSourcePins(supplement) {
+  return Object.entries(supplement.sources).map(([family, spec]) => ({
+    repository: supplement.repository,
+    sourceCommit: supplement.commit,
+    family,
+    published: supplement.published,
+    sourcePath: spec.sourcePath,
+    sourceSha256: spec.sourceSha256,
+  }));
+}
 export function campaignSupplementPins(supplement) {
   assert.deepEqual(Object.keys(supplement.sources).sort(), [
     "messaging",
@@ -84,6 +95,7 @@ export function expectedContract() {
   assert.equal(source.repository, "polymorfa/polymorfa");
   assert.match(source.commit, /^[a-f0-9]{40}$/);
   validateFeatureContractPins(source, [
+    ...multiSourcePins(JSON.parse(readFileSync(join(root, "contracts/calls-simultaneous-calls.json")))),
     JSON.parse(
       readFileSync(join(root, "contracts/analytics-device-signals.json")),
     ),

@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Prepare simultaneous-call settings and Ban Insurance evidence in all six
+  server SDKs against accepted API #559 source `c1a43a1e`. Updates preserve
+  omission and explicit false. The API enforces acknowledgment and team-key
+  authority on an off-to-on transition. Claims and webhooks recognize
+  `simultaneous_calls`; claim evidence includes `simultaneousCalls`.
+  Package publication and deployed acceptance remain gated.
 - Official API round-2 betas now have native source counterparts in all six
   server SDKs: Number catalog-cache operations, marketing status and lifecycle
   events, parent/previous identity fields, incoming carts, multipart Official

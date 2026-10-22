@@ -707,3 +707,15 @@ tests check framing, growth, unchanged wire transport and diagnostic redaction.
 Signed negative-claim vectors are locally accepted as opaque strings; the API
 authenticates them. This supplement does not repin the baseline OpenAPI snapshots,
 change scopes, or establish package publication or deployed acceptance.
+
+## Simultaneous calls supplement
+
+`calls-simultaneous-calls.json` pins the exact GET/PUT call-settings operations,
+request/response schemas and Ban Insurance claim/webhook changes to accepted
+API #559 merge `c1a43a1eb409ad57c2b9677c606a3d42d7b5598c`. It records full
+source hashes and canonical fragment hashes for each audience.
+`native-calls-simultaneous-calls.json` attributes the six native counterparts
+and tests. These are scoped supplements; the global `171a9683` baseline is
+unchanged. `published: false` retains the release hold. Accepted API source
+alone does not prove deployment, registry publication or installed-client
+acceptance. PHP and Rust qualification remains pending.

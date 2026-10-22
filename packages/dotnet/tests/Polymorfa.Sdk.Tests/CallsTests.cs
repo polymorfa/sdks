@@ -7,6 +7,10 @@ internal static class CallsTests
     private const string Settings = "{\"success\":true,\"data\":{\"callsEnabled\":true,\"conferenceMode\":false,\"inboundRoute\":\"clients\",\"sipTrunkId\":null,\"sipClaim\":false,\"hostCloudApiCalls\":false,\"revision\":2,\"updatedAt\":null}}";
     public static async Task RunAsync()
     {
+        await Messaging("PUT", "/platform/sessions/s/call-settings", "{\"simultaneousCalls\":true,\"acknowledgeRisk\":true}", Settings, async c => ResourceTests.Equal((await c.Calls.UpdateCallSettingsAsync("s", new(SimultaneousCalls: true, AcknowledgeRisk: true))).Data.Data.Revision, 2L));
+        await Messaging("PUT", "/platform/sessions/s/call-settings", "{\"simultaneousCalls\":false}", Settings, async c => ResourceTests.Equal((await c.Calls.UpdateCallSettingsAsync("s", new(SimultaneousCalls: false))).Data.Data.Revision, 2L));
+        await Messaging("PUT", "/platform/sessions/s/call-settings", "{\"simultaneousCalls\":true}", Settings, async c => ResourceTests.Equal((await c.Calls.UpdateCallSettingsAsync("s", new(SimultaneousCalls: true))).Data.Data.Revision, 2L));
+        await Messaging("PUT", "/platform/sessions/s/call-settings", "{\"simultaneousCalls\":true,\"acknowledgeRisk\":false}", Settings, async c => ResourceTests.Equal((await c.Calls.UpdateCallSettingsAsync("s", new(SimultaneousCalls: true, AcknowledgeRisk: false))).Data.Data.Revision, 2L));
         await Messaging("POST", "/messaging/voip/calls", "{\"session\":\"s\",\"to\":\"peer\",\"video\":false}", "{\"success\":true,\"data\":{\"callId\":\"call\",\"session\":\"s\",\"video\":false}}", async c => ResourceTests.Equal((await c.Calls.PlaceAsync(new(Session: "s", To: "peer", Video: false))).Data.Data.CallId, "call"));
         await Messaging("POST", "/messaging/voip/calls/call/accept", "{\"exclusive\":true}", "{\"success\":true,\"data\":{\"answered\":true,\"answeredBy\":\"server\",\"exclusive\":true}}", async c => ResourceTests.Equal((await c.Calls.AcceptAsync("call", new(Exclusive: true))).Data.Data.AnsweredBy, "server"));
         await Messaging("POST", "/messaging/voip/calls/call/reject", null, Success, async c => True((await c.Calls.RejectAsync("call")).Data.Success));
@@ -30,8 +34,12 @@ internal static class CallsTests
         await Invalid(() => client.Calls.SetHandRaisedAsync("call", new("short", true)));
         await Invalid(() => client.Calls.CreateCallLinkAsync(new("s"), new() { IdempotencyKey = "key" }));
         await Invalid(() => client.Calls.UpdateCallSettingsAsync("s", new()));
+        await Invalid(() => client.Calls.UpdateCallSettingsAsync("s", new(AcknowledgeRisk: true)));
         await Invalid(() => client.Calls.ReportAsync("call", new("quality", "connection1", new("polymorfa-dotnet", "0.1.0", "other"), Quality: new(RttMs: -1))));
-        Console.WriteLine("PASS 16 typed Calls routes, explicit null patch and validation");
+        var json = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
+        var claim = System.Text.Json.JsonSerializer.Deserialize<BanSafeClaimEvidence>("""{"attributionRuleVersion":null,"windowDays":30,"deviceEvidence":false,"otherDevices":0,"restrictedInWindow":false,"criticalFindingDays":0,"sharedConnection":false,"simultaneousCalls":true,"measuredHours":0}""", json)!;
+        True(claim.SimultaneousCalls);
+        Console.WriteLine("PASS Calls routes, simultaneous-call presence, evidence and validation");
     }
     private static async Task Invalid(Func<Task> action) { try { await action(); } catch (PolymorfaValidationException) { return; } throw new Exception("Expected preflight Calls validation."); }
 }

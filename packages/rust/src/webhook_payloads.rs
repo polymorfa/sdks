@@ -1133,6 +1133,7 @@ pub enum BanSafeClaimStatus {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum BanSafeClaimVerdict {
+    SimultaneousCalls,
     OtherDevice,
     CustomerConduct,
     SharedNetwork,

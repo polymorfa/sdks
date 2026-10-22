@@ -194,7 +194,7 @@ async fn voip_link_permission_settings_wire_contracts() {
             RequestOptions::default()
         )
     );
-    let settings = json!({"callsEnabled":true,"conferenceMode":false,"inboundRoute":"clients","sipTrunkId":null,"sipClaim":true,"hostCloudApiCalls":false,"revision":1,"updatedAt":"2026-10-11T12:00:00Z"});
+    let settings = json!({"callsEnabled":true,"conferenceMode":false,"inboundRoute":"clients","sipTrunkId":null,"sipClaim":true,"hostCloudApiCalls":false,"simultaneousCalls":false,"revision":1,"updatedAt":"2026-10-11T12:00:00Z"});
     wire_messaging!(
         client,
         "GET",
@@ -296,4 +296,52 @@ async fn voip_validation_prevents_invalid_network_requests() {
             .kind,
         polymorfa_sdk::ErrorKind::Configuration
     );
+}
+
+#[tokio::test]
+async fn simultaneous_calls_preserves_presence() {
+    for (enabled, ack) in [
+        (true, Some(true)),
+        (false, None),
+        (true, None),
+        (true, Some(false)),
+    ] {
+        let body = UpdateSessionCallSettingsRequest {
+            simultaneous_calls: Some(enabled),
+            acknowledge_risk: ack,
+            ..Default::default()
+        };
+        let mut expected = json!({"simultaneousCalls":enabled});
+        if let Some(v) = ack {
+            expected["acknowledgeRisk"] = json!(v);
+        }
+        wire_messaging!(
+            client,
+            "PUT",
+            "/platform/sessions/s/call-settings",
+            Some(expected),
+            json!({"success":true,"data":{"callsEnabled":true,"conferenceMode":false,"inboundRoute":"clients","sipTrunkId":null,"sipClaim":false,"hostCloudApiCalls":false,"simultaneousCalls":enabled,"revision":2,"updatedAt":null}}),
+            client
+                .voip()
+                .update_call_settings("s", &body, RequestOptions::default())
+        );
+    }
+}
+
+#[test]
+fn simultaneous_claim_verdicts_and_evidence() {
+    let verdict: polymorfa_sdk::bansafe::ClaimVerdict =
+        serde_json::from_value(json!("simultaneous_calls")).unwrap();
+    assert_eq!(
+        serde_json::to_value(verdict).unwrap(),
+        json!("simultaneous_calls")
+    );
+    let webhook: polymorfa_sdk::webhook_payloads::BanSafeClaimVerdict =
+        serde_json::from_value(json!("simultaneous_calls")).unwrap();
+    assert_eq!(
+        serde_json::to_value(webhook).unwrap(),
+        json!("simultaneous_calls")
+    );
+    let evidence: polymorfa_sdk::bansafe::ClaimEvidence = serde_json::from_value(json!({"attributionRuleVersion":null,"windowDays":30,"deviceEvidence":false,"otherDevices":0,"restrictedInWindow":false,"criticalFindingDays":0,"sharedConnection":false,"simultaneousCalls":true,"measuredHours":0})).unwrap();
+    assert!(evidence.simultaneous_calls);
 }

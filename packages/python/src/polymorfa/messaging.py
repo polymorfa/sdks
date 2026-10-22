@@ -928,12 +928,20 @@ class Voip(Resource):
                     "sipTrunkId",
                     "sipClaim",
                     "hostCloudApiCalls",
+                    "simultaneousCalls",
                 )
             )
             or "includeSelfAudio" in body
         ):
             raise ValidationError("Provide a supported call setting.")
-        for key in ("callsEnabled", "conferenceMode", "sipClaim", "hostCloudApiCalls"):
+        for key in (
+            "callsEnabled",
+            "conferenceMode",
+            "sipClaim",
+            "hostCloudApiCalls",
+            "simultaneousCalls",
+            "acknowledgeRisk",
+        ):
             if key in body and not isinstance(body[key], bool):
                 raise ValidationError("Call switches must be booleans.")
         if "inboundRoute" in body and body["inboundRoute"] not in ("clients", "sip_trunk"):
