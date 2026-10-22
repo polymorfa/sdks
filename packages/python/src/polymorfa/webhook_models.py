@@ -870,7 +870,9 @@ class CampaignPausedPayload(TypedDict):
     campaignId: str
     sentCount: float
     remainingCount: float
-    pausedAt: float
+    pausedAt: float  # Unix seconds.
+    reason: NotRequired[str]  # Automatic pauses only; open string.
+    code: NotRequired[str]  # Automatic pauses only; open string.
 
 
 class CampaignRescheduledPayload(TypedDict):
@@ -936,7 +938,9 @@ class CampaignRecipientSkippedPayload(TypedDict):
     recipientId: str
     phone: str
     reason: str
-    skippedAt: float
+    skippedAt: float  # Unix milliseconds.
+    messageIndex: NotRequired[int]  # Nonnegative sequence position, including zero.
+    followUpId: NotRequired[str]  # UUID of a capped follow-up.
 
 
 class CampaignThrottledPayload(TypedDict):

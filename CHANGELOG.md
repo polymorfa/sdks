@@ -2,12 +2,14 @@
 
 ## Unreleased
 
-- `CampaignPausedPayload` adds optional `reason` and `code`, present when
-  Polymorfa pauses a campaign automatically (for example
-  `number_quality_dropped` or `messaging_limit_dropped`). A customer pause
-  carries neither. `CampaignRecipientSkippedPayload.skippedAt` is documented as
-  Unix milliseconds, and `reason` can be `whatsapp_marketing_limit`. Types
-  only; no runtime change. API contract: polymorfa/polymorfa#326.
+- All six server SDKs expose optional automatic-pause `reason`/`code` and
+  optional recipient-skip `messageIndex`/`followUpId` from accepted API source
+  `9bb1e2ed`. Future reason/code strings and raw envelope fields are retained;
+  manual omission and zero sequence positions are preserved. Pause timestamps
+  remain seconds, skip timestamps milliseconds. Rust full struct literals and
+  Go unkeyed literals need the added optional fields; C# constructor/Deconstruct
+  arities are unchanged. Source-only and unpublished; see
+  `docs/campaign-webhook-metadata.md` for compatibility and acceptance gates.
 - Prepare simultaneous-call settings and Ban Insurance evidence in all six
   server SDKs against accepted API #559 source `c1a43a1e`. Updates preserve
   omission and explicit false. The API enforces acknowledgment and team-key

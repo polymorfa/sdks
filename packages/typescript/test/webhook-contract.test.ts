@@ -767,6 +767,8 @@ const PAYLOADS: {
       phone: "+15551234567",
       reason: "whatsapp_marketing_limit",
       skippedAt: 1_790_000_004_000,
+      messageIndex: 0,
+      followUpId: "0198a2cb-0000-7000-8000-0000000000f1",
     },
     ["campaignId", "recipientId", "phone", "reason", "skippedAt"],
   ),

@@ -1159,10 +1159,14 @@ export interface CampaignRecipientSkippedPayload {
   readonly campaignId: string;
   readonly recipientId: string;
   readonly phone: string;
-  /** Stable skip reason, such as `optout` or `whatsapp_marketing_limit`. */
+  /** Open skip reason, including `optout`, `frequency_cap_exceeded` or `whatsapp_marketing_limit`. */
   readonly reason: string;
   /** Unix milliseconds. */
   readonly skippedAt: number;
+  /** Nonnegative sequence position, including zero. */
+  readonly messageIndex?: number;
+  /** UUID of a capped receipt-timed follow-up. */
+  readonly followUpId?: string;
 }
 
 export interface CampaignThrottledPayload {

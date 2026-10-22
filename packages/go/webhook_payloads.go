@@ -753,10 +753,12 @@ type CampaignLaunchedPayload struct {
 }
 type CampaignPausedPayload struct {
 	webhookPayloadBase
-	CampaignID     string `json:"campaignId"`
-	SentCount      int    `json:"sentCount"`
-	RemainingCount int    `json:"remainingCount"`
-	PausedAt       int64  `json:"pausedAt"`
+	CampaignID     string  `json:"campaignId"`
+	SentCount      int     `json:"sentCount"`
+	RemainingCount int     `json:"remainingCount"`
+	PausedAt       int64   `json:"pausedAt"`         // Unix seconds.
+	Reason         *string `json:"reason,omitempty"` // Automatic pauses only; open string.
+	Code           *string `json:"code,omitempty"`   // Automatic pauses only; open string.
 }
 type CampaignRescheduledPayload struct {
 	webhookPayloadBase
@@ -818,11 +820,13 @@ type CampaignRecipientFailedPayload struct {
 }
 type CampaignRecipientSkippedPayload struct {
 	webhookPayloadBase
-	CampaignID  string `json:"campaignId"`
-	RecipientID string `json:"recipientId"`
-	Phone       string `json:"phone"`
-	Reason      string `json:"reason"`
-	SkippedAt   int64  `json:"skippedAt"`
+	CampaignID   string  `json:"campaignId"`
+	RecipientID  string  `json:"recipientId"`
+	Phone        string  `json:"phone"`
+	Reason       string  `json:"reason"`
+	SkippedAt    int64   `json:"skippedAt"`              // Unix milliseconds.
+	MessageIndex *int    `json:"messageIndex,omitempty"` // Nonnegative sequence position; zero is meaningful.
+	FollowUpID   *string `json:"followUpId,omitempty"`   // UUID of a capped follow-up.
 }
 type CampaignThrottledPayload struct {
 	webhookPayloadBase

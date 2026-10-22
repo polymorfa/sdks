@@ -1012,3 +1012,24 @@ includes `simultaneousCalls`; the webhook does not acquire an evidence object.
 
 No browser/client-token authority, call media behavior, automatic state read,
 retry policy or feature availability is added by these SDK fields.
+
+## Campaign webhook metadata (unreleased source)
+
+Automatic `campaign.paused` payloads can include open-string `reason` and
+`code`; manual pauses omit both. `pausedAt` is Unix seconds.
+`campaign.recipient_skipped` can include nonnegative `messageIndex` (including
+zero) and a UUID `followUpId`. `skippedAt` is Unix milliseconds. Missing optional
+fields remain absent. Do not infer a pause cause from an unknown future code.
+
+```csharp
+// webhookEvent is verified by Webhooks.ConstructDelivery.
+if (webhookEvent is TypedWebhookEvent<CampaignPausedPayload> pause)
+    Console.WriteLine($"{pause.Payload.Code} {pause.Payload.PausedAt}"); // seconds
+if (webhookEvent is TypedWebhookEvent<CampaignRecipientSkippedPayload> skip)
+    Console.WriteLine($"{skip.Payload.MessageIndex} {skip.Payload.FollowUpId} {skip.Payload.SkippedAt}"); // milliseconds
+```
+
+These are verified-event handling fragments, not complete receivers. Preserve
+whole-body signature verification before decoding and deduplicate batch members.
+See [the scoped source contract and compatibility notes](../../docs/campaign-webhook-metadata.md).
+Package publication and matching API environment acceptance remain separate gates.

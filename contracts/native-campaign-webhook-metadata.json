@@ -1,0 +1,37 @@
+{
+  "apiSource": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f",
+  "contract": "contracts/campaign-paused-reasons.json",
+  "note": "Field supplement only: no added/removed operations, so baseline operation coverage and source pins are unchanged. Default test registration is required; listed source paths are not execution proof.",
+  "languages": {
+    "typescript": {
+      "models": "packages/typescript/src/webhooks/events.ts",
+      "test": "packages/typescript/test/campaign-webhook-metadata.test.ts",
+      "default": "vitest run"
+    },
+    "go": {
+      "models": "packages/go/webhook_payloads.go",
+      "test": "packages/go/campaign_webhook_metadata_test.go",
+      "default": "go test ./..."
+    },
+    "python": {
+      "models": "packages/python/src/polymorfa/webhook_models.py",
+      "test": "packages/python/tests/test_campaign_webhook_metadata.py",
+      "default": "pytest"
+    },
+    "php": {
+      "models": "packages/php/src/WebhookModels.php",
+      "test": "packages/php/tests/campaign_webhook_metadata.php",
+      "default": "tests/run.php includes campaign_webhook_metadata.php"
+    },
+    "rust": {
+      "models": "packages/rust/src/webhook_payloads.rs",
+      "test": "packages/rust/tests/campaign_webhook_metadata.rs",
+      "default": "cargo test integration discovery"
+    },
+    "dotnet": {
+      "models": "packages/dotnet/src/Polymorfa.Sdk/WebhookPayloads.cs",
+      "test": "packages/dotnet/tests/Polymorfa.Sdk.Tests/CampaignWebhookMetadataTests.cs",
+      "default": "tests/Polymorfa.Sdk.Tests/Program.cs calls CampaignWebhookMetadataTests.Run()"
+    }
+  }
+}

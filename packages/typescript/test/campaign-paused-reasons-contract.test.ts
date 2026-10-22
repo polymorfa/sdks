@@ -34,7 +34,7 @@ const keys = (schema: Schema | undefined) =>
 describe("campaign pause reason contract supplement", () => {
   it("pins the merged API source", () => {
     expect(contract.repository).toBe("polymorfa/polymorfa");
-    expect(contract.commit).toMatch(/^[0-9a-f]{40}$/);
+    expect(contract.commit).toBe("9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f");
     expect(messaging.sourcePath).toBe("apps/api/docs/openapi.json");
     expect(messaging.sourceSha256).toMatch(/^[0-9a-f]{64}$/);
     expect(Object.keys(messaging.schemas).sort()).toEqual([
@@ -86,9 +86,21 @@ describe("campaign pause reason contract supplement", () => {
           "reason",
           "recipientId",
           "skippedAt",
+          "messageIndex",
+          "followUpId",
         ] satisfies (keyof CampaignRecipientSkippedPayload)[]
       ).sort(),
     );
+    expect(skipped?.required).not.toContain("messageIndex");
+    expect(skipped?.required).not.toContain("followUpId");
+    expect(skipped?.properties?.messageIndex?.type).toBe("integer");
+    expect(skipped?.properties?.followUpId?.type).toBe("string");
+    expectTypeOf<
+      CampaignRecipientSkippedPayload["messageIndex"]
+    >().toEqualTypeOf<number | undefined>();
+    expectTypeOf<CampaignRecipientSkippedPayload["followUpId"]>().toEqualTypeOf<
+      string | undefined
+    >();
     expect(skipped?.properties?.skippedAt?.description).toMatch(/milliseconds/);
     expect(skipped?.properties?.reason?.description).toMatch(
       /whatsapp_marketing_limit/,

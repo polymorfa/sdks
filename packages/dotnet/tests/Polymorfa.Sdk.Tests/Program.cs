@@ -236,3 +236,5 @@ await UnledgeredRetryTests.RunAsync();
 await OfficialRound2Tests.RunAsync();
 
 await CloudOrderQuantityTests.RunAsync();
+
+CampaignWebhookMetadataTests.Run();

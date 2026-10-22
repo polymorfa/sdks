@@ -773,7 +773,8 @@ pub enum TemplateStatusPayload {
     OfficialApi(CloudTemplateStatusPayload),
 }
 payload!(CampaignLaunchedPayload {campaign_id:String,name:String,recipient_count:u32,scheduled:bool,launched_at:u64} {});
-payload!(CampaignPausedPayload {campaign_id:String,sent_count:u32,remaining_count:u32,paused_at:u64} {});
+// Paused timestamp is Unix seconds. Reason/code are omitted for manual pauses.
+payload!(CampaignPausedPayload {campaign_id:String,sent_count:u32,remaining_count:u32,paused_at:u64} {reason:String,code:String});
 payload!(CampaignRescheduledPayload {campaign_id:String,previous_scheduled_at:Option<u64>,scheduled_at:u64,rescheduled_at:u64} {});
 payload!(CampaignResumedPayload {campaign_id:String,sent_count:u32,remaining_count:u32,resumed_at:u64} {});
 payload!(CampaignCompletedPayload {campaign_id:String,sent_count:u32,delivered_count:u32,read_count:u32,failed_count:u32,skipped_count:u32,response_count:u32,completed_at:u64,duration_ms:u64} {});
@@ -781,7 +782,8 @@ payload!(CampaignFailedPayload {campaign_id:String,reason:String,failed_at:u64} 
 payload!(CampaignStoppedPayload {campaign_id:String,sent_count:u32,abandoned_count:u32,stopped_at:u64} {});
 payload!(CampaignRecipientSentPayload {campaign_id:String,recipient_id:String,phone:String,session_key:String,external_message_id:String,variant_key:String,attempt:u32} {});
 payload!(CampaignRecipientFailedPayload {campaign_id:String,recipient_id:String,phone:String,attempts:u32,error:String,failed_at:u64} {});
-payload!(CampaignRecipientSkippedPayload {campaign_id:String,recipient_id:String,phone:String,reason:String,skipped_at:u64} {});
+// Skipped timestamp is Unix milliseconds; message_index is a nonnegative sequence position.
+payload!(CampaignRecipientSkippedPayload {campaign_id:String,recipient_id:String,phone:String,reason:String,skipped_at:u64} {message_index:u64,follow_up_id:String});
 payload!(CampaignThrottledPayload {campaign_id:String,session_key:String,reason:String,deferred_count:u32,at:u64} {});
 payload!(CampaignCapReachedPayload {campaign_id:String,session_key:String,phone:String,cap_type:String,cap_limit:u32,window_resets_at:u64,at:u64} {});
 payload!(CampaignColdBlockedPayload {campaign_id:String,recipient_id:String,phone:String,surface:String,reason:String,at:u64} {});

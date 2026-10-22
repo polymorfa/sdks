@@ -82,7 +82,7 @@ namespace Polymorfa;
  * @phpstan-type RuntimeTemplate array{templateName:string,templateId:string,status:string,category:string,reason:string,qualityRating:string}
  * @phpstan-type CloudTemplate array{kind:'message_template_status_update'|'message_template_quality_update',event?:string,templateId?:string,templateName?:string,language?:string,reason?:string,previousQualityScore?:string,newQualityScore?:string,wabaId?:string}
  * @phpstan-type CampaignLaunched array{campaignId:string,name:string,recipientCount:int|float,scheduled:bool,launchedAt:int|float}
- * @phpstan-type CampaignPaused array{campaignId:string,sentCount:int|float,remainingCount:int|float,pausedAt:int|float}
+ * @phpstan-type CampaignPaused array{campaignId:string,sentCount:int|float,remainingCount:int|float,pausedAt:int|float,reason?:string,code?:string}
  * @phpstan-type CampaignRescheduled array{campaignId:string,previousScheduledAt:int|float|null,scheduledAt:int|float,rescheduledAt:int|float}
  * @phpstan-type CampaignResumed array{campaignId:string,sentCount:int|float,remainingCount:int|float,resumedAt:int|float}
  * @phpstan-type CampaignCompleted array{campaignId:string,sentCount:int|float,deliveredCount:int|float,readCount:int|float,failedCount:int|float,skippedCount:int|float,responseCount:int|float,completedAt:int|float,durationMs:int|float}
@@ -90,7 +90,7 @@ namespace Polymorfa;
  * @phpstan-type CampaignStopped array{campaignId:string,sentCount:int|float,abandonedCount:int|float,stoppedAt:int|float}
  * @phpstan-type RecipientSent array{campaignId:string,recipientId:string,phone:string,sessionKey:string,externalMessageId:string,variantKey:string,attempt:int|float}
  * @phpstan-type RecipientFailed array{campaignId:string,recipientId:string,phone:string,attempts:int|float,error:string,failedAt:int|float}
- * @phpstan-type RecipientSkipped array{campaignId:string,recipientId:string,phone:string,reason:string,skippedAt:int|float}
+ * @phpstan-type RecipientSkipped array{campaignId:string,recipientId:string,phone:string,reason:string,skippedAt:int|float,messageIndex?:int|float,followUpId?:string}
  * @phpstan-type CampaignThrottled array{campaignId:string,sessionKey:string,reason:string,deferredCount:int|float,at:int|float}
  * @phpstan-type CampaignCap array{campaignId:string,sessionKey:string,phone:string,capType:string,capLimit:int|float,windowResetsAt:int|float,at:int|float}
  * @phpstan-type CampaignCold array{campaignId:string,recipientId:string,phone:string,surface:string,reason:string,at:int|float}

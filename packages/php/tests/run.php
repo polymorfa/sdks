@@ -268,3 +268,5 @@ check(proc_close($s3Process) === 0, 'S3 suite process passes');
 require __DIR__.'/unledgered_retry.php';
 
 require __DIR__.'/official_round2.php';
+
+require __DIR__.'/campaign_webhook_metadata.php';
