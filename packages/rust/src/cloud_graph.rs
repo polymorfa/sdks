@@ -53,8 +53,6 @@ pub struct CloudMarketingStatus {
     pub disable_marketing_messages_on_cloud_api: Option<bool>,
     pub id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub marketing_messages_lite_api_status: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub marketing_messages_onboarding_status: Option<String>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]

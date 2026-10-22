@@ -29,6 +29,7 @@ $batch = ['object'=>'event_batch','version'=>1,'id'=>'00000000-0000-4000-8000-00
 $signed = static function (array $value) { $raw=json_encode($value,JSON_THROW_ON_ERROR); return Webhooks::constructDelivery($raw,hash_hmac('sha256',$raw,'s'),'s'); };
 $value=$signed($batch);check($value instanceof WebhookEventBatch && count($value->events) === 2 && $value->events[0]->id === 'e', 'batch ordering');
 check($value->events[0]->payload['identityChange']['previous']['id'] === 'old' && $value->events[0]->payload['parentBsuid'] === 'new-p', 'previous identity');
+$one=$batch;$one['events']=[$event];check(count($signed($one)->events)===1,'one-member batch');
 check($signed($event)->id === 'e', 'single event');
 $raw=json_encode($batch,JSON_THROW_ON_ERROR);raises(fn()=>Webhooks::constructDelivery($raw.' ',hash_hmac('sha256',$raw,'s'),'s'),WebhookSignatureException::class);
 foreach ([[],[$batch],[['id'=>'e']],array_fill(0,101,$event)] as $members) { $bad=$batch;$bad['events']=$members;raises(fn()=>$signed($bad),ValidationException::class); }
@@ -53,3 +54,6 @@ foreach ([...\Polymorfa\OfficialRound2Models::READINESS_CODES,'future_readiness'
 $history=[];$graph=['id'=>'w','marketing_messages_onboarding_status'=>'future','owner_business_info'=>['marketing_messages_onboarding_status'=>['status'=>'future_terms','time'=>'now']],'disable_marketing_messages_on_cloud_api'=>false];
 $c=new MessagingClient(Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'),http:mocked([jsonResponse($graph)],$history));
 check($c->cloudMarketing->status('w',['version'=>'v26.0'])->data===$graph,'raw graph terms and disabled');
+
+$cancel=new \Polymorfa\CancellationToken();$cancel->cancel();
+raises(fn()=>$c->officialGroups->setPicture('n','g',$jpeg,new RequestOptions(cancellation:$cancel)),\Polymorfa\CancelledException::class);

@@ -75,6 +75,8 @@ internal static class OfficialRound2Tests
         var raw = JsonSerializer.SerializeToUtf8Bytes(batch); var sig = Convert.ToHexString(HMACSHA256.HashData("s"u8, raw));
         var delivery = (WebhookEventBatch)Webhooks.ConstructDelivery(raw, sig, "s"); Check(delivery.Events.Count == 2 && delivery.Events[0].Envelope.Id == "e");
         var payload = delivery.Events[0].Envelope.Payload.Deserialize<ContactUpdatePayload>(Json)!; Check(payload.ParentBsuid == "new-p" && payload.IdentityChange!.Previous!.Id == "old");
+        var one = JsonSerializer.SerializeToUtf8Bytes(new { @object = "event_batch", version = 1, id = "00000000-0000-4000-8000-000000000001", events = new[] { e } });
+        Check(((WebhookEventBatch)Webhooks.ParseVerifiedDelivery(one)).Events.Count == 1);
         Check(Webhooks.ParseVerifiedDelivery(Encoding.UTF8.GetBytes(ev)) is SingleWebhookDelivery);
         try { Webhooks.ConstructDelivery([.. raw, 32], sig, "s"); throw new Exception("Expected signature failure"); } catch (WebhookSignatureException) { }
         foreach (var text in new[] { """{"object":"event_batch","version":2,"id":"00000000-0000-4000-8000-000000000001","events":[]}""", """{"object":"event_batch","version":1,"id":"00000000-0000-4000-8000-000000000001","events":[{"object":"event_batch"}]}""" }) Invalid(() => Webhooks.ParseVerifiedDelivery(Encoding.UTF8.GetBytes(text)));

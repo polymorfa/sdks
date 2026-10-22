@@ -138,6 +138,8 @@ def test_whole_body_batch_and_identity():
     assert isinstance(value, WebhookEventBatch)
     assert [x.id for x in value.events] == ["e", "future"]
     assert value.events[0].payload == e["payload"]
+    one = signed({**batch, "events": [e]})
+    assert isinstance(one, WebhookEventBatch) and len(one.events) == 1
     assert signed(e).id == "e"
     raw = json.dumps(batch).encode()
     with pytest.raises(WebhookSignatureError):

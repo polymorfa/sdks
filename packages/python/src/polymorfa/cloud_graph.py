@@ -62,7 +62,6 @@ class MarketingStatus(TypedDict):
     owner_business_info: NotRequired[MarketingOwnerBusiness]
     disable_marketing_messages_on_cloud_api: NotRequired[bool]
     id: str
-    marketing_messages_lite_api_status: NotRequired[str]
     marketing_messages_onboarding_status: NotRequired[str]
 
 

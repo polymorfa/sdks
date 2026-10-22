@@ -205,6 +205,12 @@ fn whole_body_batch_and_previous_identity() {
         json!([{"id":"e"}]),
         Value::Array(vec![event.clone(); 101]),
     ] {
+        let mut one = batch.clone();
+        one["events"] = json!([event.clone()]);
+        let WebhookDelivery::Batch(one) = signed(&one).unwrap() else {
+            panic!("one-member batch")
+        };
+        assert_eq!(one.events.len(), 1);
         let mut bad = batch.clone();
         bad["events"] = members;
         assert!(signed(&bad).is_err())
@@ -330,4 +336,39 @@ fn graph_terms_and_cart_dtos() {
     let order = json!({"catalogId":"123","items":[{"productRetailerId":"p","quantity":2,"itemPrice":0.1,"currency":"USD"}]});
     let history:polymorfa_sdk::history::HistoryMessage=serde_json::from_value(json!({"id":"m","whatsapp_ids":{"official_api":"wamid"},"direction":"inbound","type":"order","timestamp":"now","conversation":{"id":"u","parentBsuid":"new-p"},"fromMe":false,"order":order})).unwrap();
     assert_eq!(history.order.unwrap().items[0].item_price, 0.1);
+}
+
+#[tokio::test]
+async fn picture_cancellation_and_catalog_credential_boundary() {
+    let client = support::messaging("http://127.0.0.1:1".into());
+    let cancellation = tokio_util::sync::CancellationToken::new();
+    cancellation.cancel();
+    let error = client
+        .official_groups()
+        .set_picture(
+            "n",
+            "g",
+            include_bytes!("../../../contracts/fixtures/official-group-picture.jpg"),
+            RequestOptions {
+                cancellation: Some(cancellation),
+                ..Default::default()
+            },
+        )
+        .await
+        .unwrap_err();
+    assert_eq!(error.kind, polymorfa_sdk::ErrorKind::Cancelled);
+    let client = polymorfa_sdk::MessagingClient::new(
+        polymorfa_sdk::Credential::client_token("pmfa_ct_bG9jYWw").unwrap(),
+        polymorfa_sdk::ClientOptions::default(),
+    )
+    .unwrap();
+    assert_eq!(
+        client
+            .catalogs()
+            .list("n", RequestOptions::default())
+            .await
+            .unwrap_err()
+            .kind,
+        polymorfa_sdk::ErrorKind::Configuration
+    );
 }

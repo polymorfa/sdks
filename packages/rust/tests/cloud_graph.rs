@@ -34,7 +34,7 @@ async fn merged_graph_catalog_marketing_and_flow_key_supplements_native_wire() {
         "GET",
         "/graph/whatsapp/v26.0/waba/marketing_messages/status",
         None,
-        json!({"id":"waba","marketing_messages_lite_api_status":"ELIGIBLE","marketing_messages_onboarding_status":"ACCEPTED"}),
+        json!({"id":"waba","marketing_messages_onboarding_status":"ACCEPTED"}),
         client
             .cloud_marketing()
             .status("waba", "v26.0", RequestOptions::default())

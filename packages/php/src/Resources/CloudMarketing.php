@@ -20,14 +20,14 @@ final class CloudMarketing extends Resource
     }
     /** These raw provider observations never grant eligibility or terms.
      * @param array{version:string} $params
-     * @return ApiResponse<array{id:string,marketing_messages_lite_api_status?:string,marketing_messages_onboarding_status?:string,owner_business_info?:array{marketing_messages_onboarding_status?:array{status?:string,time?:string}},disable_marketing_messages_on_cloud_api?:bool}> */
+     * @return ApiResponse<array{id:string,marketing_messages_onboarding_status?:string,owner_business_info?:array{marketing_messages_onboarding_status?:array{status?:string,time?:string}},disable_marketing_messages_on_cloud_api?:bool}> */
     public function status(string $wabaId, array $params, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
         if (trim($wabaId) === '' || trim($params['version']) === '') {
             throw new ConfigurationException('wabaId');
         }
-        /** @var ApiResponse<array{id:string,marketing_messages_lite_api_status?:string,marketing_messages_onboarding_status?:string,owner_business_info?:array{marketing_messages_onboarding_status?:array{status?:string,time?:string}},disable_marketing_messages_on_cloud_api?:bool}> */
+        /** @var ApiResponse<array{id:string,marketing_messages_onboarding_status?:string,owner_business_info?:array{marketing_messages_onboarding_status?:array{status?:string,time?:string}},disable_marketing_messages_on_cloud_api?:bool}> */
         return $this->request('GET', '/graph/whatsapp/'.self::segment($params['version']).'/'.self::segment($wabaId).'/marketing_messages/status', options:$options);
     }
 }

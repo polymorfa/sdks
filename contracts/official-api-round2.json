@@ -110,5 +110,18 @@
     "sourceCommit": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f",
     "sourcePath": "apps/api/docs/openapi.management.json",
     "sourceSha256": "bf4c6056b75e2fb0293b48edc5d8c12c36cdcbd194b9d11159f59522d30badc3"
+  },
+  "graphMarketingSource": {
+    "sourceCommit": "24ac44aad59715a3f32dcbee2f4fe5cb07bbda87",
+    "sourcePath": "apps/api/packages/api/src/routes/graph/marketing.ts",
+    "sourceSha256": "f797f502990c8cabd4ee3a6c4da1ffd644ccbf62f45a204f63b9f0d9029b99cb",
+    "accepted9bbIdentical": true,
+    "fields": [
+      "marketing_messages_onboarding_status",
+      "owner_business_info.marketing_messages_onboarding_status.status",
+      "owner_business_info.marketing_messages_onboarding_status.time",
+      "disable_marketing_messages_on_cloud_api"
+    ],
+    "note": "OA17 filtered public Graph status DTO replaces the retired MM Lite field. Existing Graph catalog/encryption pins remain separate."
   }
 }

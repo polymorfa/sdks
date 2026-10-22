@@ -109,6 +109,12 @@ func TestOfficialRound2WholeBody(t *testing.T) {
 	if e != nil || len(v.Batch.Events) != 2 || v.Batch.Events[0].ID != "e" {
 		t.Fatal(v, e)
 	}
+	one := map[string]any{"object": "event_batch", "version": 1, "id": "00000000-0000-4000-8000-000000000001", "events": []json.RawMessage{event}}
+	oneRaw, _ := json.Marshal(one)
+	oneDelivery, oneErr := signed(oneRaw)
+	if oneErr != nil || len(oneDelivery.Batch.Events) != 1 {
+		t.Fatal(oneDelivery, oneErr)
+	}
 	if _, e = ConstructWebhookDelivery(append(raw, ' '), "bad", "s"); e == nil {
 		t.Fatal("tamper")
 	}

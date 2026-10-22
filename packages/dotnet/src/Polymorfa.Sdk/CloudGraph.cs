@@ -8,7 +8,7 @@ public sealed record CloudGraphCursors(string? Before = null, string? After = nu
 public sealed record CloudGraphPaging(CloudGraphCursors Cursors);
 public sealed record CloudCatalogList(IReadOnlyList<CloudProductCatalog> Data, CloudGraphPaging? Paging = null);
 public sealed record CloudCatalogProductList(IReadOnlyList<CloudCatalogProduct> Data, CloudGraphPaging? Paging = null);
-public sealed record CloudMarketingStatus(string Id, [property: JsonPropertyName("marketing_messages_lite_api_status")] string? MarketingMessagesLiteApiStatus = null, [property: JsonPropertyName("marketing_messages_onboarding_status")] string? MarketingMessagesOnboardingStatus = null, [property: JsonPropertyName("owner_business_info")] CloudMarketingOwnerBusiness? OwnerBusinessInfo = null, [property: JsonPropertyName("disable_marketing_messages_on_cloud_api")] bool? DisableMarketingMessagesOnCloudApi = null);
+public sealed record CloudMarketingStatus(string Id, [property: JsonPropertyName("marketing_messages_onboarding_status")] string? MarketingMessagesOnboardingStatus = null, [property: JsonPropertyName("owner_business_info")] CloudMarketingOwnerBusiness? OwnerBusinessInfo = null, [property: JsonPropertyName("disable_marketing_messages_on_cloud_api")] bool? DisableMarketingMessagesOnCloudApi = null);
 public sealed record FlowEncryptionKey([property: JsonPropertyName("business_public_key")] string BusinessPublicKey, [property: JsonPropertyName("business_public_key_signature_status")] string BusinessPublicKeySignatureStatus);
 public sealed record FlowEncryptionKeyList(IReadOnlyList<FlowEncryptionKey> Data);
 public sealed record RegisterFlowEncryptionKeyRequest([property: JsonPropertyName("business_public_key")] string BusinessPublicKey);
