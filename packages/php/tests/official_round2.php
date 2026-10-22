@@ -8,7 +8,14 @@ $jpeg = file_get_contents(__DIR__.'/../../../contracts/fixtures/official-group-p
 check(is_string($jpeg), 'JPEG fixture loaded');
 $state = ['catalogId'=>'123','syncedAt'=>null,'stale'=>true,'productCount'=>1,'lastAttempt'=>['startedAt'=>'now','finishedAt'=>null,'outcome'=>'future']];
 $history = [];
-$http = mocked(array_fill(0, 6, jsonResponse(['success'=>true,'data'=>$state + ['catalogs'=>[$state],'catalog'=>$state,'products'=>[['id'=>'p','price'=>'0.10']],'nextCursor'=>'next_-','accepted'=>true,'wabaId'=>'w','onboarding'=>['status'=>'unknown','metaStatus'=>null],'terms'=>['status'=>'unknown','metaStatus'=>null,'date'=>null],'cloudApiMarketingDisabled'=>false,'nextAction'=>'none','guideUrl'=>'https://example.test','observedAt'=>'now']])), $history);
+$responseData = ['success'=>true,'data'=>$state + ['catalogs'=>[$state],'catalog'=>$state,'products'=>[['id'=>'p','price'=>'0.10']],'nextCursor'=>'next_-','accepted'=>true,'wabaId'=>'w','onboarding'=>['status'=>'unknown','metaStatus'=>null],'terms'=>['status'=>'unknown','metaStatus'=>null,'date'=>null],'cloudApiMarketingDisabled'=>false,'nextAction'=>'none','guideUrl'=>'https://example.test','observedAt'=>'now']];
+$responses = [];
+for ($responseIndex = 0; $responseIndex < 6; ++$responseIndex) {
+    $responses[] = jsonResponse($responseData);
+}
+check(count(array_unique(array_map(static fn(\Psr\Http\Message\ResponseInterface $response): int => spl_object_id($response), $responses))) === 6, 'independent Official response objects');
+check(count(array_unique(array_map(static fn(\Psr\Http\Message\ResponseInterface $response): int => spl_object_id($response->getBody()), $responses))) === 6, 'independent Official response bodies');
+$http = mocked($responses, $history);
 $c = new MessagingClient(Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'), http:$http);
 $c->catalogs->list('n /x');
 check($c->catalogs->retrieve('n /x','123')->data['data']['syncedAt'] === null, 'nullable sync');
