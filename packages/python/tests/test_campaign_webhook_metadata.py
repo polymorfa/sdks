@@ -7,9 +7,9 @@ from typing import get_args, get_type_hints
 import pytest
 from typing_extensions import NotRequired
 
+from polymorfa.errors import WebhookSignatureError
 from polymorfa.webhook_models import CampaignPausedPayload, CampaignRecipientSkippedPayload
 from polymorfa.webhooks import WebhookEventBatch, construct_webhook_delivery
-from polymorfa.errors import WebhookSignatureError
 
 FIXTURE = json.loads(
     (

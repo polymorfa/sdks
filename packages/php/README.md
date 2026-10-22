@@ -975,7 +975,7 @@ fields remain absent. Do not infer a pause cause from an unknown future code.
 // $event is verified by Webhooks::constructDelivery.
 $known = $event->knownEvent();
 if ($known !== null && $known['event'] === 'campaign.paused') {
-    echo $known['payload']['code'] ?? 'manual'; // pausedAt is seconds
+    echo $known['payload']['code'] ?? 'unspecified'; // pausedAt is seconds
 }
 if ($known !== null && $known['event'] === 'campaign.recipient_skipped') {
     $index = $known['payload']['messageIndex'] ?? null; // zero is meaningful

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import {
   constructWebhookDelivery,
+  isEvent,
   isWebhookEventBatch,
   WebhookSignatureError,
 } from "../src/webhooks/index.js";
@@ -57,10 +58,14 @@ describe("accepted campaign webhook metadata", () => {
     const zero = batch.events[2];
     const follow = batch.events[3];
     if (
-      automatic?.event !== "campaign.paused" ||
-      manual?.event !== "campaign.paused" ||
-      zero?.event !== "campaign.recipient_skipped" ||
-      follow?.event !== "campaign.recipient_skipped"
+      !automatic ||
+      !isEvent(automatic, "campaign.paused") ||
+      !manual ||
+      !isEvent(manual, "campaign.paused") ||
+      !zero ||
+      !isEvent(zero, "campaign.recipient_skipped") ||
+      !follow ||
+      !isEvent(follow, "campaign.recipient_skipped")
     )
       throw new Error("order changed");
     expect(automatic.payload.code).toBe("future_automatic_pause");
