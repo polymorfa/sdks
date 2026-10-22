@@ -15,6 +15,18 @@ for ($responseIndex = 0; $responseIndex < 6; ++$responseIndex) {
 }
 check(count(array_unique(array_map(static fn(\Psr\Http\Message\ResponseInterface $response): int => spl_object_id($response), $responses))) === 6, 'independent Official response objects');
 check(count(array_unique(array_map(static fn(\Psr\Http\Message\ResponseInterface $response): int => spl_object_id($response->getBody()), $responses))) === 6, 'independent Official response bodies');
+$officialPictureBody = '';
+$officialPictureResponse = $responses[5];
+$responses[5] = static function (\Psr\Http\Message\RequestInterface $request) use (&$officialPictureBody, $officialPictureResponse): \Psr\Http\Message\ResponseInterface {
+    $body = $request->getBody();
+    $position = $body->tell();
+    try {
+        $officialPictureBody = (string) $body;
+    } finally {
+        $body->seek($position);
+    }
+    return $officialPictureResponse;
+};
 $http = mocked($responses, $history);
 $c = new MessagingClient(Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'), http:$http);
 $c->catalogs->list('n /x');
@@ -28,7 +40,7 @@ check($history[0]['request']->getUri()->getPath() === '/messaging/n%20%2Fx/catal
 $request = $history[5]['request'];
 check($request->getMethod() === 'PUT' && $request->getUri()->getPath() === '/messaging/n%20%2Fx/official-groups/g%2Fx/picture', 'picture route');
 check(str_starts_with($request->getHeaderLine('Content-Type'), 'multipart/form-data; boundary='), 'multipart boundary');
-check(str_contains((string)$request->getBody(), $jpeg) && str_contains((string)$request->getBody(), 'Content-Type: image/jpeg'), 'actual jpeg');
+check(str_contains($officialPictureBody, $jpeg) && str_contains($officialPictureBody, 'Content-Type: image/jpeg'), 'actual jpeg');
 raises(fn()=> $c->catalogs->retrieve('n','../'), ValidationException::class);
 raises(fn()=> $c->catalogs->listProducts('n','123',['limit'=>0]), ValidationException::class);
 $event = ['id'=>'e','session'=>'','timestamp'=>'now','event'=>'contact.update','payload'=>['id'=>'new','parentBsuid'=>'new-p','identityChange'=>['reason'=>'user_id_changed','messageId'=>'m','previous'=>['id'=>'old','parentBsuid'=>'old-p']]]];
