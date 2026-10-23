@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "sourceAccepted": false,
+  "published": false,
+  "candidateSource": {
+    "repository": "polymorfa/polymorfa",
+    "commit": "c9902b86e4a1b52092029486cc16c1699456d539",
+    "tree": "9925573ab3e03270e81c719a4fc828c86f2be74c",
+    "parent": "45f4a8511bd604bb4a40e70748b1b45a3d94cb9a",
+    "files": [
+      {
+        "path": "apps/api/packages/api/src/routes/session-passkey.ts",
+        "sha256": "04fdd4beb424a83f2fb63f5090af26992b06c60a2123bb2f35a5dc31150bb890"
+      },
+      {
+        "path": "apps/api/packages/api/src/lib/session-passkey-tickets.ts",
+        "sha256": "e5f0b4b941c506db0e0bb42236c02d7f36b134fd1b0f635678925dcdad1276c0"
+      },
+      {
+        "path": "apps/api/packages/api/src/lib/passkey-assertion-limits.ts",
+        "sha256": "f442c6d9b79504263f807343838a2217c0c99149a196bce0318679783dfeed52"
+      },
+      {
+        "path": "apps/api/packages/api/src/middleware/client-rules.ts",
+        "sha256": "96fdd17e89e50bf252c64521ba553b182d5aacce7e8bf9116e673b627c5d825d"
+      },
+      {
+        "path": "apps/api/packages/api/src/lib/credential-capabilities.ts",
+        "sha256": "009b4093178524fb9627bf074951000bef98c6dfd1d3d8164e65072222ec8076"
+      },
+      {
+        "path": "apps/api/packages/api/src/composition/messaging-native.ts",
+        "sha256": "368c86c010b641d39efdb984fffb5346b1e3e33cf3e64a18557b4f36cc1b31f4"
+      },
+      {
+        "path": "apps/api/docs/openapi.json",
+        "sha256": "d753e0f97270509d068ebdc26ec10a8edf6c51021eeec65c60c6f5493d7504ec"
+      },
+      {
+        "path": "docs/api-reference/openapi.json",
+        "sha256": "3167cbd926f5ca2de88d55852c65e6b840e5eb722e1d6cae0ffbf648dc1c2029"
+      },
+      {
+        "path": "docs/openapi.json",
+        "sha256": "3810d4665f3fe4050e1ec0ca87da8362b8ce7a35734c7cefb0ee47a7d9de04cf"
+      }
+    ]
+  },
+  "fragment": {
+    "path": "contracts/passkeys.candidate.fragments.json",
+    "sha256": "4099350294f54141d49aa25caa9ecb833823d98f7b563ba4d9478da024f58722"
+  },
+  "operations": [
+    {
+      "operationId": "issuePasskeyChallenge",
+      "method": "POST",
+      "path": "/messaging/{session}/passkey/challenge",
+      "audience": "customer server",
+      "requiredScope": "sessions:manage",
+      "serverCredentialsOnly": true,
+      "automaticRetries": 0,
+      "counterparts": {
+        "typescript": "passkeys.issueChallenge",
+        "go": "Passkeys().IssueChallenge",
+        "python": "passkeys.issue_challenge",
+        "php": "passkeys->issueChallenge",
+        "rust": "passkeys().issue_challenge",
+        "dotnet": "Passkeys.IssueChallengeAsync"
+      }
+    },
+    {
+      "operationId": "getPasskeyChallenge",
+      "method": "GET",
+      "path": "/messaging/{session}/passkey/challenge/{ticketId}",
+      "audience": "customer server",
+      "requiredScope": "sessions:manage",
+      "serverCredentialsOnly": true,
+      "automaticRetries": "ordinary request policy",
+      "counterparts": {
+        "typescript": "passkeys.getChallenge",
+        "go": "Passkeys().GetChallenge",
+        "python": "passkeys.get_challenge",
+        "php": "passkeys->getChallenge",
+        "rust": "passkeys().get_challenge",
+        "dotnet": "Passkeys.GetChallengeAsync"
+      }
+    },
+    {
+      "operationId": "submitPasskeyAssertion",
+      "method": "POST",
+      "path": "/messaging/{session}/passkey/assertion",
+      "audience": "customer server",
+      "requiredScope": "sessions:manage",
+      "serverCredentialsOnly": true,
+      "automaticRetries": 0,
+      "counterparts": {
+        "typescript": "passkeys.submitAssertion",
+        "go": "Passkeys().SubmitAssertion",
+        "python": "passkeys.submit_assertion",
+        "php": "passkeys->submitAssertion",
+        "rust": "passkeys().submit_assertion",
+        "dotnet": "Passkeys.SubmitAssertionAsync"
+      }
+    },
+    {
+      "operationId": "getPasskeyConfirmation",
+      "method": "GET",
+      "path": "/messaging/{session}/passkey/confirmation",
+      "audience": "customer server",
+      "requiredScope": "sessions:manage",
+      "serverCredentialsOnly": true,
+      "automaticRetries": "ordinary request policy",
+      "counterparts": {
+        "typescript": "passkeys.getConfirmation",
+        "go": "Passkeys().GetConfirmation",
+        "python": "passkeys.get_confirmation",
+        "php": "passkeys->getConfirmation",
+        "rust": "passkeys().get_confirmation",
+        "dotnet": "Passkeys.GetConfirmationAsync"
+      }
+    },
+    {
+      "operationId": "confirmPasskey",
+      "method": "POST",
+      "path": "/messaging/{session}/passkey/confirmation",
+      "audience": "customer server",
+      "requiredScope": "sessions:manage",
+      "serverCredentialsOnly": true,
+      "automaticRetries": 0,
+      "counterparts": {
+        "typescript": "passkeys.confirm",
+        "go": "Passkeys().Confirm",
+        "python": "passkeys.confirm",
+        "php": "passkeys->confirm",
+        "rust": "passkeys().confirm",
+        "dotnet": "Passkeys.ConfirmAsync"
+      }
+    }
+  ],
+  "excluded": [
+    {
+      "operationId": "verifyExtensionPasskeyTicket",
+      "reason": "Extension/hosted participant ceremony relay, not machine SDK audience"
+    },
+    {
+      "operationId": "submitQuickLinkPasskey",
+      "reason": "Extension/hosted participant ceremony relay, not machine SDK audience"
+    },
+    {
+      "operationId": "confirmQuickLinkPasskey",
+      "reason": "Extension/hosted participant ceremony relay, not machine SDK audience"
+    }
+  ],
+  "coexistingCandidate": {
+    "commit": "0b7b739493b089c386fc21f2cf76f05f60de9151",
+    "laterTestOnlyHead": "fce83265c1c99b75de3678191e5b07aac6de2cf0",
+    "sourceAccepted": false,
+    "published": false,
+    "note": "Calls response-only candidate preserved in parent78f6; c990 does not contain it. Unified containing API acceptance and final specs remain required."
+  },
+  "acceptedPinsUnchanged": true,
+  "coverageLedgerCredit": false
+}

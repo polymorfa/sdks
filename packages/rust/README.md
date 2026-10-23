@@ -946,3 +946,47 @@ does not establish API deployment or package publication.
 
 Rust response struct literals must include
 `simultaneous_calls_coverage_excluded_until: None` or a timestamp.
+
+## Direct passkey relay (unreleased)
+
+Use server credentials with `sessions:manage` for every operation, including reads.
+The API also checks live Number ownership, direct-pairing access, relay enrollment
+and the current attempt. These methods accept ceremony data supplied by an
+external participant. They do not run WebAuthn, store credentials, poll, or confirm
+a pairing automatically. Hosted QuickLink and extension relay endpoints are excluded.
+
+Challenge TTL uses seconds; ceremony `timeoutMs` uses milliseconds. The server
+owns ceremony options and ignores the deprecated `userVerification` and
+`timeoutMs` request fields. An optional expected `challengeB64Url` must match the
+current attempt. Keep `rawIdB64Url` and the named `*B64` assertion strings unchanged;
+do not convert between base64 and base64url. Omit optional fields when absent.
+
+Challenge issuance, assertion submission and explicit confirmation each make one
+attempt, even with caller retry options or an idempotency key. If the outcome is
+uncertain, read current challenge/confirmation state and reconcile it before a new
+write. Assertion acceptance is not pairing completion. Forwarded API failures keep
+their status and open error code; the SDK does not invent passkey error codes.
+
+The whole JSON body is limited to 1 MiB. Credential ID strings allow 1364 UTF-16
+units and optional user handles allow 86. Other opaque assertion fields share the
+body limit. The API validates encodings, decoded bounds and challenge binding.
+
+This is source preparation. Matching API acceptance, package qualification and
+publication are still required before using a released package.
+
+```rust,no_run
+# async fn supplied_steps(client: &polymorfa_sdk::MessagingClient, session: &str, supplied_assertion: &polymorfa_sdk::passkeys::SubmitPasskeyAssertion, supplied_confirmation: &polymorfa_sdk::passkeys::ConfirmPasskey) -> polymorfa_sdk::Result<()> {
+use polymorfa_sdk::{passkeys::IssuePasskeyChallenge, RequestOptions};
+let ticket = client.passkeys().issue_challenge(session, &IssuePasskeyChallenge::default(), RequestOptions::default()).await?;
+client.passkeys().get_challenge(session, &ticket.data.data.ticket, RequestOptions::default()).await?;
+client.passkeys().submit_assertion(session, supplied_assertion, RequestOptions::default()).await?;
+let state = client.passkeys().get_confirmation(session, RequestOptions::default()).await?;
+// This function is called only after the caller's explicit decision.
+async fn confirm_explicitly(client: &polymorfa_sdk::MessagingClient, session: &str, supplied: &polymorfa_sdk::passkeys::ConfirmPasskey) -> polymorfa_sdk::Result<()> {
+    client.passkeys().confirm(session, supplied, RequestOptions::default()).await?;
+    Ok(())
+}
+# let _ = (state, supplied_confirmation);
+# Ok(())
+# }
+```

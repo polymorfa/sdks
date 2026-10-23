@@ -192,6 +192,19 @@ from .media_streams import (
     descriptor_from_media,
     download_whatsapp_media_stream,
 )
+from .passkeys import (
+    ConfirmPasskey,
+    IssuePasskeyChallenge,
+    PasskeyAssertion,
+    PasskeyAssertionResponse,
+    PasskeyAssertionResult,
+    PasskeyConfirmation,
+    Passkeys,
+    PasskeyStatus,
+    PasskeyTicket,
+    SubmitPasskeyAssertion,
+    UserVerification,
+)
 from .policies import graph_transport_headers
 from .raw_pagination import PageResult, RawCursorPage
 from .request_logs import (
@@ -241,6 +254,17 @@ from .webhooks import (
 )
 
 __all__ = [
+    "ConfirmPasskey",
+    "IssuePasskeyChallenge",
+    "PasskeyAssertion",
+    "PasskeyAssertionResponse",
+    "PasskeyAssertionResult",
+    "PasskeyConfirmation",
+    "Passkeys",
+    "PasskeyStatus",
+    "PasskeyTicket",
+    "SubmitPasskeyAssertion",
+    "UserVerification",
     "API_VERSION",
     "CALL_REACTION_EMOJI",
     "CUSTOMER_OWNED_API_VERSION",

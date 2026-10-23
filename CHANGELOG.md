@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Prepare direct server passkey challenge, assertion and explicit confirmation methods in all six SDKs. Writes use one attempt; ceremony execution remains external. Unreleased and awaiting matching API/package acceptance.
+
 - Add the read-only nullable call-settings exclusion-end response field across all six SDKs. Rust response struct literals require the new optional field; C# positional construction remains compatible. Unreleased and dependent on the matching API contract.
 
 - All six server SDKs expose optional automatic-pause `reason`/`code` and
