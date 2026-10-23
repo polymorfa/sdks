@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add the read-only nullable call-settings exclusion-end response field across all six SDKs. Rust response struct literals require the new optional field; C# positional construction remains compatible. Unreleased and dependent on the matching API contract.
+
 - All six server SDKs expose optional automatic-pause `reason`/`code` and
   optional recipient-skip `messageIndex`/`followUpId` from accepted API source
   `9bb1e2ed`. Future reason/code strings and raw envelope fields are retained;

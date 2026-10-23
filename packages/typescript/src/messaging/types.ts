@@ -2168,6 +2168,8 @@ export type VoipAddParticipantResponse = SuccessEnvelope<VoipParticipant>;
 
 /** Call settings for one session (`/platform/sessions/{session}/call-settings`). */
 export interface SessionCallSettings {
+  /** Read-only RFC3339 exclusion end, or null. Null is not a coverage guarantee. */
+  readonly simultaneousCallsCoverageExcludedUntil: string | null;
   /**
    * Whether the session can place, answer and receive calls. While `false`,
    * those actions fail with `calls_disabled`, incoming calls are declined and

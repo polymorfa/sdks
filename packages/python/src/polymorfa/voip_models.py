@@ -43,6 +43,7 @@ class CallParticipant(TypedDict):
 
 
 class SessionCallSettings(TypedDict):
+    simultaneousCallsCoverageExcludedUntil: str | None
     simultaneousCalls: bool
     callsEnabled: bool
     conferenceMode: bool

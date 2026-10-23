@@ -1,0 +1,611 @@
+{
+  "schemas": {
+    "PlatformAccessCallSettings": {
+      "type": "object",
+      "properties": {
+        "callsEnabled": {
+          "type": "boolean",
+          "description": "Whether the session can place, answer and receive calls. When false, placing, answering, joining and attaching media fail with `403 calls_disabled`, incoming calls are declined, and SIP trunks cannot place calls through the session. Calls in progress continue, and the participant that answered or placed one can reconnect to it. Defaults to true."
+        },
+        "conferenceMode": {
+          "type": "boolean",
+          "description": "Conference mode. When true, every participant you connect to a call (including SIP trunk callers) hears the WhatsApp party and every other participant you connected. When false, each of them hears only the WhatsApp party. The WhatsApp party always hears all of your participants, and no participant hears their own audio. Defaults to true."
+        },
+        "inboundRoute": {
+          "$ref": "#/components/schemas/PlatformAccessCallInboundRoute"
+        },
+        "sipTrunkId": {
+          "type": "string",
+          "nullable": true,
+          "format": "uuid",
+          "description": "The SIP trunk that receives incoming calls when `inboundRoute` is `sip_trunk`; otherwise null."
+        },
+        "sipClaim": {
+          "type": "boolean",
+          "description": "Whether an answer from the SIP trunk claims the call, which ends ringing on your other clients. Defaults to true."
+        },
+        "hostCloudApiCalls": {
+          "type": "boolean",
+          "description": "Whether Polymorfa Calls answers the session's incoming calls when the session uses the Cloud API. When false (the default), your app answers them through the Graph API `/calls` endpoint and Polymorfa Calls does not host them. Sessions on a linked device ignore it."
+        },
+        "simultaneousCalls": {
+          "type": "boolean",
+          "description": "Whether this Number may hold more than one call at a time, with no limit. Linked-device sessions only; Cloud API sessions ignore it. WhatsApp's own apps never hold two calls at once, so this behavior is unusual for WhatsApp, and it voids Ban Insurance: a ban whose 30-day window overlaps any period this setting was on is not refunded. Defaults to false."
+        },
+        "simultaneousCallsCoverageExcludedUntil": {
+          "type": "string",
+          "nullable": true,
+          "format": "date-time",
+          "description": "Read-only. While `simultaneousCalls` is false, when Ban Insurance stops excluding this Number because of an earlier period with it on: 30 days after the latest period ended. A ban that starts before this time is not refunded; from this time on, that period no longer excludes it. Null while `simultaneousCalls` is true, because the exclusion has no end yet, and null when no period ended in the last 30 days. Null does not mean the Number is covered: the other Ban Insurance conditions still apply."
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Increases on every change; 0 while the session uses the defaults. Send it as `expectedRevision` to refuse an update that would overwrite someone else's change."
+        },
+        "updatedAt": {
+          "type": "string",
+          "nullable": true,
+          "format": "date-time",
+          "description": "When the settings were last changed, or null when the session uses the defaults."
+        }
+      },
+      "required": [
+        "callsEnabled",
+        "conferenceMode",
+        "inboundRoute",
+        "sipTrunkId",
+        "sipClaim",
+        "hostCloudApiCalls",
+        "simultaneousCalls",
+        "simultaneousCallsCoverageExcludedUntil",
+        "revision",
+        "updatedAt"
+      ],
+      "additionalProperties": false
+    },
+    "PlatformAccessGetCallSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [true]
+        },
+        "data": {
+          "$ref": "#/components/schemas/PlatformAccessCallSettings"
+        }
+      },
+      "required": ["success", "data"]
+    },
+    "PlatformAccessUpdateCallSettingsResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "enum": [true]
+        },
+        "data": {
+          "$ref": "#/components/schemas/PlatformAccessCallSettings"
+        }
+      },
+      "required": ["success", "data"]
+    },
+    "PlatformAccessUpdateCallSettingsRequest": {
+      "type": "object",
+      "properties": {
+        "callsEnabled": {
+          "type": "boolean",
+          "description": "Set to false to refuse new and incoming calls on the session; true allows them again."
+        },
+        "conferenceMode": {
+          "type": "boolean",
+          "description": "Set to true so that the participants you connect to a call hear each other as well as the WhatsApp party, or false so that each hears only the WhatsApp party."
+        },
+        "inboundRoute": {
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/PlatformAccessCallInboundRoute"
+            },
+            {
+              "description": "Where incoming WhatsApp calls ring."
+            }
+          ]
+        },
+        "sipTrunkId": {
+          "type": "string",
+          "nullable": true,
+          "format": "uuid",
+          "description": "The SIP trunk for `sip_trunk`: a trunk in the session's project whose direction is `outbound` or `both`. Required when switching the route to `sip_trunk`; omit it to keep the stored trunk. With `clients` send `null` or omit it: a trunk ID is refused, and `clients` clears the stored trunk."
+        },
+        "sipClaim": {
+          "type": "boolean",
+          "description": "Whether an answer from the SIP trunk claims the call."
+        },
+        "hostCloudApiCalls": {
+          "type": "boolean",
+          "description": "Set to true to have Polymorfa Calls answer the session's Cloud API calls instead of your Graph API integration. Applies to calls that arrive after the change."
+        },
+        "simultaneousCalls": {
+          "type": "boolean",
+          "description": "Set to true to let this Number hold more than one call at a time, with no limit. Turning it on requires `acknowledgeRisk: true` and a team API key; it voids Ban Insurance for any ban whose 30-day window overlaps a period it was on. Set to false to return to one call at a time. Applies to calls that start after the change."
+        },
+        "acknowledgeRisk": {
+          "type": "boolean",
+          "description": "Required as true when the update turns `simultaneousCalls` on. Confirms that you accept the unusual-behavior risk and the loss of Ban Insurance for this Number."
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Apply the update only if the settings still have this `revision` (0 for a session using the defaults). Otherwise the update fails with `409 state_conflict`."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "operations": {
+    "get": {
+      "operationId": "getCallSettings",
+      "tags": ["Calls"],
+      "summary": "Get call settings for a session",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "x-required-scope": "sessions:read",
+      "parameters": [
+        {
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "required": true,
+          "name": "session",
+          "in": "path"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Call settings. Sessions without saved settings return the defaults.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessGetCallSettingsResponse"
+              }
+            }
+          },
+          "headers": {
+            "X-RateLimit-Limit": {
+              "$ref": "#/components/headers/X-RateLimit-Limit"
+            },
+            "X-RateLimit-Remaining": {
+              "$ref": "#/components/headers/X-RateLimit-Remaining"
+            },
+            "X-RateLimit-Reset": {
+              "$ref": "#/components/headers/X-RateLimit-Reset"
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request \u2014 request body or params failed validation",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessPublicError"
+              },
+              "example": {
+                "error": {
+                  "type": "invalid_request_error",
+                  "code": "invalid_parameter",
+                  "message": "Correct the invalid request field.",
+                  "param": null,
+                  "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                },
+                "data": null,
+                "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+              }
+            }
+          },
+          "headers": {
+            "X-RateLimit-Limit": {
+              "$ref": "#/components/headers/X-RateLimit-Limit"
+            },
+            "X-RateLimit-Remaining": {
+              "$ref": "#/components/headers/X-RateLimit-Remaining"
+            },
+            "X-RateLimit-Reset": {
+              "$ref": "#/components/headers/X-RateLimit-Reset"
+            }
+          }
+        },
+        "401": {
+          "description": "Missing or invalid authentication token",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessPublicError"
+              },
+              "example": {
+                "error": {
+                  "type": "authentication_error",
+                  "code": "invalid_credential",
+                  "message": "Supply a valid credential.",
+                  "param": null,
+                  "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                },
+                "data": null,
+                "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+              }
+            }
+          },
+          "headers": {
+            "X-RateLimit-Limit": {
+              "$ref": "#/components/headers/X-RateLimit-Limit"
+            },
+            "X-RateLimit-Remaining": {
+              "$ref": "#/components/headers/X-RateLimit-Remaining"
+            },
+            "X-RateLimit-Reset": {
+              "$ref": "#/components/headers/X-RateLimit-Reset"
+            }
+          }
+        },
+        "403": {
+          "description": "Authenticated but not permitted (missing scope or rule violation)",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessPublicError"
+              },
+              "example": {
+                "error": {
+                  "type": "permission_error",
+                  "code": "permission_denied",
+                  "message": "The credential does not have access to this resource.",
+                  "param": null,
+                  "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                },
+                "data": null,
+                "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+              }
+            }
+          },
+          "headers": {
+            "X-RateLimit-Limit": {
+              "$ref": "#/components/headers/X-RateLimit-Limit"
+            },
+            "X-RateLimit-Remaining": {
+              "$ref": "#/components/headers/X-RateLimit-Remaining"
+            },
+            "X-RateLimit-Reset": {
+              "$ref": "#/components/headers/X-RateLimit-Reset"
+            }
+          }
+        },
+        "404": {
+          "description": "Resource not found",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessPublicError"
+              },
+              "example": {
+                "error": {
+                  "type": "invalid_request_error",
+                  "code": "resource_not_found",
+                  "message": "The resource is unavailable to this caller.",
+                  "param": null,
+                  "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                },
+                "data": null,
+                "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+              }
+            }
+          },
+          "headers": {
+            "X-RateLimit-Limit": {
+              "$ref": "#/components/headers/X-RateLimit-Limit"
+            },
+            "X-RateLimit-Remaining": {
+              "$ref": "#/components/headers/X-RateLimit-Remaining"
+            },
+            "X-RateLimit-Reset": {
+              "$ref": "#/components/headers/X-RateLimit-Reset"
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessPublicError"
+              },
+              "example": {
+                "error": {
+                  "type": "api_error",
+                  "code": "internal_error",
+                  "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                  "param": null,
+                  "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                },
+                "data": null,
+                "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+              }
+            }
+          },
+          "headers": {
+            "X-RateLimit-Limit": {
+              "$ref": "#/components/headers/X-RateLimit-Limit"
+            },
+            "X-RateLimit-Remaining": {
+              "$ref": "#/components/headers/X-RateLimit-Remaining"
+            },
+            "X-RateLimit-Reset": {
+              "$ref": "#/components/headers/X-RateLimit-Reset"
+            }
+          }
+        }
+      },
+      "x-mint": {
+        "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
+      },
+      "description": "**Required scope:** `sessions:read`",
+      "x-audience": "public"
+    },
+    "put": {
+      "operationId": "updateCallSettings",
+      "tags": ["Calls"],
+      "summary": "Update call settings for a session",
+      "description": "**Required scope:** `sessions:manage`\n\nChanges the settings you send; omitted settings keep their current values. Send `expectedRevision` to refuse the update when someone else changed the settings after you read them.",
+      "security": [
+        {
+          "ApiKeyAuth": []
+        }
+      ],
+      "x-required-scope": "sessions:manage",
+      "parameters": [
+        {
+          "schema": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "required": true,
+          "name": "session",
+          "in": "path"
+        }
+      ],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/PlatformAccessUpdateCallSettingsRequest"
+            }
+          }
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Call settings saved. Audio settings apply to a call the next time a participant answers or connects to it, including calls in progress. Routing settings apply to calls that arrive after the change.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessUpdateCallSettingsResponse"
+              }
+            }
+          },
+          "headers": {
+            "X-RateLimit-Limit": {
+              "$ref": "#/components/headers/X-RateLimit-Limit"
+            },
+            "X-RateLimit-Remaining": {
+              "$ref": "#/components/headers/X-RateLimit-Remaining"
+            },
+            "X-RateLimit-Reset": {
+              "$ref": "#/components/headers/X-RateLimit-Reset"
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request \u2014 request body or params failed validation",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessPublicError"
+              },
+              "example": {
+                "error": {
+                  "type": "invalid_request_error",
+                  "code": "invalid_parameter",
+                  "message": "Correct the invalid request field.",
+                  "param": null,
+                  "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                },
+                "data": null,
+                "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+              }
+            }
+          },
+          "headers": {
+            "X-RateLimit-Limit": {
+              "$ref": "#/components/headers/X-RateLimit-Limit"
+            },
+            "X-RateLimit-Remaining": {
+              "$ref": "#/components/headers/X-RateLimit-Remaining"
+            },
+            "X-RateLimit-Reset": {
+              "$ref": "#/components/headers/X-RateLimit-Reset"
+            }
+          }
+        },
+        "401": {
+          "description": "Missing or invalid authentication token",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessPublicError"
+              },
+              "example": {
+                "error": {
+                  "type": "authentication_error",
+                  "code": "invalid_credential",
+                  "message": "Supply a valid credential.",
+                  "param": null,
+                  "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                },
+                "data": null,
+                "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+              }
+            }
+          },
+          "headers": {
+            "X-RateLimit-Limit": {
+              "$ref": "#/components/headers/X-RateLimit-Limit"
+            },
+            "X-RateLimit-Remaining": {
+              "$ref": "#/components/headers/X-RateLimit-Remaining"
+            },
+            "X-RateLimit-Reset": {
+              "$ref": "#/components/headers/X-RateLimit-Reset"
+            }
+          }
+        },
+        "403": {
+          "description": "Authenticated but not permitted (missing scope or rule violation)",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessPublicError"
+              },
+              "example": {
+                "error": {
+                  "type": "permission_error",
+                  "code": "permission_denied",
+                  "message": "The credential does not have access to this resource.",
+                  "param": null,
+                  "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                },
+                "data": null,
+                "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+              }
+            }
+          },
+          "headers": {
+            "X-RateLimit-Limit": {
+              "$ref": "#/components/headers/X-RateLimit-Limit"
+            },
+            "X-RateLimit-Remaining": {
+              "$ref": "#/components/headers/X-RateLimit-Remaining"
+            },
+            "X-RateLimit-Reset": {
+              "$ref": "#/components/headers/X-RateLimit-Reset"
+            }
+          }
+        },
+        "404": {
+          "description": "Resource not found",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessPublicError"
+              },
+              "example": {
+                "error": {
+                  "type": "invalid_request_error",
+                  "code": "resource_not_found",
+                  "message": "The resource is unavailable to this caller.",
+                  "param": null,
+                  "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                },
+                "data": null,
+                "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+              }
+            }
+          },
+          "headers": {
+            "X-RateLimit-Limit": {
+              "$ref": "#/components/headers/X-RateLimit-Limit"
+            },
+            "X-RateLimit-Remaining": {
+              "$ref": "#/components/headers/X-RateLimit-Remaining"
+            },
+            "X-RateLimit-Reset": {
+              "$ref": "#/components/headers/X-RateLimit-Reset"
+            }
+          }
+        },
+        "409": {
+          "description": "`state_conflict`: the settings changed after `expectedRevision`.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessPublicError"
+              },
+              "example": {
+                "error": {
+                  "type": "conflict_error",
+                  "code": "state_conflict",
+                  "message": "The request conflicts with the resource state.",
+                  "param": null,
+                  "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                },
+                "data": null,
+                "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+              }
+            }
+          },
+          "headers": {
+            "X-RateLimit-Limit": {
+              "$ref": "#/components/headers/X-RateLimit-Limit"
+            },
+            "X-RateLimit-Remaining": {
+              "$ref": "#/components/headers/X-RateLimit-Remaining"
+            },
+            "X-RateLimit-Reset": {
+              "$ref": "#/components/headers/X-RateLimit-Reset"
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlatformAccessPublicError"
+              },
+              "example": {
+                "error": {
+                  "type": "api_error",
+                  "code": "internal_error",
+                  "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                  "param": null,
+                  "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                },
+                "data": null,
+                "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+              }
+            }
+          },
+          "headers": {
+            "X-RateLimit-Limit": {
+              "$ref": "#/components/headers/X-RateLimit-Limit"
+            },
+            "X-RateLimit-Remaining": {
+              "$ref": "#/components/headers/X-RateLimit-Remaining"
+            },
+            "X-RateLimit-Reset": {
+              "$ref": "#/components/headers/X-RateLimit-Reset"
+            }
+          }
+        }
+      },
+      "x-mint": {
+        "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge>"
+      },
+      "x-audience": "public"
+    }
+  }
+}

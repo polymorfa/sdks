@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "sourceAccepted": false,
+  "published": false,
+  "candidateCommit": "0b7b739493b089c386fc21f2cf76f05f60de9151",
+  "candidateTree": "1b5c55375b928e2a3f9068d180aa43bd5be61cb8",
+  "candidateParent": "4bf556ab46e23c6d87fa376151f1bd217f6f0812",
+  "apiVersion": "2026-09-22",
+  "sourceFiles": [
+    {
+      "path": "apps/api/packages/api/src/routes/call-settings.ts",
+      "sha256": "9023f1ac740072a4a67f0afc007ad7a03d112412187e95a232351a22ac72bf18"
+    },
+    {
+      "path": "apps/api/packages/api/src/db/calls/settings-repo.ts",
+      "sha256": "e72ac879bf6b685acf045039b58f8246a9dc068dcd1991ab7de510fbe8d7871e"
+    },
+    {
+      "path": "apps/api/docs/openapi.management.json",
+      "sha256": "f5544f6034bebc978ae2892ef6c885c7a8508d9f349f741b409518240ef7c2c9"
+    },
+    {
+      "path": "docs/api-reference/openapi.management.json",
+      "sha256": "9a8db97a52fbcf3efab47d7c342d9d65c187d5edcefabe19980e56a44ea65fe6"
+    },
+    {
+      "path": "docs/openapi.json",
+      "sha256": "fa17c29c961cc085cf4f63f5ff4522ca3fa0c0b80f04409e9a53d0c86a6d1d49"
+    }
+  ],
+  "fragmentPath": "contracts/calls-coverage-end.candidate.fragments.json",
+  "fragmentSha256": "8553868e4cb332bb7e756b28d01b828ceab5a05866bb72710ce6372b7988837d",
+  "fixturePath": "contracts/fixtures/calls-coverage-end.candidate.json",
+  "fixtureSha256": "9e0a281012f6b94ad44ef38454da52d95fd4fca759c45e1070af861ab24d5cee",
+  "operations": [
+    "getCallSettings",
+    "updateCallSettings"
+  ],
+  "field": "simultaneousCallsCoverageExcludedUntil",
+  "responseOnly": true,
+  "required": true,
+  "nullable": true,
+  "format": "date-time",
+  "acceptedContainingCommit": null,
+  "privateConsoleSchemaNote": "Candidate shared serializer adds the field, but SessionCallSettings private Console schema in management snapshot lacks it; producer-owned reconciliation required. No SDK private route."
+}
