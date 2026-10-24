@@ -32,10 +32,7 @@
   "fragmentSha256": "8553868e4cb332bb7e756b28d01b828ceab5a05866bb72710ce6372b7988837d",
   "fixturePath": "contracts/fixtures/calls-coverage-end.candidate.json",
   "fixtureSha256": "9e0a281012f6b94ad44ef38454da52d95fd4fca759c45e1070af861ab24d5cee",
-  "operations": [
-    "getCallSettings",
-    "updateCallSettings"
-  ],
+  "operations": ["getCallSettings", "updateCallSettings"],
   "field": "simultaneousCallsCoverageExcludedUntil",
   "responseOnly": true,
   "required": true,
