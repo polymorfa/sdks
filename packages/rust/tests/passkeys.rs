@@ -1,3 +1,7 @@
+#[allow(
+    dead_code,
+    reason = "shared integration-test support; this target uses only part of it"
+)]
 mod support;
 use polymorfa_sdk::{passkeys::*, RequestOptions};
 use serde_json::{json, Value};
