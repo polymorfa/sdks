@@ -1,7 +1,56 @@
 {
   "schemaVersion": 1,
-  "sourceAccepted": false,
+  "sourceAccepted": true,
   "published": false,
+  "acceptedSource": {
+    "repository": "polymorfa/polymorfa",
+    "branch": "dev",
+    "commit": "77e9ce31aa5e0ea58815662ba0028f1927f690d5",
+    "tree": "b2f9fdfc575a0fabb5edb57b7780411f5e9b4b90",
+    "parents": [
+      "6ce6f6c975224abe8ab21eae96b381044f3a6073",
+      "4be63eb3310615f47b1c3dae410f1adbd5dc0727"
+    ],
+    "pullRequests": ["polymorfa/polymorfa#168", "polymorfa/polymorfa#798"],
+    "files": [
+      {
+        "path": "apps/api/packages/api/src/routes/session-passkey.ts",
+        "sha256": "04fdd4beb424a83f2fb63f5090af26992b06c60a2123bb2f35a5dc31150bb890"
+      },
+      {
+        "path": "apps/api/packages/api/src/lib/session-passkey-tickets.ts",
+        "sha256": "e5f0b4b941c506db0e0bb42236c02d7f36b134fd1b0f635678925dcdad1276c0"
+      },
+      {
+        "path": "apps/api/packages/api/src/lib/passkey-assertion-limits.ts",
+        "sha256": "f442c6d9b79504263f807343838a2217c0c99149a196bce0318679783dfeed52"
+      },
+      {
+        "path": "apps/api/packages/api/src/middleware/client-rules.ts",
+        "sha256": "96fdd17e89e50bf252c64521ba553b182d5aacce7e8bf9116e673b627c5d825d"
+      },
+      {
+        "path": "apps/api/packages/api/src/lib/credential-capabilities.ts",
+        "sha256": "96afee6a1f4019c3d5b8b881cfcd3cfd1e73e585442d279bdabb942a762b9342"
+      },
+      {
+        "path": "apps/api/packages/api/src/composition/messaging-native.ts",
+        "sha256": "3626f2773cbb51aa7e06bc7a47176e05cd5b3b0c07a30623d29906decdcba81a"
+      },
+      {
+        "path": "apps/api/docs/openapi.json",
+        "sha256": "0dae88e889900491fc79c592785142810490a92b71e988b4138a64fdaf78002a"
+      },
+      {
+        "path": "docs/api-reference/openapi.json",
+        "sha256": "ea163e6639cb954cb6d2ba3bb7ebc06ea86eb185d1553e72ffc6ffe030cd55f8"
+      },
+      {
+        "path": "docs/openapi.json",
+        "sha256": "03da2795efd1c1801d98f513a7585395d6522e8585ab4a8d2b5863f4e81d6443"
+      }
+    ]
+  },
   "candidateSource": {
     "repository": "polymorfa/polymorfa",
     "commit": "c9902b86e4a1b52092029486cc16c1699456d539",
@@ -154,9 +203,10 @@
   "coexistingCandidate": {
     "commit": "0b7b739493b089c386fc21f2cf76f05f60de9151",
     "laterTestOnlyHead": "fce83265c1c99b75de3678191e5b07aac6de2cf0",
-    "sourceAccepted": false,
+    "sourceAccepted": true,
     "published": false,
-    "note": "Calls response-only candidate preserved in parent78f6; c990 does not contain it. Unified containing API acceptance and final specs remain required."
+    "acceptedContainingCommit": "77e9ce31aa5e0ea58815662ba0028f1927f690d5",
+    "note": "Calls response-only field merged to API dev by #798 (0f6e92ec); 77e9ce31 contains both producers."
   },
   "acceptedPinsUnchanged": true,
   "coverageLedgerCredit": false

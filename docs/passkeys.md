@@ -22,8 +22,8 @@ The whole JSON body is limited to 1 MiB. Credential ID strings allow 1364 UTF-16
 units and optional user handles allow 86. Other opaque assertion fields share the
 body limit. The API validates encodings, decoded bounds and challenge binding.
 
-This is source preparation. Matching API acceptance, package qualification and
-publication are still required before using a released package.
+The matching API source is accepted. Package qualification and publication are
+still required before using a released package.
 
 | Operation              | TypeScript               | Go                         | Python                    | PHP                       | Rust                        | .NET                          |
 | ---------------------- | ------------------------ | -------------------------- | ------------------------- | ------------------------- | --------------------------- | ----------------------------- |

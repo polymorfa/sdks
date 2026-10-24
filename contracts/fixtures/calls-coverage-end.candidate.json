@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "candidateSource": "0b7b739493b089c386fc21f2cf76f05f60de9151",
-  "sourceAccepted": false,
+  "candidateSource": "77e9ce31aa5e0ea58815662ba0028f1927f690d5",
+  "sourceAccepted": true,
   "settings": {
     "callsEnabled": true,
     "conferenceMode": false,

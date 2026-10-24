@@ -36,7 +36,7 @@
           "type": "string",
           "nullable": true,
           "format": "date-time",
-          "description": "Read-only. While `simultaneousCalls` is false, when Ban Insurance stops excluding this Number because of an earlier period with it on: 30 days after the latest period ended. A ban that starts before this time is not refunded; from this time on, that period no longer excludes it. Null while `simultaneousCalls` is true, because the exclusion has no end yet, and null when no period ended in the last 30 days. Null does not mean the Number is covered: the other Ban Insurance conditions still apply."
+          "description": "Read-only. While `simultaneousCalls` is false, when Ban Insurance stops excluding this Number because of an earlier period with it on: 30 days after the latest period ended. A ban is excluded when the setting was on at any time in the 30 days before it, so until this time, a new ban is not refunded; from this time on, that period no longer excludes a ban. Null while `simultaneousCalls` is true, because the exclusion has no end yet, and null when no period ended in the last 30 days. Null does not mean the Number is covered: the other Ban Insurance conditions still apply."
         },
         "revision": {
           "type": "integer",

@@ -26,18 +26,29 @@ function jsonSchema(value) {
   return out;
 }
 
-test("candidate five-operation scope, immutable fragment, independent producer status", () => {
-  assert.equal(m.sourceAccepted, false);
+const ACCEPTED = "77e9ce31aa5e0ea58815662ba0028f1927f690d5";
+const sha = (p) => createHash("sha256").update(read(p)).digest("hex");
+test("five-operation scope bound to the accepted API dev source, unpublished", () => {
+  assert.equal(m.sourceAccepted, true);
   assert.equal(m.published, false);
+  assert.equal(m.acceptedSource.commit, ACCEPTED);
+  assert.equal(m.acceptedSource.branch, "dev");
   assert.equal(
     m.candidateSource.commit,
     "c9902b86e4a1b52092029486cc16c1699456d539",
+  );
+  assert.deepEqual(
+    m.acceptedSource.files.map((x) => x.path),
+    m.candidateSource.files.map((x) => x.path),
   );
   assert.equal(
     m.coexistingCandidate.commit,
     "0b7b739493b089c386fc21f2cf76f05f60de9151",
   );
-  assert.equal(m.coexistingCandidate.sourceAccepted, false);
+  assert.equal(m.coexistingCandidate.sourceAccepted, true);
+  assert.equal(m.coexistingCandidate.acceptedContainingCommit, ACCEPTED);
+  assert.equal(f.candidateSource, ACCEPTED);
+  assert.equal(f.sourceAccepted, true);
   assert.equal(
     m.fragment.sha256,
     createHash("sha256").update(read(m.fragment.path)).digest("hex"),
@@ -83,4 +94,20 @@ test("synthetic native wire values match candidate public schemas, not a live ce
     fragment.paths["/messaging/{session}/passkey/confirmation"].post.requestBody
       .content["application/json"].schema;
   check(confirmation, f.confirm);
+});
+test("call-settings exclusion end bound to the same accepted source", () => {
+  const c = JSON.parse(read("contracts/calls-coverage-end.candidate.json"));
+  assert.equal(c.sourceAccepted, true);
+  assert.equal(c.published, false);
+  assert.equal(c.acceptedSource.commit, ACCEPTED);
+  assert.equal(c.acceptedContainingCommit, ACCEPTED);
+  assert.equal(c.fragmentSha256, sha(c.fragmentPath));
+  assert.equal(c.fixtureSha256, sha(c.fixturePath));
+  const fixture = JSON.parse(read(c.fixturePath));
+  assert.equal(fixture.candidateSource, ACCEPTED);
+  const field = JSON.parse(read(c.fragmentPath)).schemas
+    .PlatformAccessCallSettings.properties[c.field];
+  assert.equal(field.nullable, true);
+  assert.equal(field.format, "date-time");
+  assert.match(field.description, /at any time in the 30 days before it/);
 });

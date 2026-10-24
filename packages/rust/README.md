@@ -936,7 +936,9 @@ Call-settings GET and PUT responses include the read-only
 `simultaneousCallsCoverageExcludedUntil` field as an RFC3339 string or null.
 While `simultaneousCalls` is on, null means the exclusion has no end yet.
 When it is off, a future timestamp is 30 days after the latest period ended.
-At that timestamp the earlier period no longer excludes a ban. Null while off
+A ban is excluded when the setting was on at any time in the 30 days before it,
+so until that timestamp a new ban is not refunded. At that timestamp the earlier
+period no longer excludes a ban. Null while off
 means no recent period was reported. Neither null nor an elapsed timestamp
 guarantees coverage; all other Ban Insurance conditions still apply.
 
@@ -971,8 +973,8 @@ The whole JSON body is limited to 1 MiB. Credential ID strings allow 1364 UTF-16
 units and optional user handles allow 86. Other opaque assertion fields share the
 body limit. The API validates encodings, decoded bounds and challenge binding.
 
-This is source preparation. Matching API acceptance, package qualification and
-publication are still required before using a released package.
+The matching API source is accepted. Package qualification and publication are
+still required before using a released package.
 
 ```rust,no_run
 # async fn supplied_steps(client: &polymorfa_sdk::MessagingClient, session: &str, supplied_assertion: &polymorfa_sdk::passkeys::SubmitPasskeyAssertion, supplied_confirmation: &polymorfa_sdk::passkeys::ConfirmPasskey) -> polymorfa_sdk::Result<()> {
