@@ -25,7 +25,7 @@ async def _coverage_end():
                 "simultaneousCallsCoverageExcludedUntil": case["until"],
             }
 
-            def handler(request):
+            def handler(request, method=method, settings=settings):
                 assert request.method == method
                 assert request.url.path == "/platform/sessions/support/call-settings"
                 if method == "PUT":
