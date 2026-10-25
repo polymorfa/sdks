@@ -68,3 +68,25 @@ async def _older_response():
             "simultaneousCallsCoverageExcludedUntil"
             not in (await client.voip.retrieve_call_settings("support")).data["data"]
         )
+
+
+def test_call_settings_reject_response_only_and_unknown_keys():
+    asyncio.run(_reject_extra_keys())
+
+
+async def _reject_extra_keys():
+    sent = []
+    async with AsyncMessagingClient(
+        credential=Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        http_transport=httpx.MockTransport(
+            lambda request: sent.append(request) or httpx.Response(200, json={})
+        ),
+    ) as client:
+        for extra in (
+            {"simultaneousCallsCoverageExcludedUntil": None},
+            {"simultaneousCallsCoverageExcludedUntil": "2026-11-22T12:34:56.789Z"},
+            {"unknownSetting": True},
+        ):
+            with pytest.raises(ValidationError):
+                await client.voip.update_call_settings("support", {"callsEnabled": False, **extra})
+    assert sent == []

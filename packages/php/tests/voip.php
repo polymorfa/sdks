@@ -76,3 +76,7 @@ $history = [];
 $client = new Polymorfa\MessagingClient($credential, http: mocked([], $history));
 raises(fn () => $client->voip->updateCallSettings('support', ['simultaneousCallsCoverageExcludedUntil' => null]), Polymorfa\ValidationException::class);
 check($history === [], 'Response-only field is not a call setting');
+foreach ([['simultaneousCallsCoverageExcludedUntil' => null], ['simultaneousCallsCoverageExcludedUntil' => '2026-11-22T12:34:56.789Z'], ['unknownSetting' => true]] as $extra) {
+    raises(fn () => $client->voip->updateCallSettings('support', ['callsEnabled' => false] + $extra), Polymorfa\ValidationException::class);
+}
+check($history === [], 'Response-only and unknown keys are refused beside a setting');

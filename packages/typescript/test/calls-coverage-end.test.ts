@@ -1,6 +1,10 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { MessagingClient } from "../src/index.js";
+import {
+  MessagingClient,
+  PolymorfaValidationError,
+  type UpdateSessionCallSettingsRequest,
+} from "../src/index.js";
 import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 
 const fixture = JSON.parse(
@@ -52,6 +56,33 @@ describe("call settings coverage end is response-only", () => {
         expect(result.data.data).toEqual(settings);
       });
     }
+  it("rejects the response-only field and unknown keys next to a setting", async () => {
+    let sent = 0;
+    const client = new MessagingClient({
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      maxNetworkRetries: 0,
+      fetch: async () => {
+        sent += 1;
+        return new Response("{}", {
+          headers: { "content-type": "application/json" },
+        });
+      },
+    });
+    for (const extra of [
+      { simultaneousCallsCoverageExcludedUntil: null },
+      { simultaneousCallsCoverageExcludedUntil: "2026-11-22T12:34:56.789Z" },
+      { unknownSetting: true },
+    ]) {
+      const body = {
+        callsEnabled: false,
+        ...extra,
+      } as unknown as UpdateSessionCallSettingsRequest;
+      expect(() => client.voip.updateCallSettings("support", body)).toThrow(
+        PolymorfaValidationError,
+      );
+    }
+    expect(sent).toBe(0);
+  });
   it("preserves older-server absence without converting it to a coverage decision", async () => {
     const client = new MessagingClient({
       credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
