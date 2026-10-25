@@ -1242,10 +1242,10 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
 
 /* Inbox */
 .pmfa-inbox {
-  container-type: inline-size;
+  container: pmfa-inbox / inline-size;
   position: relative;
   display: grid;
-  grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+  grid-template-columns: minmax(240px, 380px) minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   height: 100%;
   min-height: 420px;
@@ -1254,7 +1254,7 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
   border-radius: var(--pmfa-r-l);
   background: var(--pmfa-c-panel);
 }
-.pmfa-inbox[data-contact-open] { grid-template-columns: minmax(280px, 360px) minmax(0, 1fr) minmax(260px, 320px); }
+.pmfa-inbox[data-contact-open] { grid-template-columns: minmax(240px, 360px) minmax(0, 1fr) minmax(260px, 320px); }
 .pmfa-inbox-list {
   display: flex;
   flex-direction: column;
@@ -1525,8 +1525,10 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
 .pmfa-contact-fields > div { display: flex; flex-direction: column; gap: 2px; padding: 12px 0; border-top: 1px solid var(--pmfa-c-border); }
 .pmfa-contact-fields dt { color: var(--pmfa-c-muted); font-size: 0.75em; font-weight: 500; }
 .pmfa-contact-fields dd { margin: 0; font-size: 0.9375em; overflow-wrap: anywhere; }
-/* Container queries match the inbox's children; the inbox is the container. */
-@container (max-width: 1023px) {
+/* Named, because the thread is a container too: an unnamed query would read
+   the thread's width for the controls inside it. The list and the thread sit
+   side by side from 560px, where the thread keeps 320px. */
+@container pmfa-inbox (max-width: 1023px) {
   .pmfa-inbox > .pmfa-thread { grid-column: 2 / -1; }
   .pmfa-inbox .pmfa-contact {
     position: absolute;
@@ -1538,11 +1540,12 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
     animation: pmfa-slide 180ms ease-out;
   }
 }
-@container (max-width: 699px) {
+@container pmfa-inbox (max-width: 559px) {
   .pmfa-inbox > .pmfa-inbox-list, .pmfa-inbox > .pmfa-thread { grid-column: 1 / -1; grid-row: 1; border-inline-end: 0; }
   .pmfa-inbox[data-view="thread"] .pmfa-inbox-list { display: none; }
   .pmfa-inbox[data-view="list"] .pmfa-thread { display: none; }
-  .pmfa-inbox .pmfa-back { display: inline-flex; }
+  .pmfa-inbox .pmfa-back { display: inline-flex; border-color: var(--pmfa-c-border); background: var(--pmfa-c-bg); color: var(--pmfa-c-fg); }
+  .pmfa-inbox .pmfa-back:hover:not(:disabled) { background: var(--pmfa-c-surface); }
   .pmfa-inbox .pmfa-contact { width: 100%; border-inline-start: 0; }
   .pmfa-thread-head { padding-inline-start: 4px; }
 }
