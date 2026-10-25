@@ -106,6 +106,20 @@ describe("appearance", () => {
     );
   });
 
+  it("lays out the inbox by its own width, not the thread's", () => {
+    // The thread is a container too, so an unnamed query showed Back beside the list.
+    expect(COMPONENT_STYLES).toContain("container: pmfa-inbox / inline-size;");
+    expect(COMPONENT_STYLES).toContain(
+      "@container pmfa-inbox (max-width: 559px)",
+    );
+    expect(COMPONENT_STYLES).toContain(
+      "@container pmfa-inbox (max-width: 1023px)",
+    );
+    expect(COMPONENT_STYLES).not.toMatch(
+      /@container \(max-width: (699|1023)px\)/,
+    );
+  });
+
   it("lays out chat messages with day separators and direction groups", () => {
     const day = new Date(2026, 0, 5, 9).getTime();
     const entries = layoutMessages([
