@@ -5,7 +5,7 @@ from pathlib import Path
 import httpx
 import pytest
 
-from polymorfa import AsyncMessagingClient, Credential, RequestOptions
+from polymorfa import AsyncMessagingClient, Credential, RequestOptions, errors
 
 F = json.loads(
     (Path(__file__).parents[3] / "contracts/fixtures/passkeys.candidate.json").read_text()
@@ -26,7 +26,7 @@ async def _wire():
     ]
     for i, (method, path, body, reply) in enumerate(expected):
 
-        def handler(request):
+        def handler(request, method=method, path=path, body=body, reply=reply):
             assert request.method == method
             assert request.url.raw_path.decode() == "/messaging/desk%2F1/passkey" + path
             assert request.headers["authorization"].startswith("Bearer pmfa_")
@@ -95,7 +95,7 @@ async def _boundaries():
         async with AsyncMessagingClient(
             key,
             http_transport=httpx.MockTransport(
-                lambda r: httpx.Response(
+                lambda r, status=status: httpx.Response(
                     200, json={"success": True, "data": {"status": status, "skipHandoffUX": False}}
                 )
             ),
@@ -107,7 +107,7 @@ async def _boundaries():
     for status in F["errors"]:
         count = 0
 
-        def refuse(request):
+        def refuse(request, status=status):
             nonlocal count
             count += 1
             return httpx.Response(
@@ -115,7 +115,7 @@ async def _boundaries():
             )
 
         async with AsyncMessagingClient(key, http_transport=httpx.MockTransport(refuse)) as c:
-            with pytest.raises(Exception) as e:
+            with pytest.raises(errors.PolymorfaError) as e:
                 await c.passkeys.confirm(
                     "s",
                     F["confirm"],
@@ -126,7 +126,7 @@ async def _boundaries():
         for kind in ("issue", "assertion", "confirm"):
             count = 0
 
-            def broken(request):
+            def broken(request, mode=mode):
                 nonlocal count
                 count += 1
                 if mode == "network":
@@ -136,7 +136,8 @@ async def _boundaries():
                 )
 
             async with AsyncMessagingClient(key, http_transport=httpx.MockTransport(broken)) as c:
-                with pytest.raises(Exception):
+                expected = errors.ConnectionError if mode == "network" else errors.ServerError
+                with pytest.raises(expected):
                     o = RequestOptions(max_network_retries=3, idempotency_key="caller")
                     if kind == "issue":
                         await c.passkeys.issue_challenge("s", F["issue"], options=o)
@@ -157,7 +158,7 @@ async def _boundaries():
         assert bodies == [{}, {"ticketId": "ticket"}]
         bad = json.loads(json.dumps(F["assertion"]))
         bad["assertion"]["id"] = "x" * 1365
-        with pytest.raises(Exception):
+        with pytest.raises(errors.ValidationError):
             await c.passkeys.submit_assertion("s", bad)
         bad["assertion"]["id"] = "x" * 1364
         bad["assertion"]["rawIdB64Url"] = "x" * 1364
@@ -165,7 +166,7 @@ async def _boundaries():
         await c.passkeys.submit_assertion("s", bad)
         assert bodies[-1] == bad
         bad["assertion"]["response"]["signatureB64"] = "x" * 1048576
-        with pytest.raises(Exception):
+        with pytest.raises(errors.ValidationError):
             await c.passkeys.submit_assertion("s", bad)
         assert len(bodies) == 3
         assert not hasattr(c.passkeys, "verify") and not hasattr(
@@ -175,6 +176,6 @@ async def _boundaries():
         Credential("client_token", "pmfa_ct_Zml4dHVyZQ"),
         http_transport=httpx.MockTransport(capture),
     ) as c:
-        with pytest.raises(Exception):
+        with pytest.raises(errors.ConfigurationError):
             await c.passkeys.get_confirmation("s")
         assert len(bodies) == 3
