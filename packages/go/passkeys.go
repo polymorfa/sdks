@@ -100,7 +100,7 @@ func (r *Passkeys) IssueChallenge(ctx context.Context, s string, body IssuePassk
 	if err = passkeyBudget(body); err != nil {
 		return Response[Envelope[PasskeyTicket]]{}, err
 	}
-	return request[Envelope[PasskeyTicket]](ctx, r.t, "POST", p+"/challenge", nil, body, noRetry(options(o)))
+	return request[Envelope[PasskeyTicket]](ctx, r.t, "POST", p+"/challenge", nil, singleSubmission{body}, noRetry(options(o)))
 }
 func (r *Passkeys) GetChallenge(ctx context.Context, s, ticket string, o ...RequestOptions) (Response[Envelope[PasskeyTicket]], error) {
 	if err := serverOnly(r.t); err != nil {
@@ -131,7 +131,7 @@ func (r *Passkeys) SubmitAssertion(ctx context.Context, s string, body SubmitPas
 	if err = passkeyBudget(body); err != nil {
 		return Response[Envelope[PasskeyAssertionResult]]{}, err
 	}
-	return request[Envelope[PasskeyAssertionResult]](ctx, r.t, "POST", p+"/assertion", nil, body, noRetry(options(o)))
+	return request[Envelope[PasskeyAssertionResult]](ctx, r.t, "POST", p+"/assertion", nil, singleSubmission{body}, noRetry(options(o)))
 }
 func (r *Passkeys) GetConfirmation(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[PasskeyConfirmation]], error) {
 	if err := serverOnly(r.t); err != nil {
@@ -163,5 +163,5 @@ func (r *Passkeys) Confirm(ctx context.Context, s string, body ConfirmPasskeyReq
 	if err = passkeyBudget(body); err != nil {
 		return Response[Envelope[PasskeyConfirmation]]{}, err
 	}
-	return request[Envelope[PasskeyConfirmation]](ctx, r.t, "POST", p+"/confirmation", nil, body, noRetry(options(o)))
+	return request[Envelope[PasskeyConfirmation]](ctx, r.t, "POST", p+"/confirmation", nil, singleSubmission{body}, noRetry(options(o)))
 }

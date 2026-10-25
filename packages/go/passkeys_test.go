@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -232,5 +233,49 @@ func TestPasskeyMaximumWire(t *testing.T) {
 	defer server.Close()
 	if _, e := mustMessaging(t, server.URL).Passkeys().SubmitAssertion(context.Background(), "s", body); e != nil {
 		t.Fatal(e)
+	}
+}
+
+// A caller idempotency key must not let net/http rewind and resend a
+// single-use passkey write on a reused connection.
+func TestPasskeyWritesOfferNoBodyRewind(t *testing.T) {
+	handle := "AQID"
+	assertion := SubmitPasskeyAssertionRequest{TicketID: "t", Assertion: PasskeyAssertion{ID: "id", RawIDB64URL: "id", Response: PasskeyAssertionResponse{AuthenticatorDataB64: "AQID", ClientDataJSONB64: "e30", SignatureB64: "AQID", UserHandleB64: &handle}}}
+	rewindable := map[string]bool{}
+	config := orgConfig("https://api.fixture.invalid")
+	config.HTTPClient = &http.Client{Transport: mediaRoundTripper(func(req *http.Request) (*http.Response, error) {
+		if req.Method == "POST" {
+			rewindable[req.URL.Path] = req.GetBody != nil
+			if req.Header.Get("Idempotency-Key") != "caller" {
+				t.Error("caller idempotency key not sent")
+			}
+		}
+		data := `{"success":true,"data":{"status":"none"}}`
+		if strings.HasSuffix(req.URL.Path, "/assertion") {
+			data = `{"success":true,"data":{"ok":true,"ticket":"t","session":"s"}}`
+		}
+		return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(data)), Request: req}, nil
+	})}
+	c, err := NewMessagingClient(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, o := context.Background(), RequestOptions{IdempotencyKey: "caller"}
+	if _, e := c.Passkeys().IssueChallenge(ctx, "s", IssuePasskeyChallengeRequest{}, o); e != nil {
+		t.Fatal(e)
+	}
+	if _, e := c.Passkeys().SubmitAssertion(ctx, "s", assertion, o); e != nil {
+		t.Fatal(e)
+	}
+	if _, e := c.Passkeys().Confirm(ctx, "s", ConfirmPasskeyRequest{TicketID: "t"}, o); e != nil {
+		t.Fatal(e)
+	}
+	if len(rewindable) != 3 {
+		t.Fatalf("expected three passkey writes, saw %v", rewindable)
+	}
+	for path, rewind := range rewindable {
+		if rewind {
+			t.Errorf("%s offers a body rewind", path)
+		}
 	}
 }
