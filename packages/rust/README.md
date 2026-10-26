@@ -26,7 +26,7 @@ Use `OrganizationClient` with an team key for Platform operations;
 `organization.project("project-id")` creates an immutable project view. Project
 tokens cannot bind to another project. Credentials are validated before network
 requests. The crate refuses compilation for WASM: Rust frontend applications use
-the existing `@polymorfa/browser` and `@polymorfa/elements` components, with token
+the existing UI Kit web components from `@polymorfa/ui-kit`, with token
 issuance kept on a trusted server.
 
 Every call returns `ApiResponse<T>` with response metadata. Native errors expose

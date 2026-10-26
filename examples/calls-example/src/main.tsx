@@ -5,7 +5,7 @@ import {
   CallSurface,
   DialPad,
   PolymorfaProvider,
-} from "@polymorfa/react";
+} from "@polymorfa/ui-kit/react";
 import {
   createNumberConnection,
   hasActiveCall,

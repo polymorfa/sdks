@@ -51,7 +51,7 @@ example credentials. The browser receives an opaque, HttpOnly, SameSite cookie;
 it cannot choose the session, customer, or ephemeral ID sent to Polymorfa.
 POST requests check the exact application origin. Logout revokes the server-side
 application session immediately. Token responses are marked `no-store` and
-include the grant consumed by `definePolymorfa`.
+include the grant consumed by `defineUiKit`.
 
 The login and bounded in-memory session store are for this loopback example.
 Replace them with your application's durable authentication and live

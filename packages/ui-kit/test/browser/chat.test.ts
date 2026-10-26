@@ -1,0 +1,368 @@
+import { describe, expect, it, vi } from "vitest";
+
+import {
+  ConversationController,
+  MessageComposerController,
+  createConversationComposerActions,
+  localAttachmentFromFile,
+  type ConversationDataSource,
+  type ConversationEvent,
+} from "../../src/browser/index.js";
+
+const message = (id: string, text = id) => ({
+  id,
+  text,
+  createdAt: 1,
+  direction: "inbound" as const,
+  status: "sent" as const,
+});
+
+function fixtureSource() {
+  let listener: ((event: ConversationEvent) => void) | undefined;
+  const unsubscribe = vi.fn();
+  const source: ConversationDataSource = {
+    load: vi.fn(async (cursor?: string) =>
+      cursor
+        ? { messages: [message("older")] }
+        : { messages: [], nextCursor: "next" },
+    ),
+    subscribe: vi.fn((next) => {
+      listener = next;
+      return unsubscribe;
+    }),
+    send: vi.fn(async (draft) => ({
+      ...message("server-1", draft.text),
+      direction: "outbound" as const,
+      clientId: draft.clientId,
+    })),
+  };
+  return {
+    source,
+    emit: (event: ConversationEvent) => listener?.(event),
+    unsubscribe,
+  };
+}
+
+describe("ConversationController", () => {
+  it("treats empty application history as ready and paginates", async () => {
+    const fixture = fixtureSource();
+    const controller = new ConversationController(fixture.source);
+    await controller.load();
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ready",
+      messages: [],
+      hasMore: true,
+    });
+    await controller.loadMore();
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "ready",
+      hasMore: false,
+    });
+    expect(controller.getSnapshot().messages.map(({ id }) => id)).toEqual([
+      "older",
+    ]);
+  });
+
+  it("merges subscription updates and deduplicates acknowledgements", async () => {
+    const fixture = fixtureSource();
+    const controller = new ConversationController(fixture.source, {
+      createClientId: () => "client-1",
+    });
+    await controller.load();
+    const sending = controller.send({ text: "hello" });
+    expect(controller.getSnapshot().messages[0]).toMatchObject({
+      clientId: "client-1",
+      status: "pending",
+    });
+    fixture.emit({ type: "upsert", message: message("incoming") });
+    await sending;
+    fixture.emit({
+      type: "upsert",
+      message: { ...message("server-1", "hello"), clientId: "client-1" },
+    });
+    expect(
+      controller
+        .getSnapshot()
+        .messages.map(({ id }) => id)
+        .sort(),
+    ).toEqual(["incoming", "server-1"]);
+  });
+
+  it("marks failed sends, retries them, and tears down", async () => {
+    const fixture = fixtureSource();
+    vi.mocked(fixture.source.send).mockRejectedValueOnce(new Error("offline"));
+    const controller = new ConversationController(fixture.source, {
+      createClientId: () => "client-1",
+    });
+    await controller.load();
+    await controller.send({ text: "hello" });
+    expect(controller.getSnapshot().messages[0]).toMatchObject({
+      status: "failed",
+      error: "offline",
+    });
+    await controller.retry("client-1");
+    expect(controller.getSnapshot().messages[0]).toMatchObject({
+      id: "server-1",
+      status: "sent",
+    });
+    controller.dispose();
+    expect(fixture.unsubscribe).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("MessageComposerController", () => {
+  it("manages reply context, upload progress, send locking, and resets after send", async () => {
+    const upload = vi.fn(
+      async (_attachment, progress: (value: number) => void) => {
+        progress(0.5);
+        return {
+          id: "media-1",
+          name: "photo.png",
+          size: 10,
+          contentType: "image/png",
+        };
+      },
+    );
+    let resolveSend!: () => void;
+    const send = vi.fn(
+      () => new Promise<void>((resolve) => (resolveSend = resolve)),
+    );
+    const controller = new MessageComposerController({ upload, send });
+    controller.setText("hello");
+    controller.setReplyTo("message-1");
+    await controller.addAttachment({
+      id: "local-1",
+      name: "photo.png",
+      size: 10,
+      contentType: "image/png",
+    });
+    expect(controller.getSnapshot().attachments[0]).toMatchObject({
+      status: "ready",
+      progress: 1,
+    });
+    const submitting = controller.submit();
+    expect(controller.getSnapshot().sending).toBe(true);
+    await expect(controller.submit()).rejects.toThrow("already sending");
+    resolveSend();
+    await submitting;
+    expect(controller.getSnapshot()).toMatchObject({
+      text: "",
+      attachments: [],
+      sending: false,
+    });
+    expect(controller.getSnapshot().replyTo).toBeUndefined();
+    expect(send).toHaveBeenCalledWith(
+      {
+        text: "hello",
+        replyTo: "message-1",
+        attachments: [
+          {
+            id: "media-1",
+            name: "photo.png",
+            size: 10,
+            contentType: "image/png",
+          },
+        ],
+      },
+      expect.any(AbortSignal),
+    );
+  });
+
+  it("validates drafts and cancels in-flight uploads", async () => {
+    const upload = vi.fn(
+      (_attachment, _progress, signal: AbortSignal) =>
+        new Promise<never>((_resolve, reject) =>
+          signal.addEventListener("abort", () =>
+            reject(new Error("cancelled")),
+          ),
+        ),
+    );
+    const controller = new MessageComposerController(
+      { upload, send: vi.fn(async () => undefined) },
+      { maxTextLength: 3 },
+    );
+    controller.setText("long");
+    await expect(controller.submit()).rejects.toThrow("3 characters");
+    expect(controller.getSnapshot()).toMatchObject({
+      status: "error",
+      error: "Message text cannot exceed 3 characters.",
+    });
+    const pending = controller.addAttachment({
+      id: "local-1",
+      name: "a.txt",
+      size: 1,
+      contentType: "text/plain",
+    });
+    controller.cancelAttachment("local-1");
+    await pending;
+    expect(controller.getSnapshot().attachments).toEqual([]);
+  });
+});
+
+describe("composer and conversation wiring", () => {
+  it("describes a file as a local attachment that keeps its bytes", () => {
+    const file = new File(["hello"], "note.txt", { type: "text/plain" });
+    const attachment = localAttachmentFromFile(file, () => "local-1");
+    expect(attachment).toEqual({
+      id: "local-1",
+      name: "note.txt",
+      size: 5,
+      contentType: "text/plain",
+      file,
+    });
+    const untyped = localAttachmentFromFile(new File(["x"], "blob"));
+    expect(untyped.contentType).toBe("application/octet-stream");
+    expect(typeof untyped.id).toBe("string");
+  });
+
+  it("sends composer drafts through the shared conversation", async () => {
+    const fixture = fixtureSource();
+    const conversation = new ConversationController(fixture.source, {
+      createClientId: () => "client-1",
+    });
+    await conversation.load();
+    const upload = vi.fn(async (local: { id: string; file?: Blob }) => ({
+      id: `up-${local.id}`,
+      name: "photo.png",
+      size: 3,
+      contentType: "image/png",
+      url: "https://cdn.example/photo.png",
+    }));
+    const composer = new MessageComposerController(
+      createConversationComposerActions(conversation, upload),
+    );
+    const file = new File(["abc"], "photo.png", { type: "image/png" });
+    await composer.addAttachment(localAttachmentFromFile(file, () => "a1"));
+    expect(upload.mock.calls[0]?.[0].file).toBe(file);
+    composer.setText("look");
+    composer.setReplyTo("older");
+    await composer.submit();
+    expect(fixture.source.send).toHaveBeenCalledWith(
+      {
+        clientId: "client-1",
+        text: "look",
+        replyTo: "older",
+        attachments: [
+          {
+            id: "up-a1",
+            name: "photo.png",
+            size: 3,
+            contentType: "image/png",
+            url: "https://cdn.example/photo.png",
+          },
+        ],
+      },
+      expect.anything(),
+    );
+    expect(conversation.getSnapshot().messages[0]).toMatchObject({
+      clientId: "client-1",
+      status: "sent",
+    });
+    expect(composer.getSnapshot()).toMatchObject({ text: "", attachments: [] });
+  });
+
+  it("omits empty reply and attachment fields", async () => {
+    const fixture = fixtureSource();
+    const conversation = new ConversationController(fixture.source, {
+      createClientId: () => "client-2",
+    });
+    await conversation.load();
+    const actions = createConversationComposerActions(conversation, vi.fn());
+    await actions.send(
+      { text: "plain", attachments: [] },
+      new AbortController().signal,
+    );
+    expect(fixture.source.send).toHaveBeenCalledWith(
+      { clientId: "client-2", text: "plain" },
+      expect.anything(),
+    );
+  });
+
+  it("forwards composer cancellation to the conversation request", async () => {
+    const fixture = fixtureSource();
+    let received: AbortSignal | undefined;
+    fixture.source.send = vi.fn(
+      (_draft, signal?: AbortSignal) =>
+        new Promise<never>((_resolve, reject) => {
+          received = signal;
+          signal?.addEventListener("abort", () => reject(new Error("aborted")));
+        }),
+    );
+    const conversation = new ConversationController(fixture.source, {
+      createClientId: () => "client-3",
+    });
+    await conversation.load();
+    const composer = new MessageComposerController(
+      createConversationComposerActions(conversation, vi.fn()),
+    );
+    composer.setText("stop me");
+    const sending = composer.submit();
+    await Promise.resolve();
+    expect(received?.aborted).toBe(false);
+    composer.cancelSend();
+    expect(received?.aborted).toBe(true);
+    await sending;
+    expect(conversation.getSnapshot().messages[0]).toMatchObject({
+      clientId: "client-3",
+      status: "failed",
+      error: "Message send was cancelled.",
+    });
+  });
+});
+
+it("keeps a failed composer draft and retries the same operation; edits create a new operation", async () => {
+  const fixture = fixtureSource();
+  vi.mocked(fixture.source.send).mockRejectedValueOnce(new Error("offline"));
+  let sequence = 0;
+  const conversation = new ConversationController(fixture.source, {
+    createClientId: () => `op-${++sequence}`,
+  });
+  await conversation.load();
+  const composer = new MessageComposerController(
+    createConversationComposerActions(conversation, vi.fn()),
+  );
+  composer.setText("Keep my draft");
+  composer.setReplyTo("original");
+  await composer.submit();
+  expect(composer.getSnapshot()).toMatchObject({
+    text: "Keep my draft",
+    replyTo: "original",
+    error: "offline",
+  });
+  await composer.submit();
+  expect(
+    vi.mocked(fixture.source.send).mock.calls.map((call) => call[0].clientId),
+  ).toEqual(["op-1", "op-1"]);
+  expect(composer.getSnapshot().text).toBe("");
+  vi.mocked(fixture.source.send).mockRejectedValueOnce(new Error("offline"));
+  composer.setText("another");
+  await composer.submit();
+  composer.setText("edited");
+  await composer.submit();
+  expect(
+    vi
+      .mocked(fixture.source.send)
+      .mock.calls.slice(-2)
+      .map((call) => call[0].clientId),
+  ).toEqual(["op-2", "op-3"]);
+  composer.dispose();
+  conversation.dispose();
+});
+
+it("ignores stale history that resolves after a newer load", async () => {
+  const fixture = fixtureSource();
+  let complete!: (value: { messages: ReturnType<typeof message>[] }) => void;
+  vi.mocked(fixture.source.load).mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        complete = resolve;
+      }),
+  );
+  const conversation = new ConversationController(fixture.source);
+  const stale = conversation.load();
+  await conversation.load();
+  complete({ messages: [message("stale")] });
+  await stale;
+  expect(conversation.getSnapshot().messages).toEqual([]);
+  conversation.dispose();
+});

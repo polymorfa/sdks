@@ -1,4 +1,4 @@
-import { definePolymorfaElements } from "@polymorfa/elements";
+import { definePolymorfaElements } from "@polymorfa/ui-kit/web-components";
 definePolymorfaElements();
 let disposeInbox;
 // Only receipts the host observed from message.ack become chat receipts. The

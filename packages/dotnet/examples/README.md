@@ -32,7 +32,7 @@ ASP.NET Core.
 
 `blazor-wasm` is a runnable same-origin WebAssembly host. Run `dotnet publish packages/dotnet/examples/blazor-wasm/Polymorfa.Example.Blazor.csproj --configuration Release --output packages/dotnet/examples/blazor-wasm/bin/served` and `node packages/dotnet/examples/prepare-blazor.mjs` from the repository root. Start ASP.NET Core, sign in at `/`, then open `/blazor/`. It uses the authenticated ASP.NET Core token endpoint and server-owned API configuration above. The WebAssembly host is checked in a browser against local API fixtures.
 
-Use one mounted component per browser client. Install and bundle the same accepted TypeScript package version as the owning release. These integrations reuse `@polymorfa/elements`; they do not implement another messaging or calling UI.
+Use one mounted component per browser client. Install and bundle the same accepted TypeScript package version as the owning release. These integrations reuse `@polymorfa/ui-kit/web-components`; they do not implement another messaging or calling UI.
 
 ## MAUI Blazor Hybrid
 

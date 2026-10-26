@@ -1,4 +1,4 @@
-import type { MessageAttachment } from "@polymorfa/browser";
+import type { MessageAttachment } from "@polymorfa/ui-kit";
 
 import { desk } from "../../../../lib/desk/data.js";
 import type { SendInput } from "../../../../lib/desk/types.js";
