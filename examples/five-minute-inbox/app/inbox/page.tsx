@@ -1,5 +1,5 @@
 "use client";
-import { Inbox, PolymorfaProvider } from "@polymorfa/react";
+import { Inbox, PolymorfaProvider } from "@polymorfa/ui-kit/react";
 
 export default function InboxPage() {
   return (

@@ -2,7 +2,7 @@ import {
   createBrowserCalls,
   type BrowserCalls,
   type BrowserCallsOptions,
-} from "@polymorfa/browser";
+} from "@polymorfa/ui-kit";
 
 export interface NumberConnection {
   readonly id: string;

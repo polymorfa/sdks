@@ -1,4 +1,4 @@
-import type { MessageAttachment } from "@polymorfa/browser";
+import type { MessageAttachment } from "@polymorfa/ui-kit";
 
 import type { Operator } from "../auth.js";
 import { InputError } from "../route.js";

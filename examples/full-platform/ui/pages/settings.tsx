@@ -249,7 +249,7 @@ export function SettingsPage() {
       <Card title="Developer">
         <div className="setting">
           <div>
-            <span className="setting-label">Web Components</span>
+            <span className="setting-label">UI Kit web components</span>
             <p className="muted small">
               The same chat and template controllers as framework-free custom
               elements.

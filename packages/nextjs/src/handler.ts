@@ -803,7 +803,7 @@ function eventAllowed(event: RelayEvent, grant: PolymorfaGrant): boolean {
   );
 }
 
-/** The conversation an event belongs to, as `@polymorfa/store` reads it. */
+/** The conversation an event belongs to, as `@polymorfa/ui-kit/store` reads it. */
 export function conversationOf(event: RelayEvent): string | undefined {
   const payload = event.payload as
     | { conversation?: { id?: unknown }; from?: { id?: unknown } }
