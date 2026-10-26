@@ -182,15 +182,17 @@ type BanSafeIncidentReceipt struct {
 	OccurredAt string `json:"occurredAt"`
 }
 type BanSafeClaimEvidence struct {
-	SimultaneousCalls      bool `json:"simultaneousCalls"`
-	AttributionRuleVersion *int `json:"attributionRuleVersion"`
-	WindowDays             int  `json:"windowDays"`
-	DeviceEvidence         bool `json:"deviceEvidence"`
-	OtherDevices           int  `json:"otherDevices"`
-	RestrictedInWindow     bool `json:"restrictedInWindow"`
-	CriticalFindingDays    int  `json:"criticalFindingDays"`
-	SharedConnection       bool `json:"sharedConnection"`
-	MeasuredHours          int  `json:"measuredHours"`
+	SimultaneousCalls       bool `json:"simultaneousCalls"`
+	LinkedDeviceInteractive bool `json:"linkedDeviceInteractive"`
+	ReferralGroupSend       bool `json:"referralGroupSend"`
+	AttributionRuleVersion  *int `json:"attributionRuleVersion"`
+	WindowDays              int  `json:"windowDays"`
+	DeviceEvidence          bool `json:"deviceEvidence"`
+	OtherDevices            int  `json:"otherDevices"`
+	RestrictedInWindow      bool `json:"restrictedInWindow"`
+	CriticalFindingDays     int  `json:"criticalFindingDays"`
+	SharedConnection        bool `json:"sharedConnection"`
+	MeasuredHours           int  `json:"measuredHours"`
 }
 type BanSafeClaim struct {
 	ID            string               `json:"id"`

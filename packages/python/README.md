@@ -827,6 +827,13 @@ when the 30-day claim window overlaps an enabled period. Claim verdicts and
 `bansafe.claim` webhook verdicts recognize `simultaneous_calls`. Claim evidence
 includes `simultaneousCalls`; the webhook does not acquire an evidence object.
 
+Ban Credit claims also recognize `linked_device_interactive` (the Number sent
+an interactive message from a linked device in the 30 days before the ban) and
+`referral_group_send` (it posted a referral message to WhatsApp groups in that
+window), on claim reads and `bansafe.claim` webhooks. Both open `denied` with
+amount 0. Claim evidence includes `linkedDeviceInteractive` and
+`referralGroupSend`; claims filed before these were recorded report `false`.
+
 No browser/client-token authority, call media behavior, automatic state read,
 retry policy or feature availability is added by these SDK fields.
 

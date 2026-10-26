@@ -342,6 +342,6 @@ fn simultaneous_claim_verdicts_and_evidence() {
         serde_json::to_value(webhook).unwrap(),
         json!("simultaneous_calls")
     );
-    let evidence: polymorfa_sdk::bansafe::ClaimEvidence = serde_json::from_value(json!({"attributionRuleVersion":null,"windowDays":30,"deviceEvidence":false,"otherDevices":0,"restrictedInWindow":false,"criticalFindingDays":0,"sharedConnection":false,"simultaneousCalls":true,"measuredHours":0})).unwrap();
+    let evidence: polymorfa_sdk::bansafe::ClaimEvidence = serde_json::from_value(json!({"attributionRuleVersion":null,"windowDays":30,"deviceEvidence":false,"otherDevices":0,"restrictedInWindow":false,"criticalFindingDays":0,"sharedConnection":false,"simultaneousCalls":true,"linkedDeviceInteractive":false,"referralGroupSend":false,"measuredHours":0})).unwrap();
     assert!(evidence.simultaneous_calls);
 }

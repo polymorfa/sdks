@@ -1267,7 +1267,19 @@ export type BanSafeClaimVerdict =
    * Simultaneous calls were on for the number during the 30 days before the
    * ban. The claim opens `denied` with amount 0 and cannot be approved.
    */
-  | "simultaneous_calls";
+  | "simultaneous_calls"
+  /**
+   * The number sent an interactive message from a linked device during the 30
+   * days before the ban. Ban Credit does not cover it: the claim opens `denied`
+   * with amount 0 and cannot be approved.
+   */
+  | "linked_device_interactive"
+  /**
+   * The number posted a referral message to WhatsApp groups during the 30 days
+   * before the ban. Ban Credit does not cover it: the claim opens `denied` with
+   * amount 0 and cannot be approved.
+   */
+  | "referral_group_send";
 
 export interface BanSafeClaimEvidence {
   readonly attributionRuleVersion: number | null;
@@ -1284,6 +1296,19 @@ export interface BanSafeClaimEvidence {
    * when filed.
    */
   readonly simultaneousCalls: boolean;
+  /**
+   * Whether this number sent an interactive message (buttons, lists, product
+   * messages, Flows and similar) from a linked device inside the window. When
+   * `true`, Ban Credit does not cover the ban and the claim is denied when
+   * filed. `false` for claims filed before this was recorded.
+   */
+  readonly linkedDeviceInteractive: boolean;
+  /**
+   * Whether this number posted a referral message to WhatsApp groups inside
+   * the window. When `true`, Ban Credit does not cover the ban and the claim is
+   * denied when filed. `false` for claims filed before this was recorded.
+   */
+  readonly referralGroupSend: boolean;
 }
 
 export interface BanSafeClaim {
