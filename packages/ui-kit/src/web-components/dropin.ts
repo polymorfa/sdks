@@ -8,6 +8,8 @@ import {
   warnInvalidQuickLink,
   createHandlerInboxSource,
   warnMissingPermission,
+  type ContactDirectorySource,
+  type GroupSource,
   type InboxConversation,
   type InboxDataSource,
   type InboxSnapshot,
@@ -33,15 +35,19 @@ import {
   type ElementConfiguration,
 } from "./base.js";
 import { defineCallElements } from "./calls.js";
+import { ClientElement, defaults, hue, icon, initials } from "./client.js";
 import {
   PolymorfaComposeBoxElement,
   PolymorfaMessageListElement,
   defineChatElements,
 } from "./chat.js";
 import { defineTemplateElements } from "./templates.js";
+import {
+  PolymorfaGroupDetailsElement,
+  PolymorfaNewChatElement,
+  defineContactElements,
+} from "./contacts.js";
 
-let defaultClient: PolymorfaClient | undefined;
-let defaultConfiguration: ElementConfiguration | undefined;
 
 export interface DefineUiKitOptions {
   /** Your handler's token route. Default `/api/polymorfa/token`. */
@@ -60,7 +66,7 @@ export interface DefineUiKitOptions {
  * `<pmfa-session-status>` use that client unless given their own.
  */
 export function defineUiKit(options: DefineUiKitOptions = {}): PolymorfaClient {
-  defaultClient?.dispose();
+  defaults.client?.dispose();
   const client =
     options.client ??
     new PolymorfaClient(
@@ -69,8 +75,8 @@ export function defineUiKit(options: DefineUiKitOptions = {}): PolymorfaClient {
         : { tokenEndpoint: options.tokenEndpoint },
     );
   client.start();
-  defaultClient = client;
-  defaultConfiguration = {
+  defaults.client = client;
+  defaults.configuration = {
     ...(options.appearance === undefined
       ? {}
       : { appearance: options.appearance }),
@@ -95,88 +101,10 @@ export function defineDropInElements(
     registry.define("pmfa-session-status", PolymorfaSessionStatusElement);
   if (registry.get("pmfa-quicklink-button") === undefined)
     registry.define("pmfa-quicklink-button", PolymorfaQuickLinkButtonElement);
+  defineContactElements(registry);
 }
 
-function icon(name: ChatIconName): SVGSVGElement {
-  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-  svg.setAttribute("class", "pmfa-icon");
-  svg.setAttribute("viewBox", "0 0 24 24");
-  svg.setAttribute("fill", "none");
-  svg.setAttribute("stroke", "currentColor");
-  svg.setAttribute("stroke-width", "2");
-  svg.setAttribute("stroke-linecap", "round");
-  svg.setAttribute("stroke-linejoin", "round");
-  svg.setAttribute("aria-hidden", "true");
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("d", CHAT_ICONS[name]);
-  svg.append(path);
-  return svg;
-}
 
-/** Shared base: a provider client, its permissions and one warning each. */
-abstract class ClientElement<T extends object> extends PolymorfaElement<T> {
-  #client: PolymorfaClient | undefined;
-  #unsubscribeClient: (() => void) | undefined;
-  #configured = false;
-
-  /** Defaults to the client from `defineUiKit()`. */
-  get client(): PolymorfaClient | undefined {
-    return this.#client ?? defaultClient;
-  }
-  set client(value: PolymorfaClient | undefined) {
-    this.#unbindClient();
-    this.#client = value;
-    if (this.isConnected) this.#bindClient();
-    this.render();
-  }
-
-  override connectedCallback(): void {
-    if (!this.#configured && defaultConfiguration !== undefined) {
-      this.#configured = true;
-      this.configuration = { ...defaultConfiguration, ...this.configuration };
-    }
-    this.#bindClient();
-    super.connectedCallback();
-  }
-  override disconnectedCallback(): void {
-    super.disconnectedCallback();
-    this.#unbindClient();
-  }
-
-  protected clientSnapshot(): PolymorfaClientSnapshot | undefined {
-    return this.client?.getSnapshot();
-  }
-  /** Whether a control may render; warns once when a minted grant lacks it. */
-  protected allowed(
-    component: string,
-    control: string,
-    permission: PolymorfaPermission,
-  ): boolean {
-    const snapshot = this.clientSnapshot();
-    if (snapshot === undefined) return false;
-    const allowed = snapshot.grant?.allow.includes(permission) === true;
-    if (!allowed && snapshot.grant !== undefined)
-      warnMissingPermission(component, control, permission);
-    return allowed;
-  }
-  protected onClientChange(): void {
-    this.render();
-  }
-
-  #bindClient(): void {
-    const client = this.client;
-    if (client === undefined || this.#unsubscribeClient !== undefined) return;
-    try {
-      this.#unsubscribeClient = client.subscribe(() => this.onClientChange());
-    } catch {
-      // Disposed client.
-    }
-  }
-  #unbindClient(): void {
-    this.#unsubscribeClient?.();
-    this.#unsubscribeClient = undefined;
-  }
-}
 
 /** `<pmfa-connect-whatsapp>`: opens Polymorfa's hosted QuickLink page. */
 export class PolymorfaConnectWhatsAppElement extends ClientElement<object> {
@@ -270,9 +198,9 @@ export class PolymorfaQuickLinkButtonElement extends PolymorfaElement<object> {
   }
 
   override connectedCallback(): void {
-    if (!this.#configured && defaultConfiguration !== undefined) {
+    if (!this.#configured && defaults.configuration !== undefined) {
       this.#configured = true;
-      this.configuration = { ...defaultConfiguration, ...this.configuration };
+      this.configuration = { ...defaults.configuration, ...this.configuration };
     }
     super.connectedCallback();
   }
@@ -357,6 +285,40 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
   #shellGeneration = -1;
   #query = "";
   #filter: InboxFilter = "all";
+  #contacts: ContactDirectorySource | undefined;
+  #groups: GroupSource | undefined;
+  #composing = false;
+  #newChat: PolymorfaNewChatElement | undefined;
+  #infoOpen = false;
+  #info: PolymorfaGroupDetailsElement | undefined;
+
+  static get observedAttributes(): string[] {
+    return ["self-id", "no-new-chat"];
+  }
+  attributeChangedCallback(): void {
+    this.render();
+  }
+
+  /** Contacts for "New chat" and adding group members. Defaults to the API. */
+  get contacts(): ContactDirectorySource | undefined {
+    return this.#contacts;
+  }
+  set contacts(value: ContactDirectorySource | undefined) {
+    this.#contacts = value;
+    this.#newChat = undefined;
+    this.#info = undefined;
+    this.render();
+  }
+  /** Group reads and changes. Defaults to the API (`groups_read`, `groups_manage`). */
+  get groups(): GroupSource | undefined {
+    return this.#groups;
+  }
+  set groups(value: GroupSource | undefined) {
+    this.#groups = value;
+    this.#newChat = undefined;
+    this.#info = undefined;
+    this.render();
+  }
 
   get source(): InboxDataSource | undefined {
     return this.#source;
@@ -442,13 +404,37 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
     const shell = this.#shell;
     shell.className = this.rootClass("pmfa-inbox");
     this.decorate(shell, "inbox");
-    const selected = snapshot?.conversations.find(
-      (conversation) => conversation.id === snapshot.selectedId,
-    );
+    const selected =
+      snapshot?.conversations.find(
+        (conversation) => conversation.id === snapshot.selectedId,
+      ) ??
+      (snapshot?.draft !== undefined &&
+      snapshot.draft.id === snapshot.selectedId
+        ? snapshot.draft
+        : undefined);
     shell.dataset.view = selected === undefined ? "list" : "thread";
-    this.#renderList(snapshot, controller);
     const thread = this.#renderThread(selected, controller);
-    shell.replaceChildren(this.#list!, thread);
+    const children: Node[] = [];
+    const newChat =
+      this.#composing && controller !== undefined
+        ? this.#renderNewChat(controller)
+        : undefined;
+    if (newChat !== undefined) children.push(newChat);
+    else {
+      this.#composing = false;
+      this.#renderList(snapshot, controller);
+      children.push(this.#list!);
+    }
+    children.push(thread);
+    const info =
+      this.#infoOpen && selected?.kind === "group"
+        ? this.#renderGroupInfo(selected)
+        : undefined;
+    if (info !== undefined) {
+      shell.dataset.contactOpen = "";
+      children.push(info);
+    } else delete shell.dataset.contactOpen;
+    shell.replaceChildren(...children);
     return [shell];
   }
 
@@ -471,9 +457,26 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
     const filterFocused = active?.dataset.inboxFilter;
     const head = element("div");
     head.className = "pmfa-inbox-head";
+    const heading = element("div");
+    heading.className = "pmfa-inbox-heading";
     const title = textElement("h2", this.text("inbox.title"));
     title.className = "pmfa-inbox-title";
-    head.append(title);
+    heading.append(title);
+    if (this.#canNewChat()) {
+      const start = document.createElement("button");
+      start.type = "button";
+      start.className = "pmfa-btn pmfa-btn-ghost pmfa-btn-icon";
+      start.dataset.inboxNewChat = "";
+      start.setAttribute("aria-label", this.text("inbox.newChat"));
+      start.title = this.text("inbox.newChat");
+      start.append(icon("plus"));
+      start.addEventListener("click", () => {
+        this.#composing = true;
+        this.render();
+      });
+      heading.append(start);
+    }
+    head.append(heading);
     const search = element("div");
     search.className = "pmfa-search";
     const input = document.createElement("input");
@@ -717,6 +720,93 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
     return item;
   }
 
+  #canNewChat(): boolean {
+    if (this.hasAttribute("no-new-chat")) return false;
+    return (
+      this.#contacts !== undefined ||
+      this.clientSnapshot()?.grant?.allow.includes("read_contact") === true
+    );
+  }
+
+  #canGroups(): boolean {
+    return (
+      this.#groups !== undefined ||
+      this.clientSnapshot()?.grant?.allow.includes("groups_read") === true
+    );
+  }
+
+  #renderNewChat(controller: InboxController): HTMLElement | undefined {
+    if (!this.#canNewChat()) return undefined;
+    if (this.#newChat === undefined) {
+      const panel = document.createElement(
+        "pmfa-new-chat",
+      ) as PolymorfaNewChatElement;
+      panel.setAttribute("closable", "");
+      panel.configuration = this.configuration;
+      if (this.client !== undefined) panel.client = this.client;
+      if (this.#contacts !== undefined) panel.contacts = this.#contacts;
+      if (this.#groups !== undefined) panel.groups = this.#groups;
+      panel.className = "pmfa-inbox-newchat";
+      panel.addEventListener("pmfa-open", (event) => {
+        event.stopPropagation();
+        const conversation = (event as CustomEvent<InboxConversation>).detail;
+        controller.open(conversation);
+        this.#composing = false;
+        this.#infoOpen = false;
+        this.render();
+        this.dispatchEvent(
+          new CustomEvent("pmfa-select", {
+            detail: conversation,
+            bubbles: true,
+            composed: true,
+          }),
+        );
+      });
+      panel.addEventListener("pmfa-close", (event) => {
+        event.stopPropagation();
+        this.#composing = false;
+        this.render();
+        queueMicrotask(() =>
+          this.root
+            .querySelector<HTMLElement>("[data-inbox-new-chat]")
+            ?.focus(),
+        );
+      });
+      this.#newChat = panel;
+    }
+    return this.#newChat;
+  }
+
+  #renderGroupInfo(conversation: InboxConversation): HTMLElement | undefined {
+    if (!this.#canGroups()) return undefined;
+    let info = this.#info;
+    if (info === undefined || info.getAttribute("group-id") !== conversation.id) {
+      info = document.createElement(
+        "pmfa-group-details",
+      ) as PolymorfaGroupDetailsElement;
+      info.setAttribute("closable", "");
+      info.configuration = this.configuration;
+      if (this.client !== undefined) info.client = this.client;
+      if (this.#groups !== undefined) info.source = this.#groups;
+      if (this.#contacts !== undefined) info.contacts = this.#contacts;
+      info.setAttribute("group-id", conversation.id);
+      info.className = "pmfa-inbox-group";
+      info.addEventListener("pmfa-close", (event) => {
+        event.stopPropagation();
+        this.#infoOpen = false;
+        this.render();
+        queueMicrotask(() =>
+          this.root.querySelector<HTMLElement>("[data-group-info]")?.focus(),
+        );
+      });
+      this.#info = info;
+    }
+    const self = this.getAttribute("self-id");
+    if (self === null) info.removeAttribute("self-id");
+    else info.setAttribute("self-id", self);
+    return info;
+  }
+
   #renderThread(
     conversation: InboxConversation | undefined,
     controller: InboxController | undefined,
@@ -735,7 +825,7 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
       return empty;
     }
     const canSend = this.#can("send_message", "composer");
-    const key = `${conversation.id}:${canSend}`;
+    const key = `${conversation.id}:${canSend}:${conversation.kind ?? ""}:${this.#canGroups()}`;
     if (this.#thread !== undefined && this.#threadFor === key)
       return this.#thread;
     this.#threadFor = key;
@@ -770,6 +860,31 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
       who.append(sub);
     }
     header.append(back, who);
+    if (conversation.kind === "group" && this.#canGroups()) {
+      const actions = element("div");
+      actions.className = "pmfa-thread-actions";
+      const toggle = this.decorate(document.createElement("button"), "button");
+      toggle.type = "button";
+      toggle.className = "pmfa-btn pmfa-btn-ghost pmfa-btn-icon";
+      toggle.dataset.groupInfo = "";
+      toggle.title = this.text("group.info");
+      const sync = () => {
+        toggle.setAttribute("aria-expanded", String(this.#infoOpen));
+        toggle.setAttribute(
+          "aria-label",
+          this.text(this.#infoOpen ? "group.hideInfo" : "group.showInfo"),
+        );
+      };
+      sync();
+      toggle.append(icon("info"));
+      toggle.addEventListener("click", () => {
+        this.#infoOpen = !this.#infoOpen;
+        sync();
+        this.render();
+      });
+      actions.append(toggle);
+      header.append(actions);
+    }
     const configuration = this.configuration;
     const messages = document.createElement(
       "pmfa-message-list",
@@ -808,28 +923,11 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
   }
 }
 
-function initials(name: string): string {
-  const letters = name
-    .replace(/[^\p{L}\p{N}\s]/gu, " ")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((word) => Array.from(word)[0] ?? "");
-  const first = letters[0] ?? "";
-  const last = letters.length > 1 ? (letters[letters.length - 1] ?? "") : "";
-  return (first + last).toUpperCase() || "#";
-}
 
-function hue(id: string): number {
-  let hash = 0;
-  for (const character of id)
-    hash = Math.imul(hash ^ character.charCodeAt(0), 2654435761);
-  return Math.round(Math.abs(hash % 360) * 137.508) % 360;
-}
 
 /** @internal Clears the `defineUiKit()` client, for tests. */
 export function resetDefineUiKit(): void {
-  defaultClient?.dispose();
-  defaultClient = undefined;
-  defaultConfiguration = undefined;
+  defaults.client?.dispose();
+  defaults.client = undefined;
+  defaults.configuration = undefined;
 }

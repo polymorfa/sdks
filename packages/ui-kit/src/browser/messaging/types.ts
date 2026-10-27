@@ -246,3 +246,47 @@ export type BrowserRequestOptions = Pick<
   BrowserRequest,
   "signal" | "timeoutMs" | "maxNetworkRetries" | "idempotencyKey" | "headers"
 >;
+
+/** A group member. `id` is the stable Polymorfa user ID. */
+export interface BrowserGroupParticipant {
+  readonly id: string;
+  readonly phoneNumber?: string;
+  readonly bsuid?: string;
+  readonly username?: string;
+  readonly isAdmin: boolean;
+  readonly isSuperAdmin: boolean;
+}
+
+/** A WhatsApp group as the API reports it. The API reports no settings state. */
+export interface BrowserGroup {
+  /** Opaque Polymorfa group ID; also the group conversation's ID. */
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly ownerId: string;
+  /** Unix seconds. */
+  readonly createdAt: number;
+  readonly participants: readonly BrowserGroupParticipant[];
+}
+
+export interface BrowserGroupInviteInfo {
+  readonly id: string;
+  readonly subject: string;
+  readonly creatorId: string;
+  readonly createdAt: number;
+  readonly size: number;
+  readonly participants: readonly BrowserGroupParticipant[];
+}
+
+export interface BrowserGroupInviteCode {
+  readonly code: string;
+}
+
+export interface BrowserCreateGroupRequest {
+  readonly name: string;
+  /** 1 to 256 stable user IDs. */
+  readonly participants: readonly string[];
+}
+
+/** Who may add participants. */
+export type BrowserGroupMemberAddMode = "admin_add" | "all_member_add";

@@ -1,5 +1,6 @@
 export {
   BrowserContactsResource,
+  BrowserGroupsResource,
   BrowserMessagingClient,
   BrowserMessagesResource,
   BrowserPresenceResource,

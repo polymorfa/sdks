@@ -14,6 +14,8 @@ import type { PolymorfaClient } from "./client.js";
 /** One row of the conversation list. */
 export interface InboxConversation {
   readonly id: string;
+  /** `group` for a WhatsApp group. Omitted means one-to-one. */
+  readonly kind?: "direct" | "group";
   /** Session that owns the conversation; defaults to the grant's session. */
   readonly session?: string;
   readonly name?: string;
@@ -67,6 +69,7 @@ export type InboxChange =
       readonly session?: string;
       readonly name?: string;
       readonly phoneNumber?: string;
+      readonly kind?: InboxConversation["kind"];
       readonly lastMessage: NonNullable<InboxConversation["lastMessage"]>;
     }
   | { readonly type: "remove"; readonly conversationId: string };
@@ -96,6 +99,12 @@ export interface InboxSnapshot extends ControllerSnapshot {
   readonly status: "idle" | "loading" | "ready" | "loading_more" | "error";
   readonly conversations: readonly InboxConversation[];
   readonly selectedId?: string;
+  /**
+   * The selected conversation while it is not in the list yet, such as a
+   * chat just started from the contacts directory. It joins the list with
+   * its first message.
+   */
+  readonly draft?: InboxConversation;
   readonly hasMore: boolean;
   readonly cursor?: string;
   readonly error?: string;
@@ -121,17 +130,22 @@ export class InboxController extends ObservableController<InboxSnapshot> {
     this.#abort.abort();
     this.#abort = new AbortController();
     const signal = this.#abort.signal;
-    const selectedId = this.getSnapshot().selectedId;
+    const { selectedId, draft } = this.getSnapshot();
     this.transition({
       status: "loading",
       conversations: [],
       hasMore: false,
       ...(selectedId === undefined ? {} : { selectedId }),
+      ...(draft === undefined ? {} : { draft }),
     });
     try {
       const page = await this.source.listConversations(undefined, signal);
       if (signal.aborted) return;
+      const listed =
+        draft !== undefined &&
+        page.conversations.some((row) => row.id === draft.id);
       this.transition({
+        ...(draft === undefined || listed ? {} : { draft }),
         status: "ready",
         conversations: sortConversations(page.conversations).map(
           (conversation) =>
@@ -150,6 +164,7 @@ export class InboxController extends ObservableController<InboxSnapshot> {
     } catch (cause) {
       if (!signal.aborted)
         this.transition({
+          ...(draft === undefined ? {} : { draft }),
           status: "error",
           conversations: [],
           hasMore: false,
@@ -192,10 +207,11 @@ export class InboxController extends ObservableController<InboxSnapshot> {
   /** Select a conversation, or pass `undefined` to go back to the list. */
   select(conversationId: string | undefined): void {
     const current = rest(this.getSnapshot());
-    const { selectedId: _selected, ...base } = current;
+    const { selectedId: _selected, draft, ...base } = current;
     void _selected;
     this.transition({
       ...base,
+      ...(draft !== undefined && draft.id === conversationId ? { draft } : {}),
       ...(conversationId === undefined ? {} : { selectedId: conversationId }),
       // Opening a conversation clears its unread badge locally.
       conversations: base.conversations.map((conversation) =>
@@ -207,8 +223,30 @@ export class InboxController extends ObservableController<InboxSnapshot> {
   }
 
   get selected(): InboxConversation | undefined {
-    const { selectedId, conversations } = this.getSnapshot();
-    return conversations.find((conversation) => conversation.id === selectedId);
+    const { selectedId, conversations, draft } = this.getSnapshot();
+    return (
+      conversations.find((conversation) => conversation.id === selectedId) ??
+      (draft?.id === selectedId ? draft : undefined)
+    );
+  }
+
+  /**
+   * Select a conversation that may not be in the list, for example one
+   * started from the contacts directory. An existing row is selected as is.
+   */
+  open(conversation: InboxConversation): void {
+    const current = rest(this.getSnapshot());
+    if (current.conversations.some((row) => row.id === conversation.id)) {
+      this.select(conversation.id);
+      return;
+    }
+    const { draft: _draft, ...base } = current;
+    void _draft;
+    this.transition({
+      ...base,
+      selectedId: conversation.id,
+      draft: { ...conversation, unreadCount: 0 },
+    });
   }
 
   /** The shared controller for a conversation, created and loaded on first use. */
@@ -245,9 +283,13 @@ export class InboxController extends ObservableController<InboxSnapshot> {
     }
     let incoming: InboxConversation;
     if (change.type === "activity") {
-      const existing = current.conversations.find(
-        (conversation) => conversation.id === change.conversationId,
-      );
+      const existing =
+        current.conversations.find(
+          (conversation) => conversation.id === change.conversationId,
+        ) ??
+        (current.draft?.id === change.conversationId
+          ? current.draft
+          : undefined);
       incoming = {
         ...(existing ?? { id: change.conversationId, unreadCount: 0 }),
         ...(existing?.session === undefined && change.session !== undefined
@@ -260,6 +302,9 @@ export class InboxController extends ObservableController<InboxSnapshot> {
         change.phoneNumber !== undefined
           ? { phoneNumber: change.phoneNumber }
           : {}),
+        ...(existing?.kind === undefined && change.kind !== undefined
+          ? { kind: change.kind }
+          : {}),
         lastMessage: change.lastMessage,
         lastActivity: change.lastMessage.createdAt,
         unreadCount:
@@ -269,8 +314,10 @@ export class InboxController extends ObservableController<InboxSnapshot> {
     } else incoming = change.conversation;
     if (incoming.id === current.selectedId)
       incoming = { ...incoming, unreadCount: 0 };
+    const { draft, ...settled } = current;
     this.transition({
-      ...current,
+      ...settled,
+      ...(draft !== undefined && draft.id !== incoming.id ? { draft } : {}),
       conversations: sortConversations(
         merge(current.conversations, [incoming]),
       ),
@@ -540,13 +587,46 @@ function messageFromEvent(
   const time = Date.parse(
     typeof payload.timestamp === "string" ? payload.timestamp : event.timestamp,
   );
+  const fromMe = payload.fromMe === true;
+  const sender = groupSender(payload);
   return {
     conversationId,
     id,
     text,
     createdAt: Number.isFinite(time) ? time : Date.now(),
-    direction: payload.fromMe === true ? "outbound" : "inbound",
+    direction: fromMe ? "outbound" : "inbound",
     status: "sent",
+    ...(fromMe || sender === undefined ? {} : { sender }),
+  };
+}
+
+/** Whether a relayed message belongs to a group conversation. */
+function isGroupPayload(payload: Record<string, unknown> | undefined): boolean {
+  return (
+    payload?.isGroup === true ||
+    record(record(payload?.conversation)?.sender) !== undefined
+  );
+}
+
+function groupSender(
+  payload: Record<string, unknown>,
+): ConversationMessage["sender"] | undefined {
+  if (!isGroupPayload(payload)) return undefined;
+  const sender = record(record(payload.conversation)?.sender);
+  const id = sender?.id;
+  if (typeof id !== "string") return undefined;
+  const name =
+    typeof payload.pushName === "string" && payload.pushName !== ""
+      ? payload.pushName
+      : typeof payload.senderName === "string" && payload.senderName !== ""
+        ? payload.senderName
+        : undefined;
+  return {
+    id,
+    ...(name === undefined ? {} : { name }),
+    ...(typeof sender?.phoneNumber === "string"
+      ? { phoneNumber: sender.phoneNumber }
+      : {}),
   };
 }
 
@@ -574,8 +654,12 @@ function inboxChange(event: RelayedEvent): InboxChange | undefined {
   if (message === undefined) return undefined;
   const payload = record(event.payload);
   const conversation = record(payload?.conversation);
+  const group = isGroupPayload(payload);
+  // A group message's push name is the sender's, never the group's name.
   const name =
-    message.direction === "inbound" && typeof payload?.pushName === "string"
+    !group &&
+    message.direction === "inbound" &&
+    typeof payload?.pushName === "string"
       ? payload.pushName
       : undefined;
   const phone =
@@ -587,7 +671,8 @@ function inboxChange(event: RelayedEvent): InboxChange | undefined {
     conversationId: message.conversationId,
     session: event.session,
     ...(name === undefined ? {} : { name }),
-    ...(phone === undefined ? {} : { phoneNumber: phone }),
+    ...(phone === undefined || group ? {} : { phoneNumber: phone }),
+    ...(group ? { kind: "group" as const } : {}),
     lastMessage: {
       text: message.text,
       createdAt: message.createdAt,

@@ -123,9 +123,19 @@ interface ViewHost {
 }
 
 function authorName(host: ViewHost, message?: ConversationMessage): string {
-  return host.text(
-    message?.direction === "outbound" ? "chat.you" : "chat.contact",
-  );
+  if (message?.direction === "outbound") return host.text("chat.you");
+  const sender = message?.sender;
+  return sender === undefined
+    ? host.text("chat.contact")
+    : (sender.name ?? sender.phoneNumber ?? sender.id);
+}
+
+/** A stable hue per group author; matches the React message list. */
+function senderHue(id: string): number {
+  let hash = 0;
+  for (const character of id)
+    hash = Math.imul(hash ^ character.charCodeAt(0), 2654435761);
+  return Math.abs(hash) % 360;
 }
 
 function snippet(host: ViewHost, message: ConversationMessage): string {
@@ -508,6 +518,18 @@ class MessageListView {
     row.className = "pmfa-row";
     const bubble = host.decorate(element("div", "bubble"), "bubble");
     bubble.classList.add("pmfa-bubble");
+    if (!outbound && message.sender !== undefined) {
+      // Shown only on the first message of an author's run (see CSS).
+      const sender = host.decorate(
+        span("pmfa-msg-sender", authorName(host, message)),
+        "messageSender",
+      );
+      sender.style.setProperty(
+        "--pmfa-sender-hue",
+        String(senderHue(message.sender.id)),
+      );
+      bubble.append(sender);
+    }
     if (quoted !== undefined) {
       const quote = host.decorate(
         button("", "quote", () => this.jump(quoted.id), "pmfa-quote"),

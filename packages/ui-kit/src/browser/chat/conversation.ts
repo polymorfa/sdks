@@ -87,6 +87,15 @@ export interface MessageAttachment {
   readonly hd?: MediaVariant;
 }
 
+/** Who wrote a message in a group. One-to-one messages leave it out. */
+export interface MessageSender {
+  /** Stable Polymorfa user ID. */
+  readonly id: string;
+  /** The name the data source resolved, or the sender's own push name. */
+  readonly name?: string;
+  readonly phoneNumber?: string;
+}
+
 export interface ConversationMessage {
   readonly id: string;
   readonly clientId?: string;
@@ -94,6 +103,8 @@ export interface ConversationMessage {
   readonly createdAt: number;
   readonly direction: MessageDirection;
   readonly status: MessageStatus;
+  /** The author of an inbound group message. */
+  readonly sender?: MessageSender;
   /** An observed type, including media whose bytes were not retained. */
   readonly messageType?: ConversationMessageKind;
   /** Omission means available. Empty text alone never means missing content. */

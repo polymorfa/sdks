@@ -19,6 +19,11 @@ export {
 } from "./templates.js";
 export { PolymorfaCallElement, defineCallElements } from "./calls.js";
 export {
+  PolymorfaGroupDetailsElement,
+  PolymorfaNewChatElement,
+  defineContactElements,
+} from "./contacts.js";
+export {
   PolymorfaConnectWhatsAppElement,
   PolymorfaInboxElement,
   PolymorfaQuickLinkButtonElement,

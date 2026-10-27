@@ -61,6 +61,12 @@ import {
 } from "./context.js";
 import { useController, useOwnedController } from "./hooks.js";
 import { CallButton } from "./call-button.js";
+import { GroupDetails, NewChat } from "./new-chat.js";
+import {
+  createApiContactSource,
+  type ContactDirectorySource,
+  type GroupSource,
+} from "../browser/index.js";
 
 type Configuration = ReturnType<typeof usePolymorfa>;
 
@@ -800,9 +806,18 @@ function Thread({
               {...slots("button", "pmfa-btn pmfa-btn-ghost pmfa-btn-icon")}
               aria-label={text(
                 configuration,
-                contactOpen ? "inbox.hideContact" : "inbox.showContact",
+                conversation.kind === "group"
+                  ? contactOpen
+                    ? "group.hideInfo"
+                    : "group.showInfo"
+                  : contactOpen
+                    ? "inbox.hideContact"
+                    : "inbox.showContact",
               )}
-              title={text(configuration, "inbox.contact")}
+              title={text(
+                configuration,
+                conversation.kind === "group" ? "group.info" : "inbox.contact",
+              )}
               aria-expanded={contactOpen}
               onClick={onToggleContact}
             >
@@ -861,6 +876,20 @@ export interface InboxProps {
     ComposeBoxProps,
     "controller" | "createController" | "conversation"
   >;
+  /**
+   * Show "New chat" above the list. Defaults to `true`; it appears when
+   * contacts can be read (`read_contact` or a `contacts` source).
+   */
+  readonly newChat?: boolean;
+  /** Contacts for "New chat" and adding group members. Defaults to the API. */
+  readonly contacts?: ContactDirectorySource;
+  /**
+   * Group reads and changes. Defaults to the API, gated by `groups_read`
+   * and `groups_manage`.
+   */
+  readonly groups?: GroupSource;
+  /** The WhatsApp account's own user ID, when known; marks "You" in groups. */
+  readonly selfId?: string;
   readonly className?: string;
   readonly classNames?: SlotClassNames;
 }
@@ -879,6 +908,10 @@ export function Inbox({
   renderActions,
   title,
   composerProps,
+  newChat = true,
+  contacts,
+  groups,
+  selfId,
   className,
   classNames,
 }: InboxProps) {
@@ -914,12 +947,27 @@ export function Inbox({
     "contact panel",
     "read_contact",
   );
-  const canContact = contactPanel && contactAllowed;
+  const canContactPerson = contactPanel && contactAllowed;
   const canCall = permissions.can("voip_place");
   const [contactOpen, setContactOpen] = useState(false);
-  const selected = snapshot.conversations.find(
-    (conversation) => conversation.id === snapshot.selectedId,
+  const [composing, setComposing] = useState(false);
+  const selected =
+    snapshot.conversations.find(
+      (conversation) => conversation.id === snapshot.selectedId,
+    ) ??
+    (snapshot.draft !== undefined && snapshot.draft.id === snapshot.selectedId
+      ? snapshot.draft
+      : undefined);
+  const directory = useMemo(
+    () =>
+      contacts ??
+      (client !== undefined && contactAllowed
+        ? createApiContactSource(client)
+        : undefined),
+    [contacts, client, contactAllowed],
   );
+  const canNewChat = newChat && directory !== undefined;
+  const canGroup = groups !== undefined || permissions.can("groups_read");
   const latestSelect = useRef(onSelect);
   latestSelect.current = onSelect;
   const loadContact = useMemo(
@@ -952,6 +1000,8 @@ export function Inbox({
     ) : canCall && selected.phoneNumber !== undefined ? (
       <CallButton to={selected.phoneNumber} variant="icon" />
     ) : null;
+  const isGroup = selected?.kind === "group";
+  const canContact = isGroup ? contactPanel && canGroup : canContactPerson;
   const showPanel = canContact && contactOpen && selected !== undefined;
   return (
     <div
@@ -960,12 +1010,28 @@ export function Inbox({
       data-view={selected === undefined ? "list" : "thread"}
       {...(showPanel ? { "data-contact-open": "" } : {})}
     >
-      <ConversationList
-        controller={inbox}
-        {...(title === undefined ? {} : { title })}
-        {...(classNames === undefined ? {} : { classNames })}
-        onSelect={(conversation) => latestSelect.current?.(conversation)}
-      />
+      {composing && directory !== undefined ? (
+        <NewChat
+          contacts={directory}
+          {...(groups === undefined ? {} : { groups })}
+          {...(classNames === undefined ? {} : { classNames })}
+          onClose={() => setComposing(false)}
+          onOpen={(conversation) => {
+            inbox.open(conversation);
+            setComposing(false);
+            setContactOpen(false);
+            latestSelect.current?.(conversation);
+          }}
+        />
+      ) : (
+        <ConversationList
+          controller={inbox}
+          {...(title === undefined ? {} : { title })}
+          {...(classNames === undefined ? {} : { classNames })}
+          {...(canNewChat ? { onNewConversation: () => setComposing(true) } : {})}
+          onSelect={(conversation) => latestSelect.current?.(conversation)}
+        />
+      )}
       {selected === undefined ? (
         <section {...slots("thread", "pmfa-thread")} data-pmfa="thread">
           <div className="pmfa-inbox-state">
@@ -989,7 +1055,18 @@ export function Inbox({
           composerProps={composerProps}
         />
       )}
-      {showPanel && (
+      {showPanel && isGroup && (
+        <GroupDetails
+          key={selected.id}
+          groupId={selected.id}
+          {...(groups === undefined ? {} : { source: groups })}
+          {...(selfId === undefined ? {} : { selfId })}
+          {...(directory === undefined ? {} : { contacts: directory })}
+          {...(classNames === undefined ? {} : { classNames })}
+          onClose={() => setContactOpen(false)}
+        />
+      )}
+      {showPanel && !isGroup && (
         <ContactPanel
           conversation={selected}
           {...(loadContact === undefined ? {} : { load: loadContact })}

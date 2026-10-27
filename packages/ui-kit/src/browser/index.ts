@@ -42,3 +42,4 @@ export {
   type BrowserTransportOptions,
 } from "./transport.js";
 export * from "./dropin/index.js";
+export * from "./contacts/index.js";

@@ -7,6 +7,8 @@ export interface ChatLayoutMessage {
   readonly id: string;
   readonly createdAt: number;
   readonly direction: "inbound" | "outbound";
+  /** Group messages break runs where the author changes. */
+  readonly sender?: { readonly id: string };
 }
 
 /** File-picker hints, not server permissions or upload validation. */
@@ -181,7 +183,7 @@ export function messageDayKey(time: number): string | undefined {
 
 /**
  * Sort messages oldest first, insert a date separator before each new day,
- * and mark runs of consecutive messages from the same side.
+ * and mark runs of consecutive messages from the same side and author.
  */
 export function layoutMessages<T extends ChatLayoutMessage>(
   messages: readonly T[],
@@ -202,10 +204,12 @@ export function layoutMessages<T extends ChatLayoutMessage>(
       groupStart:
         previous === undefined ||
         previous.direction !== message.direction ||
+        previous.sender?.id !== message.sender?.id ||
         days[index - 1] !== day,
       groupEnd:
         next === undefined ||
         next.direction !== message.direction ||
+        next.sender?.id !== message.sender?.id ||
         days[index + 1] !== day,
     });
   });
@@ -434,6 +438,9 @@ export const CHAT_ICONS = {
     "M23 7l-7 5 7 5V7ZM14 5H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z",
   link: "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71",
   plus: "M12 5v14M5 12h14",
+  group:
+    "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75",
+  check: "M20 6 9 17l-5-5",
   play: "M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z",
   pause: "M8 5h2.5v14H8ZM13.5 5H16v14h-2.5Z",
   chevron: "m6 9 6 6 6-6",

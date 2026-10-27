@@ -90,3 +90,11 @@ export {
   type CallNumberOption,
   type CallNumberPickerProps,
 } from "./call-number-picker.js";
+export {
+  ContactListView,
+  GroupDetails,
+  NewChat,
+  type ContactListViewProps,
+  type GroupDetailsProps,
+  type NewChatProps,
+} from "./new-chat.js";
