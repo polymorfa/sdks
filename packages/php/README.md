@@ -1006,8 +1006,11 @@ After verifying the delivery signature and dispatching individual batch members:
 ```php
 $known = $event->knownEvent();
 if ($known !== null && $known['event'] === 'newsletter.update') {
-    foreach ($known['payload']['messages'] ?? [] as $row) {
-        if (array_key_exists('forwards', $row)) { echo $row['position'].': '.$row['forwards']; }
+    $rows = $known['payload']['messages'] ?? [];
+    if (is_array($rows)) {
+        foreach ($rows as $row) {
+            if (array_key_exists('forwards', $row)) { echo $row['position'].': '.$row['forwards']; }
+        }
     }
 }
 ```
