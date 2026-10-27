@@ -2,6 +2,46 @@
 
 ## Unreleased
 
+- All six server SDKs expose optional automatic-pause `reason`/`code` and
+  optional recipient-skip `messageIndex`/`followUpId` from accepted API source
+  `9bb1e2ed`. Future reason/code strings and raw envelope fields are retained;
+  manual omission and zero sequence positions are preserved. Pause timestamps
+  remain seconds, skip timestamps milliseconds. Rust full struct literals and
+  Go unkeyed literals need the added optional fields; C# constructor/Deconstruct
+  arities are unchanged. Source-only and unpublished; see
+  `docs/campaign-webhook-metadata.md` for compatibility and acceptance gates.
+- Prepare simultaneous-call settings and Ban Insurance evidence in all six
+  server SDKs against accepted API #559 source `c1a43a1e`. Updates preserve
+  omission and explicit false. The API enforces acknowledgment and team-key
+  authority on an off-to-on transition. Claims and webhooks recognize
+  `simultaneous_calls`; claim evidence includes `simultaneousCalls`.
+  Package publication and deployed acceptance remain gated.
+- Official API round-2 betas now have native source counterparts in all six
+  server SDKs: Number catalog-cache operations, marketing status and lifecycle
+  events, parent/previous identity fields, incoming carts, multipart Official
+  group pictures, Platform batching settings and whole-body signed batch
+  receivers. Graph resources and Linked Devices groups retain their own routes.
+  These changes are source-only. Exact combined-source hosted qualification,
+  accepted downstream source, API acceptance and publication remain required.
+
+- All six server SDKs submit each direct media grant, API relay upload, history
+  chunk retry and history media deletion at most once per invocation, including
+  when a caller supplies an idempotency key and a positive retry option. These
+  held routes have no server replay ledger. Errors retain their metadata;
+  established message-send/GET retries and direct CDN recovery are unchanged.
+  This correction is source-only and does not release the held API routes.
+
+- Project event streams in TypeScript, Go, Python, PHP and .NET retain their
+  resume cursor until the event payload validates. TypeScript now validates the
+  decoded webhook envelope. Their parsers enforce 4 MiB UTF-8 frame budgets
+  across incomplete lines, multiline data and comments. Rust's existing cursor
+  validation and frame bound gain regression coverage. Native malformed-payload
+  error and reconnect policies remain unchanged.
+- Go and .NET storage synchronization preserve the configured initial cursor
+  when no checkpoint exists. A saved checkpoint still takes precedence; event
+  commit, checkpoint CAS and manual ACK retain their order. These repairs are
+  source-only and unreleased.
+
 - Webhook phone offline start day. Platform and Messaging webhook create,
   update and read types gain `phoneOfflineStartDay` (7-13, default 10): the
   first day without the phone on which the webhook receives
@@ -167,7 +207,7 @@
 - Call consent. `Client.callPolicy` (`retrieve`, `update`) reads and replaces
   the team's blocked country codes with an optional `expectedRevision` guard,
   and `Client.callOptOuts` (`list`, `create`, `import`, `delete`) manages the
-  team's do-not-call list. Both need an organization key. `list` returns a
+  team's do-not-call list. Both need an team key. `list` returns a
   `CursorPage` that follows `page.nextCursor`; `create` answers `201` for a new
   entry and `200` for one already listed, told apart by `metadata.status`.
   `MessagingClient.voip.retrieveCallPermission()` reads a person's call
@@ -195,7 +235,7 @@
 
 - Added `Client.usage` to read monthly metered usage, page or iterate usage
   records, and inspect team usage gates. Project clients can read only their
-  own usage; gate state requires an organization key. The `usage.recorded`
+  own usage; gate state requires an team key. The `usage.recorded`
   webhook has a typed payload, and enforced limits use the
   `gate_limit_reached` error code. Usage is measured but not charged.
 
@@ -719,7 +759,7 @@
   incidents, claims, and Health action reads to `Client.banSafe`.
   Project and session resources now cover Safe Mode, warm-up, Ban Insurance
   evidence, and Health policy settings, and `MessagingClient.banSafe` covers
-  the same settings on the Messaging API for organization API keys and project
+  the same settings on the Messaging API for team keys and project
   tokens. Claim credit amounts are decimal quantities. Dashboard-only finding
   acknowledgement and appeals remain outside the server SDK.
 - Breaking: saved QuickLink settings drop `allowedRedirectUris` and add
@@ -839,6 +879,18 @@
 - Refreshed the Messaging and Platform contracts and the coverage ledger for
   the `/api/voip/*` signaling routes and the `call.ended` / `call.telemetry`
   webhook events.
+
+- Chat kit (`@polymorfa/browser`, `@polymorfa/ui`, `@polymorfa/react`,
+  `@polymorfa/elements`): search and media-type/direction filters over loaded
+  messages, received carts with reported unit prices and no computed total,
+  distinct not-retained/unavailable/deleted content states, a React
+  `ChatDetails` view, `inboxActionsFor()` row-action eligibility, Brazilian Portuguese chat and inbox strings,
+  `replies={false}` (`replies="false"`) for send paths that cannot quote, and
+  `createConversationSession(source, { sendUnavailable })`.
+  `<QuickLinkButton url/>` and `<pmfa-quicklink-button url>` link to a
+  QuickLink your server already created, with no client token or handler
+  call; `isQuickLinkUrl()` exposes the same URL check. Source-only and
+  unreleased.
 
 ## 0.1.0-dev.0 - 2026-08-19
 

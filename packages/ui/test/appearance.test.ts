@@ -193,7 +193,7 @@ describe("diagnostic redaction", () => {
     expect(
       redactDiagnostic({
         requestId: "req_123",
-        clientToken: "pmfa_ct_secret",
+        clientToken: "pmfa_ct_c2VjcmV0",
         headers: { authorization: "Bearer secret", accept: "application/json" },
         webhookSecret: "whsec_secret",
         payload: { messageBody: "private message", state: "ready" },

@@ -1,0 +1,557 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f",
+  "pin": "contracts/official-api-round2.json",
+  "typescriptHandoff": "f9937116b17f9962de8a3eb632c44d0399b05002",
+  "claim": "Native source and synthetic wire fixtures; exact-head execution and package qualification are separate gates.",
+  "baselineUnchanged": true,
+  "published": false,
+  "operations": [
+    {
+      "operationId": "listCloudCatalogs",
+      "method": "GET",
+      "path": "/messaging/{session}/catalogs",
+      "snapshot": "contracts/official-api-round2/oa-16.json",
+      "languages": {
+        "typescript": {
+          "method": "MessagingClient.catalogs.list",
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "method": "MessagingClient.Catalogs.List",
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "method": "AsyncMessagingClient.catalogs.list",
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "method": "MessagingClient.catalogs.list",
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "method": "MessagingClient.catalogs.list",
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "method": "MessagingClient.Catalogs.ListAsync",
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    {
+      "operationId": "getCloudCatalog",
+      "method": "GET",
+      "path": "/messaging/{session}/catalogs/{catalogId}",
+      "snapshot": "contracts/official-api-round2/oa-16.json",
+      "languages": {
+        "typescript": {
+          "method": "MessagingClient.catalogs.retrieve",
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "method": "MessagingClient.Catalogs.Retrieve",
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "method": "AsyncMessagingClient.catalogs.retrieve",
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "method": "MessagingClient.catalogs.retrieve",
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "method": "MessagingClient.catalogs.retrieve",
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "method": "MessagingClient.Catalogs.RetrieveAsync",
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    {
+      "operationId": "syncCloudCatalog",
+      "method": "POST",
+      "path": "/messaging/{session}/catalogs/{catalogId}/sync",
+      "snapshot": "contracts/official-api-round2/oa-16.json",
+      "languages": {
+        "typescript": {
+          "method": "MessagingClient.catalogs.sync",
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "method": "MessagingClient.Catalogs.Sync",
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "method": "AsyncMessagingClient.catalogs.sync",
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "method": "MessagingClient.catalogs.sync",
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "method": "MessagingClient.catalogs.sync",
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "method": "MessagingClient.Catalogs.SyncAsync",
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    {
+      "operationId": "listCloudCatalogProducts",
+      "method": "GET",
+      "path": "/messaging/{session}/catalogs/{catalogId}/products",
+      "snapshot": "contracts/official-api-round2/oa-16.json",
+      "languages": {
+        "typescript": {
+          "method": "MessagingClient.catalogs.listProducts",
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "method": "MessagingClient.Catalogs.ListProducts",
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "method": "AsyncMessagingClient.catalogs.list_products",
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "method": "MessagingClient.catalogs.listProducts",
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "method": "MessagingClient.catalogs.list_products",
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "method": "MessagingClient.Catalogs.ListProductsAsync",
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    {
+      "operationId": "getMarketingMessagesStatus",
+      "method": "GET",
+      "path": "/messaging/{session}/marketing-messages/status",
+      "snapshot": "contracts/official-api-round2/oa-17.json",
+      "languages": {
+        "typescript": {
+          "method": "MessagingClient.cloudMarketing.getStatus",
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "method": "MessagingClient.CloudMarketing.GetStatus",
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "method": "AsyncMessagingClient.cloud_marketing.get_status",
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "method": "MessagingClient.cloudMarketing.getStatus",
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "method": "MessagingClient.cloud_marketing.get_status",
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "method": "MessagingClient.CloudGraph.GetMarketingMessagesStatusAsync",
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    {
+      "operationId": "setOfficialGroupPicture",
+      "method": "PUT",
+      "path": "/messaging/{session}/official-groups/{group}/picture",
+      "snapshot": "contracts/official-api-round2/oa-21.json",
+      "languages": {
+        "typescript": {
+          "method": "MessagingClient.officialGroups.setPicture",
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "method": "MessagingClient.OfficialGroups.SetPicture",
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "method": "AsyncMessagingClient.official_groups.set_picture",
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "method": "MessagingClient.officialGroups.setPicture",
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "method": "MessagingClient.official_groups.set_picture",
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "method": "MessagingClient.OfficialGroups.SetPictureAsync",
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    }
+  ],
+  "fields": {
+    "parentBsuid": {
+      "languages": {
+        "typescript": {
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    "ContactPreviousIdentity": {
+      "languages": {
+        "typescript": {
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    "ContactIdentityChange": {
+      "languages": {
+        "typescript": {
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    "CloudOrder": {
+      "languages": {
+        "typescript": {
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    "CloudOrderItem": {
+      "languages": {
+        "typescript": {
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    "marketing.onboarding_updated": {
+      "languages": {
+        "typescript": {
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    "contact.marketing_preference_updated": {
+      "languages": {
+        "typescript": {
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    "QuickLinkStatus.errorCode": {
+      "languages": {
+        "typescript": {
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    "GraphMarketing.owner_business_info": {
+      "languages": {
+        "typescript": {
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    "GraphMarketing.disable_marketing_messages_on_cloud_api": {
+      "languages": {
+        "typescript": {
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    "WebhookBatchingInput": {
+      "languages": {
+        "typescript": {
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    "WebhookEventBatch": {
+      "languages": {
+        "typescript": {
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    },
+    "wholeBodySignature": {
+      "languages": {
+        "typescript": {
+          "test": "test/official-api-round2.test.ts"
+        },
+        "go": {
+          "test": "official_round2_test.go"
+        },
+        "python": {
+          "test": "tests/test_official_round2.py"
+        },
+        "php": {
+          "test": "tests/official_round2.php"
+        },
+        "rust": {
+          "test": "tests/official_round2.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+        }
+      }
+    }
+  },
+  "verification": {
+    "typescript": {
+      "sourceFile": "src/messaging/catalogs.ts",
+      "wireTest": "test/official-api-round2.test.ts",
+      "requiredGate": "Exact combined-head native CI and physical package qualification."
+    },
+    "go": {
+      "sourceFile": "official_round2.go",
+      "wireTest": "official_round2_test.go",
+      "requiredGate": "Exact combined-head native CI and physical package qualification."
+    },
+    "python": {
+      "sourceFile": "src/polymorfa/official_round2.py",
+      "wireTest": "tests/test_official_round2.py",
+      "requiredGate": "Exact combined-head native CI and physical package qualification."
+    },
+    "php": {
+      "sourceFile": "src/Resources/Catalogs.php",
+      "wireTest": "tests/official_round2.php",
+      "requiredGate": "Exact combined-head native CI, physical package and snippet compilation. PHP/Rust execution unavailable locally."
+    },
+    "rust": {
+      "sourceFile": "src/official_round2.rs",
+      "wireTest": "tests/official_round2.rs",
+      "requiredGate": "Exact combined-head native CI, physical package and snippet compilation. PHP/Rust execution unavailable locally."
+    },
+    "dotnet": {
+      "sourceFile": "src/Polymorfa.Sdk/OfficialRound2.cs",
+      "wireTest": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs",
+      "requiredGate": "Exact combined-head native CI and physical package qualification."
+    }
+  },
+  "platformBatching": {
+    "snapshot": "contracts/official-api-round2/oa-30.json",
+    "operations": [
+      "listOrganizationWebhooks",
+      "getOrganizationWebhook",
+      "createOrganizationWebhook",
+      "updateOrganizationWebhook",
+      "listProjectWebhooks",
+      "getProjectWebhook",
+      "createProjectWebhook",
+      "updateProjectWebhook"
+    ],
+    "languages": {
+      "typescript": {
+        "test": "test/official-api-round2.test.ts"
+      },
+      "go": {
+        "test": "official_round2_test.go"
+      },
+      "python": {
+        "test": "tests/test_official_round2.py"
+      },
+      "php": {
+        "test": "tests/official_round2.php"
+      },
+      "rust": {
+        "test": "tests/official_round2.rs"
+      },
+      "dotnet": {
+        "test": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
+      }
+    },
+    "note": "Existing typed Platform resources extended. Messaging webhook settings unchanged. Preserve omitted PATCH settings and explicit false; API validates saved format."
+  }
+}

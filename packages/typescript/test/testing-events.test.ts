@@ -172,7 +172,7 @@ it("surfaces a real-session refusal as an invalid request", async () => {
 it("rejects client tokens before transport", () => {
   const fetcher = vi.fn<typeof globalThis.fetch>();
   const messaging = new MessagingClient({
-    credential: { type: "clientToken", value: "pmfa_ct_browser" },
+    credential: { type: "clientToken", value: "pmfa_ct_YnJvd3Nlcg" },
     baseUrl: "https://api.example",
     fetch: fetcher,
   });
@@ -181,9 +181,9 @@ it("rejects client tokens before transport", () => {
       session: "test-a",
       event: "session.status",
     }),
-  ).toThrow("requires an organization API key or project token");
+  ).toThrow("requires an team key or project token");
   expect(() => messaging.testing.listEventFixtures("project-a")).toThrow(
-    "requires an organization API key or project token",
+    "requires an team key or project token",
   );
   expect(fetcher).not.toHaveBeenCalled();
 });

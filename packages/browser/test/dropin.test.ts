@@ -3,6 +3,7 @@ import {
   InboxController,
   PolymorfaClient,
   connectWhatsApp,
+  isQuickLinkUrl,
   createHandlerInboxSource,
   type EventSourceLike,
   type PolymorfaGrant,
@@ -16,7 +17,7 @@ const grant: PolymorfaGrant = {
 
 function tokenResponse(expiresAt: number, allow = grant.allow): Response {
   return Response.json({
-    value: "pmfa_ct_fixture",
+    value: "pmfa_ct_Zml4dHVyZQ",
     audience: "browser",
     expiresAt,
     grant: { ...grant, allow },
@@ -75,7 +76,7 @@ describe("PolymorfaClient token refresh", () => {
     expect(client.can("voip_place")).toBe(false);
     expect(client.canRead("chat_1")).toBe(true);
     expect(client.handlerPath).toBe("/api/polymorfa");
-    expect((await client.getClientToken()).value).toBe("pmfa_ct_fixture");
+    expect((await client.getClientToken()).value).toBe("pmfa_ct_Zml4dHVyZQ");
     expect(fetch).toHaveBeenCalledTimes(1);
   });
 
@@ -174,7 +175,7 @@ describe("PolymorfaClient token refresh", () => {
     const time = clock();
     const fetch = vi.fn(async () =>
       Response.json({
-        value: "pmfa_ct_x",
+        value: "pmfa_ct_eA",
         audience: "browser",
         expiresAt: time.now() + 60_000,
       }),
@@ -375,6 +376,44 @@ describe("createHandlerInboxSource", () => {
     expect(
       await source.contact!({ id: "chat_1", lastActivity: 0, unreadCount: 0 }),
     ).toBeUndefined();
+  });
+
+  it("reuses the same operation key across acknowledged-send retries", async () => {
+    const { client } = await readyClient({});
+    const messaging = client.messaging("support");
+    const send = vi.spyOn(messaging.messages, "send").mockResolvedValue({
+      data: { data: { id: "ack-1" } },
+    } as Awaited<ReturnType<typeof messaging.messages.send>>);
+    vi.spyOn(client, "messaging").mockReturnValue(messaging);
+    const source = createHandlerInboxSource(client, {
+      live: false,
+    }).conversation({
+      id: "recipient",
+      lastActivity: 0,
+      unreadCount: 0,
+    });
+    const draft = { clientId: "operation-1", text: "Hello" };
+    const signal = new AbortController().signal;
+    await source.send(draft, signal);
+    await source.send(draft, signal);
+    expect(send).toHaveBeenCalledTimes(2);
+    for (const [, options] of send.mock.calls) {
+      expect(options).toEqual({ idempotencyKey: "operation-1", signal });
+    }
+    send.mockRestore();
+    client.dispose();
+  });
+});
+
+describe("isQuickLinkUrl", () => {
+  it("accepts https and local development URLs only", () => {
+    expect(isQuickLinkUrl("https://link.polymorfa.com/ql_1")).toBe(true);
+    expect(isQuickLinkUrl("http://localhost:3000/connect/t")).toBe(true);
+    expect(isQuickLinkUrl("http://127.0.0.1/connect/t")).toBe(true);
+    expect(isQuickLinkUrl("http://example.com/connect/t")).toBe(false);
+    expect(isQuickLinkUrl("javascript:alert(1)")).toBe(false);
+    expect(isQuickLinkUrl("/connect/t")).toBe(false);
+    expect(isQuickLinkUrl(null)).toBe(false);
   });
 });
 

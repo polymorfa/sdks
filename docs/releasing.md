@@ -79,6 +79,16 @@ and `npm run build:workspaces`. Packing additionally requires a verified
 in that disposable checkout. Local packing is not registry publication or
 hosted API acceptance.
 
+The native Rust check builds and verifies `polymorfa-storage-core` before
+`polymorfa-sdk`, retaining both archives under `packages/rust/target/package`.
+For unpublished source, Cargo 1.85 resolves the SDK's dependency through a
+command-line patch to the extracted, verified core archive. That paired-archive
+check does not prove an unpatched registry installation: the packaged lock file
+contains a local core entry without its eventual registry checksum. Under
+separate publication authority, publish and verify the exact core version first,
+then repeat SDK packaging and a fresh consumer installation without that patch.
+Do not publish the CI archive as proof that this registry gate has passed.
+
 Roll back an unusable package channel to a previously verified version through
 an authorized release action. Never overwrite a published version or roll back
 applied API migrations. API, SDK and CLI rollback decisions must use the same

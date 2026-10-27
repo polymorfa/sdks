@@ -38,7 +38,7 @@ const call = await client.place("+15550100", { video: false });
 - Browser and other untrusted clients use a client token. Your server mints it
   with `POST /platform/client-tokens` and grants `voip_place`, `voip_answer`,
   and `voip_signal`. The token decides the session and the participant.
-- Server applications use an organization API key or project token. They may
+- Server applications use an team key or project token. They may
   set `participant` (`[A-Za-z0-9._:@-]{1,128}`, default `default`); the
   platform refers to them as `server:<participant>`.
 

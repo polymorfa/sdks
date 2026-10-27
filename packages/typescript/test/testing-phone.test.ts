@@ -24,7 +24,7 @@ function client(response: Response, type: "apiKey" | "clientToken" = "apiKey") {
       credential:
         type === "apiKey"
           ? { type, value: ORGANIZATION_API_KEY }
-          : { type, value: "pmfa_ct_browser" },
+          : { type, value: "pmfa_ct_YnJvd3Nlcg" },
       baseUrl: "https://api.example",
       fetch: fetcher,
     }),

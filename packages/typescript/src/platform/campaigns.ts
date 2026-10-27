@@ -1,8 +1,40 @@
+import {
+  existingOptions,
+  validateExistingCampaign,
+  validateRecipientList,
+  validateCampaignLaunch,
+} from "../campaign-existing-validation.js";
+import { requestContract } from "../campaign-contract-response.js";
+
 import type {
   CampaignEnrollment,
   EnrollCampaignContactRequest,
 } from "../messaging/campaign-drip.js";
 import { HttpTransport } from "../transport/http.js";
+import { ProjectCampaignsResource } from "./project-campaigns.js";
+import {
+  campaignContractBody,
+  campaignContractOptions,
+  validateCampaignSelection,
+  validateCampaignTestSend,
+  validateReplyFlowAssignment,
+  validateReplyFlowCreate,
+  validateRecipientExport,
+} from "../campaign-contract-validation.js";
+import type {
+  CampaignProjectParams,
+  CampaignReplyFlow,
+  CampaignReplyFlowAssignment,
+  CampaignTestSend,
+  CampaignTrackedLinkReport,
+  CampaignLaunchApproval,
+  CampaignSettings,
+  CampaignRecipientExportPage,
+  CampaignRecipientExportParams,
+  CreatePlatformCampaignReplyFlowRequest,
+  PlatformCampaignTestSendRequest,
+  SetPlatformCampaignReplyFlowRequest,
+} from "../campaign-contracts.js";
 import {
   withIdempotencyKey,
   withoutAutomaticRetry,
@@ -24,6 +56,8 @@ import type {
   PlatformCampaignParams,
   PlatformCampaignRecipientsEnvelope,
   PlatformPayload,
+  LaunchPlatformCampaignRequest,
+  PlatformCampaignLaunchResult,
   RecordCampaignConversionRequest,
   ReschedulePlatformCampaignRequest,
   UpdatePlatformCampaignRequest,
@@ -41,6 +75,104 @@ type CampaignRead = "analytics" | "events";
 
 export class CampaignsResource {
   constructor(private readonly transport: HttpTransport) {}
+
+  getReplyFlow(
+    replyFlowId: string,
+    params: CampaignProjectParams,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignReplyFlow> {
+    return new ProjectCampaignsResource(
+      this.transport,
+      validateCampaignSelection(params),
+    ).getReplyFlow(replyFlowId, options);
+  }
+
+  createReplyFlow(
+    body: CreatePlatformCampaignReplyFlowRequest,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignReplyFlow> {
+    validateReplyFlowCreate(body, true);
+    const { projectId, ...input } = body;
+    return new ProjectCampaignsResource(
+      this.transport,
+      projectId,
+    ).createReplyFlow(input, options);
+  }
+
+  setReplyFlow(
+    campaignId: string,
+    body: SetPlatformCampaignReplyFlowRequest,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignReplyFlowAssignment> {
+    validateReplyFlowAssignment(body, true);
+    const { projectId, ...input } = body;
+    return new ProjectCampaignsResource(this.transport, projectId).setReplyFlow(
+      campaignId,
+      input,
+      options,
+    );
+  }
+
+  testSend(
+    campaignId: string,
+    body: PlatformCampaignTestSendRequest,
+    options: RequestOptions = {},
+  ): CampaignResult<CampaignTestSend> {
+    validateCampaignTestSend(body, true);
+    const { projectId, ...input } = body;
+    return new ProjectCampaignsResource(this.transport, projectId).testSend(
+      campaignId,
+      input,
+      options,
+    );
+  }
+
+  listLaunchApprovals(
+    campaignId: string,
+    params: CampaignProjectParams,
+    options: RequestOptions = {},
+  ): CampaignResult<readonly CampaignLaunchApproval[]> {
+    return new ProjectCampaignsResource(
+      this.transport,
+      validateCampaignSelection(params),
+    ).listLaunchApprovals(campaignId, options);
+  }
+
+  links(
+    campaignId: string,
+    params: CampaignProjectParams,
+    options: RequestOptions = {},
+  ): CampaignResult<readonly CampaignTrackedLinkReport[]> {
+    return new ProjectCampaignsResource(
+      this.transport,
+      validateCampaignSelection(params),
+    ).links(campaignId, options);
+  }
+
+  exportRecipients(
+    campaignId: string,
+    params: CampaignRecipientExportParams & CampaignProjectParams,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<CampaignRecipientExportPage>> {
+    validateRecipientExport(params, true);
+    const { projectId, ...input } = params;
+    return new ProjectCampaignsResource(
+      this.transport,
+      projectId,
+    ).exportRecipients(campaignId, input, options);
+  }
+
+  getSettings(options: RequestOptions = {}): CampaignResult<CampaignSettings> {
+    return requestContract(
+      this.transport,
+      {
+        ...campaignContractOptions(options),
+        method: "GET",
+        path: "/platform/campaign-settings",
+      },
+      "settings",
+    );
+  }
 
   /** Team API key with campaigns:read. Project tokens are not accepted. */
   getFrequencyCap(
@@ -102,7 +234,7 @@ export class CampaignsResource {
           ? {}
           : { projectSlug: params.projectSlug }),
       },
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -110,10 +242,12 @@ export class CampaignsResource {
     body: CreatePlatformCampaignRequest,
     options: CreateCampaignOptions = {},
   ): CampaignResult<PlatformCampaign> {
+    validateExistingCampaign(body, true, false);
+    options = existingOptions(options);
     return this.transport.request({
       method: "POST",
       path: "/platform/campaigns",
-      body,
+      body: campaignContractBody(body),
       ...(options.apiVersion === undefined
         ? {}
         : { apiVersion: options.apiVersion }),
@@ -135,7 +269,7 @@ export class CampaignsResource {
       method: "GET",
       path: campaignPath(campaignId),
       query: campaignQuery(params),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -150,12 +284,14 @@ export class CampaignsResource {
     params: PlatformCampaignParams,
     options: RequestOptions = {},
   ): CampaignResult<PlatformCampaign> {
+    if (body !== undefined) validateExistingCampaign(body, true, true);
+    options = existingOptions(options);
     return this.transport.request({
       method: "PATCH",
       path: campaignPath(campaignId),
       query: campaignQuery(params),
-      ...(body === undefined ? {} : { body }),
-      ...options,
+      ...(body === undefined ? {} : { body: campaignContractBody(body) }),
+      ...existingOptions(options),
     });
   }
 
@@ -168,16 +304,22 @@ export class CampaignsResource {
       method: "DELETE",
       path: campaignPath(campaignId),
       query: campaignQuery(params),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
   launch(
     campaignId: string,
-    body?: PlatformPayload,
+    body: LaunchPlatformCampaignRequest,
     options: RequestOptions = {},
-  ): CampaignResponse {
-    return this.action(campaignId, "launch", body, options);
+  ): CampaignResult<PlatformCampaignLaunchResult> {
+    validateCampaignLaunch(body, true);
+    return this.transport.request({
+      ...withIdempotencyKey(existingOptions(options)),
+      method: "POST",
+      path: `${campaignPath(campaignId)}/launch`,
+      body: campaignContractBody(body),
+    });
   }
 
   reschedule(
@@ -189,7 +331,7 @@ export class CampaignsResource {
       method: "POST",
       path: `${campaignPath(campaignId)}/reschedule`,
       body,
-      ...withIdempotencyKey(options),
+      ...withIdempotencyKey(existingOptions(options)),
     });
   }
 
@@ -273,6 +415,8 @@ export class CampaignsResource {
     params: ListPlatformCampaignRecipientsParams,
     options: RequestOptions = {},
   ): Promise<ApiResponse<PlatformCampaignRecipientsEnvelope>> {
+    validateRecipientList(params, true);
+    options = existingOptions(options);
     return this.transport.request({
       method: "GET",
       path: recipientsPath(campaignId),
@@ -283,18 +427,16 @@ export class CampaignsResource {
         ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
         ...(params.limit === undefined ? {} : { limit: params.limit }),
       },
-      ...options,
+      ...existingOptions(options),
     });
   }
 
   /**
    * Add up to 1,000 recipients to a campaign that has not started sending.
    *
-   * The API declares no idempotent replay for this append, so by default the
-   * SDK sends it once and does not retry it. Setting both `maxNetworkRetries`
-   * and `idempotencyKey` on the request re-enables retries, and a retry can be
-   * processed as a new append. After a lost response, list the recipients before
-   * appending again.
+   * The SDK sends this unsafe append once by default. A caller key supports
+   * replay; select maxNetworkRetries explicitly to authorize automatic retries.
+   * Without a key, inspect recipients after an uncertain result before appending.
    */
   addRecipients(
     campaignId: string,
@@ -304,8 +446,8 @@ export class CampaignsResource {
     return this.transport.request({
       method: "POST",
       path: recipientsPath(campaignId),
-      body,
-      ...withoutAutomaticRetry(options),
+      body: campaignContractBody(body),
+      ...withoutAutomaticRetry(existingOptions(options)),
     });
   }
 
@@ -327,7 +469,7 @@ export class CampaignsResource {
       method: "POST",
       path: `${campaignPath(campaignId)}/conversions`,
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -344,7 +486,7 @@ export class CampaignsResource {
       method: "GET",
       path: `${campaignPath(campaignId)}/conversions`,
       query: campaignQuery(params),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -363,7 +505,7 @@ export class CampaignsResource {
       "POST",
       `${campaignPath(campaignId)}/${action}`,
       body,
-      retryable ? withIdempotencyKey(options) : options,
+      retryable ? withIdempotencyKey(existingOptions(options)) : options,
     );
   }
 
@@ -377,7 +519,7 @@ export class CampaignsResource {
       method: "GET",
       path: `${campaignPath(campaignId)}/${resource}`,
       query: campaignQuery(params),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -391,7 +533,7 @@ export class CampaignsResource {
       method,
       path,
       ...(body === undefined ? {} : { body }),
-      ...options,
+      ...existingOptions(options),
     });
   }
 }

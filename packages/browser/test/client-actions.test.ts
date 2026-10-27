@@ -41,7 +41,7 @@ describe("BrowserMessagingClient", () => {
     const headers: Headers[] = [];
     const client = new BrowserMessagingClient({
       session: "support",
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       baseUrl: "https://api.example.test",
       maxNetworkRetries: 0,
       fetch: vi.fn(async (_url, init) => {
@@ -70,7 +70,7 @@ describe("BrowserMessagingClient", () => {
     }> = [];
     const client = new BrowserMessagingClient({
       session: "support/eu",
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       baseUrl: "https://api.example.test",
       maxNetworkRetries: 0,
       fetch: vi.fn(async (url, init) => {
@@ -125,7 +125,7 @@ describe("BrowserMessagingClient", () => {
     const urls: string[] = [];
     const client = new BrowserMessagingClient({
       session: "support",
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       baseUrl: "https://api.example.test",
       fetch: async (url) => {
         urls.push(String(url));
@@ -162,7 +162,7 @@ describe("BrowserMessagingClient", () => {
     }> = [];
     const client = new BrowserMessagingClient({
       session: "widget-1",
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       baseUrl: "https://api.example.test",
       fetch: async (url, init) => {
         requests.push({ url: String(url), init });
@@ -190,7 +190,7 @@ describe("BrowserMessagingClient", () => {
     const bodies: string[] = [];
     const client = new BrowserMessagingClient({
       session: "support",
-      getClientToken: async () => "pmfa_ct_fixture",
+      getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch: async (url, init) => {
         void url;
         bodies.push(String(init?.body));

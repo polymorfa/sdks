@@ -13,8 +13,10 @@ import { resetPermissionWarnings } from "@polymorfa/browser/internal";
 import {
   CallButton,
   ConnectWhatsAppButton,
+  ConversationListView,
   Inbox,
   PolymorfaProvider,
+  QuickLinkButton,
   SessionStatus,
   TemplateManager,
   usePermissions,
@@ -122,7 +124,7 @@ function clientWith(allow: readonly PolymorfaPermission[]) {
         ],
       });
     return Response.json({
-      value: "pmfa_ct_fixture",
+      value: "pmfa_ct_Zml4dHVyZQ",
       audience: "browser",
       expiresAt: Date.now() + 600_000,
       grant: { session: "support", conversations: "all", allow },
@@ -315,11 +317,203 @@ describe("<Inbox/>", () => {
   });
 });
 
+describe("<ConversationListView/>", () => {
+  function rows() {
+    return [
+      ...host.querySelectorAll<HTMLButtonElement>(
+        "button[data-conversation-id]",
+      ),
+    ];
+  }
+  function filter(name: string) {
+    return [
+      ...host.querySelectorAll<HTMLButtonElement>(".pmfa-inbox-filters button"),
+    ].find((button) => button.textContent === name);
+  }
+  it("uses observed unread and archive state, actual drafts and pinned ordering", () => {
+    const supplied = [
+      ...conversations,
+      { ...conversations[1]!, id: "archived", archived: true },
+      { ...conversations[1]!, id: "pinned", pinned: true },
+    ];
+    const select = vi.fn();
+    act(() =>
+      root.render(
+        <PolymorfaProvider>
+          <ConversationListView
+            conversations={supplied}
+            drafts={{ chat_2: "Confirm delivery" }}
+            onSelect={select}
+          />
+        </PolymorfaProvider>,
+      ),
+    );
+    expect(rows().map((row) => row.dataset.conversationId)).toEqual([
+      "pinned",
+      "chat_1",
+      "chat_2",
+    ]);
+    expect(rows()[2]!.textContent).toContain("Draft: Confirm delivery");
+    click(filter("Unread"));
+    expect(rows().map((row) => row.dataset.conversationId)).toEqual(["chat_1"]);
+    click(filter("Drafts"));
+    expect(rows().map((row) => row.dataset.conversationId)).toEqual(["chat_2"]);
+    click(filter("Archived"));
+    expect(rows().map((row) => row.dataset.conversationId)).toEqual([
+      "archived",
+    ]);
+    click(rows()[0]);
+    expect(select).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "archived" }),
+    );
+  });
+  it("ignores Enter while an IME composition is active in search", () => {
+    const select = vi.fn();
+    act(() =>
+      root.render(
+        <PolymorfaProvider>
+          <ConversationListView
+            conversations={conversations}
+            onSelect={select}
+          />
+        </PolymorfaProvider>,
+      ),
+    );
+    const search = host.querySelector<HTMLInputElement>(
+      'input[type="search"]',
+    )!;
+    act(() =>
+      search.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "Enter",
+          isComposing: true,
+          bubbles: true,
+        }),
+      ),
+    );
+    expect(select).not.toHaveBeenCalled();
+    act(() =>
+      search.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+      ),
+    );
+    expect(select).toHaveBeenCalledTimes(1);
+  });
+  it("renders rows whose IDs name inherited properties", () => {
+    act(() =>
+      root.render(
+        <PolymorfaProvider>
+          <ConversationListView
+            conversations={[{ ...conversations[0]!, id: "constructor" }]}
+            onSelect={vi.fn()}
+          />
+        </PolymorfaProvider>,
+      ),
+    );
+    expect(rows().map((row) => row.dataset.conversationId)).toEqual([
+      "constructor",
+    ]);
+    expect(rows()[0]!.textContent).not.toContain("Draft:");
+  });
+  it("navigates rows by keyboard and exposes receipts only when supplied", () => {
+    act(() =>
+      root.render(
+        <PolymorfaProvider>
+          <ConversationListView
+            conversations={[
+              conversations[0]!,
+              {
+                ...conversations[1]!,
+                lastMessage: {
+                  ...conversations[1]!.lastMessage!,
+                  status: "sent",
+                  receipt: { state: "read" },
+                },
+              },
+            ]}
+            onSelect={vi.fn()}
+          />
+        </PolymorfaProvider>,
+      ),
+    );
+    rows()[0]!.focus();
+    act(() =>
+      rows()[0]!.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+      ),
+    );
+    expect(document.activeElement).toBe(rows()[1]);
+    expect(rows()[1]!.querySelector(".pmfa-conv-preview svg")).not.toBeNull();
+    expect(rows()[0]!.querySelector(".pmfa-conv-preview svg")).toBeNull();
+    act(() =>
+      rows()[1]!.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Home", bubbles: true }),
+      ),
+    );
+    expect(document.activeElement).toBe(rows()[0]);
+  });
+  it("offers authorized actions, awaits the adapter and preserves observed state on failure", async () => {
+    let reject!: (error: Error) => void;
+    const action = vi.fn(
+      () =>
+        new Promise<void>((_resolve, failed) => {
+          reject = failed;
+        }),
+    );
+    act(() =>
+      root.render(
+        <PolymorfaProvider>
+          <ConversationListView
+            conversations={conversations}
+            onSelect={vi.fn()}
+            onAction={action}
+            actions={() => ["archive"]}
+          />
+        </PolymorfaProvider>,
+      ),
+    );
+    const menu = host.querySelector<HTMLDetailsElement>("details")!;
+    const context = new MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+    });
+    act(() => rows()[0]!.dispatchEvent(context));
+    expect(context.defaultPrevented).toBe(true);
+    expect(menu.open).toBe(true);
+    click(menu.querySelector("button"));
+    click(menu.querySelector("button"));
+    expect(action).toHaveBeenCalledTimes(1);
+    expect(action).toHaveBeenCalledWith(conversations[0], "archive");
+    expect(rows()).toHaveLength(2);
+    expect(menu.open).toBe(false);
+    expect(menu.parentElement!.getAttribute("aria-busy")).toBe("true");
+    expect(menu.querySelectorAll("button")).toHaveLength(1);
+    await act(async () => reject(new Error("Disconnected")));
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain(
+      "Could not update this chat",
+    );
+    expect(rows()).toHaveLength(2);
+  });
+  it("hides mutation controls without an adapter", () => {
+    act(() =>
+      root.render(
+        <PolymorfaProvider>
+          <ConversationListView
+            conversations={conversations}
+            onSelect={vi.fn()}
+          />
+        </PolymorfaProvider>,
+      ),
+    );
+    expect(host.querySelector("details")).toBeNull();
+  });
+});
+
 describe("<PolymorfaProvider tokenEndpoint>", () => {
   it("fetches a token from the endpoint and shares its permissions", async () => {
     const fetch = vi.fn(async () =>
       Response.json({
-        value: "pmfa_ct_fixture",
+        value: "pmfa_ct_Zml4dHVyZQ",
         audience: "browser",
         expiresAt: Date.now() + 600_000,
         grant: {
@@ -360,6 +554,77 @@ describe("<PolymorfaProvider tokenEndpoint>", () => {
   });
 });
 
+describe("<QuickLinkButton/>", () => {
+  it("links to a supplied QuickLink without a client or handler call", () => {
+    const fetch = vi.spyOn(globalThis, "fetch");
+    const onOpen = vi.fn();
+    act(() =>
+      root.render(
+        <QuickLinkButton
+          url="https://link.polymorfa.com/ql_1"
+          target="popup"
+          onOpen={onOpen}
+          classNames={{ connectButton: "host-link" }}
+        />,
+      ),
+    );
+    const link = host.querySelector<HTMLAnchorElement>(
+      '[data-pmfa="quicklink"]',
+    );
+    expect(link?.tagName).toBe("A");
+    expect(link?.getAttribute("href")).toBe("https://link.polymorfa.com/ql_1");
+    expect(link?.getAttribute("target")).toBe("_blank");
+    expect(link?.getAttribute("rel")).toBe("noopener noreferrer");
+    expect(link?.className).toContain("pmfa-btn-primary");
+    expect(link?.className).toContain("host-link");
+    expect(link?.textContent).toBe("Connect WhatsApp");
+    link?.addEventListener("click", (event) => event.preventDefault());
+    click(link);
+    expect(onOpen).toHaveBeenCalledTimes(1);
+    expect(fetch).not.toHaveBeenCalled();
+    fetch.mockRestore();
+  });
+
+  it("opens in this tab by default and accepts a custom label", () => {
+    act(() =>
+      root.render(
+        <QuickLinkButton url="https://link.polymorfa.com/ql_1">
+          Link your phone
+        </QuickLinkButton>,
+      ),
+    );
+    const link = host.querySelector('[data-pmfa="quicklink"]');
+    expect(link?.hasAttribute("target")).toBe(false);
+    expect(link?.textContent).toBe("Link your phone");
+  });
+
+  it("renders nothing without a warning while the URL is still empty", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    act(() => root.render(<QuickLinkButton url="" />));
+    expect(host.querySelector('[data-pmfa="quicklink"]')).toBeNull();
+    act(() => root.render(<QuickLinkButton url="  " />));
+    expect(host.querySelector('[data-pmfa="quicklink"]')).toBeNull();
+    act(() =>
+      root.render(<QuickLinkButton url="https://link.polymorfa.com/ql_1" />),
+    );
+    expect(
+      host.querySelector('[data-pmfa="quicklink"]')?.getAttribute("href"),
+    ).toBe("https://link.polymorfa.com/ql_1");
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it("renders nothing for a non-https URL and never logs the URL", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    act(() =>
+      root.render(<QuickLinkButton url="javascript:alert('ql_secret')" />),
+    );
+    expect(host.querySelector('[data-pmfa="quicklink"]')).toBeNull();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0]?.[0])).not.toContain("ql_secret");
+  });
+});
+
 describe("<ConnectWhatsAppButton/>", () => {
   it("creates the QuickLink through the handler and opens the hosted page", async () => {
     const { client, fetch } = clientWith(["connect_whatsapp"]);
@@ -396,7 +661,7 @@ describe("<ConnectWhatsAppButton/>", () => {
             { status: 500 },
           )
         : Response.json({
-            value: "pmfa_ct_fixture",
+            value: "pmfa_ct_Zml4dHVyZQ",
             audience: "browser",
             expiresAt: Date.now() + 600_000,
             grant: {

@@ -189,7 +189,14 @@ describe("error codes", () => {
     for (const code of documentedInProse) {
       expect(platformText).toContain(`code \`${code}\``);
     }
+    const round2 = JSON.parse(
+      await readFile(
+        new URL("../../../contracts/official-api-round2.json", import.meta.url),
+        "utf8",
+      ),
+    ) as { errorCodes: string[] };
     const published = new Set([
+      ...round2.errorCodes,
       ...messaging.components.schemas.PublicError!.properties.error.properties
         .code.enum,
       ...platform.components.schemas.PlatformAccessPublicError!.properties.error
@@ -199,8 +206,24 @@ describe("error codes", () => {
     // Older API deployments returned this code; keep recognizing it even
     // though the pinned API contract no longer advertises it.
     const legacyCodes = ["premium_required"];
+    // The baseline remains pinned; these additive1014 codes are also in the
+    // independently pinned supplement and do not advance its release status.
+    const additiveCodes = [
+      "campaign_approval_required",
+      "campaign_approval_stale",
+      "campaign_variables_missing",
+      "zero_knowledge_session",
+    ];
+    const supplement = await readFile(
+      new URL(
+        "../../../contracts/campaign-custody-20261014.json",
+        import.meta.url,
+      ),
+      "utf8",
+    );
+    for (const code of additiveCodes) expect(supplement).toContain(`"${code}"`);
     expect([...POLYMORFA_ERROR_CODES].sort()).toEqual(
-      [...published, ...legacyCodes].sort(),
+      [...published, ...legacyCodes, ...additiveCodes].sort(),
     );
     expect(isKnownPolymorfaErrorCode("premium_required")).toBe(true);
   });

@@ -1,0 +1,6 @@
+{
+  "sourceSdkCommit": "254fc6a2d073e7fc79420cf95f9b03927d00c04a",
+  "schemaPath": "packages/typescript/proto/whatsapp.proto",
+  "schemaSha256": "7c34922d8a99c4e9e3fadb07344b17fd660b3fe9d29a941991bb7e827f982fc7",
+  "generator": "grpcio-tools1.84.0/protoc35.1; protocol bindings only"
+}

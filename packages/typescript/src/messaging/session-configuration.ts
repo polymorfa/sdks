@@ -1,7 +1,15 @@
+export type HistorySyncDelivery = "archive" | "descriptor";
 export type HistorySyncPolicy = {
-  mode: "metadata_only" | "deliver";
-  requestFull: boolean;
+  readonly delivery?: HistorySyncDelivery;
+  readonly mode: "metadata_only" | "deliver";
+  readonly requestFull: boolean;
 };
+
+export interface HistorySyncPolicyPatch {
+  readonly mode?: "metadata_only" | "deliver";
+  readonly requestFull?: boolean;
+  readonly delivery?: "descriptor";
+}
 
 /** Customer settings with implemented runtime consumers. */
 export type HmsConfiguration =
@@ -24,7 +32,7 @@ export interface ObservationConfiguration {
 }
 export interface SessionConfigurationOverrides {
   observation?: Partial<ObservationConfiguration>;
-  historySync?: Partial<HistorySyncPolicy>;
+  historySync?: HistorySyncPolicyPatch;
   /** Atomic policy replacement; enabling requires separate live authorization. */
   hms?: HmsConfiguration;
 }
@@ -41,6 +49,7 @@ export type SessionConfigurationReset =
   | "historySync"
   | "historySync.mode"
   | "historySync.requestFull"
+  | "historySync.delivery"
   | "hms"
   | "observation"
   | `observation.${keyof ObservationConfiguration}`;
@@ -54,6 +63,7 @@ export interface ResolvedSessionConfiguration {
   sources: {
     "historySync.mode": ConfigurationValueSource;
     "historySync.requestFull": ConfigurationValueSource;
+    "historySync.delivery"?: ConfigurationSource;
     hms: ConfigurationSource;
     "observation.presenceMode": ConfigurationSource;
     "observation.typingMode": ConfigurationSource;
