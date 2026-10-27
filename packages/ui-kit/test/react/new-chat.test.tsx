@@ -13,6 +13,8 @@ import {
 } from "@polymorfa/ui-kit";
 import { resetPermissionWarnings } from "@polymorfa/ui-kit/internal";
 import {
+  ContactList,
+  ContactListView,
   GroupDetails,
   Inbox,
   MessageList,
@@ -338,5 +340,45 @@ describe("<MessageList/> quotes in groups", () => {
     await controller.load();
     await render(<MessageList controller={controller} />);
     expect(host.querySelector(".pmfa-quote-name")?.textContent).toBe("Linus");
+  });
+});
+
+describe("public contact lists", () => {
+  it("ContactListView stands alone with the shared shell, classes and selection", async () => {
+    const onSelect = vi.fn();
+    await render(
+      <ContactListView
+        contacts={contacts}
+        label="Team"
+        selectable
+        selectedIds={["2"]}
+        onSelect={onSelect}
+        className="mine"
+        classNames={{ contactItem: "row" }}
+        renderMeta={(contact) => <span className="meta">{contact.id}</span>}
+      />,
+    );
+    const list = host.querySelector("ul")!;
+    expect(list.className).toContain("pmfa-contact-list");
+    expect(list.className).toContain("mine");
+    expect(list.className).toMatch(/\bpmfa\b/);
+    expect(list.getAttribute("aria-label")).toBe("Team");
+    expect(document.getElementById("pmfa-component-styles")).not.toBeNull();
+    const rows = [...host.querySelectorAll<HTMLButtonElement>("[data-contact-id]")];
+    expect(rows[0]!.className).toContain("row");
+    expect(rows[1]!.getAttribute("aria-checked")).toBe("true");
+    expect(host.querySelectorAll(".meta")).toHaveLength(3);
+    act(() => rows[0]!.click());
+    expect(onSelect).toHaveBeenCalledWith(contacts[0]);
+  });
+
+  it("ContactList loads, searches and selects", async () => {
+    const onSelect = vi.fn();
+    await render(<ContactList contacts={contactSource()} onSelect={onSelect} />);
+    expect(host.querySelector("[data-pmfa=contact-list] h2")?.textContent).toBe("Contacts on WhatsApp");
+    type(host.querySelector<HTMLInputElement>("input[type=search]")!, "linus");
+    expect(host.querySelectorAll("[data-contact-id]")).toHaveLength(1);
+    act(() => host.querySelector<HTMLButtonElement>("[data-contact-id='3']")!.click());
+    expect(onSelect).toHaveBeenCalledWith(contacts[2]);
   });
 });

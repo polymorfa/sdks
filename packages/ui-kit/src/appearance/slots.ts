@@ -74,6 +74,7 @@ export const COMPONENT_SLOTS = [
   "newChatHeader",
   "newChatSearch",
   "newChatAction",
+  "contactDirectory",
   "contactList",
   "contactItem",
   "groupDetails",

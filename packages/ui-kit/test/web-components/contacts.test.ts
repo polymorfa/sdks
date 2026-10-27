@@ -12,6 +12,7 @@ import {
   type PolymorfaPermission,
 } from "@polymorfa/ui-kit/internal";
 import {
+  PolymorfaContactListElement,
   PolymorfaGroupDetailsElement,
   PolymorfaInboxElement,
   PolymorfaNewChatElement,
@@ -257,5 +258,26 @@ describe("<pmfa-inbox> new chat and group info", () => {
     );
     // Only the run's first message shows the name; CSS hides the rest.
     expect(list.shadowRoot!.querySelectorAll(".pmfa-msg-start .pmfa-msg-sender")).toHaveLength(1);
+  });
+});
+
+describe("<pmfa-contact-list>", () => {
+  it("lists, filters and fires pmfa-select with checkbox rows", async () => {
+    defineUiKit({ client: client([]) });
+    const list = document.createElement("pmfa-contact-list") as PolymorfaContactListElement;
+    list.contacts = contactSource();
+    list.setAttribute("selectable", "");
+    list.selectedIds = ["1"];
+    const selected = vi.fn();
+    list.addEventListener("pmfa-select", (event) => selected((event as CustomEvent).detail));
+    document.body.append(list);
+    await vi.waitFor(() => expect(list.shadowRoot!.querySelectorAll("[data-contact-id]")).toHaveLength(2));
+    expect(list.shadowRoot!.querySelector("[data-contact-id='1']")!.getAttribute("aria-checked")).toBe("true");
+    const search = list.shadowRoot!.querySelector<HTMLInputElement>("input[type=search]")!;
+    search.value = "grace";
+    search.dispatchEvent(new Event("input"));
+    expect(list.shadowRoot!.querySelectorAll("[data-contact-id]")).toHaveLength(1);
+    list.shadowRoot!.querySelector<HTMLButtonElement>("[data-contact-id='2']")!.click();
+    expect(selected).toHaveBeenCalledWith(contacts[1]);
   });
 });

@@ -23,6 +23,7 @@ export {
   defineCallLogElements,
 } from "./call-log.js";
 export {
+  PolymorfaContactListElement,
   PolymorfaGroupDetailsElement,
   PolymorfaNewChatElement,
   defineContactElements,

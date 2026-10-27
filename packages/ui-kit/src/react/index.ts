@@ -91,9 +91,11 @@ export {
   type CallNumberPickerProps,
 } from "./call-number-picker.js";
 export {
+  ContactList,
   ContactListView,
   GroupDetails,
   NewChat,
+  type ContactListProps,
   type ContactListViewProps,
   type GroupDetailsProps,
   type NewChatProps,

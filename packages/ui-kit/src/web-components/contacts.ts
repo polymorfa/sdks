@@ -618,6 +618,136 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
   }
 }
 
+/**
+ * `<pmfa-contact-list>`: the account's Contacts list, searchable by name or
+ * number, with loading, empty, error and retry states. Fires `pmfa-select`
+ * with the chosen `DirectoryContact`.
+ *
+ * Attributes: `selectable` (checkbox rows), `no-search`. Properties:
+ * `client`, `contacts` (defaults to the API with `read_contact`),
+ * `selectedIds`, `controller` (a `ContactDirectoryController`).
+ */
+export class PolymorfaContactListElement extends DirectoryElement<ContactDirectorySnapshot> {
+  static get observedAttributes(): string[] {
+    return ["selectable", "no-search"];
+  }
+  #contacts: ContactDirectorySource | undefined;
+  #owned: ContactDirectoryController | undefined;
+  #selected: readonly string[] = [];
+  #input: HTMLInputElement | undefined;
+  #inputGeneration = -1;
+
+  get contacts(): ContactDirectorySource | undefined {
+    return this.#contacts;
+  }
+  set contacts(value: ContactDirectorySource | undefined) {
+    this.#contacts = value;
+    this.#dispose();
+    if (this.isConnected) this.#ensure();
+  }
+  /** IDs shown as checked when `selectable` is set. */
+  get selectedIds(): readonly string[] {
+    return this.#selected;
+  }
+  set selectedIds(value: readonly string[]) {
+    this.#selected = [...value];
+    this.render();
+  }
+
+  attributeChangedCallback(): void {
+    this.render();
+  }
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this.#ensure();
+  }
+  override disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.#dispose();
+  }
+  protected override onClientChange(): void {
+    this.#ensure();
+    this.render();
+  }
+
+  #ensure(): void {
+    const external = this.configuredController<ContactDirectoryController>();
+    if (external !== undefined && external !== this.#owned) {
+      if (external.getSnapshot().status === "idle") void external.load();
+      return;
+    }
+    if (this.#owned !== undefined) return;
+    const client = this.client;
+    const source =
+      this.#contacts ??
+      (client !== undefined && client.getSnapshot().grant !== undefined
+        ? createApiContactSource(client)
+        : undefined);
+    if (source === undefined) return;
+    this.#owned = new ContactDirectoryController(source);
+    this.controller = this.#owned;
+    void this.#owned.load();
+  }
+  #dispose(): void {
+    if (this.#owned === undefined) return;
+    const owned = this.#owned;
+    this.#owned = undefined;
+    if (this.controller === owned) this.controller = undefined;
+    owned.dispose();
+  }
+
+  protected renderContent(snapshot: ContactDirectorySnapshot | undefined): readonly Node[] {
+    const directory = this.configuredController<ContactDirectoryController>();
+    const focused = focusKey(this.root);
+    const root = this.decorate(element("section"), "contactDirectory");
+    root.className = this.rootClass("pmfa-newchat pmfa-contacts");
+    root.setAttribute("aria-labelledby", "pmfa-contacts-title");
+    const head = this.decorate(element("header"), "newChatHeader");
+    head.className = "pmfa-newchat-head";
+    const title = textElement("h2", this.text("newChat.contacts"));
+    title.className = "pmfa-newchat-title";
+    title.id = "pmfa-contacts-title";
+    head.append(title);
+    root.append(head);
+    if (directory === undefined || snapshot === undefined) {
+      root.setAttribute("aria-busy", "true");
+      return [root];
+    }
+    if (!this.hasAttribute("no-search")) {
+      if (this.#input === undefined || this.#inputGeneration !== this.generation) {
+        this.#inputGeneration = this.generation;
+        this.#input = document.createElement("input");
+        this.bindSearch(this.#input, () => this.configuredController<ContactDirectoryController>(), () => undefined);
+      }
+      root.append(this.searchField(directory, this.#input));
+    }
+    const body = element("div");
+    body.className = "pmfa-newchat-body";
+    body.setAttribute("aria-busy", String(snapshot.status === "loading"));
+    const state = this.directoryState(snapshot, () => void directory.retry());
+    if (state !== undefined) body.append(state);
+    if (snapshot.results.length > 0)
+      body.append(
+        this.contactRows(snapshot.results, {
+          label: this.text("newChat.contacts"),
+          selectable: this.hasAttribute("selectable"),
+          selected: new Set(this.#selected),
+          onSelect: (contact) =>
+            this.dispatchEvent(
+              new CustomEvent<DirectoryContact>("pmfa-select", {
+                detail: contact,
+                bubbles: true,
+                composed: true,
+              }),
+            ),
+        }),
+      );
+    root.append(body);
+    queueMicrotask(() => restoreFocus(this.root, focused));
+    return [root];
+  }
+}
+
 const SETTINGS: readonly {
   readonly label: MessageKey;
   readonly options: readonly { readonly label: MessageKey; readonly change: GroupSettingChange }[];
@@ -1239,6 +1369,8 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
 export function defineContactElements(
   registry: CustomElementRegistry = customElements,
 ): void {
+  if (registry.get("pmfa-contact-list") === undefined)
+    registry.define("pmfa-contact-list", PolymorfaContactListElement);
   if (registry.get("pmfa-new-chat") === undefined)
     registry.define("pmfa-new-chat", PolymorfaNewChatElement);
   if (registry.get("pmfa-group-details") === undefined)

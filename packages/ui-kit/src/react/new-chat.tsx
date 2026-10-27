@@ -60,7 +60,7 @@ type Configuration = ReturnType<typeof usePolymorfa>;
 
 // ── Contact list ──────────────────────────────────────────────────────
 
-export interface ContactListViewProps {
+interface ContactRowsProps {
   readonly contacts: readonly DirectoryContact[];
   readonly onSelect: (contact: DirectoryContact) => void;
   /** Checkbox rows for picking several people, such as group members. */
@@ -71,10 +71,12 @@ export interface ContactListViewProps {
   /** Extra content after the name, for example a role. */
   readonly renderMeta?: (contact: DirectoryContact) => ReactNode;
   readonly slots: Slots;
+  /** Root props from `useShell` when the list stands alone. */
+  readonly root?: ReturnType<typeof useShell>;
 }
 
 /** Rows of contacts. Arrow keys, Home and End move between rows. */
-export function ContactListView({
+function ContactRows({
   contacts,
   onSelect,
   selectable = false,
@@ -82,7 +84,8 @@ export function ContactListView({
   label,
   renderMeta,
   slots,
-}: ContactListViewProps) {
+  root,
+}: ContactRowsProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const selected = useMemo(() => new Set(selectedIds), [selectedIds]);
   function move(event: KeyboardEvent<HTMLButtonElement>, index: number) {
@@ -106,7 +109,7 @@ export function ContactListView({
   }
   return (
     <ul
-      {...slots("contactList", "pmfa-person-list")}
+      {...(root ?? slots("contactList", "pmfa-contact-list"))}
       ref={listRef}
       aria-label={label}
     >
@@ -159,6 +162,131 @@ export function ContactListView({
         );
       })}
     </ul>
+  );
+}
+
+export interface ContactListViewProps {
+  readonly contacts: readonly DirectoryContact[];
+  readonly onSelect: (contact: DirectoryContact) => void;
+  /** Checkbox rows for picking several people, such as group members. */
+  readonly selectable?: boolean;
+  readonly selectedIds?: readonly string[];
+  /** Accessible name of the list. */
+  readonly label: string;
+  /** Extra content after the name, for example a role. */
+  readonly renderMeta?: (contact: DirectoryContact) => ReactNode;
+  readonly className?: string;
+  /** Classes for the `contactList`, `contactItem` and `avatar` slots. */
+  readonly classNames?: SlotClassNames;
+}
+
+/**
+ * Controlled contact rows: you supply the contacts and handle the choice.
+ * Arrow keys, Home and End move between rows. Uses the shared stylesheet,
+ * theme and `appearance.elements` like every other component.
+ */
+export function ContactListView({
+  className,
+  classNames,
+  ...props
+}: ContactListViewProps) {
+  const slots = useSlots(classNames);
+  const root = useShell(slots, "contactList", "pmfa-contact-list", className);
+  return <ContactRows {...props} slots={slots} root={root} />;
+}
+
+export interface ContactListProps {
+  /** Supply a directory controller to share it with other components. */
+  readonly controller?: ContactDirectoryController;
+  /**
+   * Where contacts come from. Defaults to the WhatsApp account's contacts
+   * through the provider's client token (`read_contact`).
+   */
+  readonly contacts?: ContactDirectorySource;
+  readonly onSelect: (contact: DirectoryContact) => void;
+  readonly selectable?: boolean;
+  readonly selectedIds?: readonly string[];
+  /** Show the search field. Defaults to `true`. */
+  readonly search?: boolean;
+  readonly title?: ReactNode;
+  readonly renderMeta?: (contact: DirectoryContact) => ReactNode;
+  readonly className?: string;
+  readonly classNames?: SlotClassNames;
+}
+
+/**
+ * The account's Contacts list on its own: searchable by name (case and
+ * accents folded) or number, with loading, empty, error and retry states.
+ */
+export function ContactList({
+  controller,
+  contacts,
+  onSelect,
+  selectable = false,
+  selectedIds,
+  search = true,
+  title,
+  renderMeta,
+  className,
+  classNames,
+}: ContactListProps) {
+  const client = useOptionalPolymorfaClient();
+  if (controller === undefined && contacts === undefined && client === undefined)
+    throw new Error(
+      '<ContactList/> needs <PolymorfaProvider tokenEndpoint="/api/polymorfa/token"> or a contacts source.',
+    );
+  const directory = useOwnedController<ContactDirectoryController>(
+    controller,
+    () => new ContactDirectoryController(contacts ?? createApiContactSource(client!)),
+  )!;
+  const snapshot: ContactDirectorySnapshot = useController(directory);
+  useEffect(() => {
+    if (directory.getSnapshot().status === "idle") void directory.load();
+  }, [directory]);
+  const configuration = usePolymorfa();
+  const slots = useSlots(classNames);
+  const root = useShell(slots, "contactDirectory", "pmfa-newchat pmfa-contacts", className);
+  const headingId = useId();
+  const label = text(configuration, "newChat.contacts");
+  return (
+    <section {...root} aria-labelledby={headingId} data-pmfa="contact-list">
+      <header {...slots("newChatHeader", "pmfa-newchat-head")}>
+        <h2 className="pmfa-newchat-title" id={headingId}>
+          {title ?? label}
+        </h2>
+      </header>
+      {search && (
+        <div {...slots("newChatSearch", "pmfa-search")}>
+          <Icon name="search" />
+          <input
+            {...slots("input", "pmfa-input")}
+            type="search"
+            value={snapshot.query}
+            placeholder={text(configuration, "newChat.search")}
+            aria-label={text(configuration, "newChat.search")}
+            onChange={(event) => directory.setQuery(event.currentTarget.value)}
+          />
+        </div>
+      )}
+      <div className="pmfa-newchat-body" aria-busy={snapshot.status === "loading"}>
+        <DirectoryState
+          snapshot={snapshot}
+          configuration={configuration}
+          onRetry={() => void directory.retry()}
+        />
+        {snapshot.results.length > 0 && (
+          <ContactRows
+            contacts={snapshot.results}
+            label={label}
+            onSelect={onSelect}
+            selectable={selectable}
+            {...(selectedIds === undefined ? {} : { selectedIds })}
+            {...(renderMeta === undefined ? {} : { renderMeta })}
+            slots={slots}
+          />
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -532,7 +660,7 @@ export function NewChat({
                 <h3 className="pmfa-newchat-section">
                   {text(configuration, "newChat.contacts")}
                 </h3>
-                <ContactListView
+                <ContactRows
                   contacts={directory.results}
                   label={text(configuration, "newChat.contacts")}
                   selectable={snapshot.view === "groupMembers"}
@@ -1167,7 +1295,7 @@ function AddMembers({
         />
       </div>
       <DirectoryState snapshot={snapshot} configuration={configuration} onRetry={() => void directory.retry()} />
-      <ContactListView
+      <ContactRows
         contacts={candidates}
         label={text(configuration, "group.addMembers")}
         selectable

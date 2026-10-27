@@ -1587,6 +1587,7 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
 .pmfa-group-head { justify-content: space-between; border-bottom: 1px solid var(--pmfa-c-border); }
 .pmfa-newchat-title, .pmfa-group-title { margin: 0; font-size: 1.125em; font-weight: 700; }
 .pmfa-newchat > .pmfa-search { margin: 0 16px 8px; }
+.pmfa-contacts .pmfa-newchat-head { padding-inline: 16px; }
 .pmfa-newchat-body, .pmfa-group-body {
   flex: 1;
   min-height: 0;
