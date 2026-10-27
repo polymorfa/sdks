@@ -215,7 +215,8 @@ describe("feature evaluation contract supplement", () => {
   it("has no typed SDK method for these routes", () => {
     const packages = repositoryFile("packages");
     const files = readdirSync(packages, { recursive: true, encoding: "utf8" })
-      .filter((path) => /^[^/]+\/src\/.*\.tsx?$/.test(path))
+      // Recursive readdir uses the platform separator (backslash on Windows).
+      .filter((path) => /^[^/\\]+[/\\]src[/\\].*\.tsx?$/.test(path))
       .map((path) => join(packages, path));
     expect(files.length).toBeGreaterThan(0);
     for (const file of files)
