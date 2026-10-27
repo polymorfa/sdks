@@ -4509,6 +4509,13 @@
       "baselineUnchanged": true,
       "published": false,
       "language": "dotnet"
+    },
+    "newsletterObservations": {
+      "inventory": "contracts/newsletter-observations.json",
+      "baselineUnchanged": true,
+      "published": false,
+      "language": "dotnet",
+      "testFile": "packages/dotnet/tests/Polymorfa.Sdk.Tests/NewsletterObservationTests.cs"
     }
   }
 }

@@ -61,7 +61,16 @@ public sealed record CallParticipantLeftPayload(string CallId, string Participan
 public sealed record CallConnection(string Id, string Participant, string Transport);
 public sealed record CallConnectionJoinedPayload(string CallId, CallConnection Connection);
 public sealed record CallConnectionLeftPayload(string CallId, string ConnectionId, string Participant, string Reason);
-public sealed record NewsletterUpdatePayload(string Id, string Action, bool? Muted = null);
+public sealed record NewsletterViewCount(long Count, string? Type = null);
+public sealed record NewsletterMessageReference(string Id, [property: JsonPropertyName("whatsapp_ids")] WhatsAppMessageIds WhatsAppIds);
+public sealed record NewsletterMessageObservation(long Position, NewsletterMessageReference? Message = null, string? Timestamp = null, IReadOnlyList<NewsletterViewCount>? ViewCounts = null, long? Forwards = null, IReadOnlyDictionary<string, long>? ReactionCounts = null);
+public sealed record NewsletterMilestone(long Position, string Type, long Value, string? ReactionCode = null);
+public sealed record NewsletterUpdatePayload(string Id, string Action, bool? Muted = null)
+{
+    public string? SourceTimestamp { get; init; }
+    public IReadOnlyList<NewsletterMessageObservation>? Messages { get; init; }
+    public NewsletterMilestone? Milestone { get; init; }
+}
 public sealed record BlocklistChange(string Action, string Id, string? PhoneNumber = null, string? Bsuid = null, string? Username = null);
 public sealed record BlocklistUpdatePayload(string Action, IReadOnlyList<BlocklistChange> Changes);
 public sealed record LabelsUpdatePayload(string Action, string? LabelId = null, IdentityReference? From = null, string? Label = null, string? Name = null, int? Color = null, int? OrderIndex = null, bool? Deleted = null, bool? Labeled = null, long? ObservedAt = null, string? MessageId = null, bool? Starred = null);

@@ -1,0 +1,31 @@
+{
+  "id": "9007199254740993",
+  "action": "live_update",
+  "sourceTimestamp": "2023-11-14T22:13:20Z",
+  "messages": [
+    {
+      "position": 123,
+      "message": {
+        "id": "9007199254740994",
+        "whatsapp_ids": {
+          "linked_devices": "native-observed"
+        }
+      },
+      "timestamp": "2023-11-14T22:13:21Z",
+      "viewCounts": [
+        {
+          "count": 0
+        },
+        {
+          "type": "views",
+          "count": 11
+        }
+      ],
+      "forwards": 0,
+      "reactionCounts": {}
+    },
+    {
+      "position": 124
+    }
+  ]
+}

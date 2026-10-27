@@ -1,0 +1,310 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "sourceCommit": "d60f08042a5e3f36e53a7b378be7b7e710e80e9f",
+  "sourcePath": "apps/api/docs/openapi.json",
+  "sourceSha256": "9253f7fcf7b6e802411cc2f9b3b28bbf7c1e45e90c2ebee7fc461f5627ca9a32",
+  "polymorfaVersion": "2026-09-22",
+  "published": false,
+  "scope": "POL-81 newsletter.update metadata and optional ChannelMessage.forwards; baseline snapshots unchanged",
+  "components": {
+    "schemas": {
+      "NewsletterUpdatePayload": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Stable channel ID.",
+            "example": "739182640518203"
+          },
+          "action": {
+            "type": "string",
+            "description": "Action, including join, leave, mute, unmute, live_update or milestone."
+          },
+          "muted": {
+            "type": "boolean"
+          },
+          "sourceTimestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Source notification time, when reported. The event envelope timestamp remains the publication time."
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewsletterMessageObservation"
+            },
+            "maxItems": 300
+          },
+          "milestone": {
+            "$ref": "#/components/schemas/NewsletterMilestone"
+          }
+        },
+        "required": ["id", "action"]
+      },
+      "NewsletterMessageObservation": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "exclusiveMinimum": true,
+            "description": "Channel ordering position. This is not an original WhatsApp message ID."
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$",
+                "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+                "example": "739182640518203"
+              },
+              "whatsapp_ids": {
+                "$ref": "#/components/schemas/WhatsAppMessageIds"
+              }
+            },
+            "required": ["id", "whatsapp_ids"],
+            "description": "Reference present only when WhatsApp supplied an original message ID. A partial reference alone does not authorize message actions."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "viewCounts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewsletterViewCount"
+            },
+            "maxItems": 2,
+            "description": "Reported view definitions, including typed and untyped values when both are present. No account-specific definition is inferred."
+          },
+          "forwards": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "reactionCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "maxProperties": 1000
+          }
+        },
+        "required": ["position"]
+      },
+      "NewsletterViewCount": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": ["count"]
+      },
+      "NewsletterMilestone": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "exclusiveMinimum": true
+          },
+          "type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "value": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "reactionCode": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "required": ["position", "type", "value"]
+      },
+      "ChannelMessage": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "description": "Channel ordering position. Use this value for before and after pagination cursors, not as a message ID."
+          },
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "whatsapp_ids": {
+            "$ref": "#/components/schemas/WhatsAppMessageIds"
+          },
+          "whatsapp_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+            "deprecated": true
+          },
+          "conversation": {
+            "$ref": "#/components/schemas/ConversationIdentity"
+          },
+          "type": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "views": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "forwards": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Reported forward count. Missing means not reported; zero remains present."
+          },
+          "reactionCounts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "position",
+          "id",
+          "whatsapp_ids",
+          "conversation",
+          "type",
+          "timestamp",
+          "views",
+          "reactionCounts"
+        ]
+      },
+      "WhatsAppMessageIds": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "linked_devices": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "official_api": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            },
+            "required": ["linked_devices"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "linked_devices": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "official_api": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            },
+            "required": ["official_api"],
+            "additionalProperties": false
+          }
+        ],
+        "description": "Exact message references observed through Linked Devices, the Official API, or both. Use the Polymorfa message id for actions and replies. Unknown provider references are omitted."
+      },
+      "ConversationIdentity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{1,14}$"
+          },
+          "bsuid": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}\\.[A-Za-z0-9]{1,128}$"
+          },
+          "username": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": ["id"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "nativeCounterparts": {
+    "typescript": {
+      "testFile": "packages/typescript/test/newsletter-observations.test.ts",
+      "status": "source-implemented",
+      "release": "unpublished"
+    },
+    "go": {
+      "testFile": "packages/go/newsletter_observations_test.go",
+      "status": "source-implemented",
+      "release": "unpublished"
+    },
+    "python": {
+      "testFile": "packages/python/tests/test_newsletter_observations.py",
+      "status": "source-implemented",
+      "release": "unpublished"
+    },
+    "php": {
+      "testFile": "packages/php/tests/newsletter_observations.php",
+      "status": "source-implemented",
+      "release": "unpublished"
+    },
+    "rust": {
+      "testFile": "packages/rust/tests/newsletter_observations.rs",
+      "status": "source-implemented",
+      "release": "unpublished"
+    },
+    "dotnet": {
+      "testFile": "packages/dotnet/tests/Polymorfa.Sdk.Tests/NewsletterObservationTests.cs",
+      "status": "source-implemented",
+      "release": "unpublished"
+    }
+  }
+}

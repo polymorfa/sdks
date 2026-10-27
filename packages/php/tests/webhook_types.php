@@ -26,6 +26,14 @@ function typedWebhookConsumer(Polymorfa\WebhookEvent $event): void
                 typedWebhookString($known['payload']['status']);
             }
             break;
+        case 'newsletter.update':
+            foreach ($known['payload']['messages'] ?? [] as $row) {
+                typedWebhookNumber($row['position']);
+                if (isset($row['forwards'])) { typedWebhookNumber($row['forwards']); }
+                if (isset($row['message'])) { typedWebhookString($row['message']['id']); }
+            }
+            if (isset($known['payload']['milestone'])) { typedWebhookString($known['payload']['milestone']['type']); }
+            break;
         case 'campaign.paused':
             if (isset($known['payload']['reason'])) { typedWebhookString($known['payload']['reason']); }
             if (isset($known['payload']['code'])) { typedWebhookString($known['payload']['code']); }
