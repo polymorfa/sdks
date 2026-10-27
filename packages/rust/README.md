@@ -945,9 +945,13 @@ reference alone does not authorize message actions. No message body is included.
 After verifying the delivery signature and dispatching individual batch members:
 
 ```rust
-if let WebhookEvent::Known { payload: KnownWebhookPayload::NewsletterUpdate(update), .. } = event {
-    for row in update.messages.unwrap_or_default() {
-        if let Some(forwards) = row.forwards { println!("{}: {}", row.position, forwards); }
+use polymorfa_sdk::{webhook_payloads::KnownWebhookPayload, webhooks::WebhookEvent};
+
+fn report_channel_observations(event: WebhookEvent) {
+    if let WebhookEvent::Known { payload: KnownWebhookPayload::NewsletterUpdate(update), .. } = event {
+        for row in update.messages.unwrap_or_default() {
+            if let Some(forwards) = row.forwards { println!("{}: {}", row.position, forwards); }
+        }
     }
 }
 ```
