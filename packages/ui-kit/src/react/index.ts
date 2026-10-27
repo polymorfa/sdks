@@ -98,3 +98,10 @@ export {
   type GroupDetailsProps,
   type NewChatProps,
 } from "./new-chat.js";
+export {
+  CallLog,
+  callPeerName,
+  callSummary,
+  conversationForCall,
+  type CallLogProps,
+} from "./call-log.js";

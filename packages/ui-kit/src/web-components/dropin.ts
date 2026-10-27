@@ -8,6 +8,7 @@ import {
   warnInvalidQuickLink,
   createHandlerInboxSource,
   warnMissingPermission,
+  type CallLogSource,
   type ContactDirectorySource,
   type GroupSource,
   type InboxConversation,
@@ -47,6 +48,10 @@ import {
   PolymorfaNewChatElement,
   defineContactElements,
 } from "./contacts.js";
+import {
+  PolymorfaCallLogElement,
+  defineCallLogElements,
+} from "./call-log.js";
 
 
 export interface DefineUiKitOptions {
@@ -102,6 +107,7 @@ export function defineDropInElements(
   if (registry.get("pmfa-quicklink-button") === undefined)
     registry.define("pmfa-quicklink-button", PolymorfaQuickLinkButtonElement);
   defineContactElements(registry);
+  defineCallLogElements(registry);
 }
 
 
@@ -291,9 +297,22 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
   #newChat: PolymorfaNewChatElement | undefined;
   #infoOpen = false;
   #info: PolymorfaGroupDetailsElement | undefined;
+  #callLogSource: CallLogSource | undefined;
+  #view: "chats" | "calls" = "chats";
+  #calls: PolymorfaCallLogElement | undefined;
+
+  /** Where the Calls view reads from. Defaults to your handler's `history/calls`. */
+  get callLog(): CallLogSource | undefined {
+    return this.#callLogSource;
+  }
+  set callLog(value: CallLogSource | undefined) {
+    this.#callLogSource = value;
+    this.#calls = undefined;
+    this.render();
+  }
 
   static get observedAttributes(): string[] {
-    return ["self-id", "no-new-chat"];
+    return ["self-id", "no-new-chat", "no-calls"];
   }
   attributeChangedCallback(): void {
     this.render();
@@ -419,7 +438,12 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
       this.#composing && controller !== undefined
         ? this.#renderNewChat(controller)
         : undefined;
-    if (newChat !== undefined) children.push(newChat);
+    const calls =
+      this.#view === "calls" && controller !== undefined
+        ? this.#renderCalls(controller)
+        : undefined;
+    if (calls !== undefined) children.push(calls);
+    else if (newChat !== undefined) children.push(newChat);
     else {
       this.#composing = false;
       this.#renderList(snapshot, controller);
@@ -462,6 +486,8 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
     const title = textElement("h2", this.text("inbox.title"));
     title.className = "pmfa-inbox-title";
     heading.append(title);
+    const views = this.#viewSwitch();
+    if (views !== undefined) heading.append(views);
     if (this.#canNewChat()) {
       const start = document.createElement("button");
       start.type = "button";
@@ -726,6 +752,69 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
       this.#contacts !== undefined ||
       this.clientSnapshot()?.grant?.allow.includes("read_contact") === true
     );
+  }
+
+  #canCalls(): boolean {
+    if (this.hasAttribute("no-calls")) return false;
+    return (
+      this.#callLogSource !== undefined ||
+      this.clientSnapshot()?.grant?.allow.includes("read_calls") === true
+    );
+  }
+
+  #viewSwitch(): HTMLElement | undefined {
+    if (!this.#canCalls()) return undefined;
+    const group = element("div");
+    group.className = "pmfa-inbox-views";
+    group.setAttribute("role", "group");
+    group.setAttribute("aria-label", this.text("inbox.views"));
+    for (const value of ["chats", "calls"] as const) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.inboxView = value;
+      button.setAttribute("aria-pressed", String(this.#view === value));
+      button.textContent = this.text(value === "chats" ? "inbox.chats" : "inbox.calls");
+      button.addEventListener("click", () => {
+        this.#view = value;
+        this.#composing = false;
+        this.render();
+        queueMicrotask(() => {
+          const target =
+            value === "calls"
+              ? this.#calls?.querySelector<HTMLElement>(`[data-inbox-view="calls"]`)
+              : this.root.querySelector<HTMLElement>(`[data-inbox-view="chats"]`);
+          target?.focus();
+        });
+      });
+      group.append(button);
+    }
+    return group;
+  }
+
+  #renderCalls(controller: InboxController): HTMLElement | undefined {
+    if (!this.#canCalls()) return undefined;
+    if (this.#calls === undefined) {
+      const log = document.createElement("pmfa-call-log") as PolymorfaCallLogElement;
+      log.configuration = this.configuration;
+      if (this.client !== undefined) log.client = this.client;
+      if (this.#callLogSource !== undefined) log.source = this.#callLogSource;
+      log.className = "pmfa-inbox-calls";
+      log.addEventListener("pmfa-open", (event) => {
+        event.stopPropagation();
+        const conversation = (event as CustomEvent<InboxConversation>).detail;
+        controller.open(conversation);
+        this.#infoOpen = false;
+        this.render();
+        this.dispatchEvent(
+          new CustomEvent("pmfa-select", { detail: conversation, bubbles: true, composed: true }),
+        );
+      });
+      this.#calls = log;
+    }
+    const views = this.#viewSwitch()!;
+    views.slot = "actions";
+    this.#calls.replaceChildren(views);
+    return this.#calls;
   }
 
   #canGroups(): boolean {

@@ -43,3 +43,4 @@ export {
 } from "./transport.js";
 export * from "./dropin/index.js";
 export * from "./contacts/index.js";
+export * from "./call-log/index.js";

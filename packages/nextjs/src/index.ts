@@ -40,6 +40,7 @@ export {
   conversationOf,
   createPolymorfaHandler,
   type ClientTokenMintInput,
+  type HistoryCall,
   type HistoryContact,
   type HistoryConversation,
   type HistoryMessage,

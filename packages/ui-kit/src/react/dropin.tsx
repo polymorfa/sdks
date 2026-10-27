@@ -62,8 +62,10 @@ import {
 import { useController, useOwnedController } from "./hooks.js";
 import { CallButton } from "./call-button.js";
 import { GroupDetails, NewChat } from "./new-chat.js";
+import { CallLog } from "./call-log.js";
 import {
   createApiContactSource,
+  type CallLogSource,
   type ContactDirectorySource,
   type GroupSource,
 } from "../browser/index.js";
@@ -178,6 +180,8 @@ export interface ConversationListViewProps {
     conversation: InboxConversation,
   ) => readonly InboxRowAction[];
   readonly onNewConversation?: () => void;
+  /** Content beside the title, such as the Inbox's Chats and Calls switch. */
+  readonly headerActions?: ReactNode;
   readonly status?: InboxSnapshot["status"];
   readonly onRetry?: () => void;
   readonly hasMore?: boolean;
@@ -239,6 +243,7 @@ export function ConversationListView({
   onAction,
   actions,
   onNewConversation,
+  headerActions,
   status = "ready",
   onRetry,
   hasMore = false,
@@ -312,6 +317,7 @@ export function ConversationListView({
           <h2 className="pmfa-inbox-title" id={headingId}>
             {title ?? text(configuration, "inbox.title")}
           </h2>
+          {headerActions}
           {onNewConversation && (
             <button
               type="button"
@@ -890,6 +896,13 @@ export interface InboxProps {
   readonly groups?: GroupSource;
   /** The WhatsApp account's own user ID, when known; marks "You" in groups. */
   readonly selfId?: string;
+  /**
+   * Show a Calls view beside Chats. Defaults to `true`; it appears when the
+   * grant allows `read_calls` or `callLog` is set.
+   */
+  readonly calls?: boolean;
+  /** Where the Calls view reads from. Defaults to your handler's `history/calls`. */
+  readonly callLog?: CallLogSource;
   readonly className?: string;
   readonly classNames?: SlotClassNames;
 }
@@ -912,6 +925,8 @@ export function Inbox({
   contacts,
   groups,
   selfId,
+  calls = true,
+  callLog,
   className,
   classNames,
 }: InboxProps) {
@@ -952,6 +967,32 @@ export function Inbox({
   const canCall = client !== undefined && permissions.can("voip_place");
   const [contactOpen, setContactOpen] = useState(false);
   const [composing, setComposing] = useState(false);
+  const [view, setView] = useState<"chats" | "calls">("chats");
+  const canCalls =
+    calls &&
+    (callLog !== undefined ||
+      (client !== undefined && permissions.can("read_calls")));
+  const switcher = canCalls ? (
+    <div
+      className="pmfa-inbox-views"
+      role="group"
+      aria-label={text(configuration, "inbox.views")}
+    >
+      {(["chats", "calls"] as const).map((value) => (
+        <button
+          key={value}
+          type="button"
+          aria-pressed={view === value}
+          onClick={() => {
+            setView(value);
+            setComposing(false);
+          }}
+        >
+          {text(configuration, value === "chats" ? "inbox.chats" : "inbox.calls")}
+        </button>
+      ))}
+    </div>
+  ) : undefined;
   const selected =
     snapshot.conversations.find(
       (conversation) => conversation.id === snapshot.selectedId,
@@ -1013,7 +1054,18 @@ export function Inbox({
       data-view={selected === undefined ? "list" : "thread"}
       {...(showPanel ? { "data-contact-open": "" } : {})}
     >
-      {composing && directory !== undefined ? (
+      {canCalls && view === "calls" ? (
+        <CallLog
+          {...(callLog === undefined ? {} : { source: callLog })}
+          {...(classNames === undefined ? {} : { classNames })}
+          headerActions={switcher}
+          onOpen={(conversation) => {
+            inbox.open(conversation);
+            setContactOpen(false);
+            latestSelect.current?.(conversation);
+          }}
+        />
+      ) : composing && directory !== undefined ? (
         <NewChat
           contacts={directory}
           {...(groups === undefined ? {} : { groups })}
@@ -1032,6 +1084,7 @@ export function Inbox({
           {...(title === undefined ? {} : { title })}
           {...(classNames === undefined ? {} : { classNames })}
           {...(canNewChat ? { onNewConversation: () => setComposing(true) } : {})}
+          {...(switcher === undefined ? {} : { headerActions: switcher })}
           onSelect={(conversation) => latestSelect.current?.(conversation)}
         />
       )}

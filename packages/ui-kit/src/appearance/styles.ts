@@ -1725,7 +1725,8 @@ button.pmfa-person:focus-visible { outline: 2px solid var(--pmfa-c-primary); out
 .pmfa-group-confirm p { margin: 0; }
 .pmfa-group-add { display: grid; gap: 8px; }
 .pmfa-group-add .pmfa-contact-list { max-height: 280px; overflow-y: auto; }
-.pmfa-inbox > :is(.pmfa-newchat, .pmfa-inbox-newchat) { min-width: 0; min-height: 0; border-inline-end: 1px solid var(--pmfa-c-border); }
+.pmfa-inbox > :is(.pmfa-newchat, .pmfa-inbox-newchat, .pmfa-inbox-calls) { min-width: 0; min-height: 0; border-inline-end: 1px solid var(--pmfa-c-border); }
+.pmfa-inbox > .pmfa-inbox-calls { display: flex; flex-direction: column; border-inline-end: 0; }
 .pmfa-inbox > :is(.pmfa-group, .pmfa-inbox-group) { min-width: 0; min-height: 0; border-inline-start: 1px solid var(--pmfa-c-border); background: var(--pmfa-c-panel); }
 .pmfa-conv-menu-items .pmfa-menu-danger { color: var(--pmfa-c-danger); }
 @container pmfa-inbox (max-width: 1023px) {
@@ -1739,8 +1740,8 @@ button.pmfa-person:focus-visible { outline: 2px solid var(--pmfa-c-primary); out
   }
 }
 @container pmfa-inbox (max-width: 559px) {
-  .pmfa-inbox > :is(.pmfa-newchat, .pmfa-inbox-newchat) { grid-column: 1 / -1; grid-row: 1; border-inline-end: 0; }
-  .pmfa-inbox[data-view="thread"] > :is(.pmfa-newchat, .pmfa-inbox-newchat) { display: none; }
+  .pmfa-inbox > :is(.pmfa-newchat, .pmfa-inbox-newchat, .pmfa-inbox-calls) { grid-column: 1 / -1; grid-row: 1; border-inline-end: 0; }
+  .pmfa-inbox[data-view="thread"] > :is(.pmfa-newchat, .pmfa-inbox-newchat, .pmfa-inbox-calls) { display: none; }
   .pmfa-inbox > :is(.pmfa-group, .pmfa-inbox-group) { width: 100%; border-inline-start: 0; }
 }
 @media (pointer: coarse) {
@@ -1750,6 +1751,39 @@ button.pmfa-person:focus-visible { outline: 2px solid var(--pmfa-c-primary); out
 @media (prefers-reduced-motion: reduce) {
   .pmfa-person, .pmfa-conv-menu { transition: none; }
 }
+
+/* Call log and the Inbox Chats/Calls switch */
+.pmfa-inbox-heading { gap: 8px; }
+.pmfa-inbox-heading .pmfa-inbox-title { flex: 1; min-width: 0; }
+.pmfa-inbox-views { display: inline-flex; flex: none; padding: 2px; border-radius: 999px; background: var(--pmfa-c-field); }
+.pmfa-inbox-views button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--pmfa-c-muted);
+  font: inherit;
+  font-size: 0.8125em;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pmfa-inbox-views button[aria-pressed="true"] { background: var(--pmfa-c-panel); color: var(--pmfa-c-fg); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+.pmfa-inbox-views button:focus-visible { outline: 2px solid var(--pmfa-c-primary); outline-offset: 1px; }
+.pmfa-call-log { height: 100%; }
+.pmfa-call-rows { flex: 1; min-height: 0; margin: 0; padding: 2px 8px 8px; overflow-y: auto; list-style: none; }
+.pmfa-call-entry { display: flex; align-items: center; gap: 4px; }
+.pmfa-call { flex: 1; min-width: 0; }
+button.pmfa-call:disabled { cursor: default; }
+button.pmfa-call:disabled:hover { background: transparent; }
+.pmfa-call-missed .pmfa-person-name, .pmfa-call-missed .pmfa-call-dir { color: var(--pmfa-c-danger); }
+.pmfa-call-count { color: inherit; font-weight: 400; }
+.pmfa-call-sub { display: flex; align-items: center; gap: 4px; }
+.pmfa-call-dir { flex: none; width: 14px; height: 14px; color: var(--pmfa-c-muted); }
+.pmfa-call-back { flex: none; color: var(--pmfa-c-primary); }
+.pmfa-call-back .pmfa-btn-icon { color: var(--pmfa-c-primary); }
+.pmfa-call-more { width: 100%; margin-top: 4px; }
+@media (pointer: coarse) { .pmfa-inbox-views button { min-height: 40px; } }
 
 /* Connect, status, call */
 .pmfa-connect .pmfa-icon { width: 18px; height: 18px; }

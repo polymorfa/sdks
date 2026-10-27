@@ -19,6 +19,10 @@ export {
 } from "./templates.js";
 export { PolymorfaCallElement, defineCallElements } from "./calls.js";
 export {
+  PolymorfaCallLogElement,
+  defineCallLogElements,
+} from "./call-log.js";
+export {
   PolymorfaGroupDetailsElement,
   PolymorfaNewChatElement,
   defineContactElements,

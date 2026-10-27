@@ -17,6 +17,7 @@ import type { WebhookConstructor } from "./webhook.js";
  */
 export type PolymorfaPermission =
   | "read_messages"
+  | "read_calls"
   | "subscribe_events"
   | "send_message"
   | "send_reaction"
@@ -39,6 +40,7 @@ export type PolymorfaPermission =
 
 const PERMISSIONS: ReadonlySet<string> = new Set<PolymorfaPermission>([
   "read_messages",
+  "read_calls",
   "subscribe_events",
   "send_message",
   "send_reaction",
@@ -172,6 +174,29 @@ export interface HistoryContact {
   }[];
 }
 
+/**
+ * One call, as `<CallLog/>` renders it, from your own records (for example
+ * the `call.*` webhooks you stored). Polymorfa Call Records name the other
+ * party only by pseudonym, so they cannot fill `peer`.
+ */
+export interface HistoryCall {
+  readonly id: string;
+  readonly session?: string;
+  readonly direction: "inbound" | "outbound";
+  readonly outcome: "answered" | "missed" | "declined" | "failed" | "ongoing";
+  readonly video: boolean;
+  /** Epoch milliseconds. */
+  readonly startedAt: number;
+  readonly durationSeconds?: number;
+  readonly peer: {
+    readonly id?: string;
+    readonly phoneNumber?: string;
+    readonly name?: string;
+  };
+  /** The peer's conversation. Grants limited to conversations need it. */
+  readonly conversationId?: string;
+}
+
 export interface HistoryPage<T> {
   readonly data: readonly T[];
   readonly nextCursor?: string | null;
@@ -278,6 +303,14 @@ export interface PolymorfaHandlerOptions<User extends { readonly id: string }> {
       conversationId: string,
       page: { readonly cursor?: string },
     ) => Promise<HistoryPage<HistoryMessage>>;
+    /**
+     * `GET /history/calls`, gated by `read_calls`. With a grant limited to
+     * conversations, only calls whose `conversationId` it covers are sent.
+     */
+    readonly calls?: (
+      context: PolymorfaRouteContext<User>,
+      page: { readonly cursor?: string },
+    ) => Promise<HistoryPage<HistoryCall>>;
     /** Contact panel data, gated by `read_contact`. */
     readonly contact?: (
       context: PolymorfaRouteContext<User>,
@@ -472,6 +505,15 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
         requireMethod(method, "GET");
         return await mediaRoute(request);
       }
+      if (
+        head === "history" &&
+        second === "calls" &&
+        segments.length === 2 &&
+        options.history?.calls
+      ) {
+        requireMethod(method, "GET");
+        return await callHistory(request);
+      }
       if (head === "history" && second === "conversations" && options.history) {
         requireMethod(method, "GET");
         return await history(request, third, fourth, segments.length);
@@ -630,6 +672,28 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
       return json({ data: contact });
     }
     throw new Refusal(404, "not_found", "Unknown Polymorfa route.");
+  }
+
+  async function callHistory(request: Request): Promise<Response> {
+    const context = await resolve(request, "read_calls");
+    const cursor = new URL(request.url).searchParams.get("cursor") ?? undefined;
+    const result = await options.history!.calls!(
+      context,
+      cursor === undefined ? {} : { cursor },
+    );
+    const { grant } = context;
+    return json({
+      data: result.data.filter(
+        (call) =>
+          (grant.session === undefined ||
+            call.session === undefined ||
+            call.session === grant.session) &&
+          (grant.conversations === "all" ||
+            (call.conversationId !== undefined &&
+              grant.conversations.includes(call.conversationId))),
+      ),
+      nextCursor: result.nextCursor ?? null,
+    });
   }
 
   async function events(request: Request): Promise<Response> {
@@ -811,7 +875,11 @@ function eventAllowed(event: RelayEvent, grant: PolymorfaGrant): boolean {
     return false;
   if (grant.conversations === "all") return true;
   const conversationId = conversationOf(event);
-  // Session-level events carry no conversation and pass the session check.
+  // A call event without a known peer (for example `call.ended` with
+  // `from: null`, or telemetry) may belong to any conversation.
+  if (conversationId === undefined && event.event.startsWith("call."))
+    return false;
+  // Other session-level events carry no conversation and pass the session check.
   return (
     conversationId === undefined || grant.conversations.includes(conversationId)
   );
