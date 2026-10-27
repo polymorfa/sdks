@@ -1399,7 +1399,14 @@ it("starts display capture from the share control and disables the camera until 
   const stop = host.querySelector<HTMLButtonElement>(
     '[aria-label="Stop sharing"]',
   )!;
-  expect(stop.getAttribute("aria-pressed")).toBe("true");
+  // The label names the action, so the toggle carries no aria-pressed state
+  // that would contradict it.
+  expect(stop.hasAttribute("aria-pressed")).toBe(false);
+  expect(
+    host.querySelector('[aria-label="Turn camera on"]')!.hasAttribute(
+      "aria-pressed",
+    ),
+  ).toBe(false);
   await act(async () => {
     stop.click();
   });

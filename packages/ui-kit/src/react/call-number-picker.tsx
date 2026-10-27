@@ -1,5 +1,7 @@
 import type { CallsController } from "../browser/index.js";
 import { useCallback, useId, useSyncExternalStore } from "react";
+import type { SlotClassNames } from "../appearance/index.js";
+import { useShell, useSlots } from "./components.js";
 import { usePolymorfa } from "./context.js";
 import { safeSubscribe } from "./hooks.js";
 
@@ -16,6 +18,8 @@ export interface CallNumberPickerProps {
   readonly onChange: (id: string) => void;
   readonly disabled?: boolean;
   readonly className?: string;
+  /** Classes for the `callNumberPicker`, `label` and `input` slots. */
+  readonly classNames?: SlotClassNames;
 }
 
 function busy(numbers: readonly CallNumberOption[]): boolean {
@@ -46,8 +50,16 @@ export function CallNumberPicker({
   onChange,
   disabled,
   className,
+  classNames,
 }: CallNumberPickerProps) {
   const { locale } = usePolymorfa();
+  const slots = useSlots(classNames);
+  const root = useShell(
+    slots,
+    "callNumberPicker",
+    "pmfa-number-picker",
+    className,
+  );
   const id = useId();
   const subscribe = useCallback(
     (listener: () => void) => {
@@ -71,14 +83,13 @@ export function CallNumberPicker({
     throw new Error("Call Number choices require unique nonempty ids.");
   const selected = numbers.find((number) => number.id === value);
   return (
-    <div
-      className={className}
-      dir={locale.direction}
-      data-pmfa="call-number-picker"
-    >
-      <label htmlFor={id}>{locale.messages["calls.outgoingNumber"]}</label>
+    <div {...root} data-pmfa="call-number-picker">
+      <label htmlFor={id} {...slots("label", "pmfa-number-picker-label")}>
+        {locale.messages["calls.outgoingNumber"]}
+      </label>
       <select
         id={id}
+        {...slots("input", "pmfa-input pmfa-number-picker-select")}
         value={selected?.id ?? ""}
         disabled={disabled === true || active || numbers.length === 0}
         onChange={(event) => {

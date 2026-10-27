@@ -290,6 +290,8 @@ pub enum SessionClientAction {
     VoipPlace,
     VoipAnswer,
     VoipSignal,
+    GroupsRead,
+    GroupsManage,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]

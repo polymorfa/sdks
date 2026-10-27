@@ -32,6 +32,8 @@ export type PolymorfaPermission =
   | "voip_place"
   | "voip_answer"
   | "voip_signal"
+  | "groups_read"
+  | "groups_manage"
   | "connect_whatsapp"
   | "manage_templates";
 
@@ -52,6 +54,8 @@ const PERMISSIONS: ReadonlySet<string> = new Set<PolymorfaPermission>([
   "voip_place",
   "voip_answer",
   "voip_signal",
+  "groups_read",
+  "groups_manage",
   "connect_whatsapp",
   "manage_templates",
 ]);
@@ -69,6 +73,15 @@ const CUSTOMER_TOKEN_ACTIONS: ReadonlySet<string> = new Set([
   "chats_manage",
   "contact_write",
   "contact_delete",
+]);
+
+/** Session-token-only API actions: Calls and groups (above the Customer mask). */
+const SESSION_TOKEN_ACTIONS: ReadonlySet<string> = new Set([
+  "voip_place",
+  "voip_answer",
+  "voip_signal",
+  "groups_read",
+  "groups_manage",
 ]);
 
 /**
@@ -494,7 +507,8 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
         // set is an explicit zero ceiling, never omission/follow-live-rules.
         allow: grant.allow.filter(
           (action) =>
-            CUSTOMER_TOKEN_ACTIONS.has(action) || action.startsWith("voip_"),
+            CUSTOMER_TOKEN_ACTIONS.has(action) ||
+            SESSION_TOKEN_ACTIONS.has(action),
         ),
         ephemeralId: grant.ephemeralId,
         ttlSeconds: grant.ttlSeconds,

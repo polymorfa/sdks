@@ -72,6 +72,7 @@ export const COMPONENT_SLOTS = [
   "connectButton",
   "sessionStatus",
   "callButton",
+  "callNumberPicker",
   "templateManager",
   "templateList",
   "templateItem",

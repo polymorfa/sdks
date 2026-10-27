@@ -21,6 +21,8 @@ export type PolymorfaPermission =
   | "voip_place"
   | "voip_answer"
   | "voip_signal"
+  | "groups_read"
+  | "groups_manage"
   | "connect_whatsapp"
   | "manage_templates";
 
@@ -42,6 +44,8 @@ export const POLYMORFA_PERMISSIONS: readonly PolymorfaPermission[] =
     "voip_place",
     "voip_answer",
     "voip_signal",
+    "groups_read",
+    "groups_manage",
     "connect_whatsapp",
     "manage_templates",
   ]);

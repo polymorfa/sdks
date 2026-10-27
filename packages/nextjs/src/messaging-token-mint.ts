@@ -155,4 +155,6 @@ const SESSION_ACTIONS: ReadonlySet<string> = new Set([
   "voip_place",
   "voip_answer",
   "voip_signal",
+  "groups_read",
+  "groups_manage",
 ]);

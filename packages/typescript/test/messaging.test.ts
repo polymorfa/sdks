@@ -299,12 +299,12 @@ describe("MessagingClient Customer-scoped client tokens", () => {
     await client.clientTokens.mint({
       session: "support",
       ephemeralId: "u",
-      allow: ["chats_read", "chats_manage", "contact_write", "contact_delete"],
+      allow: ["chats_read", "chats_manage", "contact_write", "contact_delete", "groups_read", "groups_manage"],
     });
     expect(JSON.parse(requests[0]!.body!)).toEqual({
       session: "support",
       ephemeralId: "u",
-      allow: ["chats_read", "chats_manage", "contact_write", "contact_delete"],
+      allow: ["chats_read", "chats_manage", "contact_write", "contact_delete", "groups_read", "groups_manage"],
     });
   });
 

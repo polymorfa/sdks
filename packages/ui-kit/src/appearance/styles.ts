@@ -163,6 +163,10 @@ a.pmfa-btn { text-decoration: none; }
 .pmfa-btn-ghost { border-color: transparent; background: transparent; color: var(--pmfa-c-muted); }
 .pmfa-btn-ghost:hover:not(:disabled) { color: var(--pmfa-c-fg); }
 .pmfa-btn-icon { width: 40px; padding: 0; border-radius: 999px; }
+.pmfa-number-picker { display: grid; gap: 6px; min-width: 0; }
+.pmfa-number-picker-label { color: var(--pmfa-c-muted); font-size: 0.8125em; font-weight: 600; }
+.pmfa-number-picker-select { appearance: auto; cursor: pointer; text-overflow: ellipsis; }
+.pmfa-number-picker-select:disabled { opacity: 0.55; cursor: not-allowed; }
 .pmfa-input {
   display: block;
   width: 100%;
