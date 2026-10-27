@@ -1,4 +1,5 @@
 export {
+  BrowserCallsResource,
   BrowserContactsResource,
   BrowserGroupsResource,
   BrowserMessagingClient,

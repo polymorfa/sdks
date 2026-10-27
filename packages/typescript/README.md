@@ -1065,7 +1065,7 @@ const { data: stats } = await platform.calls.stats({
 console.log(stats.totals.answerRate, stats.groups, stats.heatmap);
 
 for await (const call of await platform.calls.list({ outcome: "missed" })) {
-  console.log(call.callId, call.peerRef, call.endReason);
+  console.log(call.callId, call.peer?.phoneNumber, call.endReason);
 }
 ```
 
@@ -1079,8 +1079,9 @@ for await (const call of await platform.calls.list({ outcome: "missed" })) {
   query that takes too long fails with `PolymorfaServerError`
   (`service_unavailable`).
 - `list(params)` returns a `CursorPage<CallRecord>`, newest first. `limit` is
-  1 to 100 (default 25). `peerRef` is a team-specific pseudonym of the other
-  party; call records never contain phone numbers.
+  1 to 100 (default 25). `peer` names the other party (user ID, phone
+  number, username); calls recorded before caller identities were stored
+  have only the deprecated pseudonym `peerRef`.
 - `export(params)` returns one page of up to 1,000 records (`limit` 1 to 1,000)
   as `{ format, body, nextCursor }`. `format` is `csv` (the default; every page
   starts with a header row and uses CRLF line endings) or `ndjson` (one call

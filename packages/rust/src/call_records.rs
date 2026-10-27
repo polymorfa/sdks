@@ -23,7 +23,9 @@ enumeration!(TelemetryStatus {Reported=>"reported",Unknown=>"unknown"});
 enumeration!(TelemetrySource {MediaServer=>"media_server"});
 enumeration!(CandidateType {Host=>"host",Srflx=>"srflx",Prflx=>"prflx",Relay=>"relay"});
 enumeration!(AppReportsStatus {Reported=>"reported",None=>"none"});
-model!(CallRecord {call_id:String,project_id:Option<String>,session_id:String,direction:CallDirection,upstream:CallUpstream,outcome:CallOutcome,state:CallRecordState,has_video:bool,peer_ref:Option<String>,started_at:String,connected_at:Option<String>,ended_at:Option<String>,duration_seconds:Option<f64>,end_reason:Option<String>});
+model!(CallRecord {call_id:String,project_id:Option<String>,session_id:String,direction:CallDirection,upstream:CallUpstream,outcome:CallOutcome,state:CallRecordState,has_video:bool,peer:Option<CallPeer>,peer_ref:Option<String>,started_at:String,connected_at:Option<String>,ended_at:Option<String>,duration_seconds:Option<f64>,end_reason:Option<String>});
+// The other party. Absent on calls recorded before caller identities were stored.
+model!(CallPeer {id:Option<String>,phone_number:Option<String>,username:Option<String>});
 model!(CallEndReason {
     code: String,
     label: String
@@ -38,7 +40,7 @@ model!(AppError {
 });
 model!(AppConnection {connection_id:String,participant:String,client:Option<crate::voip::CallReportClient>,quality:Option<AppQuality>,errors:Vec<AppError>});
 model!(AppReports {status:AppReportsStatus,connections:Vec<AppConnection>,truncated:bool});
-model!(CallSummary {call_id:String,session_id:String,project_id:Option<String>,direction:CallDirection,state:CallRecordState,live:bool,backend:String,has_video:bool,peer_ref:Option<String>,started_at:String,connected_at:Option<String>,ended_at:Option<String>,duration_seconds:Option<f64>,end_reason:Option<CallEndReason>,answered_by:Option<String>,exclusive:Option<bool>});
+model!(CallSummary {call_id:String,session_id:String,project_id:Option<String>,direction:CallDirection,state:CallRecordState,live:bool,backend:String,has_video:bool,peer:Option<CallPeer>,peer_ref:Option<String>,started_at:String,connected_at:Option<String>,ended_at:Option<String>,duration_seconds:Option<f64>,end_reason:Option<CallEndReason>,answered_by:Option<String>,exclusive:Option<bool>});
 model!(HistoryEvent {
     event_id: String,
     r#type: String,

@@ -53,6 +53,11 @@ properties for your own backend. In `<pmfa-inbox>`, set `contacts` and
 `groups` the same way, `self-id` to mark the account in groups, and
 `no-new-chat` to hide the button.
 
+`<pmfa-call-log>` lists the number's calls (`read_calls`). Rows fire
+`pmfa-open` with the conversation; call-back buttons fire `pmfa-call` with the
+entry so your page places the call. `<pmfa-contact-list>` is the Contacts
+list on its own and fires `pmfa-select`.
+
 Vue binds the events with `@pmfa-open`:
 
 ```vue

@@ -7,7 +7,7 @@ from collections.abc import AsyncIterator, Mapping
 from datetime import datetime, timezone
 from typing import Literal, cast
 
-from typing_extensions import TypedDict
+from typing_extensions import NotRequired, TypedDict
 
 from .errors import ConfigurationError, ServerError
 from .messaging import O, segment
@@ -21,6 +21,14 @@ Outcome = Literal["answered", "missed", "declined", "failed", "in_progress"]
 State = Literal["offered", "accepted", "rejected", "missed", "ended"]
 
 
+class Peer(TypedDict, total=False):
+    """The other party. Absent on calls recorded before caller identities were stored."""
+
+    id: str
+    phoneNumber: str
+    username: str
+
+
 class Record(TypedDict):
     callId: str
     projectId: str | None
@@ -30,6 +38,7 @@ class Record(TypedDict):
     outcome: Outcome
     state: State
     hasVideo: bool
+    peer: NotRequired[Peer | None]
     peerRef: str | None
     startedAt: str
     connectedAt: str | None
@@ -126,6 +135,7 @@ class RecordSummary(TypedDict):
     live: bool
     backend: str
     hasVideo: bool
+    peer: NotRequired[Peer | None]
     peerRef: str | None
     startedAt: str
     connectedAt: str | None

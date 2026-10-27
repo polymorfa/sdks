@@ -3,7 +3,8 @@ import {
   type ControllerSnapshot,
 } from "../controller.js";
 import type { PolymorfaClient } from "../dropin/client.js";
-import type { EventSourceLike, RelayedEvent } from "../dropin/inbox.js";
+import type { BrowserCallRecord } from "../messaging/types.js";
+import { missingPermission, withTokenRetry } from "../contacts/directory.js";
 
 /** How a call ended, from this account's side. */
 export type CallLogOutcome =
@@ -36,11 +37,9 @@ export interface CallLogPage {
 }
 
 /**
- * Where a call log reads from. Polymorfa Call Records keep the other party
- * only as a pseudonym, so a log that names people reads your own records:
- * `createHandlerCallLogSource` (your handler's `history/calls` route and
- * live `call.*` events) or `createStoreCallLogSource` from
- * `@polymorfa/ui-kit/store`.
+ * Where a call log reads from. `createApiCallLogSource` reads the number's
+ * Call Records from the API with the client token; implement it yourself
+ * for another backend or sample data.
  */
 export interface CallLogSource {
   list(cursor?: string, signal?: AbortSignal): Promise<CallLogPage>;
@@ -221,133 +220,61 @@ export class CallLogController extends ObservableController<CallLogSnapshot> {
   }
 }
 
-function record(value: unknown): Record<string, unknown> | undefined {
-  return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : undefined;
-}
-
-/**
- * Folds relayed `call.*` events into entries. `from` is the other party for
- * both directions, matching Polymorfa's call recorder.
- */
-export function callLogReducer(): (event: RelayedEvent) => CallLogEntry | undefined {
-  const calls = new Map<string, CallLogEntry>();
-  return (event) => {
-    if (!event.event.startsWith("call.")) return undefined;
-    const payload = record(event.payload);
-    const callId = payload?.callId;
-    if (typeof callId !== "string") return undefined;
-    const time = Date.parse(event.timestamp);
-    const at = Number.isFinite(time) ? time : Date.now();
-    const previous = calls.get(callId);
-    const from = record(payload?.from);
-    const peer = {
-      ...previous?.peer,
-      ...(typeof from?.id === "string" ? { id: from.id } : {}),
-      ...(typeof from?.phoneNumber === "string" ? { phoneNumber: from.phoneNumber } : {}),
-    };
-    const outcomes: Record<string, CallLogOutcome> = {
-      "call.received": "ongoing",
-      "call.accepted": "ongoing",
-      "call.missed": "missed",
-      "call.rejected": "declined",
-    };
-    let outcome = outcomes[event.event] ?? previous?.outcome;
-    let durationSeconds = previous?.durationSeconds;
-    if (event.event === "call.ended") {
-      const seconds = typeof payload?.durationSeconds === "number" ? payload.durationSeconds : undefined;
-      durationSeconds = seconds;
-      const reason = typeof payload?.reason === "string" ? payload.reason : "";
-      outcome =
-        previous?.outcome === "missed" || previous?.outcome === "declined"
-          ? previous.outcome
-          : seconds !== undefined && seconds > 0
-            ? "answered"
-            : /fail|error|pod_lost/.test(reason)
-              ? "failed"
-              : // Never connected: unanswered, in either direction.
-                "missed";
-    }
-    if (outcome === undefined) return undefined;
-    const direction =
-      payload?.direction === "inbound" || payload?.direction === "outbound"
-        ? payload.direction
-        : (previous?.direction ?? "inbound");
-    const video =
-      payload?.hasVideo === true || payload?.hadVideo === true || previous?.video === true;
-    const entry: CallLogEntry = {
-      id: callId,
-      session: event.session,
-      direction,
-      outcome,
-      video,
-      startedAt: previous?.startedAt ?? at,
-      ...(durationSeconds === undefined ? {} : { durationSeconds }),
-      peer,
-      ...(peer.id === undefined ? {} : { conversationId: peer.id }),
-    };
-    calls.set(callId, entry);
-    return entry;
+function entry(record: BrowserCallRecord): CallLogEntry {
+  const started = Date.parse(record.startedAt);
+  const outcome: CallLogOutcome =
+    record.outcome === "in_progress" ? "ongoing" : record.outcome;
+  const peer = record.peer ?? {};
+  return {
+    id: record.callId,
+    session: record.sessionId,
+    direction: record.direction,
+    outcome,
+    video: record.hasVideo,
+    startedAt: Number.isFinite(started) ? started : 0,
+    ...(record.durationSeconds === null ? {} : { durationSeconds: record.durationSeconds }),
+    peer: {
+      ...(peer.id === undefined ? {} : { id: peer.id }),
+      ...(peer.phoneNumber === undefined ? {} : { phoneNumber: peer.phoneNumber }),
+      ...(peer.username === undefined ? {} : { name: `@${peer.username}` }),
+    },
+    ...(peer.id === undefined ? {} : { conversationId: peer.id }),
   };
 }
 
 /**
- * The default call log source: your handler's `history/calls` route (gated
- * by `read_calls`) and live `call.*` events from its `events` route.
+ * The default call log source: `GET /messaging/{session}/calls` with the
+ * client token (`read_calls`). Each page returns the callers' identities.
+ * Pass `names` to show saved contact names instead of numbers.
  */
-export function createHandlerCallLogSource(
+export function createApiCallLogSource(
   client: PolymorfaClient,
   options: {
-    readonly live?: boolean;
-    readonly EventSource?: new (
-      url: string,
-      init?: { withCredentials?: boolean },
-    ) => EventSourceLike;
+    readonly session?: string;
+    /** Calls per page, 1 to 100. Default 50. */
+    readonly limit?: number;
+    /** A display name for a caller, for example from the contacts directory. */
+    readonly names?: (peer: { readonly id?: string; readonly phoneNumber?: string }) => string | undefined;
   } = {},
 ): CallLogSource {
-  const EventSourceImpl =
-    options.EventSource ??
-    (globalThis as unknown as { EventSource?: NonNullable<typeof options.EventSource> })
-      .EventSource;
-  let source: EventSourceLike | undefined;
   return {
     async list(cursor, signal) {
-      const page = await client.request<{ data: CallLogEntry[]; nextCursor?: string | null }>(
-        `history/calls${cursor === undefined ? "" : `?cursor=${encodeURIComponent(cursor)}`}`,
-        signal === undefined ? {} : { signal },
+      if (!client.can("read_calls")) missingPermission("read_calls");
+      const response = await withTokenRetry(client, () =>
+        client.messaging(options.session).calls.list(
+          { limit: options.limit ?? 50, ...(cursor === undefined ? {} : { cursor }) },
+          signal === undefined ? {} : { signal },
+        ),
       );
+      const page = response.data;
       return {
-        entries: page.data,
-        ...(typeof page.nextCursor === "string" ? { nextCursor: page.nextCursor } : {}),
+        entries: page.data.map((record) => {
+          const item = entry(record);
+          const name = options.names?.(item.peer);
+          return name === undefined ? item : { ...item, peer: { ...item.peer, name } };
+        }),
+        ...(page.nextCursor === null ? {} : { nextCursor: page.nextCursor }),
       };
-    },
-    subscribe(listener) {
-      if (options.live === false || EventSourceImpl === undefined || !client.can("subscribe_events"))
-        return () => undefined;
-      const reduce = callLogReducer();
-      const events = new EventSourceImpl(client.url("events"), { withCredentials: true });
-      source = events;
-      events.addEventListener("message", (frame) => {
-        let parsed: unknown;
-        try {
-          parsed = JSON.parse(frame.data);
-        } catch {
-          return;
-        }
-        for (const item of Array.isArray(parsed) ? parsed : [parsed]) {
-          const event = record(item) as RelayedEvent | undefined;
-          if (typeof event?.event !== "string" || typeof event.session !== "string") continue;
-          const entry = reduce(event);
-          if (entry !== undefined) listener(entry);
-        }
-      });
-      return () => {
-        events.close();
-        source = undefined;
-      };
-    },
-    close() {
-      source?.close();
-      source = undefined;
     },
   };
 }

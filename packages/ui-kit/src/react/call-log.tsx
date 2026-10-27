@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from "react";
 import {
   CallLogController,
-  createHandlerCallLogSource,
+  createApiCallLogSource,
   type CallLogEntry,
   type CallLogGroup,
   type CallLogSnapshot,
@@ -98,7 +98,7 @@ export function conversationForCall(entry: CallLogEntry): InboxConversation | un
 export interface CallLogProps {
   /** Supply a controller to drive the log from outside. */
   readonly controller?: CallLogController;
-  /** Defaults to your handler's `history/calls` route and live call events. */
+  /** Defaults to the API (`GET /messaging/{session}/calls`, `read_calls`). */
   readonly source?: CallLogSource;
   /** Opens the call's conversation. Rows without a conversation do nothing. */
   readonly onOpen?: (conversation: InboxConversation) => void;
@@ -137,7 +137,7 @@ export function CallLog({
     );
   const log = useOwnedController<CallLogController>(
     controller,
-    () => new CallLogController(source ?? createHandlerCallLogSource(client!)),
+    () => new CallLogController(source ?? createApiCallLogSource(client!)),
   )!;
   const snapshot: CallLogSnapshot = useController(log);
   useEffect(() => {

@@ -46,6 +46,7 @@ CASES = [
                 "voip_signal",
                 "groups_read",
                 "groups_manage",
+                "read_calls",
             ],
         },
         TOKEN,
@@ -64,6 +65,7 @@ CASES = [
                     "voip_signal",
                     "groups_read",
                     "groups_manage",
+                    "read_calls",
                 ],
             }
         ),

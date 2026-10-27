@@ -819,6 +819,7 @@ export type {
   CallRecord,
   CallRecordDetail,
   CallRecordSummary,
+  CallPeer,
   CallRecordEndReason,
   CallRecordParticipant,
   CallRecordConnection,

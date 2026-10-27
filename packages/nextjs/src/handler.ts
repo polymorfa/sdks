@@ -77,13 +77,14 @@ const CUSTOMER_TOKEN_ACTIONS: ReadonlySet<string> = new Set([
   "contact_delete",
 ]);
 
-/** Session-token-only API actions: Calls and groups (above the Customer mask). */
+/** Session-token-only API actions: Calls, groups and call records (above the Customer mask). */
 const SESSION_TOKEN_ACTIONS: ReadonlySet<string> = new Set([
   "voip_place",
   "voip_answer",
   "voip_signal",
   "groups_read",
   "groups_manage",
+  "read_calls",
 ]);
 
 /**
@@ -172,29 +173,6 @@ export interface HistoryContact {
     readonly label: string;
     readonly value: string;
   }[];
-}
-
-/**
- * One call, as `<CallLog/>` renders it, from your own records (for example
- * the `call.*` webhooks you stored). Polymorfa Call Records name the other
- * party only by pseudonym, so they cannot fill `peer`.
- */
-export interface HistoryCall {
-  readonly id: string;
-  readonly session?: string;
-  readonly direction: "inbound" | "outbound";
-  readonly outcome: "answered" | "missed" | "declined" | "failed" | "ongoing";
-  readonly video: boolean;
-  /** Epoch milliseconds. */
-  readonly startedAt: number;
-  readonly durationSeconds?: number;
-  readonly peer: {
-    readonly id?: string;
-    readonly phoneNumber?: string;
-    readonly name?: string;
-  };
-  /** The peer's conversation. Grants limited to conversations need it. */
-  readonly conversationId?: string;
 }
 
 export interface HistoryPage<T> {
@@ -303,14 +281,6 @@ export interface PolymorfaHandlerOptions<User extends { readonly id: string }> {
       conversationId: string,
       page: { readonly cursor?: string },
     ) => Promise<HistoryPage<HistoryMessage>>;
-    /**
-     * `GET /history/calls`, gated by `read_calls`. With a grant limited to
-     * conversations, only calls whose `conversationId` it covers are sent.
-     */
-    readonly calls?: (
-      context: PolymorfaRouteContext<User>,
-      page: { readonly cursor?: string },
-    ) => Promise<HistoryPage<HistoryCall>>;
     /** Contact panel data, gated by `read_contact`. */
     readonly contact?: (
       context: PolymorfaRouteContext<User>,
@@ -505,15 +475,6 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
         requireMethod(method, "GET");
         return await mediaRoute(request);
       }
-      if (
-        head === "history" &&
-        second === "calls" &&
-        segments.length === 2 &&
-        options.history?.calls
-      ) {
-        requireMethod(method, "GET");
-        return await callHistory(request);
-      }
       if (head === "history" && second === "conversations" && options.history) {
         requireMethod(method, "GET");
         return await history(request, third, fourth, segments.length);
@@ -672,28 +633,6 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
       return json({ data: contact });
     }
     throw new Refusal(404, "not_found", "Unknown Polymorfa route.");
-  }
-
-  async function callHistory(request: Request): Promise<Response> {
-    const context = await resolve(request, "read_calls");
-    const cursor = new URL(request.url).searchParams.get("cursor") ?? undefined;
-    const result = await options.history!.calls!(
-      context,
-      cursor === undefined ? {} : { cursor },
-    );
-    const { grant } = context;
-    return json({
-      data: result.data.filter(
-        (call) =>
-          (grant.session === undefined ||
-            call.session === undefined ||
-            call.session === grant.session) &&
-          (grant.conversations === "all" ||
-            (call.conversationId !== undefined &&
-              grant.conversations.includes(call.conversationId))),
-      ),
-      nextCursor: result.nextCursor ?? null,
-    });
   }
 
   async function events(request: Request): Promise<Response> {

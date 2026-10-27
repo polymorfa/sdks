@@ -723,44 +723,13 @@ describe("createDevelopmentInboxStore", () => {
   });
 });
 
-describe("GET /history/calls", () => {
-  const calls = [
-    { id: "c1", session: "support", direction: "inbound" as const, outcome: "missed" as const, video: false, startedAt: 2, peer: { id: "chat_1" }, conversationId: "chat_1" },
-    { id: "c2", session: "support", direction: "outbound" as const, outcome: "answered" as const, video: true, startedAt: 1, peer: { id: "chat_9" }, conversationId: "chat_9" },
-    { id: "c3", session: "support", direction: "inbound" as const, outcome: "failed" as const, video: false, startedAt: 0, peer: {} },
-    { id: "c4", session: "sales", direction: "inbound" as const, outcome: "missed" as const, video: false, startedAt: 0, peer: { id: "chat_1" }, conversationId: "chat_1" },
-  ];
-  const history = {
-    conversations: async () => ({ data: [] }),
-    messages: async () => ({ data: [] }),
-    calls: vi.fn(async () => ({ data: calls, nextCursor: "next" })),
-  };
-
-  it("needs read_calls", async () => {
-    const { route } = handler({ history });
-    expect((await route.GET(get("history/calls"))).status).toBe(403);
-  });
-
-  it("keeps only calls in the grant's session and conversations", async () => {
-    const { route } = handler({
-      history,
-      mint: () => ({ ...grant, allow: ["read_calls"] }),
+describe("call events and call records", () => {
+  it("forwards read_calls on session grants as an API action", async () => {
+    const { route, polymorfa } = handler({
+      mint: () => ({ ...grant, allow: ["read_messages", "read_calls"] }),
     });
-    const response = await route.GET(get("history/calls?cursor=abc"));
-    expect(response.status).toBe(200);
-    const body = (await response.json()) as { data: { id: string }[]; nextCursor: string };
-    expect(body.data.map((call) => call.id)).toEqual(["c1"]);
-    expect(body.nextCursor).toBe("next");
-    expect(history.calls).toHaveBeenLastCalledWith(expect.anything(), { cursor: "abc" });
-  });
-
-  it("returns every session call to a grant covering all conversations", async () => {
-    const { route } = handler({
-      history,
-      mint: () => ({ ...grant, conversations: "all", allow: ["read_calls"] }),
-    });
-    const body = (await (await route.GET(get("history/calls"))).json()) as { data: { id: string }[] };
-    expect(body.data.map((call) => call.id)).toEqual(["c1", "c2", "c3"]);
+    expect((await route.POST(post("token"))).status).toBe(200);
+    expect(polymorfa.clientTokens.mint.mock.calls[0]?.[0].allow).toEqual(["read_calls"]);
   });
 
   it("does not relay call events without a peer to a conversation-limited grant", async () => {

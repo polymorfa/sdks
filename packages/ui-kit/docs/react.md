@@ -103,6 +103,21 @@ Creating a group and adding members also need the session's client rules to
 use `recipientMode: "any"`. Customer-scoped tokens cannot carry group
 actions. Changing the group picture stays server-only.
 
+## Call log
+
+`<CallLog/>` lists the number's calls from `GET /messaging/{session}/calls`
+with the client token (`read_calls`): newest first, consecutive calls with
+the same person merged with a count, missed incoming calls in red, an
+All/Missed filter, call back and open chat. `<Inbox/>` shows it behind a
+Chats/Calls switch when the grant allows `read_calls`.
+
+```tsx
+<CallLog onOpen={(conversation) => inbox.open(conversation)} />
+```
+
+Pass `source` for your own backend, or `onCall` to place calls yourself.
+Calls recorded before caller identities were stored have no caller.
+
 ## Chat
 
 `ChatDrawer` shows a conversation with its composer. Pass

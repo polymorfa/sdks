@@ -301,7 +301,7 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
   #view: "chats" | "calls" = "chats";
   #calls: PolymorfaCallLogElement | undefined;
 
-  /** Where the Calls view reads from. Defaults to your handler's `history/calls`. */
+  /** Where the Calls view reads from. Defaults to the API (`read_calls`). */
   get callLog(): CallLogSource | undefined {
     return this.#callLogSource;
   }

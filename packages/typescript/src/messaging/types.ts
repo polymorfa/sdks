@@ -1873,6 +1873,7 @@ export interface MintSessionClientTokenRequest extends MintClientTokenBase {
     | "voip_signal"
     | "groups_read"
     | "groups_manage"
+    | "read_calls"
   )[];
 }
 
@@ -1923,6 +1924,7 @@ export type ClientAction =
   | "contact_delete"
   | "groups_read"
   | "groups_manage"
+  | "read_calls"
   | "widget_start"
   | "widget_pair"
   | "widget_status"

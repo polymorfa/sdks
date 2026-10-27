@@ -290,3 +290,45 @@ export interface BrowserCreateGroupRequest {
 
 /** Who may add participants. */
 export type BrowserGroupMemberAddMode = "admin_add" | "all_member_add";
+
+/** The other party on a call: user ID, phone number or username. */
+export interface BrowserCallPeer {
+  readonly id?: string;
+  readonly phoneNumber?: string;
+  readonly username?: string;
+}
+
+/** One call on a number, as `GET /messaging/{session}/calls` returns it. */
+export interface BrowserCallRecord {
+  readonly callId: string;
+  readonly projectId: string | null;
+  readonly sessionId: string;
+  readonly direction: "inbound" | "outbound";
+  readonly upstream: "linked_device" | "cloud_api";
+  readonly outcome: "answered" | "missed" | "declined" | "failed" | "in_progress";
+  readonly state: "offered" | "accepted" | "rejected" | "missed" | "ended";
+  readonly hasVideo: boolean;
+  /** Null on calls recorded before caller identities were stored. */
+  readonly peer: BrowserCallPeer | null;
+  readonly startedAt: string;
+  readonly connectedAt: string | null;
+  readonly endedAt: string | null;
+  readonly durationSeconds: number | null;
+  readonly endReason: string | null;
+}
+
+export interface BrowserListCallsParams {
+  readonly cursor?: string;
+  /** 1 to 100; default 25. */
+  readonly limit?: number;
+  readonly direction?: "inbound" | "outbound";
+  readonly outcome?: BrowserCallRecord["outcome"];
+  readonly since?: string;
+  readonly until?: string;
+}
+
+export interface BrowserCallPage {
+  readonly success: true;
+  readonly data: readonly BrowserCallRecord[];
+  readonly nextCursor: string | null;
+}

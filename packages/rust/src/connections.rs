@@ -292,6 +292,7 @@ pub enum SessionClientAction {
     VoipSignal,
     GroupsRead,
     GroupsManage,
+    ReadCalls,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]

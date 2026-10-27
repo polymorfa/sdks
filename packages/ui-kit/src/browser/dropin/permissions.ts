@@ -1,7 +1,7 @@
 /**
  * What a drop-in grant can allow. The API enforces the client-token actions
- * (`send_*`, `read_*`, `subscribe_presence`, `voip_*`); your handler enforces
- * the rest on its own routes (`read_messages`, `read_calls`, `subscribe_events`,
+ * (`send_*`, `read_*`, `subscribe_presence`, `voip_*`, `groups_*`); your handler enforces
+ * the rest on its own routes (`read_messages`, `subscribe_events`,
  * `connect_whatsapp`, `manage_templates`).
  */
 export type PolymorfaPermission =

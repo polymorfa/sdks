@@ -901,7 +901,7 @@ export interface InboxProps {
    * grant allows `read_calls` or `callLog` is set.
    */
   readonly calls?: boolean;
-  /** Where the Calls view reads from. Defaults to your handler's `history/calls`. */
+  /** Where the Calls view reads from. Defaults to the API (`read_calls`). */
   readonly callLog?: CallLogSource;
   readonly className?: string;
   readonly classNames?: SlotClassNames;

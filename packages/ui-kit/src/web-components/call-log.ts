@@ -1,6 +1,6 @@
 import {
   CallLogController,
-  createHandlerCallLogSource,
+  createApiCallLogSource,
   type CallLogEntry,
   type CallLogSnapshot,
   type CallLogSource,
@@ -28,8 +28,8 @@ function duration(seconds: number): string {
  * the call's conversation; call-back buttons fire `pmfa-call` with the
  * `CallLogEntry`, so your page places the call with its Calls client.
  *
- * Properties: `client`, `source` (defaults to your handler's
- * `history/calls` route and live call events), `controller`. Attribute
+ * Properties: `client`, `source` (defaults to the API,
+ * `GET /messaging/{session}/calls` with `read_calls`), `controller`. Attribute
  * `no-call-back` hides call-back buttons. Put extra header content in
  * `slot="actions"`.
  */
@@ -75,7 +75,7 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
     const client = this.client;
     const source =
       this.#source ??
-      (client?.can("read_calls") === true ? createHandlerCallLogSource(client) : undefined);
+      (client?.can("read_calls") === true ? createApiCallLogSource(client) : undefined);
     if (source === undefined) return;
     this.#owned = new CallLogController(source);
     this.controller = this.#owned;

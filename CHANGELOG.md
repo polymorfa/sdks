@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Call records name the other party. `CallRecord` and `CallRecordSummary`
+  gain `peer` (user ID, phone number, username) in all six SDKs; `peerRef` is
+  deprecated and set only on calls recorded before the change. Session
+  client tokens accept `read_calls` for `GET /messaging/{session}/calls`.
+  Requires the matching API change.
+- UI Kit call log: `<CallLog/>`, `<pmfa-call-log>` and an Inbox Chats/Calls
+  switch read the number's calls from the API, merge repeat calls as WhatsApp
+  does and offer call back. `ContactListView` now takes `className` and
+  `classNames`; `ContactList` and `<pmfa-contact-list>` show the Contacts list
+  on their own.
+- Drop-in handler: call events without a known peer are no longer relayed to
+  grants limited to conversations.
+
 - UI Kit: New chat and a contacts directory. `<NewChat/>` and
   `<pmfa-new-chat>` list the WhatsApp account's contacts (`read_contact`),
   search names without regard to case or accents, check unsaved numbers and

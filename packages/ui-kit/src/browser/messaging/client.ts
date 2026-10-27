@@ -9,7 +9,9 @@ import type {
   BrowserAsyncAcceptedData,
   BrowserChatPresenceData,
   BrowserContact,
+  BrowserCallPage,
   BrowserContactCheckResult,
+  BrowserListCallsParams,
   BrowserCreateGroupRequest,
   BrowserGroup,
   BrowserGroupInviteCode,
@@ -42,6 +44,7 @@ export class BrowserMessagingClient {
   readonly presence: BrowserPresenceResource;
   readonly contacts: BrowserContactsResource;
   readonly groups: BrowserGroupsResource;
+  readonly calls: BrowserCallsResource;
   readonly widget: BrowserWidgetResource;
 
   constructor(options: BrowserMessagingClientOptions) {
@@ -57,6 +60,7 @@ export class BrowserMessagingClient {
     this.presence = new BrowserPresenceResource(transport, session);
     this.contacts = new BrowserContactsResource(transport, session);
     this.groups = new BrowserGroupsResource(transport, session);
+    this.calls = new BrowserCallsResource(transport, session);
     this.widget = new BrowserWidgetResource(transport, session);
   }
 }
@@ -235,6 +239,37 @@ export class BrowserContactsResource {
       method: "GET",
       path: `${sessionRoot(this.session)}/contacts/check`,
       query: { phone: value },
+      ...options,
+    });
+  }
+}
+
+/** The number's calls, newest first, with each caller's identity (`read_calls`). */
+export class BrowserCallsResource {
+  constructor(
+    private readonly transport: BrowserTransport,
+    private readonly session: string,
+  ) {}
+
+  list(
+    params: BrowserListCallsParams = {},
+    options: BrowserActionOptions = {},
+  ): Promise<BrowserActionResponse<BrowserCallPage>> {
+    if (
+      params.limit !== undefined &&
+      (!Number.isInteger(params.limit) || params.limit < 1 || params.limit > 100)
+    )
+      throw new BrowserValidationError("limit must be 1 to 100.", "invalid_limit");
+    const query: Record<string, string> = {};
+    for (const key of ["cursor", "direction", "outcome", "since", "until"] as const) {
+      const value = params[key];
+      if (value !== undefined) query[key] = value;
+    }
+    if (params.limit !== undefined) query.limit = String(params.limit);
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionRoot(this.session)}/calls`,
+      query,
       ...options,
     });
   }

@@ -118,7 +118,8 @@ async fn session_client_token_ceiling_survives_native_json_and_http() {
             "voip_answer",
             "voip_signal",
             "groups_read",
-            "groups_manage"
+            "groups_manage",
+            "read_calls"
         ]),
     ] {
         let expected = json!({"ephemeralId":"visitor","session":"s","allow":allow});
@@ -154,12 +155,13 @@ fn session_client_token_ceiling_has_public_typed_actions() {
                 SessionClientAction::VoipSignal,
                 SessionClientAction::GroupsRead,
                 SessionClientAction::GroupsManage,
+                SessionClientAction::ReadCalls,
             ]),
         },
     };
     assert_eq!(
         serde_json::to_value(body).unwrap(),
-        json!({"ephemeralId":"visitor","session":"s","allow":["chats_read","chats_manage","contact_write","contact_delete","mcp","voip_place","voip_answer","voip_signal","groups_read","groups_manage"]})
+        json!({"ephemeralId":"visitor","session":"s","allow":["chats_read","chats_manage","contact_write","contact_delete","mcp","voip_place","voip_answer","voip_signal","groups_read","groups_manage","read_calls"]})
     );
 }
 

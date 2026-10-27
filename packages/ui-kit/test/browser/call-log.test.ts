@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   CallLogController,
-  callLogReducer,
+  PolymorfaClient,
+  createApiCallLogSource,
   groupCallLog,
   type CallLogEntry,
   type CallLogSource,
@@ -86,36 +87,39 @@ describe("CallLogController", () => {
   });
 });
 
-describe("callLogReducer", () => {
-  const relay = (event: string, payload: object, timestamp = "2026-10-27T10:00:00Z") => ({
-    id: `${event}-${Math.random()}`,
-    session: "support",
-    event,
-    timestamp,
-    payload,
-  });
-
-  it("follows a call from ringing to answered with its duration", () => {
-    const reduce = callLogReducer();
-    expect(reduce(relay("call.received", { callId: "c", from: { id: "1", phoneNumber: "+1555" }, hasVideo: true }))).toMatchObject({
-      outcome: "ongoing",
-      video: true,
-      peer: { id: "1", phoneNumber: "+1555" },
-      conversationId: "1",
+describe("createApiCallLogSource", () => {
+  it("reads the number's calls with read_calls and maps callers", async () => {
+    const calls: string[] = [];
+    const fetch = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input instanceof Request ? input.url : input);
+      if (url === "/api/polymorfa/token")
+        return Response.json({ value: "pmfa_ct_Zml4dHVyZQ", audience: "browser", expiresAt: Date.now() + 600_000, grant: { session: "support", conversations: "all", allow: ["read_calls"] } });
+      calls.push(new URL(url).pathname + new URL(url).search);
+      return Response.json({
+        success: true,
+        data: [
+          { callId: "c1", projectId: null, sessionId: "support", direction: "inbound", upstream: "linked_device", outcome: "in_progress", state: "offered", hasVideo: true, peer: { id: "15550100", phoneNumber: "+15550100" }, startedAt: "2026-10-27T10:00:00Z", connectedAt: null, endedAt: null, durationSeconds: null, endReason: null },
+          { callId: "c0", projectId: null, sessionId: "support", direction: "outbound", upstream: "linked_device", outcome: "answered", state: "ended", hasVideo: false, peer: null, startedAt: "2026-10-27T09:00:00Z", connectedAt: "2026-10-27T09:00:05Z", endedAt: "2026-10-27T09:02:05Z", durationSeconds: 120, endReason: "hangup" },
+        ],
+        nextCursor: "next",
+      });
     });
-    expect(
-      reduce(relay("call.ended", { callId: "c", from: null, durationSeconds: 125, direction: "inbound", hadVideo: true, reason: "hangup" }, "2026-10-27T10:03:00Z")),
-    ).toMatchObject({ outcome: "answered", durationSeconds: 125, startedAt: Date.parse("2026-10-27T10:00:00Z"), peer: { id: "1" } });
+    const client = new PolymorfaClient({ fetch, baseUrl: "https://api.example" });
+    await client.refresh();
+    const source = createApiCallLogSource(client, { names: (peer) => (peer.id === "15550100" ? "Ada" : undefined) });
+    const page = await source.list("c9");
+    expect(calls).toEqual(["/messaging/support/calls?cursor=c9&limit=50"]);
+    expect(page.nextCursor).toBe("next");
+    expect(page.entries[0]).toMatchObject({ id: "c1", outcome: "ongoing", video: true, peer: { id: "15550100", phoneNumber: "+15550100", name: "Ada" }, conversationId: "15550100", startedAt: Date.parse("2026-10-27T10:00:00Z") });
+    expect(page.entries[1]).toMatchObject({ id: "c0", outcome: "answered", durationSeconds: 120, peer: {} });
+    expect(page.entries[1]).not.toHaveProperty("conversationId");
   });
 
-  it("keeps missed and declined, and ignores other events", () => {
-    const reduce = callLogReducer();
-    reduce(relay("call.received", { callId: "m", from: { id: "1" } }));
-    reduce(relay("call.missed", { callId: "m", from: { id: "1" }, reason: "timeout" }));
-    expect(reduce(relay("call.ended", { callId: "m", from: { id: "1" }, durationSeconds: 0, direction: "inbound", hadVideo: false, reason: "timeout" }))?.outcome).toBe("missed");
-    reduce(relay("call.received", { callId: "r", from: { id: "2" } }));
-    expect(reduce(relay("call.rejected", { callId: "r", from: { id: "2" } }))?.outcome).toBe("declined");
-    expect(reduce(relay("message.received", { id: "x" }))).toBeUndefined();
-    expect(reduce(relay("call.telemetry", { callId: "q", setupMs: 3 }))).toBeUndefined();
+  it("refuses without read_calls", async () => {
+    const fetch = vi.fn(async () => Response.json({ value: "pmfa_ct_Zml4dHVyZQ", audience: "browser", expiresAt: Date.now() + 600_000, grant: { session: "support", conversations: "all", allow: [] } }));
+    const client = new PolymorfaClient({ fetch });
+    await client.refresh();
+    await expect(createApiCallLogSource(client).list()).rejects.toMatchObject({ code: "permission_missing" });
+    expect(fetch).toHaveBeenCalledOnce();
   });
 });
