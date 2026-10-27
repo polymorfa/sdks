@@ -25,6 +25,11 @@ import { CallsSignalingClient } from "./signaling.js";
 export interface BrowserCallsOptions extends BrowserTransportOptions {
   /** Local call identity. Requests use the client token's bound session. */
   readonly session: string;
+  /**
+   * Set when the client token is Customer-scoped: the number it acts for,
+   * sent as `?session=` on Calls requests and the lifecycle socket.
+   */
+  readonly clientTokenSession?: string;
   readonly WebSocket?: CallsClientOptions["WebSocket"];
   readonly controller?: CallsControllerOptions;
   /**
@@ -81,12 +86,19 @@ export function createBrowserCalls(
   publicOptions: BrowserCallsOptions,
 ): BrowserCalls {
   const options = publicOptions as InternalBrowserCallsOptions;
-  const transport = new BrowserTransport(options);
+  const base = new BrowserTransport(options);
+  const transport =
+    options.clientTokenSession === undefined
+      ? base
+      : withSessionQuery(base, options.clientTokenSession);
   const api = new BrowserCallsApi(transport);
   const clientOptions: InternalCallsClientOptions = {
     session: options.session,
     api,
     mediaMode: "external",
+    ...(options.clientTokenSession === undefined
+      ? {}
+      : { clientTokenSession: options.clientTokenSession }),
     ...(options.WebSocket === undefined
       ? {}
       : { WebSocket: options.WebSocket }),
@@ -359,4 +371,21 @@ export function createBrowserCalls(
 
 function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : "Call operation failed.";
+}
+
+/** Adds `?session=` to every Calls request, for Customer-scoped tokens. */
+function withSessionQuery(
+  transport: BrowserTransport,
+  session: string,
+): BrowserTransport {
+  return new Proxy(transport, {
+    get(target, property, receiver) {
+      if (property !== "request") return Reflect.get(target, property, receiver);
+      return (request: Parameters<BrowserTransport["request"]>[0]) =>
+        target.request({
+          ...request,
+          query: { ...request.query, session },
+        });
+    },
+  });
 }

@@ -43,6 +43,8 @@ export interface LifecycleSocketOptions {
    * Ignored for client tokens.
    */
   readonly participant?: string;
+  /** The number a Customer-scoped client token acts for, sent as `?session=`. */
+  readonly clientTokenSession?: string;
   readonly WebSocket?: typeof globalThis.WebSocket;
   readonly setTimeout?: typeof globalThis.setTimeout;
   readonly clearTimeout?: typeof globalThis.clearTimeout;
@@ -499,9 +501,15 @@ export class LifecycleSocket extends Emitter<Events> {
     }
   }
 
-  /** `/voip/ws`, naming the session only for server credentials. */
+  /**
+   * `/voip/ws`. Server credentials name the session and participant; a
+   * Customer-scoped client token names only the number it acts for.
+   */
   #path(token: CallsToken): string {
-    if (isClientToken(token.value)) return LIFECYCLE_SOCKET_PATH;
+    if (isClientToken(token.value))
+      return this.#o.clientTokenSession === undefined
+        ? LIFECYCLE_SOCKET_PATH
+        : `${LIFECYCLE_SOCKET_PATH}?session=${encodeURIComponent(this.#o.clientTokenSession)}`;
     const query = new URLSearchParams();
     if (this.#o.session !== undefined) query.set("session", this.#o.session);
     if (this.#o.participant !== undefined)

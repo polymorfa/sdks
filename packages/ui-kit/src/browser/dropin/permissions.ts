@@ -24,6 +24,17 @@ export type PolymorfaPermission =
   | "voip_signal"
   | "groups_read"
   | "groups_manage"
+  | "conversations_read"
+  | "conversations_manage"
+  | "labels_read"
+  | "labels_manage"
+  | "contacts_manage"
+  | "profile_read"
+  | "profile_manage"
+  | "channels_read"
+  | "channels_manage"
+  | "business_read"
+  | "presence_write"
   | "connect_whatsapp"
   | "manage_templates";
 
@@ -48,6 +59,17 @@ export const POLYMORFA_PERMISSIONS: readonly PolymorfaPermission[] =
     "voip_signal",
     "groups_read",
     "groups_manage",
+    "conversations_read",
+    "conversations_manage",
+    "labels_read",
+    "labels_manage",
+    "contacts_manage",
+    "profile_read",
+    "profile_manage",
+    "channels_read",
+    "channels_manage",
+    "business_read",
+    "presence_write",
     "connect_whatsapp",
     "manage_templates",
   ]);

@@ -95,6 +95,20 @@ session's recipient mode `any`. Group capabilities and the group picture are
 server-only. `InboxController.open(conversation)` selects a conversation that
 is not in the list yet; it stays in `draft` until its first message.
 
+## The rest of a messaging frontend
+
+`client.messaging()` also reaches, with the matching client-token action:
+`chats` for stored conversations and messages (`conversations_read`; the API
+answers `hms_not_enabled` when hosted message storage is off) and archive,
+disappearing messages, edit and delete (`conversations_manage`); `labels`;
+`profile` for the account's profile, picture, privacy settings and default
+disappearing timer; `channels`; `catalog`; `presence.set`; and contact
+`block`, `unblock`, `blocked`, `info` and `businessProfile`. Pictures are
+base64; client tokens cannot pass a URL.
+
+A Customer-scoped token covers several numbers. Pass the one a call uses as
+`clientTokenSession` to `createBrowserCalls`; it is sent as `?session=`.
+
 ## Call permission requests
 
 The next SDK release types call permission request content for Cloud API

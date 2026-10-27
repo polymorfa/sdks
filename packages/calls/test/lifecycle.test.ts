@@ -336,3 +336,24 @@ describe("LifecycleSocket listener failures", () => {
     h.socket.close();
   });
 });
+
+describe("Customer-scoped client tokens", () => {
+  it("names the number on the lifecycle socket", async () => {
+    FakeWebSocket.instances = [];
+    const t = timers();
+    const socket = new LifecycleSocket({
+      api: fakeApi(),
+      session: "support",
+      clientTokenSession: "sales",
+      WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
+      setTimeout: t.setTimeout,
+      clearTimeout: t.clearTimeout,
+      setInterval: t.setInterval,
+      clearInterval: t.clearInterval,
+    });
+    void socket.connect().catch(() => undefined);
+    await flush();
+    expect(FakeWebSocket.instances[0]!.url).toBe("wss://api.example/voip/ws?session=sales");
+    socket.close();
+  });
+});

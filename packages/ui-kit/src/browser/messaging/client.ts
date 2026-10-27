@@ -1,3 +1,10 @@
+import {
+  BrowserCatalogResource,
+  BrowserChannelsResource,
+  BrowserChatsResource,
+  BrowserLabelsResource,
+  BrowserProfileResource,
+} from "./account.js";
 import { BrowserValidationError } from "../errors.js";
 import {
   BrowserTransport,
@@ -45,6 +52,11 @@ export class BrowserMessagingClient {
   readonly contacts: BrowserContactsResource;
   readonly groups: BrowserGroupsResource;
   readonly calls: BrowserCallsResource;
+  readonly chats: BrowserChatsResource;
+  readonly labels: BrowserLabelsResource;
+  readonly profile: BrowserProfileResource;
+  readonly channels: BrowserChannelsResource;
+  readonly catalog: BrowserCatalogResource;
   readonly widget: BrowserWidgetResource;
 
   constructor(options: BrowserMessagingClientOptions) {
@@ -61,6 +73,11 @@ export class BrowserMessagingClient {
     this.contacts = new BrowserContactsResource(transport, session);
     this.groups = new BrowserGroupsResource(transport, session);
     this.calls = new BrowserCallsResource(transport, session);
+    this.chats = new BrowserChatsResource(transport, session);
+    this.labels = new BrowserLabelsResource(transport, session);
+    this.profile = new BrowserProfileResource(transport, session);
+    this.channels = new BrowserChannelsResource(transport, session);
+    this.catalog = new BrowserCatalogResource(transport, session);
     this.widget = new BrowserWidgetResource(transport, session);
   }
 }
@@ -161,6 +178,19 @@ export class BrowserPresenceResource {
     });
   }
 
+  /** Set the account's own availability (`presence_write`). */
+  set(
+    presence: "available" | "unavailable",
+    options: BrowserActionOptions = {},
+  ): Promise<BrowserActionResponse<BrowserSuccessResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionRoot(this.session)}/presence`,
+      body: { presence },
+      ...options,
+    });
+  }
+
   subscribe(
     chatId: string,
     options: BrowserActionOptions = {},
@@ -218,6 +248,29 @@ export class BrowserContactsResource {
       path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/picture`,
       ...options,
     });
+  }
+
+  /** Block a contact (`contacts_manage`). */
+  block(contactId: string, options: BrowserActionOptions = {}): Promise<BrowserActionResponse<BrowserSuccessResponse>> {
+    return this.transport.request({ method: "POST", path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/block`, ...options });
+  }
+
+  unblock(contactId: string, options: BrowserActionOptions = {}): Promise<BrowserActionResponse<BrowserSuccessResponse>> {
+    return this.transport.request({ method: "POST", path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/unblock`, ...options });
+  }
+
+  /** Blocked contacts (`read_contact`). */
+  blocked(options: BrowserActionOptions = {}): Promise<BrowserActionResponse<BrowserSuccessEnvelope<readonly BrowserContact[]>>> {
+    return this.transport.request({ method: "GET", path: `${sessionRoot(this.session)}/contacts/blocked`, ...options });
+  }
+
+  /** The contact's About text and account details (`read_contact`). */
+  info(contactId: string, options: BrowserActionOptions = {}): Promise<BrowserActionResponse<BrowserSuccessEnvelope<Readonly<Record<string, unknown>>>>> {
+    return this.transport.request({ method: "GET", path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/info`, ...options });
+  }
+
+  businessProfile(contactId: string, options: BrowserActionOptions = {}): Promise<BrowserActionResponse<BrowserSuccessEnvelope<Readonly<Record<string, unknown>>>>> {
+    return this.transport.request({ method: "GET", path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/business-profile`, ...options });
   }
 
   check(
@@ -360,6 +413,12 @@ export class BrowserGroupsResource {
 
   demote(groupId: string, participants: readonly string[], options: BrowserActionOptions = {}): Promise<Done> {
     return this.members(groupId, "admin/demote", participants, options);
+  }
+
+  /** Base64 image bytes; client tokens cannot pass a URL. */
+  setPicture(groupId: string, base64: string, options: BrowserActionOptions = {}): Promise<Done> {
+    requireText(base64, "base64 is required.", "missing_picture");
+    return this.call("PUT", `${this.group(groupId)}/picture`, { base64 }, options);
   }
 
   /** Only admins may edit the group name, description and picture. */

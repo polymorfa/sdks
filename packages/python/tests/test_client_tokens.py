@@ -47,6 +47,8 @@ CASES = [
                 "groups_read",
                 "groups_manage",
                 "read_calls",
+                "conversations_read",
+                "presence_write",
             ],
         },
         TOKEN,
@@ -66,6 +68,8 @@ CASES = [
                     "groups_read",
                     "groups_manage",
                     "read_calls",
+                    "conversations_read",
+                    "presence_write",
                 ],
             }
         ),

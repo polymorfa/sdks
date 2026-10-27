@@ -1854,7 +1854,24 @@ export type CustomerClientTokenAction =
   | "chats_read"
   | "chats_manage"
   | "contact_write"
-  | "contact_delete";
+  | "contact_delete"
+  | "voip_place"
+  | "voip_answer"
+  | "voip_signal"
+  | "groups_read"
+  | "groups_manage"
+  | "read_calls"
+  | "conversations_read"
+  | "conversations_manage"
+  | "labels_read"
+  | "labels_manage"
+  | "contacts_manage"
+  | "profile_read"
+  | "profile_manage"
+  | "channels_read"
+  | "channels_manage"
+  | "business_read"
+  | "presence_write";
 
 interface MintClientTokenBase {
   readonly ephemeralId: string;
@@ -1865,16 +1882,7 @@ interface MintClientTokenBase {
 export interface MintSessionClientTokenRequest extends MintClientTokenBase {
   readonly session: string;
   readonly customer?: never;
-  readonly allow?: readonly (
-    | CustomerClientTokenAction
-    | "mcp"
-    | "voip_place"
-    | "voip_answer"
-    | "voip_signal"
-    | "groups_read"
-    | "groups_manage"
-    | "read_calls"
-  )[];
+  readonly allow?: readonly (CustomerClientTokenAction | "mcp")[];
 }
 
 /**
@@ -1925,6 +1933,17 @@ export type ClientAction =
   | "groups_read"
   | "groups_manage"
   | "read_calls"
+  | "conversations_read"
+  | "conversations_manage"
+  | "labels_read"
+  | "labels_manage"
+  | "contacts_manage"
+  | "profile_read"
+  | "profile_manage"
+  | "channels_read"
+  | "channels_manage"
+  | "business_read"
+  | "presence_write"
   | "widget_start"
   | "widget_pair"
   | "widget_status"

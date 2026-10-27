@@ -80,7 +80,7 @@ describe("createMessagingClientTokenMint", () => {
     );
   });
 
-  it.each(["send_message", ["unknown"], ["voip_place"]])(
+  it.each(["send_message", ["unknown"], ["mcp"]])(
     "refuses invalid Customer allow %j before transport",
     async (allow) => {
       const mint = vi.fn();

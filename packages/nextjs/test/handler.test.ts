@@ -197,7 +197,7 @@ describe("POST /token", () => {
       "voip_signal",
     ]);
   });
-  it("forwards group actions on session grants and drops them from Customer grants", async () => {
+  it("forwards group actions on session and Customer grants", async () => {
     const session = handler({
       mint: () => ({
         ...grant,
@@ -219,7 +219,7 @@ describe("POST /token", () => {
     expect((await customer.route.POST(post("token"))).status).toBe(200);
     expect(
       customer.polymorfa.clientTokens.mint.mock.calls[0]?.[0].allow,
-    ).toEqual(["read_contact"]);
+    ).toEqual(["read_contact", "groups_read", "groups_manage"]);
   });
   it("mints an explicit zero API ceiling for a wrapper-only session grant", async () => {
     const { route, polymorfa } = handler({

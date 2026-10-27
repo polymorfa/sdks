@@ -271,6 +271,23 @@ pub enum CustomerClientAction {
     ChatsManage,
     ContactWrite,
     ContactDelete,
+    VoipPlace,
+    VoipAnswer,
+    VoipSignal,
+    GroupsRead,
+    GroupsManage,
+    ReadCalls,
+    ConversationsRead,
+    ConversationsManage,
+    LabelsRead,
+    LabelsManage,
+    ContactsManage,
+    ProfileRead,
+    ProfileManage,
+    ChannelsRead,
+    ChannelsManage,
+    BusinessRead,
+    PresenceWrite,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -293,6 +310,17 @@ pub enum SessionClientAction {
     GroupsRead,
     GroupsManage,
     ReadCalls,
+    ConversationsRead,
+    ConversationsManage,
+    LabelsRead,
+    LabelsManage,
+    ContactsManage,
+    ProfileRead,
+    ProfileManage,
+    ChannelsRead,
+    ChannelsManage,
+    BusinessRead,
+    PresenceWrite,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]

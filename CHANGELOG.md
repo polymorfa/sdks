@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Client tokens cover a messaging frontend. All six SDKs, the drop-in handler
+  and the UI Kit accept the new session actions `conversations_read`,
+  `conversations_manage`, `labels_read`, `labels_manage`, `contacts_manage`,
+  `profile_read`, `profile_manage`, `channels_read`, `channels_manage`,
+  `business_read` and `presence_write`. Customer-scoped tokens accept every
+  action except `mcp`, including Calls, groups and call records. Requires the
+  matching API change.
+- UI Kit: `client.messaging()` gains `chats` (history, archive, disappearing
+  messages, edit and delete), `labels`, `profile` (profile and privacy),
+  `channels`, `catalog`, `presence.set`, contact block, unblock and info, and
+  `groups.setPicture` (base64). Browser Calls take `clientTokenSession` so a
+  Customer token names the number it calls from.
+
 - Call records name the other party. `CallRecord` and `CallRecordSummary`
   gain `peer` (user ID, phone number, username) in all six SDKs; `peerRef` is
   deprecated and set only on calls recorded before the change. Session
