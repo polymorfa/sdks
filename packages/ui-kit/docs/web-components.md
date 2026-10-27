@@ -28,7 +28,42 @@ is the recipient's only credential.
 `defineUiKit` is the equivalent of `<PolymorfaProvider tokenEndpoint>`:
 one client that refreshes tokens, shared by every element. Elements hide
 controls the grant lacks and warn once in development. `<pmfa-inbox>` has the
-conversation list and chat; the contact panel is React-only for now.
+conversation list, chat, New chat and Group info; the person contact panel is
+React-only for now.
+
+## New chat, contacts and groups
+
+```html
+<pmfa-new-chat closable></pmfa-new-chat>
+<pmfa-group-details group-id="120363012345678901" self-id="447700900123" closable></pmfa-group-details>
+<script type="module">
+  const chat = document.querySelector("pmfa-new-chat");
+  chat.addEventListener("pmfa-open", (event) => openConversation(event.detail));
+  chat.addEventListener("pmfa-close", () => chat.remove());
+</script>
+```
+
+`<pmfa-new-chat>` lists the account's contacts (`read_contact`), checks
+unsaved numbers and, with `groups_manage`, creates groups. It fires
+`pmfa-open` with an `InboxConversation` and never sends a message itself.
+`no-groups` hides New group. `<pmfa-group-details>` reads one group
+(`groups_read`) and makes changes with `groups_manage`; it fires `pmfa-close`
+and `pmfa-left`. Both accept `contacts`, `groups`/`source` and `controller`
+properties for your own backend. In `<pmfa-inbox>`, set `contacts` and
+`groups` the same way, `self-id` to mark the account in groups, and
+`no-new-chat` to hide the button.
+
+Vue binds the events with `@pmfa-open`:
+
+```vue
+<pmfa-new-chat closable @pmfa-open="open($event.detail)" @pmfa-close="closed = true" />
+```
+
+Svelte 5 uses `onpmfa-open`:
+
+```svelte
+<pmfa-new-chat closable onpmfa-open={(event) => open(event.detail)}></pmfa-new-chat>
+```
 
 ```ts
 import { definePolymorfaElements } from "@polymorfa/ui-kit/web-components";

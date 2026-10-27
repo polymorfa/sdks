@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+- UI Kit: New chat and a contacts directory. `<NewChat/>` and
+  `<pmfa-new-chat>` list the WhatsApp account's contacts (`read_contact`),
+  search names without regard to case or accents, check unsaved numbers and
+  open the chosen chat as a draft until its first message. The Inbox shows
+  them from its New chat button.
+- UI Kit: groups. `<GroupDetails/>` and `<pmfa-group-details>` show a group's
+  info and members and make the changes client tokens allow: create, rename,
+  describe, add and remove members, promote and demote admins, read and reset
+  the invite link, the four settings and exit. Group threads name each
+  message's author. Framework-neutral `ContactDirectoryController`,
+  `NewChatController`, `GroupController` and `client.messaging().groups`
+  back both. Relayed group messages no longer rename the chat after their
+  sender.
+- Client tokens: `groups_read` and `groups_manage` in all six server SDKs,
+  the drop-in handler and the UI Kit, for session tokens only. Requires the
+  matching API change; until it is accepted the API refuses these actions.
+- UI Kit calls: toggle buttons no longer report `aria-pressed` alongside an
+  action label ("Turn camera on", pressed). `CallNumberPicker` now renders
+  with the shared stylesheet and a `callNumberPicker` slot.
+- UI Kit Inbox: with a custom `source` and no provider client, opening a
+  conversation with a phone number no longer throws from the call button.
+
 - Breaking: the browser UI packages are now one package, the UI Kit
   (`@polymorfa/ui-kit`), with one version. Change each import as follows:
   `@polymorfa/browser` to `@polymorfa/ui-kit`, `@polymorfa/react` to

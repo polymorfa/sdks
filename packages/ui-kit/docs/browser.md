@@ -61,6 +61,40 @@ message resource for text and reply sends. Supply an upload adapter and a
 `createMessage` mapping for attachments; client tokens cannot call the media
 routes directly.
 
+## Contacts and groups
+
+`ContactDirectoryController` loads the WhatsApp account's contacts once,
+filters them by name (case and accents folded) or digits, and can check an
+unsaved number with `lookupPhone()`. An older load or lookup never replaces a
+newer one; `setSource()` drops results from the previous session.
+`NewChatController` adds starting a one-to-one chat and the two-step
+new-group flow. `GroupController` holds one group and makes every change
+client tokens allow, reloading after each.
+
+```ts
+import {
+  NewChatController,
+  createApiContactSource,
+  createApiGroupSource,
+} from "@polymorfa/ui-kit";
+
+const chat = new NewChatController({
+  contacts: createApiContactSource(client), // read_contact
+  groups: createApiGroupSource(client), // groups_manage; omit to hide groups
+  onOpen: (conversation) => inbox.open(conversation),
+});
+chat.start();
+```
+
+`client.messaging().groups` calls the group routes directly: `list`,
+`retrieve`, `participants`, `inviteCode`, `joinInfo` (`groups_read`) and
+`create`, `join`, `leave`, `setSubject`, `setDescription`,
+`revokeInviteCode`, `addParticipants`, `removeParticipants`, `promote`,
+`demote` and the four settings (`groups_manage`). Creating and adding need the
+session's recipient mode `any`. Group capabilities and the group picture are
+server-only. `InboxController.open(conversation)` selects a conversation that
+is not in the list yet; it stays in `draft` until its first message.
+
 ## Call permission requests
 
 The next SDK release types call permission request content for Cloud API

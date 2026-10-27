@@ -26,6 +26,8 @@ the grant for rendering only. `appearance` and `locale` work as before.
 | ---------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | `<Inbox/>`                               | `read_messages`    | List, chat and contact panel. Composer needs `send_message`, contact panel `read_contact`, the call button `voip_place` |
 | `<ConversationList/>`, `<ContactPanel/>` |                    | Inbox parts, usable alone                                                                                               |
+| `<NewChat onOpen/>`                      | `read_contact`     | Contacts directory, number lookup and, with `groups_manage`, New group                                                  |
+| `<GroupDetails groupId/>`                | `groups_read`      | Group info and roster; changes need `groups_manage`                                                                     |
 | `<ConnectWhatsAppButton/>`               | `connect_whatsapp` | Opens Polymorfa's hosted QuickLink page; never embeds it                                                                |
 | `<QuickLinkButton url/>`                 |                    | Link to a QuickLink your server already created; no token or handler call                                               |
 | `<SessionStatus/>`                       |                    | Connection badge with a Retry button                                                                                    |
@@ -70,6 +72,36 @@ controllers are disposed by the binding. `useController` and
 The chat and template components add the shared `@polymorfa/ui-kit/appearance` stylesheet
 to the document on mount and use `pmfa-*` class names, so a host stylesheet
 can adjust them. Visible text comes from the provider's locale.
+
+## New chat, contacts and groups
+
+`<Inbox/>` shows a New chat button above the list when contacts can be read.
+It opens `<NewChat/>` in the list column: the WhatsApp account's contacts,
+searchable by name (ignoring case and accents) or by number. A number that is
+not saved can be checked on WhatsApp and then messaged. The chosen chat opens
+as a draft and joins the list with its first message. Nothing is sent until
+the user sends a message.
+
+```tsx
+import { GroupDetails, NewChat } from "@polymorfa/ui-kit/react";
+
+<NewChat onOpen={(conversation) => inbox.open(conversation)} onClose={close} />
+<GroupDetails groupId="120363012345678901" selfId={accountUserId} />
+```
+
+`<NewChat groups={false}/>` hides New group. Pass `contacts` or `groups` to
+read from your own backend instead of the API. Group conversations
+(`kind: "group"`) name the author of each run of messages and show Group info
+instead of the contact panel: name, description, members (named from your
+contacts), admin actions, invite link, settings and Exit group. WhatsApp
+decides whether this account may make each change; a refusal shows as an
+error. The API does not report a group's current settings, so the settings
+apply a choice without showing one as current. `selfId` is optional; the
+API does not report the account's own user ID.
+
+Creating a group and adding members also need the session's client rules to
+use `recipientMode: "any"`. Customer-scoped tokens cannot carry group
+actions. Changing the group picture stays server-only.
 
 ## Chat
 
