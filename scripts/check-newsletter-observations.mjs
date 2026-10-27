@@ -12,14 +12,38 @@ assert.equal(contract.published, false);
 assert.equal(contract.polymorfaVersion, "2026-09-22");
 const ajv = new Ajv({ strict: false });
 addFormats(ajv);
+// OpenAPI 3.0 uses boolean exclusive bounds; Ajv consumes JSON Schema bounds.
+function jsonSchema(value) {
+  if (Array.isArray(value)) return value.map(jsonSchema);
+  if (value === null || typeof value !== "object") return value;
+  const result = Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [key, jsonSchema(item)]),
+  );
+  for (const bound of ["Minimum", "Maximum"]) {
+    const exclusive = `exclusive${bound}`,
+      inclusive = bound.toLowerCase();
+    if (typeof result[exclusive] === "boolean") {
+      if (result[exclusive]) result[exclusive] = result[inclusive];
+      else delete result[exclusive];
+    }
+  }
+  return result;
+}
 const validate = (name) =>
-  ajv.compile({ ...contract, $ref: `#/components/schemas/${name}` });
+  ajv.compile({
+    components: jsonSchema(contract.components),
+    $ref: `#/components/schemas/${name}`,
+  });
 const payload = validate("NewsletterUpdatePayload");
 const fixture = read(
   "contracts/fixtures/newsletter-observations/delivery.json",
 );
 for (const event of fixture.events)
   assert.ok(payload(event.payload), JSON.stringify(payload.errors));
+assert.equal(
+  payload({ id: "123", action: "live_update", messages: [{ position: 0 }] }),
+  false,
+);
 const channel = validate("ChannelMessage");
 assert.ok(
   channel(
