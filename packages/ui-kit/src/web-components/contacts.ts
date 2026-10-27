@@ -755,6 +755,9 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
     });
     this.controller = this.#owned;
     void this.#owned.load();
+    // Name participants from the address book when contacts are readable.
+    const directory = this.#directoryController();
+    if (directory?.getSnapshot().status === "idle") void directory.load();
   }
 
   #directoryController(): ContactDirectoryController | undefined {
@@ -771,8 +774,12 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
 
   #nameOf(participant: BrowserGroupParticipant): string {
     if (participant.id === this.getAttribute("self-id")) return this.text("group.you");
+    const known = this.#directory
+      ?.getSnapshot()
+      .contacts.find((contact) => contact.id === participant.id);
     return (
       this.resolveName?.(participant) ??
+      (known === undefined ? undefined : contactDisplayName(known)) ??
       participant.phoneNumber ??
       participant.username ??
       participant.id
@@ -816,7 +823,9 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
         ? ""
         : snapshot.failed !== undefined && snapshot.failed !== "load"
           ? this.text("group.failed", { error: snapshot.error ?? "" })
-          : snapshot.done !== undefined && snapshot.done !== "leave"
+          : snapshot.done !== undefined &&
+              snapshot.done !== "leave" &&
+              snapshot.done !== "inviteCode"
             ? this.text("group.saved")
             : "";
     if (snapshot.status === "left") {

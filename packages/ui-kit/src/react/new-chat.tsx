@@ -4,6 +4,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type KeyboardEvent,
   type ReactNode,
 } from "react";
@@ -40,6 +41,20 @@ import {
 } from "./context.js";
 import { Avatar } from "./dropin.js";
 import { useController, useOwnedController } from "./hooks.js";
+
+const NO_SUBSCRIPTION = () => () => undefined;
+const NO_SNAPSHOT = () => undefined;
+
+/** `useController` for a controller that may be absent. */
+function useOptionalController<T>(
+  controller: { getSnapshot(): T; subscribe(listener: () => void): () => void } | undefined,
+): T | undefined {
+  return useSyncExternalStore(
+    controller?.subscribe ?? NO_SUBSCRIPTION,
+    controller?.getSnapshot ?? NO_SNAPSHOT,
+    controller?.getSnapshot ?? NO_SNAPSHOT,
+  );
+}
 
 type Configuration = ReturnType<typeof usePolymorfa>;
 
@@ -658,6 +673,21 @@ export function GroupDetails({
   useEffect(() => {
     if (group.getSnapshot().status === "idle") void group.load();
   }, [group]);
+  // One directory for "Add members" and for naming participants.
+  const directory = useOwnedController<ContactDirectoryController>(
+    contacts instanceof ContactDirectoryController ? contacts : undefined,
+    contacts === undefined || contacts instanceof ContactDirectoryController
+      ? undefined
+      : () => new ContactDirectoryController(contacts),
+  );
+  const people: ContactDirectorySnapshot | undefined = useOptionalController(directory);
+  useEffect(() => {
+    if (directory?.getSnapshot().status === "idle") void directory.load();
+  }, [directory]);
+  const known = useMemo(
+    () => new Map((people?.contacts ?? []).map((contact) => [contact.id, contactDisplayName(contact)])),
+    [people],
+  );
   const latestLeft = useRef(onLeft);
   latestLeft.current = onLeft;
   useEffect(() => {
@@ -674,6 +704,7 @@ export function GroupDetails({
     participant.id === selfId
       ? text(configuration, "group.you")
       : (resolveName?.(participant) ??
+        known.get(participant.id) ??
         participant.phoneNumber ??
         participant.username ??
         participant.id);
@@ -715,7 +746,9 @@ export function GroupDetails({
           ? ""
           : snapshot.failed !== undefined && snapshot.failed !== "load"
             ? text(configuration, "group.failed", { error: snapshot.error ?? "" })
-            : snapshot.done !== undefined && snapshot.done !== "leave"
+            : snapshot.done !== undefined &&
+                snapshot.done !== "leave" &&
+                snapshot.done !== "inviteCode"
               ? text(configuration, "group.saved")
               : ""}
       </p>
@@ -777,9 +810,9 @@ export function GroupDetails({
             onSave={(value) => group.describe(value)}
           />
 
-          {manage && contacts !== undefined && (
+          {manage && directory !== undefined && (
             <AddMembers
-              contacts={contacts}
+              directory={directory}
               existing={info.participants.map((participant) => participant.id)}
               disabled={busy}
               configuration={configuration}
@@ -1087,14 +1120,14 @@ function LeaveGroup({
 }
 
 function AddMembers({
-  contacts,
+  directory,
   existing,
   disabled,
   configuration,
   slots,
   onAdd,
 }: {
-  readonly contacts: ContactDirectorySource | ContactDirectoryController;
+  readonly directory: ContactDirectoryController;
   readonly existing: readonly string[];
   readonly disabled: boolean;
   readonly configuration: Configuration;
@@ -1103,12 +1136,6 @@ function AddMembers({
 }) {
   const [open, setOpen] = useState(false);
   const [picked, setPicked] = useState<readonly string[]>([]);
-  const directory = useOwnedController<ContactDirectoryController>(
-    contacts instanceof ContactDirectoryController ? contacts : undefined,
-    contacts instanceof ContactDirectoryController
-      ? undefined
-      : () => new ContactDirectoryController(contacts),
-  )!;
   const snapshot: ContactDirectorySnapshot = useController(directory);
   useEffect(() => {
     if (open && directory.getSnapshot().status === "idle") void directory.load();
