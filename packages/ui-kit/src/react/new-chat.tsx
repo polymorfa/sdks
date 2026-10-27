@@ -302,9 +302,11 @@ export function NewChat({
     throw new Error(
       '<NewChat/> needs <PolymorfaProvider tokenEndpoint="/api/polymorfa/token"> or a contacts source.',
     );
+  // Without a client the API default does not exist, whatever `can()` says.
   const canCreate =
     groups !== false &&
-    (groups !== undefined || permissions.can("groups_manage"));
+    (groups !== undefined ||
+      (client !== undefined && permissions.can("groups_manage")));
   const newChat = useOwnedController<NewChatController>(
     controller,
     () =>
@@ -643,7 +645,8 @@ export function GroupDetails({
       '<GroupDetails/> needs <PolymorfaProvider tokenEndpoint="/api/polymorfa/token"> or a source.',
     );
   const canManage =
-    source !== undefined || permissions.can("groups_manage");
+    source !== undefined ||
+    (client !== undefined && permissions.can("groups_manage"));
   const group = useOwnedController<GroupController>(
     controller,
     () =>

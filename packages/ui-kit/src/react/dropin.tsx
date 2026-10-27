@@ -948,7 +948,8 @@ export function Inbox({
     "read_contact",
   );
   const canContactPerson = contactPanel && contactAllowed;
-  const canCall = permissions.can("voip_place");
+  // Calls need the provider's client; a custom source alone cannot place one.
+  const canCall = client !== undefined && permissions.can("voip_place");
   const [contactOpen, setContactOpen] = useState(false);
   const [composing, setComposing] = useState(false);
   const selected =
@@ -967,7 +968,9 @@ export function Inbox({
     [contacts, client, contactAllowed],
   );
   const canNewChat = newChat && directory !== undefined;
-  const canGroup = groups !== undefined || permissions.can("groups_read");
+  const canGroup =
+    groups !== undefined ||
+    (client !== undefined && permissions.can("groups_read"));
   const latestSelect = useRef(onSelect);
   latestSelect.current = onSelect;
   const loadContact = useMemo(
