@@ -748,18 +748,27 @@ button.pmfa-hd:disabled { cursor: default; opacity: 0.75; }
 .pmfa-chip-preview { width: 56px; height: 56px; border-radius: 6px; object-fit: cover; }
 .pmfa-chip-player { display: block; width: 220px; max-width: 100%; }
 video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
+/*
+ * One control size for the whole composer row. The field's vertical padding
+ * comes from that size and the field's own line height, so a single line is
+ * exactly as tall as the buttons beside it at any text size, and more lines
+ * grow upward from the same bottom edge.
+ */
+.pmfa-composer { --pmfa-composer-control: 40px; --pmfa-composer-line: 1.45; }
+@media (max-width: 600px) { .pmfa-composer { --pmfa-composer-control: 44px; } }
 .pmfa-composer .pmfa-input {
   flex: 1;
   min-width: 0;
-  min-height: 40px;
-  border-radius: 20px;
-  padding: 8px 16px;
+  min-height: var(--pmfa-composer-control);
+  border-radius: calc(var(--pmfa-composer-control) / 2);
+  padding: max(4px, calc((var(--pmfa-composer-control) - var(--pmfa-composer-line) * 1em - 2px) / 2)) 16px;
   background: var(--pmfa-c-surface);
   border-color: transparent;
-  line-height: 1.45;
+  line-height: var(--pmfa-composer-line);
   resize: none;
   field-sizing: content;
 }
+.pmfa-composer-row .pmfa-btn-icon { width: var(--pmfa-composer-control); min-width: var(--pmfa-composer-control); min-height: var(--pmfa-composer-control); }
 .pmfa-composer .pmfa-input:hover { border-color: var(--pmfa-c-border); }
 .pmfa-composer .pmfa-input:focus-visible { outline-offset: 0; background: var(--pmfa-c-bg); border-color: var(--pmfa-c-border); }
 .pmfa-composer .pmfa-btn { flex: none; }
@@ -839,12 +848,13 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
 }
 .pmfa-composer > .pmfa-error { padding-inline: 8px; }
 .pmfa-composer-row { align-items: flex-end; gap: 2px; }
-.pmfa-composer-actions { display: flex; flex: none; align-items: center; gap: 2px; min-height: 40px; }
+.pmfa-composer-actions { display: flex; flex: none; align-items: center; gap: 2px; min-height: var(--pmfa-composer-control); }
 .pmfa-composer-actions:empty { display: none; }
 .pmfa-composer-actions > * { flex: none; }
 .pmfa-composer .pmfa-input {
   margin-inline: 4px;
-  max-height: calc(var(--pmfa-composer-max-rows, 8) * 1.45em + 18px);
+  /* The rows of text plus the single-line padding and border. */
+  max-height: calc((var(--pmfa-composer-max-rows, 8) - 1) * var(--pmfa-composer-line) * 1em + var(--pmfa-composer-control));
   overflow-y: auto;
 }
 .pmfa-composer .pmfa-btn-ghost[aria-expanded="true"] { color: var(--pmfa-c-primary); background: var(--pmfa-c-surface); }
@@ -858,26 +868,22 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
  */
 .pmfa-chat-window .pmfa-chat-footer, .pmfa-chat-window .pmfa-drawer-footer { padding: 8px clamp(8px, 2cqi, 16px) max(8px, env(safe-area-inset-bottom)); border-top: 0; }
 .pmfa-chat-window .pmfa-chat-footer > fieldset + * { margin-top: 6px; }
-.pmfa-chat-window .pmfa-composer { gap: 6px; padding: 0; border: 0; border-radius: 0; background: transparent; }
+.pmfa-chat-window .pmfa-composer { --pmfa-composer-control: 44px; --pmfa-composer-line: 1.4; gap: 6px; padding: 0; border: 0; border-radius: 0; background: transparent; }
 .pmfa-chat-window .pmfa-composer-row { flex-wrap: nowrap; gap: 4px; align-items: flex-end; }
-.pmfa-chat-window .pmfa-composer-actions { min-height: 44px; gap: 0; }
-.pmfa-chat-window .pmfa-composer-actions .pmfa-btn-icon { width: 40px; min-height: 40px; margin-block: 2px; color: var(--pmfa-c-muted); }
+.pmfa-chat-window .pmfa-composer-actions { gap: 0; }
+.pmfa-chat-window .pmfa-composer-actions .pmfa-btn-icon { color: var(--pmfa-c-muted); }
 .pmfa-chat-window .pmfa-composer-actions .pmfa-btn-icon .pmfa-icon { width: 22px; height: 22px; }
 .pmfa-chat-window .pmfa-composer .pmfa-input {
   flex: 1;
   min-width: 0;
-  min-height: 44px;
   margin: 0;
-  padding: 11px 16px;
   border: 1px solid transparent;
-  border-radius: 22px;
   background: var(--pmfa-c-field);
   font-size: var(--pmfa-message-font-size, 0.9375em);
-  line-height: 1.4;
 }
 .pmfa-chat-window .pmfa-composer .pmfa-input:hover { border-color: transparent; }
 .pmfa-chat-window .pmfa-composer .pmfa-input:focus-visible { outline: none; border-color: color-mix(in srgb, var(--pmfa-c-fg) 22%, transparent); background: var(--pmfa-c-field); }
-.pmfa-chat-window .pmfa-send, .pmfa-chat-window .pmfa-voice { flex: none; width: 44px; min-height: 44px; border-radius: 999px; }
+.pmfa-chat-window .pmfa-send, .pmfa-chat-window .pmfa-voice { flex: none; width: var(--pmfa-composer-control); min-height: var(--pmfa-composer-control); border-radius: 999px; }
 .pmfa-chat-window .pmfa-send { border-color: transparent; background: var(--pmfa-c-primary); color: var(--pmfa-c-on-primary); }
 .pmfa-chat-window .pmfa-send:hover:not(:disabled) { background: color-mix(in srgb, var(--pmfa-c-primary) 88%, #000000); }
 .pmfa-chat-window .pmfa-voice .pmfa-icon { width: 22px; height: 22px; }
