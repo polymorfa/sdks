@@ -327,7 +327,27 @@ payload!(CallConnectionLeftPayload {call_id:String,connection_id:String,particip
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NewsletterMessageReference {
     pub id: String,
+    #[serde(serialize_with = "serialize_newsletter_message_ids")]
     pub whatsapp_ids: WhatsAppMessageIds,
+}
+// Keep absent transports absent on the new metadata reference, without changing
+// the existing shared identity serializer used by other resource models.
+fn serialize_newsletter_message_ids<S>(
+    value: &WhatsAppMessageIds,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    use serde::ser::SerializeMap;
+    let mut map = serializer.serialize_map(None)?;
+    if let Some(id) = &value.linked_devices {
+        map.serialize_entry("linked_devices", id)?;
+    }
+    if let Some(id) = &value.official_api {
+        map.serialize_entry("official_api", id)?;
+    }
+    map.end()
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NewsletterViewCount {
