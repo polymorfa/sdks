@@ -426,6 +426,27 @@ type ExpectedPayloads = {
     readonly id: string;
     readonly action: string;
     readonly muted?: boolean;
+    readonly sourceTimestamp?: string;
+    readonly messages?: readonly {
+      readonly position: number;
+      readonly message?: {
+        readonly id: string;
+        readonly whatsapp_ids: WhatsAppMessageIds;
+      };
+      readonly timestamp?: string;
+      readonly viewCounts?: readonly {
+        readonly type?: string;
+        readonly count: number;
+      }[];
+      readonly forwards?: number;
+      readonly reactionCounts?: Readonly<Record<string, number>>;
+    }[];
+    readonly milestone?: {
+      readonly position: number;
+      readonly type: string;
+      readonly value: number;
+      readonly reactionCode?: string;
+    };
   };
   readonly "presence.update": {
     readonly observedAt: number;
