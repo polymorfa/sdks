@@ -1,13 +1,13 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "d36e12ff05f9f3537f3f87d8ad27258abc9b02df",
+  "commit": "2e38a3342b0692e62c3fa62f432d98b8d681c5bb",
   "branch": "dev",
   "note": "Feature availability operations from API dev. The full snapshots and coverage.json stay pinned to contracts/source.json until the next repin.",
   "extraction": "Feature availability operations and their transitive component references; operation objects unchanged",
   "sources": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
-      "sourceSha256": "03f48a3ac98ff88e504337aaa95d60b1ae81ef3381deaa2d5ac9780896a48608",
+      "sourceSha256": "d23ef72bfba7c27f22953d16beb93c01eedc064e6e506118d20644b906a2c8e4",
       "paths": {
         "/messaging/features/evaluate": {
           "post": {
@@ -39,7 +39,9 @@
                       },
                       "measurementAllowed": {
                         "type": "boolean",
-                        "default": false
+                        "default": false,
+                        "description": "Deprecated. Has no effect on native operational experiment measurement.",
+                        "deprecated": true
                       },
                       "locale": {
                         "type": "string",
@@ -80,15 +82,24 @@
                                   "enrolled": { "type": "boolean" },
                                   "variant": {
                                     "type": "string",
-                                    "nullable": true
+                                    "description": "Deprecated. Always null; use experiments.",
+                                    "enum": [null],
+                                    "nullable": true,
+                                    "deprecated": true
                                   },
                                   "experimentRevision": {
                                     "type": "integer",
+                                    "description": "Deprecated. Always null; use experiments.",
+                                    "enum": [null],
                                     "nullable": true,
-                                    "minimum": 1,
-                                    "description": "Published experiment policy revision for an assigned native experiment; null otherwise."
+                                    "deprecated": true
                                   },
-                                  "experimentAssigned": { "type": "boolean" }
+                                  "experimentAssigned": {
+                                    "type": "boolean",
+                                    "enum": [false],
+                                    "description": "Deprecated. Always false; use experiments.",
+                                    "deprecated": true
+                                  }
                                 },
                                 "required": [
                                   "key",
@@ -99,6 +110,34 @@
                                   "experimentRevision",
                                   "experimentAssigned"
                                 ]
+                              },
+                              "experiments": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "key": {
+                                      "type": "string",
+                                      "maxLength": 100,
+                                      "pattern": "^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$"
+                                    },
+                                    "variant": { "type": "string" },
+                                    "revision": {
+                                      "type": "integer",
+                                      "nullable": true,
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true
+                                    },
+                                    "assigned": { "type": "boolean" }
+                                  },
+                                  "required": [
+                                    "key",
+                                    "variant",
+                                    "revision",
+                                    "assigned"
+                                  ]
+                                },
+                                "description": "Registered experiments. Evaluation does not record exposure."
                               },
                               "title": { "type": "string" },
                               "description": { "type": "string" },
@@ -128,12 +167,16 @@
                                 "description": "Who enabled an opt-in feature for the team: a team owner or admin, or Polymorfa. Null when not enrolled."
                               },
                               "exposureToken": {
+                                "type": "string",
+                                "description": "Deprecated. Always null.",
+                                "enum": [null],
                                 "nullable": true,
-                                "description": "Deprecated. Always null."
+                                "deprecated": true
                               }
                             },
                             "required": [
                               "decision",
+                              "experiments",
                               "title",
                               "description",
                               "state",
@@ -326,10 +369,12 @@
                       "stream_cursor_expired",
                       "stream_connection_limit_reached",
                       "state_conflict",
+                      "team_deletion_scheduled",
                       "hybrid_routing_paused",
                       "hybrid_choice_required",
                       "hybrid_transition_ineligible",
                       "hybrid_automation_unavailable",
+                      "hybrid_group_linked_devices_unavailable",
                       "hybrid_transport_unavailable",
                       "hybrid_target_reference_unavailable",
                       "send_outcome_unknown",
@@ -372,13 +417,18 @@
                       "session_not_ready",
                       "command_dispatch_failed",
                       "result_unknown",
+                      "parent_bsuid_not_supported",
                       "recipient_not_on_whatsapp",
                       "conversation_window_closed",
                       "template_not_approved",
                       "media_too_large",
                       "whatsapp_rate_limited",
                       "new_chat_limit_reached",
+                      "marketing_disabled_on_cloud_api",
                       "whatsapp_account_restricted",
+                      "whatsapp_authorization_required",
+                      "whatsapp_payment_method_required",
+                      "whatsapp_number_not_registered",
                       "whatsapp_groups_ineligible",
                       "whatsapp_group_creation_paused",
                       "whatsapp_group_limit_reached",
@@ -443,14 +493,14 @@
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
-      "sourceSha256": "baafc9d1836bf1aacdbb550e3e43c6a71e4160d4b4874deb80309b2f43339a10",
+      "sourceSha256": "528f6fa56c0044519ff0f3c12412eae3bbcad18485175daf82fc7b73046bf6b5",
       "paths": {
         "/api/account/features/evaluate": {
           "post": {
             "operationId": "evaluateAccountFeatures",
             "tags": ["Feature availability"],
             "summary": "Evaluate feature availability",
-            "description": "Evaluate feature decisions for the live dashboard organization from each feature's published setting. No permission is granted by a decision. Features not offered to the team are omitted unless the team is enrolled; opt-in features include their terms before enrollment, and enrolled features stay visible for withdrawal.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+            "description": "Evaluate feature decisions for the live dashboard organization from each feature's published setting. No permission is granted by a decision. Features not offered to the team are omitted unless the team is enrolled; opt-in features include their terms before enrollment, and enrolled features stay visible for withdrawal.\n\nRequires a verified dashboard bearer and current organization authorization. Team keys and project tokens are not accepted.",
             "x-audience": "console",
             "x-polymorfa-resource-boundary": "human_only",
             "x-excluded-from-public": true,
@@ -482,6 +532,7 @@
                       "measurementAllowed": {
                         "type": "boolean",
                         "default": false,
+                        "deprecated": true,
                         "description": "Deprecated. Has no effect."
                       },
                       "projectId": {
@@ -533,6 +584,7 @@
                             "type": "object",
                             "required": [
                               "decision",
+                              "experiments",
                               "title",
                               "description",
                               "state",
@@ -568,17 +620,46 @@
                                   "enrolled": { "type": "boolean" },
                                   "variant": {
                                     "type": "string",
-                                    "nullable": true
+                                    "nullable": true,
+                                    "enum": [null],
+                                    "deprecated": true,
+                                    "description": "Always null. Use experiments[].variant."
                                   },
                                   "experimentRevision": {
                                     "type": "integer",
-                                    "minimum": 1,
                                     "nullable": true,
-                                    "description": "Published experiment policy revision for an assigned native experiment; null otherwise."
+                                    "enum": [null],
+                                    "deprecated": true,
+                                    "description": "Always null. Use experiments[].revision."
                                   },
                                   "experimentAssigned": {
                                     "type": "boolean",
-                                    "description": "True only when an experiment assigned a registered variant with measurement enabled."
+                                    "enum": [false],
+                                    "deprecated": true,
+                                    "description": "Always false. Use experiments[].assigned."
+                                  }
+                                }
+                              },
+                              "experiments": {
+                                "type": "array",
+                                "description": "Registered experiments. Evaluation does not record exposure.",
+                                "items": {
+                                  "type": "object",
+                                  "required": [
+                                    "key",
+                                    "variant",
+                                    "revision",
+                                    "assigned"
+                                  ],
+                                  "properties": {
+                                    "key": { "type": "string" },
+                                    "variant": { "type": "string" },
+                                    "revision": {
+                                      "type": "integer",
+                                      "minimum": 1,
+                                      "nullable": true
+                                    },
+                                    "assigned": { "type": "boolean" }
                                   }
                                 }
                               },
@@ -610,7 +691,10 @@
                                 "description": "Who enabled an opt-in feature for the team: a team owner or admin, or Polymorfa. Null when not enrolled."
                               },
                               "exposureToken": {
+                                "type": "string",
                                 "nullable": true,
+                                "enum": [null],
+                                "deprecated": true,
                                 "description": "Deprecated. Always null."
                               }
                             }
@@ -635,7 +719,7 @@
             "operationId": "setFeatureEnrollment",
             "tags": ["Feature availability"],
             "summary": "setFeatureEnrollment",
-            "description": "Live organization owner/admin only. Enabling requires the feature's published opt-in setting, its current terms revision, entitlement, release eligibility and no operational disable; a terms change during the request returns 409. Withdrawal does not delete resources.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+            "description": "Live organization owner/admin only. Enabling requires the feature's published opt-in setting, its current terms revision, entitlement, release eligibility and no operational disable; a terms change during the request returns 409. Withdrawal does not delete resources.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Team keys and project tokens are not accepted.",
             "x-audience": "console",
             "x-polymorfa-resource-boundary": "human_only",
             "x-excluded-from-public": true,
@@ -737,7 +821,7 @@
             "operationId": "recordFeatureExposure",
             "tags": ["Feature availability"],
             "summary": "recordFeatureExposure",
-            "description": "Deprecated. Exposure measurement is not recorded through this route; it always returns 403.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+            "description": "Deprecated. Exposure measurement is not recorded through this route; it always returns 403.\n\nRequires a verified dashboard bearer and current organization authorization. Team keys and project tokens are not accepted.",
             "x-audience": "console",
             "x-polymorfa-resource-boundary": "human_only",
             "x-excluded-from-public": true,
@@ -1025,7 +1109,7 @@
       "method": "POST",
       "path": "/messaging/features/evaluate",
       "operationId": "evaluateFeatures",
-      "fingerprint": "06bfd46fac5a92bd17a3e4a554fbb41b19d0d2f119bcf7b04dcd46635ad0f12a",
+      "fingerprint": "994b893419de21c7916d3eeaaffec43bf3a70663c874412761b682a4a554889f",
       "typescript": {
         "status": "excluded",
         "reason": "Host-runtime feature evaluation is not a customer messaging operation in this SDK."
@@ -1047,7 +1131,7 @@
       "method": "POST",
       "path": "/api/account/features/evaluate",
       "operationId": "evaluateAccountFeatures",
-      "fingerprint": "63da15e03f7c0f9f9277b82cc4db8ab7b5204f305cc2995f15cb377cc5f8cf39",
+      "fingerprint": "385101196190ec9994946f0ddb1545bcdd248e304f9910257e2f733e27c069f4",
       "typescript": {
         "status": "excluded",
         "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."

@@ -149,7 +149,35 @@ describe("feature evaluation contract supplement", () => {
         enum: ["customer", "staff", null],
       });
       // Deprecated and always null.
-      expect(item.properties!.exposureToken!.nullable).toBe(true);
+      expect(item.properties!.exposureToken).toMatchObject({
+        nullable: true,
+        enum: [null],
+      });
+
+      // Native experiments (polymorfa/polymorfa#816): one entry per registered
+      // experiment; the single-experiment decision fields are fixed values.
+      expect(item.required).toContain("experiments");
+      expect(item.properties!.experiments).toMatchObject({
+        type: "array",
+        items: {
+          required: ["key", "variant", "revision", "assigned"],
+          properties: {
+            variant: { type: "string" },
+            revision: { type: "integer", nullable: true },
+            assigned: { type: "boolean" },
+          },
+        },
+      });
+      const decision = item.properties!.decision!.properties!;
+      expect(decision.variant).toMatchObject({ nullable: true, enum: [null] });
+      expect(decision.experimentRevision).toMatchObject({
+        nullable: true,
+        enum: [null],
+      });
+      expect(decision.experimentAssigned).toMatchObject({
+        type: "boolean",
+        enum: [false],
+      });
     }
   });
 
