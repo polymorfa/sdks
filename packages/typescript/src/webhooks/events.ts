@@ -639,10 +639,36 @@ export interface CallConnectionLeftPayload {
   readonly reason: CallConnectionLeftReason;
 }
 
+/** A reported view definition. An absent type denotes the untyped definition. */
+export interface NewsletterViewCount {
+  readonly type?: string;
+  readonly count: number;
+}
+/** Counts observed at a channel position. No message body is included. */
+export interface NewsletterMessageObservation {
+  readonly position: number;
+  readonly message?: {
+    readonly id: string;
+    readonly whatsapp_ids: WhatsAppMessageIds;
+  };
+  readonly timestamp?: string;
+  readonly viewCounts?: readonly NewsletterViewCount[];
+  readonly forwards?: number;
+  readonly reactionCounts?: Readonly<Record<string, number>>;
+}
+export interface NewsletterMilestone {
+  readonly position: number;
+  readonly type: string;
+  readonly value: number;
+  readonly reactionCode?: string;
+}
 export interface NewsletterUpdatePayload {
   readonly id: string;
   readonly action: string;
   readonly muted?: boolean;
+  readonly sourceTimestamp?: string;
+  readonly messages?: readonly NewsletterMessageObservation[];
+  readonly milestone?: NewsletterMilestone;
 }
 
 export interface BlocklistChange {
