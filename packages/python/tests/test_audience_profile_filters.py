@@ -4,10 +4,10 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 import pytest
-
-from polymorfa.errors import ValidationError
-from polymorfa import campaign_contract_validation as V
 from test_campaign_contracts import wire
+
+from polymorfa import campaign_contract_validation as V
+from polymorfa.errors import ValidationError
 
 FIXTURE = json.loads(
     (
