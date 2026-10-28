@@ -6,6 +6,7 @@ import {
   graphTransportHeaders,
   type AddressMessageContent,
   type ButtonsMessageContent,
+  type SendCarouselMessageRequest,
   type FlowMessageContent,
   type ListMessageContent,
   type MessageButton,
@@ -122,12 +123,8 @@ describe("MessagingClient message types", () => {
           readonly catalogProductId?: string;
         }
     >();
-    expectTypeOf<ButtonsMessageContent>().toEqualTypeOf<{
-      readonly title?: string;
-      readonly body: string;
-      readonly footer?: string;
-      readonly buttons: readonly MessageButton[];
-    }>();
+    expectTypeOf<ButtonsMessageContent>().toHaveProperty("buttons");
+    expectTypeOf<ButtonsMessageContent>().toHaveProperty("media");
     expectTypeOf<ListMessageContent>().toHaveProperty("sections");
     expectTypeOf<ProductMessageContent>().toHaveProperty("businessOwnerId");
     expectTypeOf<ProductListMessageContent>().toHaveProperty("sections");
@@ -153,6 +150,7 @@ describe("MessagingClient message types", () => {
     expectTypeOf<SendPhoneNumberRequest>().toMatchTypeOf<SendMessageRequest>();
     expectTypeOf<SendListMessageRequest>().toMatchTypeOf<SendMessageRequest>();
     expectTypeOf<SendButtonsMessageRequest>().toMatchTypeOf<SendMessageRequest>();
+    expectTypeOf<SendCarouselMessageRequest>().toMatchTypeOf<SendMessageRequest>();
     expectTypeOf<SendAddressMessageRequest>().toMatchTypeOf<SendMessageRequest>();
     expectTypeOf<SendFlowMessageRequest>().toMatchTypeOf<SendMessageRequest>();
     expectTypeOf<SendTemplateMessageRequest>().toMatchTypeOf<SendMessageRequest>();
@@ -418,4 +416,80 @@ it("surfaces an uncertain accepted operation once and reads its status without a
       .status,
   ).toBe("unknown");
   expect(server.requests.map((value) => value.method)).toEqual(["POST", "GET"]);
+});
+
+it("preserves ten linked replies and three CTA parameters without truncation", async () => {
+  const { client, requests } = await messagesServer();
+  const combinations: MessageButton[][] = [
+    Array.from({ length: 10 }, (_, index) => ({
+      type: "reply",
+      id: `reply-${index}`,
+      text: `Choice ${index}`,
+    })),
+    [
+      { type: "url", text: "Open", url: "https://example.test" },
+      { type: "copy", text: "Copy", copyCode: "SYNTHETIC" },
+      {
+        type: "catalog",
+        text: "Catalog",
+        businessPhoneNumber: "+15551234567",
+        catalogProductId: "123",
+      },
+    ],
+  ];
+  for (const buttons of combinations) {
+    const body: SendButtonsMessageRequest = {
+      transport: "linked_devices",
+      conversation: { phoneNumber: "+15551234567" },
+      content: { buttons: { body: "Choose", buttons } },
+    };
+    await client.messages.send("number", body);
+    expect(JSON.parse(requests.at(-1)!.body)).toEqual(body);
+  }
+});
+
+it.each([2, 10])(
+  "preserves one %i-card request and every card's media and reply ID",
+  async (count) => {
+    const { client, requests } = await messagesServer();
+    const body: SendCarouselMessageRequest = {
+      conversation: { phoneNumber: "+15551234567" },
+      content: {
+        carousel: {
+          body: "Offers",
+          cards: Array.from({ length: count }, (_, index) => ({
+            body: `Card ${index}`,
+            image: { base64: "c3ludGhldGlj", mimeType: "image/png" },
+            buttons: [{ type: "reply", text: "Choose", id: `card-${index}` }],
+          })),
+        },
+      },
+    };
+    await client.messages.send("support", body, {
+      idempotencyKey: "carousel-once",
+    });
+    expect(requests).toHaveLength(1);
+    expect(JSON.parse(requests[0]!.body)).toEqual(body);
+    expect(requests[0]!.headers["idempotency-key"]).toBe("carousel-once");
+  },
+);
+
+it("preserves mixed controls and a media header without splitting transport", async () => {
+  const { client, requests } = await messagesServer();
+  const body: SendButtonsMessageRequest = {
+    conversation: { phoneNumber: "+15551234567" },
+    content: {
+      buttons: {
+        body: "Offer",
+        media: { type: "image", base64: "c3ludGhldGlj", mimeType: "image/png" },
+        buttons: [
+          { type: "reply", text: "Choose", id: "stable" },
+          { type: "url", text: "Open", url: "https://example.com" },
+        ],
+      },
+    },
+  };
+  await client.messages.send("support", body, { idempotencyKey: "mixed-once" });
+  expect(requests).toHaveLength(1);
+  expect(JSON.parse(requests[0]!.body)).toEqual(body);
 });

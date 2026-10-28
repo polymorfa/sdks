@@ -50,6 +50,14 @@
   (Messaging). `PHONE_OFFLINE_START_DAY` exports the bounds. Not usable until
   the API release that adds the field is deployed. API contract:
   polymorfa/polymorfa#631.
+
+- Interactive-message candidate (API PR #562, not deployed): Linked Devices
+  supports ten total buttons, up to three CTAs, mixed replies with URL/call
+  controls, image/video/document headers, and one 2–10-card image/video
+  carousel. Reply IDs and per-card controls are preserved. Copy/catalog controls
+  cannot mix with replies. Official API limits and approval remain separate.
+  Package publication requires the accepted API revision and matching staging.
+
 - Receipt-timed campaign follow-ups (beta). Messaging and Platform campaign
   create and update accept `followUp` (`CampaignFollowUp`): one text or
   template message sent from the first message's number, timed from its first
