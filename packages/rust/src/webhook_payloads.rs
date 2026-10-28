@@ -324,7 +324,49 @@ pub enum CallConnectionLeftReason {
     SipAuthFailed,
 }
 payload!(CallConnectionLeftPayload {call_id:String,connection_id:String,participant:String,reason:CallConnectionLeftReason} {});
-payload!(NewsletterUpdatePayload {id:String,action:String} {muted:bool});
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct NewsletterMessageReference {
+    pub id: String,
+    #[serde(serialize_with = "serialize_newsletter_message_ids")]
+    pub whatsapp_ids: WhatsAppMessageIds,
+}
+// Keep absent transports absent on the new metadata reference, without changing
+// the existing shared identity serializer used by other resource models.
+fn serialize_newsletter_message_ids<S>(
+    value: &WhatsAppMessageIds,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    use serde::ser::SerializeMap;
+    let mut map = serializer.serialize_map(None)?;
+    if let Some(id) = &value.linked_devices {
+        map.serialize_entry("linked_devices", id)?;
+    }
+    if let Some(id) = &value.official_api {
+        map.serialize_entry("official_api", id)?;
+    }
+    map.end()
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct NewsletterViewCount {
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
+    pub view_type: Option<String>,
+    pub count: u64,
+}
+payload!(NewsletterMessageObservation {position:u64} {message:NewsletterMessageReference,timestamp:String,view_counts:Vec<NewsletterViewCount>,forwards:u64,reaction_counts:BTreeMap<String,u64>});
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NewsletterMilestone {
+    pub position: u64,
+    #[serde(rename = "type")]
+    pub milestone_type: String,
+    pub value: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reaction_code: Option<String>,
+}
+payload!(NewsletterUpdatePayload {id:String,action:String} {muted:bool,source_timestamp:String,messages:Vec<NewsletterMessageObservation>,milestone:NewsletterMilestone});
 payload!(BlocklistChange {action:String,id:String} {phone_number:String,bsuid:String,username:String});
 payload!(BlocklistUpdatePayload {action:String,changes:Vec<BlocklistChange>} {});
 payload!(LabelsUpdatePayload {action:String} {label_id:String,from:ConversationIdentity,label:String,name:String,color:u32,order_index:u32,deleted:bool,labeled:bool,observed_at:u64,message_id:String,starred:bool});

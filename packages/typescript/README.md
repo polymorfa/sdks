@@ -3458,3 +3458,29 @@ These are verified-event handling fragments, not complete receivers. Preserve
 whole-body signature verification before decoding and deduplicate batch members.
 See [the scoped source contract and compatibility notes](../../docs/campaign-webhook-metadata.md).
 Package publication and matching API environment acceptance remain separate gates.
+
+## Channel observations
+
+`newsletter.update` can include metadata-only `messages` for `live_update`, or a
+`milestone` object. Counts are reported observations. Missing is distinct from
+zero, and an explicitly empty reaction map stays present. `viewCounts` preserves
+each typed or untyped definition; do not choose one by list order. Unknown valid
+milestone types remain strings. Existing channel reads also expose optional
+`forwards`.
+
+A row's `position` is an ordering cursor. Its optional `message` reference is
+present only when an original WhatsApp message ID was observed. A partial
+reference alone does not authorize message actions. No message body is included.
+
+After verifying the delivery signature and dispatching individual batch members:
+
+```typescript
+if (isEvent(event, "newsletter.update")) {
+  for (const row of event.payload.messages ?? []) {
+    if (row.forwards !== undefined) console.log(row.position, row.forwards);
+  }
+}
+```
+
+Source contract: [`newsletter-observations.json`](../../contracts/newsletter-observations.json).
+This source supplement does not establish registry publication or API deployment.

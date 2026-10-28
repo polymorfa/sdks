@@ -1490,6 +1490,8 @@ export interface ChannelMessage {
   readonly type: string;
   readonly timestamp: string;
   readonly views: number;
+  /** Reported forward count. Missing is distinct from zero. */
+  readonly forwards?: number;
   readonly reactionCounts: Readonly<Record<string, number>>;
   readonly text?: string;
 }

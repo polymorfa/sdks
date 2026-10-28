@@ -1,0 +1,70 @@
+{
+  "secret": "synthetic-newsletter-secret",
+  "batchId": "0198a2cb-0000-7000-8000-000000000081",
+  "events": [
+    {
+      "id": "newsletter-event-0",
+      "session": "channel-number",
+      "timestamp": "2026-10-27T00:00:00.000Z",
+      "event": "newsletter.update",
+      "payload": {
+        "id": "9007199254740993",
+        "action": "live_update",
+        "sourceTimestamp": "2023-11-14T22:13:20Z",
+        "messages": [
+          {
+            "position": 123,
+            "message": {
+              "id": "9007199254740994",
+              "whatsapp_ids": {
+                "linked_devices": "native-observed"
+              }
+            },
+            "timestamp": "2023-11-14T22:13:21Z",
+            "viewCounts": [
+              {
+                "count": 0
+              },
+              {
+                "type": "views",
+                "count": 11
+              }
+            ],
+            "forwards": 0,
+            "reactionCounts": {}
+          },
+          {
+            "position": 124
+          }
+        ]
+      }
+    },
+    {
+      "id": "newsletter-event-1",
+      "session": "channel-number",
+      "timestamp": "2026-10-27T00:00:00.000Z",
+      "event": "newsletter.update",
+      "payload": {
+        "id": "9007199254740993",
+        "action": "milestone",
+        "milestone": {
+          "position": 123,
+          "type": "FUTURE_MILESTONE",
+          "value": 0,
+          "reactionCode": "👍"
+        }
+      }
+    },
+    {
+      "id": "legacy-mute",
+      "session": "channel-number",
+      "timestamp": "2026-10-27T00:00:00.000Z",
+      "event": "newsletter.update",
+      "payload": {
+        "id": "9007199254740993",
+        "action": "mute",
+        "muted": false
+      }
+    }
+  ]
+}

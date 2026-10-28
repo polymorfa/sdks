@@ -928,3 +928,33 @@ These are verified-event handling fragments, not complete receivers. Preserve
 whole-body signature verification before decoding and deduplicate batch members.
 See [the scoped source contract and compatibility notes](../../docs/campaign-webhook-metadata.md).
 Package publication and matching API environment acceptance remain separate gates.
+
+## Channel observations
+
+`newsletter.update` can include metadata-only `messages` for `live_update`, or a
+`milestone` object. Counts are reported observations. Missing is distinct from
+zero, and an explicitly empty reaction map stays present. `viewCounts` preserves
+each typed or untyped definition; do not choose one by list order. Unknown valid
+milestone types remain strings. Existing channel reads also expose optional
+`forwards`.
+
+A row's `position` is an ordering cursor. Its optional `message` reference is
+present only when an original WhatsApp message ID was observed. A partial
+reference alone does not authorize message actions. No message body is included.
+
+After verifying the delivery signature and dispatching individual batch members:
+
+```rust
+use polymorfa_sdk::{webhook_payloads::KnownWebhookPayload, webhooks::WebhookEvent};
+
+fn report_channel_observations(event: WebhookEvent) {
+    if let WebhookEvent::Known { payload: KnownWebhookPayload::NewsletterUpdate(update), .. } = event {
+        for row in update.messages.unwrap_or_default() {
+            if let Some(forwards) = row.forwards { println!("{}: {}", row.position, forwards); }
+        }
+    }
+}
+```
+
+Source contract: [`newsletter-observations.json`](../../contracts/newsletter-observations.json).
+This source supplement does not establish registry publication or API deployment.

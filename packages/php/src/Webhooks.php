@@ -46,8 +46,8 @@ final class Webhooks
         if (!$tree instanceof \stdClass || !is_array($tree->events ?? null)) { throw new ValidationException('Invalid event batch array.', 'invalid_webhook_batch'); }
         if (count($value) !== 4 || ($value['version'] ?? null) !== 1 || !is_string($value['id'] ?? null) || !preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/iD', $value['id']) || !is_array($value['events'] ?? null) || !array_is_list($value['events']) || count($value['events']) < 1 || count($value['events']) > 100) { throw new ValidationException('Invalid version 1 event batch.', 'invalid_webhook_batch'); }
         $events = [];
-        foreach ($value['events'] as $member) {
-            if (!is_array($member) || array_key_exists('object', $member)) { throw new ValidationException('Nested or invalid event batch.', 'invalid_webhook_batch'); }
+        foreach ($tree->events as $member) {
+            if (!$member instanceof \stdClass || property_exists($member, 'object')) { throw new ValidationException('Nested or invalid event batch.', 'invalid_webhook_batch'); }
             $events[] = self::parseVerifiedEvent(json_encode($member, JSON_THROW_ON_ERROR));
         }
         return new WebhookEventBatch($value['id'], $events);
@@ -86,7 +86,7 @@ final class Webhooks
     /** @return array{body:string,contentType:'application/json',signature:string,headers:array{'content-type':'application/json','x-webhook-signature':string}} */
     public static function createFixture(WebhookEvent $event, #[\SensitiveParameter] string $secret): array
     {
-        $body = json_encode($event->raw, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $body = $event->fixtureBody();
         $signature = hash_hmac('sha256', $body, $secret);
         return ['body' => $body,'contentType' => 'application/json','signature' => $signature,'headers' => ['content-type' => 'application/json','x-webhook-signature' => $signature]];
     }
@@ -111,6 +111,6 @@ final class Webhooks
             ProjectedHistory::validate($tree->payload);
         }
         /** @var array<string,mixed> $value */
-        return new WebhookEvent($value['id'], $value['session'], $value['timestamp'], $value['event'], $value['payload'], $value, in_array($value['event'], self::KNOWN_TYPES, true), is_string($value['externalId'] ?? null) ? $value['externalId'] : null);
+        return new WebhookEvent($value['id'], $value['session'], $value['timestamp'], $value['event'], $value['payload'], $value, in_array($value['event'], self::KNOWN_TYPES, true), is_string($value['externalId'] ?? null) ? $value['externalId'] : null, $rawBody);
     }
 }
