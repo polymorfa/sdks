@@ -37,7 +37,7 @@ internal static class CallsTests
         await Invalid(() => client.Calls.UpdateCallSettingsAsync("s", new(AcknowledgeRisk: true)));
         await Invalid(() => client.Calls.ReportAsync("call", new("quality", "connection1", new("polymorfa-dotnet", "0.1.0", "other"), Quality: new(RttMs: -1))));
         var json = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase };
-        var claim = System.Text.Json.JsonSerializer.Deserialize<BanSafeClaimEvidence>("""{"attributionRuleVersion":null,"windowDays":30,"deviceEvidence":false,"otherDevices":0,"restrictedInWindow":false,"criticalFindingDays":0,"sharedConnection":false,"simultaneousCalls":true,"measuredHours":0}""", json)!;
+        var claim = System.Text.Json.JsonSerializer.Deserialize<BanSafeClaimEvidence>("""{"attributionRuleVersion":null,"windowDays":30,"deviceEvidence":false,"otherDevices":0,"restrictedInWindow":false,"criticalFindingDays":0,"sharedConnection":false,"simultaneousCalls":true,"linkedDeviceInteractive":false,"referralGroupSend":false,"measuredHours":0}""", json)!;
         True(claim.SimultaneousCalls);
         Console.WriteLine("PASS Calls routes, simultaneous-call presence, evidence and validation");
     }

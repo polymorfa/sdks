@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- All six server SDKs recognize the Ban Credit claim verdicts
+  `linked_device_interactive` and `referral_group_send` on claim reads and
+  `bansafe.claim` webhooks, and type claim evidence `linkedDeviceInteractive`
+  and `referralGroupSend`. Rust's closed verdict enums previously rejected
+  these values. Source compatibility: Rust exhaustive `match` on the verdict
+  enums and `ClaimEvidence` struct literals, Go unkeyed `BanSafeClaimEvidence`
+  literals and the C# `BanSafeClaimEvidence` constructor/Deconstruct need the
+  added members. Pinned to unmerged API #845 source `5ccd3dcb`; package
+  publication waits for that API change to merge and deploy.
 - All six server SDKs expose optional automatic-pause `reason`/`code` and
   optional recipient-skip `messageIndex`/`followUpId` from accepted API source
   `9bb1e2ed`. Future reason/code strings and raw envelope fields are retained;

@@ -1,0 +1,72 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "sourceCommit": "5ccd3dcb7016d87994bcf19c58f2cc148ac82428",
+  "published": false,
+  "scope": "Ban Credit claim waivers: verdicts linked_device_interactive and referral_group_send, and claim evidence linkedDeviceInteractive and referralGroupSend (polymorfa/polymorfa#845, unmerged). Other SDK contracts retain their recorded source revisions.",
+  "sources": {
+    "platform": {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "sha256": "bc15edfa17c674f3aed5a192624bacaa96984155d2cc072ce1938d67f28fffa9"
+    },
+    "messaging": {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "b8a96e1f31e33ed5c4b1fb59fa9939f7f05456ed583a7ac9c68cbb10a7e29eb6"
+    }
+  },
+  "verdicts": {
+    "BanSafeClaim": {
+      "family": "platform",
+      "enum": [
+        "other_device",
+        "customer_conduct",
+        "shared_network",
+        "ours",
+        "inconclusive",
+        "simultaneous_calls",
+        "linked_device_interactive",
+        "referral_group_send"
+      ]
+    },
+    "BanSafeClaimPayload": {
+      "family": "messaging",
+      "enum": [
+        "other_device",
+        "customer_conduct",
+        "shared_network",
+        "ours",
+        "inconclusive",
+        "simultaneous_calls",
+        "linked_device_interactive",
+        "referral_group_send"
+      ]
+    }
+  },
+  "evidence": {
+    "BanSafeClaimEvidence": {
+      "family": "platform",
+      "required": [
+        "attributionRuleVersion",
+        "windowDays",
+        "deviceEvidence",
+        "otherDevices",
+        "restrictedInWindow",
+        "criticalFindingDays",
+        "sharedConnection",
+        "measuredHours",
+        "simultaneousCalls",
+        "linkedDeviceInteractive",
+        "referralGroupSend"
+      ],
+      "properties": {
+        "linkedDeviceInteractive": {
+          "type": "boolean",
+          "description": "Whether this number sent an interactive message (buttons, lists, product messages, Flows and similar) from a linked device inside the window. When true, Ban Credit does not cover the ban and the claim is denied when filed. False for claims filed before this was recorded."
+        },
+        "referralGroupSend": {
+          "type": "boolean",
+          "description": "Whether this number posted a referral message to WhatsApp groups inside the window. When true, Ban Credit does not cover the ban and the claim is denied when filed. False for claims filed before this was recorded."
+        }
+      }
+    }
+  }
+}

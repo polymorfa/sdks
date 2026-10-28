@@ -43,8 +43,16 @@ const platform = contract.sources.platform.schemas;
 const keys = (schema: Schema | undefined) =>
   Object.keys(schema?.properties ?? {}).sort();
 
-// Every verdict must appear here; a missing or extra key fails to compile.
-const VERDICTS: Record<BanSafeClaimVerdict, true> = {
+// Every verdict at this supplement's API revision must appear here; a missing
+// or extra key fails to compile. Verdicts added later are pinned by their own
+// supplement (ban-credit-waivers.json).
+const VERDICTS: Record<
+  Exclude<
+    BanSafeClaimVerdict,
+    "linked_device_interactive" | "referral_group_send"
+  >,
+  true
+> = {
   other_device: true,
   customer_conduct: true,
   shared_network: true,
