@@ -52,7 +52,7 @@ const platform = new Client({
     type: "organizationApiKey",
     value: process.env.POLYMORFA_PLATFORM_API_KEY!,
   },
-  apiVersion: "2026-03-20",
+  apiVersion: "2026-09-22",
 });
 
 const project = platform.project("project_123");
