@@ -22,3 +22,5 @@ Global API source 171a9683ff45d11a4b5d3917dc428ad2722b0d99 and Polymorfa-Version
 The original SDK350 history, canonical 1eff source and failed checks remain preserved in the Campaigns owner receipt. Core operation hunks are contained/adapted to main; common-client exposure, flat imports/raw CSV and API532 binding are historical. The PR is not wholly redundant. Release owns merges. Source rollback does not undo external effects or publication.
 
 SDK input commit: 725c5ab530e73a17e007c397430b32f53df26442. The export commit is the later commit containing this record and generated catalog. No registry artifact is established by either commit.
+
+Corrected SDK input commit: 7b8ef11e176dfbb3ada805daf98b919134ac253c. Native Rust compilation caught the canonical patch adding fields to recipient-export parameters; this child restores that unrelated struct and adds the fields only to profile-list parameters. Earlier source/export commits and the compiler failure remain preserved.
