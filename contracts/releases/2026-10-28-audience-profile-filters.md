@@ -8,7 +8,7 @@ The supplement contains eight existing operations and their eight-component refe
 
 Preserve organization-only clients, nested imports/csvBase64, UUID cursor and integer limits, strict response/options validation, omission and mutation retries. Consent accepts cursor/limit only. Go unkeyed parameter literals and Rust exhaustive struct literals need named/default fields after adding the optional filters. .NET positional construction/deconstruction remains unchanged. Deprecated aliases are not restored.
 
-Global API source171a9683ff45d11a4b5d3917dc428ad2722b0d99 and Polymorfa-Version2026-09-22 remain unchanged, as do Testing2f1510 and all other supplement pins. The real documentation generator binds its exact committed SDK inputs through sourceCommit/sourceFilesSha256; existing recipe omissions retain cURL fallback.
+Global API source 171a9683ff45d11a4b5d3917dc428ad2722b0d99 and Polymorfa-Version 2026-09-22 remain unchanged, as do Testing 2f1510 and all other supplement pins. The real documentation generator binds its exact committed SDK inputs through sourceCommit/sourceFilesSha256; existing recipe omissions retain cURL fallback.
 
 ## Six-part assessment and release gates
 
@@ -19,4 +19,6 @@ Global API source171a9683ff45d11a4b5d3917dc428ad2722b0d99 and Polymorfa-Version2
 - Feature release: no audience, enrollment, activation or contract-date advancement. Publication needs containing source, package receipts and matching API acceptance.
 - Admin: no capability, MCP, state, configuration or UI change.
 
-The original SDK350 history, canonical1eff source and failed checks remain preserved in the Campaigns owner receipt. Core operation hunks are contained/adapted to main; common-client exposure, flat imports/raw CSV and API532 binding are historical. The PR is not wholly redundant. Release owns merges. Source rollback does not undo external effects or publication.
+The original SDK350 history, canonical 1eff source and failed checks remain preserved in the Campaigns owner receipt. Core operation hunks are contained/adapted to main; common-client exposure, flat imports/raw CSV and API532 binding are historical. The PR is not wholly redundant. Release owns merges. Source rollback does not undo external effects or publication.
+
+SDK input commit: 725c5ab530e73a17e007c397430b32f53df26442. The export commit is the later commit containing this record and generated catalog. No registry artifact is established by either commit.
