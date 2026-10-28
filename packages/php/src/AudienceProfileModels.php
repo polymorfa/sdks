@@ -13,6 +13,7 @@ namespace Polymorfa;
  * @phpstan-type PutInput array{tags:list<string>,attributes:array<string,Attribute>,expectedRevision?:int,provenance?:Provenance,consent?:ConsentInput}
  * @phpstan-type Consent array{source:Source,reference:string,purpose:'campaigns',allowed:bool,assertedAt:int,id:string,profileRevision:int,createdAt:int}
  * @phpstan-type PageParams array{cursor?:string,limit?:int}
+ * @phpstan-type ListParams array{cursor?:string,limit?:int,tag?:string,phonePrefix?:string}
  * @phpstan-type PageInfo array{nextCursor:string|null,hasMore:bool}
  * @phpstan-type ProfilePage array{data:list<Profile>,page:PageInfo}
  * @phpstan-type ConsentPage array{data:list<Consent>,page:PageInfo}

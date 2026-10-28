@@ -1166,6 +1166,7 @@ async fn retained_project_views_and_finite_pages_do_not_retarget_or_autopage() {
             &ListAudienceProfilesParameters {
                 cursor: Some(ID.into()),
                 limit: Some(1),
+                ..Default::default()
             },
             Default::default(),
         )
@@ -1463,4 +1464,68 @@ async fn cancellation_settles_csv_body_without_a_second_request() {
     assert_eq!(result.unwrap_err().kind, ErrorKind::Cancelled);
     release_tx.send(()).unwrap();
     server.await.unwrap();
+}
+
+#[tokio::test]
+async fn audience_profile_filter_wire_and_boundaries() {
+    let fixture: Value = serde_json::from_str(include_str!(
+        "../../../contracts/fixtures/audience-profile-list.v1.json"
+    ))
+    .unwrap();
+    let w = Wire::new(vec![(
+        200,
+        json!({"data":[],"page":{"nextCursor":null,"hasMore":false}}),
+        None,
+        vec![],
+    )])
+    .await;
+    let (_, c, _) = w.clients();
+    c.audience_profiles()
+        .list(
+            &ListAudienceProfilesParameters {
+                cursor: Some(ID.into()),
+                limit: Some(1),
+                tag: Some("é vip".into()),
+                phone_prefix: Some("+44".into()),
+            },
+            Default::default(),
+        )
+        .await
+        .unwrap();
+    let captured = w.finish().await;
+    assert!(captured[0].path.contains("phonePrefix=%2B44"));
+    let parsed = reqwest::Url::parse(&format!("https://example.test{}", captured[0].path)).unwrap();
+    let q: BTreeMap<_, _> = parsed
+        .query_pairs()
+        .map(|(k, v)| (k.into_owned(), v.into_owned()))
+        .collect();
+    assert_eq!(q.get("tag").map(String::as_str), Some("é vip"));
+    assert_eq!(q.get("cursor").map(String::as_str), Some(ID));
+    let w = Wire::new(vec![]).await;
+    let (_, c, _) = w.clients();
+    for bad in fixture["invalidFilters"].as_array().unwrap() {
+        let params = ListAudienceProfilesParameters {
+            tag: bad["tag"].as_str().map(str::to_owned),
+            phone_prefix: bad["phonePrefix"].as_str().map(str::to_owned),
+            ..Default::default()
+        };
+        assert!(c
+            .audience_profiles()
+            .list(&params, Default::default())
+            .await
+            .is_err());
+    }
+    assert!(c
+        .audience_profiles()
+        .list_consent(
+            PHONE,
+            &ListAudienceProfilesParameters {
+                tag: Some("vip".into()),
+                ..Default::default()
+            },
+            Default::default()
+        )
+        .await
+        .is_err());
+    assert_eq!(w.finish().await.len(), 0);
 }

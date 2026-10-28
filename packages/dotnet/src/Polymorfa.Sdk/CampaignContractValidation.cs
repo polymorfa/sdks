@@ -166,8 +166,16 @@ internal static class CampaignContractValidation
         }
         return body;
     }
+    internal static IReadOnlyList<KeyValuePair<string, string>> ProfileList(ListAudienceProfilesParameters? input)
+    {
+        _ = Page(input is null ? null : new ListAudienceProfilesParameters(input.Cursor, input.Limit));
+        if (input?.Tag is { } tag && (Utf8.GetByteCount(tag) < 1 || Utf8.GetByteCount(tag) > 48 || Control(tag))) Invalid("tag");
+        if (input?.PhonePrefix is { } prefix && !Regex.IsMatch(prefix, "\\A\\+[0-9]{1,15}\\z", RegexOptions.CultureInvariant)) Invalid("phonePrefix");
+        return Resource.Query(input).ToArray();
+    }
     internal static IReadOnlyList<KeyValuePair<string, string>> Page(ListAudienceProfilesParameters? input)
     {
+        if (input?.Tag is not null || input?.PhonePrefix is not null) Invalid("consent filters");
         if (input?.Cursor is { } cursor) Uuid(cursor, "cursor");
         if (input?.Limit is { } limit) Integer(limit, "limit", 1, 100);
         return Resource.Query(input).ToArray();

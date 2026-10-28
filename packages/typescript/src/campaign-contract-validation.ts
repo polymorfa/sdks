@@ -460,6 +460,37 @@ export function validateProfilePage(
   ) as Record<string, string | number>;
 }
 
+export function validateProfileList(
+  value: unknown,
+): Record<string, string | number> {
+  const input = contractFields(
+    value,
+    ["cursor", "limit", "tag", "phonePrefix"],
+    [],
+    "params",
+  );
+  const query = validateProfilePage({
+    cursor: input.cursor,
+    limit: input.limit,
+  });
+  if (input.tag !== undefined) {
+    const tag = bytes(input.tag, "params.tag", 1, 48);
+    if (hasAsciiControl(tag))
+      invalid("params.tag", "must not contain control characters");
+    query.tag = tag;
+  }
+  if (input.phonePrefix !== undefined) {
+    if (
+      typeof input.phonePrefix !== "string" ||
+      !/^\+[0-9]{1,15}$/.test(input.phonePrefix) ||
+      hasAsciiControl(input.phonePrefix)
+    )
+      invalid("params.phonePrefix", "must be + followed by 1-15 digits");
+    query.phonePrefix = input.phonePrefix;
+  }
+  return query;
+}
+
 export function validateProfilePut(value: unknown): void {
   const input = contractFields(
     value,

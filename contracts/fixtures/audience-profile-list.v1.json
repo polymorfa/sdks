@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "operationId": "listAudienceProfiles",
+  "validFilters": [
+    {},
+    {
+      "tag": "vip",
+      "phonePrefix": "+44"
+    },
+    {
+      "tag": "éééééééééééééééééééééééé"
+    },
+    {
+      "tag": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "tag": " VIP "
+    },
+    {
+      "phonePrefix": "+0"
+    },
+    {
+      "phonePrefix": "+999999999999999"
+    }
+  ],
+  "invalidFilters": [
+    {
+      "tag": ""
+    },
+    {
+      "tag": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    {
+      "tag": "ééééééééééééééééééééééééé"
+    },
+    {
+      "tag": "vip\n"
+    },
+    {
+      "tag": ""
+    },
+    {
+      "phonePrefix": "+"
+    },
+    {
+      "phonePrefix": "44"
+    },
+    {
+      "phonePrefix": "%2B44"
+    },
+    {
+      "phonePrefix": "+44%"
+    },
+    {
+      "phonePrefix": "+44_"
+    },
+    {
+      "phonePrefix": "+9999999999999999"
+    },
+    {
+      "phonePrefix": " +44"
+    }
+  ],
+  "invalidCursors": [
+    "",
+    "not-a-uuid",
+    "018f0000-0000-7000-8000-000000000001extra"
+  ],
+  "query": {
+    "values": {
+      "cursor": "018f0000-0000-7000-8000-000000000001",
+      "limit": "1",
+      "tag": "éééééééééééééééééééééééé",
+      "phonePrefix": "+44"
+    },
+    "encodedPhonePrefix": "%2B44"
+  }
+}
