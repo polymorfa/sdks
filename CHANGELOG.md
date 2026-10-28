@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- `@polymorfa/ui` Inbox: the conversation list and the thread sit side by side
+  from 560 px of Inbox width, down from 700 px, and Back appears only when
+  they cannot. Back showed beside the list before because its rule read the
+  thread's width. Back now has a visible border. Source-only until a nightly
+  publishes.
 - All six server SDKs expose optional automatic-pause `reason`/`code` and
   optional recipient-skip `messageIndex`/`followUpId` from accepted API source
   `9bb1e2ed`. Future reason/code strings and raw envelope fields are retained;
