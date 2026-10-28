@@ -1,0 +1,366 @@
+import type { CallsController, CallsSnapshot } from "../browser/index.js";
+import type { Locale } from "../appearance/index.js";
+import { PolymorfaElement, button, element, textElement } from "./base.js";
+
+/**
+ * Run a synchronous controller call from a DOM handler. The controller's
+ * mutators throw once it is disposed, and a disposed controller keeps its last
+ * snapshot — so this element stays rendered with clickable buttons. The call
+ * they belonged to is gone; there is nothing to report.
+ */
+function ignoreDisposed(run: () => void): void {
+  try {
+    run();
+  } catch {
+    // Disposed controller — no snapshot left to change.
+  }
+}
+
+const HEADINGS: Partial<
+  Record<CallsSnapshot["status"], keyof Locale["messages"]>
+> = {
+  incoming: "calls.incoming",
+  ringing: "calls.ringing",
+  accepted: "calls.connecting",
+  connecting: "calls.connecting",
+  connected: "calls.connected",
+  reconnecting: "calls.reconnecting",
+  ended: "calls.ended",
+  error: "calls.failed",
+};
+
+const ACTIVE = new Set<CallsSnapshot["status"]>([
+  "ringing",
+  "accepted",
+  "connecting",
+  "connected",
+  "reconnecting",
+]);
+
+/**
+ * Portable call surface: incoming card (answer/reject, join for a shared
+ * call, dismiss for a call claimed elsewhere), the active call controls
+ * (mute, camera when the line carries video, leave, end for everyone), and
+ * the participant list. The React package carries the full official-window
+ * layout and video tiles; this element keeps the same controller contract for
+ * React-free hosts.
+ *
+ * Set the boolean `exclusive` attribute (or property) to claim calls answered
+ * here. Without it, other participants keep ringing and can join.
+ */
+export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
+  static readonly observedAttributes = ["exclusive"];
+
+  /** Claim calls answered from this element. Reflects the `exclusive` attribute. */
+  get exclusive(): boolean {
+    return this.hasAttribute("exclusive");
+  }
+  set exclusive(value: boolean) {
+    this.toggleAttribute("exclusive", value);
+  }
+
+  attributeChangedCallback(): void {
+    if (this.isConnected) this.render();
+  }
+
+  protected renderContent(
+    snapshot: CallsSnapshot | undefined,
+    locale: Locale,
+  ): readonly Node[] {
+    const messages = locale.messages;
+    const panel = element("section", "panel call");
+    panel.className = this.rootClass("pmfa-call");
+    const status = snapshot?.status ?? "ready";
+    // idle and ready are absent on purpose: nothing to announce, and this
+    // region is assertive — a raw status identifier would be read out.
+    const key =
+      snapshot?.error?.code === "screen_share_failed"
+        ? "calls.screenShareFailed"
+        : snapshot?.error?.code === "media_control_failed"
+          ? "calls.mediaControlFailed"
+          : snapshot?.error?.code === "call_control_failed"
+            ? "calls.controlFailed"
+            : HEADINGS[status];
+    const heading = key === undefined ? undefined : messages[key];
+    if (heading !== undefined) {
+      // Assertive on the heading, not the panel: this element re-renders
+      // wholesale on every snapshot, so a panel-wide live region made a mute
+      // toggle re-announce the peer number and every control with it.
+      const status = textElement("h2", heading, "status");
+      status.setAttribute("aria-live", "assertive");
+      panel.append(status);
+    }
+    if (snapshot?.peer !== undefined)
+      panel.append(textElement("p", snapshot.peer, "peer"));
+    if (snapshot?.remoteAudioMuted === true) {
+      const remoteMute = textElement(
+        "p",
+        messages["calls.remoteMuted"],
+        "remote-muted",
+      );
+      remoteMute.setAttribute("role", "status");
+      panel.append(remoteMute);
+    }
+    if (snapshot?.videoDelivery === "unconfirmed" && !snapshot.videoMuted) {
+      const notice = textElement(
+        "p",
+        messages["calls.videoDeliveryUnconfirmed"],
+        "video-delivery-unconfirmed",
+      );
+      notice.setAttribute("role", "status");
+      panel.append(notice);
+    }
+    const controller = this.configuredController<CallsController>();
+    if (status === "incoming" && snapshot !== undefined) {
+      // An answer or join is in flight: the controller refuses these until it
+      // settles, so they are disabled.
+      const busy = snapshot.answering === true;
+      const guarded = (value: HTMLButtonElement) => {
+        value.disabled = busy;
+        return value;
+      };
+      // A failed answer: this call's own (still ringing), or a previous
+      // call's that gave way to this one.
+      const failure = snapshot.error;
+      if (
+        failure !== undefined &&
+        failure.code !== "call_control_failed" &&
+        failure.code !== "call_claimed"
+      ) {
+        const notice = textElement(
+          "p",
+          failure.callId === undefined || failure.callId === snapshot.callId
+            ? messages["calls.answerFailed"]
+            : messages["calls.previousFailed"],
+          "failure",
+        );
+        notice.setAttribute("role", "status");
+        panel.append(notice);
+      }
+      // These reject when a remote hang-up lands between the render and the
+      // click. The snapshot already says so, so this only keeps the rejection
+      // from going unhandled — the same handling the React card uses.
+      if (snapshot.claimedByOther) {
+        panel.append(
+          textElement("p", messages["calls.answeredElsewhere"], "claimed"),
+          button(messages["calls.dismiss"], "dismiss", () =>
+            ignoreDisposed(() => controller?.dismiss()),
+          ),
+        );
+      } else if (snapshot.canJoin) {
+        panel.append(
+          textElement("p", messages["calls.joinable"], "joinable"),
+          guarded(
+            button(
+              messages["calls.join"],
+              "primary join",
+              () => void controller?.join().catch(() => undefined),
+              "pmfa-btn pmfa-btn-primary",
+            ),
+          ),
+          button(messages["calls.dismiss"], "dismiss", () =>
+            ignoreDisposed(() => controller?.dismiss()),
+          ),
+        );
+      } else {
+        const exclusive = this.exclusive;
+        panel.append(
+          guarded(
+            button(
+              messages["calls.answer"],
+              "primary answer",
+              () =>
+                void controller?.answer({ exclusive }).catch(() => undefined),
+              "pmfa-btn pmfa-btn-primary",
+            ),
+          ),
+          guarded(
+            button(
+              messages["calls.reject"],
+              "reject",
+              () => void controller?.reject().catch(() => undefined),
+            ),
+          ),
+        );
+      }
+      // Snapshots built by hand for custom controllers may omit the list.
+      const others = (snapshot.invitations ?? []).filter(
+        (invitation) => invitation.callId !== snapshot.callId,
+      );
+      if (others.length > 0) {
+        const list = element("ul", "invitations");
+        list.setAttribute("aria-label", messages["calls.otherIncoming"]);
+        for (const invitation of others) {
+          const item = element("li", "invitation");
+          item.append(
+            textElement("span", invitation.from, "invitation-peer"),
+            button(messages["calls.show"], "show", () =>
+              ignoreDisposed(() => controller?.select(invitation.callId)),
+            ),
+          );
+          list.append(item);
+        }
+        panel.append(list);
+      }
+    }
+    if (snapshot !== undefined && ACTIVE.has(status)) {
+      if (status === "connected" && snapshot.socialSupported) {
+        const hand = button(
+          snapshot.handRaised
+            ? messages["calls.lowerHand"]
+            : messages["calls.raiseHand"],
+          "hand",
+          () =>
+            void controller
+              ?.setHandRaised(!snapshot.handRaised)
+              .catch(() => undefined),
+        );
+        panel.append(hand);
+        for (const emoji of ["👍", "❤️", "😂", "😮", "😢", "🙏"] as const)
+          panel.append(
+            button(
+              `${messages["calls.react"]} ${emoji}`,
+              "reaction",
+              () => void controller?.sendReaction(emoji).catch(() => undefined),
+            ),
+          );
+        panel.append(
+          button(
+            messages["calls.clearReaction"],
+            "clear-reaction",
+            () => void controller?.sendReaction("").catch(() => undefined),
+          ),
+        );
+      }
+      if (snapshot.socialError) {
+        const error = element("span", "social-error");
+        error.setAttribute("role", "alert");
+        error.textContent = messages["calls.socialFailed"];
+        panel.append(error);
+      }
+      if (snapshot.reaction?.emoji) {
+        const reaction = element("span", "reaction");
+        reaction.setAttribute("role", "status");
+        reaction.textContent = snapshot.reaction.emoji;
+        panel.append(reaction);
+      }
+      // Gated like the camera: the element takes any controller, and one that
+      // reports a line without mute must not be offered the control.
+      if (snapshot.capabilities.mute)
+        panel.append(
+          button(
+            snapshot.audioMuted
+              ? messages["calls.unmute"]
+              : messages["calls.mute"],
+            "mute",
+            () =>
+              ignoreDisposed(() =>
+                controller?.setMuted({ audio: !snapshot.audioMuted }),
+              ),
+          ),
+        );
+      // On a video call the button mutes the outgoing track; on an audio call
+      // over a video-capable line it upgrades, as the React dock's does.
+      // Without the second case an audio call could never reach video here.
+      // The upgrade needs a media session, which exists only once the call is
+      // connected — offered earlier the button would do nothing at all. The
+      // mute branch is unaffected, and `connectedAt` is no use as the test
+      // because it survives `reconnecting`.
+      if (
+        snapshot.capabilities.video &&
+        !snapshot.screenSharing &&
+        (snapshot.video ||
+          (status === "connected" && controller?.canEnableVideo === true))
+      )
+        panel.append(
+          snapshot.video
+            ? button(
+                snapshot.videoMuted
+                  ? messages["calls.cameraOn"]
+                  : messages["calls.cameraOff"],
+                "camera",
+                () =>
+                  ignoreDisposed(() =>
+                    controller?.setMuted({ video: !snapshot.videoMuted }),
+                  ),
+              )
+            : button(messages["calls.cameraOn"], "camera", () => {
+                // Rejects on a denied camera or a failed re-offer; the upgrade
+                // rolls itself back, so the audio call carries on.
+                void controller?.enableVideo?.().catch(() => undefined);
+              }),
+        );
+      if (
+        snapshot.capabilities.video &&
+        status === "connected" &&
+        controller?.canShareScreen
+      ) {
+        const share = button(
+          messages[
+            snapshot.screenSharing ? "calls.stopSharing" : "calls.shareScreen"
+          ],
+          "screen-share",
+          () => {
+            void (
+              snapshot.screenSharing
+                ? controller.stopScreenShare()
+                : controller.startScreenShare()
+            ).catch(() => undefined);
+          },
+        );
+        panel.append(share);
+      }
+      // Leave closes only this connection; hang-up ends the call for
+      // everyone. Leave is offered where nobody claimed the call, except on
+      // a call this client placed that has not connected: leaving it would
+      // keep the callee ringing.
+      const leaveShown =
+        !snapshot.exclusive &&
+        !(
+          snapshot.direction === "outgoing" &&
+          status !== "connected" &&
+          snapshot.connectedAt === undefined
+        );
+      if (leaveShown)
+        panel.append(
+          button(
+            messages["calls.leave"],
+            "leave",
+            () => void controller?.leave().catch(() => undefined),
+          ),
+        );
+      panel.append(
+        button(
+          leaveShown ? messages["calls.end"] : messages["calls.hangup"],
+          "hangup",
+          () => void controller?.hangup().catch(() => undefined),
+          "pmfa-btn pmfa-btn-danger",
+        ),
+      );
+      const participants = (snapshot.participants ?? []).filter(
+        (participant) => participant.state !== "left",
+      );
+      if (participants.length > 0) {
+        const list = element("ul", "participants");
+        list.setAttribute("aria-label", messages["calls.participants"]);
+        for (const participant of participants)
+          list.append(
+            textElement(
+              "li",
+              `${participant.phoneNumber ?? participant.id}${participant.handRaised ? ` · ${messages["calls.handRaised"]}` : ""}`,
+              participant.audioMuted ? "participant muted" : "participant",
+            ),
+          );
+        panel.append(list);
+      }
+    }
+    return [panel];
+  }
+}
+
+export function defineCallElements(
+  registry: CustomElementRegistry = customElements,
+): void {
+  if (registry.get("pmfa-call") === undefined)
+    registry.define("pmfa-call", PolymorfaCallElement);
+}

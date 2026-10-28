@@ -4,7 +4,7 @@ import {
   createBrowserCalls,
   createClientTokenProvider,
   type CallsController,
-} from "@polymorfa/browser";
+} from "@polymorfa/ui-kit";
 // Demo mode only: the in-memory backend below needs the controller class,
 // which applications normally get from `createBrowserCalls`.
 import {
@@ -12,7 +12,7 @@ import {
   type CallLifecycleEvent,
   type CallMediaFactory,
   type CallsBackend,
-} from "@polymorfa/browser/internal";
+} from "@polymorfa/ui-kit/internal";
 
 export interface DeskCalls {
   readonly controller: CallsController;

@@ -75,6 +75,8 @@ from .models import (
     SendMessage,
     Session,
     SessionAccount,
+    SessionCallsPage,
+    SessionCallsParams,
     SessionRemoved,
     SessionStarting,
     SessionStopping,
@@ -772,6 +774,21 @@ class Presence(Resource):
 
 
 class SessionCalls(Resource):
+    async def list(
+        self, session: str, params: SessionCallsParams | None = None, *, options: RequestOptions = O
+    ) -> ApiResponse[SessionCallsPage]:
+        """One page of the number's calls, newest first, with the other party's identity.
+
+        Records are served from the number's data region. Client tokens need
+        the ``read_calls`` action.
+        """
+        return await self._request(
+            "GET",
+            f"/messaging/{segment(session)}/calls",
+            query=cast(Mapping[str, QueryValue], params or {}),
+            options=options,
+        )
+
     async def reject(
         self, session: str, call_id: str, body: RejectSessionCall, *, options: RequestOptions = O
     ) -> ApiResponse[Success | Envelope[RejectedSessionCall] | Envelope[AsyncAccepted]]:

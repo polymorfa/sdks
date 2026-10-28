@@ -293,18 +293,31 @@ describe("MessagingClient client rules contract", () => {
   });
 });
 
+describe("MessagingClient session call history", () => {
+  it("lists a number's calls with filters on the session calls route", async () => {
+    const { client, requests } = await messagingServer();
+    await client.calls.list("support line", { limit: 10, outcome: "missed", direction: "inbound", since: "2026-10-01T00:00:00Z", cursor: "c1" });
+    expect(requests[0]!.method).toBe("GET");
+    const url = new URL(requests[0]!.path, "http://test");
+    expect(url.pathname).toBe("/messaging/support%20line/calls");
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      limit: "10", outcome: "missed", direction: "inbound", since: "2026-10-01T00:00:00Z", cursor: "c1",
+    });
+  });
+});
+
 describe("MessagingClient Customer-scoped client tokens", () => {
   it("serializes a session ceiling including reserved regional beta actions", async () => {
     const { client, requests } = await messagingServer();
     await client.clientTokens.mint({
       session: "support",
       ephemeralId: "u",
-      allow: ["chats_read", "chats_manage", "contact_write", "contact_delete"],
+      allow: ["chats_read", "chats_manage", "contact_write", "contact_delete", "groups_read", "groups_manage", "read_calls", "conversations_read", "presence_write"],
     });
     expect(JSON.parse(requests[0]!.body!)).toEqual({
       session: "support",
       ephemeralId: "u",
-      allow: ["chats_read", "chats_manage", "contact_write", "contact_delete"],
+      allow: ["chats_read", "chats_manage", "contact_write", "contact_delete", "groups_read", "groups_manage", "read_calls", "conversations_read", "presence_write"],
     });
   });
 

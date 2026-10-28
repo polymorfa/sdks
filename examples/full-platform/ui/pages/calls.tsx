@@ -1,6 +1,6 @@
 "use client";
 
-import { DialPad } from "@polymorfa/react";
+import { DialPad } from "@polymorfa/ui-kit/react";
 
 import type { CallRecord } from "../../lib/desk/types.js";
 import { useCalls } from "../calls-context.js";

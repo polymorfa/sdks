@@ -2,7 +2,7 @@
 #![forbid(unsafe_code)]
 
 #[cfg(target_arch = "wasm32")]
-compile_error!("polymorfa-sdk is server-only. Use @polymorfa/browser and @polymorfa/elements in browser/WASM applications.");
+compile_error!("polymorfa-sdk is server-only. Use @polymorfa/ui-kit in browser/WASM applications.");
 
 pub mod account;
 pub mod audience_segments;
@@ -46,6 +46,7 @@ pub mod platform;
 pub mod platform_sessions;
 pub mod policies;
 pub mod raw;
+pub mod session_calls;
 pub mod settings;
 pub mod signal;
 pub mod sip;

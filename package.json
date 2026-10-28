@@ -11,13 +11,8 @@
   "workspaces": [
     "packages/typescript",
     "packages/calls",
-    "packages/browser",
-    "packages/ui",
-    "packages/elements",
-    "packages/react",
-    "packages/store",
+    "packages/ui-kit",
     "packages/nextjs",
-    "packages/devtools",
     "examples/calls-example",
     "packages/storage"
   ],

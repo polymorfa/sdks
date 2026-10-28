@@ -11,12 +11,13 @@ import {
 import type { WebhookConstructor } from "./webhook.js";
 
 /**
- * What a grant can allow. The API enforces the client-token actions
- * (`send_*`, `read_presence`, `subscribe_presence`, `read_contact`,
- * `voip_*`); this handler enforces the rest on its own routes.
+ * What a grant can allow. The API enforces the client-token actions; this
+ * handler enforces `read_messages`, `subscribe_events`, `connect_whatsapp`
+ * and `manage_templates` on its own routes.
  */
 export type PolymorfaPermission =
   | "read_messages"
+  | "read_calls"
   | "subscribe_events"
   | "send_message"
   | "send_reaction"
@@ -32,11 +33,25 @@ export type PolymorfaPermission =
   | "voip_place"
   | "voip_answer"
   | "voip_signal"
+  | "groups_read"
+  | "groups_manage"
+  | "conversations_read"
+  | "conversations_manage"
+  | "labels_read"
+  | "labels_manage"
+  | "contacts_manage"
+  | "profile_read"
+  | "profile_manage"
+  | "channels_read"
+  | "channels_manage"
+  | "business_read"
+  | "presence_write"
   | "connect_whatsapp"
   | "manage_templates";
 
 const PERMISSIONS: ReadonlySet<string> = new Set<PolymorfaPermission>([
   "read_messages",
+  "read_calls",
   "subscribe_events",
   "send_message",
   "send_reaction",
@@ -52,11 +67,24 @@ const PERMISSIONS: ReadonlySet<string> = new Set<PolymorfaPermission>([
   "voip_place",
   "voip_answer",
   "voip_signal",
+  "groups_read",
+  "groups_manage",
+  "conversations_read",
+  "conversations_manage",
+  "labels_read",
+  "labels_manage",
+  "contacts_manage",
+  "profile_read",
+  "profile_manage",
+  "channels_read",
+  "channels_manage",
+  "business_read",
+  "presence_write",
   "connect_whatsapp",
   "manage_templates",
 ]);
 
-/** Actions the API narrows on a Customer-scoped token (`allow`). */
+/** API actions a client token can carry; Customer tokens carry all of them. */
 const CUSTOMER_TOKEN_ACTIONS: ReadonlySet<string> = new Set([
   "send_message",
   "send_reaction",
@@ -69,6 +97,23 @@ const CUSTOMER_TOKEN_ACTIONS: ReadonlySet<string> = new Set([
   "chats_manage",
   "contact_write",
   "contact_delete",
+  "voip_place",
+  "voip_answer",
+  "voip_signal",
+  "groups_read",
+  "groups_manage",
+  "read_calls",
+  "conversations_read",
+  "conversations_manage",
+  "labels_read",
+  "labels_manage",
+  "contacts_manage",
+  "profile_read",
+  "profile_manage",
+  "channels_read",
+  "channels_manage",
+  "business_read",
+  "presence_write",
 ]);
 
 /**
@@ -493,8 +538,7 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
         // Wrapper-only permissions stay on this handler. An empty API action
         // set is an explicit zero ceiling, never omission/follow-live-rules.
         allow: grant.allow.filter(
-          (action) =>
-            CUSTOMER_TOKEN_ACTIONS.has(action) || action.startsWith("voip_"),
+          (action) => CUSTOMER_TOKEN_ACTIONS.has(action),
         ),
         ephemeralId: grant.ephemeralId,
         ttlSeconds: grant.ttlSeconds,
@@ -507,7 +551,7 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
       );
       if (allow.length === 0)
         throw new TypeError(
-          "A customer grant needs at least one API action (send_*, read_presence, subscribe_presence or read_contact).",
+          "A customer grant needs at least one API action.",
         );
       body = {
         customer: grant.customer!,
@@ -797,13 +841,17 @@ function eventAllowed(event: RelayEvent, grant: PolymorfaGrant): boolean {
     return false;
   if (grant.conversations === "all") return true;
   const conversationId = conversationOf(event);
-  // Session-level events carry no conversation and pass the session check.
+  // A call event without a known peer (for example `call.ended` with
+  // `from: null`, or telemetry) may belong to any conversation.
+  if (conversationId === undefined && event.event.startsWith("call."))
+    return false;
+  // Other session-level events carry no conversation and pass the session check.
   return (
     conversationId === undefined || grant.conversations.includes(conversationId)
   );
 }
 
-/** The conversation an event belongs to, as `@polymorfa/store` reads it. */
+/** The conversation an event belongs to, as `@polymorfa/ui-kit/store` reads it. */
 export function conversationOf(event: RelayEvent): string | undefined {
   const payload = event.payload as
     | { conversation?: { id?: unknown }; from?: { id?: unknown } }

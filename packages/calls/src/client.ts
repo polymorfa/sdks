@@ -36,6 +36,12 @@ export interface CallsClientOptions {
    * default `default`). Client tokens always act as their own participant.
    */
   readonly participant?: string;
+  /**
+   * The number a Customer-scoped client token acts for, sent as `?session=`
+   * on Calls requests and the lifecycle socket. Leave unset for session
+   * tokens and server credentials.
+   */
+  readonly clientTokenSession?: string;
   /** Defaults to `https://api.polymorfa.com`. */
   readonly baseUrl?: string;
   /** Media reattach attempts after an unexpected drop. Default 3. */
@@ -152,6 +158,7 @@ export class CallsClient extends Emitter<ClientEvents> {
     this.#api =
       options.api ??
       new HttpCallsApi({
+        ...(options.clientTokenSession === undefined ? {} : { clientTokenSession: options.clientTokenSession }),
         token: credential!,
         ...(options.baseUrl === undefined ? {} : { baseUrl: options.baseUrl }),
         ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
@@ -165,6 +172,9 @@ export class CallsClient extends Emitter<ClientEvents> {
       ...(options.participant === undefined
         ? {}
         : { participant: options.participant }),
+      ...(options.clientTokenSession === undefined
+        ? {}
+        : { clientTokenSession: options.clientTokenSession }),
       ...timerOptions(options),
       ...(options.now === undefined ? {} : { now: options.now }),
     });

@@ -236,6 +236,25 @@ impl<'a> Calls<'a> {
             )
             .await
     }
+    /// One page of the number's calls, newest first, with the other party's identity.
+    pub async fn list(
+        &self,
+        session: &str,
+        params: &crate::session_calls::ListSessionCallsParams,
+        options: RequestOptions,
+    ) -> Result<ApiResponse<crate::session_calls::SessionCallsPage>> {
+        let query_model = crate::developer::query(params)?;
+        let query = crate::models::query_pairs(&query_model)?;
+        self.http
+            .request::<_, ()>(
+                Method::GET,
+                &format!("/messaging/{}/calls", encode(session)),
+                &query,
+                None,
+                options,
+            )
+            .await
+    }
     pub async fn reject_incoming(
         &self,
         session: &str,

@@ -1,0 +1,424 @@
+import {
+  ObservableController,
+  type ControllerSnapshot,
+} from "../controller.js";
+
+export type MessageDirection = "inbound" | "outbound";
+export type MessageStatus = "pending" | "sent" | "failed";
+export type ConversationMessageKind =
+  "text" | "image" | "video" | "audio" | "document" | "order";
+export type MessageContentState =
+  "available" | "not_retained" | "unavailable" | "deleted";
+
+/** A received cart. Prices are the reported unit prices, never computed totals. */
+export interface OrderItem {
+  readonly productRetailerId: string;
+  readonly quantity: number;
+  readonly itemPrice: number | null;
+  readonly currency: string | null;
+}
+
+export type MessageOrder =
+  | "unreadable"
+  | {
+      readonly catalogId: string;
+      readonly items: readonly OrderItem[];
+      readonly text?: string;
+    };
+
+export type MediaQuality = "standard" | "hd";
+
+/** A small embedded JPEG, as carried inside WhatsApp media and link previews. */
+export interface MediaThumbnail {
+  readonly contentType: "image/jpeg";
+  /** Base64 JPEG bytes. */
+  readonly data: string;
+  readonly width?: number;
+  readonly height?: number;
+}
+
+/** Another quality of the same picture or video, such as its HD upload. */
+export interface MediaVariant {
+  readonly url?: string;
+  readonly previewUrl?: string;
+  readonly size?: number;
+  readonly width?: number;
+  readonly height?: number;
+}
+
+export interface LinkPreview {
+  readonly url: string;
+  readonly title?: string;
+  readonly description?: string;
+  readonly thumbnail?: MediaThumbnail;
+}
+
+export interface MessageAttachment {
+  readonly id: string;
+  readonly name: string;
+  readonly size: number;
+  readonly contentType: string;
+  /** Where the full file can be opened or downloaded. */
+  readonly url?: string;
+  /** A smaller image to show inline; falls back to `url` for images. */
+  readonly previewUrl?: string;
+  // The fields below are optional presentation hints from the data source.
+  // Renderers never infer them: no duration means none is shown, and no
+  // waveform means a plain track.
+  /** Recorded as a voice note rather than sent as an audio file. */
+  readonly voice?: boolean;
+  /** Audio or video length in seconds. */
+  readonly durationSeconds?: number;
+  /** Observed voice-note levels, each from 0 to 1. */
+  readonly waveform?: readonly number[];
+  /** Page count of a document. */
+  readonly pageCount?: number;
+  /** Pixel size of a picture or video. */
+  readonly width?: number;
+  readonly height?: number;
+  /** The embedded preview, shown blurred until the full file loads. */
+  readonly thumbnail?: MediaThumbnail;
+  /**
+   * The quality this attachment was sent at. On an outgoing draft, `hd` asks
+   * the send adapter for an HD pair: a standard picture first, then the HD one.
+   */
+  readonly quality?: MediaQuality;
+  /** The HD upload paired with this standard-quality picture or video. */
+  readonly hd?: MediaVariant;
+}
+
+/** Who wrote a message in a group. One-to-one messages leave it out. */
+export interface MessageSender {
+  /** Stable Polymorfa user ID. */
+  readonly id: string;
+  /** The name the data source resolved, or the sender's own push name. */
+  readonly name?: string;
+  readonly phoneNumber?: string;
+}
+
+export interface ConversationMessage {
+  readonly id: string;
+  readonly clientId?: string;
+  readonly text: string;
+  readonly createdAt: number;
+  readonly direction: MessageDirection;
+  readonly status: MessageStatus;
+  /** The author of an inbound group message. */
+  readonly sender?: MessageSender;
+  /** An observed type, including media whose bytes were not retained. */
+  readonly messageType?: ConversationMessageKind;
+  /** Omission means available. Empty text alone never means missing content. */
+  readonly contentState?: MessageContentState;
+  readonly order?: MessageOrder;
+  readonly replyTo?: string;
+  readonly attachments?: readonly MessageAttachment[];
+  /** The preview WhatsApp attached to a link in the text. */
+  readonly linkPreview?: LinkPreview;
+  readonly error?: string;
+  /** Observed receipts supplied by the data source. Sending never infers them. */
+  readonly receipt?: {
+    readonly state?: "delivered" | "read" | "played";
+    readonly deliveredAt?: number;
+    readonly readAt?: number;
+    readonly playedAt?: number;
+  };
+}
+
+export interface OutgoingMessage {
+  readonly clientId: string;
+  readonly text: string;
+  readonly replyTo?: string;
+  readonly attachments?: readonly MessageAttachment[];
+}
+
+export interface ConversationPage {
+  readonly messages: readonly ConversationMessage[];
+  readonly nextCursor?: string;
+}
+
+export type ConversationEvent =
+  | { readonly type: "upsert"; readonly message: ConversationMessage }
+  | { readonly type: "delete"; readonly messageId: string };
+
+export interface ConversationDataSource {
+  load(cursor?: string, signal?: AbortSignal): Promise<ConversationPage>;
+  subscribe(listener: (event: ConversationEvent) => void): () => void;
+  send(
+    message: OutgoingMessage,
+    signal?: AbortSignal,
+  ): Promise<ConversationMessage>;
+}
+
+export interface ConversationSnapshot extends ControllerSnapshot {
+  readonly status: "idle" | "loading" | "ready" | "loading_more" | "error";
+  readonly messages: readonly ConversationMessage[];
+  readonly hasMore: boolean;
+  readonly cursor?: string;
+  readonly error?: string;
+}
+
+export interface ConversationControllerOptions {
+  readonly createClientId?: () => string;
+  readonly now?: () => number;
+}
+
+export class ConversationController extends ObservableController<ConversationSnapshot> {
+  readonly #source: ConversationDataSource;
+  readonly #createClientId: () => string;
+  readonly #now: () => number;
+  #abort = new AbortController();
+  #unsubscribe: (() => void) | undefined;
+
+  constructor(
+    source: ConversationDataSource,
+    options: ConversationControllerOptions = {},
+  ) {
+    const now = options.now ?? Date.now;
+    super({ status: "idle", messages: [], hasMore: false }, now);
+    this.#source = source;
+    this.#now = now;
+    this.#createClientId =
+      options.createClientId ?? (() => crypto.randomUUID());
+  }
+
+  async load(): Promise<void> {
+    this.assertActive();
+    this.#abort.abort();
+    this.#abort = new AbortController();
+    const request = this.#abort;
+    this.#unsubscribe?.();
+    this.#unsubscribe = undefined;
+    this.transition({ status: "loading", messages: [], hasMore: false });
+    try {
+      const page = await this.#source.load(undefined, request.signal);
+      if (request.signal.aborted) return;
+      this.transition(pageSnapshot(page));
+      this.#unsubscribe = this.#source.subscribe((event) =>
+        this.#receive(event),
+      );
+    } catch (cause) {
+      if (!request.signal.aborted)
+        this.transition({
+          status: "error",
+          messages: [],
+          hasMore: false,
+          error: errorMessage(cause),
+        });
+    }
+  }
+
+  async loadMore(): Promise<void> {
+    this.assertActive();
+    const request = this.#abort;
+    const current = this.getSnapshot();
+    if (current.status === "loading_more" || current.cursor === undefined)
+      return;
+    this.transition({ ...conversationFields(current), status: "loading_more" });
+    try {
+      const page = await this.#source.load(current.cursor, request.signal);
+      if (request.signal.aborted) return;
+      this.transition({
+        status: "ready",
+        messages: mergeMessages(this.getSnapshot().messages, page.messages),
+        hasMore: page.nextCursor !== undefined,
+        ...(page.nextCursor === undefined ? {} : { cursor: page.nextCursor }),
+      });
+    } catch (cause) {
+      if (request.signal.aborted) return;
+      this.transition({
+        ...conversationFields(this.getSnapshot()),
+        status: "error",
+        error: errorMessage(cause),
+      });
+    }
+  }
+
+  /**
+   * Send optimistically. Aborting `signal` cancels the data-source request;
+   * the message is then marked failed so it can be retried.
+   */
+  async send(
+    input: Omit<OutgoingMessage, "clientId">,
+    signal?: AbortSignal,
+  ): Promise<ConversationMessage> {
+    const clientId = this.#createClientId();
+    return this.#send({ ...input, clientId }, false, signal);
+  }
+
+  async retry(
+    clientId: string,
+    signal?: AbortSignal,
+  ): Promise<ConversationMessage> {
+    const message = this.getSnapshot().messages.find(
+      (candidate) => candidate.clientId === clientId,
+    );
+    if (message === undefined || message.status !== "failed")
+      throw new Error(`Failed message ${clientId} was not found.`);
+    return this.#send(
+      {
+        clientId,
+        text: message.text,
+        ...(message.replyTo === undefined ? {} : { replyTo: message.replyTo }),
+        ...(message.attachments === undefined
+          ? {}
+          : { attachments: message.attachments }),
+      },
+      true,
+      signal,
+    );
+  }
+
+  protected override onDispose(): void {
+    this.#abort.abort();
+    this.#unsubscribe?.();
+    this.#unsubscribe = undefined;
+  }
+
+  async #send(
+    outgoing: OutgoingMessage,
+    replacing: boolean,
+    external?: AbortSignal,
+  ): Promise<ConversationMessage> {
+    this.assertActive();
+    const current = this.getSnapshot();
+    const optimistic: ConversationMessage = {
+      id: outgoing.clientId,
+      clientId: outgoing.clientId,
+      text: outgoing.text,
+      createdAt: this.#now(),
+      direction: "outbound",
+      status: "pending",
+      ...(outgoing.replyTo === undefined ? {} : { replyTo: outgoing.replyTo }),
+      ...(outgoing.attachments === undefined
+        ? {}
+        : { attachments: outgoing.attachments }),
+    };
+    const messages = replacing
+      ? replaceByClientId(current.messages, optimistic)
+      : [optimistic, ...current.messages];
+    this.transition({
+      ...conversationFields(current),
+      status: "ready",
+      messages,
+    });
+    const request = this.#abort;
+    const signal = eitherSignal(request.signal, external);
+    try {
+      const acknowledged = await this.#source.send(outgoing, signal.signal);
+      if (signal.signal.aborted) throw new Error("Message send was cancelled.");
+      const result: ConversationMessage = {
+        ...acknowledged,
+        clientId: outgoing.clientId,
+        status: "sent",
+      };
+      this.#replaceMessage(outgoing.clientId, result);
+      return result;
+    } catch (cause) {
+      const result: ConversationMessage = {
+        ...optimistic,
+        status: "failed",
+        error: signal.signal.aborted
+          ? "Message send was cancelled."
+          : errorMessage(cause),
+      };
+      if (!request.signal.aborted)
+        this.#replaceMessage(outgoing.clientId, result);
+      return result;
+    } finally {
+      signal.release();
+    }
+  }
+
+  #receive(event: ConversationEvent): void {
+    const current = this.getSnapshot();
+    const messages =
+      event.type === "delete"
+        ? current.messages.filter(({ id }) => id !== event.messageId)
+        : mergeMessages(current.messages, [event.message]);
+    this.transition({
+      ...conversationFields(current),
+      status: "ready",
+      messages,
+    });
+  }
+
+  #replaceMessage(clientId: string, message: ConversationMessage): void {
+    const current = this.getSnapshot();
+    this.transition({
+      ...conversationFields(current),
+      status: "ready",
+      messages: replaceByClientId(current.messages, message),
+    });
+  }
+}
+
+/** A signal that aborts when either input does, plus listener cleanup. */
+function eitherSignal(
+  own: AbortSignal,
+  external: AbortSignal | undefined,
+): { readonly signal: AbortSignal; release(): void } {
+  if (external === undefined) return { signal: own, release: () => undefined };
+  const combined = new AbortController();
+  const abort = () => combined.abort();
+  if (own.aborted || external.aborted) abort();
+  own.addEventListener("abort", abort, { once: true });
+  external.addEventListener("abort", abort, { once: true });
+  return {
+    signal: combined.signal,
+    release: () => {
+      own.removeEventListener("abort", abort);
+      external.removeEventListener("abort", abort);
+    },
+  };
+}
+
+function pageSnapshot(
+  page: ConversationPage,
+): Omit<ConversationSnapshot, "revision" | "updatedAt"> {
+  return {
+    status: "ready",
+    messages: mergeMessages([], page.messages),
+    hasMore: page.nextCursor !== undefined,
+    ...(page.nextCursor === undefined ? {} : { cursor: page.nextCursor }),
+  };
+}
+
+function conversationFields(snapshot: ConversationSnapshot) {
+  return {
+    messages: snapshot.messages,
+    hasMore: snapshot.hasMore,
+    ...(snapshot.cursor === undefined ? {} : { cursor: snapshot.cursor }),
+  };
+}
+
+function replaceByClientId(
+  messages: readonly ConversationMessage[],
+  message: ConversationMessage,
+) {
+  const index = messages.findIndex(
+    (candidate) =>
+      candidate.id === message.id ||
+      (message.clientId !== undefined &&
+        candidate.clientId === message.clientId),
+  );
+  if (index < 0) return [message, ...messages];
+  return messages.map((candidate, candidateIndex) =>
+    candidateIndex === index ? message : candidate,
+  );
+}
+
+function mergeMessages(
+  current: readonly ConversationMessage[],
+  incoming: readonly ConversationMessage[],
+) {
+  return incoming.reduce(
+    (messages, message) => replaceByClientId(messages, message),
+    [...current],
+  );
+}
+
+function errorMessage(cause: unknown): string {
+  return cause instanceof Error
+    ? cause.message
+    : "Conversation request failed.";
+}

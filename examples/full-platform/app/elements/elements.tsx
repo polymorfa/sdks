@@ -5,12 +5,12 @@ import {
   TemplateBuilderController,
   createSameOriginTemplateBuilderTransport,
   type ConversationPage,
-} from "@polymorfa/browser";
+} from "@polymorfa/ui-kit";
 import type {
   PolymorfaMessageListElement,
   PolymorfaTemplateBuilderElement,
-} from "@polymorfa/elements";
-import { createLocale } from "@polymorfa/ui";
+} from "@polymorfa/ui-kit/web-components";
+import { createLocale } from "@polymorfa/ui-kit/appearance";
 import { createElement, useEffect, useRef } from "react";
 
 import { callApi } from "../../lib/browser/api.js";
@@ -38,29 +38,31 @@ export function ElementsDemo() {
     );
 
     // Custom elements touch `HTMLElement`, so load them in the browser only.
-    void import("@polymorfa/elements").then(({ definePolymorfaElements }) => {
-      if (disposed) return;
-      definePolymorfaElements();
-      const configuration = {
-        // Follow the theme the app applied to the document.
-        appearance: {
-          theme:
-            document.documentElement.dataset.theme === "dark"
-              ? ("dark" as const)
-              : ("light" as const),
-        },
-        locale: createLocale("en"),
-      };
-      if (list.current) {
-        list.current.configuration = configuration;
-        list.current.controller = conversation;
-      }
-      if (builder.current) {
-        builder.current.configuration = configuration;
-        builder.current.controller = templates;
-      }
-      void conversation.load();
-    });
+    void import("@polymorfa/ui-kit/web-components").then(
+      ({ definePolymorfaElements }) => {
+        if (disposed) return;
+        definePolymorfaElements();
+        const configuration = {
+          // Follow the theme the app applied to the document.
+          appearance: {
+            theme:
+              document.documentElement.dataset.theme === "dark"
+                ? ("dark" as const)
+                : ("light" as const),
+          },
+          locale: createLocale("en"),
+        };
+        if (list.current) {
+          list.current.configuration = configuration;
+          list.current.controller = conversation;
+        }
+        if (builder.current) {
+          builder.current.configuration = configuration;
+          builder.current.controller = templates;
+        }
+        void conversation.load();
+      },
+    );
 
     return () => {
       disposed = true;

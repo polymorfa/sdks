@@ -197,6 +197,30 @@ describe("POST /token", () => {
       "voip_signal",
     ]);
   });
+  it("forwards group actions on session and Customer grants", async () => {
+    const session = handler({
+      mint: () => ({
+        ...grant,
+        allow: ["read_messages", "groups_read", "groups_manage"],
+      }),
+    });
+    expect((await session.route.POST(post("token"))).status).toBe(200);
+    expect(
+      session.polymorfa.clientTokens.mint.mock.calls[0]?.[0].allow,
+    ).toEqual(["groups_read", "groups_manage"]);
+    const customer = handler({
+      mint: () => ({
+        customer: "4f6b3c1e-0000-4000-8000-000000000001",
+        conversations: "all",
+        allow: ["read_contact", "groups_read", "groups_manage"],
+        ephemeralId: "agent-7",
+      }),
+    });
+    expect((await customer.route.POST(post("token"))).status).toBe(200);
+    expect(
+      customer.polymorfa.clientTokens.mint.mock.calls[0]?.[0].allow,
+    ).toEqual(["read_contact", "groups_read", "groups_manage"]);
+  });
   it("mints an explicit zero API ceiling for a wrapper-only session grant", async () => {
     const { route, polymorfa } = handler({
       mint: () => ({ ...grant, allow: ["read_messages"] }),
@@ -696,5 +720,28 @@ describe("createDevelopmentInboxStore", () => {
     expect(text).not.toContain("id: evt_m1\n");
     abort.abort();
     await reader.cancel();
+  });
+});
+
+describe("call events and call records", () => {
+  it("forwards read_calls on session grants as an API action", async () => {
+    const { route, polymorfa } = handler({
+      mint: () => ({ ...grant, allow: ["read_messages", "read_calls"] }),
+    });
+    expect((await route.POST(post("token"))).status).toBe(200);
+    expect(polymorfa.clientTokens.mint.mock.calls[0]?.[0].allow).toEqual(["read_calls"]);
+  });
+
+  it("does not relay call events without a peer to a conversation-limited grant", async () => {
+    const events: RelayEvent[] = [
+      { id: "k1", session: "support", event: "call.received", timestamp: "2026-10-27T10:00:00Z", payload: { callId: "a", from: { id: "chat_1" } } },
+      { id: "k2", session: "support", event: "call.ended", timestamp: "2026-10-27T10:00:01Z", payload: { callId: "b", from: null, durationSeconds: 3 } },
+      { id: "k3", session: "support", event: "call.telemetry", timestamp: "2026-10-27T10:00:02Z", payload: { callId: "b", setupMs: 1 } },
+    ];
+    const { route } = handler({ events: async function* () { yield* events; } });
+    const text = await (await route.GET(get("events"))).text();
+    expect(text).toContain("id: k1\n");
+    expect(text).not.toContain("id: k2");
+    expect(text).not.toContain("id: k3");
   });
 });

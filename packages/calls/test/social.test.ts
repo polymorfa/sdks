@@ -81,3 +81,21 @@ describe("call interactions", () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("Customer-scoped client tokens", () => {
+  it("send ?session= on Calls requests only when a number is named", async () => {
+    const fetch = vi.fn<(url: string, init: RequestInit) => Promise<Response>>(
+      async () =>
+        new Response(JSON.stringify({ success: true }), {
+          status: 202,
+          headers: { "content-type": "application/json" },
+        }),
+    );
+    await new HttpCallsApi({ token: "pmfa_ct_dG9rZW4", fetch, baseUrl: "https://api.x", clientTokenSession: "sales" }).sendReaction("call", "connection-1", "👍");
+    await new HttpCallsApi({ token: "pmfa_ct_dG9rZW4", fetch, baseUrl: "https://api.x" }).sendReaction("call", "connection-1", "👍");
+    expect(fetch.mock.calls.map(([url]) => url)).toEqual([
+      "https://api.x/messaging/voip/calls/call/reaction?session=sales",
+      "https://api.x/messaging/voip/calls/call/reaction",
+    ]);
+  });
+});

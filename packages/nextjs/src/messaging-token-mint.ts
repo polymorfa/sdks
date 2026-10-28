@@ -16,7 +16,24 @@ export type CustomerClientTokenAction =
   | "chats_read"
   | "chats_manage"
   | "contact_write"
-  | "contact_delete";
+  | "contact_delete"
+  | "voip_place"
+  | "voip_answer"
+  | "voip_signal"
+  | "groups_read"
+  | "groups_manage"
+  | "read_calls"
+  | "conversations_read"
+  | "conversations_manage"
+  | "labels_read"
+  | "labels_manage"
+  | "contacts_manage"
+  | "profile_read"
+  | "profile_manage"
+  | "channels_read"
+  | "channels_manage"
+  | "business_read"
+  | "presence_write";
 
 /**
  * What `resolve` returns: a token for one `session`, or (beta) for the
@@ -148,11 +165,22 @@ const CUSTOMER_ACTIONS: ReadonlySet<string> = new Set([
   "chats_manage",
   "contact_write",
   "contact_delete",
-]);
-const SESSION_ACTIONS: ReadonlySet<string> = new Set([
-  ...CUSTOMER_ACTIONS,
-  "mcp",
   "voip_place",
   "voip_answer",
   "voip_signal",
+  "groups_read",
+  "groups_manage",
+  "read_calls",
+  "conversations_read",
+  "conversations_manage",
+  "labels_read",
+  "labels_manage",
+  "contacts_manage",
+  "profile_read",
+  "profile_manage",
+  "channels_read",
+  "channels_manage",
+  "business_read",
+  "presence_write",
 ]);
+const SESSION_ACTIONS: ReadonlySet<string> = new Set([...CUSTOMER_ACTIONS, "mcp"]);

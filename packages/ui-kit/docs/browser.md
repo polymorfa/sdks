@@ -1,0 +1,390 @@
+# `@polymorfa/ui-kit` (root)
+
+Framework-neutral browser transport and product controllers for Polymorfa.
+
+## Drop-in client
+
+`PolymorfaClient` (`createPolymorfaClient({ tokenEndpoint })`) fetches client
+tokens from your `createPolymorfaHandler` route, refreshes them before expiry
+with backoff, and reports the grant through `can(permission)`. It never sends
+or chooses permissions. `InboxController` with `createHandlerInboxSource()`
+drives an inbox from the handler's `history` and `events` routes, and
+`connectWhatsApp(client)` asks the handler for a QuickLink and opens the
+hosted URL. The React and Web Component drop-ins are built on these.
+
+`@polymorfa/ui-kit` depends on `@polymorfa/sdk` for the Calls client
+(`@polymorfa/sdk/calls`). It imports nothing else from that package, so no
+server code reaches the browser, and call errors such as `CallsDisabledError`
+are the classes exported from `@polymorfa/sdk/calls`.
+
+This package accepts only short-lived `pmfa_ct_` client tokens obtained from an application callback. It never accepts or stores server API keys.
+
+```ts
+import {
+  BrowserMessagingClient,
+  createClientTokenProvider,
+} from "@polymorfa/ui-kit";
+
+const messaging = new BrowserMessagingClient({
+  session: "support",
+  getClientToken: createClientTokenProvider(),
+});
+
+await messaging.messages.send({
+  conversation: { phoneNumber: "+15551234567" },
+  content: { text: "Hello" },
+});
+```
+
+Native Messaging requests default to `Polymorfa-Version: 2026-09-22`, matching
+the `whatsapp_ids` message-reference object. A temporary optional `whatsapp_id`
+output alias remains for older consumers. An explicit version header in request
+options is preserved; versions before `2026-03-20` return the API error without an automatic
+upgrade or resend. Raw Graph-compatible paths and same-origin application
+handlers receive no default native version header. Client-token permissions and
+Hybrid preview restrictions still apply.
+
+Requests expose status, request ID, response headers, and attempt count. Safe reads retry transient failures; mutations retry only when supplied an idempotency key. A response carrying `X-Polymorfa-Operation-Id` is never retried. If its body cannot be read, the error retains the receipt in `error.metadata.operationId` so an authorized server client can check the operation before another send. Caller cancellation and timeouts use distinct exported error types.
+
+Product controllers use immutable snapshots and `subscribe()`/`getSnapshot()` so Web Components and framework bindings share the same behavior.
+
+`BrowserMessagingClient` binds one session and exposes only the exact
+client-token allowlist: message actions, presence reads/subscriptions, contact
+reads, and permitted widget pairing actions. Session start and status require a server
+Platform credential; use QuickLink for onboarding. The browser widget start/status
+helpers are removed in this breaking contract revision. Conversation history,
+template management and media upload remain application-owned server adapters.
+`createBrowserCalls` supplies client-token call lifecycle and controls.
+
+`createBrowserComposerActions` connects a `MessageComposerController` to the
+message resource for text and reply sends. Supply an upload adapter and a
+`createMessage` mapping for attachments; client tokens cannot call the media
+routes directly.
+
+## Contacts and groups
+
+`ContactDirectoryController` loads the WhatsApp account's contacts once,
+filters them by name (case and accents folded) or digits, and can check an
+unsaved number with `lookupPhone()`. An older load or lookup never replaces a
+newer one; `setSource()` drops results from the previous session.
+`NewChatController` adds starting a one-to-one chat and the two-step
+new-group flow. `GroupController` holds one group and makes every change
+client tokens allow, reloading after each.
+
+```ts
+import {
+  NewChatController,
+  createApiContactSource,
+  createApiGroupSource,
+} from "@polymorfa/ui-kit";
+
+const chat = new NewChatController({
+  contacts: createApiContactSource(client), // read_contact
+  groups: createApiGroupSource(client), // groups_manage; omit to hide groups
+  onOpen: (conversation) => inbox.open(conversation),
+});
+chat.start();
+```
+
+`client.messaging().groups` calls the group routes directly: `list`,
+`retrieve`, `participants`, `inviteCode`, `joinInfo` (`groups_read`) and
+`create`, `join`, `leave`, `setSubject`, `setDescription`,
+`revokeInviteCode`, `addParticipants`, `removeParticipants`, `promote`,
+`demote` and the four settings (`groups_manage`). Creating and adding need the
+session's recipient mode `any`. Group capabilities and the group picture are
+server-only. `InboxController.open(conversation)` selects a conversation that
+is not in the list yet; it stays in `draft` until its first message.
+
+## The rest of a messaging frontend
+
+`client.messaging()` also reaches, with the matching client-token action:
+`chats` for stored conversations and messages (`conversations_read`; the API
+answers `hms_not_enabled` when hosted message storage is off) and archive,
+disappearing messages, edit and delete (`conversations_manage`); `labels`;
+`profile` for the account's profile, picture, privacy settings and default
+disappearing timer; `channels`; `catalog`; `presence.set`; and contact
+`block`, `unblock`, `blocked`, `info` and `businessProfile`. Pictures are
+base64; client tokens cannot pass a URL.
+
+A Customer-scoped token covers several numbers. Pass the one a call uses as
+`clientTokenSession` to `createBrowserCalls`; it is sent as `?session=`.
+
+## Call permission requests
+
+The next SDK release types call permission request content for Cloud API
+numbers. Use the existing message send method with a client token whose
+`send_message` grant covers the destination:
+
+```ts
+await messaging.messages.send({
+  conversation: { phoneNumber: "+15551234567" },
+  content: {
+    callPermissionRequest: { body: "May we call you about order 1522?" },
+  },
+});
+```
+
+The body must contain 1 to 1,024 characters. The API refuses linked-device
+numbers with `unsupported_for_connection` (409), an existing permanent grant
+with `call_permission_granted` (409), and an exhausted request limit with
+`call_permission_request_limited` (429). Handle the error's `code`; follow
+`metadata.headers["retry-after"]` when supplied. Sending a request does not
+grant call permission. Read permission status and manage team policy or opt-outs
+through your server.
+
+This content follows the pinned Messaging contract. Hosted availability and
+package publication are separate.
+
+## Voice notes
+
+`VoiceNoteRecorder` records from the microphone with `getUserMedia` and
+`MediaRecorder`. Its snapshot has `status` (`idle`, `requesting`,
+`recording`, `stopping`, or `error`), `elapsed` milliseconds, an input
+`level` from 0 to 1, the container `mimeType`, and an `error` of
+`permission-denied`, `unavailable`, or `failed`.
+
+```ts
+import { VoiceNoteRecorder, localAttachmentFromFile } from "@polymorfa/ui-kit";
+
+if (VoiceNoteRecorder.isSupported()) {
+  const recorder = new VoiceNoteRecorder();
+  await recorder.start();
+  // later
+  const file = await recorder.stop(); // File or undefined
+  if (file) await composer.addAttachment(localAttachmentFromFile(file));
+}
+```
+
+`stop()` resolves with an `audio/webm`, `audio/ogg`, or `audio/mp4` file named
+`voice-note-<time>.webm` (`.ogg` or `.m4a`); the time is ISO 8601 with `:` and `.`
+replaced by `-`. `cancel()` discards the recording. The microphone tracks
+stop when recording ends, when a pending permission request is cancelled,
+and on `dispose()`.
+
+## Calls
+
+`createBrowserCalls` is the browser calling component: incoming calls,
+placement, answer, join, leave and end, microphone, camera and device
+control, and per-participant video. Your server mints a short-lived client
+token with `POST /platform/client-tokens`, granting `voip_place`,
+`voip_answer`, and `voip_signal` and the destination and concurrency rules you
+need. That token is the only credential the component uses; it never appears
+in a URL.
+
+```ts
+import {
+  createBrowserCalls,
+  createClientTokenProvider,
+} from "@polymorfa/ui-kit";
+
+const calls = createBrowserCalls({
+  session: "support",
+  getClientToken: createClientTokenProvider(),
+  onError: (error) => {
+    // "unauthorized": the platform stopped accepting the token.
+  },
+});
+await calls.connect();
+await calls.controller.place("+15550100");
+// When the application releases the widget:
+await calls.dispose();
+```
+
+Pass `calls.controller` to React's `CallSurface` or the `pmfa-call` element.
+`controller.call` exposes the shared `Call`, including its state, duration,
+end reason, claim state and `addParticipant()` method. Direct placement
+supports linked WhatsApp devices.
+
+### Tokens
+
+Return `{ value, audience: "browser", expiresAt }` from `getClientToken` so
+the SDK can replace the token before it expires without interrupting calls.
+When a token expires or is revoked, `onError` receives
+`code: "unauthorized"` and the next reconnect asks `getClientToken` for a new
+token. REST requests refresh a cached token before it expires; a provider
+that returns an expired token fails with `expired_client_token`.
+
+### Answering, joining, and leaving
+
+Incoming calls ring until a participant answers or declines them.
+`snapshot.invitations` lists every ringing call; several can ring at once and
+the controller never declines one for you. The first invitation is displayed;
+`controller.select(callId)` shows another while no call is active, and
+`controller.dismiss(callId?)` hides one locally without declining it.
+
+- `controller.answer({ exclusive, video, callId })` accepts the call and
+  connects microphone, camera and speaker. `exclusive` defaults to `false`, which leaves other
+  participants ringing so they can join. `exclusive: true` claims the call.
+- `controller.join({ video, callId })` joins a call another participant
+  answered without a claim (`snapshot.canJoin`).
+- `snapshot.claimedByOther` is `true` when another participant claimed the
+  call. `answer()` and `join()` then reject with `CallClaimedError`, and
+  `reject()` is refused: declining would end the claimer's call.
+- While calling is turned off for the number, `place()`, `answer()` and
+  `join()` reject with `CallsDisabledError` from `@polymorfa/sdk/calls`.
+- While `place()` is pending, `snapshot.placing` is `true`, including before
+  the API returns a call ID. It becomes `false` when placement settles.
+- While an answer or join is in flight, `snapshot.answering` is `true` and
+  `answer()`, `join()`, `reject()` and `place()` are refused. `select()` and
+  `dismiss()` still work: the answered call is displayed once it is accepted,
+  even if you selected another invitation. If you dismissed it, the controller
+  leaves it (or ends it when the answer claimed it) instead of showing it.
+  Only that call ending cancels the answer; `end()` for another displayed
+  call is refused meanwhile.
+- If the platform refuses an answer, the call stays displayed as `incoming`
+  with `snapshot.error` (`answer_failed` or `join_failed`), so it can be
+  retried or declined. If media fails after the call was answered, the
+  failed call is published as `error` (or `ended` for a terminal offer)
+  and the next waiting invitation is displayed. The failure stays in
+  `snapshot.error`; `error.callId` names the call it belongs to.
+- `controller.reject()` declines a ringing call and ends it for everyone.
+- `controller.leave()` closes this browser's connection; the call continues.
+  On a call this browser placed that has not connected, it ends the call
+  instead, so the callee stops ringing.
+- `controller.end()` (and `hangup()`) ends the call for every participant.
+- Disposing the controller leaves a joined call. It ends only a call this
+  browser placed that is still ringing.
+
+After a call ends, the next waiting invitation is displayed.
+
+### Media
+
+- `controller.localStream` is your microphone and camera.
+- `controller.remoteStream` is the merged call audio; play it through one
+  element.
+- `controller.remoteVideos` holds one entry per remote participant who sends
+  video: a `MediaStream`, a stable `key`, a display `label`, and the
+  `participant` or the other connection's `connectionId` and
+  `connectionParticipant`. `snapshot.remoteVideos` carries the same entries
+  without streams, so a render can react to changes. Videos are separate
+  streams; nothing is composed.
+- `controller.setMuted()`, `enableVideo()`, `switchDevice()`,
+  `setPreferredDevices()` and `refreshDevices()` control capture and playback.
+- `snapshot.participants` lists the call's WhatsApp participants.
+- A dropped connection shows `reconnecting` and recovers or ends as
+  `connection_failed` after a bounded window.
+
+Disposal releases tracks and connections.
+
+### Diagnostics
+
+While a call's media is open, the controller sends call diagnostics for this
+browser's connection to `POST /messaging/voip/calls/{id}/reports`, where
+they appear with the call in the Console:
+
+- Every 15 seconds, and when the connection closes if the last report was at least five seconds earlier: round-trip time,
+  audio jitter, packets lost and received, the audio and video codecs, the
+  ICE candidate type (`relay` means a TURN relay), and how many times the
+  connection reconnected. Figures come from `RTCPeerConnection.getStats()`.
+- When something fails: an error code (`media_permission_denied`,
+  `device_not_found`, `device_in_use`, `ice_failed`, `negotiation_failed`,
+  `media_timeout`, `reconnect_exhausted` or `unsupported_browser`).
+
+Each report names the connection and `@polymorfa/ui-kit` with its version.
+Reports contain no phone numbers, names, device labels, IP addresses, audio or
+video. They are best-effort: a failed report is not retried, a refused one
+(other than rate limiting) stops reporting for the connection, and nothing
+about reporting affects the call. The client token needs the `voip_signal`
+action. Turn reporting off with `createBrowserCalls({ diagnostics: false })`.
+
+If a reject or hangup request fails, the call stays active and its controls remain
+available for retry. The UI shows a localized failure message and keeps existing
+media connected until the call ends. `snapshot.error` clears when ending succeeds
+or when an incoming call is successfully answered after a failed reject.
+
+## Template builder
+
+The builder uses the canonical `TemplateDefinition` contract: standard,
+carousel, authentication, and limited-time-offer templates with structured
+headers, buttons, variables, and previews. Saving and Meta submission are
+separate controller actions.
+
+```ts
+import {
+  TemplateBuilderController,
+  createSameOriginTemplateBuilderTransport,
+} from "@polymorfa/ui-kit";
+
+const templates = new TemplateBuilderController(
+  createSameOriginTemplateBuilderTransport({
+    path: "/api/polymorfa/templates",
+  }),
+);
+
+templates.create({
+  name: "order_ready",
+  definition: {
+    version: 1,
+    kind: "standard",
+    category: "UTILITY",
+    language: "en_US",
+    body: "Hello {{name}}",
+    variables: [{ name: "name", type: "text", example: "Ada" }],
+  },
+});
+
+await templates.save();
+await templates.refreshPreview();
+```
+
+The same-origin transport sends application actions with browser cookies. It
+does not accept a server credential, project slug, or Cloud API session. The
+application route resolves those values after authorizing the request.
+
+Microphone and camera controls synchronize the connection's media preferences
+with the call. `enableVideo()` confirms the publishing request after the local
+WebRTC negotiation; peer acceptance remains independent. A local camera preview
+is not confirmation that the phone receives video. After a camera upgrade or
+display request succeeds, `snapshot.videoDelivery` is `"unconfirmed"` for the
+rest of that call; the React and web components show that peer delivery is unverified.
+This is not a peer rejection or a delivery receipt. A refused or unconfirmed
+request surfaces `media_control_failed` and switches off local video capture.
+Incoming phone video never turns on the local camera.
+
+`controller.getSnapshot().remoteAudioMuted` reports a known remote microphone
+state for a direct call and is absent for unknown or group state. React and
+web components display this state without changing local mute controls.
+
+`controller.canShareScreen` is true when the connected media adapter supports
+display capture. Call `controller.startScreenShare()` directly from a click
+handler, and `controller.stopScreenShare()` to restore the previous camera and
+mute preference. `snapshot.screenSharing` identifies the local display source.
+The React and web components include the controls. The browser asks permission each time;
+system audio is not captured. Capture ending stops sharing. Leaving stops saved
+camera and display tracks, and a replacement connection does not reacquire the
+display. The source uses the existing single video publisher, so it cannot
+replace another connection's camera. Display and camera are not sent together.
+
+## Inline chat workspace
+
+See [chat components](../../../docs/chat-components.md) for the inline `ChatWindow` /
+`pmfa-chat-window`, observed receipts, media, presentation filters and failure-preserving
+composer actions. History and sends remain owned by your authorized data source.
+
+`InboxConversation` accepts observed pin/archive/marked-unread state, a scope
+subtitle and optional last-message receipts. Rendering this state never performs
+a WhatsApp mutation. Hosts supply authorized adapters to the controlled React
+list. [See the list contract](../../../docs/chat-components.md#controlled-conversation-list).
+
+### Conversation sessions and loaded-message filters
+
+`createConversationSession(source, { upload, draft, sendUnavailable, conversation, composer })`
+owns a
+`ConversationController` and its `MessageComposerController`. `source` is the
+public `ConversationDataSource` interface. The host supplies authorized reads,
+subscriptions and sends; an optional upload adapter handles picked file bytes.
+The factory does not discover routes, mint credentials or persist browser data.
+Keep the session while switching threads to preserve its draft, reply and retry
+identity, then call `dispose()` when its scope or authority closes. Disposal
+cancels history reads, sends and uploads together. Pass `sendUnavailable` with a
+message while the host cannot send: submitting then fails with that message, keeps
+the draft and never calls `source.send`, so no failed message joins the thread.
+Without an `upload` adapter, attaching a file fails instead of uploading.
+
+`MessageFilterController` has `setQuery`, `setType`, `setDirection`, `clear` and
+`matches` methods. It filters loaded messages without fetching history or changing
+conversation state. `messageMatchesFilters`, `conversationMessageKind` and
+`orderSearchText` support custom views. An explicit `messageType` preserves known
+media type when bytes were not retained; `contentState` prevents unavailable
+content from appearing in search or default renderers. Received orders use the
+public `MessageOrder` and `OrderItem` types.

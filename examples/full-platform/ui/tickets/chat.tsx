@@ -7,12 +7,12 @@ import {
   type ConversationEvent,
   type ConversationMessage,
   type ConversationPage,
-} from "@polymorfa/browser";
+} from "@polymorfa/ui-kit";
 import {
   ComposeBox,
   MessageList,
   type QuickReplyOption,
-} from "@polymorfa/react";
+} from "@polymorfa/ui-kit/react";
 import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
 
 import {

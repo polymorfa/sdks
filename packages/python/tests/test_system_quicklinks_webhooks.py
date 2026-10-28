@@ -352,3 +352,56 @@ async def test_quicklink_testing_configuration_shape():
         http_transport=httpx.MockTransport(handler),
     ) as client:
         assert (await client.quick_links.create(body)).data["data"]["id"] == "link_1"
+
+
+async def test_session_calls_list_reads_the_numbers_calls_with_identity():
+    seen: list[httpx.Request] = []
+    page = {
+        "success": True,
+        "data": [
+            {
+                "callId": "C1",
+                "projectId": "p",
+                "sessionId": "support line",
+                "direction": "inbound",
+                "upstream": "linked_device",
+                "outcome": "missed",
+                "state": "missed",
+                "hasVideo": False,
+                "peer": {"id": "15550100", "phoneNumber": "+15550100"},
+                "startedAt": "2026-10-27T10:00:00Z",
+                "connectedAt": None,
+                "endedAt": None,
+                "durationSeconds": None,
+                "endReason": None,
+            }
+        ],
+        "nextCursor": "next",
+    }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json=page)
+
+    async with AsyncMessagingClient(
+        Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        http_transport=httpx.MockTransport(handler),
+    ) as client:
+        result = await client.calls.list(
+            "support line",
+            {
+                "limit": 10,
+                "outcome": "missed",
+                "direction": "inbound",
+                "since": "2026-10-01T00:00:00Z",
+            },
+        )
+    assert result.data == page
+    assert seen[0].method == "GET"
+    assert seen[0].url.raw_path.decode().split("?")[0] == "/messaging/support%20line/calls"
+    assert dict(seen[0].url.params) == {
+        "limit": "10",
+        "outcome": "missed",
+        "direction": "inbound",
+        "since": "2026-10-01T00:00:00Z",
+    }
