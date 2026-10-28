@@ -10,9 +10,8 @@ namespace Polymorfa;
  * @phpstan-type Direction 'inbound'|'outbound'
  * @phpstan-type Outcome 'answered'|'missed'|'declined'|'failed'|'in_progress'
  * @phpstan-type State 'offered'|'accepted'|'rejected'|'missed'|'ended'
- * @phpstan-type Peer array{id?:string,phoneNumber?:string,username?:string}
- * @phpstan-type Record array{callId:string,projectId:?string,sessionId:string,direction:Direction,upstream:'linked_device'|'cloud_api',outcome:Outcome,state:State,hasVideo:bool,peer?:?Peer,peerRef:?string,startedAt:string,connectedAt:?string,endedAt:?string,durationSeconds:int|float|null,endReason:?string}
- * @phpstan-type Summary array{callId:string,sessionId:string,projectId:?string,direction:Direction,state:State,live:bool,backend:string,hasVideo:bool,peer?:?Peer,peerRef:?string,startedAt:string,connectedAt:?string,endedAt:?string,durationSeconds:int|float|null,endReason:?array{code:string,label:string},answeredBy:?string,exclusive:?bool}
+ * @phpstan-type Record array{callId:string,projectId:?string,sessionId:string,direction:Direction,upstream:'linked_device'|'cloud_api',outcome:Outcome,state:State,hasVideo:bool,peerRef:?string,startedAt:string,connectedAt:?string,endedAt:?string,durationSeconds:int|float|null,endReason:?string}
+ * @phpstan-type Summary array{callId:string,sessionId:string,projectId:?string,direction:Direction,state:State,live:bool,backend:string,hasVideo:bool,peerRef:?string,startedAt:string,connectedAt:?string,endedAt:?string,durationSeconds:int|float|null,endReason:?array{code:string,label:string},answeredBy:?string,exclusive:?bool}
  * @phpstan-type Participant array{id:string,state:'invited'|'ringing'|'connected'|'left',firstSeenAt:string,updatedAt:string,leftReason:?string}
  * @phpstan-type Connection array{id:string,participant:string,transport:'webrtc'|'socket'|'sip'|'unknown',joinedAt:?string,leftAt:?string,reason:'left'|'replaced'|'claimed'|'call_ended'|'sip_busy'|'sip_declined'|'sip_no_answer'|'sip_unavailable'|'sip_auth_failed'|null}
  * @phpstan-type Telemetry array{status:'reported'|'unknown',source:'media_server',setupMs:int|float|null,ringMs:int|float|null,codec:?string,jitterMs:int|float|null,packetsLost:?int,rttMs:int|float|null,receivedKbps:int|float|null,sentKbps:int|float|null}

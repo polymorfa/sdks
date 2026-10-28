@@ -67,5 +67,12 @@ public sealed record HistoryMediaRetrieval(string State, string? Reason = null);
 public sealed record HistoryPollOption(string Name, string Hash);
 public sealed record HistoryMessage(string Id, [property: JsonPropertyName("whatsapp_ids")] WhatsAppMessageIds WhatsAppIds, string Direction, string Type, string Timestamp, HistoryConversation Conversation, bool FromMe, string? PushName = null, string? Text = null, string? Caption = null, string? MimeType = null, string? Filename = null, bool? Ptt = null, double? Latitude = null, double? Longitude = null, string? DisplayName = null, string? Title = null, string? Reaction = null, string? ReactionTo = null, bool? Edited = null, bool? Unavailable = null, string? UnavailableReason = null, IReadOnlyList<HistoryPollOption>? PollOptions = null, IReadOnlyList<HistoryMedia>? Media = null, HistoryMediaRetrieval? MediaRetrieval = null, [property: JsonPropertyName("whatsapp_id")] string? WhatsAppId = null, CloudOrder? Order = null);
 public sealed record HistoryPage<T>(bool Success, IReadOnlyList<T> Data, bool HasMore, string? NextCursor, string? PreviousCursor);
+/// <summary>The other party: user ID, phone number or username, as the call reported them.</summary>
+public sealed record SessionCallPeer(string? Id = null, string? PhoneNumber = null, string? Username = null);
+/// <summary>One call on a number, read from the number's data region.</summary>
+public sealed record SessionCallRecord(string CallId, string ProjectId, string SessionId, string Direction, string Upstream, string Outcome, string State, bool HasVideo, SessionCallPeer? Peer, string StartedAt, string? ConnectedAt, string? EndedAt, int? DurationSeconds, string? EndReason);
+public sealed record SessionCallsPage(bool Success, IReadOnlyList<SessionCallRecord> Data, string? NextCursor);
+/// <summary>Filters a number's calls. Since and Until are ISO 8601 times bounding when a call started.</summary>
+public sealed record ListSessionCallsParameters(int? Limit = null, string? Cursor = null, string? Direction = null, string? Outcome = null, string? Since = null, string? Until = null);
 public sealed record ListHistoryChatsParameters(int? Limit = null, string? Cursor = null, string? Kind = null, string? ActiveSince = null, string? ActiveBefore = null);
 public sealed record ListHistoryMessagesParameters(int? Limit = null, string? Cursor = null, string? Order = null, string? Since = null, string? Until = null, string? Direction = null, string? Types = null);

@@ -293,6 +293,19 @@ describe("MessagingClient client rules contract", () => {
   });
 });
 
+describe("MessagingClient session call history", () => {
+  it("lists a number's calls with filters on the session calls route", async () => {
+    const { client, requests } = await messagingServer();
+    await client.calls.list("support line", { limit: 10, outcome: "missed", direction: "inbound", since: "2026-10-01T00:00:00Z", cursor: "c1" });
+    expect(requests[0]!.method).toBe("GET");
+    const url = new URL(requests[0]!.path, "http://test");
+    expect(url.pathname).toBe("/messaging/support%20line/calls");
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      limit: "10", outcome: "missed", direction: "inbound", since: "2026-10-01T00:00:00Z", cursor: "c1",
+    });
+  });
+});
+
 describe("MessagingClient Customer-scoped client tokens", () => {
   it("serializes a session ceiling including reserved regional beta actions", async () => {
     const { client, requests } = await messagingServer();

@@ -10,30 +10,21 @@ import (
 )
 
 type CallRecord struct {
-	CallID          string    `json:"callId"`
-	ProjectID       *string   `json:"projectId"`
-	SessionID       string    `json:"sessionId"`
-	Direction       string    `json:"direction"`
-	Upstream        string    `json:"upstream"`
-	Outcome         string    `json:"outcome"`
-	State           string    `json:"state"`
-	HasVideo        bool      `json:"hasVideo"`
-	Peer            *CallPeer `json:"peer"`
-	PeerRef         *string   `json:"peerRef"`
-	StartedAt       string    `json:"startedAt"`
-	ConnectedAt     *string   `json:"connectedAt"`
-	EndedAt         *string   `json:"endedAt"`
-	DurationSeconds *float64  `json:"durationSeconds"`
-	EndReason       *string   `json:"endReason"`
+	CallID          string   `json:"callId"`
+	ProjectID       *string  `json:"projectId"`
+	SessionID       string   `json:"sessionId"`
+	Direction       string   `json:"direction"`
+	Upstream        string   `json:"upstream"`
+	Outcome         string   `json:"outcome"`
+	State           string   `json:"state"`
+	HasVideo        bool     `json:"hasVideo"`
+	PeerRef         *string  `json:"peerRef"`
+	StartedAt       string   `json:"startedAt"`
+	ConnectedAt     *string  `json:"connectedAt"`
+	EndedAt         *string  `json:"endedAt"`
+	DurationSeconds *float64 `json:"durationSeconds"`
+	EndReason       *string  `json:"endReason"`
 }
-
-// CallPeer is the other party. Nil on calls recorded before caller identities were stored.
-type CallPeer struct {
-	ID          *string `json:"id,omitempty"`
-	PhoneNumber *string `json:"phoneNumber,omitempty"`
-	Username    *string `json:"username,omitempty"`
-}
-
 type CallRecordEndReason struct {
 	Code  string `json:"code"`
 	Label string `json:"label"`
@@ -101,7 +92,6 @@ type CallRecordSummary struct {
 	Live            bool                 `json:"live"`
 	Backend         string               `json:"backend"`
 	HasVideo        bool                 `json:"hasVideo"`
-	Peer            *CallPeer            `json:"peer"`
 	PeerRef         *string              `json:"peerRef"`
 	StartedAt       string               `json:"startedAt"`
 	ConnectedAt     *string              `json:"connectedAt"`

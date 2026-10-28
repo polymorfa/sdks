@@ -3,7 +3,7 @@ mod support;
 use polymorfa_sdk::{call_records::*, ErrorKind, RequestOptions};
 use serde_json::{json, Value};
 fn record() -> Value {
-    json!({"callId":"call","projectId":"project","sessionId":"support","direction":"inbound","upstream":"linked_device","outcome":"answered","state":"ended","hasVideo":false,"peer":{"id":"15550100","phoneNumber":"+15550100"},"peerRef":null,"startedAt":"then","connectedAt":"then","endedAt":"now","durationSeconds":10.5,"endReason":"user_hangup"})
+    json!({"callId":"call","projectId":"project","sessionId":"support","direction":"inbound","upstream":"linked_device","outcome":"answered","state":"ended","hasVideo":false,"peerRef":"pseudonym","startedAt":"then","connectedAt":"then","endedAt":"now","durationSeconds":10.5,"endReason":"user_hangup"})
 }
 fn metrics() -> Value {
     json!({"calls":2,"answered":1,"missed":1,"declined":0,"failed":0,"inProgress":0,"answerRate":0.5,"totalDurationSeconds":10.5,"averageDurationSeconds":10.5})
@@ -235,18 +235,4 @@ async fn call_export_text_content_type_and_cursor_stream_native_wire() {
         Some("invalid_response")
     );
     server.await.unwrap();
-}
-
-#[test]
-fn call_record_decodes_the_peer_identity() {
-    let current: CallRecord = serde_json::from_value(record()).unwrap();
-    let peer = current.peer.expect("peer");
-    assert_eq!(peer.phone_number.as_deref(), Some("+15550100"));
-    assert_eq!(peer.id.as_deref(), Some("15550100"));
-    let mut legacy = record();
-    legacy["peer"] = Value::Null;
-    legacy["peerRef"] = json!("old");
-    let legacy: CallRecord = serde_json::from_value(legacy).unwrap();
-    assert!(legacy.peer.is_none());
-    assert_eq!(legacy.peer_ref.as_deref(), Some("old"));
 }

@@ -4,9 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Polymorfa.Sdk;
 
-public sealed record CallRecord(string CallId, string? ProjectId, string SessionId, string Direction, string Upstream, string Outcome, string State, bool HasVideo, CallPeer? Peer, string? PeerRef, string StartedAt, string? ConnectedAt, string? EndedAt, decimal? DurationSeconds, string? EndReason);
-/// <summary>The other party. Null on calls recorded before caller identities were stored.</summary>
-public sealed record CallPeer(string? Id, string? PhoneNumber, string? Username);
+public sealed record CallRecord(string CallId, string? ProjectId, string SessionId, string Direction, string Upstream, string Outcome, string State, bool HasVideo, string? PeerRef, string StartedAt, string? ConnectedAt, string? EndedAt, decimal? DurationSeconds, string? EndReason);
 public sealed record CallRecordEndReason(string Code, string Label);
 public sealed record CallRecordParticipant(string Id, string State, string FirstSeenAt, string UpdatedAt, string? LeftReason);
 public sealed record CallRecordConnection(string Id, string Participant, string Transport, string? JoinedAt, string? LeftAt, string? Reason);
@@ -15,7 +13,7 @@ public sealed record CallRecordAppQuality(string ReportedAt, decimal? RttMs, dec
 public sealed record CallRecordAppError(string Code, string ReportedAt);
 public sealed record CallRecordAppConnection(string ConnectionId, string Participant, CallReportClient? Client, CallRecordAppQuality? Quality, IReadOnlyList<CallRecordAppError> Errors);
 public sealed record CallRecordAppReports(string Status, IReadOnlyList<CallRecordAppConnection> Connections, bool Truncated);
-public sealed record CallRecordSummary(string CallId, string SessionId, string? ProjectId, string Direction, string State, bool Live, string Backend, bool HasVideo, CallPeer? Peer, string? PeerRef, string StartedAt, string? ConnectedAt, string? EndedAt, decimal? DurationSeconds, CallRecordEndReason? EndReason, string? AnsweredBy, bool? Exclusive);
+public sealed record CallRecordSummary(string CallId, string SessionId, string? ProjectId, string Direction, string State, bool Live, string Backend, bool HasVideo, string? PeerRef, string StartedAt, string? ConnectedAt, string? EndedAt, decimal? DurationSeconds, CallRecordEndReason? EndReason, string? AnsweredBy, bool? Exclusive);
 public sealed record CallRecordHistoryEvent(string EventId, string Type, string OccurredAt);
 public sealed record CallRecordHistory(IReadOnlyList<CallRecordHistoryEvent> Events, bool Truncated);
 public sealed record CallRecordCorrelation(string CallId, string SessionId);

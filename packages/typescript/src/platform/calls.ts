@@ -39,14 +39,7 @@ export type CallRecordState =
 export type CallStatsGroupBy = "day" | "hour" | "session" | "outcome";
 export type CallExportFormat = "csv" | "ndjson";
 
-/** The other party: Polymorfa user ID, phone number or username. */
-export interface CallPeer {
-  readonly id?: string;
-  readonly phoneNumber?: string;
-  readonly username?: string;
-}
-
-/** One call detail record. */
+/** One call detail record. The other party appears only as `peerRef`. */
 export interface CallRecord {
   readonly callId: string;
   /** Owning project when known, preserved after the number is deleted. */
@@ -62,9 +55,6 @@ export interface CallRecord {
    * Team-specific pseudonym of the other party: the same party has the same
    * value across your team's calls. Never a phone number. `null` when unknown.
    */
-  /** The other party. Null on calls recorded before caller identities were stored. */
-  readonly peer?: CallPeer | null;
-  /** @deprecated Pseudonym present only on calls recorded before caller identities were stored. */
   readonly peerRef: string | null;
   readonly startedAt: string;
   readonly connectedAt: string | null;
@@ -181,7 +171,6 @@ export interface CallRecordSummary {
   backend: string;
   hasVideo: boolean;
   /** Per-team pseudonym of the remote party. */
-  peer?: CallPeer | null;
   peerRef: string | null;
   startedAt: string;
   connectedAt: string | null;

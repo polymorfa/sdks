@@ -15,11 +15,12 @@
   `groups.setPicture` (base64). Browser Calls take `clientTokenSession` so a
   Customer token names the number it calls from.
 
-- Call records name the other party. `CallRecord` and `CallRecordSummary`
-  gain `peer` (user ID, phone number, username) in all six SDKs; `peerRef` is
-  deprecated and set only on calls recorded before the change. Session
-  client tokens accept `read_calls` for `GET /messaging/{session}/calls`.
-  Requires the matching API change.
+- A number's call history with the other party's identity: `GET
+  /messaging/{session}/calls` in all six SDKs (`calls.list`,
+  `SessionCalls().List` in Go, `Calls.ListAsync` in .NET). `peer` carries the
+  user ID, phone number and username. Records are served from the number's
+  data region; client tokens need the new `read_calls` action. Platform call
+  records are unchanged and keep `peerRef`. Requires the matching API change.
 - UI Kit call log: `<CallLog/>`, `<pmfa-call-log>` and an Inbox Chats/Calls
   switch read the number's calls from the API, merge repeat calls as WhatsApp
   does and offer call back. `ContactListView` now takes `className` and

@@ -645,6 +645,51 @@ export interface ListCampaignRecipientsResponse {
   readonly page: CampaignRecipientPage;
 }
 
+/** The other party on a call: user ID, phone number or username, as the call reported them. */
+export interface CallPeer {
+  readonly id?: string;
+  readonly phoneNumber?: string;
+  readonly username?: string;
+}
+
+/** One call on a number, read from the number's data region. */
+export interface SessionCallRecord {
+  readonly callId: string;
+  readonly projectId: string;
+  /** The number's session name. */
+  readonly sessionId: string;
+  readonly direction: "inbound" | "outbound";
+  readonly upstream: "linked_device" | "cloud_api";
+  readonly outcome: "answered" | "missed" | "declined" | "failed" | "in_progress";
+  readonly state: "offered" | "accepted" | "rejected" | "missed" | "ended";
+  readonly hasVideo: boolean;
+  /** Null when the call did not report the other party. */
+  readonly peer: CallPeer | null;
+  readonly startedAt: string;
+  readonly connectedAt: string | null;
+  readonly endedAt: string | null;
+  readonly durationSeconds: number | null;
+  readonly endReason: string | null;
+}
+
+export interface ListSessionCallsParams {
+  /** 1 to 100; default 25. */
+  readonly limit?: number;
+  readonly cursor?: string;
+  readonly direction?: "inbound" | "outbound";
+  readonly outcome?: SessionCallRecord["outcome"];
+  /** Calls started at or after this ISO 8601 time. */
+  readonly since?: string;
+  /** Calls started before this ISO 8601 time. */
+  readonly until?: string;
+}
+
+export interface ListSessionCallsResponse {
+  readonly success: true;
+  readonly data: readonly SessionCallRecord[];
+  readonly nextCursor: string | null;
+}
+
 export interface RejectCallRequest {
   /** JID of the incoming caller. */
   readonly from: string;

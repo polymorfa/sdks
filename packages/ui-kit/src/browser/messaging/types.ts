@@ -308,7 +308,7 @@ export interface BrowserCallRecord {
   readonly outcome: "answered" | "missed" | "declined" | "failed" | "in_progress";
   readonly state: "offered" | "accepted" | "rejected" | "missed" | "ended";
   readonly hasVideo: boolean;
-  /** Null on calls recorded before caller identities were stored. */
+  /** Null when the call did not report the other party. */
   readonly peer: BrowserCallPeer | null;
   readonly startedAt: string;
   readonly connectedAt: string | null;

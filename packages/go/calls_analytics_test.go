@@ -10,7 +10,7 @@ import (
 )
 
 var callAnalyticsFixtures = []operationFixture{
-	{"OrganizationClient.Calls.List", "GET", "/platform/calls", "direction=inbound&limit=2&projectId=p&sessionId=s&since=2026-10-01T00%3A00%3A00Z", "", `{"data":[{"callId":"c","peer":{"phoneNumber":"+15550100"},"peerRef":null,"durationSeconds":0.5}],"page":{"nextCursor":null}}`, "data.0.durationSeconds", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+	{"OrganizationClient.Calls.List", "GET", "/platform/calls", "direction=inbound&limit=2&projectId=p&sessionId=s&since=2026-10-01T00%3A00%3A00Z", "", `{"data":[{"callId":"c","peerRef":"opaque","durationSeconds":0.5}],"page":{"nextCursor":null}}`, "data.0.durationSeconds", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wirePage(o.Calls().List(ctx, ListCallRecordsParams{CallFilters: CallFilters{ProjectID: "p", SessionID: "s", Direction: "inbound", Since: "2026-10-01T00:00:00Z"}, ListParams: ListParams{Limit: 2}}))
 	}},
 	{"OrganizationClient.Calls.Retrieve", "GET", "/platform/calls/c", "", "", `{"data":{"call":{"callId":"c","exclusive":false,"endReason":{"code":"future_reason","label":"Other"}},"telemetry":{"status":"reported","jitterMs":3.5},"appReports":{"status":"reported","connections":[{"connectionId":"connection","client":{"name":"polymorfa","version":"0.1","platform":"go"},"quality":{"packetsLost":0},"errors":[{"code":"media_failed","reportedAt":"2026-10-11"}]}]}}}`, "appReports.connections.0.quality.packetsLost", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {

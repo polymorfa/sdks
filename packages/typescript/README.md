@@ -1065,7 +1065,7 @@ const { data: stats } = await platform.calls.stats({
 console.log(stats.totals.answerRate, stats.groups, stats.heatmap);
 
 for await (const call of await platform.calls.list({ outcome: "missed" })) {
-  console.log(call.callId, call.peer?.phoneNumber, call.endReason);
+  console.log(call.callId, call.peerRef, call.endReason);
 }
 ```
 
@@ -1079,9 +1079,8 @@ for await (const call of await platform.calls.list({ outcome: "missed" })) {
   query that takes too long fails with `PolymorfaServerError`
   (`service_unavailable`).
 - `list(params)` returns a `CursorPage<CallRecord>`, newest first. `limit` is
-  1 to 100 (default 25). `peer` names the other party (user ID, phone
-  number, username); calls recorded before caller identities were stored
-  have only the deprecated pseudonym `peerRef`.
+  1 to 100 (default 25). `peerRef` is a team-specific pseudonym of the other
+  party; call records never contain phone numbers.
 - `export(params)` returns one page of up to 1,000 records (`limit` 1 to 1,000)
   as `{ format, body, nextCursor }`. `format` is `csv` (the default; every page
   starts with a header row and uses CRLF line endings) or `ndjson` (one call
@@ -1165,7 +1164,16 @@ Identity resolution accepts an ID, phone number, or BSUID. Calling and security
 code checks require a connected Linked Device Number; identity resolution also
 supports Cloud Numbers when their business portfolio is configured.
 
+`messaging.calls.list(session, params)` returns one page of the number's
+calls, newest first, with the other party in `peer` (user ID, phone number,
+username). The records are served from the number's data region. Filter by
+`direction`, `outcome`, `since` and `until`, and pass `nextCursor` as
+`cursor` for the next page. Client tokens need the `read_calls` action.
+
 ```ts
+const calls = await messaging.calls.list("support", { outcome: "missed", limit: 25 });
+for (const call of calls.data.data) console.log(call.callId, call.peer?.phoneNumber);
+
 await messaging.calls.reject(
   "support",
   incomingCallId,
