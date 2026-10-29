@@ -116,6 +116,8 @@ pub struct HandRaisedRequest {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SessionCallSettings {
+    /// Read-only RFC3339 exclusion end. None is not a coverage guarantee.
+    pub simultaneous_calls_coverage_excluded_until: Option<String>,
     pub calls_enabled: bool,
     pub conference_mode: bool,
     pub inbound_route: String,

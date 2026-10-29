@@ -40,6 +40,7 @@ from .organization import (
     SecurityIncidents,
     SessionBans,
 )
+from .passkeys import Passkeys
 from .platform_media import Media as PlatformMedia
 from .policies import HybridLink, ObservationPolicies, SessionConfigurations
 from .quick_replies import QuickReplies, Users
@@ -59,6 +60,7 @@ class AsyncMessagingClient:
     history_sync: HistorySync
     campaigns: MessagingCampaigns
     official_groups: OfficialGroups
+    passkeys: Passkeys
     catalogs: Catalogs
     cloud_onboarding: CloudOnboarding
     testing: Testing
@@ -100,6 +102,7 @@ class AsyncMessagingClient:
         for name, resource in (
             ("campaigns", MessagingCampaigns),
             ("official_groups", OfficialGroups),
+            ("passkeys", Passkeys),
             ("catalogs", Catalogs),
             ("cloud_onboarding", CloudOnboarding),
             ("testing", Testing),

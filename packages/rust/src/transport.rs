@@ -665,6 +665,8 @@ impl HttpTransport {
                 let value = serde_json::from_slice(&bytes).unwrap_or(serde_json::Value::Null);
                 return Err(Error::response(&value, metadata));
             }
+            #[cfg(test)]
+            admission_test::observe_admission(attempt);
             return Ok((response, metadata));
         }
     }
@@ -992,3 +994,7 @@ fn metadata(response: &reqwest::Response, attempts: u32) -> ResponseMetadata {
         headers,
     }
 }
+
+#[cfg(test)]
+#[path = "transport_admission_test.rs"]
+mod admission_test;

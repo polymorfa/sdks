@@ -10,6 +10,10 @@ pub struct MessagingClient {
     pub(crate) http: HttpTransport,
 }
 impl MessagingClient {
+    pub fn passkeys(&self) -> crate::passkeys::Passkeys<'_> {
+        crate::passkeys::Passkeys(&self.http)
+    }
+
     pub fn new(credential: Credential, options: ClientOptions) -> Result<Self> {
         Ok(Self {
             http: HttpTransport::new(credential, options)?,
