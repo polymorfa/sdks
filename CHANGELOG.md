@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- UI Kit: keep a 320px thread beside the Inbox list in narrow two-pane layouts, and include the linked guides in the package.
+
 - Breaking: the browser UI packages are now one package, the UI Kit
   (`@polymorfa/ui-kit`), with one version. Change each import as follows:
   `@polymorfa/browser` to `@polymorfa/ui-kit`, `@polymorfa/react` to

@@ -1,0 +1,68 @@
+{
+  "browser": "153.0.8010.12",
+  "playwright": "1.63.0",
+  "fixture": "Actual public React Inbox/current compiled package; synthetic in-memory source and token supplier; every network request aborted",
+  "errors": [],
+  "cases": [
+    {
+      "width": 562,
+      "dark": false,
+      "outer": 562,
+      "content": 560,
+      "grid": "240px 320px",
+      "listDisplay": "flex",
+      "listWidth": 240,
+      "threadWidth": 320,
+      "threadClient": 320,
+      "threadScroll": 320,
+      "backDisplay": "none",
+      "pageClient": 562,
+      "pageScroll": 562
+    },
+    {
+      "width": 620,
+      "dark": false,
+      "outer": 620,
+      "content": 618,
+      "grid": "298px 320px",
+      "listDisplay": "flex",
+      "listWidth": 298,
+      "threadWidth": 320,
+      "threadClient": 320,
+      "threadScroll": 320,
+      "backDisplay": "none",
+      "pageClient": 620,
+      "pageScroll": 620
+    },
+    {
+      "width": 1024,
+      "dark": false,
+      "outer": 1024,
+      "content": 1022,
+      "grid": "380px 642px",
+      "listDisplay": "flex",
+      "listWidth": 380,
+      "threadWidth": 642,
+      "threadClient": 642,
+      "threadScroll": 642,
+      "backDisplay": "none",
+      "pageClient": 1024,
+      "pageScroll": 1024
+    },
+    {
+      "width": 390,
+      "dark": true,
+      "outer": 390,
+      "content": 388,
+      "grid": "68px 320px",
+      "listDisplay": "none",
+      "listWidth": 0,
+      "threadWidth": 388,
+      "threadClient": 388,
+      "threadScroll": 388,
+      "backDisplay": "flex",
+      "pageClient": 390,
+      "pageScroll": 390
+    }
+  ]
+}

@@ -1245,7 +1245,7 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
   container: pmfa-inbox / inline-size;
   position: relative;
   display: grid;
-  grid-template-columns: minmax(240px, 380px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, clamp(0px, calc(100% - 320px), 380px)) minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr);
   height: 100%;
   min-height: 420px;
