@@ -30,7 +30,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run build:workspaces
       - run: npm test
-      - run: node --test scripts/release-gate.test.mjs scripts/native-release.test.mjs scripts/native-publish.test.mjs scripts/sync-linear-coverage.test.mjs
+      - run: node --test scripts/release-gate.test.mjs scripts/native-release.test.mjs scripts/native-publish.test.mjs scripts/sync-linear-coverage.test.mjs scripts/passkeys-candidate.test.mjs
       - run: node --test scripts/sdk-fixture-server.test.mjs scripts/multi-language-coverage.test.mjs examples/calls-example/server-credential.test.mjs
       - run: python3 scripts/inspect-native-artifacts.test.py
       - run: python3 scripts/prepare-php-mirror.test.py
