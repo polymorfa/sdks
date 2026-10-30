@@ -1164,9 +1164,10 @@ Identity resolution accepts an ID, phone number, or BSUID. Calling and security
 code checks require a connected Linked Device Number; identity resolution also
 supports Cloud Numbers when their business portfolio is configured.
 
-`messaging.calls.list(session, params)` returns one page of the number's
-calls, newest first, with the other party in `peer` (user ID, phone number,
-username). The records are served from the number's data region. Filter by
+The source-only `messaging.calls.list(session, params)` method requires a
+matching package release and regional call-history API deployment. It returns
+one page of the number's calls, newest first, with the other party in `peer`
+(user ID, phone number, username). The records are served from the number's data region. Filter by
 `direction`, `outcome`, `since` and `until`, and pass `nextCursor` as
 `cursor` for the next page. Client tokens need the `read_calls` action.
 

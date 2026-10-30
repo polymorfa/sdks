@@ -4,9 +4,13 @@ The Polymorfa UI Kit: browser transport, product controllers, React
 components, web components, appearance, an opt-in event store and a
 development assistant, in one package with one version.
 
-```bash
-npm install @polymorfa/ui-kit@dev
-```
+This is an unpublished source candidate. Package consolidation, Contacts,
+New chat, groups and the call log require a matching package release. A local
+build does not establish registry availability. The import paths below describe
+this source candidate.
+
+API-backed group actions and call history also require matching API support.
+Granting an action does not enable a capability on a deployed API.
 
 `@polymorfa/ui-kit` depends on `@polymorfa/sdk` for the shared Calls client.
 React applications also need `react` and `react-dom` 18.2 or 19. They are
