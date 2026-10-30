@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-
 - Breaking, pending the API route cutover: Test phone methods take a Number ID
   without a project argument. `testing.triggerEvent(numberId, body)` omits
   body `session` and accepts `fromNumber`; `listEventFixtures()` has no project

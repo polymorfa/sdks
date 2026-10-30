@@ -3,12 +3,12 @@
   "commit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
   "branch": "dev",
   "published": true,
-  "note": "The global source commit remains the merged API baseline. The Messaging snapshot also contains the six Number-scoped Test route overrides pinned in test-number-dropin-routes.json at 79e62733b1b3d523618232a3794e26df64b7f486. Their sourceCommit entries remain explicit in coverage.json. This mixed snapshot is not a new published API contract or staging acceptance receipt; package release requires full source reconciliation and matching environment acceptance.",
+  "note": "The global source commit remains the merged API baseline. The six Number-scoped Test route overrides are pinned to accepted dev eda77760b56095a771c55e5d2df18be23e985377 in test-number-dropin-routes.json. This mixed snapshot is source preparation, not package publication or deployed API acceptance.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "fa0d463c21327de20ee04610340a0b2cbc299d4b31d5d3a0f05a8ba60bfff261"
+      "sha256": "ce6ba7a0c61dcbe31028656a5584dd8056142a395181ada7d26a1e1b8b806dd9"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",

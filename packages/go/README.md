@@ -1,6 +1,6 @@
 # Polymorfa Go SDK
 
-Handwritten server SDK for Go 1.24 or newer. This source checkout is under development and has not been published. The checked coverage manifest records native request/response evidence for all 439 primary operations supported by TypeScript SDK commit `e24cb176fc1124f5fe852ff6c77902648fd13b4a`, plus three campaign supplements in the ledger. Eight additional Graph and testing-phone routes and the eleven frequency-cap, audience-segment and drip operations in `contracts/native-campaign-supplements.json` have typed wire tests. This evidence describes SDK contracts, not deployed feature availability.
+Handwritten server SDK for Go 1.24 or newer. This source checkout is under development and has not been published. The primary ledger records 445 covered operations; mapping, native execution, package verification and deployed availability are separate evidence.
 
 The module import is `github.com/polymorfa/sdks/packages/go`. This corrects the proposed `github.com/polymorfa/sdks/go` name to match the actual repository subdirectory. A release from this layout needs a `packages/go/vX.Y.Z` tag. Do not advertise an installation version until that version exists. For local work, use the `replace` directive in `examples/go/send-message/go.mod`.
 
@@ -897,3 +897,16 @@ confirmExplicitly := func() error {
 }
 _ = confirmExplicitly
 ```
+
+## Number-scoped Test operations
+
+The Test phone methods take a Number ID, without a project argument:
+~~~go
+phone, err := client.Testing().GetPhone(ctx, "support")
+event, err := client.Testing().TriggerEvent(ctx, "support", polymorfa.TriggerTestEventRequest{
+    Event: "call.missed", FromNumber: "sales",
+})
+fixtures, err := client.Testing().ListEventFixtures(ctx)
+~~~
+
+Send-phone-message and unlink-device helpers use the same Number scope. The trigger body contains event, optional overrides and optional fromNumber; it does not contain session or fromSession. The static fixture catalog has no project argument. History-fixture creation remains project-scoped. These operations require a server credential and the API’s Test-number access checks; a helper does not grant access or make a real Number a Test number.

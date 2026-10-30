@@ -910,3 +910,14 @@ async def confirm_explicitly():
     # Call only after an explicit decision based on the current state.
     return await client.passkeys.confirm(session, supplied_confirmation)
 ```
+
+## Number-scoped Test operations
+
+The Test phone methods take a Number ID, without a project argument:
+~~~python
+phone = await client.testing.get_phone("support")
+event = await client.testing.trigger_event("support", {"event": "call.missed", "fromNumber": "sales"})
+fixtures = await client.testing.list_event_fixtures()
+~~~
+
+Send-phone-message and unlink-device helpers use the same Number scope. The trigger body contains event, optional overrides and optional fromNumber; it does not contain session or fromSession. The static fixture catalog has no project argument. History-fixture creation remains project-scoped. These operations require a server credential and the API’s Test-number access checks; a helper does not grant access or make a real Number a Test number.

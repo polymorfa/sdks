@@ -717,7 +717,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/testing/{projectId}/events/fixtures",
+      "path": "/messaging/test-events/fixtures",
       "status": "covered",
       "sdkMethod": "MessagingClient::testing.listEventFixtures",
       "testFile": "tests/onboarding.php"
@@ -1333,7 +1333,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/testing/{projectId}/events",
+      "path": "/messaging/{session}/test-events",
       "status": "covered",
       "sdkMethod": "MessagingClient::testing.triggerEvent",
       "testFile": "tests/onboarding.php"
@@ -1341,7 +1341,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/testing/{projectId}/history-fixtures",
+      "path": "/messaging/projects/{projectId}/test-history-fixtures",
       "status": "covered",
       "sdkMethod": "MessagingClient::testing.createHistoryFixture",
       "testFile": "tests/onboarding.php"
@@ -4633,6 +4633,30 @@
       "status": "excluded",
       "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority.",
       "milestone": "excluded-contract"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/phone",
+      "status": "covered",
+      "sdkMethod": "MessagingClient::testing.getPhone",
+      "testFile": "tests/onboarding.php"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/phone/devices/{deviceId}/unlink",
+      "status": "covered",
+      "sdkMethod": "MessagingClient::testing.unlinkPhoneDevice",
+      "testFile": "tests/onboarding.php"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/phone/messages",
+      "status": "covered",
+      "sdkMethod": "MessagingClient::testing.sendPhoneMessage",
+      "testFile": "tests/onboarding.php"
     }
   ],
   "supplements": {

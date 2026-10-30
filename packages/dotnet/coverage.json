@@ -717,7 +717,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/testing/{projectId}/events/fixtures",
+      "path": "/messaging/test-events/fixtures",
       "status": "covered",
       "sdkMethod": "MessagingClient.Testing.ListEventFixturesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
@@ -1328,7 +1328,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/testing/{projectId}/events",
+      "path": "/messaging/{session}/test-events",
       "status": "covered",
       "sdkMethod": "MessagingClient.Testing.TriggerEventAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
@@ -1336,7 +1336,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/testing/{projectId}/history-fixtures",
+      "path": "/messaging/projects/{projectId}/test-history-fixtures",
       "status": "covered",
       "sdkMethod": "MessagingClient.Testing.CreateHistoryFixtureAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
@@ -4496,6 +4496,30 @@
       "path": "/console/insights/vitals",
       "status": "excluded",
       "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority."
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/phone",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.GetPhoneAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/phone/devices/{deviceId}/unlink",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.UnlinkPhoneDeviceAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/phone/messages",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.SendPhoneMessageAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
     }
   ],
   "supplements": {

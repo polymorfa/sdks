@@ -1,8 +1,8 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "79e62733b1b3d523618232a3794e26df64b7f486",
+  "commit": "eda77760b56095a771c55e5d2df18be23e985377",
   "sourcePath": "apps/api/docs/openapi.json",
-  "sourceSha256": "dcbd21ba3dafe0c30e52c260ccef759eaca1c0a11d6cc092f2a3ef68bf50f4d3",
+  "sourceSha256": "5b51b9933e2f002e2f845ee184eb243d62093d8acb4c4101fb4996cc2df79d85",
   "operations": {
     "getTestingPhone": {
       "method": "GET",
@@ -1170,6 +1170,7 @@
                 "invalid_request_error",
                 "authentication_error",
                 "permission_error",
+                "billing_error",
                 "conflict_error",
                 "rate_limit_error",
                 "api_error",
@@ -1179,11 +1180,16 @@
             "code": {
               "type": "string",
               "enum": [
+                "zero_knowledge_session",
                 "invalid_parameter",
                 "invalid_credential",
                 "entitlement_required",
                 "cloud_template_authority_restricted",
                 "gate_limit_reached",
+                "billing_credit_required",
+                "addon_required",
+                "safe_mode_not_entitled",
+                "warmup_plan_not_entitled",
                 "method_not_allowed",
                 "permission_denied",
                 "missing_scope",

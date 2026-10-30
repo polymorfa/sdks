@@ -117,3 +117,77 @@ export class TestingResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<TestingPhone>> {
     assertServerCredential(this.credentialType);
+    return requestPhone(
+      this.transport,
+      {
+        method: "GET",
+        path: phonePath(session),
+        ...existingOptions(options),
+      },
+      "phone",
+      200,
+    );
+  }
+
+  /**
+   * Send a text message from a Test number's phone to another connected Test
+   * number in the same project. The message travels the simulated WhatsApp
+   * network, so its companions receive the sent copy and the recipient gets a
+   * normal inbound message. Counts toward the Testing rate limit.
+   */
+  sendPhoneMessage(
+    session: string,
+    input: SendTestingPhoneMessageRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SendTestingPhoneMessageResponse>> {
+    assertServerCredential(this.credentialType);
+    return requestPhone(
+      this.transport,
+      {
+        method: "POST",
+        path: `${phonePath(session)}/messages`,
+        body: input,
+        ...existingOptions(options),
+      },
+      "send",
+      202,
+    );
+  }
+
+  /**
+   * Unlink a companion from a Test number's phone, as a person would from
+   * Linked devices. The companion is logged out. The phone itself (device 0)
+   * cannot be unlinked.
+   */
+  unlinkPhoneDevice(
+    session: string,
+    deviceId: number,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<UnlinkTestingPhoneDeviceResponse>> {
+    assertServerCredential(this.credentialType);
+    if (!Number.isInteger(deviceId) || deviceId < 1 || deviceId > 99)
+      throw new PolymorfaValidationError(
+        "deviceId must be a companion device ID from 1 to 99.",
+      );
+    return requestPhone(
+      this.transport,
+      {
+        method: "POST",
+        path: `${phonePath(session)}/devices/${deviceId}/unlink`,
+        ...existingOptions(options),
+      },
+      "unlink",
+      200,
+    );
+  }
+}
+function phonePath(session: string): string {
+  return `/messaging/${encodeURIComponent(session)}/phone`;
+}
+function assertServerCredential(type: MessagingCredential["type"]): void {
+  if (type === "clientToken")
+    throw new PolymorfaConfigurationError(
+      "Onboarding management requires an team key or project token.",
+      "credential",
+    );
+}

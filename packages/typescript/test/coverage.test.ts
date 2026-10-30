@@ -175,7 +175,7 @@ describe("coverage checker", () => {
     expect(result.report).toMatchObject({
       sourceCommit: "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
       total: 582,
-      covered: 442,
+      covered: 445,
       partial: 0,
       missing: 0,
       excluded: 137,

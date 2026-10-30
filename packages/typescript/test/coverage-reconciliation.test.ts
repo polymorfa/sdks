@@ -211,7 +211,7 @@ describe("reconciled coverage evidence", () => {
     }
   });
 
-  it("keeps the six Test-route overrides bound to their unpublished source", () => {
+  it("keeps the six Test-route overrides bound to their accepted source", () => {
     const pin = JSON.parse(
       readFileSync(
         repositoryFile("contracts/test-number-dropin-routes.json"),
@@ -219,7 +219,7 @@ describe("reconciled coverage evidence", () => {
       ),
     );
     expect(pin.repository).toBe("polymorfa/polymorfa");
-    expect(pin.commit).toBe("79e62733b1b3d523618232a3794e26df64b7f486");
+    expect(pin.commit).toBe("eda77760b56095a771c55e5d2df18be23e985377");
     const overrides = ledger.operations.filter(
       (operation) => operation.sourceCommit === pin.commit,
     );

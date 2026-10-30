@@ -173,3 +173,111 @@ it("rejects client tokens before transport", () => {
     messaging.testing.triggerEvent("test-a", {
       event: "session.status",
     }),
+  ).toThrow("requires an team key or project token");
+  expect(() => messaging.testing.listEventFixtures()).toThrow(
+    "requires an team key or project token",
+  );
+  expect(fetcher).not.toHaveBeenCalled();
+});
+
+it("surfaces the per-project rate limit", async () => {
+  const { client: messaging } = client(
+    new Response(
+      JSON.stringify({
+        error: "rate_limited",
+        message: "Test events are limited",
+      }),
+      {
+        status: 429,
+        headers: { "content-type": "application/json", "retry-after": "12" },
+      },
+    ),
+  );
+  await expect(
+    messaging.testing.triggerEvent(
+      "test-a",
+      { event: "call.missed" },
+      { maxNetworkRetries: 0 },
+    ),
+  ).rejects.toBeInstanceOf(PolymorfaRateLimitError);
+});
+
+it("sends an optional Idempotency-Key and retries safely with it", async () => {
+  const accepted = {
+    event: "message.received",
+    session: "test-a",
+    delivery: "generated",
+    eventId: "0199f1c2-7a4e-7c55-9d1e-3f0b8a2c6d10",
+    source: "test",
+  };
+  const responses = [
+    json({ error: { code: "service_unavailable", message: "busy" } }, 503),
+    json(accepted, 202),
+  ];
+  const fetcher = vi.fn<typeof globalThis.fetch>(async () =>
+    responses.shift()!,
+  );
+  const messaging = new MessagingClient({
+    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    baseUrl: "https://api.example",
+    fetch: fetcher,
+  });
+  const result = await messaging.testing.triggerEvent(
+    "test-a",
+    { event: "message.received" },
+    { idempotencyKey: "trigger-1", maxNetworkRetries: 1 },
+  );
+  expect(result.data).toEqual(accepted);
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  for (const [, init] of fetcher.mock.calls) {
+    expect(new Headers(init?.headers).get("idempotency-key")).toBe("trigger-1");
+  }
+});
+
+it("omits Idempotency-Key when none is given", async () => {
+  const { client: messaging, fetcher } = client(
+    json(
+      {
+        event: "session.status",
+        session: "test-a",
+        delivery: "generated",
+        eventId: null,
+        source: "test",
+      },
+      202,
+    ),
+  );
+  await messaging.testing.triggerEvent("test-a", {
+    event: "session.status",
+  });
+  const init = fetcher.mock.calls[0]![1];
+  expect(new Headers(init?.headers).has("idempotency-key")).toBe(false);
+});
+
+it("serializes restriction fixtures and restricted call endings", async () => {
+  for (const input of [
+    {
+      event: "session.restriction_updated",
+      overrides: { restrictionActive: true },
+    },
+    {
+      event: "call.ended",
+      overrides: { callEndReason: "call_restricted" },
+    },
+  ] satisfies TriggerTestEventRequest[]) {
+    const { client: messaging, fetcher } = client(
+      json(
+        {
+          event: input.event,
+          session: "test-a",
+          delivery: "generated",
+          eventId: null,
+          source: "test",
+        },
+        202,
+      ),
+    );
+    await messaging.testing.triggerEvent("test-a", input);
+    expect(JSON.parse(String(fetcher.mock.calls[0]![1]?.body))).toEqual(input);
+  }
+});

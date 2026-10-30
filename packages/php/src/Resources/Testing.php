@@ -20,48 +20,44 @@ final class Testing extends Resource
     public function createHistoryFixture(string $projectId, array $input, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        /** @var ApiResponse<array{fixtureId:string}> */ return $this->request('POST', $this->base($projectId).'/history-fixtures', $input, options:$options);
+        /** @var ApiResponse<array{fixtureId:string}> */ return $this->request('POST', '/messaging/projects/'.self::segment($projectId).'/test-history-fixtures', $input, options:$options);
     }
     /** @param Trigger $input
      * @return ApiResponse<TriggerResult> */
-    public function triggerEvent(string $projectId, array $input, ?RequestOptions $options = null): ApiResponse
+    public function triggerEvent(string $session, array $input, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        /** @var ApiResponse<TriggerResult> */ return $this->request('POST', $this->base($projectId).'/events', $input, options:$options);
+        /** @var ApiResponse<TriggerResult> */ return $this->request('POST', '/messaging/'.self::segment($session).'/test-events', $input, options:$options);
     }
     /** @return ApiResponse<array{fixtures:list<array{name:Fixture,description:string,overrides:list<string>}>}> */
-    public function listEventFixtures(string $projectId, ?RequestOptions $options = null): ApiResponse
+    public function listEventFixtures(?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        /** @var ApiResponse<array{fixtures:list<array{name:Fixture,description:string,overrides:list<string>}>}> */ return $this->request('GET', $this->base($projectId).'/events/fixtures', options:$options);
+        /** @var ApiResponse<array{fixtures:list<array{name:Fixture,description:string,overrides:list<string>}>}> */ return $this->request('GET', '/messaging/test-events/fixtures', options:$options);
     }
     /** @return ApiResponse<Phone> */
-    public function getPhone(string $projectId, string $session, ?RequestOptions $options = null): ApiResponse
+    public function getPhone(string $session, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        /** @var ApiResponse<Phone> */ return \Polymorfa\ExistingContract::bare($this->transport, 'GET', $this->phone($projectId, $session), null, $options, 'testingPhone');
+        /** @var ApiResponse<Phone> */ return \Polymorfa\ExistingContract::bare($this->transport, 'GET', $this->phone($session), null, $options, 'testingPhone');
     }
     /** @param array{to:string,text:string} $input
      * @return ApiResponse<array{session:string,to:string,messageId:?string}> */
-    public function sendPhoneMessage(string $projectId, string $session, array $input, ?RequestOptions $options = null): ApiResponse
+    public function sendPhoneMessage(string $session, array $input, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        /** @var ApiResponse<array{session:string,to:string,messageId:?string}> */ return \Polymorfa\ExistingContract::bare($this->transport, 'POST', $this->phone($projectId, $session).'/messages', $input, $options, 'testingSend', 202);
+        /** @var ApiResponse<array{session:string,to:string,messageId:?string}> */ return \Polymorfa\ExistingContract::bare($this->transport, 'POST', $this->phone($session).'/messages', $input, $options, 'testingSend', 202);
     }
     /** @return ApiResponse<array{session:string,deviceId:int,unlinked:true}> */
-    public function unlinkPhoneDevice(string $projectId, string $session, int $deviceId, ?RequestOptions $options = null): ApiResponse
+    public function unlinkPhoneDevice(string $session, int $deviceId, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
         if ($deviceId < 1 || $deviceId > 99) {
             throw new ValidationException('deviceId must be a companion device ID from 1 to 99.');
-        } /** @var ApiResponse<array{session:string,deviceId:int,unlinked:true}> */ return \Polymorfa\ExistingContract::bare($this->transport, 'POST', $this->phone($projectId, $session).'/devices/'.$deviceId.'/unlink', null, $options, 'testingUnlink');
+        } /** @var ApiResponse<array{session:string,deviceId:int,unlinked:true}> */ return \Polymorfa\ExistingContract::bare($this->transport, 'POST', $this->phone($session).'/devices/'.$deviceId.'/unlink', null, $options, 'testingUnlink');
     }
-    private function base(string $projectId): string
+    private function phone(string $session): string
     {
-        return '/messaging/testing/'.self::segment($projectId);
-    }
-    private function phone(string $projectId, string $session): string
-    {
-        return $this->base($projectId).'/numbers/'.self::segment($session).'/phone';
+        return '/messaging/'.self::segment($session).'/phone';
     }
 }
