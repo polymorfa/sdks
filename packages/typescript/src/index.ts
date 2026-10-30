@@ -1420,3 +1420,5 @@ export * from "./messaging/campaign-drip.js";
 
 export type { IncomingOrderCart } from "./messaging/order-cart.js";
 export type { CloudReadinessFailureCode } from "./messaging/cloud-readiness.js";
+
+export * from "./messaging/passkeys.js";

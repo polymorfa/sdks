@@ -90,7 +90,7 @@ describe("BrowserTransport", () => {
           error: {
             code: "invalid_parameter",
             message:
-              "API version 2026-03-19 is no longer supported. Minimum: 2026-03-20",
+              "API version 2026-03-20 is no longer supported. Minimum: 2026-09-22",
             param: "Polymorfa-Version",
           },
         },
@@ -109,13 +109,13 @@ describe("BrowserTransport", () => {
           conversation: { phoneNumber: "+15551234567" },
           content: { text: "Hello" },
         },
-        { headers: { "Polymorfa-Version": "2026-03-19" } },
+        { headers: { "Polymorfa-Version": "2026-03-20" } },
       ),
     ).rejects.toMatchObject({ code: "invalid_parameter", status: 400 });
     expect(fetch).toHaveBeenCalledOnce();
     expect(
       new Headers(fetch.mock.calls[0]?.[1]?.headers).get("polymorfa-version"),
-    ).toBe("2026-03-19");
+    ).toBe("2026-03-20");
   });
 
   it("excludes raw Graph and application routes from the native default", async () => {

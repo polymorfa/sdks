@@ -29,6 +29,18 @@ import type {
 
 const PARTICIPANT_PATTERN = /^[A-Za-z0-9._:@-]{1,128}$/;
 const CONNECTION_ID_PATTERN = /^[A-Za-z0-9_-]{8,64}$/;
+// Writable call-setting keys; the API rejects any other key.
+const CALL_SETTING_KEYS: ReadonlySet<string> = new Set([
+  "callsEnabled",
+  "conferenceMode",
+  "inboundRoute",
+  "sipTrunkId",
+  "sipClaim",
+  "hostCloudApiCalls",
+  "simultaneousCalls",
+  "acknowledgeRisk",
+  "expectedRevision",
+]);
 const REPORT_SDK_PATTERN = /^[a-z0-9@/._-]{1,32}$/;
 const REPORT_VERSION_PATTERN =
   /^[0-9]{1,6}\.[0-9]{1,6}\.[0-9]{1,6}(?:[-+][0-9A-Za-z.+-]{1,24})?$/;
@@ -421,6 +433,14 @@ export class VoipResource {
       throw new PolymorfaValidationError(
         "includeSelfAudio was replaced by conferenceMode.",
       );
+    }
+    // The API accepts only these keys; simultaneousCallsCoverageExcludedUntil is response-only.
+    for (const key of Object.keys(body)) {
+      if (!CALL_SETTING_KEYS.has(key)) {
+        throw new PolymorfaValidationError(
+          `${key} is not a writable call setting.`,
+        );
+      }
     }
     const {
       callsEnabled,
