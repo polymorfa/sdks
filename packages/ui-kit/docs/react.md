@@ -99,9 +99,11 @@ error. The API does not report a group's current settings, so the settings
 apply a choice without showing one as current. `selfId` is optional; the
 API does not report the account's own user ID.
 
-Creating a group and adding members also need the session's client rules to
-use `recipientMode: "any"`. Customer-scoped tokens cannot carry group
-actions. Changing the group picture stays server-only.
+Group actions require `groups_read` or `groups_manage` in the token's
+ceiling and the number's live client rules. Customer-scoped tokens may carry
+these actions. Picture uploads use `client.messaging().groups.setPicture`
+with base64 image bytes; client tokens cannot supply a URL. GroupDetails
+does not include a picture picker.
 
 ## Call log
 
@@ -116,7 +118,9 @@ Chats/Calls switch when the grant allows `read_calls`.
 ```
 
 Pass `source` for your own backend, or `onCall` to place calls yourself.
-Calls recorded before caller identities were stored have no caller.
+The regional call-history API is a separate deployment dependency. Until it
+is configured, the default source reports an error; pass `source` for local
+sample data or your own authorized records.
 
 ## Chat
 

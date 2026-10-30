@@ -43,7 +43,7 @@
   back both. Relayed group messages no longer rename the chat after their
   sender.
 - Client tokens: `groups_read` and `groups_manage` in all six server SDKs,
-  the drop-in handler and the UI Kit, for session tokens only. Requires the
+  the drop-in handler and the UI Kit, for session and Customer tokens. Requires the
   matching API change; until it is accepted the API refuses these actions.
 - UI Kit calls: toggle buttons no longer report `aria-pressed` alongside an
   action label ("Turn camera on", pressed). `CallNumberPicker` now renders
