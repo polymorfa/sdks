@@ -23,14 +23,14 @@ var cloudAudienceFixtures = []operationFixture{
 		v := false
 		return wireData(m.CloudOnboarding().Advance(ctx, EmbeddedSignupRequest{QuickLinkID: "link", ProjectID: "p", Result: &EmbeddedSignupResult{Code: "fixture-code", WABAID: "waba", PhoneNumberID: "phone", Coexistence: &v}}))
 	}},
-	{"MessagingClient.Testing.CreateHistoryFixture", "POST", "/messaging/testing/p/history-fixtures", "", `{"messages":[{"id":"message","senderPhone":"+15551234567","text":"Hello","timestamp":123,"fromMe":false}]}`, `{"fixtureId":"fixture"}`, "fixtureId", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.Testing.CreateHistoryFixture", "POST", "/messaging/projects/p/test-history-fixtures", "", `{"messages":[{"id":"message","senderPhone":"+15551234567","text":"Hello","timestamp":123,"fromMe":false}]}`, `{"fixtureId":"fixture"}`, "fixtureId", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(m.Testing().CreateHistoryFixture(ctx, "p", []TestingHistoryMessage{{ID: "message", SenderPhone: "+15551234567", Text: "Hello", Timestamp: 123}}))
 	}},
-	{"MessagingClient.Testing.TriggerEvent", "POST", "/messaging/testing/p/events", "", `{"session":"s","event":"message.received","overrides":{"text":"Hello"}}`, `{"event":"message.received","session":"s","delivery":"queued","eventId":"event","source":"test"}`, "eventId", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
-		return wireData(m.Testing().TriggerEvent(ctx, "p", TriggerTestEventRequest{Session: "s", Event: "message.received", Overrides: &TestEventOverrides{Text: "Hello"}}))
+	{"MessagingClient.Testing.TriggerEvent", "POST", "/messaging/s/test-events", "", `{"event":"message.received","overrides":{"text":"Hello"}}`, `{"event":"message.received","session":"s","delivery":"queued","eventId":"event","source":"test"}`, "eventId", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+		return wireData(m.Testing().TriggerEvent(ctx, "s", TriggerTestEventRequest{Event: "message.received", Overrides: &TestEventOverrides{Text: "Hello"}}))
 	}},
-	{"MessagingClient.Testing.ListEventFixtures", "GET", "/messaging/testing/p/events/fixtures", "", "", `{"fixtures":[{"name":"message.received","description":"Incoming","overrides":["text"]}]}`, "fixtures.0.description", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
-		return wireData(m.Testing().ListEventFixtures(ctx, "p"))
+	{"MessagingClient.Testing.ListEventFixtures", "GET", "/messaging/test-events/fixtures", "", "", `{"fixtures":[{"name":"message.received","description":"Incoming","overrides":["text"]}]}`, "fixtures.0.description", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+		return wireData(m.Testing().ListEventFixtures(ctx))
 	}},
 	{"OrganizationClient.Audiences.List", "GET", "/platform/audiences", "", "", `{"data":{"audiences":[{"id":"audience"}]}}`, "data.audiences.0.id", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(o.Audiences().List(ctx))

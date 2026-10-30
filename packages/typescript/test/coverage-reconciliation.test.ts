@@ -211,6 +211,31 @@ describe("reconciled coverage evidence", () => {
     }
   });
 
+  it("keeps the six Test-route overrides bound to their accepted source", () => {
+    const pin = JSON.parse(
+      readFileSync(
+        repositoryFile("contracts/test-number-dropin-routes.json"),
+        "utf8",
+      ),
+    );
+    expect(pin.repository).toBe("polymorfa/polymorfa");
+    expect(pin.commit).toBe("eda77760b56095a771c55e5d2df18be23e985377");
+    const overrides = ledger.operations.filter(
+      (operation) => operation.sourceCommit === pin.commit,
+    );
+    expect(overrides.map((operation) => operation.operationId).sort()).toEqual([
+      "createTestingHistoryFixture",
+      "getTestingPhone",
+      "listTestEventFixtures",
+      "sendTestingPhoneMessage",
+      "triggerTestEvent",
+      "unlinkTestingPhoneDevice",
+    ]);
+    expect(
+      overrides.every((operation) => operation.typescript.status === "covered"),
+    ).toBe(true);
+  });
+
   it("pins Analytics to the same full Platform source and snapshot hash", () => {
     const source = JSON.parse(
       readFileSync(repositoryFile("contracts/source.json"), "utf8"),

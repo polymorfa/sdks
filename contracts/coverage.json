@@ -2770,13 +2770,14 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/testing/{projectId}/events/fixtures",
+      "path": "/messaging/test-events/fixtures",
       "operationId": "listTestEventFixtures",
-      "fingerprint": "0a1482d5fd5a365c0ba2e241d1f45ed0d5c88615c871ea97af442c8f26f3d22d",
+      "fingerprint": "671863a514ecdb1c2dff2e3b40a0d167e340ef0b41892440d6fca313fef8abc3",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.testing.listEventFixtures"
       },
+      "sourceCommit": "eda77760b56095a771c55e5d2df18be23e985377",
       "go": {
         "status": "covered",
         "method": "MessagingClient.Testing.ListEventFixtures"
@@ -5174,13 +5175,14 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/testing/{projectId}/events",
+      "path": "/messaging/{session}/test-events",
       "operationId": "triggerTestEvent",
-      "fingerprint": "c2d5c723923084c9fcca1be246f046b23d6a613eae5b6e25b71c2e6df462ec55",
+      "fingerprint": "6739ea1960b01aed8b8b393f2749427f1e1a8c08bcc6a466f14e5ec6cce487bd",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.testing.triggerEvent"
       },
+      "sourceCommit": "eda77760b56095a771c55e5d2df18be23e985377",
       "go": {
         "status": "covered",
         "method": "MessagingClient.Testing.TriggerEvent"
@@ -5205,13 +5207,14 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/testing/{projectId}/history-fixtures",
+      "path": "/messaging/projects/{projectId}/test-history-fixtures",
       "operationId": "createTestingHistoryFixture",
-      "fingerprint": "8941f260e0e4156976fe76ca2ce3545dbf2ff0a0a909bee938687e201cdfac65",
+      "fingerprint": "97956f2867fe294dfd9f97172135498a805e45ae97175d36f885453bbb43db69",
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.testing.createHistoryFixture"
       },
+      "sourceCommit": "eda77760b56095a771c55e5d2df18be23e985377",
       "go": {
         "status": "covered",
         "method": "MessagingClient.Testing.CreateHistoryFixture"
@@ -18392,6 +18395,102 @@
         "status": "excluded",
         "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority.",
         "milestone": "not-server-sdk"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/phone",
+      "operationId": "getTestingPhone",
+      "fingerprint": "7987f6e6ada35684e331e740553f15bb92a382c6d0d9d3d628bd37f07f14d317",
+      "sourceCommit": "eda77760b56095a771c55e5d2df18be23e985377",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.testing.getPhone"
+      },
+      "go": {
+        "status": "covered",
+        "method": "MessagingClient.Testing.GetPhone"
+      },
+      "python": {
+        "status": "covered",
+        "method": "AsyncMessagingClient.testing.get_phone"
+      },
+      "php": {
+        "status": "covered",
+        "method": "MessagingClient::testing.getPhone"
+      },
+      "dotnet": {
+        "status": "covered",
+        "method": "MessagingClient.Testing.GetPhoneAsync"
+      },
+      "rust": {
+        "status": "covered",
+        "method": "MessagingClient.testing.get_phone"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/phone/devices/{deviceId}/unlink",
+      "operationId": "unlinkTestingPhoneDevice",
+      "fingerprint": "af5ec3b2b83e7d7455018a8410fa2cfa1e0300ded3fc35942081716fea2b7555",
+      "sourceCommit": "eda77760b56095a771c55e5d2df18be23e985377",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.testing.unlinkPhoneDevice"
+      },
+      "go": {
+        "status": "covered",
+        "method": "MessagingClient.Testing.UnlinkPhoneDevice"
+      },
+      "python": {
+        "status": "covered",
+        "method": "AsyncMessagingClient.testing.unlink_phone_device"
+      },
+      "php": {
+        "status": "covered",
+        "method": "MessagingClient::testing.unlinkPhoneDevice"
+      },
+      "dotnet": {
+        "status": "covered",
+        "method": "MessagingClient.Testing.UnlinkPhoneDeviceAsync"
+      },
+      "rust": {
+        "status": "covered",
+        "method": "MessagingClient.testing.unlink_phone_device"
+      }
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/phone/messages",
+      "operationId": "sendTestingPhoneMessage",
+      "fingerprint": "e6f35140f5817b11464f15c60a9ad841fa0a16d5763d19000e82fefd72cea346",
+      "sourceCommit": "eda77760b56095a771c55e5d2df18be23e985377",
+      "typescript": {
+        "status": "covered",
+        "method": "MessagingClient.testing.sendPhoneMessage"
+      },
+      "go": {
+        "status": "covered",
+        "method": "MessagingClient.Testing.SendPhoneMessage"
+      },
+      "python": {
+        "status": "covered",
+        "method": "AsyncMessagingClient.testing.send_phone_message"
+      },
+      "php": {
+        "status": "covered",
+        "method": "MessagingClient::testing.sendPhoneMessage"
+      },
+      "dotnet": {
+        "status": "covered",
+        "method": "MessagingClient.Testing.SendPhoneMessageAsync"
+      },
+      "rust": {
+        "status": "covered",
+        "method": "MessagingClient.testing.send_phone_message"
       }
     }
   ],

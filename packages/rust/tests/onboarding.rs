@@ -30,7 +30,7 @@ async fn embedded_signup_and_simulated_event_history_resources_native_wire() {
     wire_messaging!(
         client,
         "POST",
-        "/messaging/testing/project/history-fixtures",
+        "/messaging/projects/project/test-history-fixtures",
         Some(
             json!({"messages":[{"id":"message","senderPhone":"+15551234567","text":"History","timestamp":1000,"fromMe":false}]})
         ),
@@ -52,15 +52,14 @@ async fn embedded_signup_and_simulated_event_history_resources_native_wire() {
     wire_messaging!(
         client,
         "POST",
-        "/messaging/testing/project/events",
+        "/messaging/support/test-events",
         Some(
-            json!({"session":"support","event":"message.received","overrides":{"text":"Hello","mediaType":"image","caption":"Caption"},"fromSession":"other"})
+            json!({"event":"message.received","overrides":{"text":"Hello","mediaType":"image","caption":"Caption"},"fromNumber":"other"})
         ),
         json!({"event":"message.received","session":"support","delivery":"simulated","eventId":null,"source":"runtime"}),
         client.testing().trigger_event(
-            "project",
+            "support",
             &TriggerTestEventRequest {
-                session: "support".into(),
                 event: TestEventFixture::MessageReceived,
                 overrides: Some(TestEventOverrides {
                     text: Some("Hello".into()),
@@ -68,7 +67,7 @@ async fn embedded_signup_and_simulated_event_history_resources_native_wire() {
                     caption: Some("Caption".into()),
                     ..Default::default()
                 }),
-                from_session: Some("other".into())
+                from_number: Some("other".into())
             },
             RequestOptions::default()
         )
@@ -76,12 +75,12 @@ async fn embedded_signup_and_simulated_event_history_resources_native_wire() {
     wire_messaging!(
         client,
         "GET",
-        "/messaging/testing/project/events/fixtures",
+        "/messaging/test-events/fixtures",
         None,
         json!({"fixtures":[{"name":"message.received","description":"Inbound message","overrides":["text","from","mediaType","caption"]},{"name":"session.status","description":"Status","overrides":["status","statusReason"]}]}),
         client
             .testing()
-            .list_event_fixtures("project", RequestOptions::default())
+            .list_event_fixtures(RequestOptions::default())
     );
 }
 #[tokio::test]
@@ -89,22 +88,21 @@ async fn simulated_phone_supplemental_native_wire_and_invalid_device_guard() {
     wire_messaging!(
         client,
         "GET",
-        "/messaging/testing/project/numbers/support/phone",
+        "/messaging/support/phone",
         None,
         json!({"session":"support","phone":"+15551234567","online":true,"devices":[{"deviceId":1},{"deviceId":2}]}),
         client
             .testing()
-            .get_phone("project", "support", RequestOptions::default())
+            .get_phone("support", RequestOptions::default())
     );
     wire_messaging_status!(
         202,
         client,
         "POST",
-        "/messaging/testing/project/numbers/support/phone/messages",
+        "/messaging/support/phone/messages",
         Some(json!({"to":"+15551234568","text":"Hello"})),
         json!({"session":"support","to":"+15551234568","messageId":"wamessage"}),
         client.testing().send_phone_message(
-            "project",
             "support",
             &SendTestingPhoneMessageRequest {
                 to: "+15551234568".into(),
@@ -116,19 +114,19 @@ async fn simulated_phone_supplemental_native_wire_and_invalid_device_guard() {
     wire_messaging!(
         client,
         "POST",
-        "/messaging/testing/project/numbers/support/phone/devices/2/unlink",
+        "/messaging/support/phone/devices/2/unlink",
         None,
         json!({"session":"support","deviceId":2,"unlinked":true}),
         client
             .testing()
-            .unlink_phone_device("project", "support", 2, RequestOptions::default())
+            .unlink_phone_device("support", 2, RequestOptions::default())
     );
     let client = support::messaging("http://127.0.0.1:1".into());
     for device in [0, 100] {
         assert_eq!(
             client
                 .testing()
-                .unlink_phone_device("project", "support", device, RequestOptions::default())
+                .unlink_phone_device("support", device, RequestOptions::default())
                 .await
                 .unwrap_err()
                 .kind,

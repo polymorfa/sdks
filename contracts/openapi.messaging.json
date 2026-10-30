@@ -20544,15 +20544,376 @@
         },
         "additionalProperties": false
       },
-      "TriggerTestEventRequest": {
+      "TestingPhoneState": {
         "type": "object",
         "properties": {
           "session": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "description": "The Test number, in E.164 format."
+          },
+          "online": {
+            "type": "boolean",
+            "description": "True while the simulated phone is running."
+          },
+          "devices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "deviceId": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "deviceId"
+              ]
+            },
+            "description": "Companions linked to the phone, such as Polymorfa's own session and Inspector."
+          }
+        },
+        "required": [
+          "session",
+          "phone",
+          "online",
+          "devices"
+        ]
+      },
+      "TestingPhoneMessageRequest": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "Another Test number in the same project, in E.164 format."
+          },
+          "text": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 128,
-            "description": "Test number session name in the project."
+            "maxLength": 4096
+          }
+        },
+        "required": [
+          "to",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "TestingPhoneMessage": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string"
           },
+          "to": {
+            "type": "string"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "session",
+          "to",
+          "messageId"
+        ]
+      },
+      "TestingPhoneUnlink": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "integer"
+          },
+          "unlinked": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "session",
+          "deviceId",
+          "unlinked"
+        ]
+      },
+      "TestDropinTestingPhoneState": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "description": "The Test number, in E.164 format."
+          },
+          "online": {
+            "type": "boolean",
+            "description": "True while the simulated phone is running."
+          },
+          "devices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "deviceId": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "deviceId"
+              ]
+            },
+            "description": "Companions linked to the phone, such as Polymorfa's own session and Inspector."
+          }
+        },
+        "required": [
+          "session",
+          "phone",
+          "online",
+          "devices"
+        ]
+      },
+      "TestDropinPublicError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request_error",
+                  "authentication_error",
+                  "permission_error",
+                  "billing_error",
+                  "conflict_error",
+                  "rate_limit_error",
+                  "api_error",
+                  "upstream_error"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "enum": [
+                  "zero_knowledge_session",
+                  "invalid_parameter",
+                  "invalid_credential",
+                  "entitlement_required",
+                  "cloud_template_authority_restricted",
+                  "gate_limit_reached",
+                  "billing_credit_required",
+                  "addon_required",
+                  "safe_mode_not_entitled",
+                  "warmup_plan_not_entitled",
+                  "method_not_allowed",
+                  "permission_denied",
+                  "missing_scope",
+                  "resource_not_found",
+                  "hms_not_enabled",
+                  "media_fetch_failed",
+                  "resource_gone",
+                  "feature_unavailable",
+                  "stream_cursor_invalid",
+                  "stream_cursor_expired",
+                  "stream_connection_limit_reached",
+                  "state_conflict",
+                  "team_deletion_scheduled",
+                  "hybrid_routing_paused",
+                  "hybrid_choice_required",
+                  "hybrid_transition_ineligible",
+                  "hybrid_automation_unavailable",
+                  "hybrid_group_linked_devices_unavailable",
+                  "hybrid_transport_unavailable",
+                  "hybrid_target_reference_unavailable",
+                  "send_outcome_unknown",
+                  "idempotency_conflict",
+                  "idempotency_in_progress",
+                  "idempotency_completed",
+                  "idempotency_outcome_unknown",
+                  "call_claimed",
+                  "call_not_ringing",
+                  "connection_limit",
+                  "unsupported_for_connection",
+                  "call_permission_required",
+                  "invalid_sip_trunk",
+                  "calls_disabled",
+                  "call_recipient_opted_out",
+                  "call_destination_blocked",
+                  "call_permission_request_limited",
+                  "call_permission_granted",
+                  "order_status_transition_invalid",
+                  "order_cancellation_failed",
+                  "call_opt_out_limit",
+                  "number_restricted",
+                  "sip_trunk_in_use",
+                  "sip_trunk_revision_conflict",
+                  "sip_trunk_limit",
+                  "sip_unavailable",
+                  "voice_not_enabled",
+                  "provider_credential_invalid",
+                  "provider_unavailable",
+                  "asset_not_ready",
+                  "voice_asset_in_use",
+                  "voice_asset_revision_conflict",
+                  "voice_unavailable",
+                  "rate_limit_exceeded",
+                  "internal_error",
+                  "operation_not_supported",
+                  "upstream_failure",
+                  "service_unavailable",
+                  "credential_verification_unavailable",
+                  "session_not_ready",
+                  "command_dispatch_failed",
+                  "result_unknown",
+                  "parent_bsuid_not_supported",
+                  "recipient_not_on_whatsapp",
+                  "conversation_window_closed",
+                  "template_not_approved",
+                  "media_too_large",
+                  "whatsapp_rate_limited",
+                  "new_chat_limit_reached",
+                  "marketing_disabled_on_cloud_api",
+                  "whatsapp_account_restricted",
+                  "whatsapp_authorization_required",
+                  "whatsapp_payment_method_required",
+                  "whatsapp_number_not_registered",
+                  "whatsapp_groups_ineligible",
+                  "whatsapp_group_creation_paused",
+                  "whatsapp_group_limit_reached",
+                  "whatsapp_group_full",
+                  "whatsapp_group_suspended",
+                  "whatsapp_group_has_no_participants",
+                  "bansafe_suspended",
+                  "bansafe_org_suspended",
+                  "bansafe_cold_blocked",
+                  "bansafe_cold_held",
+                  "bansafe_throttled",
+                  "bansafe_daily_allowance_reached",
+                  "bansafe_accounting_unavailable",
+                  "bansafe_send_outcome_unknown",
+                  "campaigns_not_entitled",
+                  "campaign_throughput_capped",
+                  "campaign_approval_required",
+                  "campaign_approval_stale",
+                  "campaign_variables_missing"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "param": {
+                "type": "string",
+                "nullable": true
+              },
+              "request_id": {
+                "type": "string",
+                "description": "Matches the X-Request-Id response header. Include it when you contact support."
+              },
+              "request_log_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+              }
+            },
+            "required": [
+              "type",
+              "code",
+              "message",
+              "param",
+              "request_id"
+            ]
+          },
+          "data": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ],
+            "description": "Always null for a failed request."
+          },
+          "docs": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "error",
+          "data",
+          "docs"
+        ]
+      },
+      "TestDropinTestingPhoneMessageRequest": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "Another Test number in the same project, in E.164 format."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          }
+        },
+        "required": [
+          "to",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "TestDropinTestingPhoneMessage": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "session",
+          "to",
+          "messageId"
+        ]
+      },
+      "TestDropinTestingPhoneUnlink": {
+        "type": "object",
+        "properties": {
+          "session": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "integer"
+          },
+          "unlinked": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "session",
+          "deviceId",
+          "unlinked"
+        ]
+      },
+      "TestDropinTriggerTestEventRequest": {
+        "type": "object",
+        "properties": {
           "event": {
             "type": "string",
             "enum": [
@@ -20569,9 +20930,9 @@
             "description": "Fixture name. Each name is the event type it produces."
           },
           "overrides": {
-            "$ref": "#/components/schemas/TestEventOverrides"
+            "$ref": "#/components/schemas/TestDropinTestEventOverrides"
           },
-          "fromSession": {
+          "fromNumber": {
             "type": "string",
             "minLength": 1,
             "maxLength": 128,
@@ -20579,10 +20940,217 @@
           }
         },
         "required": [
-          "session",
           "event"
         ],
         "additionalProperties": false
+      },
+      "TestDropinTestEventOverrides": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          },
+          "from": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{7,14}$"
+          },
+          "pushName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "mediaType": {
+            "type": "string",
+            "enum": [
+              "image",
+              "video",
+              "audio",
+              "document",
+              "sticker"
+            ]
+          },
+          "caption": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "ackStatus": {
+            "type": "string",
+            "enum": [
+              "delivered",
+              "read",
+              "played",
+              "error"
+            ]
+          },
+          "messageId": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$"
+          },
+          "failureReason": {
+            "type": "string",
+            "enum": [
+              "invalid_recipient",
+              "session_not_connected",
+              "ack_timeout",
+              "send_failed",
+              "blocked_by_safety"
+            ]
+          },
+          "video": {
+            "type": "boolean"
+          },
+          "durationSeconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 86400
+          },
+          "callEndReason": {
+            "type": "string",
+            "enum": [
+              "user_hangup",
+              "timeout",
+              "lost_connection",
+              "rejected",
+              "call_restricted"
+            ]
+          },
+          "restrictionActive": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CONNECTING",
+              "CONNECTED",
+              "DISCONNECTED"
+            ]
+          },
+          "statusReason": {
+            "type": "string",
+            "enum": [
+              "SCAN_QR",
+              "AUTO_RECONNECT",
+              "FAILED",
+              "MANUAL_STOP",
+              "QR_TIMEOUT",
+              "LOGGED_OUT",
+              "TEMPORARY_BAN",
+              "STREAM_ERROR"
+            ]
+          },
+          "templateName": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,512}$"
+          },
+          "templateStatus": {
+            "type": "string",
+            "enum": [
+              "APPROVED",
+              "REJECTED"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "additionalProperties": false
+      },
+      "TestDropinTriggerTestEventResponse": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "enum": [
+              "message.received",
+              "message.ack",
+              "message.failed",
+              "call.received",
+              "call.missed",
+              "call.ended",
+              "session.status",
+              "session.restriction_updated",
+              "template.status"
+            ]
+          },
+          "session": {
+            "type": "string"
+          },
+          "delivery": {
+            "type": "string",
+            "enum": [
+              "generated",
+              "simulated"
+            ]
+          },
+          "eventId": {
+            "type": "string",
+            "nullable": true,
+            "format": "uuid"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "test",
+              "runtime"
+            ]
+          }
+        },
+        "required": [
+          "event",
+          "session",
+          "delivery",
+          "eventId",
+          "source"
+        ]
+      },
+      "TestDropinTestEventFixtureList": {
+        "type": "object",
+        "properties": {
+          "fixtures": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "enum": [
+                    "message.received",
+                    "message.ack",
+                    "message.failed",
+                    "call.received",
+                    "call.missed",
+                    "call.ended",
+                    "session.status",
+                    "session.restriction_updated",
+                    "template.status"
+                  ]
+                },
+                "description": {
+                  "type": "string"
+                },
+                "overrides": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "name",
+                "description",
+                "overrides"
+              ]
+            }
+          }
+        },
+        "required": [
+          "fixtures"
+        ]
       }
     },
     "headers": {
@@ -20601,6 +21169,27 @@
         }
       },
       "X-RateLimit-Reset": {
+        "description": "Unix timestamp in seconds when the oldest counted request leaves the rolling window, when the per-team request limiter applies. Follow Retry-After on a rejected request.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "TestDropinX-RateLimit-Limit": {
+        "description": "Team request quota per rolling minute, when the per-team request limiter applies.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "TestDropinX-RateLimit-Remaining": {
+        "description": "Requests left in the per-team quota; zero when this limiter rejects the request.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "TestDropinX-RateLimit-Reset": {
         "description": "Unix timestamp in seconds when the oldest counted request leaves the rolling window, when the per-team request limiter applies. Follow Retry-After on a rejected request.",
         "schema": {
           "type": "integer",
@@ -73264,7 +73853,7 @@
         "description": "**Required scope:** `quicklink:manage`"
       }
     },
-    "/messaging/testing/{projectId}/history-fixtures": {
+    "/messaging/projects/{projectId}/test-history-fixtures": {
       "post": {
         "operationId": "createTestingHistoryFixture",
         "tags": [
@@ -73362,13 +73951,13 @@
             },
             "headers": {
               "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
               },
               "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
               },
               "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
               }
             }
           },
@@ -73376,19 +73965,19 @@
             "description": "Invalid fixture",
             "headers": {
               "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
               },
               "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
               },
               "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
               }
             },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/components/schemas/TestDropinPublicError"
                 },
                 "example": {
                   "error": {
@@ -73408,19 +73997,19 @@
             "description": "Test access required",
             "headers": {
               "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
               },
               "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
               },
               "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
               }
             },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/components/schemas/TestDropinPublicError"
                 },
                 "example": {
                   "error": {
@@ -73440,19 +74029,19 @@
             "description": "Project not found",
             "headers": {
               "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
               },
               "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
               },
               "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
               }
             },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/components/schemas/TestDropinPublicError"
                 },
                 "example": {
                   "error": {
@@ -73472,19 +74061,19 @@
             "description": "Test runtime unavailable",
             "headers": {
               "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
               },
               "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
               },
               "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
               }
             },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/components/schemas/TestDropinPublicError"
                 },
                 "example": {
                   "error": {
@@ -73507,7 +74096,7 @@
         "description": "**Required scope:** `sandbox:write`"
       }
     },
-    "/messaging/testing/{projectId}/events/fixtures": {
+    "/messaging/test-events/fixtures": {
       "get": {
         "operationId": "listTestEventFixtures",
         "tags": [
@@ -73520,56 +74109,45 @@
         ],
         "summary": "List test event fixtures",
         "x-required-scope": "sandbox:read",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "required": true,
-            "name": "projectId",
-            "in": "path"
-          }
-        ],
         "responses": {
           "200": {
             "description": "Available fixtures and the overrides each accepts",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TestEventFixtureList"
+                  "$ref": "#/components/schemas/TestDropinTestEventFixtureList"
                 }
               }
             },
             "headers": {
               "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
               },
               "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
               },
               "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
               }
             }
           },
           "403": {
-            "description": "Test numbers access required, or a client token was used",
+            "description": "Read scope required; client tokens are not permitted",
             "headers": {
               "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
               },
               "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
               },
               "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
               }
             },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/components/schemas/TestDropinPublicError"
                 },
                 "example": {
                   "error": {
@@ -73584,70 +74162,6 @@
                 }
               }
             }
-          },
-          "404": {
-            "description": "Project not found",
-            "headers": {
-              "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
-              },
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "resource_not_found",
-                    "message": "The resource is unavailable to this caller.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
-                }
-              }
-            }
-          },
-          "502": {
-            "description": "Test access could not be verified",
-            "headers": {
-              "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
-              },
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "upstream_error",
-                    "code": "upstream_failure",
-                    "message": "The messaging provider could not complete the request.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
-                }
-              }
-            }
           }
         },
         "x-mint": {
@@ -73656,7 +74170,7 @@
         "description": "**Required scope:** `sandbox:read`"
       }
     },
-    "/messaging/testing/{projectId}/events": {
+    "/messaging/{session}/test-events": {
       "post": {
         "operationId": "triggerTestEvent",
         "tags": [
@@ -73673,10 +74187,12 @@
           {
             "schema": {
               "type": "string",
-              "format": "uuid"
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "Test Number ID."
             },
             "required": true,
-            "name": "projectId",
+            "name": "session",
             "in": "path"
           },
           {
@@ -73695,7 +74211,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TriggerTestEventRequest"
+                "$ref": "#/components/schemas/TestDropinTriggerTestEventRequest"
               }
             }
           }
@@ -73706,39 +74222,39 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TriggerTestEventResponse"
+                  "$ref": "#/components/schemas/TestDropinTriggerTestEventResponse"
                 }
               }
             },
             "headers": {
               "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
               },
               "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
               },
               "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
               }
             }
           },
           "400": {
-            "description": "Invalid fixture, override, or real session",
+            "description": "Invalid fixture or override",
             "headers": {
               "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
               },
               "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
               },
               "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
               }
             },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/components/schemas/TestDropinPublicError"
                 },
                 "example": {
                   "error": {
@@ -73758,19 +74274,19 @@
             "description": "Test numbers access required, or a client token was used",
             "headers": {
               "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
               },
               "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
               },
               "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
               }
             },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/components/schemas/TestDropinPublicError"
                 },
                 "example": {
                   "error": {
@@ -73787,22 +74303,22 @@
             }
           },
           "404": {
-            "description": "Project or Test number not found",
+            "description": "Resource not found",
             "headers": {
               "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
               },
               "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
               },
               "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
               }
             },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/components/schemas/TestDropinPublicError"
                 },
                 "example": {
                   "error": {
@@ -73822,19 +74338,19 @@
             "description": "Test event rate limit reached",
             "headers": {
               "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
               },
               "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
               },
               "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
               }
             },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/components/schemas/TestDropinPublicError"
                 },
                 "example": {
                   "error": {
@@ -73854,19 +74370,19 @@
             "description": "Test event delivery unavailable. Retry with the same Idempotency-Key to avoid a second event.",
             "headers": {
               "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
               },
               "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
               },
               "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
               }
             },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/components/schemas/TestDropinPublicError"
                 },
                 "example": {
                   "error": {
@@ -73884,9 +74400,591 @@
           }
         },
         "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sandbox:write</Badge>"
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">sandbox:write</Badge>"
         },
-        "description": "**Required scope:** `sandbox:write`"
+        "x-protocols": [
+          "Linked Device API"
+        ],
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sandbox:write`"
+      }
+    },
+    "/messaging/{session}/phone": {
+      "get": {
+        "operationId": "getTestingPhone",
+        "tags": [
+          "Testing"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Get a Test number's phone",
+        "x-required-scope": "sandbox:read",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "description": "The Test number's session ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The simulated phone and its linked companions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinTestingPhoneState"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            }
+          },
+          "403": {
+            "description": "Test numbers access required, or a client token was used",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The simulated phone could not be read. Retry later.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">sandbox:read</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ],
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sandbox:read`"
+      }
+    },
+    "/messaging/{session}/phone/messages": {
+      "post": {
+        "operationId": "sendTestingPhoneMessage",
+        "tags": [
+          "Testing"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Send a message from a Test number's phone",
+        "x-required-scope": "sandbox:write",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "description": "The Test number's session ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestDropinTestingPhoneMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "The phone sent the message",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinTestingPhoneMessage"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid recipient, or the phone is offline",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Test numbers access required, or a client token was used",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Testing rate limit reached",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "rate_limit_error",
+                    "code": "rate_limit_exceeded",
+                    "message": "The request limit was reached. Follow Retry-After when supplied.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#rate-limit-exceeded"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The phone could not send the message. Retry later.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">sandbox:write</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ],
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sandbox:write`"
+      }
+    },
+    "/messaging/{session}/phone/devices/{deviceId}/unlink": {
+      "post": {
+        "operationId": "unlinkTestingPhoneDevice",
+        "tags": [
+          "Testing"
+        ],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Unlink a companion from a Test number's phone",
+        "x-required-scope": "sandbox:write",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256,
+              "description": "The Test number's session ID."
+            },
+            "required": true,
+            "name": "session",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 99,
+              "description": "The companion's device ID, as listed by the phone."
+            },
+            "required": true,
+            "name": "deviceId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The companion was unlinked and logged out",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinTestingPhoneUnlink"
+                }
+              }
+            },
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            }
+          },
+          "400": {
+            "description": "The phone is offline",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "invalid_parameter",
+                    "message": "Correct the invalid request field.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Test numbers access required, or a client token was used",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "permission_error",
+                    "code": "permission_denied",
+                    "message": "The credential does not have access to this resource.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project or companion not found",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "invalid_request_error",
+                    "code": "resource_not_found",
+                    "message": "The resource is unavailable to this caller.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "The phone could not unlink the companion. Retry later.",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Limit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Remaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/TestDropinX-RateLimit-Reset"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestDropinPublicError"
+                },
+                "example": {
+                  "error": {
+                    "type": "upstream_error",
+                    "code": "upstream_failure",
+                    "message": "The messaging provider could not complete the request.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                }
+              }
+            }
+          }
+        },
+        "x-mint": {
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">sandbox:write</Badge>"
+        },
+        "x-protocols": [
+          "Linked Device API"
+        ],
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sandbox:write`"
       }
     }
   },

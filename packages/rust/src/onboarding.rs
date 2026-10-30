@@ -69,12 +69,11 @@ overrides!(text:String,from:String,push_name:String,media_type:TestMediaType,cap
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TriggerTestEventRequest {
-    pub session: String,
     pub event: TestEventFixture,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub overrides: Option<TestEventOverrides>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub from_session: Option<String>,
+    pub from_number: Option<String>,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -159,14 +158,10 @@ impl CloudOnboarding<'_> {
     }
 }
 fn project_path(project: &str) -> String {
-    format!("/messaging/testing/{}", encode(project))
+    format!("/messaging/projects/{}", encode(project))
 }
-fn phone_path(project: &str, session: &str) -> String {
-    format!(
-        "{}/numbers/{}/phone",
-        project_path(project),
-        encode(session)
-    )
+fn phone_path(session: &str) -> String {
+    format!("/messaging/{}/phone", encode(session))
 }
 impl Testing<'_> {
     pub async fn create_history_fixture(
@@ -179,7 +174,7 @@ impl Testing<'_> {
         self.0
             .request(
                 Method::POST,
-                &format!("{}/history-fixtures", project_path(project)),
+                &format!("{}/test-history-fixtures", project_path(project)),
                 &[],
                 Some(body),
                 options,
@@ -188,7 +183,7 @@ impl Testing<'_> {
     }
     pub async fn trigger_event(
         &self,
-        project: &str,
+        session: &str,
         body: &TriggerTestEventRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<TriggerTestEventResponse>> {
@@ -196,7 +191,7 @@ impl Testing<'_> {
         self.0
             .request(
                 Method::POST,
-                &format!("{}/events", project_path(project)),
+                &format!("/messaging/{}/test-events", encode(session)),
                 &[],
                 Some(body),
                 options,
@@ -205,30 +200,22 @@ impl Testing<'_> {
     }
     pub async fn list_event_fixtures(
         &self,
-        project: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<TestEventFixtures>> {
         self.0.server()?;
-        self.0
-            .get(
-                &format!("{}/events/fixtures", project_path(project)),
-                options,
-            )
-            .await
+        self.0.get("/messaging/test-events/fixtures", options).await
     }
     pub async fn get_phone(
         &self,
-        project: &str,
         session: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<TestingPhone>> {
         self.0.server()?;
-        let response = self.0.get(&phone_path(project, session), options).await?;
+        let response = self.0.get(&phone_path(session), options).await?;
         phone_response(response, 200, true)
     }
     pub async fn send_phone_message(
         &self,
-        project: &str,
         session: &str,
         body: &SendTestingPhoneMessageRequest,
         options: RequestOptions,
@@ -238,7 +225,7 @@ impl Testing<'_> {
             .0
             .request(
                 Method::POST,
-                &format!("{}/messages", phone_path(project, session)),
+                &format!("{}/messages", phone_path(session)),
                 &[],
                 Some(body),
                 options,
@@ -248,7 +235,6 @@ impl Testing<'_> {
     }
     pub async fn unlink_phone_device(
         &self,
-        project: &str,
         session: &str,
         device: u8,
         options: RequestOptions,
@@ -265,7 +251,7 @@ impl Testing<'_> {
             .0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/devices/{device}/unlink", phone_path(project, session)),
+                &format!("{}/devices/{device}/unlink", phone_path(session)),
                 &[],
                 None,
                 options,
