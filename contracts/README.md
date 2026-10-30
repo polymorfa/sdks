@@ -637,6 +637,46 @@ from API `dev` merge commit `8d248b578a7c76034b30a5a97349adcd15ce5c55`
 (polymorfa/polymorfa#406), with both source paths and file hashes.
 `campaign-ab-tests-contract.test.ts` checks the SDK types against it.
 
+## Feature evaluation supplement
+
+`feature-evaluation.json` records the four feature availability operations and
+their referenced components from API `dev` merge commit
+`2e38a3342b0692e62c3fa62f432d98b8d681c5bb` (polymorfa/polymorfa#816), with both
+source paths and file hashes. `scripts/sync-feature-evaluation-contract.mjs`
+extracts it without changing the operation objects. Run it with a monorepo
+checkout and an exact commit to refresh the supplement.
+
+The supplement was first pinned at `d36e12ff05` (polymorfa/polymorfa#561).
+That PR added the optional request `locale` (`en` or `pt-BR`) and the item
+fields `state` (`off`, `opt_in` or `on`), `terms` and `enrollmentSource`
+(`customer`, `staff` or null). `exposureToken` is always null, and
+`measurementAllowed` is accepted with no effect. The enrollment and exposure
+routes changed only in their descriptions; the exposure route always returns 403.
+
+The October 27 repin to #816 adds native experiments to both evaluate
+operations. Each returned feature has a required `experiments` array of
+`{ key, variant, revision, assigned }`. The single-experiment decision fields
+are deprecated with fixed values: `variant` and `experimentRevision` are always
+null, and `experimentAssigned` is always false. `measurementAllowed` is marked
+deprecated. The resolved `evaluateFeatures` component set also picks up shared
+`PublicError` codes added on API dev since #561, such as
+`team_deletion_scheduled` and `whatsapp_number_not_registered`; no SDK type
+reads them from this supplement.
+
+All four operations stay excluded, with the reasons in `coverage.json`, and no
+SDK package calls them. `evaluateFeatures` accepts team and project
+credentials; callers use an authenticated request. The three account routes
+require dashboard identity. `feature-evaluation-contract.test.ts` checks that
+the stored operations reproduce the recorded fingerprints with
+`check-coverage.mjs`, that the reviewed request and response fields (including
+`experiments`) are present, and that the ledger and SDK sources keep the
+exclusions.
+
+The full snapshots and `coverage.json` stay pinned to `contracts/source.json`.
+At the next full repin, these four rows change as recorded here. No SDK method
+or type depends on this supplement, so `scripts/release-gate.mjs` does not hold
+publication for it.
+
 ## Campaign webhook metadata supplement
 
 `campaign-paused-reasons.json` pins the two accepted webhook schemas at API

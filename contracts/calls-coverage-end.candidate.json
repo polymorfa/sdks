@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "sourceAccepted": true,
+  "published": false,
+  "acceptedSource": {
+    "repository": "polymorfa/polymorfa",
+    "branch": "dev",
+    "commit": "77e9ce31aa5e0ea58815662ba0028f1927f690d5",
+    "tree": "b2f9fdfc575a0fabb5edb57b7780411f5e9b4b90",
+    "parents": [
+      "6ce6f6c975224abe8ab21eae96b381044f3a6073",
+      "4be63eb3310615f47b1c3dae410f1adbd5dc0727"
+    ],
+    "pullRequests": ["polymorfa/polymorfa#168", "polymorfa/polymorfa#798"],
+    "files": [
+      {
+        "path": "apps/api/packages/api/src/routes/call-settings.ts",
+        "sha256": "c39aa1ad8facc02b391974be7ba502293662797c5dce3626f4509ecbf7cae4eb"
+      },
+      {
+        "path": "apps/api/packages/api/src/db/calls/settings-repo.ts",
+        "sha256": "e72ac879bf6b685acf045039b58f8246a9dc068dcd1991ab7de510fbe8d7871e"
+      },
+      {
+        "path": "apps/api/docs/openapi.management.json",
+        "sha256": "3a4370816296cf96296d643e3d823185c64d354ca29ac24343cebff774d43319"
+      },
+      {
+        "path": "docs/api-reference/openapi.management.json",
+        "sha256": "af09de19a9152fe4977e5545213ccb09210e4a0ed3019020fb46c78b66f3f096"
+      },
+      {
+        "path": "docs/openapi.json",
+        "sha256": "03da2795efd1c1801d98f513a7585395d6522e8585ab4a8d2b5863f4e81d6443"
+      }
+    ]
+  },
+  "candidateCommit": "0b7b739493b089c386fc21f2cf76f05f60de9151",
+  "candidateTree": "1b5c55375b928e2a3f9068d180aa43bd5be61cb8",
+  "candidateParent": "4bf556ab46e23c6d87fa376151f1bd217f6f0812",
+  "apiVersion": "2026-09-22",
+  "sourceFiles": [
+    {
+      "path": "apps/api/packages/api/src/routes/call-settings.ts",
+      "sha256": "9023f1ac740072a4a67f0afc007ad7a03d112412187e95a232351a22ac72bf18"
+    },
+    {
+      "path": "apps/api/packages/api/src/db/calls/settings-repo.ts",
+      "sha256": "e72ac879bf6b685acf045039b58f8246a9dc068dcd1991ab7de510fbe8d7871e"
+    },
+    {
+      "path": "apps/api/docs/openapi.management.json",
+      "sha256": "f5544f6034bebc978ae2892ef6c885c7a8508d9f349f741b409518240ef7c2c9"
+    },
+    {
+      "path": "docs/api-reference/openapi.management.json",
+      "sha256": "9a8db97a52fbcf3efab47d7c342d9d65c187d5edcefabe19980e56a44ea65fe6"
+    },
+    {
+      "path": "docs/openapi.json",
+      "sha256": "fa17c29c961cc085cf4f63f5ff4522ca3fa0c0b80f04409e9a53d0c86a6d1d49"
+    }
+  ],
+  "fragmentPath": "contracts/calls-coverage-end.candidate.fragments.json",
+  "fragmentSha256": "ebf836d45a87eea629808f2b2701667d742a06df031c71b476d942cca61da79a",
+  "fixturePath": "contracts/fixtures/calls-coverage-end.candidate.json",
+  "fixtureSha256": "b7a2af6007dac4de11fc86fd236cd4d36bd4af2362a35078b1d5ee928fa4568b",
+  "operations": ["getCallSettings", "updateCallSettings"],
+  "field": "simultaneousCallsCoverageExcludedUntil",
+  "responseOnly": true,
+  "required": true,
+  "nullable": true,
+  "format": "date-time",
+  "acceptedContainingCommit": "77e9ce31aa5e0ea58815662ba0028f1927f690d5",
+  "privateConsoleSchemaNote": "At 77e9ce31 the private Console SessionCallSettings schema also carries the field. No SDK private route."
+}

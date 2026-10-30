@@ -24,6 +24,13 @@
   they cannot. Back showed beside the list before because its rule read the
   thread's width. Back now has a visible border. Source-only until a nightly
   publishes.
+
+- Prepare direct server passkey challenge, assertion and explicit confirmation methods in all six SDKs. Writes use one attempt; ceremony execution remains external. Bound to accepted API source `77e9ce31`; unreleased until package publication.
+
+- Add the read-only nullable call-settings exclusion-end response field across all six SDKs. Rust response struct literals require the new optional field; C# positional construction remains compatible. Bound to accepted API source `77e9ce31`, which also clarifies when a ban is excluded; unreleased.
+
+- TypeScript, Python and PHP call-settings updates now refuse keys the API does not accept, including the response-only `simultaneousCallsCoverageExcludedUntil`, before sending. Go, Rust and .NET requests already serialize only writable fields.
+
 - All six server SDKs expose optional automatic-pause `reason`/`code` and
   optional recipient-skip `messageIndex`/`followUpId` from accepted API source
   `9bb1e2ed`. Future reason/code strings and raw envelope fields are retained;

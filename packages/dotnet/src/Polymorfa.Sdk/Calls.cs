@@ -25,7 +25,11 @@ public sealed record CallPermissionActions(CallPermissionAction? RequestPermissi
 public record CallPermissionState(string Status, string? ExpiresAt, string? Source, string? UpdatedAt, string? CheckedAt, bool Fresh, CallPermissionActions? Actions);
 public sealed record CallPermission(string Status, string? ExpiresAt, string? Source, string? UpdatedAt, string? CheckedAt, bool Fresh, CallPermissionActions? Actions, ConversationReference Conversation) : CallPermissionState(Status, ExpiresAt, Source, UpdatedAt, CheckedAt, Fresh, Actions);
 public sealed record CallCheck(bool Allowed, string? Refusal, CallPermissionState? Permission);
-public sealed record SessionCallSettings(bool CallsEnabled, bool ConferenceMode, string InboundRoute, string? SipTrunkId, bool SipClaim, bool HostCloudApiCalls, long Revision, string? UpdatedAt, bool SimultaneousCalls);
+public sealed record SessionCallSettings(bool CallsEnabled, bool ConferenceMode, string InboundRoute, string? SipTrunkId, bool SipClaim, bool HostCloudApiCalls, long Revision, string? UpdatedAt, bool SimultaneousCalls)
+{
+    /// <summary>Read-only RFC3339 exclusion end. Null is not a coverage guarantee.</summary>
+    public string? SimultaneousCallsCoverageExcludedUntil { get; init; }
+}
 public sealed record UpdateCallSettingsRequest(bool? CallsEnabled = null, bool? ConferenceMode = null, string? InboundRoute = null, [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] PatchValue<string> SipTrunkId = default, bool? SipClaim = null, bool? HostCloudApiCalls = null, long? ExpectedRevision = null, bool? SimultaneousCalls = null, bool? AcknowledgeRisk = null);
 public sealed record CallReportClient(string Sdk, string Version, string Platform);
 public sealed record CallQuality(int? RttMs = null, int? JitterMs = null, int? PacketsLost = null, int? PacketsReceived = null, int? Reconnects = null, string? AudioCodec = null, string? VideoCodec = null, string? CandidateType = null);

@@ -699,8 +699,8 @@ and `idempotencyKey`; the key does not make the API replay the append.
 
 Set `apiVersion` on a client or a single request. Use a date-form API revision,
 such as `2026-09-22`. The SDK sends it as the `Polymorfa-Version` header.
-Native calls default to `2026-09-22`; the API accepts explicit revisions from
-`2026-03-20` and rejects earlier pins.
+Native calls default to `2026-09-22`, which is also the oldest revision the API
+accepts. Earlier pins, including `2026-03-20`, return a `400` error.
 
 Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 

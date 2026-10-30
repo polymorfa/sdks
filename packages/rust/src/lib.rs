@@ -42,6 +42,7 @@ pub mod operations;
 pub mod organization;
 pub mod organization_controls;
 pub mod pagination;
+pub mod passkeys;
 pub mod platform;
 pub mod platform_sessions;
 pub mod policies;
