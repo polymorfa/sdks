@@ -203,12 +203,7 @@ impl Testing<'_> {
         options: RequestOptions,
     ) -> Result<ApiResponse<TestEventFixtures>> {
         self.0.server()?;
-        self.0
-            .get(
-                "/messaging/test-events/fixtures",
-                options,
-            )
-            .await
+        self.0.get("/messaging/test-events/fixtures", options).await
     }
     pub async fn get_phone(
         &self,
