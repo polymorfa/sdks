@@ -1,4 +1,4 @@
-import type { ConversationMessage } from "@polymorfa/browser";
+import type { ConversationMessage } from "@polymorfa/ui-kit";
 
 /**
  * Opt-in, per-device copy of recently viewed conversations, so a chat can

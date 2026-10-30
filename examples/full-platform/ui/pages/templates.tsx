@@ -4,8 +4,8 @@ import {
   TemplateBuilderController,
   createSameOriginTemplateBuilderTransport,
   type RenderedTemplate,
-} from "@polymorfa/browser";
-import { TemplateBuilder } from "@polymorfa/react";
+} from "@polymorfa/ui-kit";
+import { TemplateBuilder } from "@polymorfa/ui-kit/react";
 import { useState } from "react";
 
 import type { DeskTemplate } from "../../lib/desk/types.js";

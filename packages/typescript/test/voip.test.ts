@@ -474,7 +474,7 @@ describe("VoipResource", () => {
       kind: "quality",
       connectionId: "conn_0123456789",
       client: {
-        sdk: "@polymorfa/browser",
+        sdk: "@polymorfa/ui-kit",
         version: "0.1.0-dev.0",
         platform: "browser",
       },

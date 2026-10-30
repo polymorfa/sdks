@@ -1,10 +1,10 @@
 "use client";
 
-import type {
-  ConversationMessage,
-  MessageAttachment,
-} from "@polymorfa/browser";
-import { formatFileSize, safeAttachmentUrl } from "@polymorfa/ui";
+import type { ConversationMessage, MessageAttachment } from "@polymorfa/ui-kit";
+import {
+  formatFileSize,
+  safeAttachmentUrl,
+} from "@polymorfa/ui-kit/appearance";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 import type { DeskMessage, DeskMessageKind } from "../../lib/desk/types.js";

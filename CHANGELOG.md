@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+- UI Kit: keep a 320px thread beside the Inbox list in narrow two-pane layouts, and include the linked guides in the package.
+
+- Breaking: the browser UI packages are now one package, the UI Kit
+  (`@polymorfa/ui-kit`), with one version. Change each import as follows:
+  `@polymorfa/browser` to `@polymorfa/ui-kit`, `@polymorfa/react` to
+  `@polymorfa/ui-kit/react`, `@polymorfa/elements` (and its `/chat`,
+  `/templates` and `/calls` subpaths) to `@polymorfa/ui-kit/web-components`
+  (same subpaths), `@polymorfa/ui` to `@polymorfa/ui-kit/appearance`,
+  `@polymorfa/store` and `@polymorfa/store/react` to `@polymorfa/ui-kit/store`
+  and `@polymorfa/ui-kit/store/react`, and `@polymorfa/devtools` and
+  `@polymorfa/devtools/production` to `@polymorfa/ui-kit/devtools` and
+  `@polymorfa/ui-kit/devtools/production`. `definePolymorfa()` is now
+  `defineUiKit()` and `DefinePolymorfaOptions` is now `DefineUiKitOptions`;
+  there is no alias. Other exports, behavior and the `pmfa-` tag, class and CSS
+  variable names are unchanged. `react` and `react-dom` are optional peer
+  dependencies used only by `/react` and `/store/react`. Browser call reports
+  name `@polymorfa/ui-kit` as their SDK. See the
+  [UI Kit guide](packages/ui-kit/README.md). Source-only until a nightly
+  publishes `@polymorfa/ui-kit`.
+- `@polymorfa/ui` Inbox: the conversation list and the thread sit side by side
+  from 560 px of Inbox width, down from 700 px, and Back appears only when
+  they cannot. Back showed beside the list before because its rule read the
+  thread's width. Back now has a visible border. Source-only until a nightly
+  publishes.
+
 - Prepare direct server passkey challenge, assertion and explicit confirmation methods in all six SDKs. Writes use one attempt; ceremony execution remains external. Bound to accepted API source `77e9ce31`; unreleased until package publication.
 
 - Add the read-only nullable call-settings exclusion-end response field across all six SDKs. Rust response struct literals require the new optional field; C# positional construction remains compatible. Bound to accepted API source `77e9ce31`, which also clarifies when a ban is excluded; unreleased.

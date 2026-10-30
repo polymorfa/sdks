@@ -1,0 +1,23 @@
+{
+  "browser": "153.0.8010.12",
+  "playwright": "1.63.0",
+  "fixture": "Actual public React Inbox/current compiled package; synthetic in-memory source and token supplier; every network request aborted",
+  "errors": [],
+  "cases": [
+    {
+      "width": 562,
+      "dark": false,
+      "outer": 562,
+      "content": 560,
+      "grid": "380px 180px",
+      "listDisplay": "flex",
+      "listWidth": 380,
+      "threadWidth": 180,
+      "threadClient": 180,
+      "threadScroll": 180,
+      "backDisplay": "none",
+      "pageClient": 562,
+      "pageScroll": 562
+    }
+  ]
+}

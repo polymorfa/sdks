@@ -1,0 +1,98 @@
+{
+  "name": "@polymorfa/ui-kit",
+  "version": "0.1.0-dev.0",
+  "description": "Polymorfa UI Kit: browser transport, product controllers, React components, web components, appearance, store and devtools",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polymorfa/sdks.git",
+    "directory": "packages/ui-kit"
+  },
+  "bugs": {
+    "url": "https://github.com/polymorfa/sdks/issues"
+  },
+  "homepage": "https://github.com/polymorfa/sdks/tree/main/packages/ui-kit#readme",
+  "sideEffects": false,
+  "dependencies": {
+    "@polymorfa/sdk": "0.1.0-dev.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.2.0 <20",
+    "react-dom": ">=18.2.0 <20"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
+  },
+  "main": "./dist/browser/index.js",
+  "types": "./dist/browser/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/browser/index.d.ts",
+      "import": "./dist/browser/index.js"
+    },
+    "./internal": {
+      "types": "./dist/browser/internal.d.ts",
+      "import": "./dist/browser/internal.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js"
+    },
+    "./web-components": {
+      "types": "./dist/web-components/index.d.ts",
+      "import": "./dist/web-components/index.js"
+    },
+    "./web-components/chat": {
+      "types": "./dist/web-components/chat.d.ts",
+      "import": "./dist/web-components/chat.js"
+    },
+    "./web-components/templates": {
+      "types": "./dist/web-components/templates.d.ts",
+      "import": "./dist/web-components/templates.js"
+    },
+    "./web-components/calls": {
+      "types": "./dist/web-components/calls.d.ts",
+      "import": "./dist/web-components/calls.js"
+    },
+    "./appearance": {
+      "types": "./dist/appearance/index.d.ts",
+      "import": "./dist/appearance/index.js"
+    },
+    "./store": {
+      "types": "./dist/store/index.d.ts",
+      "import": "./dist/store/index.js"
+    },
+    "./store/react": {
+      "types": "./dist/store/react.d.ts",
+      "import": "./dist/store/react.js"
+    },
+    "./devtools": {
+      "types": "./dist/devtools/index.d.ts",
+      "import": "./dist/devtools/index.js"
+    },
+    "./devtools/production": {
+      "types": "./dist/devtools/production.d.ts",
+      "import": "./dist/devtools/production.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "docs"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
