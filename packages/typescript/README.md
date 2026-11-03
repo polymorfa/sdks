@@ -351,7 +351,7 @@ user. The organization-key SDK does not expose those two mutations.
 
 `MessagingClient.clientTokens` mints short-lived tokens and manages the live
 session rules that authorize them. Use it only on the server. The browser-safe
-transport and allowed-action resources live in `@polymorfa/browser`; the
+transport and allowed-action resources live in `@polymorfa/ui-kit`; the
 Next.js-compatible route adapter lives in `@polymorfa/nextjs`.
 
 Minting a client token and updating its session rules require all six client
@@ -2573,7 +2573,7 @@ Pass `ack: "manual"` to have the server wait for your processing, and confirm
 progress with
 `events.acknowledgeStream(item.streamId, { cursor: item.cursor, sequence: item.sequence })`.
 
-`events.liveSource()` returns a `LiveEventSource` for `@polymorfa/store`:
+`events.liveSource()` returns a `LiveEventSource` for `@polymorfa/ui-kit/store`:
 
 ```ts
 connectEventSource(

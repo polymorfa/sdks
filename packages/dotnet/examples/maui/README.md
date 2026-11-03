@@ -1,6 +1,6 @@
 # MAUI Blazor Hybrid
 
-This Mac Catalyst application hosts the existing `blazor-components` Razor component and `@polymorfa/elements`. It uses an authenticated application server to mint short-lived client tokens and load inbox history. It contains no server API key. These development sources do not establish registry publication or hosted API availability.
+This Mac Catalyst application hosts the existing `blazor-components` Razor component and `@polymorfa/ui-kit/web-components`. It uses an authenticated application server to mint short-lived client tokens and load inbox history. It contains no server API key. These development sources do not establish registry publication or hosted API availability.
 
 ## Build and run
 

@@ -351,7 +351,7 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
       })
       .then(unwrapResponse);
   }
-  /** A `@polymorfa/store` live source over `stream()`; see `eventStreamSource`. */
+  /** A `@polymorfa/ui-kit/store` live source over `stream()`; see `eventStreamSource`. */
   liveSource(
     params: Omit<EventStreamParamsFor<O>, "since" | "signal"> = {} as Omit<
       EventStreamParamsFor<O>,
