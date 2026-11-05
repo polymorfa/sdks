@@ -7,6 +7,7 @@ internal static class CallsTests
     private const string Settings = "{\"success\":true,\"data\":{\"callsEnabled\":true,\"conferenceMode\":false,\"inboundRoute\":\"clients\",\"sipTrunkId\":null,\"sipClaim\":false,\"hostCloudApiCalls\":false,\"revision\":2,\"updatedAt\":null}}";
     public static async Task RunAsync()
     {
+        await CallSettingsCoverageEndTests.RunAsync();
         await Messaging("PUT", "/platform/sessions/s/call-settings", "{\"simultaneousCalls\":true,\"acknowledgeRisk\":true}", Settings, async c => ResourceTests.Equal((await c.Calls.UpdateCallSettingsAsync("s", new(SimultaneousCalls: true, AcknowledgeRisk: true))).Data.Data.Revision, 2L));
         await Messaging("PUT", "/platform/sessions/s/call-settings", "{\"simultaneousCalls\":false}", Settings, async c => ResourceTests.Equal((await c.Calls.UpdateCallSettingsAsync("s", new(SimultaneousCalls: false))).Data.Data.Revision, 2L));
         await Messaging("PUT", "/platform/sessions/s/call-settings", "{\"simultaneousCalls\":true}", Settings, async c => ResourceTests.Equal((await c.Calls.UpdateCallSettingsAsync("s", new(SimultaneousCalls: true))).Data.Data.Revision, 2L));

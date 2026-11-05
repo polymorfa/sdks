@@ -1,6 +1,6 @@
 "use client";
 
-import type { MessageAttachment } from "@polymorfa/browser";
+import type { MessageAttachment } from "@polymorfa/ui-kit";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { callApi } from "../lib/browser/api.js";

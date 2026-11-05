@@ -1,4 +1,4 @@
-import type { ConversationMessage } from "@polymorfa/browser";
+import type { ConversationMessage } from "@polymorfa/ui-kit";
 import type {
   WebhookEvent,
   WebhookEventOf,

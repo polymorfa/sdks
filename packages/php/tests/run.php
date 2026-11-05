@@ -270,3 +270,5 @@ require __DIR__.'/unledgered_retry.php';
 require __DIR__.'/official_round2.php';
 
 require __DIR__.'/campaign_webhook_metadata.php';
+
+require __DIR__.'/passkeys.php';
