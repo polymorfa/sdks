@@ -196,6 +196,11 @@ func uploadStatus(status int) error {
 	}
 	return &directUploadFailure{status: status, retry: status == 401 || status == 408 || (status >= 500 && status != 507), final: &Error{Kind: ServerError, Status: status, Code: code, Message: "The WhatsApp media host rejected the upload."}}
 }
+
+// directPost submits encrypted bytes without following redirects or forwarding
+// API credentials. Deadline and cancellation errors retain no signed-URL cause,
+// including when cancellation closes the response body as an ordinary EOF.
+// The caller owns retry decisions; this method performs one HTTP submission.
 func (r *WhatsAppMediaResource) directPost(ctx context.Context, target string, body io.Reader, length int64) ([]byte, error) {
 	request, err := http.NewRequestWithContext(ctx, "POST", target, body)
 	if err != nil {

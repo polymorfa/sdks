@@ -1441,10 +1441,11 @@ and can return the legacy `idempotency_completed` error. Reusing a key for a dif
 `PolymorfaValidationError` (`422 idempotency_conflict`) in the response-replay
 contract. A recorded error does not prove the write had no effect. Reconcile
 message events, webhooks or the resource before deciding whether another write
-is safe. Never change keys merely to bypass an uncertain result. If the API
-cannot read the recorded response right now, it answers
-`503 idempotency_replay_unavailable` with `Retry-After`; the SDK retries it with
-the same key.
+is safe. Never change keys merely to bypass an uncertain result. Keep the first
+response: opaque response bodies are not retained by default. Denied or missing
+exact replay data returns `503 idempotency_replay_unavailable` with `Retry-After`.
+The SDK's configured retry policy reuses the same key; waiting does not guarantee
+that replay data becomes available.
 A retry that arrives while the first request is still running receives
 `idempotency_in_progress`, and the SDK retries it after `Retry-After`. When a
 response carries `Idempotent-Replayed: true`, the SDK treats it as final and
@@ -2323,10 +2324,12 @@ members, and `Client.optOuts` reads and replaces team keyword settings.
 Platform `create` route has no replay contract, so the SDK sends it once and
 does not accept an idempotency key or retry setting. After a lost create
 response, inspect the campaign list before creating another draft. For launch
-and reschedule, a supplied key is preserved across retries within the API's
-24-hour replay window. If the outcome remains uncertain after that window,
-reconcile campaign state before starting another request; see
-[Idempotent sends](#idempotent-sends).
+and reschedule, a supplied key is preserved across retries. The older pinned
+Platform contract has a 24-hour replay window; the response-replay contract uses
+the one-hour receipt window described in [Idempotent sends](#idempotent-sends).
+Use the window of the API contract serving the request. If the outcome remains
+uncertain, reconcile campaign state before starting another request. Retrying
+after the receipt expires can run the operation again.
 `archive` returns a receipt for a completed, failed, or cancelled campaign;
 other states return `409`. A pending final event or active delivery run also
 returns `409`; retry after both finish. Platform `delete` accepts draft,
