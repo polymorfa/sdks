@@ -64,6 +64,15 @@ internal static class CampaignExistingTests
         await Messaging("GET", path + "/c/analytics", null, Envelope(Report), async c => { var r = (await c.Campaigns.AnalyticsAsync("support", "c")).Data.Data; Check(r.AverageResponseTimeMs is null && r.MinResponseTimeMs is null && r.MaxResponseTimeMs is null && r.Experiment is null && r.FollowUps.Total == 0, "Messaging report"); });
         await Organization("GET", "/platform/campaigns?projectId=" + Project, null, Envelope("[" + CampaignJson + "]", false), async c => { await c.Campaigns.ListAsync(new(Project)); });
         await Organization("POST", "/platform/campaigns", "{\"projectId\":\"" + Project + "\",\"name\":\"Campaign\"}", Envelope(CampaignJson, false), async c => { await c.Campaigns.CreateAsync(new(Project, "Campaign")); });
+        const string interactive = """{"projectId":"11111111-1111-4111-8111-111111111111","name":"Interactive","messagesArray":[{"version":2,"source":"Choose an offer","media":{"kind":"image","url":"https://example.test/offer"},"buttons":[{"kind":"reply","label":"Choose","id":"offer-stable"},{"kind":"link","label":"Open","url":"https://example.test/offer"}]}]}""";
+        await Organization("POST", "/platform/campaigns", interactive, Envelope(CampaignJson, false), async c =>
+        {
+            await c.Campaigns.CreateAsync(new(Project, "Interactive", MessagesArray: [new PlatformCampaignMessage
+            {
+                Version = 2, Source = "Choose an offer", Media = new("image", "https://example.test/offer"),
+                Buttons = [new("reply", "Choose", Id: "offer-stable"), new("link", "Open", Url: "https://example.test/offer")],
+            }]));
+        });
         await Organization("GET", "/platform/campaigns/c?projectId=" + Project, null, "{\"data\":null}", async c => Check((await c.Campaigns.RetrieveAsync("c", new(Project))).Data.Data is null, "Nullable Platform retrieve"));
         foreach (var body in new UpdatePlatformCampaignRequest?[] { null, new(), new() { AdditionalFields = new Dictionary<string, JsonElement> { ["future"] = JsonSerializer.SerializeToElement(false) } } })
             await Organization("PATCH", "/platform/campaigns/c?projectId=" + Project, body is null ? null : body.AdditionalFields is null ? "{}" : "{\"future\":false}", Envelope(CampaignJson, false), async c => { await c.Campaigns.UpdateAsync("c", body, new(Project)); });

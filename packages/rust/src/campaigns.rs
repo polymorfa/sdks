@@ -1019,6 +1019,8 @@ pub struct CampaignMessageMedia {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CampaignMessageButton {
+    #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "optional_nonnull")]
+    pub id: Option<String>,
     pub kind: CampaignMessageButtonKind,
     pub label: String,
     #[serde(

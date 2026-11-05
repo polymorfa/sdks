@@ -54,7 +54,7 @@ public sealed record PlatformCampaignMedia(string Kind, string Url, string? File
 {
     [JsonExtensionData] public IDictionary<string, JsonElement>? AdditionalFields { get; init; }
 }
-public sealed record PlatformCampaignButton(string Kind, string Label, string? Url = null, string? Phone = null)
+public sealed record PlatformCampaignButton(string Kind, string Label, string? Url = null, string? Phone = null, string? Id = null)
 {
     [JsonExtensionData] public IDictionary<string, JsonElement>? AdditionalFields { get; init; }
 }

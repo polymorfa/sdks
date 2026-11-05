@@ -145,7 +145,7 @@ def composed(value: object, max_delay: int = ORDINARY_MAX_DELAY) -> None:
                 b = obj(entry, "button")
                 V.choice(b.get("kind"), ("reply", "link", "call"), "button.kind")
                 V.text(b.get("label"), "button.label", 0)
-                for key in ("url", "phone"):
+                for key in ("url", "phone", "id"):
                     if key in b:
                         V.text(b[key], key, 0)
 

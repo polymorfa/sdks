@@ -2540,7 +2540,6 @@ export type ButtonsMessageContent = {
 /** Each card has replies or CTAs; IDs are unique across the complete carousel. */
 export type CarouselCard = {
   readonly body: string;
-  readonly footer?: string;
   readonly buttons: readonly MessageButton[];
 } & (
   | {

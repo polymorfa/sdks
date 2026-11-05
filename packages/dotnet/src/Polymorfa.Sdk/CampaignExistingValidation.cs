@@ -44,7 +44,7 @@ internal static class CampaignExistingValidation
     {
         AdditionalFields = Extensions(message.AdditionalFields, ["version", "source", "media", "buttons", "footer", "delayAfterSec", "delayUnit", "sendWindow"]),
         Media = message.Media is { } media ? media with { AdditionalFields = Extensions(media.AdditionalFields, ["kind", "url", "filename", "caption"]) } : null,
-        Buttons = message.Buttons?.Select(button => button with { AdditionalFields = Extensions(button.AdditionalFields, ["kind", "label", "url", "phone"]) }).ToArray()
+        Buttons = message.Buttons?.Select(button => button with { AdditionalFields = Extensions(button.AdditionalFields, ["kind", "label", "url", "phone", "id"]) }).ToArray()
     }).ToArray();
     private static void Unique(JsonElement value)
     {
@@ -227,7 +227,7 @@ internal static class CampaignExistingValidation
                 {
                     if (button.ValueKind != JsonValueKind.Object || !Has(button, "kind") || !Has(button, "label")) Invalid("button");
                     One(button.GetProperty("kind"), "kind", "reply", "link", "call"); Text(button.GetProperty("label"), "label", 0);
-                    foreach (var key in new[] { "url", "phone" }) if (Has(button, key)) Text(button.GetProperty(key), key, 0);
+                    foreach (var key in new[] { "url", "phone", "id" }) if (Has(button, key)) Text(button.GetProperty(key), key, 0);
                 }
             }
         }

@@ -84,6 +84,7 @@ type CampaignComposedMedia struct {
 	Extra    PlatformPayload `json:"-"`
 }
 type CampaignComposedButton struct {
+	ID    *string         `json:"id,omitempty"`
 	Kind  string          `json:"kind"`
 	Label string          `json:"label"`
 	URL   *string         `json:"url,omitempty"`
@@ -119,7 +120,7 @@ func (v CampaignComposedMedia) MarshalJSON() ([]byte, error) {
 }
 func (v CampaignComposedButton) MarshalJSON() ([]byte, error) {
 	type plain CampaignComposedButton
-	return openCampaignJSON(plain(v), v.Extra, "kind", "label", "url", "phone")
+	return openCampaignJSON(plain(v), v.Extra, "kind", "label", "url", "phone", "id")
 }
 func decodeOpenCampaign(b []byte, out any, owned ...string) (PlatformPayload, error) {
 	var m PlatformPayload
@@ -164,7 +165,7 @@ func (v *CampaignComposedMedia) UnmarshalJSON(b []byte) error {
 func (v *CampaignComposedButton) UnmarshalJSON(b []byte) error {
 	type plain CampaignComposedButton
 	var x plain
-	m, e := decodeOpenCampaign(b, &x, "kind", "label", "url", "phone")
+	m, e := decodeOpenCampaign(b, &x, "kind", "label", "url", "phone", "id")
 	*v = CampaignComposedButton(x)
 	v.Extra = m
 	return e
@@ -558,7 +559,7 @@ func validateComposed(x any, maxDelay float64) error {
 				if !ok || contractOne(fmt.Sprint(v["kind"]), "kind", "reply", "link", "call") != nil || !existingText(v["label"], 0, int(^uint(0)>>1)) {
 					return existingInvalid("button")
 				}
-				for _, k := range []string{"url", "phone"} {
+				for _, k := range []string{"url", "phone", "id"} {
 					if s, ok := v[k]; ok && !existingText(s, 0, int(^uint(0)>>1)) {
 						return existingInvalid(k)
 					}

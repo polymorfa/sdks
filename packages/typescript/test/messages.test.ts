@@ -6,6 +6,7 @@ import {
   graphTransportHeaders,
   type AddressMessageContent,
   type ButtonsMessageContent,
+  type CarouselCard,
   type SendCarouselMessageRequest,
   type FlowMessageContent,
   type ListMessageContent,
@@ -64,6 +65,18 @@ it("restricts media fields to their documented kind", () => {
     content: { video: { url: "https://example.test/video", ptt: true } },
   };
   expect([file, voice, image, video]).toHaveLength(4);
+});
+
+it("restricts carousel footers to the outer message", () => {
+  const card: CarouselCard = {
+    body: "Offer",
+    image: { url: "https://example.test/image" },
+    buttons: [{ type: "reply", text: "Choose", id: "offer" }],
+    // @ts-expect-error The strict API card schema does not accept footer.
+    footer: "Unsupported card footer",
+  };
+  expect(card.body).toBe("Offer");
+  expectTypeOf<CarouselCard>().not.toHaveProperty("footer");
 });
 
 afterEach(async () => {

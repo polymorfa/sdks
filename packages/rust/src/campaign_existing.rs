@@ -235,7 +235,7 @@ pub(crate) fn validate_message_extensions(messages: &[CampaignMessage], drip: bo
         }
         if let Some(buttons) = &m.buttons {
             for b in buttons {
-                reserved(&b.extensions, &["kind", "label", "url", "phone"])?;
+                reserved(&b.extensions, &["kind", "label", "url", "phone", "id"])?;
             }
         }
     }

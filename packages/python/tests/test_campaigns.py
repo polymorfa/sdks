@@ -12,6 +12,38 @@ WINDOW = {
     "recipientTimeZone": True,
     "timeZoneVariable": "tz",
 }
+
+
+async def test_composed_campaign_preserves_reply_id_and_media_on_wire():
+    body = {
+        "projectId": "11111111-1111-4111-8111-111111111111",
+        "name": "Interactive",
+        "messagesArray": [{
+            "version": 2,
+            "source": "Choose an offer",
+            "media": {"kind": "image", "url": "https://example.test/offer"},
+            "buttons": [
+                {"kind": "reply", "label": "Choose", "id": "offer-stable"},
+                {"kind": "link", "label": "Open", "url": "https://example.test/offer"},
+            ],
+        }],
+    }
+    requests = []
+
+    def handler(request):
+        requests.append(request)
+        assert request.method == "POST" and request.url.path == "/platform/campaigns"
+        assert json.loads(request.content) == body
+        return httpx.Response(200, json={"data": CAMPAIGN})
+
+    async with AsyncClient(
+        Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        http_transport=httpx.MockTransport(handler),
+    ) as client:
+        await client.campaigns.create(body)
+    assert len(requests) == 1
+
+
 VARIANT = {
     "key": "a",
     "label": "First",

@@ -3484,8 +3484,13 @@ await messaging.messages.send(sessionId, {
 ```
 
 `CarouselMessageContent` contains a body, optional footer and 2–10 cards.
-Each card has a body, optional footer, native buttons, and exactly one `image`
+Each card has a body, native buttons, and exactly one `image`
 or `video` source. Native controls within each card share a category, and reply
 IDs must be unique across all cards. One carousel is one send; clients do not
 split it into separately metered messages. Official API media buttons and
 carousels use approved templates through their existing template route.
+
+Composed campaign buttons expose an optional typed `id`; keep it stable when
+editing labels and unique within the message. This change does not expand the
+separate reply-flow action limits. All six server SDKs are in the coordinated
+interactive candidate scope; package and native qualification remain required.

@@ -314,6 +314,7 @@ impl Messages<'_> {
         body: &SendMessageRequest,
         mut options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<MessageResponse>>> {
+        body.content.validate_interactive()?;
         if body.conversation.id.is_none()
             && body.conversation.phone_number.is_none()
             && body.conversation.bsuid.is_none()

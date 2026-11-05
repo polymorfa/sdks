@@ -9,6 +9,9 @@ import (
 type Messages struct{ t *transport }
 
 func (r *Messages) Send(ctx context.Context, session string, b SendMessageRequest, opts ...RequestOptions) (Response[Envelope[MessageResult]], error) {
+	if err := validateInteractiveContent(b.Content); err != nil {
+		return Response[Envelope[MessageResult]]{}, err
+	}
 	var fields map[string]json.RawMessage
 	encoded, err := json.Marshal(b.Content)
 	if err != nil {

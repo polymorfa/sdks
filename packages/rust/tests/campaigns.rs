@@ -10,6 +10,27 @@ fn operation() -> serde_json::Value {
     c["operationId"] = json!("operation");
     c
 }
+
+#[tokio::test]
+async fn composed_campaign_preserves_reply_id_and_media_on_wire() {
+    let body = json!({
+        "projectId": "11111111-1111-4111-8111-111111111111",
+        "name": "Interactive",
+        "messagesArray": [{
+            "version": 2, "source": "Choose an offer",
+            "media": {"kind": "image", "url": "https://example.test/offer"},
+            "buttons": [
+                {"kind": "reply", "label": "Choose", "id": "offer-stable"},
+                {"kind": "link", "label": "Open", "url": "https://example.test/offer"}
+            ]
+        }]
+    });
+    let request: CreatePlatformCampaignRequest = serde_json::from_value(body.clone()).unwrap();
+    wire_organization!(
+        client, "POST", "/platform/campaigns", Some(body), json!({"data": campaign()}),
+        client.campaigns().create(&request, RequestOptions::default())
+    );
+}
 fn recipients() -> serde_json::Value {
     json!([{"id":"recipient","phone":"+15551234567","variables":{"name":"Alex"},"variantKey":"a","status":"read","attempts":1,"lastError":null,"externalMessageId":"message","queuedAt":1000,"sentAt":1100,"deliveredAt":1200,"readAt":1300,"failedAt":null,"respondedAt":1400,"messagesSent":0,"failureReason":null,"nextMessageAt":null,"sequenceError":null,"followUp":null}])
 }

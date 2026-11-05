@@ -199,7 +199,7 @@ function composed(value: unknown, mayBeDrip: boolean): void {
         const button = contractObject(b, "button");
         enumValue(button.kind, ["reply", "link", "call"], "button.kind");
         contractString(button.label, "button.label", 0);
-        for (const key of ["url", "phone"])
+        for (const key of ["url", "phone", "id"])
           if (present(button, key)) contractString(button[key], key, 0);
       }
     }
