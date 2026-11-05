@@ -72,6 +72,10 @@
     "miniflare": {
       "undici": "^7.29.1",
       "sharp": "^0.35.5"
+    },
+    "@google-cloud/firestore-api": {
+      "google-gax": "5.0.4",
+      "gaxios": "7.3.1"
     }
   }
 }
