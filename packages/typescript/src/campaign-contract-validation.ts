@@ -475,6 +475,8 @@ export function validateProfileList(
   });
   const tagValue = input.tag;
   if (tagValue !== undefined) {
+    if (typeof tagValue === "string" && /[\uD800-\uDFFF]/u.test(tagValue))
+      invalid("params.tag", "must contain well-formed Unicode");
     const tag = bytes(tagValue, "params.tag", 1, 48);
     if (hasAsciiControl(tag))
       invalid("params.tag", "must not contain control characters");

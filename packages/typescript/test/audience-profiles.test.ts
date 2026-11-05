@@ -279,3 +279,27 @@ it("captures a present tag getter before validation and transport", async () => 
   expect(url.searchParams.get("tag")).toBe("vip");
   expect(reads).toBe(1);
 });
+
+it.each(["\ud800", "\udfff"])(
+  "rejects malformed UTF-16 tag %j before I/O",
+  async (tag) => {
+    const { server, resource } = await setup();
+    await expect(
+      Promise.resolve().then(() => resource.list({ tag })),
+    ).rejects.toThrow();
+    expect(server.requests).toHaveLength(0);
+  },
+);
+it.each(["\u{1F642}".repeat(12), "\ufffd"])(
+  "preserves valid scalar tag %j exactly",
+  async (tag) => {
+    const { server, resource } = await setup();
+    await resource.list({ tag });
+    expect(
+      new URL(
+        server.requests[0]!.path,
+        "https://example.test",
+      ).searchParams.get("tag"),
+    ).toBe(tag);
+  },
+);
