@@ -284,36 +284,51 @@ export async function verify(language, { negativeTest = false } = {}) {
     );
     run("tar", ["-xf", archive, "-C", source], work);
     const sdkSource = join(source, "packages/rust");
-    const target = join(work, "packed");
-    run(
-      "cargo",
-      [
+    // Leave compilation targets to Cargo and the user's shared cache manager.
+    // Copy only produced distributions into this check's private artifact tree.
+    const packed = join(work, "packed");
+    mkdirSync(packed);
+    const packageCrate = (manifest, name, extra = []) => {
+      const metadata = JSON.parse(
+        run(
+          "cargo",
+          [
+            "metadata",
+            "--manifest-path",
+            manifest,
+            "--format-version",
+            "1",
+            "--no-deps",
+          ],
+          sdkSource,
+        ),
+      );
+      run(
+        "cargo",
+        ["package", "--manifest-path", manifest, "--allow-dirty", ...extra],
+        sdkSource,
+      );
+      const archive = join(
+        metadata.target_directory,
         "package",
-        "--manifest-path",
-        join(sdkSource, "storage-core/Cargo.toml"),
-        "--target-dir",
-        target,
-        "--allow-dirty",
-      ],
-      sdkSource,
-    );
+        `${name}.crate`,
+      );
+      run("tar", ["-xf", archive, "-C", packed], work);
+      return join(packed, name);
+    };
     const version = catalog.packages.rust.version;
-    const core = join(target, "package", `polymorfa-storage-core-${version}`);
-    run(
-      "cargo",
+    const core = packageCrate(
+      join(sdkSource, "storage-core/Cargo.toml"),
+      `polymorfa-storage-core-${version}`,
+    );
+    const pkg = packageCrate(
+      join(sdkSource, "Cargo.toml"),
+      `polymorfa-sdk-${version}`,
       [
-        "package",
-        "--manifest-path",
-        join(sdkSource, "Cargo.toml"),
-        "--target-dir",
-        target,
-        "--allow-dirty",
         "--config",
         `patch.crates-io.polymorfa-storage-core.path=${JSON.stringify(core)}`,
       ],
-      sdkSource,
     );
-    const pkg = join(target, "package", `polymorfa-sdk-${version}`);
     writeFileSync(
       join(work, "Cargo.toml"),
       `[package]\nname = "doc-snippets"\nversion = "0.0.0"\nedition = "2021"\nrust-version = "1.85"\n[dependencies]\npolymorfa-sdk = { path = ${JSON.stringify(pkg)} }\ntokio = { version = "1", features = ["rt", "macros"] }\n[patch.crates-io]\npolymorfa-storage-core = { path = ${JSON.stringify(core)} }\n`,

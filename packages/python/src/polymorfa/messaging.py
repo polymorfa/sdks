@@ -14,6 +14,7 @@ import httpx
 
 from . import campaign_contract_validation as V
 from . import session_delivery_validation as D
+from .business_account_modes import validate_testing_mode_fields
 from .cloud import (
     CloudCredentialHealth,
     CloudReauthorization,
@@ -348,6 +349,10 @@ class QuickLinks(Resource):
         self._server()
         value = {} if body is None else body
         options = D.options(options, D.quicklink_intent(value))
+        testing = value.get("configuration", {}).get("testing", {}).get("configuration")
+        if testing is not None:
+            validate_testing_mode_fields(testing)
+
         if value.get("purpose") == "add_connection" and not value.get("session"):
             raise ValidationError("An add_connection QuickLink requires session.")
         billing = value.get("billingControls")

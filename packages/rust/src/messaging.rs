@@ -459,6 +459,17 @@ impl QuickLinks<'_> {
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<QuickLink>>> {
         self.0.server()?;
+        if let Some(testing) = body
+            .configuration
+            .as_ref()
+            .and_then(|c| c.testing.as_ref())
+            .and_then(|t| t.configuration.as_ref())
+        {
+            crate::business_account_modes::validate(
+                testing.account_type.as_ref(),
+                testing.primary_platform.as_ref(),
+            )?;
+        }
         let supplementary = matches!(body.purpose, Some(CreateQuickLinkPurpose::AddConnection));
         if supplementary {
             if body.session.as_ref().is_none_or(|s| s.is_empty())

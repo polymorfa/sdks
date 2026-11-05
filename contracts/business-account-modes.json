@@ -1,0 +1,1231 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "f391fb49bbffddb45459525091fe8851182fc298",
+  "releaseStatus": "source-only",
+  "sources": {
+    "messaging": {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sourceSha256": "acdc3c530fd1b797679a03e62551e4d4dcb9cd365530edb748256cfee26b33b0",
+      "paths": {
+        "/messaging/{session}/contacts/{contactId}/business-profile": {
+          "get": {
+            "operationId": "getBusinessProfile",
+            "tags": ["Contacts"],
+            "summary": "Get a WhatsApp business profile",
+            "security": [{ "BearerAuth": [] }],
+            "x-required-scope": "contacts:read",
+            "parameters": [
+              {
+                "schema": { "type": "string" },
+                "required": true,
+                "name": "session",
+                "in": "path"
+              },
+              {
+                "schema": { "type": "string", "pattern": "^[1-9][0-9]{0,18}$" },
+                "required": true,
+                "name": "contactId",
+                "in": "path"
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Business profile",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/GetBusinessProfileResponse"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "400": {
+                "description": "Bad request — request body or params failed validation",
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "invalid_request_error",
+                        "code": "invalid_parameter",
+                        "message": "Correct the invalid request field.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "401": {
+                "description": "Missing or invalid authentication token",
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "authentication_error",
+                        "code": "invalid_credential",
+                        "message": "Supply a valid credential.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "403": {
+                "description": "Authenticated but not permitted (missing scope or rule violation)",
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "permission_error",
+                        "code": "permission_denied",
+                        "message": "The credential does not have access to this resource.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "404": {
+                "description": "Resource not found",
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "invalid_request_error",
+                        "code": "resource_not_found",
+                        "message": "The resource is unavailable to this caller.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "500": {
+                "description": "Internal server error",
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "api_error",
+                        "code": "internal_error",
+                        "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              }
+            },
+            "x-mint": {
+              "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge>"
+            },
+            "x-protocols": ["Linked Device API"],
+            "description": "**Protocols:** Linked Device API\n\n**Required scope:** `contacts:read`"
+          }
+        },
+        "/messaging/quicklinks": {
+          "post": {
+            "operationId": "createQuickLink",
+            "tags": ["QuickLink"],
+            "summary": "Create a QuickLink",
+            "description": "**Required scope:** `quicklink:manage`\n\nCreates a persistent hosted link that connects one WhatsApp number to a new session in the project.",
+            "security": [{ "BearerAuth": [] }],
+            "x-required-scope": "quicklink:manage",
+            "requestBody": {
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/CreateQuickLinkRequest"
+                  }
+                }
+              }
+            },
+            "responses": {
+              "201": {
+                "description": "QuickLink created",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/QuickLinkResponse"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "400": {
+                "description": "Bad request — request body or params failed validation",
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "invalid_request_error",
+                        "code": "invalid_parameter",
+                        "message": "Correct the invalid request field.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "401": {
+                "description": "Missing or invalid authentication token",
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "authentication_error",
+                        "code": "invalid_credential",
+                        "message": "Supply a valid credential.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#invalid-credential"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "403": {
+                "description": "Authenticated but not permitted (missing scope or rule violation)",
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "permission_error",
+                        "code": "permission_denied",
+                        "message": "The credential does not have access to this resource.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "404": {
+                "description": "Resource not found",
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "invalid_request_error",
+                        "code": "resource_not_found",
+                        "message": "The resource is unavailable to this caller.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "500": {
+                "description": "Internal server error",
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "api_error",
+                        "code": "internal_error",
+                        "message": "An unexpected service failure occurred. Keep the request ID for support.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#internal-error"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              }
+            },
+            "x-mint": {
+              "content": "<Badge color=\"yellow\" icon=\"key\">quicklink:manage</Badge>"
+            }
+          }
+        },
+        "/messaging/{session}/phone/account-mode": {
+          "put": {
+            "operationId": "setTestingAccountMode",
+            "tags": ["Testing"],
+            "security": [{ "BearerAuth": [] }],
+            "summary": "Change a Test number's account type or phone platform",
+            "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sandbox:write`\n\nChanges how the Test number presents itself. A change unlinks every companion, including the Number's own session, so each must pair again. Repeating the current mode changes nothing.",
+            "x-required-scope": "sandbox:write",
+            "parameters": [
+              {
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256,
+                  "description": "The Test number's session ID."
+                },
+                "required": true,
+                "name": "session",
+                "in": "path"
+              }
+            ],
+            "requestBody": {
+              "required": true,
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/TestingAccountModeRequest"
+                  }
+                }
+              }
+            },
+            "responses": {
+              "200": {
+                "description": "The account mode is set",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/TestingAccountMode"
+                    }
+                  }
+                },
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                }
+              },
+              "400": {
+                "description": "Invalid mode, or the phone is offline",
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "invalid_request_error",
+                        "code": "invalid_parameter",
+                        "message": "Correct the invalid request field.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
+                    }
+                  }
+                }
+              },
+              "403": {
+                "description": "Test numbers access required, or a client token was used",
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "permission_error",
+                        "code": "permission_denied",
+                        "message": "The credential does not have access to this resource.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#permission-denied"
+                    }
+                  }
+                }
+              },
+              "404": {
+                "description": "Resource not found",
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "invalid_request_error",
+                        "code": "resource_not_found",
+                        "message": "The resource is unavailable to this caller.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#resource-not-found"
+                    }
+                  }
+                }
+              },
+              "502": {
+                "description": "The phone could not change mode. Retry later.",
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "upstream_error",
+                        "code": "upstream_failure",
+                        "message": "The messaging provider could not complete the request.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#upstream-failure"
+                    }
+                  }
+                }
+              }
+            },
+            "x-mint": {
+              "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">sandbox:write</Badge>"
+            },
+            "x-protocols": ["Linked Device API"]
+          }
+        }
+      },
+      "components": {
+        "schemas": {
+          "GetBusinessProfileResponse": {
+            "type": "object",
+            "properties": {
+              "success": { "type": "boolean", "enum": [true] },
+              "data": { "$ref": "#/components/schemas/BusinessProfile" }
+            },
+            "required": ["success", "data"]
+          },
+          "BusinessProfile": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$",
+                "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+                "example": "739182640518203"
+              },
+              "phoneNumber": { "type": "string" },
+              "bsuid": { "type": "string" },
+              "username": { "type": "string" },
+              "address": { "type": "string" },
+              "email": { "type": "string" },
+              "description": { "type": "string" },
+              "websites": {
+                "type": "array",
+                "items": { "type": "string", "format": "uri" }
+              },
+              "coverPhotoId": { "type": "string" },
+              "categories": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "name": { "type": "string" }
+                  },
+                  "required": ["id", "name"]
+                }
+              },
+              "options": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              },
+              "hoursTimeZone": { "type": "string" },
+              "hours": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "dayOfWeek": { "type": "string" },
+                    "mode": { "type": "string" },
+                    "openTime": { "type": "string" },
+                    "closeTime": { "type": "string" }
+                  },
+                  "required": ["dayOfWeek", "mode", "openTime", "closeTime"]
+                }
+              },
+              "encryption": {
+                "type": "string",
+                "enum": ["end_to_end", "hybrid", "not_end_to_end"],
+                "description": "How messages with this business are encrypted, as WhatsApp reports it. Omitted when the connection does not report it.",
+                "x-enumDescriptions": {
+                  "end_to_end": "Messages are end-to-end encrypted.",
+                  "hybrid": "Some of the business's messaging uses a service that is not end-to-end encrypted, such as a hosting provider.",
+                  "not_end_to_end": "Messages with this business are not end-to-end encrypted."
+                }
+              }
+            },
+            "required": [
+              "id",
+              "address",
+              "email",
+              "description",
+              "websites",
+              "coverPhotoId",
+              "categories",
+              "options",
+              "hoursTimeZone",
+              "hours"
+            ]
+          },
+          "PublicError": {
+            "type": "object",
+            "properties": {
+              "error": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "invalid_request_error",
+                      "authentication_error",
+                      "permission_error",
+                      "billing_error",
+                      "conflict_error",
+                      "rate_limit_error",
+                      "api_error",
+                      "upstream_error"
+                    ]
+                  },
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "zero_knowledge_session",
+                      "invalid_parameter",
+                      "invalid_credential",
+                      "entitlement_required",
+                      "cloud_template_authority_restricted",
+                      "gate_limit_reached",
+                      "billing_credit_required",
+                      "addon_required",
+                      "safe_mode_not_entitled",
+                      "warmup_plan_not_entitled",
+                      "method_not_allowed",
+                      "permission_denied",
+                      "missing_scope",
+                      "resource_not_found",
+                      "hms_not_enabled",
+                      "media_fetch_failed",
+                      "resource_gone",
+                      "feature_unavailable",
+                      "stream_cursor_invalid",
+                      "stream_cursor_expired",
+                      "stream_connection_limit_reached",
+                      "state_conflict",
+                      "team_deletion_scheduled",
+                      "hybrid_routing_paused",
+                      "hybrid_choice_required",
+                      "hybrid_transition_ineligible",
+                      "hybrid_automation_unavailable",
+                      "hybrid_group_linked_devices_unavailable",
+                      "hybrid_transport_unavailable",
+                      "hybrid_target_reference_unavailable",
+                      "send_outcome_unknown",
+                      "idempotency_conflict",
+                      "idempotency_in_progress",
+                      "idempotency_completed",
+                      "idempotency_outcome_unknown",
+                      "call_claimed",
+                      "call_not_ringing",
+                      "connection_limit",
+                      "unsupported_for_connection",
+                      "call_permission_required",
+                      "invalid_sip_trunk",
+                      "calls_disabled",
+                      "call_recipient_opted_out",
+                      "call_destination_blocked",
+                      "call_permission_request_limited",
+                      "call_permission_granted",
+                      "order_status_transition_invalid",
+                      "order_cancellation_failed",
+                      "call_opt_out_limit",
+                      "number_restricted",
+                      "sip_trunk_in_use",
+                      "sip_trunk_revision_conflict",
+                      "sip_trunk_limit",
+                      "sip_unavailable",
+                      "voice_not_enabled",
+                      "provider_credential_invalid",
+                      "provider_unavailable",
+                      "asset_not_ready",
+                      "voice_asset_in_use",
+                      "voice_asset_revision_conflict",
+                      "voice_unavailable",
+                      "rate_limit_exceeded",
+                      "internal_error",
+                      "operation_not_supported",
+                      "upstream_failure",
+                      "service_unavailable",
+                      "credential_verification_unavailable",
+                      "session_not_ready",
+                      "command_dispatch_failed",
+                      "result_unknown",
+                      "parent_bsuid_not_supported",
+                      "recipient_not_on_whatsapp",
+                      "conversation_window_closed",
+                      "template_not_approved",
+                      "media_too_large",
+                      "whatsapp_rate_limited",
+                      "new_chat_limit_reached",
+                      "marketing_disabled_on_cloud_api",
+                      "whatsapp_account_restricted",
+                      "whatsapp_authorization_required",
+                      "whatsapp_payment_method_required",
+                      "whatsapp_number_not_registered",
+                      "whatsapp_groups_ineligible",
+                      "whatsapp_group_creation_paused",
+                      "whatsapp_group_limit_reached",
+                      "whatsapp_group_full",
+                      "whatsapp_group_suspended",
+                      "whatsapp_group_has_no_participants",
+                      "bansafe_suspended",
+                      "bansafe_org_suspended",
+                      "bansafe_cold_blocked",
+                      "bansafe_cold_held",
+                      "bansafe_throttled",
+                      "bansafe_daily_allowance_reached",
+                      "bansafe_accounting_unavailable",
+                      "bansafe_send_outcome_unknown",
+                      "campaigns_not_entitled",
+                      "campaign_throughput_capped",
+                      "campaign_approval_required",
+                      "campaign_approval_stale",
+                      "campaign_variables_missing"
+                    ]
+                  },
+                  "message": { "type": "string" },
+                  "param": { "type": "string", "nullable": true },
+                  "request_id": {
+                    "type": "string",
+                    "description": "Matches the X-Request-Id response header. Include it when you contact support."
+                  },
+                  "request_log_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+                  }
+                },
+                "required": ["type", "code", "message", "param", "request_id"]
+              },
+              "data": {
+                "type": "string",
+                "nullable": true,
+                "enum": [null],
+                "description": "Always null for a failed request."
+              },
+              "docs": { "type": "string", "format": "uri" }
+            },
+            "required": ["error", "data", "docs"]
+          },
+          "CreateQuickLinkRequest": {
+            "type": "object",
+            "properties": {
+              "signalMode": {
+                "type": "string",
+                "enum": ["standard", "zero_knowledge"],
+                "description": "Signal key custody for a new Number. Inherits Customer then Project default; cannot change an existing Number. Customer-owned custody requires beta admission and real Linked Devices."
+              },
+              "purpose": {
+                "type": "string",
+                "enum": ["initial", "add_connection"],
+                "description": "Initial setup, or add a transport to an existing session without replacing the Number."
+              },
+              "connectionGoal": {
+                "type": "string",
+                "enum": ["single", "hybrid"]
+              },
+              "session": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "description": "Existing session name. Required only for add_connection."
+              },
+              "addConnection": {
+                "type": "string",
+                "enum": ["linked_devices", "official_api"]
+              },
+              "projectId": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Project that receives the connected number. Required for team keys with more than one project."
+              },
+              "customerId": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Customer that owns the connected number when Customers is enabled for the project."
+              },
+              "billingControls": {
+                "type": "object",
+                "properties": {
+                  "limitCredits": {
+                    "type": "number",
+                    "nullable": true,
+                    "minimum": 0,
+                    "maximum": 1000000
+                  },
+                  "priority": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000000
+                  }
+                },
+                "required": ["limitCredits", "priority"],
+                "additionalProperties": false,
+                "description": "Initial monthly spending limit and funding priority for a real Number. Requires a team key with billing:manage or a live team owner/admin on Pay-As-You-Go. Applied atomically before pairing admission."
+              },
+              "externalId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "pattern": "^[^\\x00-\\x1f\\x7f]+$",
+                "description": "Integrator correlation copied to the resulting session. May repeat across invitations; does not grant access."
+              },
+              "configuration": {
+                "$ref": "#/components/schemas/QuickLinkConfiguration"
+              }
+            },
+            "additionalProperties": false
+          },
+          "QuickLinkConfiguration": {
+            "type": "object",
+            "properties": {
+              "testing": {
+                "type": "object",
+                "properties": {
+                  "country": { "type": "string" },
+                  "configuration": {
+                    "type": "object",
+                    "properties": {
+                      "profile": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128
+                          },
+                          "status": { "type": "string", "maxLength": 139 }
+                        },
+                        "additionalProperties": false
+                      },
+                      "accountType": {
+                        "type": "string",
+                        "enum": [
+                          "whatsapp_app",
+                          "business_app",
+                          "meta_cloud",
+                          "meta_coexistence"
+                        ],
+                        "description": "How the account uses WhatsApp.",
+                        "x-enumDescriptions": {
+                          "whatsapp_app": "WhatsApp app, connected as a linked device.",
+                          "business_app": "WhatsApp Business app, connected as a linked device.",
+                          "meta_cloud": "Meta Cloud API.",
+                          "meta_coexistence": "Meta Cloud API, with the WhatsApp Business app still active on the phone."
+                        }
+                      },
+                      "primaryPlatform": {
+                        "type": "string",
+                        "enum": ["android", "ios"],
+                        "description": "Primary phone platform the Test number emulates. Defaults to `android`. Not accepted when `accountType` is `meta_cloud`.",
+                        "x-enumDescriptions": {
+                          "android": "An Android phone.",
+                          "ios": "An iPhone."
+                        }
+                      },
+                      "replyBehavior": {
+                        "type": "string",
+                        "enum": ["off", "echo"]
+                      },
+                      "failureScenario": {
+                        "type": "string",
+                        "enum": ["none", "reject-send"]
+                      },
+                      "historyFixtureId": { "type": "string", "format": "uuid" }
+                    },
+                    "additionalProperties": false
+                  },
+                  "editable": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "profile.name",
+                        "profile.status",
+                        "accountType",
+                        "primaryPlatform",
+                        "replyBehavior",
+                        "failureScenario",
+                        "historyFixtureId"
+                      ]
+                    },
+                    "maxItems": 3
+                  }
+                },
+                "additionalProperties": false
+              },
+              "prefillPhone": {
+                "type": "string",
+                "pattern": "^\\+?\\d{6,15}$"
+              },
+              "connectionPreference": {
+                "type": "string",
+                "enum": ["cloud", "linked", "both"]
+              },
+              "connectionEnforcement": {
+                "type": "string",
+                "enum": ["prefer", "force"]
+              },
+              "methods": {
+                "type": "array",
+                "items": { "type": "string", "enum": ["qr", "pairing"] },
+                "minItems": 1,
+                "maxItems": 2,
+                "description": "Linked Devices methods offered for this connection."
+              },
+              "defaultMethod": {
+                "type": "string",
+                "nullable": true,
+                "enum": ["qr", "pairing", null],
+                "description": "Linked Devices method opened first. Omit to inherit the saved project setting, or set null to choose by recipient device."
+              },
+              "allowPhoneChange": { "type": "boolean" },
+              "historySync": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": ["metadata_only", "deliver"]
+                  },
+                  "requestFull": { "type": "boolean" },
+                  "delivery": {
+                    "type": "string",
+                    "enum": ["descriptor"],
+                    "description": "Polymorfa-Version 2026-10-14 and later. `descriptor` keeps history chunks with the recipient for local processing. Omit to inherit saved defaults. Recipient history consent remains required."
+                  },
+                  "consent": {
+                    "type": "string",
+                    "enum": ["ask", "force_on", "force_off"]
+                  }
+                },
+                "additionalProperties": false
+              },
+              "hms": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "enabled": { "type": "boolean", "enum": [false] }
+                    },
+                    "required": ["enabled"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "enabled": { "type": "boolean", "enum": [true] },
+                      "region": {
+                        "type": "string",
+                        "pattern": "^[a-z0-9][a-z0-9-]{0,31}$"
+                      },
+                      "policy": {
+                        "type": "string",
+                        "enum": [
+                          "short",
+                          "standard",
+                          "extended",
+                          "compliance",
+                          "enterprise_archive"
+                        ]
+                      },
+                      "retentionDays": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 2555
+                      },
+                      "policyVersion": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                      },
+                      "legalHold": { "type": "boolean" }
+                    },
+                    "required": ["enabled", "region", "policy"],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "observation": {
+                "type": "object",
+                "properties": {
+                  "presenceMode": {
+                    "type": "string",
+                    "enum": ["off", "events", "cache"]
+                  },
+                  "typingMode": {
+                    "type": "string",
+                    "enum": ["off", "events", "cache"]
+                  },
+                  "labelMode": {
+                    "type": "string",
+                    "enum": ["off", "events", "cache", "project"]
+                  },
+                  "quickReplyMode": {
+                    "type": "string",
+                    "enum": ["off", "events", "cache"]
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false,
+            "description": "Connection, pairing, phone, and history overrides. Omitted fields inherit saved defaults. Presentation, legal links, and callbacks belong to saved project settings."
+          },
+          "QuickLinkResponse": {
+            "type": "object",
+            "properties": {
+              "success": { "type": "boolean", "enum": [true] },
+              "data": { "$ref": "#/components/schemas/QuickLink" }
+            },
+            "required": ["success", "data"]
+          },
+          "QuickLink": {
+            "type": "object",
+            "properties": {
+              "purpose": {
+                "type": "string",
+                "enum": ["initial", "add_connection", "reauthorization"]
+              },
+              "connectionGoal": {
+                "type": "string",
+                "enum": ["single", "hybrid"]
+              },
+              "addConnection": {
+                "type": "string",
+                "enum": ["linked_devices", "official_api"]
+              },
+              "id": {
+                "type": "string",
+                "description": "Stable QuickLink identifier, prefixed `ql_`."
+              },
+              "url": {
+                "type": "string",
+                "description": "Hosted connection URL. Share it only with the person holding the phone."
+              },
+              "session": {
+                "type": "string",
+                "description": "Session name that receives the connected number."
+              },
+              "expiresAt": {
+                "type": "string",
+                "nullable": true,
+                "description": "Null for new persistent QuickLinks. Legacy links retain their ISO-8601 expiry."
+              }
+            },
+            "required": [
+              "purpose",
+              "connectionGoal",
+              "id",
+              "url",
+              "session",
+              "expiresAt"
+            ]
+          },
+          "TestingAccountModeRequest": {
+            "type": "object",
+            "properties": {
+              "accountType": {
+                "type": "string",
+                "enum": [
+                  "whatsapp_app",
+                  "business_app",
+                  "meta_cloud",
+                  "meta_coexistence"
+                ],
+                "description": "How the account uses WhatsApp.",
+                "x-enumDescriptions": {
+                  "whatsapp_app": "WhatsApp app, connected as a linked device.",
+                  "business_app": "WhatsApp Business app, connected as a linked device.",
+                  "meta_cloud": "Meta Cloud API.",
+                  "meta_coexistence": "Meta Cloud API, with the WhatsApp Business app still active on the phone."
+                }
+              },
+              "primaryPlatform": {
+                "type": "string",
+                "enum": ["android", "ios"],
+                "description": "Primary phone platform the Test number emulates. Defaults to `android`. Not accepted when `accountType` is `meta_cloud`.",
+                "x-enumDescriptions": {
+                  "android": "An Android phone.",
+                  "ios": "An iPhone."
+                }
+              }
+            },
+            "required": ["accountType"],
+            "additionalProperties": false
+          },
+          "TestingAccountMode": {
+            "type": "object",
+            "properties": {
+              "session": { "type": "string" },
+              "accountType": {
+                "type": "string",
+                "enum": [
+                  "whatsapp_app",
+                  "business_app",
+                  "meta_cloud",
+                  "meta_coexistence"
+                ],
+                "description": "How the account uses WhatsApp.",
+                "x-enumDescriptions": {
+                  "whatsapp_app": "WhatsApp app, connected as a linked device.",
+                  "business_app": "WhatsApp Business app, connected as a linked device.",
+                  "meta_cloud": "Meta Cloud API.",
+                  "meta_coexistence": "Meta Cloud API, with the WhatsApp Business app still active on the phone."
+                }
+              },
+              "primaryPlatform": {
+                "type": "string",
+                "nullable": true,
+                "enum": ["android", "ios", null],
+                "description": "Null for `meta_cloud`, which has no phone.",
+                "x-enumDescriptions": {
+                  "android": "An Android phone.",
+                  "ios": "An iPhone."
+                }
+              },
+              "changed": {
+                "type": "boolean",
+                "description": "False when the Test number already used this mode. Nothing was unlinked."
+              },
+              "unlinkedDevices": {
+                "type": "array",
+                "items": { "type": "integer" },
+                "description": "Companions the phone unlinked. Each must pair again, including Polymorfa's own session."
+              }
+            },
+            "required": [
+              "session",
+              "accountType",
+              "primaryPlatform",
+              "changed",
+              "unlinkedDevices"
+            ]
+          }
+        },
+        "headers": {
+          "X-RateLimit-Limit": {
+            "description": "Team request quota per rolling minute, when the per-team request limiter applies.",
+            "schema": { "type": "integer", "minimum": 1 }
+          },
+          "X-RateLimit-Remaining": {
+            "description": "Requests left in the per-team quota; zero when this limiter rejects the request.",
+            "schema": { "type": "integer", "minimum": 0 }
+          },
+          "X-RateLimit-Reset": {
+            "description": "Unix timestamp in seconds when the oldest counted request leaves the rolling window, when the per-team request limiter applies. Follow Retry-After on a rejected request.",
+            "schema": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    }
+  }
+}

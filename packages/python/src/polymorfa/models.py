@@ -6,6 +6,7 @@ from typing import Generic, Literal, TypeVar
 
 from typing_extensions import NotRequired, TypedDict
 
+from .business_account_modes import ContactEncryption
 from .campaign_contract_models import SignalCustodyMode
 from .cloud_order import CloudOrder
 from .configuration import ConfigurationPatch, ConfigurationView
@@ -281,6 +282,7 @@ class BusinessHours(TypedDict):
 
 
 class BusinessProfile(TypedDict):
+    encryption: NotRequired[ContactEncryption]
     id: str
     address: str
     email: str

@@ -127,7 +127,11 @@ pub struct UnlinkTestingPhoneDeviceResponse {
     pub device_id: u8,
     pub unlinked: bool,
 }
-fn phone_response<T>(response: ApiResponse<T>, status: u16, valid: bool) -> Result<ApiResponse<T>> {
+pub(crate) fn phone_response<T>(
+    response: ApiResponse<T>,
+    status: u16,
+    valid: bool,
+) -> Result<ApiResponse<T>> {
     if response.metadata.status != status || !valid {
         return Err(Error::local(
             ErrorKind::Server,

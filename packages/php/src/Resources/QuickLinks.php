@@ -28,6 +28,10 @@ final class QuickLinks extends Resource
         $this->server();
         $options = \Polymorfa\ExistingContract::options($options, \Polymorfa\SessionDeliveryValidation::quickLink($body));
         $this->validateBilling($body);
+        if (isset($body['configuration']['testing']['configuration'])) {
+            \Polymorfa\BusinessAccountMode::fields($body['configuration']['testing']['configuration']);
+        }
+
         /** @var ApiResponse<array{success:bool,data:Link}> */
         return $this->request('POST', '/messaging/quicklinks', \Polymorfa\ExistingContract::body($body), options: $options);
     }

@@ -1077,3 +1077,19 @@ or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
 MIT
 
 Treat every Polymorfa credential as an opaque string. Never parse it or assume a fixed length. Credential storage must support at least 512 characters, preferably unrestricted text. Client-token length varies with its bindings and Customer scope.
+
+## Business account-mode supplement
+
+All six SDKs expose the Test-number account-mode operation, the corresponding
+QuickLink testing fields and optional business contact encryption values. See
+the package READMEs for the native calls. The separately produced
+`contracts/business-account-modes.json` binds API source
+`f391fb49bbffddb45459525091fe8851182fc298`; it does not replace the API baseline
+or other supplements. `contracts/native-business-account-modes.json` attributes
+the native fixtures. Check receipts and package consumers remain separate gates.
+This source is not a package release or proof that the API is deployed.
+
+The existing documentation snippet catalog must be rebound to the actual combined
+SDK source after these public changes. It retains its baseline recipes. The new
+account-mode operation has no catalog recipe until the consuming API reference
+can bind this separate supplement; it keeps the documented cURL fallback.

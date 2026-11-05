@@ -1,3 +1,4 @@
+import { checkBusinessAccountModes } from "./check-business-account-modes.mjs";
 import "./check-calls-simultaneous-calls.mjs";
 import { checkOfficialRound2 } from "./check-official-round2.mjs";
 import assert from "node:assert/strict";
@@ -90,3 +91,5 @@ if (!requested) {
 }
 
 if (!requested) checkOfficialRound2();
+
+if (!requested) checkBusinessAccountModes();

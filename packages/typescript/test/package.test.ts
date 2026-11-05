@@ -91,6 +91,12 @@ describe("npm package", () => {
       consumer,
       [
         'import * as sdk from "@polymorfa/sdk";',
+        'import assert from "node:assert/strict";',
+        'import { createServer } from "node:http";',
+        'let modeRequest; const server = createServer(async (req,res) => { let body=""; for await (const part of req) body += part; modeRequest={method:req.method,path:req.url,body:JSON.parse(body)}; res.writeHead(200,{"content-type":"application/json"}); res.end(JSON.stringify({session:"demo/a",accountType:"business_app",primaryPlatform:"ios",changed:false,unlinkedDevices:[]})); });',
+        'await new Promise(resolve => server.listen(0,"127.0.0.1",resolve));',
+        'try { const client = new sdk.MessagingClient({credential:{type:"apiKey",value:"pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"},baseUrl:`http://127.0.0.1:${server.address().port}`}); const result=await client.testing.setAccountMode("demo/a",{accountType:"business_app",primaryPlatform:"ios"}); assert.equal(result.data.changed,false); assert.deepEqual(modeRequest,{method:"PUT",path:"/messaging/demo%2Fa/phone/account-mode",body:{accountType:"business_app",primaryPlatform:"ios"}}); } finally { await new Promise(resolve => server.close(resolve)); }',
+
         "const { MessagingClient, Client, SystemClient, BridgeClient, PRESENCE_STATES, PRIVACY_SETTING_VALUES, SDK_VERSION, webhooks } = sdk;",
         'const messaging = new MessagingClient({ credential: { type: "apiKey", value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k" } });',
         'const platform = new Client({ credential: { type: "organizationApiKey", value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k" } });',

@@ -24,6 +24,14 @@ public sealed record UnlinkTestingPhoneDeviceResponse(string Session, int Device
 public sealed class Testing : Resource
 {
     internal Testing(HttpTransport http) : base(http) { }
+    public Task<ApiResponse<TestingAccountMode>> SetAccountModeAsync(string session, TestingAccountModeRequest input, RequestOptions? options = null)
+    {
+        Http.Credential.RequireServer();
+        CampaignContractValidation.Unicode(session);
+        if (session is null || session.Length is < 1 or > 256) throw new PolymorfaValidationException("Invalid session.", "invalid_parameter");
+        BusinessAccountModeValidation.Fields(input.AccountType, input.PrimaryPlatform);
+        return ExistingContractCodec.Request<TestingAccountMode>(Http, HttpMethod.Put, "/messaging/" + E(session) + "/phone/account-mode", ExistingContractCodec.Capture(input), options);
+    }
     private static string Path(string projectId) => "/messaging/testing/" + E(projectId);
     private static string PhonePath(string projectId, string session) => Path(projectId) + "/numbers/" + E(session) + "/phone";
     private Task<ApiResponse<T>> Request<T>(HttpMethod method, string path, object? body, RequestOptions? options) { Http.Credential.RequireServer(); return Http.RequestAsync<T>(method, path, body, options); }
