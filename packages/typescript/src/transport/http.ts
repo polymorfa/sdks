@@ -1007,7 +1007,6 @@ function responseMetadata(
 }
 
 const SAFE_RESPONSE_HEADERS = [
-  "idempotent-replayed",
   "content-type",
   "content-disposition",
   "x-polymorfa-transport",
