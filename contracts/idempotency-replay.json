@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "ec2b28bd47d210e14bb2a488df46b45b19cc317f",
+  "sourceCommit": "43a286d2133c2328eb30d6210572d9bfc19734f0",
   "sources": [
     {
       "path": "apps/api/docs/openapi.json",
@@ -18,7 +18,7 @@
     },
     {
       "path": "apps/api/docs/openapi.management.json",
-      "sha256": "98e73b00f1daead92af75fdd2b43a1bd7bf6a3e44d4648fc5a7d5cda347f048b",
+      "sha256": "b68239debe43b7d045926f48bc1132d2e2b17dfe01986f3752ad2ba05b475a14",
       "info": {
         "title": "Polymorfa Console & Management API",
         "version": "1.0.0",
