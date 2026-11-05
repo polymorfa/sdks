@@ -1,5 +1,6 @@
 import { PolymorfaConfigurationError } from "../errors.js";
 
+/** Narrow untyped content to a non-null, non-array object before reading fields. */
 function object(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -8,6 +9,7 @@ function invalid(message: string): never {
   throw new PolymorfaConfigurationError(message, "content");
 }
 
+/** Require exactly one string URL/base64 field without asserting API media acceptance. */
 function source(value: unknown): void {
   if (!object(value))
     invalid("Interactive media requires a URL or base64 source.");

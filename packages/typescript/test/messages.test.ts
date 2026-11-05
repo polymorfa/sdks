@@ -431,6 +431,7 @@ it("surfaces an uncertain accepted operation once and reads its status without a
   expect(server.requests.map((value) => value.method)).toEqual(["POST", "GET"]);
 });
 
+/** Compare complete request bodies so SDK truncation cannot masquerade as a valid send. */
 it("preserves ten linked replies and three CTA parameters without truncation", async () => {
   const { client, requests } = await messagesServer();
   const combinations: MessageButton[][] = [

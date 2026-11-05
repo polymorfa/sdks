@@ -38,6 +38,10 @@ function run(command, args, cwd, env = {}) {
 const json = (path, data) =>
   writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`);
 
+/**
+ * Compile every exported program against a physical package without executing API calls.
+ * Optional negative verification must fail on the substituted nonexistent public method.
+ */
 export async function verify(language, { negativeTest = false } = {}) {
   if (!languages.includes(language))
     throw new Error(`Choose ${languages.join(", ")}`);
@@ -287,6 +291,7 @@ export async function verify(language, { negativeTest = false } = {}) {
     run("tar", ["-xf", archive, "-C", source], work);
     const sdkSource = join(source, "packages/rust");
     const target = join(work, "packed");
+    /** Ask the Mac cache manager for its target; other platforms use the verifier staging tree. */
     const packageTarget = (manifest) =>
       process.platform === "darwin"
         ? JSON.parse(

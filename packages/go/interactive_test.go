@@ -9,6 +9,8 @@ import (
 	"testing"
 )
 
+// TestInteractiveMediaAndCarouselWire checks public-client JSON and idempotency
+// against a local server, retaining nested video previews and the outer footer.
 func TestInteractiveMediaAndCarouselWire(t *testing.T) {
 	url, preview, footer, id := "https://example.test/media", "c3ludGhldGlj", "Outer", "stable"
 	source := InteractiveMediaSource{URL: &url}
@@ -62,6 +64,9 @@ func TestInteractiveMediaAndCarouselWire(t *testing.T) {
 		t.Fatal("typed campaign stable ID lost", err)
 	}
 }
+
+// TestInteractiveCampaignStableReplyIDWire requires identical requests for typed
+// and legacy extension IDs while leaving the caller's original button unchanged.
 func TestInteractiveCampaignStableReplyIDWire(t *testing.T) {
 	source, id, target := "Choose an offer", "offer-stable", "https://example.test/offer"
 	calls := 0
@@ -108,6 +113,9 @@ func TestInteractiveCampaignStableReplyIDWire(t *testing.T) {
 		t.Fatalf("legacy ID changed or wire request missing: calls=%d, legacy=%#v", calls, legacy)
 	}
 }
+
+// TestInteractiveCampaignExtensionIDConflictsNoHTTP proves conflicting, null and
+// nonstring extension IDs are rejected before any request reaches the local server.
 func TestInteractiveCampaignExtensionIDConflictsNoHTTP(t *testing.T) {
 	id, source := "typed", "Choose"
 	calls := 0
@@ -132,6 +140,9 @@ func TestInteractiveCampaignExtensionIDConflictsNoHTTP(t *testing.T) {
 		t.Fatalf("invalid IDs reached HTTP: %d", calls)
 	}
 }
+
+// TestInteractiveMediaRejectsAmbiguousSources isolates title/media conflicts,
+// dual URL/base64 sources and carousel cards missing their media union member.
 func TestInteractiveMediaRejectsAmbiguousSources(t *testing.T) {
 	value := "fixture"
 	invalid := []MessageContent{

@@ -8,6 +8,8 @@ import (
 
 type Messages struct{ t *transport }
 
+// Send validates one content variant and its interactive media before HTTP,
+// then submits an idempotent request with descriptor-specific version handling.
 func (r *Messages) Send(ctx context.Context, session string, b SendMessageRequest, opts ...RequestOptions) (Response[Envelope[MessageResult]], error) {
 	if err := validateInteractiveContent(b.Content); err != nil {
 		return Response[Envelope[MessageResult]]{}, err

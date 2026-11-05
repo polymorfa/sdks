@@ -39,6 +39,7 @@ export const SDK_LANGUAGES = [
   "rust",
 ];
 
+/** Compare the requested ledger and enforce supplement attribution for repository inputs. */
 function main() {
   try {
     const args = parseArguments(process.argv.slice(2));
@@ -76,6 +77,7 @@ if (
 )
   main();
 
+/** Parse explicit spec/ledger paths and boolean gates, rejecting missing option values. */
 function parseArguments(argv) {
   const values = {};
   for (let index = 0; index < argv.length; index += 1) {

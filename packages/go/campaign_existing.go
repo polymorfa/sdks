@@ -118,6 +118,9 @@ func (v CampaignComposedMedia) MarshalJSON() ([]byte, error) {
 	type plain CampaignComposedMedia
 	return openCampaignJSON(plain(v), v.Extra, "kind", "url", "filename", "caption")
 }
+
+// MarshalJSON retains a legacy extension ID when no typed ID is set. Both forms
+// may agree; conflicting or nonstring extension values fail without mutating v.
 func (v CampaignComposedButton) MarshalJSON() ([]byte, error) {
 	type plain CampaignComposedButton
 	if raw, ok := v.Extra["id"]; ok {
@@ -528,6 +531,8 @@ const (
 	dripMaxDelaySeconds     = 2592000
 )
 
+// validateComposed checks composed-message structure, delay bounds and optional
+// button IDs. Channel-specific delivery limits remain authoritative at the API.
 func validateComposed(x any, maxDelay float64) error {
 	a, ok := x.([]any)
 	if !ok || len(a) > 10 {

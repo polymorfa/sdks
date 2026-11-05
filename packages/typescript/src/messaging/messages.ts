@@ -44,6 +44,7 @@ export class MessagesResource {
     });
   }
 
+  /** Validate interactive unions before transport and preserve idempotency and descriptor options. */
   send(
     session: string,
     body: SendMessageRequest,

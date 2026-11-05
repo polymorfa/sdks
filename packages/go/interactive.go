@@ -31,12 +31,17 @@ type CarouselContent struct {
 	Cards  []CarouselCard `json:"cards"`
 }
 
+// validateInteractiveSource requires exactly one source pointer; URL validity,
+// content bounds and transport availability remain API checks.
 func validateInteractiveSource(v InteractiveMediaSource) error {
 	if (v.URL == nil) == (v.Base64 == nil) {
 		return validation("Interactive media requires exactly one URL or base64 source.")
 	}
 	return nil
 }
+
+// validateInteractiveContent rejects ambiguous media headers and carousel cards
+// before sending, including title/media conflicts, media kinds and card counts.
 func validateInteractiveContent(v MessageContent) error {
 	if b := v.Buttons; b != nil {
 		if b.Media != nil {

@@ -198,10 +198,12 @@ for (const [name, mutate, expected] of [
   });
 }
 
+/** Mutate one read result at a time to distinguish registration and snapshot drift guards. */
 test("interactive coverage detects removed native registration and changed contract bytes", () => {
   const nativeManifest = resolve(root, "packages/php/coverage.json");
   const pinPath = resolve(root, "contracts/interactive-messages.json");
   for (const target of [nativeManifest, pinPath]) {
+    /** Corrupt only the selected fixture while preserving Buffer/string read behavior. */
     const readFile = (path, encoding) => {
       if (path !== target) return readFileSync(path, encoding);
       const value = JSON.parse(readFileSync(path, "utf8"));

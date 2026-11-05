@@ -31,6 +31,7 @@ test("Mac verification refuses a direct Cargo fallback when the shared shim is a
   );
 });
 
+/** Linux and Windows must use their selected Cargo without probing the Mac cache shim. */
 test("other platforms retain the workflow-selected Cargo", () => {
   for (const platform of ["linux", "win32"]) {
     assert.equal(

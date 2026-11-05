@@ -6,10 +6,12 @@ from .errors import ValidationError
 
 
 def validate_interactive(content: object) -> None:
+    """Reject ambiguous media headers and invalid carousel media/card-count structure."""
     if not isinstance(content, Mapping):
         return
 
     def source(value: object) -> Mapping[str, object]:
+        """Require a mapping with exactly one URL/base64 key; the API validates its value."""
         if not isinstance(value, Mapping) or (("url" in value) == ("base64" in value)):
             raise ValidationError("Interactive media requires exactly one URL or base64 source.")
         return value

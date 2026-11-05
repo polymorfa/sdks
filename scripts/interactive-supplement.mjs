@@ -19,6 +19,10 @@ const FIELDS = {
 };
 const GROUPS = [...Object.keys(FIELDS), "campaignReplies"];
 
+/**
+ * Check the pinned supplement, unchanged baseline and six native evidence mappings.
+ * Attribution markers identify wire fixtures; this check does not execute them.
+ */
 export function checkInteractiveSupplement(root, options = {}) {
   const read = options.readFile ?? readFileSync;
   const text = (path) => read(resolve(root, path), "utf8");
@@ -107,6 +111,7 @@ export function checkInteractiveSupplement(root, options = {}) {
       );
     }
     const packageRoot = resolve(root, "packages", language);
+    /** Read evidence only from within the selected language package. */
     const packageText = (path) => {
       assert.ok(
         typeof path === "string" && !isAbsolute(path),
