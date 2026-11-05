@@ -854,6 +854,11 @@ composed campaign messages, not reply-flow actions: the latter retain their
 separate three-reply contract. The API remains authoritative for sender
 availability, media sizes, control limits and campaign sendability.
 
+Existing `Extra["id"]` string values remain supported. When both `ID` and the
+extension are supplied, they must agree; conflicting or non-string extension
+values fail before HTTP. Serialization does not mutate the caller's extension
+map.
+
 ### Call settings exclusion end (Unreleased)
 
 Call-settings GET and PUT responses include the read-only

@@ -506,3 +506,97 @@ it("preserves mixed controls and a media header without splitting transport", as
   expect(requests).toHaveLength(1);
   expect(JSON.parse(requests[0]!.body)).toEqual(body);
 });
+
+describe("interactive content from JavaScript callers", () => {
+  const card = {
+    body: "Card",
+    image: { url: "https://example.test/card" },
+    buttons: [{ type: "reply", text: "Choose", id: "stable" }],
+  };
+  it.each([
+    { carousel: { body: "Offers", cards: [card] } },
+    {
+      carousel: {
+        body: "Offers",
+        cards: Array.from({ length: 11 }, () => card),
+      },
+    },
+    { carousel: { body: "Offers", cards: [{ body: "Missing" }, card] } },
+    {
+      carousel: {
+        body: "Offers",
+        cards: [
+          { ...card, video: { url: "https://example.test/video" } },
+          card,
+        ],
+      },
+    },
+    { carousel: { body: "Offers", cards: [{ ...card, image: {} }, card] } },
+    {
+      carousel: {
+        body: "Offers",
+        cards: [
+          {
+            ...card,
+            image: { url: "https://example.test/image", base64: "YQ==" },
+          },
+          card,
+        ],
+      },
+    },
+    {
+      carousel: {
+        body: "Offers",
+        cards: [{ ...card, image: { url: 123 } }, card],
+      },
+    },
+    {
+      buttons: {
+        body: "Offer",
+        title: "Title",
+        media: { type: "image", url: "https://example.test/image" },
+        buttons: [],
+      },
+    },
+    {
+      buttons: {
+        body: "Offer",
+        media: { type: "audio", url: "https://example.test/audio" },
+        buttons: [],
+      },
+    },
+    {
+      buttons: {
+        body: "Offer",
+        media: {
+          type: "image",
+          url: "https://example.test/image",
+          base64: "YQ==",
+        },
+        buttons: [],
+      },
+    },
+    {
+      buttons: {
+        body: "Offer",
+        media: {
+          type: "image",
+          filename: "wrong",
+          url: "https://example.test/image",
+        },
+        buttons: [],
+      },
+    },
+  ])(
+    "refuses malformed interactive unions before HTTP: %j",
+    async (content) => {
+      const { client, requests } = await messagesServer();
+      const body = {
+        conversation: { phoneNumber: "+15551234567" },
+        content,
+      } as unknown as SendMessageRequest;
+      expect(() => client.messages.send("support", body)).toThrow();
+      expect(requests).toHaveLength(0);
+    },
+  );
+});

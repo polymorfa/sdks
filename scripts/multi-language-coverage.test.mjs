@@ -219,14 +219,13 @@ test("interactive coverage detects removed native registration and changed contr
   }
 });
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 
 test("the shared coverage CLI rejects a candidate ledger missing interactive registration", () => {
-  const parent = resolve(homedir(), ".polymorfa-agent-work");
-  mkdirSync(parent, { recursive: true });
-  const work = mkdtempSync(resolve(parent, "sdk-interactive-coverage-"));
+  // This disposable test fixture is removed in finally, not an agent artifact.
+  const work = mkdtempSync(resolve(tmpdir(), "sdk-interactive-coverage-"));
   try {
     const ledger = JSON.parse(
       readFileSync(resolve(root, "contracts/coverage.json")),

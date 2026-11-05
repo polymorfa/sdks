@@ -181,7 +181,11 @@
       },
       "campaignReplies": {
         "sourceFile": "src/campaigns.rs",
-        "symbols": ["CampaignMessageButton", "pub id: Option<String>"],
+        "symbols": [
+          "CampaignMessageButton",
+          "pub fn with_reply_id",
+          "pub fn reply_id"
+        ],
         "testFile": "tests/campaigns.rs",
         "testNeedles": [
           "composed_campaign_preserves_reply_id_and_media_on_wire",

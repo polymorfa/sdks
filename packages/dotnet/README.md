@@ -1053,6 +1053,11 @@ composed campaign messages, not reply-flow actions: the latter retain their
 separate three-reply contract. The API remains authoritative for sender
 availability, media sizes, control limits and campaign sendability.
 
+Existing `AdditionalFields["id"]` string values remain supported. When `Id` is
+also supplied, both values must agree. Conflicting or non-string extension IDs
+fail before HTTP without mutating the caller's dictionary. The existing
+four-argument button constructor and four-value deconstruction remain available.
+
 ### Call settings exclusion end (Unreleased)
 
 Call-settings GET and PUT responses include the read-only

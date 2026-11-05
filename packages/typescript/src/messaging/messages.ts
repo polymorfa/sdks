@@ -4,6 +4,7 @@ import { PolymorfaConfigurationError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import { withIdempotencyKey } from "../transport/idempotency.js";
 import { validateStickerContent } from "../media/send-descriptor.js";
+import { validateInteractiveContent } from "../media/interactive-content.js";
 import { existingOptions } from "../campaign-existing-validation.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
@@ -49,6 +50,7 @@ export class MessagesResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<SendMessageResponse>> {
     options = existingOptions(options);
+    validateInteractiveContent(body.content);
     if (
       body.content !== null &&
       typeof body.content === "object" &&

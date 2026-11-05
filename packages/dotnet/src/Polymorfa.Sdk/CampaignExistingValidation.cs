@@ -40,11 +40,26 @@ internal static class CampaignExistingValidation
         }
         return copy;
     }
+    private static PlatformCampaignButton Button(PlatformCampaignButton button)
+    {
+        var id = button.Id;
+        var fields = button.AdditionalFields;
+        if (fields is not null && fields.TryGetValue("id", out var legacy))
+        {
+            if (legacy.ValueKind != JsonValueKind.String) Invalid("button.id");
+            var value = legacy.GetString();
+            if (id is not null && id != value) Invalid("button.id");
+            id ??= value;
+            fields = new Dictionary<string, JsonElement>(fields, StringComparer.Ordinal);
+            fields.Remove("id");
+        }
+        return button with { Id = id, AdditionalFields = Extensions(fields, ["kind", "label", "url", "phone", "id"]) };
+    }
     private static IReadOnlyList<PlatformCampaignMessage> Messages(IReadOnlyList<PlatformCampaignMessage> input) => input.Select(message => message with
     {
         AdditionalFields = Extensions(message.AdditionalFields, ["version", "source", "media", "buttons", "footer", "delayAfterSec", "delayUnit", "sendWindow"]),
         Media = message.Media is { } media ? media with { AdditionalFields = Extensions(media.AdditionalFields, ["kind", "url", "filename", "caption"]) } : null,
-        Buttons = message.Buttons?.Select(button => button with { AdditionalFields = Extensions(button.AdditionalFields, ["kind", "label", "url", "phone", "id"]) }).ToArray()
+        Buttons = message.Buttons?.Select(Button).ToArray()
     }).ToArray();
     private static void Unique(JsonElement value)
     {

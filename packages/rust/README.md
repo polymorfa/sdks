@@ -941,12 +941,30 @@ video previews remain inside the video object. Each complete carousel is one
 message request. Linked Devices allow ten controls with at most three CTAs;
 replies can mix with URL/call controls, but not copy/catalog controls.
 
-Composed campaign buttons now expose an optional typed `id`. Preserve it across
-label changes and make reply IDs unique within the message. Existing media and
+Composed campaign buttons expose `with_reply_id` and `reply_id`. Preserve the ID
+across label changes and make IDs unique within the message. Existing media and
 carousel-template campaign paths retain the API's sender checks. These are
 composed campaign messages, not reply-flow actions: the latter retain their
 separate three-reply contract. The API remains authoritative for sender
 availability, media sizes, control limits and campaign sendability.
+
+The existing struct-literal fields stay unchanged. Legacy string IDs in
+`extensions["id"]` remain supported; the builder rejects an attempt to replace
+one with a different ID. Non-string extension IDs fail before HTTP.
+
+```rust
+use polymorfa_sdk::campaigns::{CampaignMessageButton, CampaignMessageButtonKind};
+let button = CampaignMessageButton {
+    kind: CampaignMessageButtonKind::Reply,
+    label: "Choose".into(),
+    url: None,
+    phone: None,
+    extensions: Default::default(),
+}
+.with_reply_id("offer-stable")
+.expect("no conflicting extension ID");
+assert_eq!(button.reply_id(), Some("offer-stable"));
+```
 
 ### Call settings exclusion end (Unreleased)
 

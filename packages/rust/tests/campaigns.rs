@@ -25,7 +25,22 @@ async fn composed_campaign_preserves_reply_id_and_media_on_wire() {
             ]
         }]
     });
-    let request: CreatePlatformCampaignRequest = serde_json::from_value(body.clone()).unwrap();
+    let mut request: CreatePlatformCampaignRequest = serde_json::from_value(body.clone()).unwrap();
+    // The pre-existing struct literal still compiles without an added field.
+    let reply = CampaignMessageButton {
+        kind: CampaignMessageButtonKind::Reply,
+        label: "Choose".into(),
+        url: None,
+        phone: None,
+        extensions: Default::default(),
+    }
+    .with_reply_id("offer-stable")
+    .unwrap();
+    assert_eq!(reply.reply_id(), Some("offer-stable"));
+    request.messages_array.as_mut().unwrap()[0]
+        .buttons
+        .as_mut()
+        .unwrap()[0] = reply;
     wire_organization!(
         client,
         "POST",
@@ -36,6 +51,20 @@ async fn composed_campaign_preserves_reply_id_and_media_on_wire() {
             .campaigns()
             .create(&request, RequestOptions::default())
     );
+}
+#[test]
+fn campaign_reply_id_builder_preserves_legacy_ids_and_rejects_conflicts() {
+    let legacy: CampaignMessageButton = serde_json::from_value(json!({
+        "kind":"reply", "label":"Choose", "id":"stable"
+    }))
+    .unwrap();
+    assert_eq!(legacy.reply_id(), Some("stable"));
+    assert_eq!(
+        serde_json::to_value(legacy.clone()).unwrap()["id"],
+        "stable"
+    );
+    assert!(legacy.clone().with_reply_id("different").is_err());
+    assert!(legacy.with_reply_id("stable").is_ok());
 }
 fn recipients() -> serde_json::Value {
     json!([{"id":"recipient","phone":"+15551234567","variables":{"name":"Alex"},"variantKey":"a","status":"read","attempts":1,"lastError":null,"externalMessageId":"message","queuedAt":1000,"sentAt":1100,"deliveredAt":1200,"readAt":1300,"failedAt":null,"respondedAt":1400,"messagesSent":0,"failureReason":null,"nextMessageAt":null,"sequenceError":null,"followUp":null}])

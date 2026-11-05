@@ -90,14 +90,46 @@ func TestInteractiveCampaignStableReplyIDWire(t *testing.T) {
 		t.Fatal(err)
 	}
 	version := 2
-	buttons := []CampaignComposedButton{{Kind: "reply", Label: "Choose", ID: &id}, {Kind: "link", Label: "Open", URL: &target}}
-	messages := []CampaignComposedMessage{{Version: &version, Source: &source, Media: &CampaignComposedMedia{Kind: "image", URL: target}, Buttons: &buttons}}
-	_, err = client.Campaigns().Create(context.Background(), CreatePlatformCampaignRequest{ProjectID: "11111111-1111-4111-8111-111111111111", Name: "Interactive", MessagesArray: &messages})
+	rawID := json.RawMessage(`"offer-stable"`)
+	legacy := CampaignComposedButton{Kind: "reply", Label: "Choose", Extra: PlatformPayload{"id": rawID}}
+	for _, reply := range []CampaignComposedButton{
+		{Kind: "reply", Label: "Choose", ID: &id},
+		legacy,
+		{Kind: "reply", Label: "Choose", ID: &id, Extra: PlatformPayload{"id": rawID}},
+	} {
+		buttons := []CampaignComposedButton{reply, {Kind: "link", Label: "Open", URL: &target}}
+		messages := []CampaignComposedMessage{{Version: &version, Source: &source, Media: &CampaignComposedMedia{Kind: "image", URL: target}, Buttons: &buttons}}
+		_, err = client.Campaigns().Create(context.Background(), CreatePlatformCampaignRequest{ProjectID: "11111111-1111-4111-8111-111111111111", Name: "Interactive", MessagesArray: &messages})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	if calls != 3 || legacy.ID != nil || string(legacy.Extra["id"]) != string(rawID) {
+		t.Fatalf("legacy ID changed or wire request missing: calls=%d, legacy=%#v", calls, legacy)
+	}
+}
+func TestInteractiveCampaignExtensionIDConflictsNoHTTP(t *testing.T) {
+	id, source := "typed", "Choose"
+	calls := 0
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls++ }))
+	defer server.Close()
+	client, err := NewOrganizationClient(orgConfig(server.URL))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if calls != 1 {
-		t.Fatalf("expected one campaign request, got %d", calls)
+	for _, button := range []CampaignComposedButton{
+		{Kind: "reply", Label: "Choose", ID: &id, Extra: PlatformPayload{"id": json.RawMessage(`"different"`)}},
+		{Kind: "reply", Label: "Choose", Extra: PlatformPayload{"id": json.RawMessage(`123`)}},
+		{Kind: "reply", Label: "Choose", Extra: PlatformPayload{"id": nil}},
+	} {
+		buttons := []CampaignComposedButton{button}
+		messages := []CampaignComposedMessage{{Source: &source, Buttons: &buttons}}
+		if _, err := client.Campaigns().Create(context.Background(), CreatePlatformCampaignRequest{ProjectID: "11111111-1111-4111-8111-111111111111", Name: "Invalid", MessagesArray: &messages}); err == nil {
+			t.Fatal("accepted a conflicting or nonstring extension ID")
+		}
+	}
+	if calls != 0 {
+		t.Fatalf("invalid IDs reached HTTP: %d", calls)
 	}
 }
 func TestInteractiveMediaRejectsAmbiguousSources(t *testing.T) {

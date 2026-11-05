@@ -120,6 +120,17 @@ func (v CampaignComposedMedia) MarshalJSON() ([]byte, error) {
 }
 func (v CampaignComposedButton) MarshalJSON() ([]byte, error) {
 	type plain CampaignComposedButton
+	if raw, ok := v.Extra["id"]; ok {
+		bytes, err := json.Marshal(raw)
+		var legacy *string
+		if err != nil || json.Unmarshal(bytes, &legacy) != nil || legacy == nil {
+			return nil, existingInvalid("button.id")
+		}
+		if v.ID != nil && *v.ID != *legacy {
+			return nil, existingInvalid("button.id")
+		}
+		v.ID = legacy
+	}
 	return openCampaignJSON(plain(v), v.Extra, "kind", "label", "url", "phone", "id")
 }
 func decodeOpenCampaign(b []byte, out any, owned ...string) (PlatformPayload, error) {
