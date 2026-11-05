@@ -2,6 +2,206 @@
 
 ## Unreleased
 
+- UI Kit: keep a 320px thread beside the Inbox list in narrow two-pane layouts, and include the linked guides in the package.
+
+- Breaking: the browser UI packages are now one package, the UI Kit
+  (`@polymorfa/ui-kit`), with one version. Change each import as follows:
+  `@polymorfa/browser` to `@polymorfa/ui-kit`, `@polymorfa/react` to
+  `@polymorfa/ui-kit/react`, `@polymorfa/elements` (and its `/chat`,
+  `/templates` and `/calls` subpaths) to `@polymorfa/ui-kit/web-components`
+  (same subpaths), `@polymorfa/ui` to `@polymorfa/ui-kit/appearance`,
+  `@polymorfa/store` and `@polymorfa/store/react` to `@polymorfa/ui-kit/store`
+  and `@polymorfa/ui-kit/store/react`, and `@polymorfa/devtools` and
+  `@polymorfa/devtools/production` to `@polymorfa/ui-kit/devtools` and
+  `@polymorfa/ui-kit/devtools/production`. `definePolymorfa()` is now
+  `defineUiKit()` and `DefinePolymorfaOptions` is now `DefineUiKitOptions`;
+  there is no alias. Other exports, behavior and the `pmfa-` tag, class and CSS
+  variable names are unchanged. `react` and `react-dom` are optional peer
+  dependencies used only by `/react` and `/store/react`. Browser call reports
+  name `@polymorfa/ui-kit` as their SDK. See the
+  [UI Kit guide](packages/ui-kit/README.md). Source-only until a nightly
+  publishes `@polymorfa/ui-kit`.
+- `@polymorfa/ui` Inbox: the conversation list and the thread sit side by side
+  from 560 px of Inbox width, down from 700 px, and Back appears only when
+  they cannot. Back showed beside the list before because its rule read the
+  thread's width. Back now has a visible border. Source-only until a nightly
+  publishes.
+
+- Prepare direct server passkey challenge, assertion and explicit confirmation methods in all six SDKs. Writes use one attempt; ceremony execution remains external. Bound to accepted API source `77e9ce31`; unreleased until package publication.
+
+- Add the read-only nullable call-settings exclusion-end response field across all six SDKs. Rust response struct literals require the new optional field; C# positional construction remains compatible. Bound to accepted API source `77e9ce31`, which also clarifies when a ban is excluded; unreleased.
+
+- TypeScript, Python and PHP call-settings updates now refuse keys the API does not accept, including the response-only `simultaneousCallsCoverageExcludedUntil`, before sending. Go, Rust and .NET requests already serialize only writable fields.
+
+- All six server SDKs expose optional automatic-pause `reason`/`code` and
+  optional recipient-skip `messageIndex`/`followUpId` from accepted API source
+  `9bb1e2ed`. Future reason/code strings and raw envelope fields are retained;
+  manual omission and zero sequence positions are preserved. Pause timestamps
+  remain seconds, skip timestamps milliseconds. Rust full struct literals and
+  Go unkeyed literals need the added optional fields; C# constructor/Deconstruct
+  arities are unchanged. Source-only and unpublished; see
+  `docs/campaign-webhook-metadata.md` for compatibility and acceptance gates.
+- Prepare simultaneous-call settings and Ban Insurance evidence in all six
+  server SDKs against accepted API #559 source `c1a43a1e`. Updates preserve
+  omission and explicit false. The API enforces acknowledgment and team-key
+  authority on an off-to-on transition. Claims and webhooks recognize
+  `simultaneous_calls`; claim evidence includes `simultaneousCalls`.
+  Package publication and deployed acceptance remain gated.
+- Official API round-2 betas now have native source counterparts in all six
+  server SDKs: Number catalog-cache operations, marketing status and lifecycle
+  events, parent/previous identity fields, incoming carts, multipart Official
+  group pictures, Platform batching settings and whole-body signed batch
+  receivers. Graph resources and Linked Devices groups retain their own routes.
+  These changes are source-only. Exact combined-source hosted qualification,
+  accepted downstream source, API acceptance and publication remain required.
+
+- All six server SDKs submit each direct media grant, API relay upload, history
+  chunk retry and history media deletion at most once per invocation, including
+  when a caller supplies an idempotency key and a positive retry option. These
+  held routes have no server replay ledger. Errors retain their metadata;
+  established message-send/GET retries and direct CDN recovery are unchanged.
+  This correction is source-only and does not release the held API routes.
+
+- Project event streams in TypeScript, Go, Python, PHP and .NET retain their
+  resume cursor until the event payload validates. TypeScript now validates the
+  decoded webhook envelope. Their parsers enforce 4 MiB UTF-8 frame budgets
+  across incomplete lines, multiline data and comments. Rust's existing cursor
+  validation and frame bound gain regression coverage. Native malformed-payload
+  error and reconnect policies remain unchanged.
+- Go and .NET storage synchronization preserve the configured initial cursor
+  when no checkpoint exists. A saved checkpoint still takes precedence; event
+  commit, checkpoint CAS and manual ACK retain their order. These repairs are
+  source-only and unreleased.
+
+- Webhook phone offline start day. Platform and Messaging webhook create,
+  update and read types gain `phoneOfflineStartDay` (7-13, default 10): the
+  first day without the phone on which the webhook receives
+  `session.phone_offline`. Platform webhooks always return it. To stop the
+  warning, leave the event out of `eventTypes` (Platform) or `events`
+  (Messaging). `PHONE_OFFLINE_START_DAY` exports the bounds. Not usable until
+  the API release that adds the field is deployed. API contract:
+  polymorfa/polymorfa#631.
+- Receipt-timed campaign follow-ups (beta). Messaging and Platform campaign
+  create and update accept `followUp` (`CampaignFollowUp`): one text or
+  template message sent from the first message's number, timed from its first
+  delivery or read. Campaigns return the stored follow-up, recipients return
+  `followUp` (`CampaignFollowUpSummary`), and campaign analytics return
+  `followUps` (`CampaignFollowUpReport`). `null` removes the follow-up on an
+  unlaunched draft. A team that is not enrolled receives
+  `403 feature_unavailable`. API contract: polymorfa/polymorfa#503.
+- Campaign A/B tests (beta). Messaging and Platform campaign create and
+  update accept `variants` (`CampaignVariant`, two to four) and
+  `variantStrategy` (`CampaignVariantStrategy`); campaigns return them with
+  `experimentOutcome`. Campaign analytics include `experiment` results by
+  variant, and Platform `campaigns.analytics` now returns
+  `PlatformCampaignAnalytics` instead of an untyped object. A team that is not
+  enrolled receives `403 feature_unavailable`. API contract:
+  polymorfa/polymorfa#406.
+- Weighted message variation (beta). Messaging and Platform campaign create
+  and update accept `messageVariations`, two to five weighted alternatives
+  (`CampaignMessageVariation`), and campaigns return it. `null` clears the
+  alternatives on an unlaunched draft. A team that is not enrolled receives
+  `403 feature_unavailable`. API contract: polymorfa/polymorfa#409.
+- `Client.requestLogs` reads a project's API request log (`logs:read`):
+  `list` with status, method, route, source, credential, request ID and trace
+  ID filters, `follow` for newer requests, and `tail`, an async iterator that
+  polls for new requests and honours `Retry-After`. Not usable until the API
+  release that adds the request log is deployed.
+- Test number phone controls. `MessagingClient.testing` adds `getPhone`
+  (online state and linked companions), `sendPhoneMessage` (a text from the
+  simulated phone to another Test number in the project) and
+  `unlinkPhoneDevice`. Requires Test numbers access. API contract:
+  polymorfa/polymorfa#526.
+
+- Dynamic WhatsApp Flow endpoints (beta, Cloud onboarding enrollment, Official
+  API Numbers only). `Client.project(projectId).flows` adds `endpoint`,
+  `setEndpoint` (modes `forward`, `function` and `direct`; a forward endpoint's
+  `signingSecret` is returned once), `deleteEndpoint`, `endpointReceipts`
+  (metadata only), `encryptionKey` and `rotateEncryptionKey` (managed key
+  custody per Number). Writes make one attempt. New
+  `verifyFlowForwardSignature` and `FLOW_FORWARD_SIGNATURE_HEADER` verify
+  forwarded requests at your endpoint. Contracts are pinned to API `dev`
+  `171a968`. API contract: polymorfa/polymorfa#428 and #434.
+
+- Added source-build `Client.analytics.metrics` for scoped Prometheus/OpenMetrics gauges, including denominators, observation times and coverage. Uses Analytics opt-in and `sessions:read`.
+
+- `Client.analytics.get` reads WhatsApp number activity, completed 24-hour read and reply cohorts, response times and connection vitals. Requires `sessions:read` and Analytics enabled by a team owner or admin. Missing coverage returns null rates.
+
+- Hybrid Link tier transitions. `Client.sessions.quoteTierChange` accepts
+  `hybridResolution` (`keep` one connection or `split` into two Numbers) for a
+  Hybrid Link Number leaving Pro, or `hybridMerge` to merge a same-number pair
+  on an upgrade to Pro. `NumberTierChange.quote.hybridTransition` reports the
+  plan and its `status`. `Client.projects.listHybridMergeCandidates` lists
+  mergeable pairs. `PolymorfaErrorCode` adds `hybrid_choice_required` and
+  `hybrid_transition_ineligible`.
+- `Session` gains optional `newChatCapping` (`NewChatCapping`): WhatsApp's
+  per-number new-chat cap, returned by `sessions.retrieve` for linked-device
+  numbers. API contract: polymorfa/polymorfa#403.
+- Brazil payment orders (beta, requires team enrollment, an Official API
+  Number and Meta payments eligibility in Brazil). `messages.send` accepts
+  `orderDetails` (Pix dynamic code, payment link or boleto, itemized or
+  total only) and `orderStatus` content. New types:
+  `OrderDetailsMessageContent`, `OrderStatusMessageContent`,
+  `OrderPaymentSettings`, `OrderDetailsItemization`, `PixDynamicCodePayment`,
+  `PaymentOrderAmount`, `PixKeyType`, `OrderStatus`, `OrderPaymentStatus`,
+  `SendOrderDetailsMessageRequest`, `SendOrderStatusMessageRequest` and
+  `OrderPaymentUpdatedPayload` (discriminated on `kind`) for the
+  `order.payment_updated` event. `MessageKind` adds `order_details` and
+  `order_status`. New error
+  codes: `order_status_transition_invalid` and `order_cancellation_failed`.
+  Polymorfa relays orders and payment reports; it does not process funds.
+  Contracts are pinned to API `dev` `e818ba6`.
+- Official groups (beta, requires team enrollment and an Official Business
+  Account). `MessagingClient.officialGroups` adds `list`, `create`, `retrieve`,
+  `update`, `delete`, `getInviteLink`, `resetInviteLink`, `removeParticipants`,
+  `listJoinRequests`, `approveJoinRequests`, `rejectJoinRequests` and `pin`.
+  Changes make one attempt and pass `idempotencyKey` through. New error codes:
+  `whatsapp_groups_ineligible`, `whatsapp_group_creation_paused`,
+  `whatsapp_group_limit_reached`, `whatsapp_group_full`,
+  `whatsapp_group_suspended` and `whatsapp_group_has_no_participants`.
+  `GroupUpdatePayload` and `GroupParticipantPayload` add optional Official
+  group fields. Contracts are pinned to API `dev` `ee217bf`.
+- Campaign conversion reporting (beta, requires team enrollment).
+  `Client.campaigns.recordConversion(campaignId, body)` reports a conversion
+  for a named campaign recipient, deduplicated by `eventId`.
+  `Client.campaigns.conversions(campaignId, { projectId })` returns counts by
+  attribution outcome and reported value per currency. New types:
+  `RecordCampaignConversionRequest`, `CampaignConversion`,
+  `CampaignConversionValue`, `CampaignConversionOutcome`,
+  `CampaignConversionReport` and `CampaignConversionCurrencyTotal`.
+- Campaign types include `sendWindow`. `Campaign.sendWindow` is a
+  `CampaignSendWindow` or null, and campaign create and update requests on
+  both clients accept a `CampaignSendWindowRequest`; update accepts null to
+  remove the window. `Client.campaigns.list`, `retrieve`, `create` and
+  `update` return `PlatformCampaign` instead of an untyped payload.
+- `QuickLinkPurpose` includes `reauthorization`. Hosted history messages
+  expose `mediaRetrieval`, call participants expose optional `handRaised`, and
+  `message.ack` payloads expose the optional Official API `pricing`
+  classification (`MetaPricingReport`).
+- Official API consumers: Number-scoped Meta templates (`cloudTemplates`),
+  service windows, Meta pricing counts, Cloud credential health and
+  reauthorization, QuickLink sync receipts, typing with an inbound message ID,
+  the Flow provider lifecycle, linked catalogs and Flow encryption keys, and
+  the Meta lifecycle webhook payload variants. Provider writes make one
+  attempt. Contracts are pinned to API `dev` `29abb7b`.
+- Campaign records type the stored `sendWindow`; create and update requests
+  accept `CampaignSendWindowRequest`.
+- Breaking for Flow drafts: `flows.list` and `flows.retrieve` now return the
+  unwrapped record in `response.data`, like the other Flow methods. Replace
+  `response.data.data` with `response.data`.
+
+- `message.received` payload types include `replyChoice` (`kind` `button` or
+  `list` and the `id` you assigned) and `parentMessageId`, and the linked-device
+  message `type` union adds `button_reply`, `list_reply`, and
+  `native_flow_response`. `ReplyChoice` is exported.
+
+- Calls quality diagnostics respect their five-second send interval when a
+  connection closes, avoiding an extra report that the API can rate-limit.
+
+- Browser Calls uses its authenticated lifecycle socket for ICE candidates and
+  pauses remote candidate polling while connected. It falls back to HTTP when
+  that socket disconnects. The Calls example also displays call-control errors
+  and failed request IDs.
 - Team webhook tests accept an optional event type. The SDK now rejects a
   supplied body or session ID before making that request. Project webhook
   tests keep the paired native body and session ID input.
@@ -11,6 +211,12 @@
   test-event fixtures. The typed `bansafe.incident`, `bansafe.action`,
   `bansafe.health_threshold`, and `bansafe.claim` events remain available.
 
+- Added `Client.sessions.getCapabilities(sessionId)` and the
+  `SessionCapabilities` types. It reads which WhatsApp features and limits
+  WhatsApp has enabled for a number, as of the number's last configuration sync;
+  `status` is `unknown` and every value null before the first sync. It needs
+  `sessions:read` and enrollment in the number capabilities beta (403 until
+  then).
 - Browser Calls hold locally gathered ICE candidates until the platform
   answers the call's offer, then send them. Candidates sent earlier were
   refused with `409` because no media session existed yet, and were lost.
@@ -32,7 +238,7 @@
 - Call consent. `Client.callPolicy` (`retrieve`, `update`) reads and replaces
   the team's blocked country codes with an optional `expectedRevision` guard,
   and `Client.callOptOuts` (`list`, `create`, `import`, `delete`) manages the
-  team's do-not-call list. Both need an organization key. `list` returns a
+  team's do-not-call list. Both need an team key. `list` returns a
   `CursorPage` that follows `page.nextCursor`; `create` answers `201` for a new
   entry and `200` for one already listed, told apart by `metadata.status`.
   `MessagingClient.voip.retrieveCallPermission()` reads a person's call
@@ -60,7 +266,7 @@
 
 - Added `Client.usage` to read monthly metered usage, page or iterate usage
   records, and inspect team usage gates. Project clients can read only their
-  own usage; gate state requires an organization key. The `usage.recorded`
+  own usage; gate state requires an team key. The `usage.recorded`
   webhook has a typed payload, and enforced limits use the
   `gate_limit_reached` error code. Usage is measured but not charged.
 
@@ -584,7 +790,7 @@
   incidents, claims, and Health action reads to `Client.banSafe`.
   Project and session resources now cover Safe Mode, warm-up, Ban Insurance
   evidence, and Health policy settings, and `MessagingClient.banSafe` covers
-  the same settings on the Messaging API for organization API keys and project
+  the same settings on the Messaging API for team keys and project
   tokens. Claim credit amounts are decimal quantities. Dashboard-only finding
   acknowledgement and appeals remain outside the server SDK.
 - Breaking: saved QuickLink settings drop `allowedRedirectUris` and add
@@ -705,6 +911,18 @@
   the `/api/voip/*` signaling routes and the `call.ended` / `call.telemetry`
   webhook events.
 
+- Chat kit (`@polymorfa/browser`, `@polymorfa/ui`, `@polymorfa/react`,
+  `@polymorfa/elements`): search and media-type/direction filters over loaded
+  messages, received carts with reported unit prices and no computed total,
+  distinct not-retained/unavailable/deleted content states, a React
+  `ChatDetails` view, `inboxActionsFor()` row-action eligibility, Brazilian Portuguese chat and inbox strings,
+  `replies={false}` (`replies="false"`) for send paths that cannot quote, and
+  `createConversationSession(source, { sendUnavailable })`.
+  `<QuickLinkButton url/>` and `<pmfa-quicklink-button url>` link to a
+  QuickLink your server already created, with no client token or handler
+  call; `isQuickLinkUrl()` exposes the same URL check. Source-only and
+  unreleased.
+
 ## 0.1.0-dev.0 - 2026-08-19
 
 - Added handwritten Messaging clients for sessions, messages, and webhooks.
@@ -757,3 +975,24 @@
 - Aligned call signaling and media behavior with the `voip-v2` implementation.
 
 This is a Git development channel. No npm package has been published.
+
+## Campaign contact frequency caps (beta)
+
+`client.campaigns.getFrequencyCap()` reads team limits and their revision.
+`client.campaigns.updateFrequencyCap({ maxPer24Hours: 2, maxPer7Days: 5, revision })`
+replaces both windows. Send both limits as null to remove them. A stale revision
+raises `PolymorfaConflictError`; read and reconcile before trying again. A new
+limit requires beta access and can return `403 feature_unavailable`.
+Campaign create/update accepts `frequencyCap`; null removes a campaign cap.
+Recipient reads expose `failureReason` and accept `reason: "frequency_cap"`.
+Analytics adds `frequencyCap.skippedRecipientCount`. Raising limits never retries
+settled skips. `contracts/campaign-frequency-cap.json` pins the merged API source;
+package publication and API availability remain separate release gates.
+
+## Unreleased: audience segments and drip sequences
+
+- Add organization-only audience segment CRUD, observed revisions and count previews.
+- Add segment campaign selection and frozen snapshot reads.
+- Add partial drip settings, enrollment, pause/enrollment reads and step analytics types.
+- Bind focused contracts to merged API `f46ebd5162453e812dafa76ce02b420ddabe6921`.
+  Package publication and matching environment acceptance remain pending.

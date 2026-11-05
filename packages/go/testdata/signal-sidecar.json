@@ -1,0 +1,9 @@
+{
+  "syntheticOnly": true,
+  "sourceCommit": "8aa191ef0d4c318229c91bcdf474bf2d79dac47c",
+  "secret": "synthetic_signal_app_secret_for_native_fixtures",
+  "timestamp": "1792022400",
+  "eventId": "event-fixture",
+  "rawBody": "{\"id\":\"event-fixture\",\"type\":\"message\",\"session_id\":\"session-fixture\",\"chat\":\"chat-fixture\",\"sender\":\"sender-fixture\",\"sender_alt\":\"alternate@lid\",\"message_id\":\"message-fixture\",\"timestamp\":1720000000,\"is_from_me\":false,\"redelivered\":false,\"identity_changed\":false,\"message_proto\":\"CgdmaXh0dXJl\",\"text\":\"private fixture text\",\"future_field\":{\"retained\":true}}",
+  "signature": "v1=bce71c58fbb62da80adc28963228ac35e1d0a8a8267ce3e0f43502bf6513b877"
+}

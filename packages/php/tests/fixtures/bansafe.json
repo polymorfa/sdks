@@ -1,0 +1,7 @@
+{
+ "safe": {"projectId":"project_1","ceiling":{"presence":"dark","typing":"off","reads":"off","pacing":"conversation","onlineStart":9,"onlineEnd":17},"entitled":false,"entitlementReason":"not_entitled"},
+ "warmup": {"projectId":"project_1","plan":{"enabled":true,"warmupDays":14,"dailyStart":5},"ceiling":100,"curve":[{"day":1,"allowance":5}],"entitled":true,"entitlementReason":null},
+ "insurance": {"projectId":"project_1","enabled":false,"banInsuranceIncluded":true},
+ "healthBody": {"version":1,"enabled":true,"threshold":25,"sessionAction":"slow_down","slowDownMps":0.25,"emailNotification":true,"webhookNotification":false},
+ "session": {"session":"support","projectId":"project_1","project":{"presence":"dark","typing":"off","reads":"off","pacing":"conversation","onlineStart":9,"onlineEnd":17},"override":{"presence":"inherit","typing":"inherit","reads":"inherit","pacing":"inherit"},"effective":{"presence":"dark","typing":"off","reads":"off","pacing":"conversation","onlineStart":9,"onlineEnd":17},"applied":{"observedAt":"2026-10-11T00:00:00Z","presence":"dark","typing":null,"reads":"off","pacing":"conversation"},"mismatch":true,"entitled":true,"entitlementReason":null}
+}

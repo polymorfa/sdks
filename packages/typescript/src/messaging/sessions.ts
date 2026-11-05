@@ -1,4 +1,13 @@
+import { campaignContractBody } from "../campaign-contract-validation.js";
+import { configurationIntent } from "../session-delivery-validation.js";
+import { existingOptions } from "../campaign-existing-validation.js";
 import type { MessagingCredential } from "../credentials.js";
+import type {
+  CloudCredentialHealth,
+  CloudReauthorization,
+  MetaPricingParams,
+  MetaPricingSummary,
+} from "./cloud-types.js";
 import { PolymorfaConfigurationError } from "../errors.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
@@ -9,6 +18,7 @@ import type {
   OperationAccepted,
   PairCodeRequest,
   RequestPairCodeResponse,
+  SuccessEnvelope,
   UpdateSessionRequest,
   UpdateSessionResponse,
 } from "./types.js";
@@ -27,6 +37,48 @@ export class SessionsResource {
     private readonly credentialType: MessagingCredential["type"],
   ) {}
 
+  /** Official API beta. Requires sessions:read; counts carry no price or charge. */
+  getMetaPricing(
+    session: string,
+    params: MetaPricingParams = {},
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessEnvelope<MetaPricingSummary>>> {
+    this.assertServerCredential();
+    return this.transport.request({
+      method: "GET",
+      path: `/messaging/${encodeURIComponent(session)}/meta-pricing`,
+      query: { ...params },
+      ...existingOptions(options),
+    });
+  }
+
+  /** Latest redacted provider checks; a healthy token does not grant beta access. */
+  getCloudCredentialHealth(
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessEnvelope<CloudCredentialHealth>>> {
+    this.assertServerCredential();
+    return this.transport.request({
+      method: "GET",
+      path: `/messaging/${encodeURIComponent(session)}/cloud-credentials`,
+      ...existingOptions(options),
+    });
+  }
+
+  /** Create one reauthorization link for a stopped standalone Official API Number. Never stops it. */
+  reauthorizeCloudCredentials(
+    session: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessEnvelope<CloudReauthorization>>> {
+    this.assertServerCredential();
+    return this.transport.request({
+      method: "POST",
+      path: `/messaging/${encodeURIComponent(session)}/cloud-credentials/reauthorize`,
+      ...existingOptions(options),
+      maxNetworkRetries: 0,
+    });
+  }
+
   list(
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<readonly PlatformSession[]>>> {
@@ -34,7 +86,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "GET",
       path: "/platform/sessions",
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -46,7 +98,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "GET",
       path: sessionPath(session),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -55,12 +107,13 @@ export class SessionsResource {
     body: UpdateSessionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UpdateSessionResponse>> {
+    options = existingOptions(options, configurationIntent(body));
     this.assertServerCredential();
     return this.transport.request({
       method: "PUT",
       path: sessionPath(session),
-      body,
-      ...options,
+      body: campaignContractBody(body),
+      ...existingOptions(options),
     });
   }
 
@@ -72,7 +125,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "DELETE",
       path: sessionPath(session),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -84,7 +137,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "POST",
       path: `${sessionPath(session)}/start`,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -96,7 +149,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "POST",
       path: `${sessionPath(session)}/stop`,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -122,7 +175,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "GET",
       path: `${sessionPath(session)}/me`,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -135,7 +188,7 @@ export class SessionsResource {
       method: "GET",
       path: `/messaging/${encodeURIComponent(session)}/pair/qr`,
       query: { format: "json" },
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -149,7 +202,7 @@ export class SessionsResource {
       method: "POST",
       path: `/messaging/${encodeURIComponent(session)}/pair/code`,
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -162,7 +215,7 @@ export class SessionsResource {
     return this.transport.request({
       method: "POST",
       path: `${sessionPath(session)}/${action}`,
-      ...options,
+      ...existingOptions(options),
     });
   }
   private assertServerCredential(): void {

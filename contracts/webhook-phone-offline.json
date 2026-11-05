@@ -1,0 +1,109 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "sourceCommit": "4380e1113f4b6e5830852f35b13e0ee15b6e340b",
+  "published": false,
+  "scope": "phoneOfflineStartDay on webhook create, update and read (merge of polymorfa/polymorfa#631 into dev). Other SDK contracts retain their recorded source revisions.",
+  "sources": {
+    "platform": {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "sha256": "bf4c6056b75e2fb0293b48edc5d8c12c36cdcbd194b9d11159f59522d30badc3"
+    },
+    "messaging": {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "6d5b5477a86a85504f921933bf7b26f2c47506e21380fe73c8a5ff1002163b28"
+    }
+  },
+  "schemas": {
+    "CreateOrganizationWebhookInput": {
+      "family": "platform",
+      "property": {
+        "type": "integer",
+        "minimum": 7,
+        "maximum": 13,
+        "default": 10,
+        "description": "First day without the phone on which this endpoint receives session.phone_offline. WhatsApp signs the linked device out on day 14. On PATCH, omission preserves the stored value. To stop the warning, remove session.phone_offline from eventTypes."
+      },
+      "required": false
+    },
+    "CreateProjectWebhookInput": {
+      "family": "platform",
+      "property": {
+        "type": "integer",
+        "minimum": 7,
+        "maximum": 13,
+        "default": 10,
+        "description": "First day without the phone on which this endpoint receives session.phone_offline. WhatsApp signs the linked device out on day 14. On PATCH, omission preserves the stored value. To stop the warning, remove session.phone_offline from eventTypes."
+      },
+      "required": false
+    },
+    "UpdateOrganizationWebhookInput": {
+      "family": "platform",
+      "property": {
+        "type": "integer",
+        "minimum": 7,
+        "maximum": 13,
+        "description": "First day without the phone on which this endpoint receives session.phone_offline. WhatsApp signs the linked device out on day 14. On PATCH, omission preserves the stored value. To stop the warning, remove session.phone_offline from eventTypes."
+      },
+      "required": false
+    },
+    "UpdateProjectWebhookInput": {
+      "family": "platform",
+      "property": {
+        "type": "integer",
+        "minimum": 7,
+        "maximum": 13,
+        "description": "First day without the phone on which this endpoint receives session.phone_offline. WhatsApp signs the linked device out on day 14. On PATCH, omission preserves the stored value. To stop the warning, remove session.phone_offline from eventTypes."
+      },
+      "required": false
+    },
+    "OrganizationWebhook": {
+      "family": "platform",
+      "property": {
+        "type": "integer",
+        "minimum": 7,
+        "maximum": 13,
+        "description": "First day without the phone on which this endpoint receives session.phone_offline."
+      },
+      "required": true
+    },
+    "ProjectWebhook": {
+      "family": "platform",
+      "property": {
+        "type": "integer",
+        "minimum": 7,
+        "maximum": 13,
+        "description": "First day without the phone on which this endpoint receives session.phone_offline."
+      },
+      "required": true
+    },
+    "Webhook": {
+      "family": "messaging",
+      "property": {
+        "type": "integer",
+        "minimum": 7,
+        "maximum": 13
+      },
+      "required": false
+    },
+    "CreateWebhookRequest": {
+      "family": "messaging",
+      "property": {
+        "type": "integer",
+        "minimum": 7,
+        "maximum": 13,
+        "description": "First day without the phone on which this webhook receives session.phone_offline. New webhooks default to 10; on update, omission keeps the stored value. WhatsApp signs the linked device out on day 14. To stop the warning, remove session.phone_offline from events."
+      },
+      "required": false
+    },
+    "UpdateWebhookRequest": {
+      "family": "messaging",
+      "property": {
+        "type": "integer",
+        "minimum": 7,
+        "maximum": 13,
+        "description": "First day without the phone on which this webhook receives session.phone_offline. New webhooks default to 10; on update, omission keeps the stored value. WhatsApp signs the linked device out on day 14. To stop the warning, remove session.phone_offline from events."
+      },
+      "required": false
+    }
+  }
+}

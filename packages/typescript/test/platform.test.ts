@@ -45,7 +45,10 @@ describe("Client credentials", () => {
     expect(
       () =>
         new Client({
-          credential: { type: "organizationApiKey", value: "pmfa_ct_browser" },
+          credential: {
+            type: "organizationApiKey",
+            value: "pmfa_ct_YnJvd3Nlcg",
+          },
         }),
     ).toThrow(PolymorfaConfigurationError);
     expect(

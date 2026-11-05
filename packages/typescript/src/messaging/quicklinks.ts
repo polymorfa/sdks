@@ -1,3 +1,8 @@
+import { quickLinkIntent } from "../session-delivery-validation.js";
+import { existingOptions } from "../campaign-existing-validation.js";
+import type { SignalCustodyMode } from "../campaign-contracts.js";
+import { campaignContractBody } from "../campaign-contract-validation.js";
+import { billingLimit, billingPriority } from "../platform/billing-controls.js";
 import type { SessionConfigurationOverrides } from "./session-configuration.js";
 import { PolymorfaConfigurationError } from "../errors.js";
 import type {
@@ -21,31 +26,48 @@ export interface QuickLinkConfiguration extends SessionConfigurationOverrides {
   readonly prefillPhone?: string;
   readonly allowPhoneChange?: boolean;
   readonly historySync?: {
+    readonly delivery?: "descriptor";
     readonly consent?: QuickLinkHistorySync;
     readonly mode?: "metadata_only" | "deliver";
     readonly requestFull?: boolean;
   };
 }
 
-export type QuickLinkPurpose = "initial" | "add_connection";
+export type QuickLinkPurpose = "initial" | "add_connection" | "reauthorization";
 export type QuickLinkConnectionGoal = "single" | "hybrid";
 export type QuickLinkConnectionKind = "linked_devices" | "official_api";
 export type QuickLinkHybridPhase =
   "cloud_setup" | "linked_pairing" | "repair_linked" | "ready";
 
 interface CreateQuickLinkBase {
-  readonly connectionGoal?: QuickLinkConnectionGoal;
-  readonly addConnection?: QuickLinkConnectionKind;
   readonly projectId?: string;
-  readonly customerId?: string;
-  readonly externalId?: string;
   readonly configuration?: QuickLinkConfiguration;
 }
-
 export type CreateQuickLinkRequest = CreateQuickLinkBase &
   (
-    | { readonly purpose?: "initial"; readonly session?: string }
-    | { readonly purpose: "add_connection"; readonly session: string }
+    | {
+        readonly purpose?: "initial";
+        readonly signalMode?: SignalCustodyMode;
+        readonly session?: never;
+        readonly addConnection?: never;
+        readonly connectionGoal?: QuickLinkConnectionGoal;
+        readonly customerId?: string;
+        readonly externalId?: string;
+        readonly billingControls?: {
+          readonly limitCredits: number | null;
+          readonly priority: number;
+        };
+      }
+    | {
+        readonly purpose: "add_connection";
+        readonly session: string;
+        readonly addConnection: QuickLinkConnectionKind;
+        readonly signalMode?: never;
+        readonly connectionGoal?: "hybrid";
+        readonly customerId?: never;
+        readonly externalId?: never;
+        readonly billingControls?: never;
+      }
   );
 
 export interface QuickLink {
@@ -61,6 +83,36 @@ export interface QuickLink {
 export type QuickLinkStatusValue =
   "pending" | "opened" | "linked" | "connected" | "failed" | "cancelled";
 
+export type CloudSyncRequest =
+  | "not_applicable"
+  | "not_requested"
+  | "pending"
+  | "requesting"
+  | "accepted"
+  | "declined"
+  | "unknown";
+export type CloudSyncDelivery =
+  | "not_applicable"
+  | "not_requested"
+  | "unconfirmed"
+  | "partial"
+  | "complete"
+  | "declined";
+
+export interface CloudSyncStatus {
+  readonly contacts: {
+    /** An accepted request receipt does not prove all contacts were delivered. */
+    readonly request: CloudSyncRequest;
+    readonly receiptRecorded: boolean;
+  };
+  readonly history: {
+    readonly request: CloudSyncRequest;
+    readonly receiptRecorded: boolean;
+    /** Meta-reported delivery progress, independent of connection readiness. */
+    readonly delivery: CloudSyncDelivery;
+  };
+}
+
 export interface QuickLinkStatus {
   readonly purpose: QuickLinkPurpose;
   readonly connectionGoal: QuickLinkConnectionGoal;
@@ -73,6 +125,7 @@ export interface QuickLinkStatus {
     readonly contactsSync: string;
     readonly historySync: string;
     readonly historyProgress: number;
+    readonly sync: CloudSyncStatus;
     readonly errorCode: string | null;
   } | null;
   readonly id: string;
@@ -133,11 +186,21 @@ export class QuickLinksResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<CreateQuickLinkResponse>> {
     this.assertServerCredential();
+    options = existingOptions(options, quickLinkIntent(input));
+    if (input.billingControls) {
+      billingLimit(input.billingControls.limitCredits);
+      billingPriority(input.billingControls.priority);
+      if (input.configuration?.testing)
+        throw new PolymorfaConfigurationError(
+          "Initial billing controls require a real new number",
+          "billingControls",
+        );
+    }
     return this.transport.request({
       method: "POST",
       path: "/messaging/quicklinks",
-      body: input,
-      ...options,
+      body: campaignContractBody(input),
+      ...existingOptions(options),
     });
   }
 
@@ -150,7 +213,7 @@ export class QuickLinksResource {
       method: "GET",
       path: "/messaging/quicklinks/availability",
       query: { projectId: input.projectId, session: input.session },
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -162,7 +225,7 @@ export class QuickLinksResource {
     return this.transport.request({
       method: "GET",
       path: quickLinkPath(id),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -175,14 +238,14 @@ export class QuickLinksResource {
     return this.transport.request({
       method: "DELETE",
       path: quickLinkPath(id),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
   private assertServerCredential(): void {
     if (this.credentialType === "clientToken") {
       throw new PolymorfaConfigurationError(
-        "QuickLink management requires an organization API key or project token.",
+        "QuickLink management requires an team key or project token.",
         "credential",
       );
     }

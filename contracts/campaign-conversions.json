@@ -1,0 +1,297 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "7d1b7d6eb035447dc8c5d20420e4cc172ba99b37",
+  "sourcePath": "apps/api/docs/openapi.management.json",
+  "sourceSha256": "cbb23410113273e7519ebf80782ee74416ee2b863b1fdee390124d302c8f0b8a",
+  "note": "Beta campaign conversion reporting (PR #427). The operations are withheld from the public Platform spec until the beta has an audience; the full snapshots stay pinned to contracts/source.json until the next repin.",
+  "operations": {
+    "GET": {
+      "operationId": "getCampaignConversions",
+      "x-required-scope": "campaigns:read"
+    },
+    "POST": {
+      "operationId": "recordCampaignConversion",
+      "x-required-scope": "campaigns:manage"
+    }
+  },
+  "path": "/platform/campaigns/{campaignId}/conversions",
+  "schemas": {
+    "RecordCampaignConversionRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "projectId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Project of the campaign. Required with a team API key."
+        },
+        "recipientId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "The campaign recipient the conversion belongs to, from the campaign's recipient list."
+        },
+        "eventId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[\\x21-\\x7e]{1,128}$",
+          "description": "Your unique ID for this conversion, such as an order ID. Deduplicates per project. Stored only as a one-way hash."
+        },
+        "eventType": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,39}$",
+          "description": "Kind of conversion, such as `purchase` or `sign_up`.",
+          "example": "purchase"
+        },
+        "occurredAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the conversion happened, with a time zone offset. Not in the future and not more than 90 days ago."
+        },
+        "value": {
+          "nullable": true,
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/CampaignConversionValue"
+            }
+          ],
+          "description": "Reported value, or omit for a conversion without one."
+        }
+      },
+      "required": ["recipientId", "eventId", "eventType", "occurredAt"]
+    },
+    "CampaignConversionValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "amountMinor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000000000000,
+          "description": "Amount in the currency's minor unit, for example cents for USD. Not converted."
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[A-Z]{3}$",
+          "description": "ISO 4217 currency code.",
+          "example": "USD"
+        }
+      },
+      "required": ["amountMinor", "currency"]
+    },
+    "CampaignConversion": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "campaignId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "recipientId": {
+          "type": "string",
+          "format": "uuid",
+          "nullable": true,
+          "description": "Null when the recipient opted out."
+        },
+        "eventType": {
+          "type": "string"
+        },
+        "occurredAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "value": {
+          "nullable": true,
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/CampaignConversionValue"
+            }
+          ],
+          "description": "Null when no value was reported or the recipient opted out."
+        },
+        "evidence": {
+          "type": "string",
+          "enum": ["customer_reported"],
+          "description": "Who asserted the conversion. `customer_reported`: your system reported it; Polymorfa did not verify a payment."
+        },
+        "attribution": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "outcome": {
+              "type": "string",
+              "enum": ["attributed", "outside_window", "not_sent", "opted_out"],
+              "description": "`attributed`: within 7 days after the recipient was sent. `outside_window`: before the send or more than 7 days after it. `not_sent`: the recipient was never sent. `opted_out`: the recipient is on the team's opt-out list; the conversion is counted but not linked to them."
+            },
+            "touchAt": {
+              "type": "string",
+              "format": "date-time",
+              "nullable": true,
+              "description": "The recipient's send time used for the decision. Null for `not_sent` and `opted_out`."
+            },
+            "windowDays": {
+              "type": "integer",
+              "enum": [7]
+            }
+          },
+          "required": ["outcome", "touchAt", "windowDays"]
+        },
+        "recordedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "replayed": {
+          "type": "boolean",
+          "description": "True when this `eventId` was already recorded and nothing new was written."
+        }
+      },
+      "required": [
+        "id",
+        "campaignId",
+        "recipientId",
+        "eventType",
+        "occurredAt",
+        "value",
+        "evidence",
+        "attribution",
+        "recordedAt",
+        "replayed"
+      ]
+    },
+    "CampaignConversionReport": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "campaignId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "model": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "The attribution rule applied to every conversion of this campaign.",
+          "properties": {
+            "touch": {
+              "type": "string",
+              "enum": ["recipient_sent"]
+            },
+            "windowDays": {
+              "type": "integer",
+              "enum": [7]
+            },
+            "correlation": {
+              "type": "string",
+              "enum": ["explicit_recipient"]
+            }
+          },
+          "required": ["touch", "windowDays", "correlation"]
+        },
+        "sentCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "conversions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "attributed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "outsideWindow": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "notSent": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "optedOut": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "total",
+            "attributed",
+            "outsideWindow",
+            "notSent",
+            "optedOut"
+          ]
+        },
+        "convertedRecipients": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Distinct recipients with at least one attributed conversion."
+        },
+        "conversionRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "`convertedRecipients` divided by `sentCount`; 0 when nothing was sent."
+        },
+        "values": {
+          "type": "array",
+          "description": "Reported value per currency, sorted by currency code. Currencies are never combined or converted.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "evidence": {
+                "type": "string",
+                "enum": ["customer_reported"]
+              },
+              "attributedConversions": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "attributedAmountMinor": {
+                "type": "string",
+                "pattern": "^[0-9]+$",
+                "description": "Sum of attributed amounts in minor units, as a decimal string."
+              },
+              "unattributedConversions": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Conversions with a value that are `outside_window` or `not_sent`."
+              },
+              "unattributedAmountMinor": {
+                "type": "string",
+                "pattern": "^[0-9]+$"
+              }
+            },
+            "required": [
+              "currency",
+              "evidence",
+              "attributedConversions",
+              "attributedAmountMinor",
+              "unattributedConversions",
+              "unattributedAmountMinor"
+            ]
+          }
+        }
+      },
+      "required": [
+        "campaignId",
+        "model",
+        "sentCount",
+        "conversions",
+        "convertedRecipients",
+        "conversionRate",
+        "values"
+      ]
+    }
+  }
+}

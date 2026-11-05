@@ -122,3 +122,34 @@ export interface TestEventFixtureInfo {
   description: string;
   overrides: Array<keyof TestEventOverrides>;
 }
+
+/** A Test number's simulated phone, which acts as its main device. */
+export interface TestingPhone {
+  session: string;
+  /** The Test number, in E.164 format. */
+  phone: string;
+  /** True while the simulated phone is running. */
+  online: boolean;
+  /** Companions linked to the phone, such as the Polymorfa runtime or a browser. */
+  devices: Array<{ deviceId: number }>;
+}
+
+export interface SendTestingPhoneMessageRequest {
+  /** Another connected Test number in the same project, in E.164 format. */
+  to: string;
+  /** Message text, 1 to 4096 characters. */
+  text: string;
+}
+
+export interface SendTestingPhoneMessageResponse {
+  session: string;
+  to: string;
+  /** WhatsApp message ID when the phone reports one. */
+  messageId: string | null;
+}
+
+export interface UnlinkTestingPhoneDeviceResponse {
+  session: string;
+  deviceId: number;
+  unlinked: true;
+}

@@ -8,7 +8,7 @@
 ## Goal
 
 Expand the handwritten TypeScript server SDK with the customer-facing
-Platform operations that accept an organization API key and are needed for
+Platform operations that accept an team key and are needed for
 campaign automation. Preserve the credential boundary by excluding endpoints
 that require a live dashboard session.
 
@@ -40,7 +40,7 @@ key. It must not accept a dashboard JWT, project token, or browser client token.
 
 The ten `/v1/templates*` and `/v1/flows*` operations are excluded from the
 server SDK coverage target because the pinned contract marks them
-`x-dashboard-only` and explicitly rejects organization keys and project tokens.
+`x-dashboard-only` and explicitly rejects team keys and project tokens.
 They belong in the later application-server adapter milestone, where an
 application can authorize a dashboard user without exposing a privileged token
 to browser code.

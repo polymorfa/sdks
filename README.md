@@ -2,71 +2,79 @@
 
 Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 
-The development branch contains the TypeScript server SDK, a framework-neutral
-browser runtime, shared UI contracts, Web Components, React bindings, thin
-Next.js server helpers, and a production-gated developer assistant. It follows
-the Messaging and Platform contracts from API source commit
-`2dd0c1563b1fc4e6525f708afc12e0685110cfe0`, now merged into API `dev`
-by PR #260. Graph-compatible
-APIs are outside this SDK's initial scope.
+The repository contains the TypeScript server SDK, the UI Kit (a
+framework-neutral browser runtime, shared UI contracts, web components, React
+bindings, an opt-in event store and a production-gated developer assistant in
+one package), and thin Next.js server helpers. The exact Messaging and Platform sources are pinned in
+`contracts/source.json`; the Graph-compatible catalog, marketing status and
+Flow encryption routes are pinned to the same API commit in
+`contracts/cloud-api-supplements.json`. Full Graph API parity is outside this
+SDK's scope; `cloudCatalogs`, `cloudMarketing.status`, and `flowEncryption` provide
+typed clients for their respective Graph resources.
 
-The same API revision adds an enrolled hosted message history beta.
+The API includes an enrolled hosted message history beta.
 `MessagingClient.chats` has typed conversation and message reads for server
 credentials. These methods do not make the beta available before enrollment,
 HMS enablement, deployment, and SDK publication.
 
 ## Package architecture
 
-| Package                | Runtime              | Responsibility                                                                    |
-| ---------------------- | -------------------- | --------------------------------------------------------------------------------- |
-| `@polymorfa/sdk`       | Node.js 20+          | Messaging, management, system, and Bridge server clients                          |
-| `@polymorfa/sdk/calls` | Node.js 22+, Browser | Calls lifecycle, answer/join/leave, and programmatic media sockets                |
-| `@polymorfa/browser`   | Browser              | Client-token transport and framework-neutral product controllers                  |
-| `@polymorfa/ui`        | Isomorphic           | Appearance, locale, direction, motion, and diagnostic contracts                   |
-| `@polymorfa/elements`  | Browser              | Portable custom elements for React-free, Vue, Svelte, and plain HTML applications |
-| `@polymorfa/react`     | Browser              | React bindings over the same controllers                                          |
-| `@polymorfa/store`     | Browser              | Opt-in IndexedDB store for webhook-shaped events, with live sources and chat data |
-| `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |
-| `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
+| Package                            | Runtime              | Responsibility                                                                    |
+| ---------------------------------- | -------------------- | --------------------------------------------------------------------------------- |
+| `@polymorfa/sdk`                   | Server               | Messaging, management, system, and Bridge server clients                          |
+| `@polymorfa/sdk/calls`             | Node.js 22+, Browser | Calls lifecycle, answer/join/leave, and programmatic media sockets                |
+| `@polymorfa/ui-kit`                | Browser              | Client-token transport and framework-neutral product controllers                  |
+| `@polymorfa/ui-kit/appearance`     | Isomorphic           | Appearance, locale, direction, motion, and diagnostic contracts                   |
+| `@polymorfa/ui-kit/web-components` | Browser              | Portable custom elements for React-free, Vue, Svelte, and plain HTML applications |
+| `@polymorfa/ui-kit/react`          | Browser              | React bindings over the same controllers                                          |
+| `@polymorfa/ui-kit/store`          | Browser              | Opt-in IndexedDB store for webhook-shaped events, with live sources and chat data |
+| `@polymorfa/nextjs`                | Server               | App Router-compatible client-token and webhook helpers                            |
+| `@polymorfa/ui-kit/devtools`       | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
 
-The separate [Python source package](packages/python/README.md) implements only
-authenticated Platform project listing. It is not part of the npm workspace or
-the npm `dev` release, and is not published to PyPI.
+The `@polymorfa/sdk` package root supports Node.js 20+, Cloudflare Workers,
+Deno, and Bun for HTTP clients and native webhook verification. Its `/node`
+entry contains Node.js file helpers.
 
-The public packages are complete development artifacts on `dev`. They
-publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the
-Polymorfa npm organization. No mobile-native binding is part of this milestone.
+SDK changes target `main`. Nightly prereleases use npm's `dev` tag after matching
+staging acceptance; stable releases require matching production acceptance and
+the protected release workflow. Source availability does not establish package
+publication or feature availability. See [the release gates](docs/releasing.md).
+
+The UI Kit packages are `@polymorfa/ui-kit` and its subpaths. React is an
+optional peer dependency used only by `/react` and `/store/react`. See the
+[UI Kit guide](packages/ui-kit/README.md) for the import map.
 
 For a small browser preview against staging, see the [Calls example](examples/calls-example/README.md).
 
 ## TypeScript development install
 
-Each push to `dev` publishes the public packages to npm under the `dev`
-dist-tag, with versions such as `0.1.0-dev.20260919094454`:
+The daily workflow checks `main` at 02:00 UTC and publishes eligible nightly
+packages under the `dev` dist-tag, with versions such as
+`0.1.0-dev.20260919094454`. Missing or mismatched staging acceptance blocks
+publication:
 
 ```bash
 npm install @polymorfa/sdk@dev
-npm install @polymorfa/browser@dev   # browser apps
+npm install @polymorfa/ui-kit@dev   # browser apps
 ```
 
-Pin an exact `0.1.0-dev.<timestamp>` version for reproducible installs. No
-stable (`latest`) release exists. Publishing starts once the npm scope and
-trusted publisher are configured; until `npm view @polymorfa/sdk dist-tags`
-shows a `dev` tag, build from source and install the packed tarballs:
+Pin an exact version for reproducible installs. Check
+`npm view @polymorfa/sdk dist-tags` for published channels. To use unpublished
+changes, check out their exact SDK commit and build packed tarballs:
 
 ```bash
-git clone --branch dev https://github.com/polymorfa/sdks.git
+git clone --branch main https://github.com/polymorfa/sdks.git
 cd sdks
 npm ci
 npm run build:workspaces
-npm pack -w @polymorfa/sdk           # add -w @polymorfa/browser for browser apps
+npm pack -w @polymorfa/sdk           # add -w @polymorfa/ui-kit for browser apps
 npm install /path/to/sdks/polymorfa-sdk-0.1.0-dev.0.tgz   # from your application
 ```
 
 See [docs/releasing.md](docs/releasing.md) for the version scheme and the
 publishing workflow.
 
-`npm install github:polymorfa/sdks#dev` no longer installs the SDK: the
+`npm install github:polymorfa/sdks#main` does not install the SDK: the
 repository root is a private workspace, and `@polymorfa/sdk` lives in
 `packages/typescript`.
 
@@ -85,7 +93,7 @@ Node.js 20 or newer is required. The package has no runtime dependencies.
 
 The programmatic Calls client ships inside the same package as the
 `@polymorfa/sdk/calls` subpath; there is no separate Calls package to install.
-`@polymorfa/browser` depends on `@polymorfa/sdk` and uses this same Calls
+`@polymorfa/ui-kit` depends on `@polymorfa/sdk` and uses this same Calls
 client, so errors raised by browser calls are the classes exported from
 `@polymorfa/sdk/calls`:
 
@@ -133,12 +141,17 @@ The handwritten Messaging resources in this milestone are:
 
 - `banSafe`: retrieve and update project Safe Mode, warm-up, Ban Insurance
   evidence, and Health policy settings, and one number's Safe Mode override,
-  with an organization API key or project token
+  with an team key or project token
 - `sessions`: list, retrieve, update, delete, start, stop, restart,
   logout, account, and entitlement-gated direct JSON QR or phone pairing
 - `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing sessions
 - `cloudOnboarding`: continue an issued Meta Cloud API QuickLink from a trusted
   server
+- `cloudTemplates`: list, retrieve, create, edit and delete Meta templates for a
+  Number with an Official API connection; separate from project template drafts
+- `cloudCatalogs`: read WABA product-catalog links through the Graph facade
+- `cloudMarketing`: read Meta's raw WABA Marketing Messages status strings without interpreting eligibility
+- `flowEncryption`: read or register a public Flow encryption key for one Meta phone number
 - `business`: manage the connected Business App profile, commerce catalog,
   products, collections, orders, compliance, linked accounts, and eligibility
 - `calls`: reject an identified incoming Linked Device call
@@ -210,7 +223,7 @@ console.log(indexed.highWatermark, indexed.nextOffset);
 `Client` binds its ownership context when you construct it. An organization
 API key without `projectId` creates an organization client. Call
 `client.project(projectId)` to create an immutable project view, or construct a
-project view directly with an organization key or a `pmfa_pt_` project token:
+project view directly with an team key or a `pmfa_pt_` project token:
 
 ```ts
 const project = new Client({
@@ -272,7 +285,7 @@ project clients see only their project.
 The organization view also exposes these management resources:
 
 - `organizations`: retrieve the organization visible to the API key
-- `apiKeys`: list key metadata and deactivate an organization API key
+- `apiKeys`: list key metadata and deactivate an team key
 - `members`: list organization members
 - `auditLogs`: list the organization audit trail with live action, resource,
   and limit filters
@@ -299,10 +312,11 @@ The organization view also exposes these management resources:
   customer incidents
 - `projects`: list, create, request production enrollment, approve, and cancel;
   retrieve and update Safe Mode, warm-up, Ban Insurance evidence, and Health
-  policy settings
+  policy settings; list same-number pairs that can merge into Hybrid Link
 - `sessions`: list, start, stop, or delete one session; stop or delete a bounded
-  batch; review and confirm a tier change; create a testing session; and
-  retrieve or update the session Safe Mode override
+  batch; review and confirm a tier change, including the Hybrid Link
+  resolution or merge; create a testing session; and retrieve or update the
+  session Safe Mode override
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
   analytics, events, and paged or appended recipients. The single-campaign
   operations require the owning `projectId`. This resource is available only
@@ -359,10 +373,114 @@ organization server keys. They are intentionally absent from `Client`;
 browser template tooling must reach them through an application-owned server
 adapter that authorizes the signed-in user.
 
+### WhatsApp analytics
+
+`client.analytics.get({projectId, sessionId, start, end})` reads activity,
+completed 24-hour direct-chat delivery/read/reply cohorts, response times and
+connection vitals. Times are Unix milliseconds and the range is at most 366
+days. A project-bound client confines the request to its own project. Requires
+`sessions:read` and Analytics enabled by a team owner or admin in the Console.
+Disabled results contain no business data. Missing coverage has null rates;
+read receipts do not prove an app open. `measured` distinguishes observed zero
+activity from a number without telemetry. No contact identities or message
+content are returned. See the [Analytics guide](https://docs.polymorfa.com/console/analytics).
+
+### Recipient observations
+
+`analytics.get()` exposes optional `recipientActivity` on the combined summary
+and each number. Hourly rows preserve recipient numbering country, complete-list
+linked-device count range and primary/linked/unknown signal source. Country and
+count fields also appear on joint `conversationBreakdown` rows; older buckets use
+Unknown. `primary_only`, `one_linked` and `two_plus_linked` exclude device zero from
+the linked count.
+
+Delivery receipts indicate delivery to a device, independently of read receipts.
+Multiple devices can receipt the same message. Quiet-gap sums and completed sample
+counts support weighted means; quiet does not establish offline or power state.
+Check `measured`, `complete`, `droppedSignals` and `truncated` before interpreting
+averages. Message type/length/source filters do not apply to recipient activity
+rows because those dimensions are not collected together.
+
+These additions are pinned to the producer in
+`contracts/analytics-device-signals.json`; source availability does not publish a
+package or advance the accepted API contract. Publication requires matching
+runtime acceptance. Linked Devices produces these aggregates; Official messaging
+Analytics remains unmeasured.
+
+### Collector metrics
+
+`client.analytics.metrics({windowHours: 24, format: "openmetrics", segments: true})` returns Prometheus/OpenMetrics text with HTTP metadata, on root and project clients.
+Counts are overlapping-window gauges, with denominators, measurement coverage and observation times.
+Requires `sessions:read` and the same Analytics opt-in. Disabled exports contain only
+enablement and window metadata. [Collector configuration](https://docs.polymorfa.com/console/analytics-collectors).
+
+Analytics responses also expose completed observed phone activity spans and
+quiet gaps, duration sums, sample counts and weighted averages. Ranges up to
+48 hours use hourly activity buckets; longer ranges and call series use daily
+UTC buckets. These signals do not establish phone online/offline or power state.
+See the [measurement definitions](https://docs.polymorfa.com/console/analytics#phone-polymorfa-and-customer-activity).
+
+### Device analytics
+
+`client.analytics.get({start, end, projectId, sessionId})` reads scoped Analytics.
+A project-bound client is confined to its project. Requires `sessions:read` and
+Analytics enabled by a team owner or admin. `deviceAnalytics` counts observed
+live direct messages by estimated sending client family, separately for people
+messaging your numbers and for your own numbers sending. Message ID prefixes are
+estimates, not hardware verification. Unknown is included; incomplete coverage
+has null shares. Older retained buckets have no device measurements.
+
+`numbers[].deviceAnalytics.inventory` lists up to 25 observed device indexes
+belonging to that connected number, with a coarse reported class and last
+observed sending activity. A later device-list change sets `listCurrent=false`
+and makes the count/membership unknown until a fresh list arrives. The combined
+summary has no inventory. No recipient device identities or raw message IDs
+are retained in Analytics.
+
+For a fresh list of a recipient's linked-device indexes, use
+`client.messaging.contacts.devices(numberId, contactId)`. This existing
+scoped read does not establish OS, model or device ownership. See the
+[device guide](https://docs.polymorfa.com/sdks/typescript/devices).
+
+`client.analytics.metrics({windowHours:24, format:"openmetrics"})` exports
+windowed gauges for platform message counts/shares and owned-device list coverage.
+Do not apply `rate()` or `increase()` to overlapping windows.
+
+### Request logs
+
+`client.requestLogs` reads a project's API and MCP requests from the last 30
+days (`logs:read`). A team client passes `projectId`; a project client reads
+only its own project.
+
+```ts
+const page = await client.requestLogs.list({
+  projectId,
+  status: ["4xx", "5xx"],
+  limit: 20,
+});
+// page.nextCursor lists older requests; page.followCursor lists newer ones.
+
+const controller = new AbortController();
+for await (const log of client.requestLogs.tail({
+  projectId,
+  backfill: 10,
+  intervalMs: 2000,
+  signal: controller.signal,
+})) {
+  console.log(log.createdAt, log.method, log.route, log.status, log.traceId);
+}
+```
+
+`tail` yields new requests oldest first. It polls every `intervalMs` (1,000 to
+60,000) while idle, reads again at once while more requests are waiting, and
+waits for `Retry-After` when the API rate limits reads. Entries carry the
+request ID and the W3C trace ID returned in `X-Trace-Id`. See
+[Read and tail request logs](https://docs.polymorfa.com/api/request-logs).
+
 ## Call consent
 
 Polymorfa checks every call against the team's call policy before the
-destination rings. The policy is team-wide and needs an organization key;
+destination rings. The policy is team-wide and needs an team key;
 project tokens and client tokens receive `403`.
 
 ```ts
@@ -581,8 +699,8 @@ and `idempotencyKey`; the key does not make the API replay the append.
 
 Set `apiVersion` on a client or a single request. Use a date-form API revision,
 such as `2026-09-22`. The SDK sends it as the `Polymorfa-Version` header.
-Native calls default to `2026-09-22`; the API accepts explicit revisions from
-`2026-03-20` and rejects earlier pins.
+Native calls default to `2026-09-22`, which is also the oldest revision the API
+accepts. Earlier pins, including `2026-03-20`, return a `400` error.
 
 Every client exposes `raw.request<T>()` for deliberate API escape hatches:
 
@@ -644,7 +762,7 @@ resources described above. Dashboard and staff routes retain their separate
 credential requirements.
 
 `Client.events.stream()` exposes the server event stream as an `AsyncIterable`,
-and `Client.events.liveSource()` adapts it for `@polymorfa/store`. Both require
+and `Client.events.liveSource()` adapts it for `@polymorfa/ui-kit/store`. Both require
 the server event stream's scope and beta access. `polymorfa listen` connects to
 a separate CLI-only forwarding protocol; its `pmfa_ls_` credential cannot be
 used by `Client`, `MessagingClient`, or their raw request helpers.
@@ -654,7 +772,7 @@ used by `Client`, `MessagingClient`, or their raw request helpers.
 `MessagingClient.quickLinks.create()`, `retrieve()`, and `cancel()` map the
 authenticated hosted lifecycle at `/messaging/quicklinks`. They accept organization
 API keys or project tokens with `quicklink:manage`; browser client tokens fail
-before transport. Organization keys can set `projectId` on creation, while a
+before transport. Team keys can set `projectId` on creation, while a
 project token remains bound by the server.
 
 These methods expose the short-lived connection URL and status record. They do
@@ -687,7 +805,7 @@ to the returned `data.url`.
 import {
   BrowserMessagingClient,
   createClientTokenProvider,
-} from "@polymorfa/browser";
+} from "@polymorfa/ui-kit";
 
 const getClientToken = createClientTokenProvider();
 const messaging = new BrowserMessagingClient({
@@ -715,10 +833,61 @@ controller without exposing a server key, project slug, or submission session.
 The controller models standard, carousel, authentication, and limited-time
 offer definitions and keeps saving separate from Meta submission.
 
-`@polymorfa/elements` provides custom elements for plain HTML and for frameworks
-that interoperate with the Custom Elements standard. `@polymorfa/react`
-provides idiomatic hooks and components, including controlled and SDK-owned
+The UI Kit web components in `@polymorfa/ui-kit/web-components` are custom
+elements for plain HTML and for frameworks that interoperate with the Custom
+Elements standard. The UI Kit React components in `@polymorfa/ui-kit/react`
+provide idiomatic hooks and components, including controlled and SDK-owned
 controller lifecycles.
+
+### Call links in this source revision
+
+`MessagingClient.voip.createCallLink` and `previewCallLink` require a server
+credential with `sessions:manage` and a Linked Device Number with calling
+enabled. They are source additions pending matching API deployment and SDK
+publication; client tokens are refused. They do not place or join a call.
+
+```ts
+const created = await messaging.voip.createCallLink({ session: "support" });
+const preview = await messaging.voip.previewCallLink({
+  session: "support",
+  token: created.data.data.token,
+  video: created.data.data.video,
+});
+```
+
+Keep the returned URL and token private. Preview returns the creator's public
+identity, `approvalRequired` and WhatsApp's `isAdmin` report. It does not grant
+API permissions or change approvals. Both methods make one request and refuse
+`idempotencyKey`; do not retry an unknown creation outcome. The exported types
+are `VoipCreateCallLinkRequest`, `VoipPreviewCallLinkRequest`,
+`VoipCreatedCallLink`, and `VoipPreviewedCallLink`.
+
+### Client-token action ceilings
+
+Client tokens accept an immutable `allow` ceiling for a session or Customer.
+Every request still requires live Number rules and current ownership. Session
+`allow` requires the action-ceilings beta. Until it is enabled, session `allow`
+is refused and omission keeps the existing token format. After enabling it,
+omitting `allow` snapshots a session's configured actions; Customer omission selects the
+original Customer action set. `chats_read`, `chats_manage`, `contact_write`, and
+`contact_delete` are reserved for enrolled regional beta access. These types do
+not establish regional availability or enable access by themselves.
+
+An explicit empty session list seals zero actions. Keep it distinct from
+omission when constructing the server-side mint request:
+
+| SDK        | Omit the session ceiling                              | Seal zero session actions |
+| ---------- | ----------------------------------------------------- | ------------------------- |
+| TypeScript | Omit `allow`                                          | `allow: []`               |
+| Go         | `Allow: nil`                                          | `Allow: []string{}`       |
+| Python     | Omit the `allow` key                                  | `"allow": []`             |
+| PHP        | Omit the `allow` key                                  | `'allow' => []`           |
+| Rust       | `ClientTokenTarget::Session { session, allow: None }` | Set `allow: Some(vec![])` |
+| C#         | Omit `Allow` or use `null`                            | `Allow: []`               |
+
+Rust uses `SessionClientAction` for session ceilings and `CustomerClientAction`
+for Customer ceilings. Customer lists remain non-empty. The API validates
+actions, enrollment and live rules; these request types grant no authority.
 
 ### Calls
 
@@ -728,7 +897,7 @@ short-lived client token, receives lifecycle events, and exposes the active
 model as `controller.call`. Pass its controller to React or Web Components.
 
 ```ts
-import { createBrowserCalls } from "@polymorfa/browser";
+import { createBrowserCalls } from "@polymorfa/ui-kit";
 
 const calls = createBrowserCalls({ session: "support", getClientToken });
 await calls.connect();
@@ -769,7 +938,7 @@ connections (quality figures and error codes, no personal data) so the Console
 can show why a call sounded bad or failed. Pass `diagnostics: false` to turn
 this off; `MessagingClient.voip.report()` sends your own.
 
-`@polymorfa/react` ships the complete call UI: `CallSurface` (incoming card,
+`@polymorfa/ui-kit/react` ships the complete call UI: `CallSurface` (incoming card,
 stage, control dock, and a pop-out window), plus `IncomingCallCard`,
 `CallStage`, `CallControls`, `ParticipantVideoGrid`, `ParticipantList`, and
 `DialPad` for composition. The design mirrors
@@ -778,13 +947,13 @@ colors derive from the shared appearance variables.
 
 ### Local event store
 
-`@polymorfa/store` keeps an opt-in IndexedDB copy of webhook-shaped events for
+`@polymorfa/ui-kit/store` keeps an opt-in IndexedDB copy of webhook-shaped events for
 applications that store messages themselves. Your backend receives webhooks
 and streams them to the browser; the store files messages, conversations,
 contacts, presence, calls, labels, sessions, templates, and other events into
 separate stores and feeds `ConversationController` through
 `createStoreConversationSource()`. Message content is written to the device;
-see the [store guide](packages/store/README.md#privacy) for encryption,
+see the [store guide](packages/ui-kit/docs/store.md#privacy) for encryption,
 redaction, and retention.
 
 ## Next.js and dev mode
@@ -798,7 +967,7 @@ Template routes use the same application-owned authorization boundary. Project
 scope and Cloud API session selection are resolver callbacks that run only on
 the server; browser-provided replacements are ignored.
 
-`@polymorfa/devtools` provides an explicit development overlay for appearance,
+`@polymorfa/ui-kit/devtools` provides an explicit development overlay for appearance,
 RTL, motion, viewport and network testing plus redacted request diagnostics. It
 only enables when trusted build and token environments match and are both
 non-production. Query-string flags cannot enable it, and the `production`
@@ -883,7 +1052,7 @@ and readiness.
 Native send/reaction requests and edits accept `transport: "auto" |
 "linked_devices" | "official_api"`. `chats.deleteMessage` accepts the choice in
 its options. Explicit choices never fall back. Raw Graph-compatible requests can
-use `graphTransportHeaders(transport)`; Graph remains outside handwritten method
+use `graphTransportHeaders(transport)`; Other Graph operations remain outside handwritten method
 coverage. Routing details appear in response `metadata.transport`,
 `metadata.routingReason`, and `metadata.operationId` when supplied by the API.
 
@@ -906,3 +1075,5 @@ or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
 ## License
 
 MIT
+
+Treat every Polymorfa credential as an opaque string. Never parse it or assume a fixed length. Credential storage must support at least 512 characters, preferably unrestricted text. Client-token length varies with its bindings and Customer scope.

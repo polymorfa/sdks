@@ -38,7 +38,7 @@ describe("CallReporter", () => {
     return { r, send, advance: (ms: number) => (now += ms) };
   }
 
-  it("sends one quality report per 5 seconds unless forced, and cleans figures", () => {
+  it("keeps final quality reports within the five-second limit and cleans figures", () => {
     const { r, send, advance } = reporter();
     r.quality({
       rttMs: 41.6,
@@ -64,15 +64,15 @@ describe("CallReporter", () => {
     advance(4_999);
     r.quality({ rttMs: 1 });
     expect(send).toHaveBeenCalledTimes(1);
-    r.quality({ rttMs: 1 }, true);
-    expect(send).toHaveBeenCalledTimes(2);
+    r.quality({ rttMs: 1 });
+    expect(send).toHaveBeenCalledTimes(1);
     advance(5_000);
     r.quality({ rttMs: 2 });
-    expect(send).toHaveBeenCalledTimes(3);
+    expect(send).toHaveBeenCalledTimes(2);
     // Nothing measured: nothing sent.
     advance(5_000);
     r.quality({ videoCodec: "?" });
-    expect(send).toHaveBeenCalledTimes(3);
+    expect(send).toHaveBeenCalledTimes(2);
   });
 
   it("sends at most 20 error reports a minute", () => {
@@ -102,7 +102,7 @@ describe("CallReporter", () => {
     await flush();
     expect(r.stopped).toBe(true);
     r.error("other");
-    r.quality({ rttMs: 1 }, true);
+    r.quality({ rttMs: 1 });
     expect(send).toHaveBeenCalledTimes(3);
   });
 
@@ -131,7 +131,7 @@ describe("HttpCallsApi.report", () => {
       error: { code: "media_timeout" },
     };
     for (const [token, expected] of [
-      ["pmfa_ct_browser", { ...report, participant: undefined }],
+      ["pmfa_ct_YnJvd3Nlcg", { ...report, participant: undefined }],
       ["pmfa_sk_server", report],
     ] as const) {
       fetch.mockClear();

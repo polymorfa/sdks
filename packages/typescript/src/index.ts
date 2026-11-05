@@ -23,6 +23,13 @@ export {
   type Client as ClientInstance,
 } from "./client.js";
 export type * from "./platform/developer-types.js";
+export type * from "./campaign-contracts.js";
+export { ProjectCampaignsResource } from "./platform/project-campaigns.js";
+export {
+  AudienceProfilesResource,
+  AudienceProfileImportsResource,
+} from "./platform/audience-profiles.js";
+export { SignalCustodyResource } from "./platform/signal-custody.js";
 export {
   EventStream,
   eventStreamSource,
@@ -60,6 +67,34 @@ export {
   type PolymorfaRateLimitReason,
 } from "./errors.js";
 export { MessagingClient } from "./messaging/client.js";
+export { CatalogsResource } from "./messaging/catalogs.js";
+export type {
+  CatalogSync,
+  CatalogProduct,
+  CatalogProductPage,
+  ListCatalogProductsParams,
+} from "./messaging/catalogs.js";
+export { CloudCatalogsResource } from "./messaging/cloud-catalogs.js";
+export { CloudMarketingResource } from "./messaging/cloud-marketing.js";
+export type {
+  CloudMarketingStatus,
+  MarketingMessagesStatus,
+  GetCloudMarketingStatusParams,
+} from "./messaging/cloud-marketing.js";
+export { FlowEncryptionResource } from "./messaging/flow-encryption.js";
+export type {
+  FlowEncryptionKey,
+  FlowEncryptionParams,
+  RegisterFlowEncryptionKeyRequest,
+} from "./messaging/flow-encryption.js";
+export type {
+  CloudProductCatalog,
+  CloudCatalogProduct,
+  ListCloudCatalogsParams,
+  ListCloudCatalogsResponse,
+  ListCloudCatalogProductsParams,
+  ListCloudCatalogProductsResponse,
+} from "./messaging/cloud-catalogs.js";
 export {
   BridgeClient,
   BridgeRoutesResource,
@@ -70,10 +105,20 @@ export {
   type BridgeSignal,
 } from "./bridge.js";
 export { ChatsResource } from "./messaging/chats.js";
+export type {
+  CustomerServiceWindow,
+  MetaPricingParams,
+  MetaPricingGroup,
+  MetaPricingSummary,
+  CloudCredentialFailureCode,
+  CloudCredentialHealth,
+  CloudReauthorization,
+} from "./messaging/cloud-types.js";
 export type { DeleteMessageOptions } from "./messaging/chats.js";
 export type {
   HistoryChat,
   HistoryMedia,
+  HistoryMediaRetrieval,
   HistoryMessage,
   HistoryMessageSummary,
   HistoryPage,
@@ -205,10 +250,52 @@ export {
   type WhatsAppMediaDownloadOptions,
   type WhatsAppMediaInput,
   type WhatsAppMediaKeys,
+  type WhatsAppMediaKeyType,
   type WhatsAppMediaKind,
   type WhatsAppMediaMessage,
   type WhatsAppMediaVerifyMode,
 } from "./media/whatsapp.js";
+export {
+  WHATSAPP_UPLOAD_MEDIA_TYPES,
+  encryptWhatsAppMedia,
+  encryptWhatsAppMediaStream,
+  generateWhatsAppMediaKey,
+  webCryptoMediaEncryptor,
+  whatsAppEncryptedLength,
+  type EncryptWhatsAppMediaOptions,
+  type EncryptedWhatsAppMedia,
+  type EncryptedWhatsAppMediaInfo,
+  type EncryptedWhatsAppMediaStream,
+  type WhatsAppMediaEncryptionDigest,
+  type WhatsAppMediaEncryptor,
+  type WhatsAppMediaPlaintext,
+  type WhatsAppUploadMediaType,
+} from "./media/encrypt.js";
+export {
+  WhatsAppMediaResource,
+  type DirectUploadTransportOptions,
+  type UploadWhatsAppMediaOptions,
+  type WhatsAppEncryptedUploadBody,
+  type WhatsAppMediaEgress,
+  type WhatsAppMediaSource,
+  type WhatsAppMediaUploadResult,
+  type WhatsAppMediaUploadTransport,
+  type WhatsAppUploadLocation,
+} from "./media/upload.js";
+export {
+  toWhatsAppMediaSendDescriptor,
+  type WhatsAppMediaSendDescriptor,
+  type WhatsAppMediaSendMetadata,
+} from "./media/send-descriptor.js";
+export type {
+  HistorySyncChunkDeleteRequest,
+  HistorySyncChunkRetryRequest,
+  HistorySyncChunkRetryResponse,
+  WhatsAppRelayUploadResponse,
+  WhatsAppUploadGrant,
+  WhatsAppUploadGrantRequest,
+} from "./media/direct-api.js";
+export { HistorySyncResource } from "./messaging/history-sync.js";
 export { parseContentDispositionFilename } from "./transport/content-disposition.js";
 export { MessagesResource } from "./messaging/messages.js";
 export { MessagingBanSafeResource } from "./messaging/bansafe.js";
@@ -233,6 +320,9 @@ export {
   type QuickLink,
   type QuickLinkStatus,
   type QuickLinkStatusValue,
+  type CloudSyncStatus,
+  type CloudSyncRequest,
+  type CloudSyncDelivery,
   type QuickLinkPurpose,
   type QuickLinkConnectionGoal,
   type QuickLinkConnectionKind,
@@ -243,6 +333,35 @@ export {
 } from "./messaging/quicklinks.js";
 export { SessionsResource } from "./messaging/sessions.js";
 export { TemplatesResource } from "./messaging/templates.js";
+export {
+  CloudTemplatesResource,
+  type CloudTemplate,
+  type CloudTemplateStatus,
+  type CreateCloudTemplateRequest,
+  type EditCloudTemplateRequest,
+  type EditCloudTemplateResponse,
+  type RetrieveCloudTemplateParams,
+  type CloudTemplateResponse,
+  type ListCloudTemplatesResponse,
+} from "./messaging/cloud-templates.js";
+export {
+  OfficialGroupsResource,
+  type OfficialGroup,
+  type OfficialGroupChangeAccepted,
+  type OfficialGroupCursorParams,
+  type OfficialGroupCursors,
+  type OfficialGroupInviteLink,
+  type OfficialGroupJoinRequest,
+  type OfficialGroupJoinRequestDecision,
+  type OfficialGroupJoinRequestList,
+  type OfficialGroupList,
+  type OfficialGroupSummary,
+  type CreateOfficialGroupRequest,
+  type CreateOfficialGroupResult,
+  type ListOfficialGroupsParams,
+  type PinOfficialGroupMessageRequest,
+  type UpdateOfficialGroupRequest,
+} from "./messaging/official-groups.js";
 export { UsersResource } from "./messaging/users.js";
 export type {
   AddressMessageContent,
@@ -261,6 +380,24 @@ export type {
   AddCampaignRecipientsResult,
   Campaign,
   CampaignAnalytics,
+  CampaignSendWindow,
+  CampaignSendWindowDay,
+  CampaignSendWindowRange,
+  CampaignMessageVariation,
+  CampaignMessageVariationBlueprint,
+  CampaignFollowUp,
+  CampaignFollowUpMessage,
+  CampaignFollowUpReport,
+  CampaignFollowUpStatus,
+  CampaignFollowUpSummary,
+  CampaignExperimentOutcome,
+  CampaignExperimentResults,
+  CampaignExperimentVariantResult,
+  CampaignVariant,
+  CampaignVariantMessage,
+  CampaignVariantStrategy,
+  CampaignWinnerCriterion,
+  CampaignSendWindowRequest,
   CampaignAnalyticsResponse,
   CampaignOperation,
   CampaignOperationResponse,
@@ -270,6 +407,7 @@ export type {
   CampaignRecipientStatus,
   CampaignRecipientVariables,
   CampaignRequeueResponse,
+  CampaignWeekday,
   CampaignRequeueResult,
   CampaignStopOperation,
   CampaignStopResponse,
@@ -297,6 +435,15 @@ export type {
   CallPermissionAction,
   CallPermissionLimit,
   CallPermissionRequestMessageContent,
+  OrderDetailsMessageContent,
+  OrderPaymentStatus,
+  OrderStatus,
+  OrderStatusMessageContent,
+  OrderDetailsItemization,
+  OrderPaymentSettings,
+  PaymentOrderAmount,
+  PixDynamicCodePayment,
+  PixKeyType,
   CallPermissionResponse,
   CallPermissionSource,
   CallPermissionState,
@@ -325,6 +472,12 @@ export type {
   VoipParticipantReference,
   VoipParticipantState,
   VoipPlaceCallRequest,
+  VoipCreateCallLinkRequest,
+  VoipPreviewCallLinkRequest,
+  VoipCreatedCallLink,
+  VoipPreviewedCallLink,
+  VoipCreatedCallLinkResponse,
+  VoipPreviewedCallLinkResponse,
   VoipPlaceCallResponse,
   VoipPlaceCallResult,
   ClientTokenValue,
@@ -335,6 +488,8 @@ export type {
   CreateBusinessQuickReplyResponse,
   CreateCampaignRequest,
   CreateCampaignResponse,
+  UpdateCampaignRequest,
+  UpdateCampaignResponse,
   CreateChannelRequest,
   CreateChannelResponse,
   CreateGroupRequest,
@@ -363,6 +518,8 @@ export type {
   GetGroupJoinInfoResponse,
   GetGroupParticipantsResponse,
   GetGroupResponse,
+  GroupCapabilities,
+  GetGroupCapabilitiesResponse,
   GetChatLabelsResponse,
   GetProjectObservationPolicyResponse,
   GetMessagingMediaInfoResponse,
@@ -380,6 +537,7 @@ export type {
   GetUserSecurityCodeResponse,
   GetWebhookResponse,
   HistorySyncPolicy,
+  NewChatCapping,
   Group,
   GroupAdminOnlySettingRequest,
   GroupInviteCode,
@@ -486,12 +644,16 @@ export type {
   ResolveIdentityResponse,
   ReactToChannelMessageResponse,
   RequeueCampaignRequest,
+  RescheduleCampaignRequest,
+  RescheduleCampaignResponse,
   RevokeGroupInviteCodeResponse,
   RequestPairCodeResponse,
   SeenRequest,
   SendAddressMessageRequest,
   SendButtonsMessageRequest,
   SendCallPermissionRequestMessageRequest,
+  SendOrderDetailsMessageRequest,
+  SendOrderStatusMessageRequest,
   SendContactMessageRequest,
   SendFlowMessageRequest,
   SendListMessageRequest,
@@ -577,6 +739,18 @@ export { ApiKeysResource } from "./platform/api-keys.js";
 export { AuditLogsResource } from "./platform/audit-logs.js";
 export { BillingResource } from "./platform/billing.js";
 export { UsageResource } from "./platform/usage.js";
+export { RequestLogsResource } from "./platform/request-logs.js";
+export type {
+  FollowRequestLogsParams,
+  ListRequestLogsParams,
+  RequestLog,
+  RequestLogCredentialType,
+  RequestLogFilters,
+  RequestLogMethod,
+  RequestLogPage,
+  RequestLogSource,
+  TailRequestLogsParams,
+} from "./platform/request-logs.js";
 export type {
   CallUsageDimensions,
   UsageGate,
@@ -643,6 +817,16 @@ export type {
   CallFilters,
   CallOutcome,
   CallRecord,
+  CallRecordDetail,
+  CallRecordSummary,
+  CallRecordEndReason,
+  CallRecordParticipant,
+  CallRecordConnection,
+  CallRecordTelemetry,
+  CallRecordAppQuality,
+  CallRecordAppConnection,
+  CallRecordAppReports,
+  RetrieveCallRecordParamsFor,
   CallRecordExportPage,
   CallRecordState,
   CallStats,
@@ -768,6 +952,12 @@ export type {
   AddAudienceMembersResult,
   AddPlatformCampaignRecipientsRequest,
   AddPlatformCampaignRecipientsResult,
+  CampaignConversion,
+  CampaignConversionCurrencyTotal,
+  CampaignConversionOutcome,
+  CampaignConversionReport,
+  CampaignConversionValue,
+  RecordCampaignConversionRequest,
   CreatePlatformCampaignRequest,
   Audience,
   AudienceImportMapping,
@@ -796,7 +986,10 @@ export type {
   ListCustomersParams,
   ListPlatformCampaignRecipientsParams,
   OptOutSettings,
+  PlatformCampaign,
+  PlatformCampaignAnalytics,
   PlatformCampaignParams,
+  ReschedulePlatformCampaignRequest,
   PlatformCampaignRecipientsEnvelope,
   UpdateOptOutSettingsRequest,
   UpdatePlatformCampaignRequest,
@@ -830,6 +1023,19 @@ export type {
   SessionStopResult,
   SessionTier,
   SessionTierOverrideRequest,
+  HybridKeepResolution,
+  HybridMerge,
+  HybridMergeCandidate,
+  HybridMergeCandidateNumber,
+  HybridMergeIneligibleReason,
+  HybridResolution,
+  HybridSplitResolution,
+  HybridTransport,
+  NumberHybridKeepTransition,
+  NumberHybridMergeTransition,
+  NumberHybridSplitTransition,
+  NumberHybridTransition,
+  NumberHybridTransitionStatus,
   NumberTierChange,
   NumberTierQuoteRequest,
   TierPricing,
@@ -914,6 +1120,15 @@ export type {
   SafeModeReads,
   SafeModeSettings,
   SafeModeTyping,
+  SessionAccountType,
+  SessionCapabilities,
+  SessionCapabilitiesStatus,
+  SessionCapability,
+  SessionCapabilityKind,
+  SessionCapabilitySource,
+  SessionCapabilityUnit,
+  SessionFeatureCapability,
+  SessionLimitCapability,
   SessionSafeMode,
   UpdateProjectHealthPolicyRequest,
   UpdateProjectInsuranceEvidenceRequest,
@@ -947,8 +1162,17 @@ export {
 } from "./system.js";
 export {
   KNOWN_WEBHOOK_EVENT_TYPES,
+  PHONE_OFFLINE_START_DAY,
   WebhookSignatureError,
   constructWebhookEvent,
+  constructWebhookDelivery,
+  isWebhookEventBatch,
+  type WebhookDelivery,
+  type WebhookEventBatch,
+  type ContactIdentityChange,
+  type ContactPreviousIdentity,
+  type MarketingOnboardingUpdatedPayload,
+  type ContactMarketingPreferencePayload,
   isEvent,
   webhooks,
   verifyWebhookSignature,
@@ -966,6 +1190,7 @@ export {
   type CallParticipantLeftPayload,
   type CallParticipantPayload,
   type CallPermissionChangedPayload,
+  type OrderPaymentUpdatedPayload,
   type CallReceivedPayload,
   type CallRejectedPayload,
   type CallTelemetryPayload,
@@ -976,6 +1201,7 @@ export {
   type ChatMutePayload,
   type ChatReadPayload,
   type CloudMessagePayload,
+  type CloudMessageReferral,
   type CloudHistorySyncPayload,
   type CommandResultPayload,
   type ContactsSyncPayload,
@@ -992,7 +1218,10 @@ export {
   type LinkedDeviceMessagePayload,
   type LinkedDeviceMessageType,
   type LinkedHistorySyncPayload,
+  type DirectHistorySyncPayload,
+  type DirectHistorySyncCommon,
   type MessageAckPayload,
+  type MetaPricingReport,
   type MessageDeletePayload,
   type MessageEchoPayload,
   type MessagePayload,
@@ -1000,6 +1229,7 @@ export {
   type MessageReceivedPayload,
   type MessageSentPayload,
   type NativeFlowResponse,
+  type ReplyChoice,
   type NewsletterUpdatePayload,
   type PollOption,
   type PollVotePayload,
@@ -1011,6 +1241,8 @@ export {
   type SessionRestrictionUpdatedPayload,
   type SessionPhoneOfflinePayload,
   type SessionStatusPayload,
+  type RuntimeSessionStatusPayload,
+  type CloudAccountStatusPayload,
   type UnknownWebhookEvent,
   type WebhookBody,
   type WebhookFixture,
@@ -1022,6 +1254,7 @@ export {
   type WebhookEvent,
   type WebhookEventOf,
   type WebhookPayloadMap,
+  type SessionCapabilitiesUpdatedPayload,
   type BanSafeActionPayload,
   type BanSafeClaimPayload,
   type BanSafeEventRung,
@@ -1038,6 +1271,7 @@ export {
   type CampaignRecipientFailedPayload,
   type CampaignRecipientSentPayload,
   type CampaignRecipientSkippedPayload,
+  type CampaignRescheduledPayload,
   type CampaignResumedPayload,
   type CampaignStoppedPayload,
   type CampaignThrottledPayload,
@@ -1062,10 +1296,15 @@ export {
   type MessageFailedPayload,
   type MessageFailedReason,
   type TemplateStatusPayload,
+  type RuntimeTemplateStatusPayload,
+  type CloudTemplateStatusPayload,
   type UsageRecordedPayload,
   type VoiceAssetEventPayload,
   type VoiceAssetFailedPayload,
   type VoiceAssetReadyPayload,
+  FLOW_FORWARD_SIGNATURE_HEADER,
+  verifyFlowForwardSignature,
+  type VerifyFlowForwardSignatureOptions,
 } from "./webhooks/index.js";
 
 export type * from "./messaging/session-configuration.js";
@@ -1095,3 +1334,87 @@ export {
 } from "./messaging/hybrid-link.js";
 
 export * from "./platform/functions.js";
+
+export {
+  FlowsResource,
+  type FlowCategory,
+  type FlowDraftStatus,
+  type FlowValidationPointer,
+  type FlowValidationIssue,
+  type FlowNumberLink,
+  type FlowSummary,
+  type FlowDraft,
+  type CreateFlowRequest,
+  type UpdateFlowRequest,
+  type FlowProviderRequest,
+  type FlowProviderOperation,
+  type FlowProviderResult,
+  type FlowEndpointMode,
+  type FlowEndpoint,
+  type ManagedFlowEncryptionKeyState,
+  type ManagedFlowEncryptionKey,
+  type FlowEncryptionCustody,
+  type FlowEncryptionKeyRotation,
+  type FlowEndpointState,
+  type FlowEndpointSetResult,
+  type ForwardFlowEndpointRequest,
+  type FunctionFlowEndpointRequest,
+  type DirectFlowEndpointRequest,
+  type SetFlowEndpointRequest,
+  type FlowNumberRequest,
+  type ListFlowEndpointReceiptsRequest,
+  type FlowEndpointReceipt,
+} from "./platform/flows.js";
+
+export { AnalyticsResource } from "./platform/analytics.js";
+export type {
+  CallOutcomeMetrics,
+  CallBusinessMetrics,
+  AnalyticsParams,
+  AnalyticsMetricsParams,
+  WhatsAppBusinessSegment,
+  WhatsAppAnalytics,
+  WhatsAppMetrics,
+  WhatsAppEngagement,
+  EstimatedMessagePlatform,
+  WhatsAppDeviceAnalytics,
+  WhatsAppConversationGroup,
+  WhatsAppConversationBreakdown,
+  RecipientDeviceCount,
+  WhatsAppRecipientActivity,
+  WhatsAppRecipientActivityRow,
+} from "./platform/analytics.js";
+export type {
+  ResourceBillingControls,
+  BillingScope,
+  BillingLimit,
+  BillingLimits,
+  BillingPriority,
+  BillingPriorities,
+  ReorderBillingPrioritiesInput,
+} from "./platform/billing-controls.js";
+
+export type {
+  CampaignMessage,
+  LaunchPlatformCampaignRequest,
+  PlatformCampaignLaunchResult,
+} from "./platform/types.js";
+
+export type {
+  HistorySyncDelivery,
+  HistorySyncPolicyPatch,
+} from "./messaging/session-configuration.js";
+
+export type { CampaignFrequencyCap } from "./messaging/types.js";
+export type {
+  CampaignFrequencyCapSettings,
+  UpdateCampaignFrequencyCapInput,
+} from "./platform/types.js";
+
+export * from "./platform/audience-segments.js";
+export * from "./messaging/campaign-drip.js";
+
+export type { IncomingOrderCart } from "./messaging/order-cart.js";
+export type { CloudReadinessFailureCode } from "./messaging/cloud-readiness.js";
+
+export * from "./messaging/passkeys.js";

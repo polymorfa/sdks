@@ -1,3 +1,4 @@
+import { ORGANIZATION_API_KEY } from "../../typescript/test/support/credentials.js";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -28,7 +29,7 @@ function sdk() {
             data: {
               success: true as const,
               data: {
-                token: "pmfa_ct_fixture",
+                token: "pmfa_ct_Zml4dHVyZQ",
                 expiresAt: new Date(Date.now() + 600_000).toISOString(),
               },
             },
@@ -82,7 +83,7 @@ const get = (path: string, init: RequestInit = {}) =>
 describe("createPolymorfaHandler options", () => {
   it("accepts the server MessagingClient", () => {
     const polymorfa = new MessagingClient({
-      credential: { type: "apiKey", value: `pmfa_${"A".repeat(72)}` },
+      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
     });
     expect(
       createPolymorfaHandler({
@@ -145,12 +146,17 @@ describe("POST /token", () => {
     expect(response.headers.get("cache-control")).toContain("no-store");
     expect(mint).toHaveBeenCalledWith({ id: "user_1" }, expect.any(Request));
     expect(polymorfa.clientTokens.mint).toHaveBeenCalledWith(
-      { session: "support", ephemeralId: "user_1", ttlSeconds: 600 },
+      {
+        session: "support",
+        allow: ["send_message"],
+        ephemeralId: "user_1",
+        ttlSeconds: 600,
+      },
       { signal: expect.any(AbortSignal) },
     );
     const body = await response.json();
     expect(body).toMatchObject({
-      value: "pmfa_ct_fixture",
+      value: "pmfa_ct_Zml4dHVyZQ",
       audience: "browser",
       scopes: grant.allow,
       grant: {
@@ -172,9 +178,31 @@ describe("POST /token", () => {
     );
     expect(polymorfa.clientTokens.mint.mock.calls[0]?.[0]).toEqual({
       session: "support",
+      allow: ["send_message"],
       ephemeralId: "user_1",
       ttlSeconds: 600,
     });
+  });
+
+  it("preserves a session grant's exact API ceiling and excludes wrapper permissions", async () => {
+    const { route, polymorfa } = handler({
+      mint: () => ({
+        ...grant,
+        allow: ["read_messages", "contact_delete", "voip_signal"],
+      }),
+    });
+    expect((await route.POST(post("token"))).status).toBe(200);
+    expect(polymorfa.clientTokens.mint.mock.calls[0]?.[0].allow).toEqual([
+      "contact_delete",
+      "voip_signal",
+    ]);
+  });
+  it("mints an explicit zero API ceiling for a wrapper-only session grant", async () => {
+    const { route, polymorfa } = handler({
+      mint: () => ({ ...grant, allow: ["read_messages"] }),
+    });
+    expect((await route.POST(post("token"))).status).toBe(200);
+    expect(polymorfa.clientTokens.mint.mock.calls[0]?.[0].allow).toEqual([]);
   });
 
   it("narrows Customer tokens to the API actions in allow", async () => {

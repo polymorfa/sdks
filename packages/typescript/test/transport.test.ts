@@ -67,6 +67,7 @@ describe("HttpTransport", () => {
         "x-request-id": "req_123",
         "polymorfa-version": "2026-08-19",
         "x-ratelimit-remaining": "41",
+        "x-ratelimit-reset": "1700000060",
         "set-cookie": "session=secret",
         "x-internal-debug": "database-host",
       },
@@ -89,6 +90,7 @@ describe("HttpTransport", () => {
       attempts: 1,
     });
     expect(response.metadata.headers["x-ratelimit-remaining"]).toBe("41");
+    expect(response.metadata.headers["x-ratelimit-reset"]).toBe("1700000060");
     expect(response.metadata.headers).not.toHaveProperty("set-cookie");
     expect(response.metadata.headers).not.toHaveProperty("x-internal-debug");
     expect(Object.isFrozen(response.metadata)).toBe(true);
@@ -172,13 +174,13 @@ describe("HttpTransport", () => {
       status: 400,
       headers: {
         "content-type": "application/json",
-        "polymorfa-version": "2026-03-19",
+        "polymorfa-version": "2026-03-20",
       },
       body: JSON.stringify({
         error: {
           code: "invalid_parameter",
           message:
-            "API version 2026-03-19 is no longer supported. Minimum: 2026-03-20",
+            "API version 2026-03-20 is no longer supported. Minimum: 2026-09-22",
           param: "Polymorfa-Version",
         },
       }),
@@ -187,11 +189,11 @@ describe("HttpTransport", () => {
       makeTransport(server.url, { maxNetworkRetries: 2 }).request({
         method: "GET",
         path: "/messaging/number/hybrid-link",
-        headers: { "Polymorfa-Version": "2026-03-19" },
+        headers: { "Polymorfa-Version": "2026-03-20" },
       }),
     ).rejects.toMatchObject({ code: "invalid_parameter", status: 400 });
     expect(server.requests).toHaveLength(1);
-    expect(server.requests[0]?.headers["polymorfa-version"]).toBe("2026-03-19");
+    expect(server.requests[0]?.headers["polymorfa-version"]).toBe("2026-03-20");
   });
 
   it("keeps API version options ahead of raw headers for JSON and streaming calls", async () => {
@@ -458,11 +460,15 @@ describe("HttpTransport", () => {
   it("surfaces a terminal rate limit when retries are disabled", async () => {
     const server = await serverFor(() => ({
       status: 429,
+      headers: { "retry-after": "60", "x-ratelimit-reset": "1700000060" },
       body: '{"error":"slow down"}',
     }));
-    await expect(
-      makeTransport(server.url).request({ method: "GET", path: "/limited" }),
-    ).rejects.toBeInstanceOf(PolymorfaRateLimitError);
+    const error = await makeTransport(server.url)
+      .request({ method: "GET", path: "/limited" })
+      .catch((caught) => caught);
+    expect(error).toBeInstanceOf(PolymorfaRateLimitError);
+    expect(error.metadata.headers["retry-after"]).toBe("60");
+    expect(error.metadata.headers["x-ratelimit-reset"]).toBe("1700000060");
   });
 
   it("rejects absolute raw URLs before credentials can leave the configured host", async () => {

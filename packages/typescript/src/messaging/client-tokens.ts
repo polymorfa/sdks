@@ -88,12 +88,6 @@ function assertMintTarget(body: MintClientTokenRequest): void {
       hasSession ? "customer" : "session",
     );
   }
-  if (body.allow !== undefined && !hasCustomer) {
-    throw new PolymorfaConfigurationError(
-      "allow is only supported for Customer-scoped client tokens.",
-      "allow",
-    );
-  }
 }
 
 function rulesPath(session: string): string {

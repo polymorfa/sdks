@@ -1,0 +1,280 @@
+{
+  "schemaVersion": 1,
+  "sourceSdkCommit": "daac84b1bd24c9460a2bcad555629a5466d85e2c",
+  "operations": [
+    {
+      "method": "PATCH",
+      "fixturePath": "/messaging/projects/project/campaigns/campaign",
+      "sdkMethod": "MessagingClient::campaigns.update",
+      "status": "covered",
+      "testFile": "tests/campaigns.php"
+    },
+    {
+      "method": "POST",
+      "fixturePath": "/messaging/projects/project/campaigns/campaign/reschedule",
+      "sdkMethod": "MessagingClient::campaigns.reschedule",
+      "status": "covered",
+      "testFile": "tests/campaigns.php"
+    },
+    {
+      "method": "POST",
+      "fixturePath": "/platform/campaigns/campaign/reschedule",
+      "sdkMethod": "Client::campaigns.reschedule",
+      "status": "covered",
+      "testFile": "tests/campaigns.php"
+    },
+    {
+      "method": "GET",
+      "fixturePath": "/messaging/testing/project/numbers/session/phone",
+      "sdkMethod": "MessagingClient::testing.getPhone",
+      "status": "covered",
+      "testFile": "tests/onboarding.php"
+    },
+    {
+      "method": "POST",
+      "fixturePath": "/messaging/testing/project/numbers/session/phone/messages",
+      "sdkMethod": "MessagingClient::testing.sendPhoneMessage",
+      "status": "covered",
+      "testFile": "tests/onboarding.php"
+    },
+    {
+      "method": "POST",
+      "fixturePath": "/messaging/testing/project/numbers/session/phone/devices/1/unlink",
+      "sdkMethod": "MessagingClient::testing.unlinkPhoneDevice",
+      "status": "covered",
+      "testFile": "tests/onboarding.php"
+    },
+    {
+      "method": "GET",
+      "fixturePath": "/platform/projects/project/request-logs",
+      "sdkMethod": "Client::requestLogs.list / ProjectClient::requestLogs.list",
+      "status": "covered",
+      "testFile": "tests/request_logs.php"
+    },
+    {
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/product_catalogs",
+      "sdkMethod": "MessagingClient::cloudCatalogs.list",
+      "status": "covered",
+      "testFile": "tests/graph.php"
+    },
+    {
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/product_catalogs/123/products",
+      "sdkMethod": "MessagingClient::cloudCatalogs.listProducts",
+      "status": "covered",
+      "testFile": "tests/graph.php"
+    },
+    {
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/marketing_messages/status",
+      "sdkMethod": "MessagingClient::cloudMarketing.status",
+      "status": "covered",
+      "testFile": "tests/graph.php"
+    },
+    {
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/phone/whatsapp_business_encryption",
+      "sdkMethod": "MessagingClient::flowEncryption.retrieve",
+      "status": "covered",
+      "testFile": "tests/graph.php"
+    },
+    {
+      "method": "POST",
+      "fixturePath": "/graph/whatsapp/v26.0/phone/whatsapp_business_encryption",
+      "sdkMethod": "MessagingClient::flowEncryption.register",
+      "status": "covered",
+      "testFile": "tests/graph.php"
+    },
+    {
+      "sdkMethod": "Client::campaigns.getFrequencyCap",
+      "method": "GET",
+      "fixturePath": "/platform/campaign-settings/frequency-cap",
+      "status": "covered",
+      "testFile": "tests/campaign_segments_drip.php",
+      "contract": "contracts/campaign-frequency-cap.json",
+      "operationId": "getCampaignFrequencyCap",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "Client::campaigns.updateFrequencyCap",
+      "method": "PUT",
+      "fixturePath": "/platform/campaign-settings/frequency-cap",
+      "status": "covered",
+      "testFile": "tests/campaign_segments_drip.php",
+      "contract": "contracts/campaign-frequency-cap.json",
+      "operationId": "updateCampaignFrequencyCap",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "Client::campaigns.enroll",
+      "method": "POST",
+      "fixturePath": "/platform/campaigns/c%2F1/enrollments",
+      "status": "covered",
+      "testFile": "tests/campaign_segments_drip.php",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "enrollCampaignContact",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "MessagingClient::campaigns.enroll",
+      "method": "POST",
+      "fixturePath": "/messaging/projects/11111111-1111-4111-8111-111111111111/campaigns/c/enrollments",
+      "status": "covered",
+      "testFile": "tests/campaign_segments_drip.php",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "enrollProjectCampaignContact",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "Client::audienceSegments.list",
+      "method": "GET",
+      "fixturePath": "/platform/audience-segments",
+      "status": "covered",
+      "testFile": "tests/campaign_segments_drip.php",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "listAudienceSegments",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "Client::audienceSegments.create",
+      "method": "POST",
+      "fixturePath": "/platform/audience-segments",
+      "status": "covered",
+      "testFile": "tests/campaign_segments_drip.php",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "createAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "Client::audienceSegments.retrieve",
+      "method": "GET",
+      "fixturePath": "/platform/audience-segments/s%2F1",
+      "status": "covered",
+      "testFile": "tests/campaign_segments_drip.php",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "getAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "Client::audienceSegments.update",
+      "method": "PATCH",
+      "fixturePath": "/platform/audience-segments/s%2F1",
+      "status": "covered",
+      "testFile": "tests/campaign_segments_drip.php",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "updateAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "Client::audienceSegments.delete",
+      "method": "DELETE",
+      "fixturePath": "/platform/audience-segments/s%2F1",
+      "status": "covered",
+      "testFile": "tests/campaign_segments_drip.php",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "deleteAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "Client::audienceSegments.preview",
+      "method": "GET",
+      "fixturePath": "/platform/audience-segments/s/preview",
+      "status": "covered",
+      "testFile": "tests/campaign_segments_drip.php",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "previewAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "Client::audienceSegments.previewRules",
+      "method": "POST",
+      "fixturePath": "/platform/audience-segments/preview",
+      "status": "covered",
+      "testFile": "tests/campaign_segments_drip.php",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "previewAudienceSegmentRules",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    }
+  ],
+  "helpers": [
+    {
+      "sdkMethod": "chats.downloadMessageMediaStream",
+      "status": "covered",
+      "testFile": "tests/history_media_stream.php",
+      "behavior": "Native incremental stored-history bytes for organization/project credentials; escaped scoped route, binary Accept/custom headers, filename, response metadata, authoritative history denial, preflight principal/identifier guards, cancellation and admitted body failure without restart."
+    },
+    {
+      "sdkMethod": "events.listIndexed / IndexedEventPage.nextPage",
+      "status": "covered",
+      "testFile": "tests/developer.php",
+      "behavior": "Canonical 64-bit decimal offsets; validation; high-watermark and cursor advancement."
+    },
+    {
+      "sdkMethod": "operations.wait",
+      "status": "covered",
+      "testFile": "tests/developer.php",
+      "behavior": "Bounded server long-poll terminal and sequence reads; invocation cancellation idempotency. Actual HTTP delayed body/retry admission remains within per-read overall budget; linked caller cancellation always propagates."
+    },
+    {
+      "sdkMethod": "requestLogs.follow / requestLogs.tail / RequestLogs.retryAfterMilliseconds",
+      "status": "covered",
+      "testFile": "tests/request_logs.php",
+      "behavior": "Cursor/filter isolation; chronological backfill; follows new requests; cooperative cancellation and Retry-After bounds."
+    },
+    {
+      "sdkMethod": "media.downloadStream / downloadUrl / downloadToFile / MediaFiles.filename / signedUrlExpiry",
+      "status": "covered",
+      "testFile": "tests/media_stream.php",
+      "behavior": "Native PSR body; API metadata; isolated redirect storage requests; sanitized filenames; secret-redacted signed URL; bounded/cancelled atomic output; admitted body failure metadata."
+    },
+    {
+      "sdkMethod": "WebhookEvent.knownEvent / Webhooks.createFixture / verifyLocal / verifyFlowForwardSignature",
+      "status": "covered",
+      "testFile": "tests/webhook_models.php",
+      "behavior": "Handwritten discriminated 84-name union; signed linked and Cloud message/history/status variants, customer lifecycle, payment union and fractional credits; unknown event preservation; distinct native/Flow/local signature grammars."
+    },
+    {
+      "sdkMethod": "ErrorCodes.KNOWN / ErrorCodes.isKnown",
+      "status": "covered",
+      "testFile": "tests/webhook_models.php",
+      "behavior": "89 known stable codes and arbitrary unknown code preservation."
+    },
+    {
+      "sdkMethod": "WhatsAppMedia.decryptChunks / downloadStream / descriptor / WhatsAppDownload.bytes / writeToFile / media.downloadFromWhatsAppStream / downloadFromWhatsAppToFile",
+      "status": "covered",
+      "testFile": "tests/whatsapp_stream.php",
+      "behavior": "Five independent crypto vectors with split cipher/MAC boundaries; before-release and streaming verification; descriptor message input; isolated CDN fallback; byte limits, cancellation and atomic verified file replacement."
+    },
+    {
+      "sdkMethod": "EventStream / EventStreamOptions / SseParser",
+      "status": "covered",
+      "testFile": "tests/event_stream.php",
+      "behavior": "Actual native HTTP watchdog reconnect with checkpoint resume; retention/reconnect callbacks; bounded Retry-After/backoff; manual acknowledgement and exact decoded webhook bodies; graceful cancellation; CRLF/CR split across chunks."
+    },
+    {
+      "sdkMethod": "CallsClient / CallsTokenSource / Call / CallReporter",
+      "status": "covered",
+      "testFile": "tests/calls_runtime.php",
+      "behavior": "Actual native HTTP and lifecycle/media WebSocket orchestration; credential cache/refresh; lifecycle claims and late acceptance cleanup; audio/video/media acknowledgements; stable reconnect identities; bounded diagnostics; cooperative polling and Fiber waiter cancellation."
+    },
+    {
+      "sdkMethod": "Events.liveSource / EventStreamSource.subscribe / EventStreamSubscription.pump / close",
+      "status": "covered",
+      "testFile": "tests/event_stream.php",
+      "behavior": "Native wire resumed cursor and exact typed webhook delivery; skips absent payloads; cooperative pump, graceful close and terminal error callback."
+    },
+    {
+      "sdkMethod": "Campaign receipt-timed follow-up configuration, recipient summary and analytics report",
+      "status": "covered",
+      "testFile": "tests/campaign_followups.php",
+      "behavior": "Both audience create/update/clear/omit bodies, optional returned timing, typed recipient receipt timestamps and nullable fields, follow-up counts separate from first-message counts."
+    },
+    {
+      "sdkMethod": "RawClient.request / RawClient.paginate / RawCursorPage / GraphTransport.headers",
+      "status": "covered",
+      "testFile": "tests/raw_parity.php",
+      "behavior": "Native arbitrary JSON success values without relaxing typed object envelopes; lazy custom decoder/cursor pagination with project scope, cancellation, preserved request body/options, malformed cursor checks and Graph routing headers."
+    }
+  ]
+}

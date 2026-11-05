@@ -1,0 +1,331 @@
+[
+  {
+    "fixture": "Negative",
+    "line": 8,
+    "code": "CS1061",
+    "symbols": [
+      "ProjectClient",
+      "AudienceProfiles"
+    ],
+    "name": "RetainedProjectProfiles",
+    "retained": true
+  },
+  {
+    "fixture": "Negative",
+    "line": 8,
+    "code": "CS1061",
+    "symbols": [
+      "ProjectClient",
+      "Audiences"
+    ],
+    "name": "RetainedProjectAudiences",
+    "retained": true
+  },
+  {
+    "fixture": "Negative",
+    "line": 8,
+    "code": "CS1061",
+    "symbols": [
+      "ProjectClient",
+      "OptOuts"
+    ],
+    "name": "RetainedProjectOptOuts",
+    "retained": true
+  },
+  {
+    "fixture": "Negative",
+    "line": 8,
+    "code": "CS1061",
+    "symbols": [
+      "ProjectCampaigns",
+      "GetSettingsAsync"
+    ],
+    "name": "RetainedProjectSettings",
+    "retained": true
+  },
+  {
+    "fixture": "Negative",
+    "line": 8,
+    "code": "CS1739",
+    "symbols": [
+      "GetReplyFlowAsync",
+      "projectId"
+    ],
+    "name": "RetainedBoundSelector",
+    "retained": true
+  },
+  {
+    "fixture": "Negative",
+    "line": 8,
+    "code": "CS0117",
+    "symbols": [
+      "CreateCampaignReplyFlowRequest",
+      "ProjectId"
+    ],
+    "name": "RetainedBodySelector",
+    "retained": true
+  },
+  {
+    "fixture": "Negative",
+    "line": 8,
+    "code": "CS0200",
+    "symbols": [
+      "ProjectClient.ProjectId"
+    ],
+    "name": "RetainedOwnerMutation",
+    "retained": true
+  },
+  {
+    "fixture": "Negative",
+    "line": 8,
+    "code": "CS0117",
+    "symbols": [
+      "RequestOptions",
+      "ProjectId"
+    ],
+    "name": "RetainedOptionSelector",
+    "retained": true
+  },
+  {
+    "fixture": "Negative",
+    "line": 8,
+    "code": "CS1503",
+    "symbols": [
+      "int[]",
+      "CampaignVariableValue"
+    ],
+    "name": "RetainedVariableArray",
+    "retained": true
+  },
+  {
+    "fixture": "Negative",
+    "line": 8,
+    "code": "CS1503",
+    "symbols": [
+      "int[]",
+      "AudienceProfileAttributeValue"
+    ],
+    "name": "RetainedAttributeArray",
+    "retained": true
+  },
+  {
+    "fixture": "Negative",
+    "line": 8,
+    "code": "CS1503",
+    "symbols": [
+      "Dictionary<string, string>",
+      "AudienceProfileAttributeValue"
+    ],
+    "name": "RetainedAttributeObject",
+    "retained": true
+  },
+  {
+    "fixture": "Negative",
+    "line": 8,
+    "code": "CS1503",
+    "symbols": [
+      "<null>",
+      "SignalCustodyMode"
+    ],
+    "name": "RetainedProjectNullMode",
+    "retained": true
+  },
+  {
+    "fixture": "Negative",
+    "line": 8,
+    "code": "CS0029",
+    "symbols": [
+      "string",
+      "SignalCustodyMode"
+    ],
+    "name": "RetainedModeString",
+    "retained": true
+  },
+  {
+    "fixture": "Negative",
+    "line": 8,
+    "code": "CS0029",
+    "symbols": [
+      "ApiResponse<Polymorfa.Sdk.SignalCustodyDefault>",
+      "DataEnvelope"
+    ],
+    "name": "RetainedBoundEnvelope",
+    "retained": true
+  },
+  {
+    "fixture": "Negative",
+    "line": 2,
+    "code": "CS0509",
+    "symbols": [
+      "CreateCampaignReplyFlowRequest",
+      "ExtendedRequest"
+    ],
+    "name": "RetainedSealedRequest",
+    "retained": true
+  },
+  {
+    "name": "ProjectOldLaunch",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS1061",
+    "symbols": [
+      "ProjectCampaigns",
+      "LaunchAsync"
+    ],
+    "retained": false
+  },
+  {
+    "name": "ProtectedPatchSelector",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS0117",
+    "symbols": [
+      "UpdatePlatformCampaignRequest",
+      "ProjectId"
+    ],
+    "retained": false
+  },
+  {
+    "name": "OptionPath",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS0117",
+    "symbols": [
+      "RequestOptions",
+      "Path"
+    ],
+    "retained": false
+  },
+  {
+    "name": "ReadDeliveryWrite",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS1503",
+    "symbols": [
+      "HistorySyncDelivery",
+      "PatchValue"
+    ],
+    "retained": false
+  },
+  {
+    "name": "DeliveryConsent",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS0117",
+    "symbols": [
+      "ConfigurationSource",
+      "Consent"
+    ],
+    "retained": false
+  },
+  {
+    "name": "GenericCustody",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS0117",
+    "symbols": [
+      "SessionConfigurationOverrides",
+      "SignalMode"
+    ],
+    "retained": false
+  },
+  {
+    "name": "MediaCannotInline",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS0117",
+    "symbols": [
+      "DirectHistorySyncMediaPayload",
+      "Inline"
+    ],
+    "retained": false
+  },
+  {
+    "name": "InlineCannotMedia",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS0117",
+    "symbols": [
+      "DirectHistorySyncInlinePayload",
+      "Media"
+    ],
+    "retained": false
+  },
+  {
+    "name": "StickerNoConvenience",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS1503",
+    "symbols": [
+      "MediaContent",
+      "WhatsAppMediaSendDescriptor"
+    ],
+    "retained": false
+  },
+  {
+    "name": "MessageIdString",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS0029",
+    "symbols": [
+      "string",
+      "long"
+    ],
+    "retained": false
+  },
+  {
+    "name": "BindingSourceString",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS1503",
+    "symbols": [
+      "int",
+      "PatchValue<string>"
+    ],
+    "retained": false
+  },
+  {
+    "name": "RetryRequiredStatus",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS7036",
+    "symbols": [
+      "Status",
+      "HistoryChunkRetryResult"
+    ],
+    "retained": false
+  },
+  {
+    "name": "LaunchRequiredProject",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS7036",
+    "symbols": [
+      "ProjectId",
+      "LaunchPlatformCampaignRequest"
+    ],
+    "retained": false
+  },
+  {
+    "name": "LaunchClosedBody",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS0117",
+    "symbols": [
+      "LaunchPlatformCampaignRequest",
+      "Id"
+    ],
+    "retained": false
+  },
+  {
+    "name": "CiphertextNoKey",
+    "fixture": "Negative",
+    "line": 6,
+    "code": "CS1061",
+    "symbols": [
+      "WhatsAppEncryptedUploadBody",
+      "MediaKey"
+    ],
+    "retained": false
+  }
+]

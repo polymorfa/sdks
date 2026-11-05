@@ -1,0 +1,18 @@
+{
+  "syntheticOnly": true,
+  "secret": "synthetic_D1_bridge_fixture_secret_only_20261015",
+  "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+  "authority": "fixture-customer-a",
+  "tablePrefix": "bridge_a_",
+  "request": {
+    "method": "GET",
+    "path": "/handshake",
+    "rawBody": "",
+    "signature": "v1=abbb8bd09e1eb2a2975e644742d06f4c27c282a223ad621df81985e3c4ff5cac"
+  },
+  "response": {
+    "status": 200,
+    "rawBody": "{\"contract\":\"polymorfa-d1-storage-v1\",\"schemaVersion\":2,\"authority\":\"fixture-customer-a\",\"tablePrefix\":\"bridge_a_\",\"data\":{\"atomicCommit\":true,\"maxCommitSize\":50,\"maxGetSize\":1000,\"maxQuerySize\":1000,\"maxBodyBytes\":8388608,\"conditionalDeletes\":true,\"setupAllowed\":true}}",
+    "signature": "v1=12c2702f8f7eb35467f2d3eb58a9f332bf6707c3a0e76777047b7364f93952ea"
+  }
+}

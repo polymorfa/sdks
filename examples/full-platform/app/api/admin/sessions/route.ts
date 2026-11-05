@@ -57,6 +57,9 @@ export const POST = route("admin", async ({ body, request }) => {
         { projectId, quoteId: text(body, "quoteId") },
         { idempotencyKey: idempotencyKey(request) },
       );
+    case "capabilities":
+      // Beta: returns 403 until the team enrolls in number capabilities.
+      return sessions.getCapabilities(sessionId);
     case "safeMode":
       return sessions.getSafeMode(sessionId);
     case "updateSafeMode":

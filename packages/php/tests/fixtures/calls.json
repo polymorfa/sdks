@@ -1,0 +1,5 @@
+{
+ "permission": {"status":"temporary","expiresAt":"2026-10-12T00:00:00Z","source":"sync","updatedAt":"2026-10-11T00:00:00Z","checkedAt":"2026-10-11T00:00:00Z","fresh":true,"actions":{"requestPermission":{"allowed":false,"limits":[{"period":"PT24H","maxAllowed":1,"used":1,"resetsAt":"2026-10-12T00:00:00Z"}]},"startCall":{"allowed":true,"limits":[]}}},
+ "settings": {"callsEnabled":true,"conferenceMode":true,"inboundRoute":"clients","sipTrunkId":null,"sipClaim":true,"hostCloudApiCalls":false,"revision":1,"updatedAt":"2026-10-11T00:00:00Z"},
+ "quality": {"kind":"quality","connectionId":"connection_1","participant":"agent_1","client":{"sdk":"polymorfa/sdk","version":"0.1.0-dev","platform":"other"},"quality":{"rttMs":42,"jitterMs":5,"packetsLost":0,"packetsReceived":100,"audioCodec":"audio/opus","videoCodec":"video/h264","candidateType":"relay","reconnects":0}}
+}

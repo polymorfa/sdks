@@ -242,6 +242,19 @@ describe("MessagingClient message routes", () => {
     expect(requests[0]?.headers["idempotency-key"]).toBe("send-text");
   });
 
+  it("forwards the Official typing inbound message ID without dropping it", async () => {
+    const { client, requests } = await messagesServer();
+    const body = {
+      conversation: { id: "739182640518203" },
+      id: "739182640518204",
+      state: "typing" as const,
+    };
+    await client.messages.setTyping("support", body);
+    expect(requests).toHaveLength(1);
+    expect(JSON.parse(requests[0]!.body)).toEqual(body);
+    expect(requests[0]!.path).toBe("/messaging/support/messages/typing");
+  });
+
   it("keeps actions on their exact message and chat routes", async () => {
     const { client, requests } = await messagesServer();
     const options = { idempotencyKey: "message-action" } as const;

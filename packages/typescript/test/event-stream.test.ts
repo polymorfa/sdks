@@ -651,3 +651,155 @@ describe("events.liveSource", () => {
     expect(received).toEqual([{ events: [webhookBody("e2")], cursor: "c2" }]);
   });
 });
+
+const FRAME_LIMIT = 4 * 1024 * 1024;
+
+describe("event stream validation and frame bounds", () => {
+  it.each(["%%%", Buffer.from("{}").toString("base64")])(
+    "keeps the last valid cursor after invalid payload %s",
+    async (payload) => {
+      const requests: Request[] = [];
+      const malformed = eventFrame(3, "bad", "bad-cursor");
+      malformed.data.event.payload!.data = payload;
+      const fetcher = vi.fn(
+        async (input: RequestInfo | URL, init?: RequestInit) => {
+          requests.push(new Request(input, init));
+          return requests.length === 1
+            ? sse([eventFrame(2, "good", "good-cursor"), malformed])
+            : sse([eventFrame(4, "recovered", "recovered-cursor")]);
+        },
+      ) as unknown as typeof fetch;
+      const stream = projectClient(fetcher).events.stream({
+        since: "initial-cursor",
+        ack: "manual",
+        reconnect: { initialDelayMs: 0, maxDelayMs: 0 },
+      });
+      const items = await collect(stream, 2);
+      expect(items.map((item) => item.cursor)).toEqual([
+        "good-cursor",
+        "recovered-cursor",
+      ]);
+      expect(requests).toHaveLength(2);
+      expect(requests[1]!.headers.get("last-event-id")).toBe("good-cursor");
+      expect(new URL(requests[1]!.url).searchParams.get("ack")).toBe("manual");
+    },
+  );
+
+  it.each(["single", "multiline", "comments", "utf8"])(
+    "rejects oversized %s frames across network chunks",
+    async (mode) => {
+      const stop = new AbortController();
+      const failures: unknown[] = [];
+      const segment =
+        mode === "multiline"
+          ? "data: \n"
+          : mode === "comments"
+            ? ": beat\n"
+            : mode === "utf8"
+              ? "🦀"
+              : "x";
+      const repeats = Math.floor(FRAME_LIMIT / Buffer.byteLength(segment)) + 1;
+      const wire = segment.repeat(repeats);
+      const fetcher = vi.fn(
+        async () =>
+          new Response(
+            new ReadableStream({
+              start(controller) {
+                const bytes = new TextEncoder().encode(wire);
+                for (let i = 0; i < bytes.length; i += 4093)
+                  controller.enqueue(bytes.slice(i, i + 4093));
+                controller.close();
+              },
+            }),
+            { headers: { "content-type": "text/event-stream" } },
+          ),
+      ) as unknown as typeof fetch;
+      const stream = projectClient(fetcher).events.stream({
+        since: "safe",
+        signal: stop.signal,
+        onReconnect: (error) => {
+          failures.push(error);
+          stop.abort();
+        },
+      });
+      expect(await collect(stream, 1)).toEqual([]);
+      expect(failures).toHaveLength(1);
+      expect(failures[0]).toMatchObject({ code: "invalid_response" });
+      expect(stream.cursor).toBe("safe");
+    },
+  );
+
+  it("accepts the UTF-8 byte boundary and resets after complete frames", async () => {
+    const tail = `\ndata: ${JSON.stringify(eventFrame(1, "boundary", "boundary-cursor").data)}\n\n`;
+    const paddingBytes = FRAME_LIMIT - Buffer.byteLength(tail) - 1;
+    const padding =
+      ":" +
+      "🦀".repeat(Math.floor(paddingBytes / 4)) +
+      "x".repeat(paddingBytes % 4);
+    const wire = padding + tail;
+    expect(Buffer.byteLength(wire)).toBe(FRAME_LIMIT);
+    const fetcher = vi.fn(
+      async () =>
+        new Response(wire + wire, {
+          headers: { "content-type": "text/event-stream" },
+        }),
+    ) as unknown as typeof fetch;
+    expect(
+      await collect(projectClient(fetcher).events.stream(), 2),
+    ).toHaveLength(2);
+  });
+});
+
+it.each(["%%%", Buffer.from("{}").toString("base64")])(
+  "never persists or acknowledges invalid stream cursor %s",
+  async (payload) => {
+    const { createStorage } = await import("../../storage/src/engine.js");
+    const { memoryAdapter } =
+      await import("../../storage/src/adapters/memory.js");
+    const { syncToStorage } = await import("../../storage/src/sync.js");
+    const storage = createStorage(memoryAdapter());
+    const good = eventFrame(2, "good", "good-cursor");
+    const malformed = eventFrame(3, "bad", "bad-cursor");
+    malformed.data.event.payload!.data = payload;
+    const requests: Request[] = [];
+    const acknowledgements: unknown[] = [];
+    const fetcher = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const request = new Request(input, init);
+        if (request.method === "POST") {
+          acknowledgements.push(await request.json());
+          expect((await storage.getCheckpoint("*", "events"))?.cursor).toBe(
+            "good-cursor",
+          );
+          return new Response(
+            JSON.stringify({
+              data: {
+                streamId: "s",
+                acknowledgedCursor: "good-cursor",
+                sequence: 2,
+                replayed: false,
+              },
+            }),
+            { headers: { "content-type": "application/json" } },
+          );
+        }
+        requests.push(request);
+        if (requests.length === 1) return sse([good, malformed]);
+        expect(requests).toHaveLength(2);
+        expect(request.headers.get("last-event-id")).toBe("good-cursor");
+        expect((await storage.getCheckpoint("*", "events"))?.cursor).toBe(
+          "good-cursor",
+        );
+        return sse([{ event: "revoked", data: { type: "revoked" } }]);
+      },
+    ) as unknown as typeof fetch;
+    const sync = syncToStorage(projectClient(fetcher).events, storage, {
+      params: { reconnect: { initialDelayMs: 0, maxDelayMs: 0 } },
+    });
+    await expect(sync.done).rejects.toBeInstanceOf(PolymorfaAuthorizationError);
+    expect(acknowledgements).toEqual([{ cursor: "good-cursor", sequence: 2 }]);
+    expect((await storage.getCheckpoint("*", "events"))?.cursor).toBe(
+      "good-cursor",
+    );
+  },
+);

@@ -152,8 +152,8 @@ function nextVersion(date = new Date()) {
 }
 
 function pack(version, out) {
-  if (!/^\d+\.\d+\.\d+-dev\.[1-9]\d*$/.test(version)) {
-    fail(`version ${version} does not match <x.y.z>-dev.<number>`);
+  if (!/^\d+\.\d+\.\d+(?:-dev\.[1-9]\d*)?$/.test(version)) {
+    fail(`version ${version} must be a stable version or <x.y.z>-dev.<number>`);
   }
   const { pub, pubNames } = loadPackages();
   const order = publishOrder(pub, pubNames);
@@ -163,6 +163,20 @@ function pack(version, out) {
       if (from !== version)
         rewriteDistVersion(join(root, p.dir), from, version);
     }
+    const provenancePath = arg("provenance");
+    if (!provenancePath) fail("pack requires verified --provenance");
+    const provenance = JSON.parse(
+      readFileSync(resolve(provenancePath), "utf8"),
+    );
+    if (
+      provenance.packageVersion !== version ||
+      provenance.repository !== "polymorfa/sdks"
+    )
+      fail("Package provenance mismatch");
+    writeFileSync(
+      join(root, p.dir, "dist/release-contract.json"),
+      JSON.stringify(provenance, null, 2) + "\n",
+    );
     p.json.version = version;
     for (const field of depFields) {
       for (const dep of Object.keys(p.json[field] ?? {})) {
@@ -221,6 +235,8 @@ function pack(version, out) {
       );
     }
     const files = new Set(result.files.map((f) => f.path));
+    if (!files.has("dist/release-contract.json"))
+      fail(`${p.json.name} lacks API acceptance provenance`);
     for (const required of requiredFiles[p.json.name] ?? []) {
       if (!files.has(required))
         fail(`${p.json.name} tarball is missing ${required}`);
@@ -266,7 +282,12 @@ function pack(version, out) {
         );
       }
     }
-    manifest.push({ name: p.json.name, version, tarball: result.filename });
+    manifest.push({
+      name: p.json.name,
+      version,
+      tarball: result.filename,
+      integrity: result.integrity,
+    });
     console.log(
       `packed ${p.json.name}@${version} (${result.files.length} files)`,
     );

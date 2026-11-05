@@ -1,167 +1,561 @@
-import json
-import threading
-import unittest
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
+from __future__ import annotations
 
-from polymorfa_sdk import (
+import asyncio
+import hashlib
+import hmac
+import json
+from collections.abc import Callable
+from dataclasses import FrozenInstanceError
+
+import httpx
+import pytest
+
+from polymorfa import (
+    AsyncClient,
+    AsyncMessagingClient,
+    AsyncProjectClient,
     AuthenticationError,
-    Client,
-    PolymorfaError,
-    Project,
-    ProtocolError,
+    ConfigurationError,
+    Credential,
+    RequestOptions,
+    ServerError,
+    WebhookSignatureError,
+    construct_webhook_event,
+    verify_webhook_signature,
 )
 
-KEY = "pmfa_" + "A" * 72
-ROOT = Path(__file__).resolve().parents[3]
+KEY = Credential(
+    "organization_api_key",
+    "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+)
+RECEIPT = {
+    "success": True,
+    "data": {
+        "id": "msg_1",
+        "whatsapp_ids": {"linked_devices": "provider_1"},
+        "conversation": {"id": "user_1"},
+        "timestamp": "2026-09-22T00:00:00Z",
+        "status": "sent",
+        "type": "text",
+    },
+}
+SESSION = {
+    "success": True,
+    "data": {
+        "sessionId": "support",
+        "name": "support",
+        "tenantId": "org_1",
+        "type": "linked_device",
+        "testMode": True,
+        "status": "CONNECTED",
+        "createdAt": "2026-09-22T00:00:00Z",
+        "updatedAt": "2026-09-22T00:00:00Z",
+    },
+}
+LINK = {
+    "success": True,
+    "data": {
+        "id": "link_1",
+        "url": "https://link.polymorfa.com/link_1",
+        "session": "support",
+        "purpose": "initial",
+        "connectionGoal": "single",
+        "expiresAt": None,
+    },
+}
+LINK_STATUS = {
+    "success": True,
+    "data": {
+        "id": "link_1",
+        "status": "pending",
+        "session": "support",
+        "purpose": "initial",
+        "connectionGoal": "single",
+        "hybridPhase": None,
+        "expiresAt": None,
+        "openedAt": None,
+        "connectedAt": None,
+        "phone": None,
+        "errorCode": None,
+    },
+}
+WEBHOOK = {
+    "success": True,
+    "data": {
+        "id": "hook_1",
+        "tenantId": "org_1",
+        "url": "https://example.com/webhook",
+        "events": ["message.received"],
+        "retries": {"attempts": 1, "delaySeconds": 1, "policy": "constant"},
+        "headers": [],
+        "enabled": True,
+        "createdAt": "2026-09-22T00:00:00Z",
+    },
+}
 
 
-class Server:
-    def __init__(self, status=200, content_type="application/json", body=b"{}"):
-        self.requests = []
-        state = self
-
-        class Handler(BaseHTTPRequestHandler):
-            def do_GET(self):
-                state.requests.append((self.path, dict(self.headers)))
-                self.send_response(status)
-                self.send_header("Content-Type", content_type)
-                self.send_header("X-Request-Id", "req_test")
-                self.send_header("Polymorfa-Version", "2026-03-20")
-                if status == 302:
-                    self.send_header("Location", "/redirect-target")
-                self.end_headers()
-                self.wfile.write(body)
-
-            def log_message(self, *_args):
-                pass
-
-        self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
-
-    def __enter__(self):
-        self.thread.start()
-        return self
-
-    def __exit__(self, *_args):
-        self.server.shutdown()
-        self.server.server_close()
-        self.thread.join()
-
-    @property
-    def url(self):
-        return f"http://127.0.0.1:{self.server.server_port}"
+def transport(handler: Callable[[httpx.Request], httpx.Response]) -> httpx.MockTransport:
+    return httpx.MockTransport(handler)
 
 
-class ClientTests(unittest.TestCase):
-    def test_project_list_contract_and_authentication(self):
-        body = json.dumps(
-            {
-                "data": [
-                    {
-                        "_id": "project_1",
-                        "name": "Support",
-                        "slug": "support",
-                        "stage": "development",
-                        "isActive": True,
-                        "activeSessions": 2,
-                        "totalSessions": 3,
-                        "totalMessages": 40,
-                    }
-                ]
-            }
-        ).encode()
-        with Server(body=body) as server:
-            response = Client(
-                api_key=KEY, base_url=server.url, api_version="2026-03-20"
-            ).projects.list()
-            self.assertEqual(
-                response.data,
-                [
-                    Project(
-                        "project_1", "Support", "support", "development", True, 2, 3, 40
-                    )
-                ],
+async def test_typed_message_send_request_response() -> None:
+    requests = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        assert request.method == "POST"
+        assert request.url.path == "/messaging/support/messages/send"
+        assert json.loads(request.content) == {
+            "conversation": {"phoneNumber": "+15551234567"},
+            "content": {"text": "Hello"},
+        }
+        assert request.headers["idempotency-key"] == "send-1"
+        return httpx.Response(
+            200, json=RECEIPT, headers={"x-request-id": "req_1", "polymorfa-version": "2026-09-22"}
+        )
+
+    async with AsyncMessagingClient(KEY, http_transport=transport(handler)) as client:
+        result = await client.messages.send(
+            "support",
+            {"conversation": {"phoneNumber": "+15551234567"}, "content": {"text": "Hello"}},
+            options=RequestOptions(idempotency_key="send-1"),
+        )
+        assert result.data["data"]["whatsapp_ids"]["linked_devices"] == "provider_1"
+        assert result.metadata.request_id == "req_1"
+        assert result.metadata.attempts == 1
+        assert result.metadata.status == 200
+    assert len(requests) == 1
+
+
+async def test_typed_resource_routes() -> None:
+    cases = [
+        (
+            "GET",
+            "/platform/sessions/support",
+            None,
+            SESSION,
+            lambda c: c.sessions.retrieve("support"),
+        ),
+        (
+            "GET",
+            "/messaging/support/pair/qr?format=json",
+            None,
+            {"success": True, "data": {"qr": "qr_1"}},
+            lambda c: c.sessions.qr("support"),
+        ),
+        (
+            "POST",
+            "/messaging/support/pair/code",
+            {"phone": "+15551234567"},
+            {"success": True, "data": {"code": "123"}},
+            lambda c: c.sessions.request_pairing_code("support", {"phone": "+15551234567"}),
+        ),
+        (
+            "POST",
+            "/messaging/quicklinks",
+            {"projectId": "project_1"},
+            LINK,
+            lambda c: c.quick_links.create({"projectId": "project_1"}),
+        ),
+        (
+            "GET",
+            "/messaging/quicklinks/link_1",
+            None,
+            LINK_STATUS,
+            lambda c: c.quick_links.retrieve("link_1"),
+        ),
+        (
+            "DELETE",
+            "/messaging/quicklinks/link_1",
+            None,
+            {"success": True, "message": "Cancelled"},
+            lambda c: c.quick_links.cancel("link_1"),
+        ),
+        (
+            "POST",
+            "/messaging/webhooks",
+            {"url": "https://example.com/webhook"},
+            WEBHOOK,
+            lambda c: c.webhooks.create({"url": "https://example.com/webhook"}),
+        ),
+        (
+            "GET",
+            "/messaging/webhooks/hook_1",
+            None,
+            WEBHOOK,
+            lambda c: c.webhooks.retrieve("hook_1"),
+        ),
+        (
+            "PUT",
+            "/messaging/webhooks/hook_1",
+            {"enabled": False},
+            WEBHOOK,
+            lambda c: c.webhooks.update("hook_1", {"enabled": False}),
+        ),
+        (
+            "DELETE",
+            "/messaging/webhooks/hook_1",
+            None,
+            {"success": True},
+            lambda c: c.webhooks.delete("hook_1"),
+        ),
+        (
+            "POST",
+            "/messaging/support/messages/react",
+            {"conversation": {"id": "user_1"}, "id": "msg_1", "reaction": "👍"},
+            RECEIPT,
+            lambda c: c.messages.react(
+                "support", {"conversation": {"id": "user_1"}, "id": "msg_1", "reaction": "👍"}
+            ),
+        ),
+        (
+            "POST",
+            "/messaging/support/messages/seen",
+            {"conversation": {"id": "user_1"}, "id": "msg_1"},
+            {"success": True, "data": {"status": "OK"}},
+            lambda c: c.messages.mark_seen(
+                "support", {"conversation": {"id": "user_1"}, "id": "msg_1"}
+            ),
+        ),
+        (
+            "POST",
+            "/messaging/support/messages/typing",
+            {"conversation": {"id": "user_1"}, "state": "typing"},
+            {"success": True, "data": {"status": "OK"}},
+            lambda c: c.messages.set_typing(
+                "support", {"conversation": {"id": "user_1"}, "state": "typing"}
+            ),
+        ),
+        (
+            "POST",
+            "/messaging/support/messages/star",
+            {"conversation": {"id": "user_1"}, "id": "msg_1", "star": True},
+            {"success": True, "data": {"status": "OK"}},
+            lambda c: c.messages.star(
+                "support", {"conversation": {"id": "user_1"}, "id": "msg_1", "star": True}
+            ),
+        ),
+        (
+            "GET",
+            "/messaging/support/operations/op_1",
+            None,
+            {"success": True, "data": {"operationId": "op_1", "status": "pending"}},
+            lambda c: c.messages.operation_status("support", "op_1"),
+        ),
+    ]
+    for method, path, body, fixture, invoke in cases:
+
+        def handler(
+            request: httpx.Request, method=method, path=path, body=body, fixture=fixture
+        ) -> httpx.Response:
+            assert request.method == method
+            assert request.url.raw_path.decode() == path
+            assert (json.loads(request.content) if request.content else None) == body
+            assert request.headers["authorization"] == "Bearer " + KEY.value
+            assert request.headers["polymorfa-version"] == "2026-09-22"
+            return httpx.Response(200, json=fixture, headers={"x-request-id": "req_resource"})
+
+        async with AsyncMessagingClient(KEY, http_transport=transport(handler)) as client:
+            response = await invoke(client)
+            assert response.data == fixture
+            assert response.metadata.request_id == "req_resource"
+            assert response.metadata.status == 200
+
+
+async def test_retry_safety_replay_and_immutable_overrides() -> None:
+    seen = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        if len(seen) == 1:
+            return httpx.Response(
+                503, json={"error": {"code": "service_unavailable"}}, headers={"retry-after": "0"}
             )
-            self.assertEqual(response.metadata.request_id, "req_test")
-            self.assertEqual(response.metadata.api_version, "2026-03-20")
-            self.assertEqual(len(server.requests), 1)
-            path, headers = server.requests[0]
-            self.assertEqual(path, "/platform/projects")
-            self.assertEqual(headers["Authorization"], f"Bearer {KEY}")
-            self.assertEqual(headers["Polymorfa-Version"], "2026-03-20")
+        return httpx.Response(200, json={"data": []})
 
-    def test_rejects_non_team_credentials_and_remote_plaintext(self):
-        for key in (
-            "",
-            "pmfa_pt_" + "A" * 94,
-            "pmfa_ct_" + "A" * 40,
-            "pmfa_" + "A" * 71,
+    async with AsyncMessagingClient(KEY, http_transport=transport(handler)) as client:
+        result = await client.sessions.list(options=RequestOptions(api_version="2026-10-01"))
+        assert result.metadata.attempts == 2
+        await client.sessions.list()
+        assert seen[-1].headers["polymorfa-version"] == "2026-09-22"
+    seen.clear()
+
+    def unsafe(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(
+            503, json={"error": {"code": "service_unavailable"}}, headers={"retry-after": "0"}
+        )
+
+    async with AsyncMessagingClient(KEY, http_transport=transport(unsafe)) as client:
+        with pytest.raises(ServerError):
+            await client.quick_links.create()
+    assert len(seen) == 1
+    seen.clear()
+
+    def replay(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(
+            503,
+            json={"error": {"code": "service_unavailable"}},
+            headers={"idempotent-replayed": "true"},
+        )
+
+    async with AsyncMessagingClient(KEY, http_transport=transport(replay)) as client:
+        with pytest.raises(ServerError):
+            await client.messages.send(
+                "support", {"conversation": {"id": "u"}, "content": {"text": "Hi"}}
+            )
+    assert len(seen) == 1
+
+
+async def test_error_metadata_and_html() -> None:
+    async with AsyncMessagingClient(
+        KEY,
+        max_network_retries=0,
+        http_transport=transport(
+            lambda r: httpx.Response(
+                401,
+                json={
+                    "error": {
+                        "code": "invalid_credential",
+                        "message": "Expired",
+                        "request_id": "body_req",
+                        "docs": "https://docs.polymorfa.com/api/errors",
+                    }
+                },
+                headers={"x-request-id": "header_req"},
+            )
+        ),
+    ) as client:
+        with pytest.raises(AuthenticationError) as caught:
+            await client.sessions.list()
+        assert caught.value.request_id == "body_req"
+        assert caught.value.doc_url == "https://docs.polymorfa.com/api/errors"
+    async with AsyncMessagingClient(
+        KEY,
+        max_network_retries=0,
+        http_transport=transport(
+            lambda r: httpx.Response(502, text="<html>private proxy details</html>")
+        ),
+    ) as client:
+        with pytest.raises(ServerError) as html:
+            await client.sessions.list()
+        assert "private" not in str(html.value)
+
+
+async def test_project_binding_and_raw_confinement() -> None:
+    async with AsyncClient(
+        KEY,
+        http_transport=transport(lambda r: httpx.Response(200, json={"data": {"id": "event_1"}})),
+    ) as client:
+        project = client.project("project_1")
+        with pytest.raises(FrozenInstanceError):
+            project.project_id = "project_2"
+        with pytest.raises(ConfigurationError):
+            project.project("project_2")
+        for path in (
+            "/../events",
+            "/%2e%2e/events",
+            "/platform/projects/project_2/events",
+            "//other-host",
         ):
-            with self.subTest(key=key[:8]), self.assertRaises(ValueError):
-                Client(api_key=key)
-        with self.assertRaises(ValueError):
-            Client(api_key=KEY, base_url="http://api.polymorfa.com")
-        with self.assertRaises(ValueError):
-            Client(api_key=KEY, base_url="https://user:secret@api.polymorfa.com")
+            from polymorfa import ValidationError
 
-    def test_401_and_html_errors_do_not_expose_secret_or_body(self):
-        with Server(
-            status=401, body=b'{"error":{"code":"unauthorized","message":"private"}}'
-        ) as server:
-            with self.assertRaises(AuthenticationError) as caught:
-                Client(api_key=KEY, base_url=server.url).projects.list()
-            self.assertEqual(caught.exception.status, 401)
-            self.assertEqual(caught.exception.code, "unauthorized")
-            self.assertEqual(caught.exception.request_id, "req_test")
-            self.assertNotIn(KEY, str(caught.exception))
-            self.assertNotIn("private", str(caught.exception))
-        with Server(
-            status=502, content_type="text/html", body=b"<b>proxy secret</b>"
-        ) as server:
-            with self.assertRaises(PolymorfaError) as caught:
-                Client(api_key=KEY, base_url=server.url).projects.list()
-            self.assertEqual(caught.exception.status, 502)
-            self.assertNotIn("proxy secret", str(caught.exception))
-
-    def test_redirect_does_not_forward_credential(self):
-        with Server(status=302) as server:
-            with self.assertRaises(PolymorfaError) as caught:
-                Client(api_key=KEY, base_url=server.url).projects.list()
-            self.assertEqual(caught.exception.status, 302)
-            self.assertEqual(len(server.requests), 1)
-
-    def test_server_failure_is_not_retried(self):
-        with Server(
-            status=503, body=b'{"error":{"code":"service_unavailable"}}'
-        ) as server:
-            with self.assertRaises(PolymorfaError) as caught:
-                Client(api_key=KEY, base_url=server.url).projects.list()
-            self.assertEqual(caught.exception.status, 503)
-            self.assertEqual(caught.exception.code, "service_unavailable")
-            self.assertEqual(len(server.requests), 1)
-
-    def test_invalid_success_response_fails_closed(self):
-        for content_type, body in (
-            ("text/html", b"<html>"),
-            ("application/json", b"not json"),
-            ("application/json", b'{"data":{}}'),
-        ):
-            with (
-                self.subTest(content_type=content_type, body=body),
-                Server(content_type=content_type, body=body) as server,
-                self.assertRaises(ProtocolError),
-            ):
-                Client(api_key=KEY, base_url=server.url).projects.list()
-
-    def test_project_route_is_present_in_pinned_platform_contract(self):
-        spec = json.loads((ROOT / "contracts/openapi.platform.json").read_text())
-        operation = spec["paths"]["/platform/projects"]["get"]
-        self.assertEqual(operation["operationId"], "listProjects")
-        self.assertEqual(operation["x-polymorfa-resource-boundary"], "organization")
-        self.assertEqual(operation["x-required-scope"], "sessions:read")
-        self.assertIn({"ApiKeyAuth": []}, operation["security"])
+            with pytest.raises(ValidationError):
+                await project.raw.request("GET", path)
+        result = await project.events.retrieve("event_1")
+        assert result.data["id"] == "event_1"
+    with pytest.raises(ConfigurationError):
+        AsyncClient(
+            Credential(
+                "project_token",
+                "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+            )
+        )
+    AsyncProjectClient(
+        Credential(
+            "project_token",
+            "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+        ),
+        "project_1",
+    )
 
 
-if __name__ == "__main__":
-    unittest.main()
+async def test_borrowed_project_close_preserves_root_and_other_views() -> None:
+    class TrackedTransport(httpx.MockTransport):
+        closes = 0
+
+        async def aclose(self):
+            self.closes += 1
+            await super().aclose()
+
+    native = TrackedTransport(lambda request: httpx.Response(200, json={"data": {"id": "event_1"}}))
+    client = AsyncClient(KEY, http_transport=native)
+    other = client.project("project_2")
+    async with client.project("project_1") as view:
+        await view.events.retrieve("event_1")
+    await view.close()
+    assert native.closes == 0
+    assert (await other.events.retrieve("event_1")).data["id"] == "event_1"
+    assert (await client.raw.request("GET", "/platform/projects")).metadata.status == 200
+    await client.close()
+    assert native.closes == 1
+
+
+async def test_owned_project_context_closes_its_transport() -> None:
+    class TrackedTransport(httpx.MockTransport):
+        closes = 0
+
+        async def aclose(self):
+            self.closes += 1
+            await super().aclose()
+
+    native = TrackedTransport(lambda request: httpx.Response(200, json={"data": {"id": "event_1"}}))
+    async with AsyncProjectClient(KEY, "project_1", http_transport=native) as project:
+        await project.events.retrieve("event_1")
+    await project.close()
+    assert native.closes == 1
+
+
+async def test_cancellation_and_pagination() -> None:
+    started = asyncio.Event()
+    cancelled = asyncio.Event()
+
+    async def blocking(request: httpx.Request) -> httpx.Response:
+        started.set()
+        try:
+            await asyncio.sleep(3600)
+        finally:
+            cancelled.set()
+        return httpx.Response(200, json={"data": []})
+
+    async with AsyncClient(KEY, http_transport=httpx.MockTransport(blocking)) as client:
+        task = asyncio.create_task(client.sessions.list())
+        await started.wait()
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+        assert cancelled.is_set()
+
+    def paging(request: httpx.Request) -> httpx.Response:
+        cursor = request.url.params.get("cursor")
+        return httpx.Response(
+            200,
+            json={
+                "data": [{"id": "event_2" if cursor else "event_1"}],
+                "page": {"nextCursor": None if cursor else "next"},
+            },
+        )
+
+    async with AsyncClient(KEY, http_transport=transport(paging)) as client:
+        page = await client.events.list()
+        assert [item["id"] async for item in page] == ["event_1", "event_2"]
+
+
+async def test_media_redirect_credential_isolation() -> None:
+    seen = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        if request.url.host == "api.polymorfa.com":
+            return httpx.Response(
+                302,
+                headers={
+                    "location": "https://storage.example.com/capability",
+                    "x-request-id": "media_req",
+                },
+            )
+        assert "authorization" not in request.headers
+        assert "polymorfa-version" not in request.headers
+        return httpx.Response(200, content=b"image")
+
+    async with AsyncMessagingClient(KEY, http_transport=transport(handler)) as client:
+        result = await client.media.download("media_1")
+        assert result.data == b"image"
+        assert result.metadata.request_id == "media_req"
+    assert len(seen) == 2
+
+
+def test_webhooks_exact_bytes_and_unknown_events() -> None:
+    raw = b'{"id":"evt_1","session":"","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"x":1}}'
+    signature = hmac.new(b"secret", raw, hashlib.sha256).hexdigest()
+    event = construct_webhook_event(raw, "sha256=" + signature, "secret")
+    assert not event.known
+    assert event.payload == {"x": 1}
+    assert not verify_webhook_signature(raw + b" ", signature, "secret")
+    assert not verify_webhook_signature(raw, "bad", "secret")
+    with pytest.raises(WebhookSignatureError):
+        construct_webhook_event(b"invalid json", signature, "secret")
+
+
+async def test_stream_checkpoint_resume() -> None:
+    requests = []
+    first = b'data: {"type":"checkpoint","cursor":"checkpoint_1"}\n\n'
+    second = b'data: {"type":"event","cursor":"event_1","streamId":"stream_1","sequence":1,"event":{"id":"evt_1","type":"message.received","payload":null}}\n\n'
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if len(requests) == 2:
+            assert request.headers["last-event-id"] == "checkpoint_1"
+        return httpx.Response(
+            200,
+            headers={"content-type": "text/event-stream"},
+            content=first if len(requests) == 1 else second,
+        )
+
+    async with AsyncClient(KEY, http_transport=transport(handler)) as client:
+        stream = client.project("project_1").events.stream()
+        async for item in stream:
+            assert item.cursor == "event_1"
+            assert item.webhook is None
+            stream.close()
+    assert len(requests) == 2
+
+
+@pytest.mark.parametrize("status", [300, 301, 302, 303, 304, 305, 307, 308])
+@pytest.mark.parametrize("method", ["GET", "POST"])
+@pytest.mark.parametrize("payload", [b"", b'{"success":true}'])
+async def test_json_api_redirects_fail_before_body_read_without_following_or_retry(
+    status: int, method: str, payload: bytes
+) -> None:
+    requests: list[httpx.Request] = []
+
+    class RedirectBody(httpx.AsyncByteStream):
+        closed = False
+
+        async def __aiter__(self):
+            raise AssertionError("Rejected redirect body must never be consumed")
+            yield payload
+
+        async def aclose(self) -> None:
+            self.closed = True
+
+    stream = RedirectBody()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(
+            status,
+            headers={
+                "Location": "https://foreign.invalid/login?secret=redacted",
+                "Content-Type": "application/json",
+                "X-Request-Id": "redirect-request",
+                "X-Polymorfa-Operation-Id": "redirect-operation",
+            },
+            stream=stream,
+        )
+
+    async with AsyncClient(KEY, http_transport=transport(handler)) as client:
+        with pytest.raises(ServerError) as caught:
+            await client.raw.request(
+                method,
+                "/platform/projects",
+                options=RequestOptions(idempotency_key="synthetic-write", max_network_retries=3),
+            )
+    error = caught.value
+    assert error.code == "invalid_redirect" and error.status == status
+    assert error.request_id == "redirect-request"
+    assert error.metadata.operation_id == "redirect-operation"
+    assert len(requests) == 1 and requests[0].url.host == "api.polymorfa.com"
+    assert stream.closed and error.__cause__ is None
+    assert "foreign.invalid" not in str(error) and "secret=" not in str(error)

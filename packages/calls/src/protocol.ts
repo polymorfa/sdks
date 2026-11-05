@@ -1,3 +1,4 @@
+import type { MediaStateRequest, MediaStateReply } from "./media-state.js";
 /**
  * The wire contract between this client and the platform (Calls contract
  * revision 1). Two sockets carry a call:
@@ -247,7 +248,30 @@ export function decodeMediaFrame(
   return undefined;
 }
 
+export const CALL_REACTION_EMOJI = [
+  "",
+  "👍",
+  "❤️",
+  "😂",
+  "😮",
+  "😢",
+  "🙏",
+] as const;
+export type CallReactionEmoji = (typeof CALL_REACTION_EMOJI)[number];
+export function isCallReactionEmoji(
+  value: unknown,
+): value is CallReactionEmoji {
+  return (
+    typeof value === "string" &&
+    (CALL_REACTION_EMOJI as readonly string[]).includes(value)
+  );
+}
+export type CallReaction = { readonly emoji: CallReactionEmoji } & (
+  | { readonly self: true; readonly participantId?: undefined }
+  | { readonly participantId: string; readonly self?: undefined }
+);
 export interface Participant {
+  readonly handRaised?: boolean;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;
@@ -281,6 +305,14 @@ export type VideoSourceFrame = {
 
 /** Text frames the platform sends on the media socket. */
 export type MediaControlFrame =
+  | MediaStateReply
+  | { readonly type: "remote_media"; readonly audioMuted: boolean | null }
+  | ({ readonly type: "reaction" } & CallReaction)
+  | {
+      readonly type: "hand_state";
+      readonly raised: boolean;
+      readonly supported: boolean;
+    }
   | {
       readonly type: "ready";
       readonly callId?: string;
@@ -310,6 +342,7 @@ export type MediaControlFrame =
 
 /** Text frames the client sends on the media socket. */
 export type MediaClientFrame =
+  | MediaStateRequest
   | {
       readonly type: "auth";
       readonly token: string;
@@ -336,6 +369,22 @@ export function parseMediaControlValue(
   if (parsed === null || typeof parsed !== "object") return undefined;
   const f = parsed as Record<string, unknown>;
   switch (f["type"]) {
+    case "media_state":
+      return isConnectionId(f["requestId"]) &&
+        typeof f["audioMuted"] === "boolean" &&
+        typeof f["videoEnabled"] === "boolean" &&
+        (f["screenSharing"] === undefined ||
+          typeof f["screenSharing"] === "boolean")
+        ? (parsed as MediaControlFrame)
+        : undefined;
+    case "media_error":
+      return isConnectionId(f["requestId"]) && isString(f["code"])
+        ? (parsed as MediaControlFrame)
+        : undefined;
+    case "remote_media":
+      return f["audioMuted"] === null || typeof f["audioMuted"] === "boolean"
+        ? (parsed as MediaControlFrame)
+        : undefined;
     case "pong":
     case "keyframe_request":
       return parsed as MediaControlFrame;
@@ -346,6 +395,19 @@ export function parseMediaControlValue(
         typeof f["video"] === "boolean" &&
         optionalString(f["callId"]) &&
         optionalString(f["connectionId"])
+        ? (parsed as MediaControlFrame)
+        : undefined;
+    case "reaction":
+      return isCallReactionEmoji(f["emoji"]) &&
+        ((f["self"] === true && f["participantId"] === undefined) ||
+          (typeof f["participantId"] === "string" &&
+            /^[1-9][0-9]{0,18}$/.test(f["participantId"]) &&
+            f["self"] === undefined))
+        ? (parsed as MediaControlFrame)
+        : undefined;
+    case "hand_state":
+      return typeof f["raised"] === "boolean" &&
+        typeof f["supported"] === "boolean"
         ? (parsed as MediaControlFrame)
         : undefined;
     case "participant_joined":
@@ -395,6 +457,13 @@ export function isSourceHandle(value: unknown): value is number {
 }
 
 export function isParticipant(value: unknown): value is Participant {
+  if (
+    value !== null &&
+    typeof value === "object" &&
+    "handRaised" in value &&
+    typeof value.handRaised !== "boolean"
+  )
+    return false;
   if (value === null || typeof value !== "object") return false;
   const p = value as Record<string, unknown>;
   return (

@@ -1,9 +1,18 @@
 import { HttpTransport } from "../transport/http.js";
+import {
+  getProjectSignalCustody,
+  updateProjectSignalCustody,
+} from "./signal-custody.js";
+import type {
+  ProjectSignalCustodyUpdate,
+  SignalCustodyDefault,
+} from "../campaign-contracts.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   CreateProjectRequest,
   CreatedProject,
   DataEnvelope,
+  HybridMergeCandidate,
   ProductionEnrollmentCommandResult,
   ProductionEnrollmentRequest,
   ProductionEnrollmentResult,
@@ -20,6 +29,21 @@ import type {
 
 export class ProjectsResource {
   constructor(private readonly transport: HttpTransport) {}
+
+  getSignalCustody(
+    projectId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SignalCustodyDefault>>> {
+    return getProjectSignalCustody(this.transport, projectId, options);
+  }
+
+  updateSignalCustody(
+    projectId: string,
+    body: ProjectSignalCustodyUpdate,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SignalCustodyDefault>>> {
+    return updateProjectSignalCustody(this.transport, projectId, body, options);
+  }
 
   list(
     options: RequestOptions = {},
@@ -133,6 +157,25 @@ export class ProjectsResource {
       body,
       options,
     );
+  }
+
+  /**
+   * Lists same-number pairs (one Linked Devices Number and one Official API
+   * coexistence Number) that can merge into one Hybrid Link Number. Merge an
+   * eligible pair with `sessions.quoteTierChange(keepId, { tierOverride: "pro",
+   * hybridMerge: { absorbNumberId } })`; the absorbed Number must have
+   * `canBeAbsorbed: true`. Requires `sessions:read` and live Hybrid Link
+   * access (otherwise `403 feature_unavailable`).
+   */
+  listHybridMergeCandidates(
+    projectId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<readonly HybridMergeCandidate[]>>> {
+    return this.transport.request({
+      method: "GET",
+      path: `/platform/projects/${encodeURIComponent(projectId)}/hybrid-merge-candidates`,
+      ...options,
+    });
   }
 
   requestProductionEnrollment(

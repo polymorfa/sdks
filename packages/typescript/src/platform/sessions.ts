@@ -1,3 +1,6 @@
+import { campaignContractBody } from "../campaign-contract-validation.js";
+import { configurationIntent } from "../session-delivery-validation.js";
+import { existingOptions } from "../campaign-existing-validation.js";
 import { HttpTransport } from "../transport/http.js";
 import { PolymorfaValidationError } from "../errors.js";
 import type {
@@ -15,6 +18,7 @@ import type {
   SessionBatchRemoveResult,
   SessionBatchRequest,
   SessionBatchStopResult,
+  SessionCapabilities,
   SessionProjectContext,
   SessionRemoveResult,
   SessionStartResult,
@@ -37,7 +41,7 @@ export class PlatformSessionsResource {
       ...(params.projectId === undefined
         ? {}
         : { query: { projectId: params.projectId } }),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -48,7 +52,7 @@ export class PlatformSessionsResource {
     return this.transport.request({
       method: "GET",
       path: sessionPath(sessionId),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -57,11 +61,12 @@ export class PlatformSessionsResource {
     body: UpdateSessionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UpdateSessionResponse>> {
+    options = existingOptions(options, configurationIntent(body));
     return this.transport.request({
       method: "PUT",
       path: sessionPath(sessionId),
-      body,
-      ...options,
+      body: campaignContractBody(body),
+      ...existingOptions(options),
     });
   }
 
@@ -74,7 +79,7 @@ export class PlatformSessionsResource {
       method: "POST",
       path: `${sessionPath(sessionId)}/start`,
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -87,7 +92,7 @@ export class PlatformSessionsResource {
       method: "POST",
       path: `${sessionPath(sessionId)}/stop`,
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -100,7 +105,7 @@ export class PlatformSessionsResource {
       method: "POST",
       path: "/platform/sessions/stop",
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -112,7 +117,7 @@ export class PlatformSessionsResource {
     return this.transport.request({
       method: "DELETE",
       path: sessionPath(sessionId),
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -128,21 +133,37 @@ export class PlatformSessionsResource {
       method: "POST",
       path: "/platform/sessions/delete",
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
-  /** Review the returned charge and effective time before confirming this quote. */
+  /**
+   * Review the returned charge and effective time before confirming this quote.
+   *
+   * A Hybrid Link Number leaving Pro needs `hybridResolution` (keep one
+   * connection or split the Number); without it the API returns
+   * `hybrid_choice_required`. An upgrade to Pro can merge a same-number
+   * pair with `hybridMerge`; `sessionId` keeps its ID. The quote echoes the
+   * plan in `quote.hybridTransition`.
+   */
   quoteTierChange(
     sessionId: string,
     body: NumberTierQuoteRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<NumberTierChange>>> {
+    if (
+      body?.hybridResolution !== undefined &&
+      body?.hybridMerge !== undefined
+    ) {
+      throw new PolymorfaValidationError(
+        "Send hybridResolution or hybridMerge in a tier quote, not both.",
+      );
+    }
     return this.transport.request({
       method: "POST",
       path: `${sessionPath(sessionId)}/tier-quotes`,
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -154,7 +175,7 @@ export class PlatformSessionsResource {
     return this.transport.request({
       method: "GET",
       path: `${sessionPath(sessionId)}/tier-quotes/${encodeURIComponent(quoteId)}`,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -173,7 +194,22 @@ export class PlatformSessionsResource {
       method: "PATCH",
       path: sessionPath(sessionId),
       body,
-      ...options,
+      ...existingOptions(options),
+    });
+  }
+
+  /**
+   * WhatsApp features and limits WhatsApp has enabled for the number, as of
+   * its last configuration sync. Beta: returns 403 until the team enrolls.
+   */
+  getCapabilities(
+    sessionId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SessionCapabilities>>> {
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionPath(sessionId)}/capabilities`,
+      ...existingOptions(options),
     });
   }
 
@@ -184,7 +220,7 @@ export class PlatformSessionsResource {
     return this.transport.request({
       method: "GET",
       path: `${sessionPath(sessionId)}/safe-mode`,
-      ...options,
+      ...existingOptions(options),
     });
   }
 
@@ -197,7 +233,7 @@ export class PlatformSessionsResource {
       method: "PUT",
       path: `${sessionPath(sessionId)}/safe-mode`,
       body,
-      ...options,
+      ...existingOptions(options),
     });
   }
 }

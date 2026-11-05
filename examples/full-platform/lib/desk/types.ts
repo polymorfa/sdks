@@ -1,7 +1,4 @@
-import type {
-  ConversationMessage,
-  MessageAttachment,
-} from "@polymorfa/browser";
+import type { ConversationMessage, MessageAttachment } from "@polymorfa/ui-kit";
 
 /**
  * Help-desk domain types shared by the server data layer and the browser UI.

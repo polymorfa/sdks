@@ -1,5 +1,6 @@
 export {
   KNOWN_WEBHOOK_EVENT_TYPES,
+  PHONE_OFFLINE_START_DAY,
   isEvent,
   type BanSafeActionPayload,
   type BanSafeClaimPayload,
@@ -22,6 +23,7 @@ export {
   type CallParticipantLeftPayload,
   type CallParticipantPayload,
   type CallPermissionChangedPayload,
+  type OrderPaymentUpdatedPayload,
   type CallReceivedPayload,
   type CallRejectedPayload,
   type CallTelemetryPayload,
@@ -35,6 +37,7 @@ export {
   type CampaignRecipientFailedPayload,
   type CampaignRecipientSentPayload,
   type CampaignRecipientSkippedPayload,
+  type CampaignRescheduledPayload,
   type CampaignResumedPayload,
   type CampaignStoppedPayload,
   type CampaignThrottledPayload,
@@ -45,9 +48,14 @@ export {
   type ChatReadPayload,
   type CloudHistorySyncPayload,
   type CloudMessagePayload,
+  type CloudMessageReferral,
   type CommandResultPayload,
   type ContactOptPayload,
   type ContactUpdatePayload,
+  type ContactIdentityChange,
+  type ContactPreviousIdentity,
+  type MarketingOnboardingUpdatedPayload,
+  type ContactMarketingPreferencePayload,
   type ContactsSyncPayload,
   type ConversationReference,
   type CustomerArchivedPayload,
@@ -78,7 +86,10 @@ export {
   type LinkedDeviceMessagePayload,
   type LinkedDeviceMessageType,
   type LinkedHistorySyncPayload,
+  type DirectHistorySyncPayload,
+  type DirectHistorySyncCommon,
   type MessageAckPayload,
+  type MetaPricingReport,
   type MessageDeletePayload,
   type MessageEchoPayload,
   type MessageFailedPayload,
@@ -88,6 +99,7 @@ export {
   type MessageReceivedPayload,
   type MessageSentPayload,
   type NativeFlowResponse,
+  type ReplyChoice,
   type NewsletterUpdatePayload,
   type PollOption,
   type PollVotePayload,
@@ -99,7 +111,11 @@ export {
   type SessionRestrictionUpdatedPayload,
   type SessionPhoneOfflinePayload,
   type SessionStatusPayload,
+  type RuntimeSessionStatusPayload,
+  type CloudAccountStatusPayload,
   type TemplateStatusPayload,
+  type RuntimeTemplateStatusPayload,
+  type CloudTemplateStatusPayload,
   type UsageRecordedPayload,
   type UnknownWebhookEvent,
   type VoiceAssetEventPayload,
@@ -108,7 +124,13 @@ export {
   type WebhookEvent,
   type WebhookEventOf,
   type WebhookPayloadMap,
+  type SessionCapabilitiesUpdatedPayload,
 } from "./events.js";
+export {
+  FLOW_FORWARD_SIGNATURE_HEADER,
+  verifyFlowForwardSignature,
+  type VerifyFlowForwardSignatureOptions,
+} from "./flow-forward.js";
 export {
   WebhookSignatureError,
   constructWebhookEvent,
@@ -124,3 +146,10 @@ export {
   type WebhookFixture,
   type WebhookUtilities,
 } from "./utilities.js";
+
+export {
+  constructWebhookDelivery,
+  isWebhookEventBatch,
+  type WebhookEventBatch,
+  type WebhookDelivery,
+} from "./delivery.js";

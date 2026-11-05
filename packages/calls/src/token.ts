@@ -16,7 +16,7 @@ export interface CallsTokenRequest {
  * Supplies the credential for REST calls and socket authentication. Browser
  * applications return a client token minted by their own server with
  * `POST /platform/client-tokens`. Server applications may return an
- * organization API key or project token.
+ * team key or project token.
  */
 export type CallsTokenProvider = (
   request: CallsTokenRequest,

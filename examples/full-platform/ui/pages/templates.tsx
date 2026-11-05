@@ -4,8 +4,8 @@ import {
   TemplateBuilderController,
   createSameOriginTemplateBuilderTransport,
   type RenderedTemplate,
-} from "@polymorfa/browser";
-import { TemplateBuilder } from "@polymorfa/react";
+} from "@polymorfa/ui-kit";
+import { TemplateBuilder } from "@polymorfa/ui-kit/react";
 import { useState } from "react";
 
 import type { DeskTemplate } from "../../lib/desk/types.js";
@@ -79,9 +79,12 @@ export function TemplatesPage() {
   // Meta's review result arrives as a `template.status` webhook.
   useLiveEvents({
     "template.status": ({ payload }) => {
-      toast(
-        `Template ${payload.templateName} is now ${payload.status.toLowerCase()}`,
-      );
+      const status = "kind" in payload ? payload.event : payload.status;
+      const quality = "kind" in payload ? payload.newQualityScore : undefined;
+      const name = payload.templateName ?? payload.templateId ?? "notification";
+      if (status) toast(`Template ${name} is now ${status.toLowerCase()}`);
+      else if (quality)
+        toast(`Template ${name} quality is now ${quality.toLowerCase()}`);
       templates.reload();
     },
   });

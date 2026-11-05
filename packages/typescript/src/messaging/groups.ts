@@ -1,3 +1,5 @@
+import { requestContract } from "../campaign-contract-response.js";
+import { existingOptions } from "../campaign-existing-validation.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
@@ -7,6 +9,7 @@ import type {
   GetGroupJoinInfoResponse,
   GetGroupParticipantsResponse,
   GetGroupResponse,
+  GetGroupCapabilitiesResponse,
   GroupAdminOnlySettingRequest,
   GroupJoinApprovalRequest,
   GroupMemberAddModeRequest,
@@ -64,6 +67,24 @@ export class GroupsResource {
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetGroupResponse>> {
     return this.get(groupPath(session, groupId), options);
+  }
+
+  /** Enrolled number-capabilities beta. Unknown until a group sync; no chat open. */
+  getCapabilities(
+    session: string,
+    groupId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<GetGroupCapabilitiesResponse>> {
+    return requestContract(
+      this.transport,
+      {
+        ...existingOptions(options),
+        method: "GET",
+        path: `${groupPath(session, groupId)}/capabilities`,
+      },
+      "groupCapabilities",
+      true,
+    );
   }
 
   delete(

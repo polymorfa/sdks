@@ -1,5 +1,37 @@
 # Contract coverage
 
+## Campaign and custody additions
+
+`campaign-custody-20261014.json` pins thirty machine-accessible operations and
+their referenced components to API source
+`f97ad78b172e80788c33bdc0fcf28f75db9283ec`. TypeScript's new typed helpers select
+`2026-10-14` when request options omit a version. The global API default and
+579-operation baseline snapshots remain unchanged.
+
+The supplement is held with `published: false`, and the release gate checks
+both source audiences. The five native ports, remaining 625-operation contract
+reconciliation, accepted staging/production API evidence, and publication are
+separate unfinished gates. `campaign-20261014-contract.test.ts` checks all thirty
+wire operations; it does not establish provider delivery or deployed access.
+
+## Request log supplement
+
+`request-logs.json` pins `GET /platform/projects/{projectId}/request-logs` and
+its `RequestLog` and `RequestLogPageMetadata` schemas to API merge commit
+`f97fb511cf3cd7bf14fbccf21a679c0f7a6ebbf3` (polymorfa/polymorfa#549).
+`Client.requestLogs` is checked against it in `request-logs-contract.test.ts`.
+The release gate requires this pin to match the global source before
+publication, so the method publishes only with a reconciled, accepted contract.
+
+## Webhook phone offline start day
+
+`webhook-phone-offline.json` pins `phoneOfflineStartDay` on the nine Platform
+and Messaging webhook schemas that carry it to API source commit
+`4380e1113f4b6e5830852f35b13e0ee15b6e340b`, the merge of polymorfa/polymorfa#631
+into dev. `webhook-phone-offline-contract.test.ts` checks the SDK types and
+`PHONE_OFFLINE_START_DAY` against it. Refresh the global snapshots in a later
+snapshot update.
+
 ## Message provider references
 
 Native message receipts, webhook references, acknowledgements, history, and
@@ -29,34 +61,240 @@ operations. The six Console counterparts are excluded. Message content and
 `call.permission_changed` are typed in server and browser packages where
 applicable.
 
+`testing-events.json` records the four test-event schemas from the same API
+source commit as the full snapshots, including the source path and file hash.
+The TypeScript test-event catalog and override types use that revision.
 `testing-events.json` records the four test-event schemas from API source commit
 `6839976e7ad54e044c4d789fd296edc44772a907`, including the source path and file
 hash. The TypeScript test-event catalog and override types use that revision.
 Local schema references are rebased to this supplement's `schemas` root.
 The fixture contract test compares the exported catalog against this snapshot.
-It adds `session.restriction_updated`, its boolean `restrictionActive` override,
-and `call_restricted` to `callEndReason`. The full snapshots and coverage ledger
-below use the merged API revision. CLI consumers require a
+It includes `session.restriction_updated`, its boolean `restrictionActive`
+override, and `call_restricted` in `callEndReason`. The retired BanSafe test
+fixtures are absent. CLI consumers require a
 published SDK package before updating their pinned dependency.
+
+## Testing phone supplement
+
+`testing-phone.json` records the three Test number phone operations
+(`getTestingPhone`, `sendTestingPhoneMessage`, `unlinkTestingPhoneDevice`) and
+their schemas from API `dev` merge commit
+`2f1510f901aca1d68398a6dc9dbf243348c672c0` (polymorfa/polymorfa#526), with the
+source path and file hash. `MessagingClient.testing.getPhone`,
+`sendPhoneMessage` and `unlinkPhoneDevice` use this revision; a contract test
+compares their paths and fields. The full snapshots are not repinned here.
 
 ## Full snapshots
 
+The current snapshots are byte-identical copies of the Messaging and Platform
+contracts at API dev merge commit `171a9683ff45d11a4b5d3917dc428ad2722b0d99`.
+The full revision contains the inherited Logs and Usage contracts and all four
+public Analytics reads. Each language ledger contains 579 operations: 442
+covered and 137 excluded, with no missing, partial or changed fingerprints
+against these pinned snapshots. The three campaign update/reschedule methods
+are verified in the TypeScript, Python and Rust wire suites; their old PR-owner
+exclusions are removed. This baseline does not establish parity with newer API
+contracts or package publication. Six reviewed
+Console changes cover analytics projections, consent preferences, operational
+error vitals and shared drains. They require dashboard identity and remain
+excluded from server SDK authority.
+
+The seven financial operations cover limits, priorities, complete ordering and
+one-resource combined read/save. Project priority takes precedence. Numbers
+inherit customer priority; a higher number priority overrides it within the
+project. Customer limits include all assigned numbers. Initial real QuickLink
+creation accepts optional billing controls before admission. These methods
+operate actual monthly credit-debit limits; the separate nested included-usage
+quota prototype remains outside those methods. Reads require `billing:read`;
+writes require `billing:manage`, live team authority and Pay-As-You-Go.
+SDK publication and API deployment remain separate gates.
+
+The preceding repin at `b8fa167e47c901131d3bd9865e6479b153ad5157`
+added only the private Console `listConsoleNumberOptions` operation,
+a bounded searchable number-label read with keyset pagination. Its dashboard
+identity requirement excludes it from server SDK methods. All 568 preceding
+operation fingerprints and the public API contract remain unchanged. The ledger
+then contained 569 operations: 429 covered and 140 excluded.
+The preceding private `usageInsight` contract at
+`49b529fd74f42fdd6bb30671ebd4b0ec8e9558f3`
+added exact org/project/number scope metadata and immutable-number filtering.
+The selected number's current UTC monthly completed outgoing calls and included
+allowance remain separate from the chart period. Unknown tiers have no allowance
+read; known unlimited tiers are explicit. Request logs and serverless receipts
+have no number attribution, so their number measurements are unavailable.
+No per-number allowance is pooled into a project/team quota; credit caps still use
+their separate financial read. The preceding private read at
+`9aa751ef923990c4b9ff6df56f64e35c7ae78027` distinguished catalog pricing from
+measured quantities and actual charged credits across 18 aggregate categories.
+Completed outbound calls match the monthly gate; serverless counts surviving
+admitted project receipts, without number attribution or durable billing authority.
+Complete WhatsApp media/HMS GB-month usage remains unavailable. The total
+production-number metric does not treat the legacy session limit as a cap.
+The preceding source,
+`61d0a0e6e2c7b0eca1971657afc80926b4d4142b`, added registered consumption meters.
+The earlier source, `ba09326dd3c6688f05320c1f7685aeb0290a0ed2`,
+added project-filtered priority reads and mixed customer/number ordering; those
+public operations retain their typed SDK methods and unchanged fingerprints.
+Usage insights require dashboard identity; no server SDK method grants access
+to that Console route. The three Console-only setup operations also remain
+excluded from SDK authority.
+Reads require team keys with `billing:read`; writes require
+`billing:manage`, live team authority and Pay-As-You-Go. Existing credential masks
+do not gain these permissions. Paid service continues through its window when a
+limit is reached. The older Graph and test-event supplements keep their independent
+pins; these financial operations do not change them. API deployment, SDK and CLI
+publication remain separate gates.
+
+The preceding snapshots were described as follows.
+
+The two public Flow draft reads in the pinned Platform snapshot are covered by
+`Client.project(projectId).flows.list` and `.retrieve`. The API declares both
+public, project-bound, and `sessions:read`.
+
+The six dynamic Flow endpoint and managed Flow key operations (API PRs #428 and
+#434) are covered by `Client.project(projectId).flows.endpoint`, `setEndpoint`,
+`deleteEndpoint`, `endpointReceipts`, `encryptionKey` and
+`rotateEncryptionKey`. The API withholds them from its public spec while the
+Cloud onboarding beta has no audience.
+
 The snapshots are byte-identical copies of the Messaging and Platform OpenAPI
-files at `polymorfa/polymorfa` API `dev` commit
-`9b64c70b622593aeda7364b7603ba6790144594e`. Team webhook tests now use
-their own event-only input schema; project webhook tests still accept a paired
-body and session ID. The team test operation is covered by
-`Client.webhooks.test`, which rejects project-only fields before sending.
-Eleven campaign fingerprints changed only in documented error responses. The
-existing SDK methods retain their route and success-response coverage; their
-shared transport preserves the `campaigns_not_entitled` 402 and
-`service_unavailable` 503 codes. Four webhook create/update fingerprints reflect
-the API's corrected HTTP header pattern. `source.json` records the source paths
-and SHA-256 hashes. SDK package publication and deployment remain separate.
+files at `polymorfa/polymorfa` commit
+`5c8014d7d58b4d3e483d9d124ee9d88bd85820f9`, the merge of PR #388 into API
+`dev`. `testing-events.json` uses the same commit; its four schemas are
+unchanged. The response to feature evaluation includes a nullable
+`experimentRevision`; both evaluation routes remain excluded from SDK methods
+because they require a host runtime or live dashboard identity. The Platform
+referral route was removed on API `dev` before this merge, so the snapshot has
+no `/platform/referral` operation; referrals stay Console-only. `source.json`
+records the exact source paths and SHA-256 hashes. SDK package publication
+remains separate.
+
+Moving from PR source commit `2f24c1d62` to the merge commit adds 17
+operations and changes 236 fingerprints; no operation was removed. The
+fingerprint changes were reviewed:
+
+- 211 operations only add documented `X-RateLimit-Limit`,
+  `X-RateLimit-Remaining` and `X-RateLimit-Reset` response headers. Most of
+  the other changed operations add the same headers.
+- Campaigns add `sendWindow` on both surfaces. `Campaign.sendWindow` is
+  `CampaignSendWindow | null`; Messaging create and update, and Platform create
+  and update, accept `CampaignSendWindowRequest` (update and Platform create
+  accept null to remove it). Platform list, get, create and update now declare
+  `PlatformCampaign`, an open object with the Messaging campaign fields, so
+  those methods return it instead of `PlatformPayload`. The Platform update
+  body names `name`, `senderConfig`, `scheduledAt` and `sendWindow` and stays
+  open.
+- QuickLink create, get and status add the `reauthorization` purpose to
+  `QuickLinkPurpose`. The public QuickLink token routes stay excluded.
+- Hosted-history message reads add `mediaRetrieval` (`HistoryMediaRetrieval`).
+- `VoipParticipant` adds optional `handRaised`.
+- `POST /messaging/voip/calls` now accepts exactly one of `to`,
+  `participants` or `groupId`. `MessagingClient.voip.place` types only `to`
+  here, so the row is partial; group placement is implemented on SDK `dev`.
+- The two account feature routes add a body `projectId`; they stay excluded.
+
+The 17 added operations are recorded as follows. Two Console account-health
+routes (`/api/account/cloud-health` and its export) are excluded because they
+require dashboard identity. Six Calls operations (call links, link preview,
+raised hand, ring participant, call reaction and `GET /platform/calls/{callId}`)
+have typed methods on SDK `dev` and are missing on this branch until `dev`
+merges. Nine Official API operations are missing: four Cloud template routes
+(proposed in SDK PR #308), stored message media download (proposed in SDK PR
+#316), the customer service window, credential health, credential
+reauthorization and the Meta pricing summary.
+
+Webhook payload types follow the same commit: `message.received` adds
+`replyChoice` and `parentMessageId` and three linked-device message types,
+`message.ack` adds optional `pricing` (`MetaPricingReport`), and call
+participants add optional `handRaised`.
+
+`MessagingClient.campaigns.update` covers the new draft update route, while
+`MessagingClient.campaigns.reschedule` and `Client.campaigns.reschedule` cover
+moving a launched campaign that is waiting to start. The Messaging update is
+sent once after an uncertain response because its route has no replay key;
+reschedule uses the API's idempotency key. The Platform reschedule request names
+`projectId` for an team key. The other refreshed operation
+fingerprints were checked against their existing method paths and types.
+files at API `dev` merge commit `e818ba62830d3727a7822379bb46c1fece90ef1b`
+(API PR #433, which corrects the payment order amount and status schemas from
+PR #429, on top of PR #431). PR #433 changes only the `sendMessage`
+fingerprint: `tax`, `shipping` and `discount` become single closed objects
+and `OrderStatusContent` requires `order` or `payment`. Moving from
+`ee217bf7bf6320e20bce341335589f17357e374c` adds no operation. It changes 251
+operation fingerprints, all reviewed: every Messaging and Platform error code
+enum gains `order_status_transition_invalid` and `order_cancellation_failed`,
+`MessageContent` gains `orderDetails` and `orderStatus`, and the webhooks gain
+`order.payment_updated`. Earlier releases pinned `29abb7b66a8e225af4df5cf354e9836ccb2ce04c`
+(API PR #362). This single revision contains every merged Official API
+contract the SDK consumes: Number-scoped Cloud templates and template editing,
+customer service windows, Meta pricing counts, Cloud credential health and
+reauthorization, QuickLink sync receipts, typing with an inbound message ID,
+the Meta lifecycle webhook payloads, and the Flow provider lifecycle. It also
+contains the merged campaign send windows and rate-limit headers.
+
+- Brazil payment orders (beta): `messages.send` accepts `orderDetails`
+  (`OrderDetailsMessageContent`, Pix dynamic code, payment link and boleto) and
+  `orderStatus` (`OrderStatusMessageContent`) content. `order.payment_updated`
+  is typed as `OrderPaymentUpdatedPayload`. The API enforces beta enrollment,
+  Official API routing and the order checks; Polymorfa relays orders and payment
+  reports and does not process funds.
+- `MessagingClient.officialGroups` (beta) covers the twelve Official group
+  operations: list, create, retrieve, update, delete, getInviteLink,
+  resetInviteLink, removeParticipants, listJoinRequests, approveJoinRequests,
+  rejectJoinRequests and pin. Changes make one network attempt even with a
+  retry override and pass `Idempotency-Key` through. `Client.campaigns`
+  `recordConversion` and `conversions` cover the two conversion operations.
+- `MessagingClient.cloudTemplates` covers list, retrieve, create, edit and
+  delete. Create, edit and delete make one network attempt even when a caller
+  supplies an idempotency key or retry override. Create and delete accept the
+  API's `Idempotency-Key`, so a manual retry with the same key returns
+  `409 idempotency_completed` rather than writing again.
+- `MessagingClient.chats.getServiceWindow`, `MessagingClient.sessions.getMetaPricing`,
+  `getCloudCredentialHealth` and `reauthorizeCloudCredentials` cover the four
+  new Number reads and the reauthorization link. Reauthorization makes one attempt.
+- `Client.project(projectId).flows` covers create, update, delete, upload,
+  publish, deprecate, discard, sync and receipts. The API now accepts server
+  API keys for these routes, so the earlier dashboard-only exclusions are
+  replaced. Provider writes make one attempt; `sync` reconciles an uncertain
+  operation without repeating it.
+- The two Console-only account health reads are excluded.
+- Campaign records type the stored `sendWindow`; create and update requests on
+  both surfaces accept it.
+
+250 fingerprints changed. Each was reviewed: 202 changed only by the new
+`cloud_template_authority_restricted` public error code and the documented
+`X-RateLimit-*` response headers. The rest add campaign `sendWindow`, the
+QuickLink `sync` status and `reauthorization` purpose, the typing `id`, the
+template `Idempotency-Key` header, typed Flow `metaLinks`, the feature
+decision `experimentRevision`, and closed Platform campaign shapes. SDK types
+follow each change on covered operations; feature evaluation stays excluded. `cloud-api-supplements.json` pins the Graph-compatible
+catalog and Flow encryption routes to the same commit.
+
+API PR #377, merged in this snapshot, rejects invalid project-template
+drafts with 400 before submission. The typed `MessagingClient.templates.submit`
+method makes one network attempt, including when callers supply an idempotency
+key or retry override; the route declares no replay contract.
+
+API PR #380, merged at the pinned commit, adds the read-only linked-catalog
+product page. `MessagingClient.cloudCatalogs.listProducts` follows its WABA and
+catalog path, `sessions:read` credential boundary, projected product fields,
+and opaque cursor response. It does not establish live catalog access.
+
+API PRs #333 and #385, merged at the pinned commit, add the Official API
+message-media retrieval status and the stored-copy download route.
+`MessagingClient.chats.downloadMessageMedia` and `downloadMessageMediaStream`
+cover the route; `HistoryMessage.mediaRetrieval` types the status. This does
+not establish deployed HMS beta access or SDK package publication.
 
 The merged Campaigns failed-state follow-up updates the `campaign.failed`
 reason example and the public archive/delete `409` descriptions. It changes no
 operation fingerprint or SDK method mapping.
+
+The API merge also incorporates two unrelated routes from API PRs #333 and
+#332. Hosted-history media download is covered by `MessagingClient.chats`; Messaging
+campaign update is assigned to SDK PR #307. Both are intentional exclusions in
+this Calls ledger. Existing hosted-history message reads now type the optional
+`mediaRetrieval` status and remain covered.
 
 The Platform event-list contract adds `afterOffset` and indexed page metadata
 for both organization and project routes. `Client.events.list` and project-view
@@ -75,12 +313,12 @@ from SDK `dev`. The three public Calls analytics operations are covered by
 `Client.calls.list`, `Client.calls.export`, and `Client.calls.stats`.
 `Client.calls.exportAll` walks export pages. The 13 public Voice operations are
 covered by `Client.voice.audio` and `Client.voice.providerCredentials`; their
-13 Console counterparts are excluded. The full 509-operation snapshot includes
+13 Console counterparts are excluded. The full 536-operation snapshot includes
 all 15 Functions routes already merged to API `dev`.
 
 HMS history adds four server-only Messaging reads under
 `MessagingClient.chats`: `list`, `retrieve`, `listMessages`, and
-`retrieveMessage`. All four are covered; they require an organization key or
+`retrieveMessage`. All four are covered; they require an team key or
 project token, their respective `chats:read` or `messages:read` scope, HMS on
 the Number, and `messaging.history` beta enrollment. Client tokens are refused
 locally. Pagination retains both cursors and the data-region response header.
@@ -105,7 +343,7 @@ payment-required error class. The webhook catalog also adds the restriction
 payload, requires `code` on `session.logged_out`, narrows its reason enum, and
 narrows the previous BanSafe health band; SDK types follow those schemas.
 
-The latest schema refresh changes only `POST /platform/campaigns`: its required
+An earlier schema refresh changes only `POST /platform/campaigns`: its required
 body is now `CreatePlatformCampaignRequest`, with required `name`, named optional
 fields, and no additional top-level properties. The SDK requires `projectId`
 because its Platform campaign resource belongs to organization clients. The
@@ -115,7 +353,7 @@ object. No routes were added or removed by this schema refresh.
 This revision also covers `GET /platform/usage`, `/platform/usage/records`,
 and `/platform/gates` through `Client.usage.summary`, `listRecords`, and
 `listGates`. `iterateRecords` follows record-page cursors. Usage is measured
-but not charged; gate state requires an organization credential.
+but not charged; gate state requires an team key.
 
 The Campaigns P0 revision added these operations. Audiences gain member
 management (`POST`/`GET /platform/audiences/{listId}/members` and
@@ -156,19 +394,35 @@ names `recipientListId` and keeps an index signature for every other field.
 The operation declares `409` for the refusal after launch, which the transport
 already maps to `PolymorfaConflictError`; no SDK change was needed for it.
 
-The webhook catalog includes `contact.opted_out` and `contact.opted_in` with the
-exported `ContactOptPayload`. The unproduced `bansafe.health_changed`,
-`bansafe.risk_changed`, and `bansafe.enforcement` names are retired. Historical
-signed events with these names still decode as unknown events.
+The webhook catalog adds `contact.opted_out` and `contact.opted_in` with the
+exported `ContactOptPayload`. That earlier revision registered
+`bansafe.health_changed` and `bansafe.risk_changed`; the current API source has
+retired both events and `bansafe.enforcement`.
+
+| Status                                                                           | Operations |
+| -------------------------------------------------------------------------------- | ---------: |
+| Covered                                                                          |        381 |
+| Missing                                                                          |         15 |
+| Excluded                                                                         |        132 |
+| Partial                                                                          |          1 |
+| Changed fingerprint                                                              |          0 |
+| Total                                                                            |        529 |
+| The webhook catalog includes `contact.opted_out` and `contact.opted_in` with the |
+| exported `ContactOptPayload`. The unproduced `bansafe.health_changed`,           |
+| `bansafe.risk_changed`, and `bansafe.enforcement` names are retired. Historical  |
+| signed events with these names still decode as unknown events.                   |
+
+The base contract snapshot below excludes the four WhatsApp business analytics
+reads described at the end of this document.
 
 | Status              | Operations |
 | ------------------- | ---------: |
-| Covered             |        379 |
+| Covered             |        422 |
 | Missing             |          0 |
-| Excluded            |        130 |
+| Excluded            |        136 |
 | Partial             |          0 |
 | Changed fingerprint |          0 |
-| Total               |        509 |
+| Total               |        558 |
 
 This revision adds test event triggering
 (`POST /messaging/testing/{projectId}/events`) and fixture listing
@@ -312,7 +566,7 @@ Functions is tracked separately in `functions/openapi.json`, with its exact
 monorepo source commit and extraction hash in `functions/source.json`. This
 snapshot contains only the 15 Functions operations and their transitive schemas.
 `npm run check:functions` verifies their ledger; SDK tests exercise every method.
-The main Messaging and Platform snapshots use the pinned merged API `dev` commit;
+The main Messaging and Platform snapshots use the pinned Hybrid Link API branch;
 Functions subset retains its separate source revision.
 
 All 15 Functions methods require `client.project(projectId).functions` and an
@@ -320,3 +574,202 @@ organization enabled for Functions. The SDK never retries Function mutations or
 invocations automatically. Browser/client-token SDKs do not expose this server
 control plane. A local implementation or installed method does not establish
 hosted availability.
+
+The current dev reconciliation changes Campaigns error declarations only:
+draft reads/writes no longer declare a plan-related 402, and launch/live sender
+edits declare the existing public 503 envelope. Request and successful response
+shapes remain unchanged for all eleven refreshed fingerprints; the existing
+transport error handling applies. Focused Campaigns and contract checks pass.
+
+The Graph coverage exclusion applies to the full Graph API, not the separately
+typed `cloudCatalogs` and `flowEncryption` subsets recorded in
+`cloud-api-supplements.json`.
+
+## Campaign conversion supplement
+
+`campaign-conversions.json` records the two beta campaign conversion
+operations and their four schemas from API source commit
+`7d1b7d6eb035447dc8c5d20420e4cc172ba99b37` (polymorfa/polymorfa PR #427), with
+the source file hash. The operations are withheld from the public Platform
+spec while the beta has no audience. The full snapshots stay pinned to
+`source.json` until the next repin, which will add both operations to the
+coverage ledger as `Client.campaigns.recordConversion` and
+`Client.campaigns.conversions`. `campaign-conversions-contract.test.ts`
+compares the exported types with the supplement.
+
+## WhatsApp business analytics contract
+
+`Client.analytics.get` covers the team and project Analytics reads.
+The strict response contains number/project-scoped messaging aggregates,
+retained-call outcomes, measured timings, quality, failure categories,
+missed-call follow-up and daily call series. `Client.analytics.metrics` covers
+the two collector reads and returns Prometheus/OpenMetrics text rather than
+a JSON envelope. All four use scoped reader authority and Analytics opt-in.
+
+The full Platform snapshot, each Analytics operation and `source.json` pin the
+same API source revision. Reconciliation tests check exact snapshot hashes and
+strict operation fingerprints. Counts do not establish package publication or
+customer access.
+
+## AB props capabilities
+
+`abprops-capabilities.json` pins the stored group read and canonical number-change
+webhook to backend source `2f9efad933b3a7a455f73245a566c827ac004608`. Both consumers use this exact
+revision. The full legacy snapshots retain their recorded revision; unrelated
+API drift is not declared covered by this scoped update. The capability methods
+remain subject to the enrolled beta. Source integration does not publish a package.
+
+## Campaign message variation supplement
+
+`campaign-message-variations.json` records the weighted message variation
+schemas and the `messageVariations` fields of the Messaging and Platform
+campaign create, update and response schemas from API `dev` merge commit
+`9dc523d940edc5954a37ad85647b89be1cd58e3c` (polymorfa/polymorfa#409), with
+both source paths and file hashes. `campaign-message-variations-contract.test.ts`
+checks the SDK types against it. The full snapshots stay pinned to
+`contracts/source.json` until the next repin.
+
+## Campaign A/B test supplement
+
+`campaign-ab-tests.json` records the A/B variant, strategy, outcome and result
+schemas, and the related Messaging and Platform campaign and analytics fields,
+from API `dev` merge commit `8d248b578a7c76034b30a5a97349adcd15ce5c55`
+(polymorfa/polymorfa#406), with both source paths and file hashes.
+`campaign-ab-tests-contract.test.ts` checks the SDK types against it.
+
+## Feature evaluation supplement
+
+`feature-evaluation.json` records the four feature availability operations and
+their referenced components from API `dev` merge commit
+`2e38a3342b0692e62c3fa62f432d98b8d681c5bb` (polymorfa/polymorfa#816), with both
+source paths and file hashes. `scripts/sync-feature-evaluation-contract.mjs`
+extracts it without changing the operation objects. Run it with a monorepo
+checkout and an exact commit to refresh the supplement.
+
+The supplement was first pinned at `d36e12ff05` (polymorfa/polymorfa#561).
+That PR added the optional request `locale` (`en` or `pt-BR`) and the item
+fields `state` (`off`, `opt_in` or `on`), `terms` and `enrollmentSource`
+(`customer`, `staff` or null). `exposureToken` is always null, and
+`measurementAllowed` is accepted with no effect. The enrollment and exposure
+routes changed only in their descriptions; the exposure route always returns 403.
+
+The October 27 repin to #816 adds native experiments to both evaluate
+operations. Each returned feature has a required `experiments` array of
+`{ key, variant, revision, assigned }`. The single-experiment decision fields
+are deprecated with fixed values: `variant` and `experimentRevision` are always
+null, and `experimentAssigned` is always false. `measurementAllowed` is marked
+deprecated. The resolved `evaluateFeatures` component set also picks up shared
+`PublicError` codes added on API dev since #561, such as
+`team_deletion_scheduled` and `whatsapp_number_not_registered`; no SDK type
+reads them from this supplement.
+
+All four operations stay excluded, with the reasons in `coverage.json`, and no
+SDK package calls them. `evaluateFeatures` accepts team and project
+credentials; callers use an authenticated request. The three account routes
+require dashboard identity. `feature-evaluation-contract.test.ts` checks that
+the stored operations reproduce the recorded fingerprints with
+`check-coverage.mjs`, that the reviewed request and response fields (including
+`experiments`) are present, and that the ledger and SDK sources keep the
+exclusions.
+
+The full snapshots and `coverage.json` stay pinned to `contracts/source.json`.
+At the next full repin, these four rows change as recorded here. No SDK method
+or type depends on this supplement, so `scripts/release-gate.mjs` does not hold
+publication for it.
+
+## Campaign webhook metadata supplement
+
+`campaign-paused-reasons.json` pins the two accepted webhook schemas at API
+`9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f`, with the exact Messaging spec hash.
+The original pause producer is API326 `a6812f1570814346d5e2a973ed1b855026981793`.
+Pause `reason`/`code` remain optional open strings. The accepted recipient-skip
+schema also includes optional cap `messageIndex`/`followUpId`; the old326 full
+skip schema is not claimed equivalent. Pause timestamps are seconds and skip
+timestamps milliseconds. `webhook-contract.test.ts` overlays only these scoped
+schemas; all-six source/test attribution is in
+`native-campaign-webhook-metadata.json`. Compatibility and source-only package
+examples are in `docs/campaign-webhook-metadata.md`. Full baseline snapshots,
+coverage operation pins and API date remain unchanged.
+
+## Campaign follow-up supplement
+
+`campaign-follow-ups.json` records the receipt-timed follow-up schemas
+(`CampaignFollowUp`, `CampaignFollowUpSummary`, `CampaignFollowUpReport`) and
+the `followUp`/`followUps` fields of the Messaging and Platform campaign,
+create, update, recipient and analytics schemas from API `dev` merge commit
+`87b25fd9e2494d90f01f7511fb47be6a28845fa1` (polymorfa/polymorfa#503), with both source paths and file
+hashes. `campaign-follow-ups-contract.test.ts` checks the SDK types against it.
+The full snapshots stay pinned to `contracts/source.json` until the next repin.
+
+## Campaign contact frequency caps (beta)
+
+`client.campaigns.getFrequencyCap()` reads team limits and their revision.
+`client.campaigns.updateFrequencyCap({ maxPer24Hours: 2, maxPer7Days: 5, revision })`
+replaces both windows. Send both limits as null to remove them. A stale revision
+raises `PolymorfaConflictError`; read and reconcile before trying again. A new
+limit requires beta access and can return `403 feature_unavailable`.
+Campaign create/update accepts `frequencyCap`; null removes a campaign cap.
+Recipient reads expose `failureReason` and accept `reason: "frequency_cap"`.
+Analytics adds `frequencyCap.skippedRecipientCount`. Raising limits never retries
+settled skips. `contracts/campaign-frequency-cap.json` pins the merged API source;
+package publication and API availability remain separate release gates.
+
+`campaign-segments-drip.json` pins the merged audience segment and drip additions
+at accepted API source `9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f`, including
+source hashes, focused schemas, fields and operations. The frequency-cap
+supplement uses that same source. All 21 frequency-cap and 48 segment/drip
+fragments are exactly unchanged at this revision. Their native campaign manifest
+references match the two full source hashes. The full baseline snapshots and
+mixed campaign/custody supplement keep their independent pins. This reconciliation
+records source provenance; package publication, deployed acceptance and release
+holds remain separate.
+
+## Client-token ceilings
+
+`client-token-ceilings.json` pins API source `02aee1d010c5009401c0b60ab98eafd3dfd69f08`
+and its exact Platform spec hash for session/Customer mint ceilings and rule
+validation. The supplement is held from publication. Reconcile full snapshots,
+feature pins and the exact deployed API acceptance before publication; source
+merge, passing SDK tests and opaque-token transport do not establish availability.
+Session `allow` requires the action-ceilings beta; an empty session list seals
+zero actions, while Customer lists remain non-empty. Reserved regional actions
+remain gated. The Next.js handler forwards only the grant's API actions and does
+not turn a wrapper-only grant into the session's broader API action set.
+
+All five native mint helpers preserve omitted, empty and populated session
+ceilings. Go uses the minimum Go 1.24 `omitzero` encoding to distinguish nil from
+an explicit empty slice. Python, PHP and Rust expose the reserved regional
+action spellings in their request types; Go and C# retain their existing string
+lists. Server-only mint guards remain in every language. This extends the
+existing mint request, with no added operation or coverage-ledger claim.
+
+## Verified documentation snippets
+
+[`doc-snippets.json`](doc-snippets.json) exports checked programs for all six
+server SDKs. Read [the consumer and maintenance contract](doc-snippets.md) before
+using it: pin the export commit, match API/spec provenance, preserve exact
+placeholders and key scope, and use cURL for absent or mismatched entries.
+Current metadata describes source packages and omits registry install commands.
+
+## Machine-credential fixture supplement
+
+`machine-credentials.v1.json` is the byte-identical API #647 fixture from merged
+source `e95d02da674da8242453c2a41efd48883fa04734`. Its producer path, blob and hash
+are in `machine-credentials.source.json`. `npm run check:machine-credentials`
+checks provenance and shared consumption in all six languages. Native credential
+tests check framing, growth, unchanged wire transport and diagnostic redaction.
+Signed negative-claim vectors are locally accepted as opaque strings; the API
+authenticates them. This supplement does not repin the baseline OpenAPI snapshots,
+change scopes, or establish package publication or deployed acceptance.
+
+## Simultaneous calls supplement
+
+`calls-simultaneous-calls.json` pins the exact GET/PUT call-settings operations,
+request/response schemas and Ban Insurance claim/webhook changes to accepted
+API #559 merge `c1a43a1eb409ad57c2b9677c606a3d42d7b5598c`. It records full
+source hashes and canonical fragment hashes for each audience.
+`native-calls-simultaneous-calls.json` attributes the six native counterparts
+and tests. These are scoped supplements; the global `171a9683` baseline is
+unchanged. `published: false` retains the release hold. Accepted API source
+alone does not prove deployment, registry publication or installed-client
+acceptance. PHP and Rust qualification remains pending.

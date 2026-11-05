@@ -482,3 +482,51 @@ describe("Platform call analytics", () => {
     });
   });
 });
+
+describe("stored call detail", () => {
+  it("reads by call ID and pins a project client to its own project", async () => {
+    const data = {
+      call: { callId: "CALL-1" },
+      history: { events: [], truncated: false },
+    };
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({ data }),
+    );
+    const response = await projectClient(fetch).calls.retrieve("CALL-1");
+    expect(response.data).toEqual(data);
+    expect(call(fetch, 0).url.pathname).toBe("/platform/calls/CALL-1");
+    expect(call(fetch, 0).url.searchParams.get("projectId")).toBe(PROJECT_ID);
+    expect(call(fetch, 0).method).toBe("GET");
+    expect(() =>
+      projectClient(fetch).calls.retrieve("CALL-1", {
+        // @ts-expect-error project clients cannot name another project
+        projectId: OTHER_PROJECT_ID,
+      }),
+    ).toThrow(PolymorfaConfigurationError);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("accepts printable call IDs and encodes path separators", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({ data: { call: { callId: "call.v2:abc/def" } } }),
+    );
+    await teamClient(fetch).calls.retrieve("call.v2:abc/def");
+    expect(call(fetch, 0).url.pathname).toBe(
+      "/platform/calls/call.v2%3Aabc%2Fdef",
+    );
+  });
+
+  it("rejects unsafe IDs before dispatch and maps an inaccessible record to not found", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      errorResponse(404, "resource_not_found"),
+    );
+    for (const id of ["", "bad id", "bad\n", "é", "x".repeat(129)])
+      expect(() => teamClient(fetch).calls.retrieve(id)).toThrow(
+        PolymorfaConfigurationError,
+      );
+    expect(fetch).not.toHaveBeenCalled();
+    await expect(
+      teamClient(fetch).calls.retrieve("CALL-1"),
+    ).rejects.toBeInstanceOf(PolymorfaNotFoundError);
+  });
+});

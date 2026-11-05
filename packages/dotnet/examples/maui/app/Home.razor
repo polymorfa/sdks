@@ -1,0 +1,79 @@
+@namespace Polymorfa.Example.Maui
+@implements IAsyncDisposable
+@inject ApplicationBridge Bridge
+@inject IJSRuntime JavaScript
+<h1>Polymorfa MAUI</h1>
+@if (!signedIn)
+{
+    <p>Sign in to the application's local demonstration account.</p>
+    <form @onsubmit="SignIn" @onsubmit:preventDefault="true" method="post">
+        <label for="password">Application password</label>
+        <input id="password" type="password" autocomplete="current-password" @bind="password" @bind:event="oninput" disabled="@busy" />
+        <button type="button" @onclick="SignIn" disabled="@(busy || module is null)">Sign in</button>
+    </form>
+}
+else
+{
+    <button @onclick="SignOut" disabled="@busy">Sign out</button>
+    <p id="app-session-status">Application session authenticated</p>
+    <Messaging TokenEndpoint="/api/polymorfa/token" />
+}
+<p role="status">@message</p>
+@code {
+    private string password = "";
+    private string message = "";
+    private bool signedIn;
+    private bool busy;
+    private IJSObjectReference? module;
+    private DotNetObjectReference<Home>? reference;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        reference = DotNetObjectReference.Create(this);
+        module = await JavaScript.InvokeAsync<IJSObjectReference>("import", "./native-bridge.js");
+        await module.InvokeVoidAsync("install", reference);
+        StateHasChanged();
+    }
+    private async Task SignIn()
+    {
+        busy = true;
+        message = "";
+        try { signedIn = await Bridge.LoginAsync(password); if (!signedIn) message = "Sign-in failed."; }
+        catch (Exception) { message = "The application server could not be reached."; }
+        finally { password = ""; busy = false; }
+    }
+    private async Task SignOut()
+    {
+        busy = true;
+        try { await Bridge.RequestAsync("logout"); message = "Signed out."; }
+        catch (Exception) { message = "The local session was cleared; server sign-out could not be confirmed."; }
+        finally { signedIn = false; busy = false; }
+    }
+    [JSInvokable] public async Task<BridgeResponse> RequestApplicationAsync(string action)
+    {
+        try
+        {
+            var response = await Bridge.RequestAsync(action);
+            if (response.Status == 401 && signedIn) await InvokeAsync(() => { signedIn = false; message = "Your application session expired."; StateHasChanged(); });
+            return response;
+        }
+        catch (Exception) { return new(502, "", "application/json"); }
+    }
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (module is not null)
+            {
+                try { await module.InvokeVoidAsync("dispose"); }
+                catch (JSException) { /* The stopped WebView has already released its JavaScript handle. */ }
+                finally
+                {
+                    try { await module.DisposeAsync(); }
+                    catch (JSException) { /* Cleanup after native WebView shutdown. */ }
+                }
+            }
+        }
+        finally { reference?.Dispose(); }
+    }
+}

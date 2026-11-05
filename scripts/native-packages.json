@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "note": "Actual public native package graph in publication dependency order. Every artifact carries the same accepted version and release receipt.",
+  "go": [{ "name": "github.com/polymorfa/sdks/packages/go", "dependsOn": [] }],
+  "python": [{ "name": "polymorfa-sdk", "dependsOn": [] }],
+  "php": [{ "name": "polymorfa/sdk", "dependsOn": [] }],
+  "rust": [
+    {
+      "name": "polymorfa-storage-core",
+      "dir": "storage-core",
+      "dependsOn": []
+    },
+    {
+      "name": "polymorfa-sdk",
+      "dir": ".",
+      "dependsOn": ["polymorfa-storage-core"]
+    },
+    {
+      "name": "polymorfa-storage-indexeddb",
+      "dir": "indexeddb",
+      "dependsOn": ["polymorfa-storage-core"]
+    }
+  ],
+  "dotnet": [
+    { "name": "Polymorfa.Sdk", "dependsOn": [] },
+    { "name": "Polymorfa.Storage.Sql", "dependsOn": ["Polymorfa.Sdk"] },
+    {
+      "name": "Polymorfa.Storage.LibSql",
+      "dependsOn": ["Polymorfa.Storage.Sql"]
+    },
+    {
+      "name": "Polymorfa.Storage.EntityFrameworkCore",
+      "dependsOn": ["Polymorfa.Storage.Sql"]
+    },
+    { "name": "Polymorfa.Storage.MongoDb", "dependsOn": ["Polymorfa.Sdk"] },
+    { "name": "Polymorfa.Storage.DynamoDb", "dependsOn": ["Polymorfa.Sdk"] },
+    { "name": "Polymorfa.Storage.Firestore", "dependsOn": ["Polymorfa.Sdk"] },
+    { "name": "Polymorfa.Storage.Cosmos", "dependsOn": ["Polymorfa.Sdk"] },
+    { "name": "Polymorfa.Storage.S3", "dependsOn": ["Polymorfa.Sdk"] },
+    { "name": "Polymorfa.Storage.IndexedDb", "dependsOn": ["Polymorfa.Sdk"] }
+  ]
+}

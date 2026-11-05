@@ -1,0 +1,146 @@
+{
+  "name": "@polymorfa/storage",
+  "version": "0.1.0-dev.0",
+  "description": "Customer-owned event and history storage with one shared merge contract",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/polymorfa/sdks.git",
+    "directory": "packages/storage"
+  },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./conformance": {
+      "types": "./dist/conformance.d.ts",
+      "import": "./dist/conformance.js"
+    },
+    "./memory": {
+      "types": "./dist/adapters/memory.d.ts",
+      "import": "./dist/adapters/memory.js"
+    },
+    "./postgres": {
+      "types": "./dist/adapters/postgres.d.ts",
+      "import": "./dist/adapters/postgres.js"
+    },
+    "./mysql": {
+      "types": "./dist/adapters/mysql.d.ts",
+      "import": "./dist/adapters/mysql.js"
+    },
+    "./sqlite": {
+      "types": "./dist/adapters/sqlite.d.ts",
+      "import": "./dist/adapters/sqlite.js"
+    },
+    "./libsql": {
+      "types": "./dist/adapters/libsql.d.ts",
+      "import": "./dist/adapters/libsql.js"
+    },
+    "./d1": {
+      "types": "./dist/adapters/d1.d.ts",
+      "import": "./dist/adapters/d1.js"
+    },
+    "./mongodb": {
+      "types": "./dist/adapters/mongodb.d.ts",
+      "import": "./dist/adapters/mongodb.js"
+    },
+    "./dynamodb": {
+      "types": "./dist/adapters/dynamodb.d.ts",
+      "import": "./dist/adapters/dynamodb.js"
+    },
+    "./firestore": {
+      "types": "./dist/adapters/firestore.d.ts",
+      "import": "./dist/adapters/firestore.js"
+    },
+    "./convex": {
+      "types": "./dist/adapters/convex.d.ts",
+      "import": "./dist/adapters/convex.js"
+    },
+    "./cosmos": {
+      "types": "./dist/adapters/cosmos.d.ts",
+      "import": "./dist/adapters/cosmos.js"
+    },
+    "./indexeddb": {
+      "types": "./dist/adapters/indexeddb.d.ts",
+      "import": "./dist/adapters/indexeddb.js"
+    },
+    "./supabase": {
+      "types": "./dist/adapters/supabase.d.ts",
+      "import": "./dist/adapters/supabase.js"
+    },
+    "./drizzle": {
+      "types": "./dist/orm/drizzle.d.ts",
+      "import": "./dist/orm/drizzle.js"
+    },
+    "./prisma": {
+      "types": "./dist/orm/prisma.d.ts",
+      "import": "./dist/orm/prisma.js"
+    },
+    "./d1-bridge": {
+      "types": "./dist/d1-bridge.d.ts",
+      "import": "./dist/d1-bridge.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "prisma",
+    "conformance-fixtures.json",
+    "D1-BRIDGE.md",
+    "d1-bridge-fixtures.json"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "@polymorfa/sdk": "0.1.0-dev.0",
+    "mongodb": ">=6 <8",
+    "@aws-sdk/client-dynamodb": ">=3 <4",
+    "@aws-sdk/util-dynamodb": ">=3 <4",
+    "@google-cloud/firestore": ">=7 <10",
+    "@azure/cosmos": ">=4 <5",
+    "convex": ">=1 <2",
+    "drizzle-orm": ">=0.40 <1",
+    "postgres": ">=3 <4"
+  },
+  "peerDependenciesMeta": {
+    "mongodb": {
+      "optional": true
+    },
+    "@aws-sdk/client-dynamodb": {
+      "optional": true
+    },
+    "@aws-sdk/util-dynamodb": {
+      "optional": true
+    },
+    "@google-cloud/firestore": {
+      "optional": true
+    },
+    "@azure/cosmos": {
+      "optional": true
+    },
+    "convex": {
+      "optional": true
+    },
+    "drizzle-orm": {
+      "optional": true
+    },
+    "postgres": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}

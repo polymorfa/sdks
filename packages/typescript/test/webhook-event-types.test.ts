@@ -1,7 +1,9 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type {
   BlocklistUpdatePayload,
+  IncomingOrderCart,
   WhatsAppMessageIds,
   BusinessQuickReplyUpdatePayload,
   CallAcceptedPayload,
@@ -21,21 +23,26 @@ import type {
   ChatMutePayload,
   ChatReadPayload,
   CloudMessagePayload,
+  CloudMessageReferral,
   CommandResultPayload,
   ContactsSyncPayload,
   ContactUpdatePayload,
   GroupParticipantPayload,
   GroupUpdatePayload,
   HistorySyncPayload,
+  DirectHistorySyncPayload,
   IdentityReference,
   WebhookConversationReference,
   LabelsUpdatePayload,
   LinkedDeviceMessageType,
+  MessageAckPayload,
   MessageDeletePayload,
+  MetaPricingReport,
   MessageEchoPayload,
   MessagePayload,
   MessageReceivedPayload,
   NativeFlowResponse,
+  ReplyChoice,
   NewsletterUpdatePayload,
   PollOption,
   PollVotePayload,
@@ -49,6 +56,7 @@ import type {
 import { KNOWN_WEBHOOK_EVENT_TYPES } from "../src/index.js";
 
 type ExpectedIdentityReference = {
+  readonly parentBsuid?: string;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;
@@ -75,6 +83,11 @@ type ExpectedPollOption = {
   readonly hash: string;
 };
 
+type ExpectedReplyChoice = {
+  readonly kind: "button" | "list";
+  readonly id: string;
+};
+
 type ExpectedLinkedDeviceMessageType =
   | "text"
   | "image"
@@ -84,6 +97,9 @@ type ExpectedLinkedDeviceMessageType =
   | "location"
   | "contact"
   | "phone_number_shared"
+  | "native_flow_response"
+  | "button_reply"
+  | "list_reply"
   | "poll"
   | "sticker"
   | "reaction"
@@ -92,6 +108,7 @@ type ExpectedLinkedDeviceMessageType =
   | "unknown";
 
 type ExpectedMessagePayload = {
+  readonly order?: IncomingOrderCart;
   readonly id: string;
   readonly whatsapp_ids: WhatsAppMessageIds;
   readonly whatsapp_id?: string;
@@ -120,7 +137,14 @@ type ExpectedMessagePayload = {
   readonly unavailable?: boolean;
   readonly unavailableReason?: string;
   readonly nativeFlowResponse?: ExpectedNativeFlowResponse;
+  readonly replyChoice?: ExpectedReplyChoice;
+  readonly parentMessageId?: string;
   readonly [key: string]: unknown;
+};
+
+type ExpectedOfficialGroupError = {
+  readonly code: number;
+  readonly title?: string;
 };
 
 type ExpectedPayloads = {
@@ -174,6 +198,7 @@ type ExpectedPayloads = {
       readonly phoneNumber?: string;
       readonly bsuid?: string;
       readonly username?: string;
+      readonly handRaised?: boolean;
       readonly audioMuted: false;
       readonly video: false;
       readonly state: "invited" | "ringing" | "connected" | "left";
@@ -191,6 +216,7 @@ type ExpectedPayloads = {
       readonly phoneNumber?: string;
       readonly bsuid?: string;
       readonly username?: string;
+      readonly handRaised?: boolean;
       readonly audioMuted: false;
       readonly video: false;
       readonly state: "invited" | "ringing" | "connected" | "left";
@@ -267,6 +293,16 @@ type ExpectedPayloads = {
     readonly error?: string;
   };
   readonly "contact.update": {
+    readonly parentBsuid?: string;
+    readonly identityChange?: {
+      readonly reason: "phone_number_changed" | "user_id_changed";
+      readonly messageId: string;
+      readonly previous?: {
+        readonly id?: string;
+        readonly bsuid?: string;
+        readonly parentBsuid?: string;
+      };
+    };
     readonly id: string;
     readonly phoneNumber?: string;
     readonly bsuid?: string;
@@ -290,14 +326,34 @@ type ExpectedPayloads = {
     readonly left?: readonly ExpectedIdentityReference[];
     readonly promoted?: readonly ExpectedIdentityReference[];
     readonly demoted?: readonly ExpectedIdentityReference[];
+    readonly reason?: string;
+    readonly initiatedBy?: "business" | "participant";
+    readonly requestId?: string;
+    readonly failedParticipants?: readonly {
+      readonly participant: ExpectedIdentityReference;
+      readonly errors?: readonly ExpectedOfficialGroupError[];
+    }[];
+    readonly errors?: readonly ExpectedOfficialGroupError[];
+    readonly joinRequest?: {
+      readonly joinRequestId: string;
+      readonly user: ExpectedIdentityReference;
+      readonly state: "created" | "revoked";
+    };
   };
   readonly "group.update": {
     readonly id: string;
     readonly newSubject?: string;
     readonly newDescription?: string;
     readonly action?: string;
+    readonly requestId?: string;
+    readonly inviteLink?: string;
+    readonly joinApprovalRequired?: boolean;
+    readonly pictureChanged?: boolean;
+    readonly failedChanges?: readonly ("subject" | "description" | "picture")[];
+    readonly errors?: readonly ExpectedOfficialGroupError[];
   };
   readonly "history.sync":
+    | DirectHistorySyncPayload
     | {
         readonly whatsapp_ids: WhatsAppMessageIds;
         readonly whatsapp_id?: string;
@@ -427,10 +483,48 @@ type ExportedPayloads = {
 };
 
 describe("webhook event payload types", () => {
+  it("types Meta Cloud referral fields from the public webhook contract", () => {
+    expectTypeOf<CloudMessagePayload["referral"]>().toEqualTypeOf<
+      CloudMessageReferral | undefined
+    >();
+    expectTypeOf<CloudMessageReferral["ctwa_clid"]>().toEqualTypeOf<
+      string | undefined
+    >();
+    const spec = JSON.parse(
+      readFileSync(
+        new URL("../../../contracts/openapi.messaging.json", import.meta.url),
+        "utf8",
+      ),
+    ) as {
+      components: { schemas: { CloudMessagePayload: unknown } };
+    };
+    const schema = (
+      spec.components.schemas.CloudMessagePayload as {
+        properties: { referral: { properties: Record<string, unknown> } };
+      }
+    ).properties.referral;
+    expect(Object.keys(schema.properties).sort()).toEqual([
+      "ctwa_clid",
+      "source_id",
+      "source_type",
+      "source_url",
+    ]);
+  });
+
   it("maps every formerly opaque event family to its contract payload", () => {
     expectTypeOf<IdentityReference>().toEqualTypeOf<ExpectedIdentityReference>();
     expectTypeOf<WebhookConversationReference>().toEqualTypeOf<ExpectedConversationReference>();
     expectTypeOf<NativeFlowResponse>().toEqualTypeOf<ExpectedNativeFlowResponse>();
+    expectTypeOf<ReplyChoice>().toEqualTypeOf<ExpectedReplyChoice>();
+    expectTypeOf<MessageAckPayload["pricing"]>().toEqualTypeOf<
+      MetaPricingReport | undefined
+    >();
+    expectTypeOf<MetaPricingReport>().toEqualTypeOf<{
+      readonly billable?: boolean;
+      readonly pricing_model?: string;
+      readonly category?: string;
+      readonly type?: string;
+    }>();
     expectTypeOf<PollOption>().toEqualTypeOf<ExpectedPollOption>();
     expectTypeOf<LinkedDeviceMessageType>().toEqualTypeOf<ExpectedLinkedDeviceMessageType>();
     expectTypeOf<CallParticipant>().toEqualTypeOf<
@@ -482,7 +576,7 @@ describe("webhook event payload types", () => {
       expectTypeOf(payload.value).toEqualTypeOf<
         Readonly<Record<string, unknown>>
       >();
-    } else {
+    } else if (!("delivery" in payload)) {
       expectTypeOf(payload.whatsapp.data).toEqualTypeOf<string>();
     }
     expect("kind" in payload).toBe(true);

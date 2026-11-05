@@ -1,0 +1,9 @@
+{
+  "storageSourceSdkCommit": "3bacf46f9c4213426314001586f5bae43aaa77de",
+  "schemaVersion": 2,
+  "schemaPath": "packages/storage/src/schema.ts",
+  "schemaSourceSha256": "f5493691328d1093ab875c91c012a178a7a010a2be4f34f80fce37fb606f0f22",
+  "dataArtifact": "schema.json",
+  "d1BridgeSourceSdkCommit": "9ae35e671f7f4868a67c1562422c5af9284b95c1",
+  "logic": "Handwritten Python; schema.json is fixed protocol data."
+}

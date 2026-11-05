@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 import { describe, expect, it } from "vitest";
-import { BrowserMessagingClient } from "../../browser/src/index.js";
+import { BrowserMessagingClient } from "../../ui-kit/src/browser/index.js";
 import {
   BridgeClient,
   Client,
@@ -173,12 +173,12 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "9b64c70b622593aeda7364b7603ba6790144594e",
-      total: 509,
-      covered: 379,
+      sourceCommit: "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
+      total: 579,
+      covered: 442,
       partial: 0,
       missing: 0,
-      excluded: 130,
+      excluded: 137,
       changed: 0,
     });
     const resolutions = (result.report?.resolutions ?? []) as Array<{
@@ -235,6 +235,7 @@ describe("coverage checker", () => {
     );
     expect(mappings).toEqual({
       exportCallRecords: { status: "covered", method: "Client.calls.export" },
+      getCallRecord: { status: "covered", method: "Client.calls.retrieve" },
       getCallStats: { status: "covered", method: "Client.calls.stats" },
       listCallRecords: { status: "covered", method: "Client.calls.list" },
     });

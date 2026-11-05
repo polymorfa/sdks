@@ -4,6 +4,7 @@ import {
   Client,
   PolymorfaConflictError,
   type CreatePlatformCampaignRequest,
+  type ReschedulePlatformCampaignRequest,
 } from "../src/index.js";
 import { ORGANIZATION_API_KEY } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
@@ -23,14 +24,39 @@ const body = {
     nested: [null, { enabled: false }],
   },
   scheduledAt: 1_800_000_000_000,
+  sendWindow: {
+    timeZone: "America/Sao_Paulo",
+    days: ["monday", "friday"],
+    hours: [{ start: "09:00", end: "18:00" }],
+    recipientTimeZone: true,
+    timeZoneVariable: "timeZone",
+  },
   recipients: [{ phone: "+15551234567", variables: { plan: "pro" } }],
   recipientCount: 100,
   composerBlueprint: { steps: [null, { text: "Hello" }] },
   messagesArray: [{ kind: "text", text: "Hello" }],
   audienceRef: null,
   complianceConfig: false,
-  variants: ["a", "b"],
-  variantStrategy: "round_robin",
+  variants: [
+    {
+      key: "a",
+      label: "A",
+      weight: 50,
+      blueprint: { version: 2, source: "Hello" },
+    },
+    {
+      key: "b",
+      label: "B",
+      weight: 50,
+      blueprint: { version: 2, source: "Hi" },
+    },
+  ],
+  variantStrategy: {
+    winnerCriterion: "read",
+    holdoutPercent: 0,
+    autoPromote: true,
+    testWindowMinutes: 60,
+  },
 } satisfies CreatePlatformCampaignRequest;
 
 it("covers exactly the pinned create request fields without closing opaque JSON", () => {
@@ -89,6 +115,10 @@ it("requires the organization project and body at compile time", () => {
       // @ts-expect-error senderConfig is an object, unlike the opaque JSON fields
       senderConfig: false,
     });
+    // @ts-expect-error the Platform create route has no replay contract
+    client.campaigns.create(body, { idempotencyKey: "not-supported" });
+    // @ts-expect-error the Platform create route must not be retried
+    client.campaigns.create(body, { maxNetworkRetries: 2 });
   };
   expect(invalidCalls).toBeTypeOf("function");
 });
@@ -106,21 +136,37 @@ it("sends the required scope and preserves every JSON field to the Platform rout
     credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
     baseUrl: server.url,
   });
-  const result = await client.campaigns.create(body, {
-    idempotencyKey: "create-august",
-  });
+  const result = await client.campaigns.create(body);
   expect(server.requests).toHaveLength(1);
   expect(server.requests[0]).toMatchObject({
     method: "POST",
     path: "/platform/campaigns",
   });
   expect(JSON.parse(server.requests[0]!.body)).toEqual(body);
-  expect(server.requests[0]!.headers["idempotency-key"]).toBe("create-august");
+  expect(server.requests[0]!.headers["idempotency-key"]).toBeUndefined();
   expect(result.data.data).toEqual({
     id: "campaign-1",
     name: body.name,
     recipientCount: 1,
   });
+});
+
+it("never retries a Platform create after an uncertain server response", async () => {
+  const server = await startTestServer(() => ({
+    status: 503,
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      error: { code: "temporarily_unavailable", message: "Try later" },
+    }),
+  }));
+  servers.push(server);
+  const client = new Client({
+    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    baseUrl: server.url,
+    maxNetworkRetries: 3,
+  });
+  await expect(client.campaigns.create(body)).rejects.toThrow();
+  expect(server.requests).toHaveLength(1);
 });
 
 it("returns the archive receipt and surfaces an active-campaign conflict", async () => {
@@ -156,4 +202,34 @@ it("returns the archive receipt and surfaces an active-campaign conflict", async
     ["POST", "/platform/campaigns/campaign-1/archive"],
     ["POST", "/platform/campaigns/campaign-2/archive"],
   ]);
+});
+
+it("reschedules a waiting campaign with its project and safe retry key", async () => {
+  const server = await startTestServer(() => ({
+    status: 200,
+    body: JSON.stringify({
+      data: { id: "campaign-1", status: "running", operationId: "operation-1" },
+    }),
+  }));
+  servers.push(server);
+  const client = new Client({
+    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    baseUrl: server.url,
+  });
+  const request: ReschedulePlatformCampaignRequest = {
+    projectId: body.projectId,
+    scheduledAt: null,
+  };
+  const result = await client.campaigns.reschedule("campaign-1", request, {
+    idempotencyKey: "reschedule-campaign-1",
+  });
+  expect(server.requests[0]).toMatchObject({
+    method: "POST",
+    path: "/platform/campaigns/campaign-1/reschedule",
+    body: JSON.stringify(request),
+  });
+  expect(server.requests[0]?.headers["idempotency-key"]).toBe(
+    "reschedule-campaign-1",
+  );
+  expect(result.data.data).toMatchObject({ operationId: "operation-1" });
 });

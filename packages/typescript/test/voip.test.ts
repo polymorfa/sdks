@@ -73,6 +73,171 @@ const participant = {
 } as const;
 
 describe("VoipResource", () => {
+  it("creates and previews call links with tokens confined to the POST body", async () => {
+    const token = "private_link_test_token";
+    const created = {
+      session: "support",
+      token,
+      url: `https://call.whatsapp.com/voice/${token}`,
+      video: false,
+    };
+    const previewed = {
+      session: "support",
+      creator: { id: "9007199254740993" },
+      video: false,
+      approvalRequired: true,
+      isAdmin: false,
+    };
+    const server = await serve([
+      json({ success: true, data: created }, 201),
+      json({ success: true, data: previewed }),
+    ]);
+    const sdk = client(server);
+    expect(
+      (await sdk.voip.createCallLink({ session: "support" })).data.data,
+    ).toEqual(created);
+    expect(
+      (await sdk.voip.previewCallLink({ session: "support", token })).data.data,
+    ).toEqual(previewed);
+    expect(
+      server.requests.map(({ method, path, body }) => ({
+        method,
+        path,
+        body: JSON.parse(body),
+      })),
+    ).toEqual([
+      {
+        method: "POST",
+        path: "/messaging/voip/call-links",
+        body: { session: "support" },
+      },
+      {
+        method: "POST",
+        path: "/messaging/voip/call-links/preview",
+        body: { session: "support", token },
+      },
+    ]);
+  });
+
+  it("refuses client tokens, invalid input and idempotency keys without transport", async () => {
+    const server = await serve([]);
+    const sdk = client(server);
+    expect(() =>
+      client(server, {
+        type: "clientToken",
+        value: "ct_test_token",
+      }).voip.createCallLink({ session: "support" }),
+    ).toThrow(PolymorfaConfigurationError);
+    expect(() => sdk.voip.createCallLink({ session: " " })).toThrow(
+      PolymorfaValidationError,
+    );
+    expect(() =>
+      sdk.voip.previewCallLink({ session: "support", token: "bad/token" }),
+    ).toThrow(PolymorfaValidationError);
+    expect(() =>
+      sdk.voip.createCallLink(
+        { session: "support" },
+        { idempotencyKey: "once" },
+      ),
+    ).toThrow(PolymorfaValidationError);
+    expect(() =>
+      sdk.voip.previewCallLink(
+        { session: "support", token: "test" },
+        { headers: { "Idempotency-Key": "once" } },
+      ),
+    ).toThrow(PolymorfaValidationError);
+    expect(server.requests).toHaveLength(0);
+  });
+
+  it("does not retry a failed link creation even when retries are requested", async () => {
+    const server = await serve([
+      json(
+        { error: { code: "upstream_failure", message: "Provider failed" } },
+        502,
+      ),
+    ]);
+    await expect(
+      client(server).voip.createCallLink(
+        { session: "support" },
+        { maxNetworkRetries: 3 },
+      ),
+    ).rejects.toThrow();
+    expect(server.requests).toHaveLength(1);
+  });
+
+  it("serializes ad-hoc group placement and re-ring without retries", async () => {
+    const server = await serve([
+      json(
+        {
+          success: true,
+          data: { callId: "group/1", session: "support", video: false },
+        },
+        201,
+      ),
+      json({ success: true }, 202),
+    ]);
+    const sdk = client(server);
+    await sdk.voip.place({
+      session: "support",
+      participants: ["+15550100", "+15550101"],
+    });
+    await sdk.voip.ringParticipant("group/1", { to: "+15550100" });
+    expect(
+      server.requests.map(({ method, path, body }) => ({
+        method,
+        path,
+        body: JSON.parse(body),
+      })),
+    ).toEqual([
+      {
+        method: "POST",
+        path: "/messaging/voip/calls",
+        body: { session: "support", participants: ["+15550100", "+15550101"] },
+      },
+      {
+        method: "POST",
+        path: "/messaging/voip/calls/group%2F1/participants/ring",
+        body: { to: "+15550100" },
+      },
+    ]);
+  });
+
+  it("serializes a stored group by public ID without recipient fields", async () => {
+    const server = await serve([
+      json(
+        {
+          success: true,
+          data: { callId: "stored-group", session: "support", video: false },
+        },
+        201,
+      ),
+    ]);
+    await client(server).voip.place({
+      session: "support",
+      groupId: "9007199254740996",
+    });
+    expect(JSON.parse(server.requests[0]!.body)).toEqual({
+      session: "support",
+      groupId: "9007199254740996",
+    });
+  });
+
+  it("refuses ambiguous or invalid group destinations before a request", async () => {
+    const sdk = client(await serve([]));
+    for (const body of [
+      { to: "+15550100", participants: ["+15550100", "+15550101"] },
+      { participants: ["+15550100"] },
+      { participants: ["+15550100", "+15550100"] },
+      { participants: ["123@lid", "+15550100"] },
+      { groupId: "123@g.us" },
+      { groupId: "9007199254740996", to: "+15550100" },
+      { groupId: "9007199254740996", participants: ["+15550100", "+15550101"] },
+    ])
+      expect(() => sdk.voip.place({ session: "support", ...body })).toThrow(
+        PolymorfaValidationError,
+      );
+  });
+
   it("places, accepts, adds participants, leaves, rejects, and ends calls", async () => {
     const server = await serve([
       {
@@ -304,12 +469,12 @@ describe("VoipResource", () => {
       json({ success: true }, 202),
       json({ success: true }, 202),
     ]);
-    const sdk = client(server, { type: "clientToken", value: "pmfa_ct_web" });
+    const sdk = client(server, { type: "clientToken", value: "pmfa_ct_d2Vi" });
     const quality = {
       kind: "quality",
       connectionId: "conn_0123456789",
       client: {
-        sdk: "@polymorfa/browser",
+        sdk: "@polymorfa/ui-kit",
         version: "0.1.0-dev.0",
         platform: "browser",
       },
@@ -392,7 +557,7 @@ describe("VoipResource", () => {
         201,
       ),
     ]);
-    const sdk = client(server, { type: "clientToken", value: "pmfa_ct_web" });
+    const sdk = client(server, { type: "clientToken", value: "pmfa_ct_d2Vi" });
     expect(() => sdk.voip.accept("call-1", { participant: "desk-1" })).toThrow(
       PolymorfaConfigurationError,
     );
@@ -467,6 +632,151 @@ describe("VoipResource", () => {
       }),
     ).toThrow(PolymorfaValidationError);
     expect(server.requests).toHaveLength(2);
+  });
+
+  it("turns simultaneous calls on only with an explicit risk acknowledgment", async () => {
+    const settings = {
+      callsEnabled: true,
+      conferenceMode: true,
+      inboundRoute: "clients",
+      sipTrunkId: null,
+      sipClaim: true,
+      hostCloudApiCalls: false,
+      simultaneousCalls: true,
+      revision: 4,
+      updatedAt: "2026-10-11T10:00:00.000Z",
+    };
+    const server = await serve([
+      json({ success: true, data: settings }),
+      json({ success: true, data: { ...settings, simultaneousCalls: false } }),
+      json(
+        {
+          success: false,
+          error: {
+            code: "permission_denied",
+            message: "Only a team API key can turn simultaneous calls on.",
+          },
+        },
+        403,
+      ),
+    ]);
+    const sdk = client(server);
+    const on = await sdk.voip.updateCallSettings("support", {
+      simultaneousCalls: true,
+      acknowledgeRisk: true,
+      expectedRevision: 3,
+    });
+    expect(on.data.data.simultaneousCalls).toBe(true);
+    expect(JSON.parse(server.requests[0]?.body ?? "null")).toEqual({
+      simultaneousCalls: true,
+      acknowledgeRisk: true,
+      expectedRevision: 3,
+    });
+    const off = await sdk.voip.updateCallSettings("support", {
+      simultaneousCalls: false,
+    });
+    expect(off.data.data.simultaneousCalls).toBe(false);
+    expect(JSON.parse(server.requests[1]?.body ?? "null")).toEqual({
+      simultaneousCalls: false,
+    });
+    // A project token can turn the setting off but never on.
+    const refused = await client(server, {
+      type: "projectToken",
+      value: PROJECT_TOKEN,
+    })
+      .voip.updateCallSettings("support", {
+        simultaneousCalls: true,
+        acknowledgeRisk: true,
+      })
+      .catch((error: unknown) => error);
+    expect(refused).toBeInstanceOf(PolymorfaAuthorizationError);
+    expect((refused as PolymorfaAuthorizationError).code).toBe(
+      "permission_denied",
+    );
+
+    for (const body of [
+      { acknowledgeRisk: true },
+      { simultaneousCalls: "on" },
+      { simultaneousCalls: false, acknowledgeRisk: "yes" },
+    ])
+      expect(() =>
+        sdk.voip.updateCallSettings(
+          "support",
+          body as unknown as { simultaneousCalls: boolean },
+        ),
+      ).toThrow(PolymorfaValidationError);
+    expect(server.requests).toHaveLength(3);
+  });
+
+  it("leaves stored-state acknowledgment and revision decisions to the API", async () => {
+    const settings = {
+      callsEnabled: true,
+      conferenceMode: false,
+      inboundRoute: "clients",
+      sipTrunkId: null,
+      sipClaim: false,
+      hostCloudApiCalls: false,
+      simultaneousCalls: true,
+      revision: 2,
+      updatedAt: null,
+    };
+    const server = await serve([
+      json({ success: true, data: settings }),
+      json(
+        {
+          success: false,
+          error: {
+            code: "invalid_parameter",
+            message: "Acknowledgment required.",
+            param: "acknowledgeRisk",
+          },
+        },
+        400,
+      ),
+      json(
+        {
+          success: false,
+          error: {
+            code: "state_conflict",
+            message: "Revision changed.",
+            param: "expectedRevision",
+          },
+        },
+        409,
+      ),
+    ]);
+    const sdk = client(server);
+    expect(
+      (
+        await sdk.voip.updateCallSettings("support", {
+          simultaneousCalls: true,
+        })
+      ).data.data.simultaneousCalls,
+    ).toBe(true);
+    await expect(
+      sdk.voip.updateCallSettings("support", {
+        simultaneousCalls: true,
+        acknowledgeRisk: false,
+      }),
+    ).rejects.toMatchObject({
+      code: "invalid_parameter",
+      param: "acknowledgeRisk",
+    });
+    await expect(
+      sdk.voip.updateCallSettings("support", {
+        simultaneousCalls: true,
+        acknowledgeRisk: true,
+        expectedRevision: 1,
+      }),
+    ).rejects.toMatchObject({
+      code: "state_conflict",
+      param: "expectedRevision",
+    });
+    expect(server.requests.map((r) => JSON.parse(r.body))).toEqual([
+      { simultaneousCalls: true },
+      { simultaneousCalls: true, acknowledgeRisk: false },
+      { simultaneousCalls: true, acknowledgeRisk: true, expectedRevision: 1 },
+    ]);
   });
 
   it("turns calling off and reports calls_disabled refusals", async () => {

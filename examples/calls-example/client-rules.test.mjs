@@ -34,7 +34,7 @@ function fakeMessaging({
       },
       mint: async (input) => {
         calls.push(["mint", input]);
-        return { data: { data: { token: "pmfa_ct_example" } } };
+        return { data: { data: { token: "pmfa_ct_ZXhhbXBsZQ" } } };
       },
       updateRules: async (_session, input) => {
         calls.push(["update-rules", input]);
@@ -79,7 +79,7 @@ test("mint helper rejects missing Calls actions before minting", async () => {
 test("mint helper uses existing rules without requiring sessions:read", async () => {
   const messaging = fakeMessaging({ sessionError: forbidden });
   const token = await mintCallsExampleToken(messaging, "support", "local-1");
-  assert.equal(token, "pmfa_ct_example");
+  assert.equal(token, "pmfa_ct_ZXhhbXBsZQ");
   assert.deepEqual(messaging.calls, [
     "retrieve-rules",
     ["mint", { session: "support", ephemeralId: "local-1", ttlSeconds: 900 }],

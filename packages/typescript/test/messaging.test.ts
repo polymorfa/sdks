@@ -294,6 +294,20 @@ describe("MessagingClient client rules contract", () => {
 });
 
 describe("MessagingClient Customer-scoped client tokens", () => {
+  it("serializes a session ceiling including reserved regional beta actions", async () => {
+    const { client, requests } = await messagingServer();
+    await client.clientTokens.mint({
+      session: "support",
+      ephemeralId: "u",
+      allow: ["chats_read", "chats_manage", "contact_write", "contact_delete"],
+    });
+    expect(JSON.parse(requests[0]!.body!)).toEqual({
+      session: "support",
+      ephemeralId: "u",
+      allow: ["chats_read", "chats_manage", "contact_write", "contact_delete"],
+    });
+  });
+
   it("sends customer and allow instead of session", async () => {
     const { client, requests } = await messagingServer();
 
@@ -322,10 +336,6 @@ describe("MessagingClient Customer-scoped client tokens", () => {
       },
     ],
     ["neither session nor customer", { ephemeralId: "u" }],
-    [
-      "allow without customer",
-      { session: "support", ephemeralId: "u", allow: ["send_message"] },
-    ],
   ])("rejects %s before transport", async (_label, body) => {
     const { client, requests } = await messagingServer();
     expect(() =>
@@ -557,7 +567,7 @@ describe("MessagingClient webhooks", () => {
     }));
     servers.push(server);
     const client = new MessagingClient({
-      credential: { type: "clientToken", value: "pmfa_ct_widget" },
+      credential: { type: "clientToken", value: "pmfa_ct_d2lkZ2V0" },
       baseUrl: server.url,
     });
     expect(() => client.sessions.list()).toThrow(/server API key/);

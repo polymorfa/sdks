@@ -1,3 +1,4 @@
+import { validateWebhookBatching } from "./webhook-batching.js";
 import {
   PolymorfaConfigurationError,
   PolymorfaServerError,
@@ -113,7 +114,7 @@ type WebhookRotationFor<O extends ClientOwner> = O extends "project"
 type WebhookTestFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookTestReceipt
   : OrganizationWebhookTestReceipt;
-type TestWebhookInputFor<O extends ClientOwner> = O extends "project"
+type WebhookTestInputFor<O extends ClientOwner> = O extends "project"
   ? TestProjectWebhookInput
   : TestOrganizationWebhookInput;
 type DeliveryFor<O extends ClientOwner> = O extends "project"
@@ -350,7 +351,7 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
       })
       .then(unwrapResponse);
   }
-  /** A `@polymorfa/store` live source over `stream()`; see `eventStreamSource`. */
+  /** A `@polymorfa/ui-kit/store` live source over `stream()`; see `eventStreamSource`. */
   liveSource(
     params: Omit<EventStreamParamsFor<O>, "since" | "signal"> = {} as Omit<
       EventStreamParamsFor<O>,
@@ -390,6 +391,7 @@ export class WebhooksResource<O extends ClientOwner> extends ResourceBase {
     input: CreateWebhookFor<O>,
     options: RequestOptions = {},
   ): Promise<ApiResponse<WebhookCreationFor<O>>> {
+    validateWebhookBatching(input);
     return this.mutate("POST", this.path("/webhooks"), input, options);
   }
   retrieve(
@@ -406,6 +408,7 @@ export class WebhooksResource<O extends ClientOwner> extends ResourceBase {
     input: UpdateWebhookFor<O>,
     options: RequestOptions = {},
   ): Promise<ApiResponse<WebhookMutationFor<O>>> {
+    validateWebhookBatching(input);
     return this.mutate(
       "PATCH",
       this.path(`/webhooks/${encodeURIComponent(webhookId)}`),
@@ -426,7 +429,7 @@ export class WebhooksResource<O extends ClientOwner> extends ResourceBase {
   }
   test(
     webhookId: string,
-    input: TestWebhookInputFor<O> = {},
+    input: WebhookTestInputFor<O> = {} as WebhookTestInputFor<O>,
     options: RequestOptions = {},
   ): Promise<ApiResponse<WebhookTestFor<O>>> {
     if (

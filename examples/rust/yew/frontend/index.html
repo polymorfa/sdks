@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Polymorfa Yew example</title>
+    <link data-trunk rel="rust" />
+    <link data-trunk rel="copy-file" href="public/elements.js" />
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        margin: 0;
+        color: #182026;
+        background: #f7f8fa;
+      }
+      main {
+        max-width: 70rem;
+        margin: 1rem auto;
+        padding: 1rem;
+      }
+      h1 {
+        font-size: 26px;
+        margin: 0 0 12px;
+      }
+      p {
+        margin: 4px 0;
+      }
+      section > button {
+        justify-self: start;
+      }
+      form {
+        max-width: 25rem;
+        display: grid;
+        gap: 0.8rem;
+      }
+      input,
+      button {
+        font: inherit;
+        padding: 0.75rem;
+        border: 1px solid #64748b;
+        border-radius: 0.4rem;
+        min-height: 44px;
+      }
+      button {
+        background: #174dcb;
+        color: white;
+        cursor: pointer;
+      }
+      button:focus-visible,
+      input:focus-visible {
+        outline: 3px solid #86b5ff;
+        outline-offset: 3px;
+      }
+      section {
+        display: grid;
+        gap: 0.4rem;
+      }
+      pmfa-inbox {
+        display: block;
+        height: calc(100dvh - 280px);
+        min-height: 360px;
+      }
+    </style>
+  </head>
+  <body>
+    <script type="module" src="/elements.js"></script>
+  </body>
+</html>

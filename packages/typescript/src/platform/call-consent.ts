@@ -132,7 +132,7 @@ export interface CallOptOutDeleted {
 }
 
 /**
- * The team's blocked country codes. Organization credentials only: the API
+ * The team's blocked country codes. Team keys only: the API
  * refuses project tokens and client tokens with `403`.
  */
 export class CallPolicyResource {
@@ -171,7 +171,7 @@ export class CallPolicyResource {
 
 /**
  * The team's do-not-call list. Calls to a listed person are refused with
- * `call_recipient_opted_out`. Organization credentials only: the API refuses
+ * `call_recipient_opted_out`. Team keys only: the API refuses
  * project tokens and client tokens with `403`.
  */
 export class CallOptOutsResource {

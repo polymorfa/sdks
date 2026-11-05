@@ -1,3 +1,5 @@
+import { AnalyticsResource } from "./platform/analytics.js";
+import { FlowsResource } from "./platform/flows.js";
 import { FunctionsResource } from "./platform/functions.js";
 import { SessionConfigurationResource } from "./platform/session-configuration.js";
 import {
@@ -25,7 +27,11 @@ import {
 } from "./platform/call-consent.js";
 import { PlatformCallsResource } from "./platform/calls.js";
 import { CallRetentionResource } from "./platform/call-retention.js";
+import { AudienceSegmentsResource } from "./platform/audience-segments.js";
 import { CampaignsResource } from "./platform/campaigns.js";
+import { ProjectCampaignsResource } from "./platform/project-campaigns.js";
+import { AudienceProfilesResource } from "./platform/audience-profiles.js";
+import { SignalCustodyResource } from "./platform/signal-custody.js";
 import { CustomersResource } from "./platform/customers.js";
 import {
   EventsResource,
@@ -47,6 +53,7 @@ import { PlatformSessionsResource } from "./platform/sessions.js";
 import { SipTrunksResource } from "./platform/sip-trunks.js";
 import { VoiceResource } from "./platform/voice.js";
 import { UsageResource } from "./platform/usage.js";
+import { RequestLogsResource } from "./platform/request-logs.js";
 
 export type EventsResourceFor<O extends ClientOwner> = EventsResource<O>;
 export type WebhooksResourceFor<O extends ClientOwner> = WebhooksResource<O>;
@@ -70,6 +77,9 @@ export interface ClientBase<O extends ClientOwner> {
   readonly voice: VoiceResource<O>;
   /** Metered usage and usage gates. */
   readonly usage: UsageResource;
+  /** A project's API request log (`logs:read`). */
+  readonly requestLogs: RequestLogsResource;
+  readonly analytics: AnalyticsResource;
   readonly calls: PlatformCallsResource<O>;
   readonly callRetention: CallRetentionResource;
   readonly raw: RawResourceFor<O>;
@@ -77,6 +87,7 @@ export interface ClientBase<O extends ClientOwner> {
 }
 
 export interface OrganizationControlPlaneResources {
+  readonly audienceProfiles: AudienceProfilesResource;
   readonly apiKeys: ApiKeysResource;
   readonly audiences: AudiencesResource;
   readonly auditLogs: AuditLogsResource;
@@ -87,6 +98,7 @@ export interface OrganizationControlPlaneResources {
   /** The team's do-not-call list. */
   readonly callOptOuts: CallOptOutsResource;
   readonly campaigns: CampaignsResource;
+  readonly audienceSegments: AudienceSegmentsResource;
   readonly customers: CustomersResource;
   readonly members: MembersResource;
   readonly organizations: OrganizationsResource;
@@ -100,6 +112,9 @@ export interface OrganizationControlPlaneResources {
 }
 
 export interface ProjectControlPlaneResources {
+  readonly campaigns: ProjectCampaignsResource;
+  readonly signalCustody: SignalCustodyResource;
+  readonly flows: FlowsResource;
   readonly functions: FunctionsResource;
 }
 
@@ -116,6 +131,9 @@ export interface ClientConstructor {
 class ClientImplementation implements ClientBase<ClientOwner> {
   /** Installed only for project instances; the public conditional type reflects that. */
   declare readonly functions: FunctionsResource;
+  declare readonly flows: FlowsResource;
+  declare readonly campaigns: CampaignsResource | ProjectCampaignsResource;
+  declare readonly signalCustody: SignalCustodyResource;
   readonly owner: ClientOwner;
   readonly projectId: string | null;
   readonly events: EventsResource<ClientOwner>;
@@ -127,6 +145,8 @@ class ClientImplementation implements ClientBase<ClientOwner> {
   readonly sipTrunks: SipTrunksResource<ClientOwner>;
   readonly voice: VoiceResource<ClientOwner>;
   readonly usage: UsageResource;
+  readonly requestLogs: RequestLogsResource;
+  readonly analytics: AnalyticsResource;
   readonly calls: PlatformCallsResource<ClientOwner>;
   readonly callRetention: CallRetentionResource;
   readonly raw: RawClient | ProjectScopedRawClient;
@@ -191,6 +211,8 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       projectId !== null && credential.type !== "projectToken",
     );
     this.usage = new UsageResource(this.#transport, projectId);
+    this.requestLogs = new RequestLogsResource(this.#transport, projectId);
+    this.analytics = new AnalyticsResource(this.#transport, projectId);
     this.calls = new PlatformCallsResource(this.#transport, projectId);
     this.callRetention = new CallRetentionResource(this.#transport);
     this.raw =
@@ -201,18 +223,23 @@ class ClientImplementation implements ClientBase<ClientOwner> {
     if (projectId !== null)
       Object.assign(this, {
         functions: new FunctionsResource(this.#transport, projectId),
+        flows: new FlowsResource(this.#transport, projectId),
+        campaigns: new ProjectCampaignsResource(this.#transport, projectId),
+        signalCustody: new SignalCustodyResource(this.#transport, projectId),
       });
 
     if (this.owner === "organization") {
       Object.assign(this, {
         apiKeys: new ApiKeysResource(this.#transport),
         audiences: new AudiencesResource(this.#transport),
+        audienceProfiles: new AudienceProfilesResource(this.#transport),
         auditLogs: new AuditLogsResource(this.#transport),
         billing: new BillingResource(this.#transport),
         banSafe: new BanSafeResource(this.#transport),
         callPolicy: new CallPolicyResource(this.#transport),
         callOptOuts: new CallOptOutsResource(this.#transport),
         campaigns: new CampaignsResource(this.#transport),
+        audienceSegments: new AudienceSegmentsResource(this.#transport),
         customers: new CustomersResource(this.#transport),
         members: new MembersResource(this.#transport),
         organizations: new OrganizationsResource(this.#transport),
