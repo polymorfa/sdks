@@ -1,0 +1,11 @@
+[package]
+name = "polymorfa-axum-webhook-example"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+publish = false
+
+[dependencies]
+axum = "0.8"
+polymorfa-sdk = { path = "../../../packages/rust" }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }

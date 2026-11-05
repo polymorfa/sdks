@@ -61,7 +61,7 @@ describe("LifecycleSocket authentication", () => {
     let now = 0;
     const h = lifecycleWith(vi.fn(), () => now);
     h.api.token
-      .mockResolvedValueOnce({ value: "pmfa_ct_one", expiresAt: 300_000 })
+      .mockResolvedValueOnce({ value: "pmfa_ct_b25l", expiresAt: 300_000 })
       .mockResolvedValueOnce({ value: "pmfa_ct_two", expiresAt: 600_000 });
     const connecting = h.socket.connect();
     await flush();

@@ -3,6 +3,8 @@ import { env } from "../../../../lib/env.js";
 import {
   action,
   idempotencyKey,
+  integer,
+  flag,
   route,
   text,
   unknownAction,
@@ -38,9 +40,21 @@ export const POST = route("admin", async ({ body, request }) => {
     case "delete":
       return campaigns.delete(id, scope);
     case "launch":
-      return campaigns.launch(id, payload, {
-        idempotencyKey: idempotencyKey(request),
-      });
+      return campaigns.launch(
+        id,
+        {
+          ...scope,
+          ...(payload.scheduledAt === undefined
+            ? {}
+            : { scheduledAt: integer(payload, "scheduledAt") }),
+          ...(payload.skipMissingVariables === undefined
+            ? {}
+            : { skipMissingVariables: flag(payload, "skipMissingVariables") }),
+        },
+        {
+          idempotencyKey: idempotencyKey(request),
+        },
+      );
     case "pause":
       return campaigns.pause(id);
     case "resume":

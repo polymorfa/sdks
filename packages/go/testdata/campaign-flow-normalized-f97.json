@@ -1,0 +1,34 @@
+{
+  "data": {
+    "id": "22222222-2222-4222-8222-222222222222",
+    "flowKey": "22222222-2222-4222-8222-222222222222",
+    "revision": 1,
+    "name": "Valid API flow",
+    "definition": {
+      "entryNodeId": "entry",
+      "nodes": [
+        {
+          "id": "entry",
+          "edges": [
+            {
+              "match": {
+                "kind": "keyword",
+                "value": "i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇i̇"
+              },
+              "to": "done"
+            }
+          ]
+        },
+        {
+          "id": "done",
+          "edges": [],
+          "send": {
+            "kind": "text",
+            "text": "Hello"
+          }
+        }
+      ]
+    },
+    "createdAt": 0
+  }
+}

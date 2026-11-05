@@ -15,11 +15,11 @@ describe("CallsTokenSource", () => {
     const calls: boolean[] = [];
     const source = new CallsTokenSource(async ({ refresh }) => {
       calls.push(refresh === true);
-      return "pmfa_ct_one";
+      return "pmfa_ct_b25l";
     });
     const [a, b] = await Promise.all([source.get(), source.get()]);
-    expect(a.value).toBe("pmfa_ct_one");
-    expect(b.value).toBe("pmfa_ct_one");
+    expect(a.value).toBe("pmfa_ct_b25l");
+    expect(b.value).toBe("pmfa_ct_b25l");
     expect(calls).toEqual([false]);
   });
 
@@ -28,17 +28,17 @@ describe("CallsTokenSource", () => {
     const calls: boolean[] = [];
     const source = new CallsTokenSource(async ({ refresh }) => {
       calls.push(refresh === true);
-      return refresh ? "pmfa_ct_fresh" : stale.promise;
+      return refresh ? "pmfa_ct_ZnJlc2g" : stale.promise;
     });
     const plain = source.get();
     const refreshed = await source.get({ refresh: true });
-    expect(refreshed.value).toBe("pmfa_ct_fresh");
+    expect(refreshed.value).toBe("pmfa_ct_ZnJlc2g");
     expect(calls).toEqual([false, true]);
 
     // The older call finishing later does not replace the refreshed token.
-    stale.resolve("pmfa_ct_refused");
-    expect((await plain).value).toBe("pmfa_ct_refused");
-    expect((await source.get()).value).toBe("pmfa_ct_fresh");
+    stale.resolve("pmfa_ct_cmVmdXNlZA");
+    expect((await plain).value).toBe("pmfa_ct_cmVmdXNlZA");
+    expect((await source.get()).value).toBe("pmfa_ct_ZnJlc2g");
   });
 
   it("does not let a call pending across invalidate() answer or repopulate later requests", async () => {
@@ -46,16 +46,16 @@ describe("CallsTokenSource", () => {
     let calls = 0;
     const source = new CallsTokenSource(async () => {
       calls += 1;
-      return calls === 1 ? stale.promise : "pmfa_ct_fresh";
+      return calls === 1 ? stale.promise : "pmfa_ct_ZnJlc2g";
     });
     const before = source.get();
     source.invalidate(); // e.g. a 401 on a REST call
     const after = source.get();
     expect(calls).toBe(2);
-    stale.resolve("pmfa_ct_refused");
-    expect((await before).value).toBe("pmfa_ct_refused");
-    expect((await after).value).toBe("pmfa_ct_fresh");
-    expect((await source.get()).value).toBe("pmfa_ct_fresh");
+    stale.resolve("pmfa_ct_cmVmdXNlZA");
+    expect((await before).value).toBe("pmfa_ct_cmVmdXNlZA");
+    expect((await after).value).toBe("pmfa_ct_ZnJlc2g");
+    expect((await source.get()).value).toBe("pmfa_ct_ZnJlc2g");
     expect(calls).toBe(2);
   });
 
@@ -79,9 +79,9 @@ describe("CallsTokenSource", () => {
     await expect(cancelled).rejects.toThrow("placement cancelled");
     // The shared provider call is still running for the other callers.
     expect(signals[0]?.aborted).toBe(false);
-    pending.resolve("pmfa_ct_shared");
-    expect((await kept).value).toBe("pmfa_ct_shared");
-    expect((await unsignalled).value).toBe("pmfa_ct_shared");
+    pending.resolve("pmfa_ct_c2hhcmVk");
+    expect((await kept).value).toBe("pmfa_ct_c2hhcmVk");
+    expect((await unsignalled).value).toBe("pmfa_ct_c2hhcmVk");
   });
 
   it("cancels the shared provider call once every caller has cancelled", async () => {
@@ -112,14 +112,14 @@ describe("CallsTokenSource", () => {
     const calls: boolean[] = [];
     const source = new CallsTokenSource(async ({ refresh }) => {
       calls.push(refresh === true);
-      return "pmfa_ct_fresh";
+      return "pmfa_ct_ZnJlc2g";
     });
     const [refreshed, plain] = await Promise.all([
       source.get({ refresh: true }),
       source.get(),
     ]);
-    expect(refreshed.value).toBe("pmfa_ct_fresh");
-    expect(plain.value).toBe("pmfa_ct_fresh");
+    expect(refreshed.value).toBe("pmfa_ct_ZnJlc2g");
+    expect(plain.value).toBe("pmfa_ct_ZnJlc2g");
     expect(calls).toEqual([true]);
   });
 });

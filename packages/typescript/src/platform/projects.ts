@@ -1,4 +1,12 @@
 import { HttpTransport } from "../transport/http.js";
+import {
+  getProjectSignalCustody,
+  updateProjectSignalCustody,
+} from "./signal-custody.js";
+import type {
+  ProjectSignalCustodyUpdate,
+  SignalCustodyDefault,
+} from "../campaign-contracts.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   CreateProjectRequest,
@@ -21,6 +29,21 @@ import type {
 
 export class ProjectsResource {
   constructor(private readonly transport: HttpTransport) {}
+
+  getSignalCustody(
+    projectId: string,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SignalCustodyDefault>>> {
+    return getProjectSignalCustody(this.transport, projectId, options);
+  }
+
+  updateSignalCustody(
+    projectId: string,
+    body: ProjectSignalCustodyUpdate,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<DataEnvelope<SignalCustodyDefault>>> {
+    return updateProjectSignalCustody(this.transport, projectId, body, options);
+  }
 
   list(
     options: RequestOptions = {},

@@ -311,7 +311,7 @@ describe("MessagingClient BanSafe settings", () => {
   it("rejects browser client tokens before transport", async () => {
     const { client, requests } = await messagingClient(
       "clientToken",
-      "pmfa_ct_bansafe",
+      "pmfa_ct_YmFuc2FmZQ",
     );
     expect(() => client.banSafe.getProjectSafeMode("project_a")).toThrow(
       PolymorfaConfigurationError,

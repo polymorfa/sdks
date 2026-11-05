@@ -52,6 +52,10 @@ export async function constructWebhookEvent(
 }
 
 export function parseVerifiedWebhookEvent(rawBody: WebhookBody): WebhookEvent {
+  return parseEventEnvelope(decodeVerifiedWebhookBody(rawBody));
+}
+
+export function decodeVerifiedWebhookBody(rawBody: WebhookBody): unknown {
   let text: string;
   try {
     text = new TextDecoder("utf-8", { fatal: true }).decode(
@@ -80,6 +84,10 @@ export function parseVerifiedWebhookEvent(rawBody: WebhookBody): WebhookEvent {
     );
   }
 
+  return parsed;
+}
+
+export function parseEventEnvelope(parsed: unknown): WebhookEvent {
   if (!isEventEnvelope(parsed)) {
     throw new PolymorfaValidationError(
       "Webhook body is not a valid event envelope.",

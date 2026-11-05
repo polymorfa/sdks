@@ -162,7 +162,7 @@ export interface UsageGateList {
 }
 
 export interface UsageSummaryParams {
-  /** Organization keys only; a project client always reads its own project. */
+  /** Team keys only; a project client always reads its own project. */
   readonly projectId?: string;
   /** One number (session name). */
   readonly session?: string;
@@ -190,7 +190,7 @@ export interface UsageGateParams {
 /**
  * Metered usage and usage gates. Usage is measured, not charged. Requires the
  * `sessions:read` scope; a project token reads only its own project's usage,
- * and gate state needs an organization key.
+ * and gate state needs an team key.
  */
 export class UsageResource {
   constructor(

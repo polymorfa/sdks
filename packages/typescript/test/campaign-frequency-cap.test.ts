@@ -34,7 +34,7 @@ const contract = JSON.parse(
   ),
 );
 it("pins bounds, fields, errors and reason filters to the merged contract", () => {
-  expect(contract.commit).toBe("e404a727ddb4abf42a8df768a5336fad922cc99a");
+  expect(contract.commit).toBe("9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f");
   for (const source of Object.values(contract.sources) as {
     sourceSha256: string;
     fields: Record<string, unknown>;
@@ -63,7 +63,7 @@ it("pins bounds, fields, errors and reason filters to the merged contract", () =
   }>();
   const create: CreatePlatformCampaignRequest = {
     name: "cap",
-    projectId: "p",
+    projectId: "11111111-1111-4111-8111-111111111111",
     frequencyCap: limits,
   };
   const update: UpdatePlatformCampaignRequest = { frequencyCap: null };
@@ -155,25 +155,36 @@ it("passes cap fields and recipient reason filters through both audiences", asyn
   });
   await client.campaigns.create({
     name: "cap",
-    projectId: "p",
+    projectId: "11111111-1111-4111-8111-111111111111",
     frequencyCap: limits,
   });
   await client.campaigns.update(
     "c",
     { frequencyCap: null },
-    { projectId: "p" },
+    { projectId: "11111111-1111-4111-8111-111111111111" },
   );
-  await messaging.campaigns.create("p", { name: "cap", frequencyCap: limits });
-  await messaging.campaigns.update("p", "c", { frequencyCap: null });
+  await messaging.campaigns.create("11111111-1111-4111-8111-111111111111", {
+    name: "cap",
+    frequencyCap: limits,
+  });
+  await messaging.campaigns.update(
+    "11111111-1111-4111-8111-111111111111",
+    "c",
+    { frequencyCap: null },
+  );
   await client.campaigns.recipients("c", {
-    projectId: "p",
+    projectId: "11111111-1111-4111-8111-111111111111",
     status: "skipped",
     reason: "frequency_cap",
   });
-  await messaging.campaigns.listRecipients("p", "c", {
-    status: "skipped",
-    reason: "frequency_cap",
-  });
+  await messaging.campaigns.listRecipients(
+    "11111111-1111-4111-8111-111111111111",
+    "c",
+    {
+      status: "skipped",
+      reason: "frequency_cap",
+    },
+  );
   expect(
     server.requests.slice(0, 4).map((r) => JSON.parse(r.body).frequencyCap),
   ).toEqual([limits, null, limits, null]);
@@ -211,26 +222,48 @@ it("preserves cap reads, skip analytics and recipient reasons on both surfaces",
     baseUrl: server.url,
   });
   expect(
-    (await client.campaigns.retrieve("c", { projectId: "p" })).data.data
-      ?.frequencyCap,
+    (
+      await client.campaigns.retrieve("c", {
+        projectId: "11111111-1111-4111-8111-111111111111",
+      })
+    ).data.data?.frequencyCap,
   ).toEqual(limits);
   expect(
-    (await messaging.campaigns.retrieve("p", "c")).data.data.frequencyCap,
+    (
+      await messaging.campaigns.retrieve(
+        "11111111-1111-4111-8111-111111111111",
+        "c",
+      )
+    ).data.data.frequencyCap,
   ).toEqual(limits);
   expect(
-    (await client.campaigns.analytics("c", { projectId: "p" })).data.data
-      .frequencyCap?.skippedRecipientCount,
+    (
+      await client.campaigns.analytics("c", {
+        projectId: "11111111-1111-4111-8111-111111111111",
+      })
+    ).data.data.frequencyCap?.skippedRecipientCount,
   ).toBe(3);
   expect(
-    (await messaging.campaigns.analytics("p", "c")).data.data.frequencyCap
-      ?.skippedRecipientCount,
+    (
+      await messaging.campaigns.analytics(
+        "11111111-1111-4111-8111-111111111111",
+        "c",
+      )
+    ).data.data.frequencyCap?.skippedRecipientCount,
   ).toBe(3);
   expect(
-    (await client.campaigns.recipients("c", { projectId: "p" })).data.data[0]
-      ?.failureReason,
+    (
+      await client.campaigns.recipients("c", {
+        projectId: "11111111-1111-4111-8111-111111111111",
+      })
+    ).data.data[0]?.failureReason,
   ).toBe("frequency_cap");
   expect(
-    (await messaging.campaigns.listRecipients("p", "c")).data.data[0]
-      ?.failureReason,
+    (
+      await messaging.campaigns.listRecipients(
+        "11111111-1111-4111-8111-111111111111",
+        "c",
+      )
+    ).data.data[0]?.failureReason,
   ).toBe("frequency_cap");
 });

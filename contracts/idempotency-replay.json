@@ -1,0 +1,515 @@
+{
+  "schemaVersion": 1,
+  "repository": "polymorfa/polymorfa",
+  "sourceCommit": "8aded38f41f27252df383fe2ac83e8f2f782c773",
+  "sources": [
+    {
+      "path": "apps/api/docs/openapi.json",
+      "sha256": "4f537fcadb58c7af4e027764fec985523a35a4c9b4369ea1c78139596b8a0fcf",
+      "info": {
+        "title": "Polymorfa WhatsApp API",
+        "version": "1.0.0",
+        "description": "Public Polymorfa REST API for sessions, messaging, media, webhooks, campaigns, templates, client tokens, QuickLinks, and bridge routing.",
+        "contact": {
+          "name": "Polymorfa API",
+          "url": "https://docs.polymorfa.com"
+        }
+      }
+    },
+    {
+      "path": "apps/api/docs/openapi.management.json",
+      "sha256": "e13fdd007565b333942e1ddd11768baf0876643b8edf45249f48ef44dea6db42",
+      "info": {
+        "title": "Polymorfa Console & Management API",
+        "version": "1.0.0",
+        "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (279 endpoints): each endpoint declares either a scoped `pmfa_` team key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (125 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+      }
+    }
+  ],
+  "errorCodes": [
+    "idempotency_conflict",
+    "idempotency_in_progress",
+    "idempotency_outcome_unknown",
+    "idempotency_replay_unavailable"
+  ],
+  "operations": [
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/messages/send",
+      "method": "POST",
+      "operationId": "sendMessage",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/messages/react",
+      "method": "POST",
+      "operationId": "sendReaction",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "method": "PUT",
+      "operationId": "editMessage",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "method": "DELETE",
+      "operationId": "deleteMessage",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/official-groups",
+      "method": "POST",
+      "operationId": "createOfficialGroup",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/official-groups/{group}",
+      "method": "PATCH",
+      "operationId": "updateOfficialGroup",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/official-groups/{group}",
+      "method": "DELETE",
+      "operationId": "deleteOfficialGroup",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/official-groups/{group}/invite-link/reset",
+      "method": "POST",
+      "operationId": "resetOfficialGroupInviteLink",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/official-groups/{group}/participants/remove",
+      "method": "POST",
+      "operationId": "removeOfficialGroupParticipants",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/official-groups/{group}/join-requests/approve",
+      "method": "POST",
+      "operationId": "approveOfficialGroupJoinRequests",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/official-groups/{group}/join-requests/reject",
+      "method": "POST",
+      "operationId": "rejectOfficialGroupJoinRequests",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/official-groups/{group}/pins",
+      "method": "POST",
+      "operationId": "pinOfficialGroupMessage",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/channels/{id}/messages/{messageId}/reaction",
+      "method": "POST",
+      "operationId": "reactToChannelMessage",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/templates",
+      "method": "POST",
+      "operationId": "createTemplate",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/{session}/templates/{name}",
+      "method": "DELETE",
+      "operationId": "deleteTemplate",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/projects/{projectSlug}/campaigns",
+      "method": "POST",
+      "operationId": "createCampaign",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/launch",
+      "method": "POST",
+      "operationId": "launchCampaign",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/pause",
+      "method": "POST",
+      "operationId": "pauseCampaign",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/resume",
+      "method": "POST",
+      "operationId": "resumeCampaign",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/stop",
+      "method": "POST",
+      "operationId": "stopCampaign",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/test-send",
+      "method": "POST",
+      "operationId": "testSendCampaign",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reschedule",
+      "method": "POST",
+      "operationId": "rescheduleCampaign",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "path": "/platform/campaigns/{campaignId}/launch",
+      "method": "POST",
+      "operationId": "launchPlatformCampaign",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again while its receipt is retained. Keep the first response. Opaque campaign bodies are not retained by default; an available authorized exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After`; the request does not run again. Missing replay data never releases the execution fence.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "path": "/platform/campaigns/{campaignId}/pause",
+      "method": "POST",
+      "operationId": "pausePlatformCampaign",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again while its receipt is retained. Keep the first response. Opaque campaign bodies are not retained by default; an available authorized exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After`; the request does not run again. Missing replay data never releases the execution fence.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "path": "/platform/campaigns/{campaignId}/resume",
+      "method": "POST",
+      "operationId": "resumePlatformCampaign",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again while its receipt is retained. Keep the first response. Opaque campaign bodies are not retained by default; an available authorized exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After`; the request does not run again. Missing replay data never releases the execution fence.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "path": "/platform/campaigns/{campaignId}/stop",
+      "method": "POST",
+      "operationId": "stopPlatformCampaign",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again while its receipt is retained. Keep the first response. Opaque campaign bodies are not retained by default; an available authorized exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After`; the request does not run again. Missing replay data never releases the execution fence.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "path": "/platform/campaigns/{campaignId}/reschedule",
+      "method": "POST",
+      "operationId": "reschedulePlatformCampaign",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again while its receipt is retained. Keep the first response. Opaque campaign bodies are not retained by default; an available authorized exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After`; the request does not run again. Missing replay data never releases the execution fence.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    },
+    {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "path": "/platform/campaigns/{campaignId}/test-send",
+      "method": "POST",
+      "operationId": "testSendPlatformCampaign",
+      "idempotencyParameter": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": false,
+        "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again while its receipt is retained. Keep the first response. Opaque campaign bodies are not retained by default; an available authorized exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After`; the request does not run again. Missing replay data never releases the execution fence.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      }
+    }
+  ],
+  "extraction": "Idempotency error enums and unchanged one-hour header parameters from committed generated API documents; the baseline snapshots are unchanged",
+  "published": false
+}

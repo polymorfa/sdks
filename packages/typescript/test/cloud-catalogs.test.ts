@@ -100,7 +100,7 @@ describe("Official API catalog discovery", () => {
     });
     expect(() =>
       browser.cloudCatalogs.listProducts("123", "456", { version: "v26.0" }),
-    ).toThrow("organization API key or project token");
+    ).toThrow("team key or project token");
   });
   it("rejects client credentials before dispatch", () => {
     const client = new MessagingClient({
@@ -108,6 +108,6 @@ describe("Official API catalog discovery", () => {
     });
     expect(() =>
       client.cloudCatalogs.list("123", { version: "v26.0" }),
-    ).toThrow("organization API key or project token");
+    ).toThrow("team key or project token");
   });
 });

@@ -33,6 +33,12 @@ public implementations rather than copying their visual design or API names.
 - Web Components are the portable baseline. React bindings wrap the same
   controllers; Vue, Svelte and other Custom Elements-compatible surfaces do not
   need duplicated business logic.
+- The browser UI ships as one package, the UI Kit (`@polymorfa/ui-kit`), with
+  one version. Subpaths separate the transport and controllers (root), React
+  components (`/react`), web components (`/web-components`), appearance
+  (`/appearance`), the event store (`/store`) and the developer assistant
+  (`/devtools`). The package has no import side effects, so a subpath loads
+  only its own modules; React is an optional peer used by the React subpaths.
 - The developer assistant is explicit and production-gated. It does not enable
   itself from a query string or inspect secret material.
 - Mobile-native packages are deferred. The browser and server contracts avoid

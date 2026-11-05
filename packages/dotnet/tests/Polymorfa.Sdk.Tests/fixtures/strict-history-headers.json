@@ -1,0 +1,416 @@
+[
+  {
+    "name": "name-65535-comment-None-fhcrc-False",
+    "segments": [
+      {
+        "base64": "H4sICAAAAAAAAA=="
+      },
+      {
+        "byte": 78,
+        "count": 65535
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "base64": "42AGAE3JCRACAAAA"
+      }
+    ],
+    "sha256": "254a07880215c9f101b02ca5aee6d84692a33279ba3f78ea0936c80b5920a52d",
+    "plain": "CAM=",
+    "compression": "valid",
+    "supported": true
+  },
+  {
+    "name": "name-65535-comment-None-fhcrc-True",
+    "segments": [
+      {
+        "base64": "H4sICgAAAAAAAA=="
+      },
+      {
+        "byte": 78,
+        "count": 65535
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "base64": "K+4="
+      },
+      {
+        "base64": "42AGAE3JCRACAAAA"
+      }
+    ],
+    "sha256": "22fca14fc5fbf7828d5d19d8da9a3966e108b48bf84117fa8c33b347bd3982e1",
+    "plain": "CAM=",
+    "compression": "valid",
+    "supported": true
+  },
+  {
+    "name": "name-65536-comment-None-fhcrc-False",
+    "segments": [
+      {
+        "base64": "H4sICAAAAAAAAA=="
+      },
+      {
+        "byte": 78,
+        "count": 65536
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "base64": "42AGAE3JCRACAAAA"
+      }
+    ],
+    "sha256": "4fdedd71a9a2fe1ccee40b833a89925c8add272469951af9761bb381694dd831",
+    "plain": "CAM=",
+    "compression": "valid",
+    "supported": false
+  },
+  {
+    "name": "name-65536-comment-None-fhcrc-True",
+    "segments": [
+      {
+        "base64": "H4sICgAAAAAAAA=="
+      },
+      {
+        "byte": 78,
+        "count": 65536
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "base64": "qPM="
+      },
+      {
+        "base64": "42AGAE3JCRACAAAA"
+      }
+    ],
+    "sha256": "7ed4261681417b901d3cdec8567ce0374fa14245e6bb59a86f199844ce50fcf1",
+    "plain": "CAM=",
+    "compression": "valid",
+    "supported": false
+  },
+  {
+    "name": "name-None-comment-65535-fhcrc-False",
+    "segments": [
+      {
+        "base64": "H4sIEAAAAAAAAA=="
+      },
+      {
+        "byte": 67,
+        "count": 65535
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "base64": "42AGAE3JCRACAAAA"
+      }
+    ],
+    "sha256": "4db760bfd91befbbe951a023c9d6d74cdb5152a0e04e8b53025037c9c74b9d65",
+    "plain": "CAM=",
+    "compression": "valid",
+    "supported": true
+  },
+  {
+    "name": "name-None-comment-65535-fhcrc-True",
+    "segments": [
+      {
+        "base64": "H4sIEgAAAAAAAA=="
+      },
+      {
+        "byte": 67,
+        "count": 65535
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "base64": "mFg="
+      },
+      {
+        "base64": "42AGAE3JCRACAAAA"
+      }
+    ],
+    "sha256": "6eed28755d60edd833e5ec984e24c6f418e56827df0b8efdc87ca98961be9d81",
+    "plain": "CAM=",
+    "compression": "valid",
+    "supported": true
+  },
+  {
+    "name": "name-None-comment-65536-fhcrc-False",
+    "segments": [
+      {
+        "base64": "H4sIEAAAAAAAAA=="
+      },
+      {
+        "byte": 67,
+        "count": 65536
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "base64": "42AGAE3JCRACAAAA"
+      }
+    ],
+    "sha256": "af4e9681e91813e5cd23a0d002c5f191d884b244388d073bcd5e4065db7511e8",
+    "plain": "CAM=",
+    "compression": "valid",
+    "supported": false
+  },
+  {
+    "name": "name-None-comment-65536-fhcrc-True",
+    "segments": [
+      {
+        "base64": "H4sIEgAAAAAAAA=="
+      },
+      {
+        "byte": 67,
+        "count": 65536
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "base64": "ZVk="
+      },
+      {
+        "base64": "42AGAE3JCRACAAAA"
+      }
+    ],
+    "sha256": "95be64edd80016ad299d84c9d6872daf417dd63cb82e4bc4c5f104c9f9000c11",
+    "plain": "CAM=",
+    "compression": "valid",
+    "supported": false
+  },
+  {
+    "name": "name-65535-comment-65535-fhcrc-False",
+    "segments": [
+      {
+        "base64": "H4sIGAAAAAAAAA=="
+      },
+      {
+        "byte": 78,
+        "count": 65535
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "byte": 67,
+        "count": 65535
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "base64": "42AGAE3JCRACAAAA"
+      }
+    ],
+    "sha256": "1fc2407748a13933e65169d415a89e4009b267429cd16ca56bcfeac560d1a887",
+    "plain": "CAM=",
+    "compression": "valid",
+    "supported": true
+  },
+  {
+    "name": "name-65535-comment-65535-fhcrc-True",
+    "segments": [
+      {
+        "base64": "H4sIGgAAAAAAAA=="
+      },
+      {
+        "byte": 78,
+        "count": 65535
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "byte": 67,
+        "count": 65535
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "base64": "PuY="
+      },
+      {
+        "base64": "42AGAE3JCRACAAAA"
+      }
+    ],
+    "sha256": "6b42057895ca655def5d2733d339a1f6ecb2484a48a86b28687003f10a12884d",
+    "plain": "CAM=",
+    "compression": "valid",
+    "supported": true
+  },
+  {
+    "name": "name-65536-comment-65535-fhcrc-False",
+    "segments": [
+      {
+        "base64": "H4sIGAAAAAAAAA=="
+      },
+      {
+        "byte": 78,
+        "count": 65536
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "byte": 67,
+        "count": 65535
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "base64": "42AGAE3JCRACAAAA"
+      }
+    ],
+    "sha256": "3340f1463d1a351566494a31d7e64eaa3acb137db92e9f6c2dcd050a9b2980c5",
+    "plain": "CAM=",
+    "compression": "valid",
+    "supported": false
+  },
+  {
+    "name": "name-65536-comment-65535-fhcrc-True",
+    "segments": [
+      {
+        "base64": "H4sIGgAAAAAAAA=="
+      },
+      {
+        "byte": 78,
+        "count": 65536
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "byte": 67,
+        "count": 65535
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "base64": "R74="
+      },
+      {
+        "base64": "42AGAE3JCRACAAAA"
+      }
+    ],
+    "sha256": "7f5e8e1e18c0b5048e581de74b002d4db7a1851eb069dd6e020614c375e81d8f",
+    "plain": "CAM=",
+    "compression": "valid",
+    "supported": false
+  },
+  {
+    "name": "name-65535-comment-65536-fhcrc-False",
+    "segments": [
+      {
+        "base64": "H4sIGAAAAAAAAA=="
+      },
+      {
+        "byte": 78,
+        "count": 65535
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "byte": 67,
+        "count": 65536
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "base64": "42AGAE3JCRACAAAA"
+      }
+    ],
+    "sha256": "781e886c204a7a5e9e4acda99b627811e42eea894f38f29f64f8d3c05a969893",
+    "plain": "CAM=",
+    "compression": "valid",
+    "supported": false
+  },
+  {
+    "name": "name-65535-comment-65536-fhcrc-True",
+    "segments": [
+      {
+        "base64": "H4sIGgAAAAAAAA=="
+      },
+      {
+        "byte": 78,
+        "count": 65535
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "byte": 67,
+        "count": 65536
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "base64": "Bms="
+      },
+      {
+        "base64": "42AGAE3JCRACAAAA"
+      }
+    ],
+    "sha256": "c90fb6a9e2819a0ca65fa06899aa9f3dd650f3f6af47284ca8d8b40ea1df06a5",
+    "plain": "CAM=",
+    "compression": "valid",
+    "supported": false
+  },
+  {
+    "name": "huge-name-comment",
+    "segments": [
+      {
+        "base64": "H4sIGgAAAAAA/w=="
+      },
+      {
+        "byte": 78,
+        "count": 1048576
+      },
+      {
+        "base64": "AA=="
+      },
+      {
+        "byte": 67,
+        "count": 1048576
+      },
+      {
+        "base64": "AFeS42D0YAAAyViS3QQAAAA="
+      }
+    ],
+    "sha256": "193338ab13fb31812aee17a2c1ca42331dfc80554191b5acd0fba70f8823b2ac",
+    "plain": "CAFIAA==",
+    "compression": "valid",
+    "supported": false,
+    "origin": "Retained portable corpus huge-name-comment, exact bytes"
+  },
+  {
+    "name": "unterminated-name",
+    "segments": [
+      {
+        "base64": "H4sICAAAAAAA/w=="
+      },
+      {
+        "byte": 78,
+        "count": 1048576
+      }
+    ],
+    "sha256": "b4d6ee7519dc107cb8cef924bb02d8042aafaa8aefbfa55e46f73cec2948a81c",
+    "compression": "incomplete",
+    "supported": false,
+    "origin": "Retained portable corpus unterminated-name, exact bytes"
+  }
+]

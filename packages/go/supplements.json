@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "sourceSdkCommit": "daac84b1bd24c9460a2bcad555629a5466d85e2c",
+  "operations": [
+    {
+      "sdkMethod": "MessagingClient.CloudCatalogs.List",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/product_catalogs",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.CloudCatalogs.ListProducts",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/product_catalogs/42/products",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.CloudMarketing.Status",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/waba/marketing_messages/status",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.FlowEncryption.Retrieve",
+      "method": "GET",
+      "fixturePath": "/graph/whatsapp/v26.0/phone/whatsapp_business_encryption",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.FlowEncryption.Register",
+      "method": "POST",
+      "fixturePath": "/graph/whatsapp/v26.0/phone/whatsapp_business_encryption",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.Testing.GetPhone",
+      "method": "GET",
+      "fixturePath": "/messaging/testing/project/numbers/support/phone",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.Testing.SendPhoneMessage",
+      "method": "POST",
+      "fixturePath": "/messaging/testing/project/numbers/support/phone/messages",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.Testing.UnlinkPhoneDevice",
+      "method": "POST",
+      "fixturePath": "/messaging/testing/project/numbers/support/phone/devices/1/unlink",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.Campaigns.Update",
+      "method": "PATCH",
+      "fixturePath": "/messaging/projects/project/campaigns/campaign",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "MessagingClient.Campaigns.Reschedule",
+      "method": "POST",
+      "fixturePath": "/messaging/projects/project/campaigns/campaign/reschedule",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "OrganizationClient.Campaigns.Reschedule",
+      "method": "POST",
+      "fixturePath": "/platform/campaigns/campaign/reschedule",
+      "status": "covered",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "sdkMethod": "OrganizationClient.RequestLogs.List / ProjectClient.RequestLogs.List / RequestLogs.Follow",
+      "method": "GET",
+      "fixturePath": "/platform/projects/project/request-logs",
+      "status": "covered",
+      "testFile": "request_logs_test.go"
+    },
+    {
+      "sdkMethod": "OrganizationClient.Campaigns().GetFrequencyCap",
+      "method": "GET",
+      "fixturePath": "/platform/campaign-settings/frequency-cap",
+      "status": "covered",
+      "testFile": "campaign_segments_drip_test.go",
+      "contract": "contracts/campaign-frequency-cap.json",
+      "operationId": "getCampaignFrequencyCap",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "OrganizationClient.Campaigns().UpdateFrequencyCap",
+      "method": "PUT",
+      "fixturePath": "/platform/campaign-settings/frequency-cap",
+      "status": "covered",
+      "testFile": "campaign_segments_drip_test.go",
+      "contract": "contracts/campaign-frequency-cap.json",
+      "operationId": "updateCampaignFrequencyCap",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "OrganizationClient.Campaigns().Enroll",
+      "method": "POST",
+      "fixturePath": "/platform/campaigns/c%2F1/enrollments",
+      "status": "covered",
+      "testFile": "campaign_segments_drip_test.go",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "enrollCampaignContact",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "MessagingClient.Campaigns().Enroll",
+      "method": "POST",
+      "fixturePath": "/messaging/projects/11111111-1111-4111-8111-111111111111/campaigns/c/enrollments",
+      "status": "covered",
+      "testFile": "campaign_segments_drip_test.go",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "enrollProjectCampaignContact",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "OrganizationClient.AudienceSegments().List",
+      "method": "GET",
+      "fixturePath": "/platform/audience-segments",
+      "status": "covered",
+      "testFile": "campaign_segments_drip_test.go",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "listAudienceSegments",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "OrganizationClient.AudienceSegments().Create",
+      "method": "POST",
+      "fixturePath": "/platform/audience-segments",
+      "status": "covered",
+      "testFile": "campaign_segments_drip_test.go",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "createAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "OrganizationClient.AudienceSegments().Retrieve",
+      "method": "GET",
+      "fixturePath": "/platform/audience-segments/s%2F1",
+      "status": "covered",
+      "testFile": "campaign_segments_drip_test.go",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "getAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "OrganizationClient.AudienceSegments().Update",
+      "method": "PATCH",
+      "fixturePath": "/platform/audience-segments/s%2F1",
+      "status": "covered",
+      "testFile": "campaign_segments_drip_test.go",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "updateAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "OrganizationClient.AudienceSegments().Delete",
+      "method": "DELETE",
+      "fixturePath": "/platform/audience-segments/s%2F1",
+      "status": "covered",
+      "testFile": "campaign_segments_drip_test.go",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "deleteAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "OrganizationClient.AudienceSegments().Preview",
+      "method": "GET",
+      "fixturePath": "/platform/audience-segments/s/preview",
+      "status": "covered",
+      "testFile": "campaign_segments_drip_test.go",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "previewAudienceSegment",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    },
+    {
+      "sdkMethod": "OrganizationClient.AudienceSegments().PreviewRules",
+      "method": "POST",
+      "fixturePath": "/platform/audience-segments/preview",
+      "status": "covered",
+      "testFile": "campaign_segments_drip_test.go",
+      "contract": "contracts/campaign-segments-drip.json",
+      "operationId": "previewAudienceSegmentRules",
+      "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
+    }
+  ],
+  "helpers": [
+    {
+      "sdkMethod": "CallsClient.Follow / Call lifecycle and media model",
+      "status": "covered",
+      "testFile": "calls_model_test.go"
+    },
+    {
+      "sdkMethod": "CallsTokenSource single flight / cache / refresh / cancellation",
+      "status": "covered",
+      "testFile": "calls_model_test.go"
+    },
+    {
+      "sdkMethod": "CallReporter quality and error bounds",
+      "status": "covered",
+      "testFile": "calls_model_test.go"
+    },
+    {
+      "sdkMethod": "Calls lifecycle/media native WebSocket and PCM/H264 framing",
+      "status": "covered",
+      "testFile": "calls_socket_test.go"
+    },
+    {
+      "sdkMethod": "WhatsApp incremental decryption and atomic CDN file downloads",
+      "status": "covered",
+      "testFile": "whatsapp_stream_test.go"
+    },
+    {
+      "sdkMethod": "MessagingMedia.DownloadToFile / Chats.DownloadMessageMediaToFile / DownloadURL",
+      "status": "covered",
+      "testFile": "media_file_test.go"
+    },
+    {
+      "sdkMethod": "WebhookEvent.TypedPayload all 84 known event names and unknown preservation",
+      "status": "covered",
+      "testFile": "webhook_payloads_test.go"
+    },
+    {
+      "sdkMethod": "Native / local-forward / Flow-forward webhook signatures",
+      "status": "covered",
+      "testFile": "webhook_payloads_test.go"
+    },
+    {
+      "sdkMethod": "Developer event stream reconnect / acknowledgement / heartbeat / revocation",
+      "status": "covered",
+      "testFile": "event_stream_test.go"
+    },
+    {
+      "sdkMethod": "Retained indexed-event offset pagination",
+      "status": "covered",
+      "testFile": "indexed_events_test.go"
+    },
+    {
+      "sdkMethod": "ParseContentDispositionFilename / GraphTransportHeaders",
+      "status": "covered",
+      "testFile": "content_disposition_test.go"
+    },
+    {
+      "sdkMethod": "KnownErrorCodes / IsKnownErrorCode",
+      "status": "covered",
+      "testFile": "error_codes_test.go"
+    },
+    {
+      "sdkMethod": "CallsClient.PlacePhone / PlaceParticipants / PlaceGroup credential-bound placement",
+      "status": "covered",
+      "testFile": "calls_placement_test.go"
+    },
+    {
+      "sdkMethod": "RequestLogs.Tail / RequestLogRetryAfter",
+      "status": "covered",
+      "testFile": "request_logs_test.go"
+    },
+    {
+      "sdkMethod": "Events.LiveSource / NewEventStreamSource / LiveEventSubscription.Cancel",
+      "status": "covered",
+      "testFile": "event_source_test.go"
+    },
+    {
+      "sdkMethod": "Campaign receipt-timed follow-up configuration, recipient summary and analytics report",
+      "status": "covered",
+      "testFile": "campaign_followups_test.go",
+      "behavior": "Both audience create/update/clear/omit bodies, optional returned timing, typed recipient receipt timestamps and nullable fields, follow-up counts separate from first-message counts."
+    },
+    {
+      "sdkMethod": "PaginateRaw / sealed CampaignFollowUpMessage variants",
+      "status": "covered",
+      "testFile": "raw_pagination_test.go",
+      "behavior": "Native custom decoder/cursor pagination with immutable query/header snapshots, project confinement, cancellation, decoder errors and non-advancing cursors; follow-up text/template round trips and invalid variant refusal."
+    }
+  ]
+}

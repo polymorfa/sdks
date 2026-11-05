@@ -21,14 +21,12 @@ describe("Official groups (beta)", () => {
     const server = await startTestServer(() => ({ body: "{}" }));
     servers.push(server);
     const groups = new MessagingClient({
-      credential: { type: "clientToken", value: "pmfa_ct_browser" },
+      credential: { type: "clientToken", value: "pmfa_ct_YnJvd3Nlcg" },
       baseUrl: server.url,
     }).officialGroups;
-    expect(() => groups.list("support")).toThrow(
-      /organization API key or project token/,
-    );
+    expect(() => groups.list("support")).toThrow(/team key or project token/);
     expect(() => groups.create("support", { subject: "Orders" })).toThrow(
-      /organization API key/,
+      /team key/,
     );
     expect(server.requests).toHaveLength(0);
   });

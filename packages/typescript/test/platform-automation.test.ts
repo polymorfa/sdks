@@ -110,7 +110,7 @@ describe("Client opt-outs", () => {
     expect(requests[2]?.body).toBe('{"phones":["+1 555","+44 20"]}');
   });
 
-  it("reads and replaces the organization keyword settings", async () => {
+  it("reads and replaces the team keyword settings", async () => {
     const { client, requests } = await platformServer();
     await client.optOuts.getSettings();
     await client.optOuts.updateSettings({
@@ -244,7 +244,10 @@ describe("Client campaigns", () => {
 
   it("maps lifecycle actions and read subresources", async () => {
     const { client, requests } = await platformServer();
-    await client.campaigns.launch("campaign/a", { reason: "launch" });
+    await client.campaigns.launch("campaign/a", {
+      projectId: "018f0000-0000-7000-8000-000000000001",
+      skipMissingVariables: false,
+    });
     await client.campaigns.pause("campaign/a", { reason: "pause" });
     await client.campaigns.resume("campaign/a", { reason: "resume" });
     await client.campaigns.stop(
@@ -257,7 +260,9 @@ describe("Client campaigns", () => {
     await client.campaigns.requeue("campaign/a", { reason: "requeue" });
     await client.campaigns.analytics("campaign/a", { projectId: "project/a" });
     await client.campaigns.events("campaign/a", { projectId: "project/a" });
-    await client.campaigns.recipients("campaign/a", { projectId: "project/a" });
+    await client.campaigns.recipients("campaign/a", {
+      projectId: "018f0000-0000-7000-8000-000000000001",
+    });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "POST /platform/campaigns/campaign%2Fa/launch",
@@ -269,7 +274,7 @@ describe("Client campaigns", () => {
       "POST /platform/campaigns/campaign%2Fa/requeue",
       "GET /platform/campaigns/campaign%2Fa/analytics?projectId=project%2Fa",
       "GET /platform/campaigns/campaign%2Fa/events?projectId=project%2Fa",
-      "GET /platform/campaigns/campaign%2Fa/recipients?projectId=project%2Fa",
+      "GET /platform/campaigns/campaign%2Fa/recipients?projectId=018f0000-0000-7000-8000-000000000001",
     ]);
     for (const request of requests.slice(0, 3)) {
       expect(request.headers["idempotency-key"]).toMatch(/^[0-9a-f-]{36}$/);
@@ -281,7 +286,7 @@ describe("Client campaigns", () => {
       expect(request.headers["idempotency-key"]).toBeUndefined();
     }
     expect(requests.slice(0, 7).map(({ body }) => body)).toEqual([
-      '{"reason":"launch"}',
+      '{"projectId":"018f0000-0000-7000-8000-000000000001","skipMissingVariables":false}',
       '{"reason":"pause"}',
       '{"reason":"resume"}',
       '{"reason":"stop"}',
@@ -333,7 +338,7 @@ describe("Client campaigns", () => {
   it("pages recipients and filters them by status", async () => {
     const { client, requests } = await platformServer();
     await client.campaigns.recipients("campaign/a", {
-      projectId: "project/a",
+      projectId: "018f0000-0000-7000-8000-000000000001",
       status: "skipped",
       cursor: "cur/1",
       limit: 100,
@@ -345,7 +350,7 @@ describe("Client campaigns", () => {
     );
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /platform/campaigns/campaign%2Fa/recipients?projectId=project%2Fa&status=skipped&cursor=cur%2F1&limit=100",
+      "GET /platform/campaigns/campaign%2Fa/recipients?projectId=018f0000-0000-7000-8000-000000000001&status=skipped&cursor=cur%2F1&limit=100",
       "POST /platform/campaigns/campaign%2Fa/recipients",
     ]);
     expect(requests[1]?.body).toBe(
@@ -355,14 +360,15 @@ describe("Client campaigns", () => {
   });
 });
 
-it("requires project scope on organization campaigns and omits campaigns from project views", async () => {
+it("requires organization campaign scope and confines project campaign views", async () => {
   const { client } = await platformServer();
   const project = client.project("project/a");
-  expect(project).not.toHaveProperty("campaigns");
+  expect(project.campaigns).toHaveProperty("getReplyFlow");
+  expect(project.campaigns).not.toHaveProperty("retrieve");
   // These calls are compile-time assertions and must never reach transport.
   const invalidCalls = () => {
-    // @ts-expect-error project views do not expose Platform campaigns
-    void project.campaigns;
+    // @ts-expect-error project views do not expose unconfined organization campaigns
+    void project.campaigns.retrieve;
     // @ts-expect-error an organization client must supply project parameters
     client.campaigns.retrieve("campaign/a");
     // @ts-expect-error a project ID is required within the parameters

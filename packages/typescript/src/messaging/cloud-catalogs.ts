@@ -48,7 +48,7 @@ export class CloudCatalogsResource {
   ): Promise<ApiResponse<ListCloudCatalogsResponse>> {
     if (this.credentialType === "clientToken") {
       throw new PolymorfaConfigurationError(
-        "Official API catalogs require an organization API key or project token.",
+        "Official API catalogs require an team key or project token.",
         "credential",
       );
     }
@@ -74,7 +74,7 @@ export class CloudCatalogsResource {
   ): Promise<ApiResponse<ListCloudCatalogProductsResponse>> {
     if (this.credentialType === "clientToken") {
       throw new PolymorfaConfigurationError(
-        "Official API catalogs require an organization API key or project token.",
+        "Official API catalogs require an team key or project token.",
         "credential",
       );
     }

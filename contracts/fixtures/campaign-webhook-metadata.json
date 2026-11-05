@@ -1,0 +1,78 @@
+{
+  "source": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f",
+  "secret": "campaign-fixture-only",
+  "batchId": "00000000-0000-4000-8000-000000000001",
+  "events": [
+    {
+      "id": "auto",
+      "session": "",
+      "timestamp": "2026-10-22T00:00:00Z",
+      "event": "campaign.paused",
+      "payload": {
+        "campaignId": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11",
+        "sentCount": 3,
+        "remainingCount": 7,
+        "pausedAt": 1757161200,
+        "reason": "Automatic safety pause",
+        "code": "future_automatic_pause",
+        "future": {
+          "kept": true
+        }
+      }
+    },
+    {
+      "id": "manual",
+      "session": "",
+      "timestamp": "2026-10-22T00:00:00Z",
+      "event": "campaign.paused",
+      "payload": {
+        "campaignId": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11",
+        "sentCount": 3,
+        "remainingCount": 7,
+        "pausedAt": 1757161200
+      }
+    },
+    {
+      "id": "sequence",
+      "session": "",
+      "timestamp": "2026-10-22T00:00:00Z",
+      "event": "campaign.recipient_skipped",
+      "payload": {
+        "campaignId": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11",
+        "recipientId": "01936b2e-6a11-7d2e-8f4a-1c2b3d4e5f66",
+        "phone": "+14155550123",
+        "reason": "frequency_cap_exceeded",
+        "skippedAt": 1757161200000,
+        "messageIndex": 0
+      }
+    },
+    {
+      "id": "followup",
+      "session": "",
+      "timestamp": "2026-10-22T00:00:00Z",
+      "event": "campaign.recipient_skipped",
+      "payload": {
+        "campaignId": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11",
+        "recipientId": "01936b2e-6a11-7d2e-8f4a-1c2b3d4e5f66",
+        "phone": "+14155550123",
+        "reason": "frequency_cap_exceeded",
+        "skippedAt": 1757161200000,
+        "messageIndex": 1,
+        "followUpId": "0198a2cb-0000-7000-8000-0000000000f1"
+      }
+    },
+    {
+      "id": "plain",
+      "session": "",
+      "timestamp": "2026-10-22T00:00:00Z",
+      "event": "campaign.recipient_skipped",
+      "payload": {
+        "campaignId": "01936b2e-5f2a-7c1d-9a3e-8b4c2d1e0f11",
+        "recipientId": "01936b2e-6a11-7d2e-8f4a-1c2b3d4e5f66",
+        "phone": "+14155550123",
+        "reason": "future_skip_reason",
+        "skippedAt": 1757161200000
+      }
+    }
+  ]
+}

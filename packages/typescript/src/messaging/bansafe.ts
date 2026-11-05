@@ -21,7 +21,7 @@ type ProjectSetting =
 
 /**
  * BanSafe project settings and per-number Safe Mode on the Messaging API.
- * Organization API keys and project tokens are accepted; browser client
+ * Team keys and project tokens are accepted; browser client
  * tokens fail before transport.
  */
 export class MessagingBanSafeResource {
@@ -148,7 +148,7 @@ export class MessagingBanSafeResource {
   private assertServerCredential(): void {
     if (this.credentialType === "clientToken") {
       throw new PolymorfaConfigurationError(
-        "BanSafe settings require an organization API key or project token.",
+        "BanSafe settings require an team key or project token.",
         "credential",
       );
     }

@@ -1,3 +1,4 @@
+import { PasskeysResource } from "./passkeys.js";
 import { HybridLinkResource } from "./hybrid-link.js";
 import { CloudOnboardingResource, TestingResource } from "./onboarding.js";
 import {
@@ -19,6 +20,8 @@ import { GroupsResource } from "./groups.js";
 import { LabelsResource } from "./labels.js";
 import { IdentitiesResource } from "./identities.js";
 import { MessagingMediaResource } from "./media.js";
+import { HistorySyncResource } from "./history-sync.js";
+import { WhatsAppMediaResource } from "../media/upload.js";
 import { MessagesResource } from "./messages.js";
 import { ObservationPoliciesResource } from "./observation-policies.js";
 import { ProfileResource } from "./profile.js";
@@ -30,6 +33,7 @@ import { SessionsResource } from "./sessions.js";
 import { TemplatesResource } from "./templates.js";
 import { CloudTemplatesResource } from "./cloud-templates.js";
 import { OfficialGroupsResource } from "./official-groups.js";
+import { CatalogsResource } from "./catalogs.js";
 import { CloudCatalogsResource } from "./cloud-catalogs.js";
 import { CloudMarketingResource } from "./cloud-marketing.js";
 import { FlowEncryptionResource } from "./flow-encryption.js";
@@ -38,6 +42,7 @@ import { VoipResource } from "./voip.js";
 import { WebhooksResource } from "./webhooks.js";
 
 export class MessagingClient {
+  readonly passkeys: PasskeysResource;
   readonly banSafe: MessagingBanSafeResource;
   readonly business: BusinessResource;
   readonly calls: CallsResource;
@@ -50,6 +55,10 @@ export class MessagingClient {
   readonly labels: LabelsResource;
   readonly identities: IdentitiesResource;
   readonly media: MessagingMediaResource;
+  /** Encrypts media locally and uploads it to WhatsApp (direct media). */
+  readonly whatsappMedia: WhatsAppMediaResource;
+  /** Direct history commands: chunk retry and CDN deletion. */
+  readonly historySync: HistorySyncResource;
   readonly observationPolicies: ObservationPoliciesResource;
   readonly sessions: SessionsResource;
   readonly messages: MessagesResource;
@@ -65,6 +74,7 @@ export class MessagingClient {
   readonly cloudTemplates: CloudTemplatesResource;
   /** Beta: WhatsApp groups on an Official API connection (Groups API). */
   readonly officialGroups: OfficialGroupsResource;
+  readonly catalogs: CatalogsResource;
   readonly cloudCatalogs: CloudCatalogsResource;
   readonly cloudMarketing: CloudMarketingResource;
   readonly flowEncryption: FlowEncryptionResource;
@@ -89,7 +99,7 @@ export class MessagingClient {
     this.banSafe = new MessagingBanSafeResource(transport, credential.type);
     this.business = new BusinessResource(transport);
     this.calls = new CallsResource(transport);
-    this.campaigns = new MessagingCampaignsResource(transport);
+    this.campaigns = new MessagingCampaignsResource(transport, credential.type);
     this.chats = new ChatsResource(transport, credential.type);
     this.channels = new ChannelsResource(transport);
     this.clientTokens = new ClientTokensResource(transport, credential.type);
@@ -98,6 +108,8 @@ export class MessagingClient {
     this.labels = new LabelsResource(transport);
     this.identities = new IdentitiesResource(transport);
     this.media = new MessagingMediaResource(transport);
+    this.whatsappMedia = new WhatsAppMediaResource(transport, credential.type);
+    this.historySync = new HistorySyncResource(transport, credential.type);
     this.observationPolicies = new ObservationPoliciesResource(transport);
     this.sessions = new SessionsResource(transport, credential.type);
     this.hybridLink = new HybridLinkResource(transport, credential.type);
@@ -121,6 +133,8 @@ export class MessagingClient {
       transport,
       credential.type,
     );
+    this.passkeys = new PasskeysResource(transport, credential.type);
+    this.catalogs = new CatalogsResource(transport, credential.type);
     this.cloudCatalogs = new CloudCatalogsResource(transport, credential.type);
     this.cloudMarketing = new CloudMarketingResource(
       transport,

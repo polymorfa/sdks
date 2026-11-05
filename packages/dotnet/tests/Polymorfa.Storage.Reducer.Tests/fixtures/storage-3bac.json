@@ -1,0 +1,2066 @@
+{
+  "schemaVersion": 2,
+  "sourceSdkCommit": "daac84b1bd24c9460a2bcad555629a5466d85e2c",
+  "events": [
+    {
+      "id": "evt-0-message.received",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:01.000Z",
+      "event": "message.received",
+      "payload": {
+        "id": "5001",
+        "whatsapp_ids": {
+          "linked_devices": "3EB0AAA1"
+        },
+        "conversation": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "fromMe": false,
+        "timestamp": 1790856001,
+        "pushName": "Ana",
+        "isGroup": false,
+        "type": "text",
+        "text": "original"
+      }
+    },
+    {
+      "id": "evt-1-message.update",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:05.000Z",
+      "event": "message.update",
+      "payload": {
+        "id": "5001",
+        "whatsapp_ids": {
+          "linked_devices": "3EB0AAA1"
+        },
+        "conversation": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "fromMe": false,
+        "timestamp": 1790856005,
+        "pushName": "Ana",
+        "isGroup": false,
+        "type": "text",
+        "text": "edited once",
+        "edited": true
+      }
+    },
+    {
+      "id": "evt-2-message.edited",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:07.000Z",
+      "event": "message.edited",
+      "payload": {
+        "id": "5001",
+        "whatsapp_ids": {
+          "linked_devices": "3EB0AAA1"
+        },
+        "conversation": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "fromMe": false,
+        "timestamp": 1790856007,
+        "pushName": "Ana",
+        "isGroup": false,
+        "type": "text",
+        "text": "edited twice"
+      }
+    },
+    {
+      "id": "evt-3-message.received",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:02.000Z",
+      "event": "message.received",
+      "payload": {
+        "id": "5002",
+        "whatsapp_ids": {
+          "linked_devices": "3EB0AAA2"
+        },
+        "conversation": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "fromMe": false,
+        "timestamp": 1790856002,
+        "pushName": "Ana",
+        "isGroup": false,
+        "type": "image",
+        "caption": "photo",
+        "mimeType": "image/jpeg",
+        "media": "ZGVzY3JpcHRvcg=="
+      }
+    },
+    {
+      "id": "evt-4-message.revoked",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:09.000Z",
+      "event": "message.revoked",
+      "payload": {
+        "id": "5009",
+        "whatsapp_ids": {
+          "linked_devices": "3EB0AAA9"
+        },
+        "conversation": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "fromMe": false,
+        "timestamp": 1790856009,
+        "pushName": "Ana",
+        "isGroup": false,
+        "type": "revoke",
+        "revokedId": "5002"
+      }
+    },
+    {
+      "id": "evt-5-message.edited",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:10.000Z",
+      "event": "message.edited",
+      "payload": {
+        "id": "5002",
+        "whatsapp_ids": {
+          "linked_devices": "3EB0AAA2"
+        },
+        "conversation": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "fromMe": false,
+        "timestamp": 1790856010,
+        "pushName": "Ana",
+        "isGroup": false,
+        "type": "image",
+        "caption": "late edit after revoke"
+      }
+    },
+    {
+      "id": "evt-6-message.sent",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:03.000Z",
+      "event": "message.sent",
+      "payload": {
+        "id": "5003",
+        "whatsapp_ids": {
+          "linked_devices": "3EB0BBB3"
+        },
+        "conversation": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "type": "text",
+        "timestamp": 1790856003
+      }
+    },
+    {
+      "id": "evt-7-message.ack",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:12.000Z",
+      "event": "message.ack",
+      "payload": {
+        "messages": [
+          {
+            "id": "5003",
+            "whatsapp_ids": {
+              "linked_devices": "3EB0BBB3"
+            }
+          }
+        ],
+        "conversation": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "type": "read",
+        "timestamp": 1790856012
+      }
+    },
+    {
+      "id": "evt-8-message.ack",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:11.000Z",
+      "event": "message.ack",
+      "payload": {
+        "messages": [
+          {
+            "id": "5003",
+            "whatsapp_ids": {
+              "linked_devices": "3EB0BBB3"
+            }
+          }
+        ],
+        "conversation": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "type": "delivered",
+        "timestamp": 1790856011
+      }
+    },
+    {
+      "id": "evt-9-message.reaction",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:13.000Z",
+      "event": "message.reaction",
+      "payload": {
+        "id": "5013",
+        "whatsapp_ids": {
+          "linked_devices": "3EB0AAAD"
+        },
+        "conversation": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "fromMe": false,
+        "timestamp": 1790856013,
+        "pushName": "Ana",
+        "isGroup": false,
+        "type": "reaction",
+        "reaction": "👍",
+        "reactionTo": "5003"
+      }
+    },
+    {
+      "id": "evt-10-message.reaction",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:14.000Z",
+      "event": "message.reaction",
+      "payload": {
+        "id": "5014",
+        "whatsapp_ids": {
+          "linked_devices": "3EB0AAAE"
+        },
+        "conversation": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "fromMe": false,
+        "timestamp": 1790856014,
+        "pushName": "Ana",
+        "isGroup": false,
+        "type": "reaction",
+        "reaction": "",
+        "reactionTo": "5003"
+      }
+    },
+    {
+      "id": "evt-11-chat.archive",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:20.000Z",
+      "event": "chat.archive",
+      "payload": {
+        "from": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "archive": true
+      }
+    },
+    {
+      "id": "evt-12-chat.archive",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:21.000Z",
+      "event": "chat.archive",
+      "payload": {
+        "from": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "archive": false,
+        "pinned": true
+      }
+    },
+    {
+      "id": "evt-13-chat.mute",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:22.000Z",
+      "event": "chat.mute",
+      "payload": {
+        "from": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "muted": true,
+        "muteEndTimestamp": 1790859600
+      }
+    },
+    {
+      "id": "evt-14-chat.read",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:23.000Z",
+      "event": "chat.read",
+      "payload": {
+        "from": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "read": false
+      }
+    },
+    {
+      "id": "evt-15-contact.update",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:24.000Z",
+      "event": "contact.update",
+      "payload": {
+        "id": "100200300",
+        "pushName": "Ana B",
+        "fullName": "Ana Bell"
+      }
+    },
+    {
+      "id": "evt-16-contact.update",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:25.000Z",
+      "event": "contact.update",
+      "payload": {
+        "id": "100200300",
+        "pictureId": "pic-1"
+      }
+    },
+    {
+      "id": "evt-17-blocklist.update",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:26.000Z",
+      "event": "blocklist.update",
+      "payload": {
+        "action": "modify",
+        "changes": [
+          {
+            "action": "block",
+            "id": "100200300"
+          }
+        ]
+      }
+    },
+    {
+      "id": "evt-18-group.update",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:30.000Z",
+      "event": "group.update",
+      "payload": {
+        "id": "900800700",
+        "newSubject": "Team",
+        "action": "subject"
+      }
+    },
+    {
+      "id": "evt-19-group.update",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:31.000Z",
+      "event": "group.update",
+      "payload": {
+        "id": "900800700",
+        "newSubject": "Team B",
+        "action": "subject"
+      }
+    },
+    {
+      "id": "evt-20-group.participant",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:32.000Z",
+      "event": "group.participant",
+      "payload": {
+        "id": "900800700",
+        "joined": [
+          {
+            "id": "100200301",
+            "phoneNumber": "+15550002222"
+          }
+        ]
+      }
+    },
+    {
+      "id": "evt-21-group.participant",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:33.000Z",
+      "event": "group.participant",
+      "payload": {
+        "id": "900800700",
+        "promoted": [
+          {
+            "id": "100200301",
+            "phoneNumber": "+15550002222"
+          }
+        ]
+      }
+    },
+    {
+      "id": "evt-22-message.received",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:34.000Z",
+      "event": "message.received",
+      "payload": {
+        "id": "6001",
+        "whatsapp_ids": {
+          "linked_devices": "3EB0CCC1"
+        },
+        "conversation": {
+          "id": "900800700",
+          "sender": {
+            "id": "100200301",
+            "phoneNumber": "+15550002222"
+          }
+        },
+        "fromMe": false,
+        "timestamp": 1790856034,
+        "pushName": "Bo",
+        "isGroup": true,
+        "type": "poll",
+        "title": "Lunch?",
+        "pollOptions": [
+          {
+            "name": "Yes",
+            "hash": "aa"
+          },
+          {
+            "name": "No",
+            "hash": "bb"
+          }
+        ]
+      }
+    },
+    {
+      "id": "evt-23-message.vote",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:35.000Z",
+      "event": "message.vote",
+      "payload": {
+        "conversation": {
+          "id": "900800700"
+        },
+        "pollMessageId": "6001",
+        "voter": {
+          "id": "100200301",
+          "phoneNumber": "+15550002222"
+        },
+        "selectedHashes": ["aa"],
+        "timestamp": 1790856035
+      }
+    },
+    {
+      "id": "evt-24-message.vote",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:36.000Z",
+      "event": "message.vote",
+      "payload": {
+        "conversation": {
+          "id": "900800700"
+        },
+        "pollMessageId": "6001",
+        "voter": {
+          "id": "100200301",
+          "phoneNumber": "+15550002222"
+        },
+        "selectedHashes": ["bb"],
+        "timestamp": 1790856036
+      }
+    },
+    {
+      "id": "evt-25-labels.update",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:37.000Z",
+      "event": "labels.update",
+      "payload": {
+        "action": "label_edit",
+        "labelId": "1",
+        "name": "VIP",
+        "color": 2,
+        "orderIndex": 0,
+        "observedAt": 1790856037
+      }
+    },
+    {
+      "id": "evt-26-labels.update",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:38.000Z",
+      "event": "labels.update",
+      "payload": {
+        "action": "label_association_chat",
+        "labelId": "1",
+        "from": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "labeled": true,
+        "observedAt": 1790856038
+      }
+    },
+    {
+      "id": "evt-27-labels.update",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:39.000Z",
+      "event": "labels.update",
+      "payload": {
+        "action": "star",
+        "messageId": "5001",
+        "from": {
+          "id": "100200300",
+          "phoneNumber": "+15550001111"
+        },
+        "starred": true,
+        "observedAt": 1790856039
+      }
+    },
+    {
+      "id": "evt-28-session.connected",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:40.000Z",
+      "event": "session.connected",
+      "payload": {
+        "phoneNumber": "+15559990000",
+        "pushName": "Shop",
+        "phonePlatform": "android",
+        "accountType": "business"
+      }
+    },
+    {
+      "id": "evt-29-session.logged_out",
+      "session": "portable-fixture",
+      "timestamp": "2026-10-01T12:00:41.000Z",
+      "event": "session.logged_out",
+      "payload": {
+        "reason": "device_removed",
+        "code": 401
+      }
+    }
+  ],
+  "eventRows": {
+    "sessions": [
+      {
+        "sessionId": "portable-fixture",
+        "phoneNumber": "+15559990000",
+        "waId": null,
+        "pushName": "Shop",
+        "phonePlatform": "android",
+        "accountType": "business",
+        "businessName": null,
+        "connected": false,
+        "status": null,
+        "statusReason": null,
+        "loggedOutReason": "device_removed",
+        "loggedOutCode": 401
+      }
+    ],
+    "chats": [
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "100200300",
+        "jid": null,
+        "kind": "direct",
+        "phoneNumber": "+15550001111",
+        "bsuid": null,
+        "username": null,
+        "name": null,
+        "archived": false,
+        "pinned": true,
+        "muted": true,
+        "muteEndAt": 1790859600000,
+        "markedUnread": true,
+        "unreadCount": null,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790856003000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "900800700",
+        "jid": null,
+        "kind": "group",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Team B",
+        "archived": null,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": null,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790856034000,
+        "clearedAt": null,
+        "deletedAt": null
+      }
+    ],
+    "messages": [
+      {
+        "sessionId": "portable-fixture",
+        "messageId": "5001",
+        "chatId": "100200300",
+        "waMessageId": "3EB0AAA1",
+        "cloudMessageId": null,
+        "fromMe": false,
+        "senderId": "100200300",
+        "senderJid": null,
+        "pushName": "Ana",
+        "timestamp": 1790856001000,
+        "type": "text",
+        "text": "edited twice",
+        "caption": null,
+        "mimeType": null,
+        "fileName": null,
+        "latitude": null,
+        "longitude": null,
+        "displayName": null,
+        "title": null,
+        "quotedId": null,
+        "pollOptions": null,
+        "extra": null,
+        "editedAt": 1790856007000,
+        "revokedAt": null,
+        "deletedAt": null,
+        "starred": true,
+        "status": null,
+        "statusAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "messageId": "5002",
+        "chatId": "100200300",
+        "waMessageId": "3EB0AAA2",
+        "cloudMessageId": null,
+        "fromMe": false,
+        "senderId": "100200300",
+        "senderJid": null,
+        "pushName": "Ana",
+        "timestamp": 1790856002000,
+        "type": "image",
+        "text": null,
+        "caption": null,
+        "mimeType": null,
+        "fileName": null,
+        "latitude": null,
+        "longitude": null,
+        "displayName": null,
+        "title": null,
+        "quotedId": null,
+        "pollOptions": null,
+        "extra": null,
+        "editedAt": 1790856010000,
+        "revokedAt": 1790856009000,
+        "deletedAt": null,
+        "starred": null,
+        "status": null,
+        "statusAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "messageId": "5003",
+        "chatId": "100200300",
+        "waMessageId": "3EB0BBB3",
+        "cloudMessageId": null,
+        "fromMe": true,
+        "senderId": "self",
+        "senderJid": null,
+        "pushName": null,
+        "timestamp": 1790856003000,
+        "type": "text",
+        "text": null,
+        "caption": null,
+        "mimeType": null,
+        "fileName": null,
+        "latitude": null,
+        "longitude": null,
+        "displayName": null,
+        "title": null,
+        "quotedId": null,
+        "pollOptions": null,
+        "extra": null,
+        "editedAt": null,
+        "revokedAt": null,
+        "deletedAt": null,
+        "starred": null,
+        "status": "read",
+        "statusAt": 1790856012000
+      },
+      {
+        "sessionId": "portable-fixture",
+        "messageId": "6001",
+        "chatId": "900800700",
+        "waMessageId": "3EB0CCC1",
+        "cloudMessageId": null,
+        "fromMe": false,
+        "senderId": "100200301",
+        "senderJid": null,
+        "pushName": "Bo",
+        "timestamp": 1790856034000,
+        "type": "poll",
+        "text": null,
+        "caption": null,
+        "mimeType": null,
+        "fileName": null,
+        "latitude": null,
+        "longitude": null,
+        "displayName": null,
+        "title": "Lunch?",
+        "quotedId": null,
+        "pollOptions": [
+          {
+            "name": "Yes",
+            "hash": "aa"
+          },
+          {
+            "name": "No",
+            "hash": "bb"
+          }
+        ],
+        "extra": null,
+        "editedAt": null,
+        "revokedAt": null,
+        "deletedAt": null,
+        "starred": null,
+        "status": null,
+        "statusAt": null
+      }
+    ],
+    "reactions": [
+      {
+        "sessionId": "portable-fixture",
+        "messageId": "5003",
+        "senderId": "100200300",
+        "chatId": "100200300",
+        "emoji": "",
+        "timestamp": 1790856014000
+      }
+    ],
+    "receipts": [
+      {
+        "sessionId": "portable-fixture",
+        "messageId": "5003",
+        "recipientId": "100200300",
+        "chatId": "100200300",
+        "status": "read",
+        "timestamp": 1790856012000
+      }
+    ],
+    "poll_votes": [
+      {
+        "sessionId": "portable-fixture",
+        "messageId": "6001",
+        "voterId": "100200301",
+        "chatId": "900800700",
+        "selectedHashes": ["bb"],
+        "timestamp": 1790856036000
+      }
+    ],
+    "contacts": [
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "100200300",
+        "jid": null,
+        "lidJid": null,
+        "phoneNumber": "+15550001111",
+        "bsuid": null,
+        "username": null,
+        "fullName": "Ana Bell",
+        "firstName": null,
+        "pushName": "Ana B",
+        "businessName": null,
+        "pictureId": "pic-1",
+        "blocked": true
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "100200301",
+        "jid": null,
+        "lidJid": null,
+        "phoneNumber": "+15550002222",
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Bo",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      }
+    ],
+    "groups": [
+      {
+        "sessionId": "portable-fixture",
+        "groupId": "900800700",
+        "jid": null,
+        "subject": "Team B",
+        "description": null,
+        "createdAt": null,
+        "createdBy": null,
+        "inviteLink": null,
+        "joinApprovalRequired": null,
+        "lastAction": "subject"
+      }
+    ],
+    "group_participants": [
+      {
+        "sessionId": "portable-fixture",
+        "groupId": "900800700",
+        "participantId": "100200301",
+        "jid": null,
+        "phoneNumber": "+15550002222",
+        "role": "admin",
+        "active": true,
+        "changedAt": 1790856033000,
+        "leaveReason": null
+      }
+    ],
+    "media": [
+      {
+        "sessionId": "portable-fixture",
+        "messageId": "5002",
+        "chatId": "100200300",
+        "kind": "image",
+        "mimeType": "image/jpeg",
+        "fileName": null,
+        "fileLength": null,
+        "fileSha256": null,
+        "fileEncSha256": null,
+        "directPath": null,
+        "mediaKey": null,
+        "mediaKeyTimestamp": null,
+        "descriptor": null,
+        "downloadUrl": null,
+        "archiveLocation": null,
+        "archiveContentType": null,
+        "archiveSize": null,
+        "archiveSha256": null,
+        "archivedAt": null
+      }
+    ],
+    "labels": [
+      {
+        "sessionId": "portable-fixture",
+        "labelId": "1",
+        "name": "VIP",
+        "color": 2,
+        "orderIndex": 0,
+        "deleted": false
+      }
+    ],
+    "label_associations": [
+      {
+        "sessionId": "portable-fixture",
+        "labelId": "1",
+        "targetKind": "chat",
+        "targetId": "100200300",
+        "labeled": true,
+        "changedAt": 1790856038000
+      }
+    ],
+    "history_chunks": [],
+    "history_progress": [],
+    "checkpoints": []
+  },
+  "history": {
+    "syncType": 3,
+    "chunkOrder": 1,
+    "progress": 40,
+    "conversations": [
+      {
+        "id": "15550000000@s.whatsapp.net",
+        "name": "Chat 0",
+        "unreadCount": 0,
+        "archived": true,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": [
+          {
+            "message": {
+              "key": {
+                "remoteJid": "15550000000@s.whatsapp.net",
+                "fromMe": true,
+                "id": "HIST000000"
+              },
+              "messageTimestamp": 1790856000,
+              "status": 4,
+              "message": {
+                "conversation": "history message 0"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "15550000001@s.whatsapp.net",
+        "name": "Chat 1",
+        "unreadCount": 1,
+        "archived": false,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": [
+          {
+            "message": {
+              "key": {
+                "remoteJid": "15550000001@s.whatsapp.net",
+                "fromMe": false,
+                "id": "HIST000001"
+              },
+              "messageTimestamp": 1790856001,
+              "status": 1,
+              "pushName": "Peer",
+              "message": {
+                "conversation": "history message 1"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "15550000002@s.whatsapp.net",
+        "name": "Chat 2",
+        "unreadCount": 2,
+        "archived": true,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": [
+          {
+            "message": {
+              "key": {
+                "remoteJid": "15550000002@s.whatsapp.net",
+                "fromMe": true,
+                "id": "HIST000002"
+              },
+              "messageTimestamp": 1790856002,
+              "status": 4,
+              "message": {
+                "conversation": "history message 2"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "15550000003@s.whatsapp.net",
+        "name": "Chat 3",
+        "unreadCount": 0,
+        "archived": false,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": [
+          {
+            "message": {
+              "key": {
+                "remoteJid": "15550000003@s.whatsapp.net",
+                "fromMe": false,
+                "id": "HIST000003"
+              },
+              "messageTimestamp": 1790856003,
+              "status": 1,
+              "pushName": "Peer",
+              "message": {
+                "conversation": "history message 3"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": "15550000004@s.whatsapp.net",
+        "name": "Chat 4",
+        "unreadCount": 1,
+        "archived": true,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000005@s.whatsapp.net",
+        "name": "Chat 5",
+        "unreadCount": 2,
+        "archived": false,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000006@s.whatsapp.net",
+        "name": "Chat 6",
+        "unreadCount": 0,
+        "archived": true,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000007@s.whatsapp.net",
+        "name": "Chat 7",
+        "unreadCount": 1,
+        "archived": false,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000008@s.whatsapp.net",
+        "name": "Chat 8",
+        "unreadCount": 2,
+        "archived": true,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000009@s.whatsapp.net",
+        "name": "Chat 9",
+        "unreadCount": 0,
+        "archived": false,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000010@s.whatsapp.net",
+        "name": "Chat 10",
+        "unreadCount": 1,
+        "archived": true,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000011@s.whatsapp.net",
+        "name": "Chat 11",
+        "unreadCount": 2,
+        "archived": false,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000012@s.whatsapp.net",
+        "name": "Chat 12",
+        "unreadCount": 0,
+        "archived": true,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000013@s.whatsapp.net",
+        "name": "Chat 13",
+        "unreadCount": 1,
+        "archived": false,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000014@s.whatsapp.net",
+        "name": "Chat 14",
+        "unreadCount": 2,
+        "archived": true,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000015@s.whatsapp.net",
+        "name": "Chat 15",
+        "unreadCount": 0,
+        "archived": false,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000016@s.whatsapp.net",
+        "name": "Chat 16",
+        "unreadCount": 1,
+        "archived": true,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000017@s.whatsapp.net",
+        "name": "Chat 17",
+        "unreadCount": 2,
+        "archived": false,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000018@s.whatsapp.net",
+        "name": "Chat 18",
+        "unreadCount": 0,
+        "archived": true,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      },
+      {
+        "id": "15550000019@s.whatsapp.net",
+        "name": "Chat 19",
+        "unreadCount": 1,
+        "archived": false,
+        "lastMsgTimestamp": 1790866000,
+        "conversationTimestamp": 1790866000,
+        "messages": []
+      }
+    ],
+    "pushnames": [
+      {
+        "id": "15550000000@s.whatsapp.net",
+        "pushname": "Peer 0"
+      },
+      {
+        "id": "15550000001@s.whatsapp.net",
+        "pushname": "Peer 1"
+      },
+      {
+        "id": "15550000002@s.whatsapp.net",
+        "pushname": "Peer 2"
+      },
+      {
+        "id": "15550000003@s.whatsapp.net",
+        "pushname": "Peer 3"
+      },
+      {
+        "id": "15550000004@s.whatsapp.net",
+        "pushname": "Peer 4"
+      },
+      {
+        "id": "15550000005@s.whatsapp.net",
+        "pushname": "Peer 5"
+      },
+      {
+        "id": "15550000006@s.whatsapp.net",
+        "pushname": "Peer 6"
+      },
+      {
+        "id": "15550000007@s.whatsapp.net",
+        "pushname": "Peer 7"
+      },
+      {
+        "id": "15550000008@s.whatsapp.net",
+        "pushname": "Peer 8"
+      },
+      {
+        "id": "15550000009@s.whatsapp.net",
+        "pushname": "Peer 9"
+      },
+      {
+        "id": "15550000010@s.whatsapp.net",
+        "pushname": "Peer 10"
+      },
+      {
+        "id": "15550000011@s.whatsapp.net",
+        "pushname": "Peer 11"
+      },
+      {
+        "id": "15550000012@s.whatsapp.net",
+        "pushname": "Peer 12"
+      },
+      {
+        "id": "15550000013@s.whatsapp.net",
+        "pushname": "Peer 13"
+      },
+      {
+        "id": "15550000014@s.whatsapp.net",
+        "pushname": "Peer 14"
+      },
+      {
+        "id": "15550000015@s.whatsapp.net",
+        "pushname": "Peer 15"
+      },
+      {
+        "id": "15550000016@s.whatsapp.net",
+        "pushname": "Peer 16"
+      },
+      {
+        "id": "15550000017@s.whatsapp.net",
+        "pushname": "Peer 17"
+      },
+      {
+        "id": "15550000018@s.whatsapp.net",
+        "pushname": "Peer 18"
+      },
+      {
+        "id": "15550000019@s.whatsapp.net",
+        "pushname": "Peer 19"
+      }
+    ]
+  },
+  "historyRows": {
+    "sessions": [],
+    "chats": [
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000000@s.whatsapp.net",
+        "jid": "15550000000@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 0",
+        "archived": true,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 0,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000001@s.whatsapp.net",
+        "jid": "15550000001@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 1",
+        "archived": false,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 1,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000002@s.whatsapp.net",
+        "jid": "15550000002@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 2",
+        "archived": true,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 2,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000003@s.whatsapp.net",
+        "jid": "15550000003@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 3",
+        "archived": false,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 0,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000004@s.whatsapp.net",
+        "jid": "15550000004@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 4",
+        "archived": true,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 1,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000005@s.whatsapp.net",
+        "jid": "15550000005@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 5",
+        "archived": false,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 2,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000006@s.whatsapp.net",
+        "jid": "15550000006@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 6",
+        "archived": true,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 0,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000007@s.whatsapp.net",
+        "jid": "15550000007@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 7",
+        "archived": false,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 1,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000008@s.whatsapp.net",
+        "jid": "15550000008@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 8",
+        "archived": true,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 2,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000009@s.whatsapp.net",
+        "jid": "15550000009@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 9",
+        "archived": false,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 0,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000010@s.whatsapp.net",
+        "jid": "15550000010@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 10",
+        "archived": true,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 1,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000011@s.whatsapp.net",
+        "jid": "15550000011@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 11",
+        "archived": false,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 2,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000012@s.whatsapp.net",
+        "jid": "15550000012@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 12",
+        "archived": true,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 0,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000013@s.whatsapp.net",
+        "jid": "15550000013@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 13",
+        "archived": false,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 1,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000014@s.whatsapp.net",
+        "jid": "15550000014@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 14",
+        "archived": true,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 2,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000015@s.whatsapp.net",
+        "jid": "15550000015@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 15",
+        "archived": false,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 0,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000016@s.whatsapp.net",
+        "jid": "15550000016@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 16",
+        "archived": true,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 1,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000017@s.whatsapp.net",
+        "jid": "15550000017@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 17",
+        "archived": false,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 2,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000018@s.whatsapp.net",
+        "jid": "15550000018@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 18",
+        "archived": true,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 0,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "chatId": "wa:15550000019@s.whatsapp.net",
+        "jid": "15550000019@s.whatsapp.net",
+        "kind": "direct",
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "name": "Chat 19",
+        "archived": false,
+        "pinned": null,
+        "muted": null,
+        "muteEndAt": null,
+        "markedUnread": null,
+        "unreadCount": 1,
+        "readOnly": null,
+        "ephemeralExpiration": null,
+        "lastMessageAt": 1790866000000,
+        "clearedAt": null,
+        "deletedAt": null
+      }
+    ],
+    "messages": [
+      {
+        "sessionId": "portable-fixture",
+        "messageId": "wa:15550000000@s.whatsapp.net:1::HIST000000",
+        "chatId": "wa:15550000000@s.whatsapp.net",
+        "waMessageId": "HIST000000",
+        "cloudMessageId": null,
+        "fromMe": true,
+        "senderId": "self",
+        "senderJid": null,
+        "pushName": null,
+        "timestamp": 1790856000000,
+        "type": "text",
+        "text": "history message 0",
+        "caption": null,
+        "mimeType": null,
+        "fileName": null,
+        "latitude": null,
+        "longitude": null,
+        "displayName": null,
+        "title": null,
+        "quotedId": null,
+        "pollOptions": null,
+        "extra": null,
+        "editedAt": null,
+        "revokedAt": null,
+        "deletedAt": null,
+        "starred": null,
+        "status": "read",
+        "statusAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "messageId": "wa:15550000001@s.whatsapp.net:0::HIST000001",
+        "chatId": "wa:15550000001@s.whatsapp.net",
+        "waMessageId": "HIST000001",
+        "cloudMessageId": null,
+        "fromMe": false,
+        "senderId": "wa:15550000001@s.whatsapp.net",
+        "senderJid": "15550000001@s.whatsapp.net",
+        "pushName": "Peer",
+        "timestamp": 1790856001000,
+        "type": "text",
+        "text": "history message 1",
+        "caption": null,
+        "mimeType": null,
+        "fileName": null,
+        "latitude": null,
+        "longitude": null,
+        "displayName": null,
+        "title": null,
+        "quotedId": null,
+        "pollOptions": null,
+        "extra": null,
+        "editedAt": null,
+        "revokedAt": null,
+        "deletedAt": null,
+        "starred": null,
+        "status": null,
+        "statusAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "messageId": "wa:15550000002@s.whatsapp.net:1::HIST000002",
+        "chatId": "wa:15550000002@s.whatsapp.net",
+        "waMessageId": "HIST000002",
+        "cloudMessageId": null,
+        "fromMe": true,
+        "senderId": "self",
+        "senderJid": null,
+        "pushName": null,
+        "timestamp": 1790856002000,
+        "type": "text",
+        "text": "history message 2",
+        "caption": null,
+        "mimeType": null,
+        "fileName": null,
+        "latitude": null,
+        "longitude": null,
+        "displayName": null,
+        "title": null,
+        "quotedId": null,
+        "pollOptions": null,
+        "extra": null,
+        "editedAt": null,
+        "revokedAt": null,
+        "deletedAt": null,
+        "starred": null,
+        "status": "read",
+        "statusAt": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "messageId": "wa:15550000003@s.whatsapp.net:0::HIST000003",
+        "chatId": "wa:15550000003@s.whatsapp.net",
+        "waMessageId": "HIST000003",
+        "cloudMessageId": null,
+        "fromMe": false,
+        "senderId": "wa:15550000003@s.whatsapp.net",
+        "senderJid": "15550000003@s.whatsapp.net",
+        "pushName": "Peer",
+        "timestamp": 1790856003000,
+        "type": "text",
+        "text": "history message 3",
+        "caption": null,
+        "mimeType": null,
+        "fileName": null,
+        "latitude": null,
+        "longitude": null,
+        "displayName": null,
+        "title": null,
+        "quotedId": null,
+        "pollOptions": null,
+        "extra": null,
+        "editedAt": null,
+        "revokedAt": null,
+        "deletedAt": null,
+        "starred": null,
+        "status": null,
+        "statusAt": null
+      }
+    ],
+    "reactions": [],
+    "receipts": [],
+    "poll_votes": [],
+    "contacts": [
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000001@s.whatsapp.net",
+        "jid": "15550000001@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000003@s.whatsapp.net",
+        "jid": "15550000003@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000000@s.whatsapp.net",
+        "jid": "15550000000@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 0",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000002@s.whatsapp.net",
+        "jid": "15550000002@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 2",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000004@s.whatsapp.net",
+        "jid": "15550000004@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 4",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000005@s.whatsapp.net",
+        "jid": "15550000005@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 5",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000006@s.whatsapp.net",
+        "jid": "15550000006@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 6",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000007@s.whatsapp.net",
+        "jid": "15550000007@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 7",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000008@s.whatsapp.net",
+        "jid": "15550000008@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 8",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000009@s.whatsapp.net",
+        "jid": "15550000009@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 9",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000010@s.whatsapp.net",
+        "jid": "15550000010@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 10",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000011@s.whatsapp.net",
+        "jid": "15550000011@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 11",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000012@s.whatsapp.net",
+        "jid": "15550000012@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 12",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000013@s.whatsapp.net",
+        "jid": "15550000013@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 13",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000014@s.whatsapp.net",
+        "jid": "15550000014@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 14",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000015@s.whatsapp.net",
+        "jid": "15550000015@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 15",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000016@s.whatsapp.net",
+        "jid": "15550000016@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 16",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000017@s.whatsapp.net",
+        "jid": "15550000017@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 17",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000018@s.whatsapp.net",
+        "jid": "15550000018@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 18",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      },
+      {
+        "sessionId": "portable-fixture",
+        "contactId": "wa:15550000019@s.whatsapp.net",
+        "jid": "15550000019@s.whatsapp.net",
+        "lidJid": null,
+        "phoneNumber": null,
+        "bsuid": null,
+        "username": null,
+        "fullName": null,
+        "firstName": null,
+        "pushName": "Peer 19",
+        "businessName": null,
+        "pictureId": null,
+        "blocked": null
+      }
+    ],
+    "groups": [],
+    "group_participants": [],
+    "media": [],
+    "labels": [],
+    "label_associations": [],
+    "history_chunks": [
+      {
+        "sessionId": "portable-fixture",
+        "syncType": "RECENT",
+        "chunkOrder": "1",
+        "progress": 40,
+        "conversationCount": 20,
+        "messageCount": 4,
+        "pushnameCount": 20
+      }
+    ],
+    "history_progress": [
+      {
+        "sessionId": "portable-fixture",
+        "syncType": "RECENT",
+        "progress": 40,
+        "lastChunkOrder": 1
+      }
+    ],
+    "checkpoints": []
+  }
+}

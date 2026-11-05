@@ -126,7 +126,7 @@ it("preserves partial drip PATCH on both APIs and idempotent enrollment response
   const drip: CampaignDripPatch = { enrollment: "audience" };
   const patch: UpdateCampaignRequest = { drip };
   await client.campaigns.create({
-    projectId: "p",
+    projectId: "11111111-1111-4111-8111-111111111111",
     name: "VIP drip",
     segmentId: "s",
     drip: { enrollment: "continuous" },
@@ -143,8 +143,12 @@ it("preserves partial drip PATCH on both APIs and idempotent enrollment response
       },
     ],
   });
-  await client.campaigns.update("c", { drip }, { projectId: "p" });
-  await m.campaigns.update("p", "c", patch);
+  await client.campaigns.update(
+    "c",
+    { drip },
+    { projectId: "11111111-1111-4111-8111-111111111111" },
+  );
+  await m.campaigns.update("11111111-1111-4111-8111-111111111111", "c", patch);
   expect(server.requests.slice(1).map((r) => JSON.parse(r.body))).toEqual([
     { drip: { enrollment: "audience" } },
     { drip: { enrollment: "audience" } },
@@ -152,14 +156,14 @@ it("preserves partial drip PATCH on both APIs and idempotent enrollment response
   expect(
     (
       await client.campaigns.enroll("c", {
-        projectId: "p",
+        projectId: "11111111-1111-4111-8111-111111111111",
         phone: "+5511999990000",
       })
     ).data.data.created,
   ).toBe(false);
   expect(
     (
-      await m.campaigns.enroll("p", "c", {
+      await m.campaigns.enroll("11111111-1111-4111-8111-111111111111", "c", {
         phone: "+5511999990000",
         variables: { vip: true },
       })
@@ -167,9 +171,11 @@ it("preserves partial drip PATCH on both APIs and idempotent enrollment response
   ).toBe("skipped");
   expect(server.requests.slice(3).map((r) => r.path)).toEqual([
     "/platform/campaigns/c/enrollments",
-    "/messaging/projects/p/campaigns/c/enrollments",
+    "/messaging/projects/11111111-1111-4111-8111-111111111111/campaigns/c/enrollments",
   ]);
-  const campaign = (await m.campaigns.retrieve("p", "c")).data.data;
+  const campaign = (
+    await m.campaigns.retrieve("11111111-1111-4111-8111-111111111111", "c")
+  ).data.data;
   expect(campaign.enrollmentOpen).toBe(false);
   expect(campaign.segmentSnapshot?.revision).toBe(3);
 });
@@ -183,7 +189,7 @@ it("pins PATCH defaults, four-range step windows, and segment bounds to merged d
       "utf8",
     ),
   );
-  expect(contract.commit).toBe("f46ebd5162453e812dafa76ce02b420ddabe6921");
+  expect(contract.commit).toBe("9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f");
   for (const source of Object.values(contract.sources) as {
     sourceSha256: string;
     schemas: Record<string, { properties: Record<string, unknown> }>;
@@ -214,7 +220,7 @@ it.each([
   servers.push(server);
   const result = platform(server.url).campaigns.launch(
     "c",
-    { projectId: "p" },
+    { projectId: "11111111-1111-4111-8111-111111111111" },
     { maxNetworkRetries: 0 },
   );
   await expect(result).rejects.toMatchObject({
@@ -263,20 +269,34 @@ it("projects per-step analytics and recipient exits on both APIs", async () => {
   }));
   servers.push(server);
   expect(
-    (await platform(server.url).campaigns.analytics("c", { projectId: "p" }))
-      .data.data.drip,
+    (
+      await platform(server.url).campaigns.analytics("c", {
+        projectId: "11111111-1111-4111-8111-111111111111",
+      })
+    ).data.data.drip,
   ).toEqual(drip);
   expect(
-    (await messaging(server.url).campaigns.analytics("p", "c")).data.data.drip
-      ?.steps[0]?.exited,
+    (
+      await messaging(server.url).campaigns.analytics(
+        "11111111-1111-4111-8111-111111111111",
+        "c",
+      )
+    ).data.data.drip?.steps[0]?.exited,
   ).toBe(1);
   expect(
-    (await platform(server.url).campaigns.recipients("c", { projectId: "p" }))
-      .data.data[0]?.sequenceError,
+    (
+      await platform(server.url).campaigns.recipients("c", {
+        projectId: "11111111-1111-4111-8111-111111111111",
+      })
+    ).data.data[0]?.sequenceError,
   ).toBe("link_clicked");
   expect(
-    (await messaging(server.url).campaigns.listRecipients("p", "c")).data
-      .data[0]?.messagesSent,
+    (
+      await messaging(server.url).campaigns.listRecipients(
+        "11111111-1111-4111-8111-111111111111",
+        "c",
+      )
+    ).data.data[0]?.messagesSent,
   ).toBe(1);
 });
 
@@ -299,10 +319,58 @@ it("requires organization project context and keeps segment authority out of pro
   expectTypeOf<Parameters<typeof client.campaigns.enroll>[1]>().toMatchTypeOf<{
     readonly projectId: string;
   }>();
-  expect(client.project("p")).not.toHaveProperty("audienceSegments");
+  expect(
+    client.project("11111111-1111-4111-8111-111111111111"),
+  ).not.toHaveProperty("audienceSegments");
   type Create = Parameters<typeof client.campaigns.create>[0];
-  const valid: Create = { projectId: "p", name: "draft" };
-  // @ts-expect-error The create schema permits omission, not null.
-  const invalid: Create = { projectId: "p", name: "draft", segmentId: null };
+  const valid: Create = {
+    projectId: "11111111-1111-4111-8111-111111111111",
+    name: "draft",
+  };
+  const invalid: Create = {
+    projectId: "11111111-1111-4111-8111-111111111111",
+    name: "draft",
+    // @ts-expect-error The create schema permits omission, not null.
+    segmentId: null,
+  };
   expect(valid.name).toBe(invalid.name);
+});
+
+it("preserves ordinary sequence bounds and accepts later drip steps on PATCH", async () => {
+  const server = await startTestServer(() => ({
+    body: JSON.stringify({ success: true, data: {} }),
+  }));
+  servers.push(server);
+  const client = platform(server.url);
+  const projectId = "11111111-1111-4111-8111-111111111111";
+  expect(() =>
+    client.campaigns.create({
+      projectId,
+      name: "ordinary",
+      messagesArray: [{ source: "later", delayAfterSec: 86401 }],
+    }),
+  ).toThrow("delayAfterSec");
+  expect(server.requests).toHaveLength(0);
+  await client.campaigns.update(
+    "c",
+    {
+      messagesArray: [
+        { source: "later", delayAfterSec: 2592000, delayUnit: "days" },
+      ],
+    },
+    { projectId },
+  );
+  expect(JSON.parse(server.requests[0]!.body)).toEqual({
+    messagesArray: [
+      { source: "later", delayAfterSec: 2592000, delayUnit: "days" },
+    ],
+  });
+  expect(() =>
+    client.campaigns.update(
+      "c",
+      { messagesArray: [{ source: "later", delayAfterSec: 2592001 }] },
+      { projectId },
+    ),
+  ).toThrow("delayAfterSec");
+  expect(server.requests).toHaveLength(1);
 });

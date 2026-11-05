@@ -114,7 +114,7 @@ export interface AudienceSegmentsEnvelope {
   };
 }
 type Result<T> = Promise<ApiResponse<DataEnvelope<T>>>;
-/** Organization keys only. Read scopes: campaigns:read; mutations and unsaved
+/** Team keys only. Read scopes: campaigns:read; mutations and unsaved
  * preview: campaigns:manage. Create/update/preview require both audience betas.
  * Reads and deletion remain available after withdrawal. Revision conflicts and
  * bounded evaluation timeouts return 409 state_conflict. Re-read/reconcile or

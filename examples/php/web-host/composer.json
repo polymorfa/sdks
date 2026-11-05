@@ -1,0 +1,28 @@
+{
+  "name": "polymorfa/example-web-host",
+  "description": "Laravel Blade and Symfony hosts for existing Polymorfa Web Components",
+  "type": "project",
+  "require": {
+    "php": ">=8.2",
+    "polymorfa/sdk": "@dev",
+    "laravel/framework": "^12.0",
+    "symfony/http-kernel": "^7.4",
+    "twig/twig": "^3.0"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../../../packages/php",
+      "options": {
+        "symlink": true
+      }
+    }
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "autoload": {
+    "psr-4": {
+      "PolymorfaExample\\": "src/"
+    }
+  }
+}

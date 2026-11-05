@@ -79,7 +79,7 @@ describe("Client organization access and operations", () => {
     expectTypeOf<ProjectToken>().toHaveProperty("revokedAt");
   });
 
-  it("lists and deactivates organization API keys without exposing key material", async () => {
+  it("lists and deactivates team keys without exposing key material", async () => {
     const { client, requests } = await platformAccessServer();
     const listed = await client.apiKeys.list();
     const deactivated = await client.apiKeys.deactivate("key/a", {

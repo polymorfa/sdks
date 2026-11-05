@@ -1,0 +1,17 @@
+{
+  "syntheticOnly": true,
+  "sourceSdkCommit": "254fc6a2d073e7fc79420cf95f9b03927d00c04a",
+  "sourceSchemaSha256": "7c34922d8a99c4e9e3fadb07344b17fd660b3fe9d29a941991bb7e827f982fc7",
+  "generator": "Python stdlib zlib/gzip/HMAC plus OpenSSL AES-CBC; no SDK implementation used",
+  "protobuf": "CAMSoAEKCHVzZXJAbGlkEn0KVQodCgh1c2VyQGxpZBAAGg9tZXNzYWdlX2ZpeHR1cmUSFgoUcHJpdmF0ZSBoaXN0b3J5IHRleHQYgK/A1gaiHxV1bmtub3duIG1lc3NhZ2UgZmllbGQQ////////////AdoHGHVua25vd24gbWVzc2FnZSBlbnZlbG9wZdoHFHVua25vd24gY29udmVyc2F0aW9uKAIwZDoTCgh1c2VyQGxpZBIHRml4dHVyZdgH////////////AeIHD3Vua25vd24gaGlzdG9yeesHCAfsBw==",
+  "messageProtobuf": "Ch0KCHVzZXJAbGlkEAAaD21lc3NhZ2VfZml4dHVyZRIWChRwcml2YXRlIGhpc3RvcnkgdGV4dBiAr8DWBqIfFXVua25vd24gbWVzc2FnZSBmaWVsZA==",
+  "unknownFields": "2Af///////////8B4gcPdW5rbm93biBoaXN0b3J56wcIB+wH",
+  "zlib": "eJzjYBZawMjFUVqcWuSQk5kiVMsVyiWL4AswSPHnphYXJ6anxqdlVpSUFqUKiXGJFBRlliWWpCpkZBaX5BdVKpSkVpRINKw/cI1tkbxoaV52Xn55ngJUn0JaZmpOisB/GGC8xS6BriQ1ryw1J78g9Ra7CEwqOR8oVlScWJKZn6fBZJBiJYzkSnY3iFtusCOMfcTOD9MLddZrdg72N+wAFwRaZA==",
+  "gzip": "H4sIAAAAAAACE+NgFlrAyMVRWpxa5JCTmSJUyxXKJYvgCzBI8eemFhcnpqfGp2VWlJQWpQqJcYkUFGWWJZakKmRkFpfkF1UqlKRWlEg0rD9wjW2RvGhpXnZefnmeAlSfQlpmak6KwH8YYLzFLoGuJDWvLDUnvyD1FrsITCo5HyhWVJxYkpmfp8FkkGIljORKdjeIW26wI4x9xM4P0wt11mt2DvY37AAT5GYg4gAAAA==",
+  "rawDeflate": "42AWWsDIxVFanFrkkJOZIlTLFcoli+ALMEjx56YWFyemp8anZVaUlBalColxiRQUZZYllqQqZGQWl+QXVSqUpFaUSDSsP3CNbZG8aGledl5+eZ4CVJ9CWmZqTorAfxhgvMUuga4kNa8sNSe/IPUWuwhMKjkfKFZUnFiSmZ+nwWSQYiWM5Ep2N4hbbrAjjH3Ezg/TC3XWa3YO9jfsAA==",
+  "encrypted": "hsVMMSV0VbgBQllqJcDP2E8KYW876DQpcbOHlEIt2QeIu0KFt86bAslZXuFsm4upq3QiuHwnquBFRBh1RiR1PhxzC6WfnBuEUwj33FOXTTEwuUuHuHEomwb8EqzXikAhYfHTlWSaP49vkmKdNuYBUTJOVXDbQKL5InwbGfxJkKc4scM1ngZZ3oIfm4MnpkYCMsBA/IFSK8/KeCBI1p1+b8Iz7itUoW1AwlMNHKc7n549d+2hocwlYumK",
+  "mediaKey": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+  "fileSha256": "Ho2uqNuEMs4HS67s7VwOwckLcEvYVuVbRmsJyiQv7PI=",
+  "fileEncSha256": "Ss0B3IKTgc+I/Hi2DJZsn/TL5TOYxO56USsy2sk8ZIo=",
+  "fileLength": 163
+}

@@ -54,7 +54,7 @@ describe("BridgeClient", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it("rejects organization credentials supplied by untyped callers", () => {
+  it("rejects team keys supplied by untyped callers", () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     expect(
       () =>

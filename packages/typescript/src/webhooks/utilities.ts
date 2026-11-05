@@ -1,3 +1,4 @@
+import { constructWebhookDelivery, type WebhookDelivery } from "./delivery.js";
 import type { WebhookEvent } from "./events.js";
 import {
   bytesHex,
@@ -25,7 +26,7 @@ export interface VerifyLocalWebhookInput extends VerifyWebhookInput {
   readonly nowUnixSeconds?: number;
 }
 export interface CreateWebhookFixtureInput {
-  readonly event: WebhookEvent;
+  readonly event: WebhookDelivery;
   readonly secret: string;
 }
 export interface WebhookFixture {
@@ -38,6 +39,7 @@ export interface WebhookFixture {
   }>;
 }
 export interface WebhookUtilities {
+  verifyDelivery(input: VerifyWebhookInput): Promise<WebhookDelivery>;
   verify(input: VerifyWebhookInput): Promise<WebhookEvent>;
   verifySignature(input: VerifyWebhookSignatureInput): Promise<boolean>;
   verifyLocal(input: VerifyLocalWebhookInput): Promise<WebhookEvent>;
@@ -45,6 +47,8 @@ export interface WebhookUtilities {
 }
 
 export const webhooks: WebhookUtilities = Object.freeze({
+  verifyDelivery: (input: VerifyWebhookInput) =>
+    constructWebhookDelivery(input.body, input.signature, input.secret),
   verify: (input: VerifyWebhookInput) =>
     constructWebhookEvent(input.body, input.signature, input.secret),
   verifySignature: (input: VerifyWebhookSignatureInput) =>

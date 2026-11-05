@@ -30,7 +30,7 @@ export interface AcceptCallOptions {
    */
   readonly exclusive?: boolean;
   readonly video?: boolean;
-  /** Participant name for organization API keys and project tokens. */
+  /** Participant name for team keys and project tokens. */
   readonly participant?: string;
 }
 
@@ -52,7 +52,7 @@ export interface PlaceCallRequest {
   readonly video: boolean;
   /** Claim the call for the placing participant. Default `false`. */
   readonly exclusive?: boolean;
-  /** Participant name for organization API keys and project tokens. */
+  /** Participant name for team keys and project tokens. */
   readonly participant?: string;
   readonly idempotencyKey: string;
 }

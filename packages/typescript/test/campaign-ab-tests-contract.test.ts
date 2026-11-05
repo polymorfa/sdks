@@ -160,12 +160,12 @@ describe("campaign A/B test contract supplement", () => {
     expectTypeOf<
       CreatePlatformCampaignRequest["variantStrategy"]
     >().toEqualTypeOf<CampaignVariantStrategy | undefined>();
-    expectTypeOf<Campaign["experimentOutcome"]>().toEqualTypeOf<
-      CampaignExperimentOutcome | null | undefined
-    >();
-    expectTypeOf<CampaignAnalytics["experiment"]>().toEqualTypeOf<
-      CampaignExperimentResults | null | undefined
-    >();
+    expectTypeOf<
+      Campaign["experimentOutcome"]
+    >().toEqualTypeOf<CampaignExperimentOutcome | null>();
+    expectTypeOf<
+      CampaignAnalytics["experiment"]
+    >().toEqualTypeOf<CampaignExperimentResults | null>();
     // Turning a draft back into a broadcast is a valid Messaging update.
     expectTypeOf<{
       variants: null;

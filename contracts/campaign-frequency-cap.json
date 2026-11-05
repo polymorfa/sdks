@@ -1,11 +1,11 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "e404a727ddb4abf42a8df768a5336fad922cc99a",
+  "commit": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f",
   "note": "Contact frequency cap beta, merged backend #601 and Console #609. Full snapshots retain their independent pins.",
   "sources": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
-      "sourceSha256": "9d8faf13be970bee800ad15e308c130bc4ae8703865ae99278b9ae315cc27638",
+      "sourceSha256": "6d5b5477a86a85504f921933bf7b26f2c47506e21380fe73c8a5ff1002163b28",
       "schemas": {},
       "fields": {
         "VoiceAssetFailedPayload.failureReason": {
@@ -634,7 +634,7 @@
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
-      "sourceSha256": "e28256daac1e8efd84998d7399b74c3200623c19ac807a4b0730523a667976ff",
+      "sourceSha256": "bf4c6056b75e2fb0293b48edc5d8c12c36cdcbd194b9d11159f59522d30badc3",
       "schemas": {
         "CampaignRecipientFailureReason": {
           "type": "string",

@@ -113,7 +113,23 @@ export interface WebhookSigningSecretMetadata {
   readonly createdAt: string;
   readonly previousValidUntil: string | null;
 }
+/** Beta, native-format endpoints only. Omission on create keeps single delivery;
+ * omission on update preserves saved settings. Enabling requires enrollment.
+ */
+export interface WebhookBatchingInput {
+  readonly enabled: boolean;
+  /** 2-100, default 100. A window may deliver a single member. */
+  readonly maxEvents?: number;
+  /** 100-1000 ms, default 1000. */
+  readonly windowMs?: number;
+}
+export interface WebhookBatching {
+  readonly enabled: boolean;
+  readonly maxEvents: number;
+  readonly windowMs: number;
+}
 interface WebhookBase {
+  readonly batching: WebhookBatching;
   readonly id: string;
   readonly organizationId: string;
   readonly url: string;
@@ -142,6 +158,7 @@ export interface ProjectWebhook extends WebhookBase {
   readonly projectId: string;
 }
 interface CreateWebhookInputBase {
+  readonly batching?: WebhookBatchingInput;
   readonly url: string;
   readonly eventTypes: readonly string[];
   readonly enabled?: boolean;
@@ -159,6 +176,7 @@ interface CreateWebhookInputBase {
 export type CreateOrganizationWebhookInput = CreateWebhookInputBase;
 export type CreateProjectWebhookInput = CreateWebhookInputBase;
 interface UpdateWebhookInputBase {
+  readonly batching?: WebhookBatchingInput;
   readonly url?: string;
   readonly eventTypes?: readonly string[];
   readonly enabled?: boolean;

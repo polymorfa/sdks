@@ -130,7 +130,7 @@ describe("call retention", () => {
 
     expect(() =>
       createTeamCallRetentionClient({
-        credential: { type: "projectToken", value: "pmfa_ct_browser" },
+        credential: { type: "projectToken", value: "pmfa_ct_YnJvd3Nlcg" },
         fetch,
       }),
     ).toThrow(PolymorfaConfigurationError);

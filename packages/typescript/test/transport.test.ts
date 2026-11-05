@@ -43,6 +43,74 @@ function makeTransport(
 }
 
 describe("HttpTransport", () => {
+  it.each([undefined, "false", "true"])(
+    "exposes only the received replay marker %s in safe response metadata",
+    async (marker) => {
+      const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+        Response.json(
+          { ok: true },
+          {
+            headers: {
+              ...(marker === undefined
+                ? {}
+                : { "Idempotent-Replayed": marker }),
+              "set-cookie": "session=private",
+              "x-internal-debug": "private",
+            },
+          },
+        ),
+      );
+      const response = await makeTransport("https://api.example.com", {
+        fetch,
+      }).request({
+        method: "POST",
+        path: "/messaging/test",
+        idempotencyKey: "same-key",
+      });
+
+      expect(response.metadata.headers["idempotent-replayed"]).toBe(marker);
+      expect(response.metadata.headers).not.toHaveProperty("set-cookie");
+      expect(response.metadata.headers).not.toHaveProperty("x-internal-debug");
+      expect(Object.isFrozen(response.metadata.headers)).toBe(true);
+      expect(fetch).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("exposes a replayed server error without another attempt", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json(
+        {
+          error: { code: "service_unavailable", message: "Recorded failure." },
+        },
+        {
+          status: 503,
+          headers: { "Idempotent-Replayed": "true", "Retry-After": "1" },
+        },
+      ),
+    );
+    const sleep = vi.fn(async () => undefined);
+    const error = await makeTransport("https://api.example.com", {
+      fetch,
+      sleep,
+      maxNetworkRetries: 2,
+    })
+      .request({
+        method: "POST",
+        path: "/messaging/test",
+        idempotencyKey: "same-key",
+      })
+      .catch((caught) => caught);
+
+    expect(error).toBeInstanceOf(PolymorfaServerError);
+    expect(error.metadata).toMatchObject({
+      status: 503,
+      attempts: 1,
+      headers: { "idempotent-replayed": "true" },
+    });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(sleep).not.toHaveBeenCalled();
+  });
+
   it("rejects cleartext credential transport outside loopback", () => {
     expect(() => makeTransport("http://api.example.com")).toThrow(
       PolymorfaConfigurationError,
@@ -174,13 +242,13 @@ describe("HttpTransport", () => {
       status: 400,
       headers: {
         "content-type": "application/json",
-        "polymorfa-version": "2026-03-19",
+        "polymorfa-version": "2026-03-20",
       },
       body: JSON.stringify({
         error: {
           code: "invalid_parameter",
           message:
-            "API version 2026-03-19 is no longer supported. Minimum: 2026-03-20",
+            "API version 2026-03-20 is no longer supported. Minimum: 2026-09-22",
           param: "Polymorfa-Version",
         },
       }),
@@ -189,11 +257,11 @@ describe("HttpTransport", () => {
       makeTransport(server.url, { maxNetworkRetries: 2 }).request({
         method: "GET",
         path: "/messaging/number/hybrid-link",
-        headers: { "Polymorfa-Version": "2026-03-19" },
+        headers: { "Polymorfa-Version": "2026-03-20" },
       }),
     ).rejects.toMatchObject({ code: "invalid_parameter", status: 400 });
     expect(server.requests).toHaveLength(1);
-    expect(server.requests[0]?.headers["polymorfa-version"]).toBe("2026-03-19");
+    expect(server.requests[0]?.headers["polymorfa-version"]).toBe("2026-03-20");
   });
 
   it("keeps API version options ahead of raw headers for JSON and streaming calls", async () => {

@@ -5,8 +5,8 @@ into the `@polymorfa/sdk` package and is not published on its own.
 
 Programmatic Polymorfa Calls: a client you run from code that follows a session,
 rings on inbound WhatsApp calls, places outbound ones, and hands you each call's
-audio and video to read and write. The browser call UI in `@polymorfa/react` and
-`@polymorfa/elements` uses the same call model with WebRTC as its media path.
+audio and video to read and write. The browser call UI in `@polymorfa/ui-kit/react` and
+`@polymorfa/ui-kit/web-components` uses the same call model with WebRTC as its media path.
 
 ```ts
 import { CallsClient } from "@polymorfa/sdk/calls";
@@ -38,7 +38,7 @@ const call = await client.place("+15550100", { video: false });
 - Browser and other untrusted clients use a client token. Your server mints it
   with `POST /platform/client-tokens` and grants `voip_place`, `voip_answer`,
   and `voip_signal`. The token decides the session and the participant.
-- Server applications use an organization API key or project token. They may
+- Server applications use an team key or project token. They may
   set `participant` (`[A-Za-z0-9._:@-]{1,128}`, default `default`); the
   platform refers to them as `server:<participant>`.
 
@@ -154,7 +154,7 @@ without a network.
 
 ## Browser calls
 
-Use `createBrowserCalls` from `@polymorfa/browser` in browsers. Its controller
+Use `createBrowserCalls` from `@polymorfa/ui-kit` in browsers. Its controller
 exposes this package's `Call` as `controller.call`; the browser component owns
 microphone, camera and playback, so `call.audio` and `call.video` do not carry
 media there.
@@ -188,7 +188,7 @@ placing the group call. Cloud API Numbers refuse group origination and re-ring.
 Re-ring applies to a non-connected participant already in the call roster;
 a successful request does not change the roster until WhatsApp reports it.
 The browser controller exposes the same `place` array input and
-`ringParticipant` method for custom React, Elements and Next.js interfaces.
+`ringParticipant` method for custom React, web component and Next.js interfaces.
 
 `placeGroup(groupId)` uses the public group ID. The Number must be a member;
 the server obtains the live roster and checks every remote member. Groups must

@@ -42,7 +42,7 @@ export class ChatsResource {
   > {
     if (this.credentialType === "clientToken") {
       throw new PolymorfaConfigurationError(
-        "Service windows require an organization API key or project token.",
+        "Service windows require an team key or project token.",
       );
     }
     return this.transport.request({

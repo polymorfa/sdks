@@ -1,3 +1,5 @@
+import { requestContract } from "../campaign-contract-response.js";
+import { existingOptions } from "../campaign-existing-validation.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
@@ -73,7 +75,16 @@ export class GroupsResource {
     groupId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetGroupCapabilitiesResponse>> {
-    return this.get(`${groupPath(session, groupId)}/capabilities`, options);
+    return requestContract(
+      this.transport,
+      {
+        ...existingOptions(options),
+        method: "GET",
+        path: `${groupPath(session, groupId)}/capabilities`,
+      },
+      "groupCapabilities",
+      true,
+    );
   }
 
   delete(

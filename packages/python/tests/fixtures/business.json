@@ -1,0 +1,23 @@
+{
+  "product": {
+    "id": "product_1", "name": "Shirt", "price": "12500", "currency": "USD", "hidden": false, "sanctioned": false,
+    "retailerId": "sku_1", "belongsTo": "user_1", "description": "Cotton", "url": "https://example.com/shirt", "shimmedUrl": "https://example.com/shop", "maxAvailable": 5, "availability": "in stock", "complianceCategory": "clothing",
+    "compliance": {"countryCodeOrigin": "US", "importerName": "Example", "importerAddress": {"street1": "Example Street", "street2": "Unit 1", "city": "Example City", "region": "CA", "postalCode": "90001", "countryCode": "US"}},
+    "media": {"images": [{"id": "image_1", "originalUrl": "https://example.com/original", "requestUrl": "https://example.com/image"}], "videos": [{"id": "video_1", "originalUrl": "https://example.com/video", "thumbnailUrl": "https://example.com/thumbnail"}]},
+    "status": {"status": "approved", "canAppeal": false},
+    "salePrice": {"price": "10000", "startDate": "2026-10-11", "endDate": "2026-10-12"},
+    "variant": {
+      "availability": {"listings": [{"productId": "product_1", "available": true, "options": [{"name": "color", "value": "blue"}]}]},
+      "listingDetails": {"description": "Sizes", "lowestPrice": "10000", "multiPrice": "false"},
+      "types": [{"name": "color", "options": [{"value": "blue", "thumbnail": {"id": "image_1", "originalUrl": "https://example.com/original", "requestUrl": "https://example.com/image", "originalDimensions": {"width": 256, "height": 256}}}]}],
+      "properties": [{"name": "color", "value": "blue"}]
+    },
+    "futureField": {"preserved": true}
+  },
+  "mutation": {
+    "name": "Shirt", "description": "Cotton", "currency": "USD", "price": "12500", "salePrice": "10000", "url": "https://example.com/shirt", "retailerId": "sku_1", "hidden": false,
+    "images": [{"url": "https://example.com/image"}, {"base64": "YWJj"}, {"mediaUrl": "https://mmg.whatsapp.net/image"}], "videoUrls": ["https://mmg.whatsapp.net/video"], "width": 256, "height": 256, "complianceCategory": "clothing",
+    "compliance": {"countryCodeOrigin": "US", "importerName": "Example", "importerAddress": {"street1": "Example Street", "city": "Example City", "countryCode": "US"}}
+  },
+  "order": {"id": "order_1", "createdAt": 1791676800, "catalogId": "catalog_1", "price": {"subtotal": "12500", "total": "12500", "currency": "USD", "priceStatus": "provided"}, "products": [{"id": "product_1", "imageId": "image_1", "imageUrl": "https://example.com/image", "price": "12500", "currency": "USD", "name": "Shirt", "quantity": 1, "variantProperties": "color:blue"}]}
+}

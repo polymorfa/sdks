@@ -30,7 +30,17 @@ export async function reconcileCoverage(
       matches.length <= 1,
       "Duplicate coverage tickets need reconciliation",
     );
-    const description = `${marker}\n\nPlatform definition: ${feature.notionUrl}\n\nAPI source: https://github.com/polymorfa/polymorfa/commit/${sourceSha}\n\nOperation: ${gap.method} ${gap.path}\nContract: ${gap.family}\nGap: ${gap.status}\nFingerprint: ${gap.fingerprint}\n\nVerify request, response, errors and scopes; add wire tests and update the coverage ledger. Implementation completion and deployed availability are separate stages.\n`;
+    const languageMatrix = gap.languages
+      ? "\nAffected-language coverage:\n" +
+        Object.entries(gap.languages)
+          .map(
+            ([language, mapping]) =>
+              `${language}: ${mapping.status}${mapping.method ? ` (${mapping.method})` : ""}${mapping.reason ? `: ${mapping.reason}` : ""}`,
+          )
+          .join("\n") +
+        "\n"
+      : "";
+    const description = `${marker}\n\nPlatform definition: ${feature.notionUrl}\n\nAPI source: https://github.com/polymorfa/polymorfa/commit/${sourceSha}\n\nOperation: ${gap.method} ${gap.path}\nContract: ${gap.family}\nGap: ${gap.status}\nFingerprint: ${gap.fingerprint}\n${languageMatrix}\nVerify request, response, errors and scopes; add wire tests and update the coverage ledger. Implementation completion and deployed availability are separate stages.\n`;
     const title = `SDK coverage: ${gap.method} ${gap.path}`;
     let issue = matches[0];
     if (!issue) {

@@ -1,3 +1,4 @@
+import { existingOptions } from "../campaign-existing-validation.js";
 import {
   PolymorfaConfigurationError,
   PolymorfaRateLimitError,
@@ -245,6 +246,7 @@ export class RequestLogsResource {
     query: Record<string, string | number>,
     options: RequestOptions,
   ): Promise<RequestLogPage> {
+    options = existingOptions(options);
     const response = await this.transport.request<unknown>({
       method: "GET",
       path: `/platform/projects/${encodeURIComponent(this.project(projectId))}/request-logs`,

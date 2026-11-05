@@ -1,3 +1,4 @@
+import { serverCredentialType } from "./server-credential.mjs";
 import { MessagingClient } from "@polymorfa/sdk";
 import {
   CallsExampleSetupError,
@@ -7,20 +8,14 @@ import {
 const key = process.env.POLYMORFA_SERVER_KEY;
 const session = process.env.POLYMORFA_SESSION;
 const ephemeralId = process.env.POLYMORFA_EPHEMERAL_ID;
-const credentialType = key?.startsWith("pmfa_pt_")
-  ? "projectToken"
-  : /^pmfa_[A-Za-z0-9_-]{72}$/.test(key ?? "")
-    ? "apiKey"
-    : null;
+const credentialType = serverCredentialType(key);
 if (!key || !session || !ephemeralId) {
   process.stderr.write(
     "Set POLYMORFA_SERVER_KEY, POLYMORFA_SESSION and POLYMORFA_EPHEMERAL_ID.\n",
   );
   process.exitCode = 1;
 } else if (!credentialType) {
-  process.stderr.write(
-    "Enter a canonical organization key or project token.\n",
-  );
+  process.stderr.write("Enter a canonical team key or project token.\n");
   process.exitCode = 1;
 } else {
   try {

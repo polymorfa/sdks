@@ -3,6 +3,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 
 import type {
   BlocklistUpdatePayload,
+  IncomingOrderCart,
   WhatsAppMessageIds,
   BusinessQuickReplyUpdatePayload,
   CallAcceptedPayload,
@@ -29,6 +30,7 @@ import type {
   GroupParticipantPayload,
   GroupUpdatePayload,
   HistorySyncPayload,
+  DirectHistorySyncPayload,
   IdentityReference,
   WebhookConversationReference,
   LabelsUpdatePayload,
@@ -54,6 +56,7 @@ import type {
 import { KNOWN_WEBHOOK_EVENT_TYPES } from "../src/index.js";
 
 type ExpectedIdentityReference = {
+  readonly parentBsuid?: string;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;
@@ -105,6 +108,7 @@ type ExpectedLinkedDeviceMessageType =
   | "unknown";
 
 type ExpectedMessagePayload = {
+  readonly order?: IncomingOrderCart;
   readonly id: string;
   readonly whatsapp_ids: WhatsAppMessageIds;
   readonly whatsapp_id?: string;
@@ -289,6 +293,16 @@ type ExpectedPayloads = {
     readonly error?: string;
   };
   readonly "contact.update": {
+    readonly parentBsuid?: string;
+    readonly identityChange?: {
+      readonly reason: "phone_number_changed" | "user_id_changed";
+      readonly messageId: string;
+      readonly previous?: {
+        readonly id?: string;
+        readonly bsuid?: string;
+        readonly parentBsuid?: string;
+      };
+    };
     readonly id: string;
     readonly phoneNumber?: string;
     readonly bsuid?: string;
@@ -339,6 +353,7 @@ type ExpectedPayloads = {
     readonly errors?: readonly ExpectedOfficialGroupError[];
   };
   readonly "history.sync":
+    | DirectHistorySyncPayload
     | {
         readonly whatsapp_ids: WhatsAppMessageIds;
         readonly whatsapp_id?: string;
@@ -561,7 +576,7 @@ describe("webhook event payload types", () => {
       expectTypeOf(payload.value).toEqualTypeOf<
         Readonly<Record<string, unknown>>
       >();
-    } else {
+    } else if (!("delivery" in payload)) {
       expectTypeOf(payload.whatsapp.data).toEqualTypeOf<string>();
     }
     expect("kind" in payload).toBe(true);

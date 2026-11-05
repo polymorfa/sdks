@@ -1,0 +1,49 @@
+{
+  "name": "polymorfa/sdk",
+  "description": "Handwritten Polymorfa server SDK for PHP",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.2",
+    "ext-json": "*",
+    "ext-openssl": "*",
+    "guzzlehttp/guzzle": "^7.9",
+    "ext-curl": "*",
+    "ext-zlib": "*"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^2.1",
+    "friendsofphp/php-cs-fixer": "^3.75",
+    "symfony/http-foundation": "^7.0",
+    "illuminate/http": "^12.0",
+    "phrity/websocket": "^4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Polymorfa\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Polymorfa\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "lint": "php tools/lint.php",
+    "format": "php-cs-fixer fix --config=.php-cs-fixer.dist.php",
+    "format:check": "php-cs-fixer fix --config=.php-cs-fixer.dist.php --dry-run --diff",
+    "test": "php tests/run.php",
+    "typecheck": "phpstan analyse --configuration=phpstan.neon --no-progress --memory-limit=512M",
+    "build": "php tools/build.php"
+  },
+  "suggest": {
+    "symfony/http-foundation": "Use the Symfony raw-body webhook adapter.",
+    "illuminate/http": "Use the Laravel raw-body webhook adapter.",
+    "phrity/websocket": "Use native server Calls WebSocket transport.",
+    "mongodb/mongodb": "Use the optional official MongoDB replica-set storage adapter.",
+    "aws/aws-sdk-php": "Use the optional official DynamoDB storage and S3-compatible media adapters.",
+    "google/cloud-firestore": "Use the optional official typed V1 RPC Firestore storage adapter; verified with package 1.55.0 and gRPC 1.84.",
+    "illuminate/database": "Use Eloquent schema2 query-model exports and borrowed PDO storage.",
+    "turso/libsql": "Optional technical-preview storage driver: PHP >=8.3 and FFI; install separately from the PHP 8.2 core."
+  }
+}

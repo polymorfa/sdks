@@ -52,6 +52,10 @@ export {
   type CommandResultPayload,
   type ContactOptPayload,
   type ContactUpdatePayload,
+  type ContactIdentityChange,
+  type ContactPreviousIdentity,
+  type MarketingOnboardingUpdatedPayload,
+  type ContactMarketingPreferencePayload,
   type ContactsSyncPayload,
   type ConversationReference,
   type CustomerArchivedPayload,
@@ -82,6 +86,8 @@ export {
   type LinkedDeviceMessagePayload,
   type LinkedDeviceMessageType,
   type LinkedHistorySyncPayload,
+  type DirectHistorySyncPayload,
+  type DirectHistorySyncCommon,
   type MessageAckPayload,
   type MetaPricingReport,
   type MessageDeletePayload,
@@ -140,3 +146,10 @@ export {
   type WebhookFixture,
   type WebhookUtilities,
 } from "./utilities.js";
+
+export {
+  constructWebhookDelivery,
+  isWebhookEventBatch,
+  type WebhookEventBatch,
+  type WebhookDelivery,
+} from "./delivery.js";
