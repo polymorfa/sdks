@@ -1,5 +1,5 @@
-import { definePolymorfaElements, type PolymorfaInboxElement } from "@polymorfa/elements";
-import type { ConversationMessage, ConversationEvent, InboxChange, InboxConversation } from "@polymorfa/browser";
+import { definePolymorfaElements, type PolymorfaInboxElement } from "@polymorfa/ui-kit/web-components";
+import type { ConversationMessage, ConversationEvent, InboxChange, InboxConversation } from "@polymorfa/ui-kit";
 
 // `receipt` is the C# host's raw status, shown in #native-status. Only receipts observed from
 // message.ack become chat receipts; the send response status is acceptance, never delivery or read.

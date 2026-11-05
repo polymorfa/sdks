@@ -1,6 +1,6 @@
 "use client";
 
-import { CallSurface } from "@polymorfa/react";
+import { CallSurface } from "@polymorfa/ui-kit/react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { Providers } from "../app/providers.js";

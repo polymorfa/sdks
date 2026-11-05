@@ -293,6 +293,10 @@ final class Voip extends Resource
     /** @param array<string,mixed> $body */
     private static function validateSettings(array $body): void
     {
+        // The API accepts only these keys; simultaneousCallsCoverageExcludedUntil is response-only.
+        if (array_diff(array_keys($body), ['callsEnabled','conferenceMode','inboundRoute','sipTrunkId','sipClaim','hostCloudApiCalls','simultaneousCalls','acknowledgeRisk','expectedRevision']) !== []) {
+            throw new ValidationException('Unknown or read-only call setting.');
+        }
         foreach (['callsEnabled','conferenceMode','sipClaim','hostCloudApiCalls','simultaneousCalls','acknowledgeRisk'] as $name) {
             if (array_key_exists($name, $body) && !is_bool($body[$name])) {
                 throw new ValidationException('Call switches must be booleans.');
