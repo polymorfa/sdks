@@ -25,3 +25,11 @@ The root dependency-audit repair comes from the existing owner commit `07bb62564
 This is a public SDK surface. CLI97 has its own current Business implementation and package proof; it is not acceptance of this SDK package. Customer guides and the backend/API release record remain in the owning Business family. Admin control authority, Temporal workflows, retention, ZK custody and browser pairing tunnel authorization are unchanged by this client transport code. QuickLink changes are typed client inputs only; the server remains responsible for live membership, enrollment, Test capability and custody checks.
 
 No registry package, API contract release, deployment, actual database or provider action is performed. Backend/native/Inspector acceptance and the complete-family hosted checks and clean code/security reviews remain separate gates. The accepted migration source reservations preserve Business0455 and Bartender023; installed-history attestation remains with the human/Release. This checkpoint supplies no migration application or legal approval.
+
+## Documentation export checkpoint
+
+The catalog binds actual source commit `32ec05155cd999afe5c544454bd47495aff386a4`. The API baseline, package versions and other supplements stay unchanged. The 31 existing explicit recipes per language remain 186 programs; the new Business operation has no baseline-matched recipe and therefore retains cURL fallback in consumers. Business native coverage and examples are recorded separately.
+
+Genuine generation, byte drift checks and ten catalog tests passed. Each exported language uses its native checker against an actual package artifact and rejects the deliberately nonexistent public method. PHP's checker uses a private exact-source clone, the task's fresh Linux dependency closure and Git2.47.3 installed only inside the disposable Docker container. No old Docs vendor or filtered warning result is used. Rust packaging leaves target selection to ordinary Cargo through the active MrBoxington shim and copies only produced distribution archives into the private checker directory.
+
+The complete source family remains unmerged. Hosted build/lint/type/test/security, code/security reviews, conflict checks, matching API availability and package release acceptance remain required. No local result is a staging or production acceptance receipt.
