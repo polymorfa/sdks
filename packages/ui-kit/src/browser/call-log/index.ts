@@ -89,9 +89,7 @@ function peerKey(entry: CallLogEntry): string {
  * outcome on the same day, as WhatsApp's call log does. Ongoing calls stay
  * on their own row.
  */
-export function groupCallLog(
-  entries: readonly CallLogEntry[],
-): CallLogGroup[] {
+export function groupCallLog(entries: readonly CallLogEntry[]): CallLogGroup[] {
   const groups: { key: string; entries: CallLogEntry[] }[] = [];
   for (const entry of entries) {
     const last = groups[groups.length - 1];
@@ -121,9 +119,18 @@ export class CallLogController extends ObservableController<CallLogSnapshot> {
   #abort = new AbortController();
   #unsubscribe: (() => void) | undefined;
 
-  constructor(source: CallLogSource, options: { readonly now?: () => number } = {}) {
+  constructor(
+    source: CallLogSource,
+    options: { readonly now?: () => number } = {},
+  ) {
     super(
-      { status: "idle", entries: [], filter: "all", groups: [], hasMore: false },
+      {
+        status: "idle",
+        entries: [],
+        filter: "all",
+        groups: [],
+        hasMore: false,
+      },
       options.now,
     );
     this.source = source;
@@ -135,13 +142,21 @@ export class CallLogController extends ObservableController<CallLogSnapshot> {
     const abort = new AbortController();
     this.#abort = abort;
     const filter = this.getSnapshot().filter;
-    this.transition({ status: "loading", entries: [], filter, groups: [], hasMore: false });
+    this.transition({
+      status: "loading",
+      entries: [],
+      filter,
+      groups: [],
+      hasMore: false,
+    });
     try {
       const page = await this.source.list(undefined, abort.signal);
       if (abort.signal.aborted) return;
       this.#set(page.entries, "ready", page.nextCursor);
       this.#unsubscribe?.();
-      this.#unsubscribe = this.source.subscribe?.((entry) => this.#upsert(entry));
+      this.#unsubscribe = this.source.subscribe?.((entry) =>
+        this.#upsert(entry),
+      );
     } catch (cause) {
       if (!abort.signal.aborted)
         this.transition({
@@ -163,17 +178,32 @@ export class CallLogController extends ObservableController<CallLogSnapshot> {
     try {
       const page = await this.source.list(current.cursor, signal);
       if (signal.aborted) return;
-      this.#set([...this.getSnapshot().entries, ...page.entries], "ready", page.nextCursor);
+      this.#set(
+        [...this.getSnapshot().entries, ...page.entries],
+        "ready",
+        page.nextCursor,
+      );
     } catch (cause) {
       if (signal.aborted) return;
-      this.#set(this.getSnapshot().entries, "ready", current.cursor, cause instanceof Error ? cause.message : String(cause));
+      this.#set(
+        this.getSnapshot().entries,
+        "ready",
+        current.cursor,
+        cause instanceof Error ? cause.message : String(cause),
+      );
     }
   }
 
   setFilter(filter: CallLogFilter): void {
     const current = this.getSnapshot();
     if (current.filter === filter) return;
-    this.#set(current.entries, current.status, current.cursor, current.error, filter);
+    this.#set(
+      current.entries,
+      current.status,
+      current.cursor,
+      current.error,
+      filter,
+    );
   }
 
   protected override onDispose(): void {
@@ -201,9 +231,13 @@ export class CallLogController extends ObservableController<CallLogSnapshot> {
     filter: CallLogFilter = this.getSnapshot().filter,
   ): void {
     const byId = new Map<string, CallLogEntry>();
-    for (const entry of entries) if (!byId.has(entry.id)) byId.set(entry.id, entry);
+    for (const entry of entries)
+      if (!byId.has(entry.id)) byId.set(entry.id, entry);
     const sorted = sortEntries(byId.values());
-    const shown = filter === "missed" ? sorted.filter((entry) => entry.outcome === "missed") : sorted;
+    const shown =
+      filter === "missed"
+        ? sorted.filter((entry) => entry.outcome === "missed")
+        : sorted;
     try {
       this.transition({
         status,
@@ -232,10 +266,14 @@ function entry(record: BrowserCallRecord): CallLogEntry {
     outcome,
     video: record.hasVideo,
     startedAt: Number.isFinite(started) ? started : 0,
-    ...(record.durationSeconds === null ? {} : { durationSeconds: record.durationSeconds }),
+    ...(record.durationSeconds === null
+      ? {}
+      : { durationSeconds: record.durationSeconds }),
     peer: {
       ...(peer.id === undefined ? {} : { id: peer.id }),
-      ...(peer.phoneNumber === undefined ? {} : { phoneNumber: peer.phoneNumber }),
+      ...(peer.phoneNumber === undefined
+        ? {}
+        : { phoneNumber: peer.phoneNumber }),
       ...(peer.username === undefined ? {} : { name: `@${peer.username}` }),
     },
     ...(peer.id === undefined ? {} : { conversationId: peer.id }),
@@ -254,7 +292,10 @@ export function createApiCallLogSource(
     /** Calls per page, 1 to 100. Default 50. */
     readonly limit?: number;
     /** A display name for a caller, for example from the contacts directory. */
-    readonly names?: (peer: { readonly id?: string; readonly phoneNumber?: string }) => string | undefined;
+    readonly names?: (peer: {
+      readonly id?: string;
+      readonly phoneNumber?: string;
+    }) => string | undefined;
   } = {},
 ): CallLogSource {
   return {
@@ -262,7 +303,10 @@ export function createApiCallLogSource(
       if (!client.can("read_calls")) missingPermission("read_calls");
       const response = await withTokenRetry(client, () =>
         client.messaging(options.session).calls.list(
-          { limit: options.limit ?? 50, ...(cursor === undefined ? {} : { cursor }) },
+          {
+            limit: options.limit ?? 50,
+            ...(cursor === undefined ? {} : { cursor }),
+          },
           signal === undefined ? {} : { signal },
         ),
       );
@@ -271,7 +315,9 @@ export function createApiCallLogSource(
         entries: page.data.map((record) => {
           const item = entry(record);
           const name = options.names?.(item.peer);
-          return name === undefined ? item : { ...item, peer: { ...item.peer, name } };
+          return name === undefined
+            ? item
+            : { ...item, peer: { ...item.peer, name } };
         }),
         ...(page.nextCursor === null ? {} : { nextCursor: page.nextCursor }),
       };

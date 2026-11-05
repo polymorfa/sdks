@@ -324,7 +324,8 @@ export const ENGLISH_MESSAGES = {
   "group.copy": "Copy",
   "group.copied": "Copied",
   "group.settings": "Group settings",
-  "group.settingsNote": "WhatsApp does not report the current setting. Choosing one applies it.",
+  "group.settingsNote":
+    "WhatsApp does not report the current setting. Choosing one applies it.",
   "group.editInfo": "Edit group info",
   "group.sendMessages": "Send messages",
   "group.addOthers": "Add other members",
@@ -334,7 +335,8 @@ export const ENGLISH_MESSAGES = {
   "group.on": "On",
   "group.off": "Off",
   "group.leave": "Exit group",
-  "group.leaveConfirm": "Exit this group? You will stop receiving its messages.",
+  "group.leaveConfirm":
+    "Exit this group? You will stop receiving its messages.",
   "group.left": "You exited this group.",
   "group.saved": "Saved",
   "group.failed": "That change did not go through: {error}",

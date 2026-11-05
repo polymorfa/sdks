@@ -7,34 +7,25 @@ import {
   isQuickLinkUrl,
   warnInvalidQuickLink,
   createHandlerInboxSource,
-  warnMissingPermission,
   type CallLogSource,
   type ContactDirectorySource,
   type GroupSource,
   type InboxConversation,
   type InboxDataSource,
   type InboxSnapshot,
-  type PolymorfaClientSnapshot,
   type PolymorfaPermission,
 } from "../browser/index.js";
 import {
-  CHAT_ICONS,
   filterInboxRows,
   messagePresentationStatus,
   type InboxFilter,
   formatDayLabel,
   formatMessageTime,
   type AppearanceInput,
-  type ChatIconName,
   type Locale,
 } from "../appearance/index.js";
 
-import {
-  PolymorfaElement,
-  element,
-  textElement,
-  type ElementConfiguration,
-} from "./base.js";
+import { PolymorfaElement, element, textElement } from "./base.js";
 import { defineCallElements } from "./calls.js";
 import { ClientElement, defaults, hue, icon, initials } from "./client.js";
 import {
@@ -48,11 +39,7 @@ import {
   PolymorfaNewChatElement,
   defineContactElements,
 } from "./contacts.js";
-import {
-  PolymorfaCallLogElement,
-  defineCallLogElements,
-} from "./call-log.js";
-
+import { PolymorfaCallLogElement, defineCallLogElements } from "./call-log.js";
 
 export interface DefineUiKitOptions {
   /** Your handler's token route. Default `/api/polymorfa/token`. */
@@ -109,8 +96,6 @@ export function defineDropInElements(
   defineContactElements(registry);
   defineCallLogElements(registry);
 }
-
-
 
 /** `<pmfa-connect-whatsapp>`: opens Polymorfa's hosted QuickLink page. */
 export class PolymorfaConnectWhatsAppElement extends ClientElement<object> {
@@ -458,7 +443,13 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
       shell.dataset.contactOpen = "";
       children.push(info);
     } else delete shell.dataset.contactOpen;
-    shell.replaceChildren(...children);
+    // Retain connected panels and their owned controllers during activity updates.
+    for (const child of Array.from(shell.childNodes))
+      if (!children.includes(child)) shell.removeChild(child);
+    children.forEach((child, index) => {
+      const current = shell.childNodes[index];
+      if (current !== child) shell.insertBefore(child, current ?? null);
+    });
     return [shell];
   }
 
@@ -773,7 +764,9 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
       button.type = "button";
       button.dataset.inboxView = value;
       button.setAttribute("aria-pressed", String(this.#view === value));
-      button.textContent = this.text(value === "chats" ? "inbox.chats" : "inbox.calls");
+      button.textContent = this.text(
+        value === "chats" ? "inbox.chats" : "inbox.calls",
+      );
       button.addEventListener("click", () => {
         this.#view = value;
         this.#composing = false;
@@ -781,8 +774,12 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
         queueMicrotask(() => {
           const target =
             value === "calls"
-              ? this.#calls?.querySelector<HTMLElement>(`[data-inbox-view="calls"]`)
-              : this.root.querySelector<HTMLElement>(`[data-inbox-view="chats"]`);
+              ? this.#calls?.querySelector<HTMLElement>(
+                  `[data-inbox-view="calls"]`,
+                )
+              : this.root.querySelector<HTMLElement>(
+                  `[data-inbox-view="chats"]`,
+                );
           target?.focus();
         });
       });
@@ -794,7 +791,9 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
   #renderCalls(controller: InboxController): HTMLElement | undefined {
     if (!this.#canCalls()) return undefined;
     if (this.#calls === undefined) {
-      const log = document.createElement("pmfa-call-log") as PolymorfaCallLogElement;
+      const log = document.createElement(
+        "pmfa-call-log",
+      ) as PolymorfaCallLogElement;
       log.configuration = this.configuration;
       if (this.client !== undefined) log.client = this.client;
       if (this.#callLogSource !== undefined) log.source = this.#callLogSource;
@@ -806,7 +805,11 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
         this.#infoOpen = false;
         this.render();
         this.dispatchEvent(
-          new CustomEvent("pmfa-select", { detail: conversation, bubbles: true, composed: true }),
+          new CustomEvent("pmfa-select", {
+            detail: conversation,
+            bubbles: true,
+            composed: true,
+          }),
         );
       });
       this.#calls = log;
@@ -869,7 +872,10 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
   #renderGroupInfo(conversation: InboxConversation): HTMLElement | undefined {
     if (!this.#canGroups()) return undefined;
     let info = this.#info;
-    if (info === undefined || info.getAttribute("group-id") !== conversation.id) {
+    if (
+      info === undefined ||
+      info.getAttribute("group-id") !== conversation.id
+    ) {
       info = document.createElement(
         "pmfa-group-details",
       ) as PolymorfaGroupDetailsElement;
@@ -1011,8 +1017,6 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
     return thread;
   }
 }
-
-
 
 /** @internal Clears the `defineUiKit()` client, for tests. */
 export function resetDefineUiKit(): void {

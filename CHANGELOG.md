@@ -16,7 +16,7 @@
   Customer token names the number it calls from.
 
 - A number's call history with the other party's identity: `GET
-  /messaging/{session}/calls` in all six SDKs (`calls.list`,
+/messaging/{session}/calls` in all six SDKs (`calls.list`,
   `SessionCalls().List` in Go, `Calls.ListAsync` in .NET). `peer` carries the
   user ID, phone number and username. Records are served from the number's
   data region; client tokens need the new `read_calls` action. Platform call
@@ -50,6 +50,7 @@
   with the shared stylesheet and a `callNumberPicker` slot.
 - UI Kit Inbox: with a custom `source` and no provider client, opening a
   conversation with a phone number no longer throws from the call button.
+- UI Kit: keep a 320px thread beside the Inbox list in narrow two-pane layouts, and include the linked guides in the package.
 
 - Breaking: the browser UI packages are now one package, the UI Kit
   (`@polymorfa/ui-kit`), with one version. Change each import as follows:
@@ -73,6 +74,7 @@
   they cannot. Back showed beside the list before because its rule read the
   thread's width. Back now has a visible border. Source-only until a nightly
   publishes.
+
 - Prepare direct server passkey challenge, assertion and explicit confirmation methods in all six SDKs. Writes use one attempt; ceremony execution remains external. Bound to accepted API source `77e9ce31`; unreleased until package publication.
 
 - Add the read-only nullable call-settings exclusion-end response field across all six SDKs. Rust response struct literals require the new optional field; C# positional construction remains compatible. Bound to accepted API source `77e9ce31`, which also clarifies when a ban is excluded; unreleased.

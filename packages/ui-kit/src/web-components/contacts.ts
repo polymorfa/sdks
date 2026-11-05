@@ -83,7 +83,9 @@ abstract class DirectoryElement<T extends object> extends ClientElement<T> {
   #directoryUnsubscribe: (() => void) | undefined;
   #watched: ContactDirectoryController | undefined;
 
-  protected watchDirectory(directory: ContactDirectoryController | undefined): void {
+  protected watchDirectory(
+    directory: ContactDirectoryController | undefined,
+  ): void {
     if (directory === this.#watched) return;
     this.#directoryUnsubscribe?.();
     this.#directoryUnsubscribe = undefined;
@@ -120,7 +122,10 @@ abstract class DirectoryElement<T extends object> extends ClientElement<T> {
     for (const contact of contacts) {
       const name = contactDisplayName(contact);
       const checked = options.selected.has(contact.id);
-      const row = this.decorate(document.createElement("button"), "contactItem");
+      const row = this.decorate(
+        document.createElement("button"),
+        "contactItem",
+      );
       row.type = "button";
       row.className = `pmfa-person${checked ? " pmfa-person-selected" : ""}`;
       row.dataset.contactId = contact.id;
@@ -183,7 +188,9 @@ abstract class DirectoryElement<T extends object> extends ClientElement<T> {
         ),
       );
       if (!permission)
-        node.append(actionButton(this.text("common.retry"), "pmfa-btn", onRetry));
+        node.append(
+          actionButton(this.text("common.retry"), "pmfa-btn", onRetry),
+        );
       return node;
     }
     if (snapshot.status === "ready" && snapshot.results.length === 0) {
@@ -353,10 +360,14 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
   }
 
   #close(): void {
-    this.dispatchEvent(new CustomEvent("pmfa-close", { bubbles: true, composed: true }));
+    this.dispatchEvent(
+      new CustomEvent("pmfa-close", { bubbles: true, composed: true }),
+    );
   }
 
-  protected renderContent(snapshot: NewChatSnapshot | undefined): readonly Node[] {
+  protected renderContent(
+    snapshot: NewChatSnapshot | undefined,
+  ): readonly Node[] {
     const controller = this.#controller();
     const root = this.decorate(element("section"), "newChat");
     root.className = this.rootClass("pmfa-newchat");
@@ -367,14 +378,21 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
     const focused = focusKey(this.root);
     const viewChanged = this.#view !== snapshot.view;
     this.#view = snapshot.view;
-    if (this.#input === undefined || this.#inputGeneration !== this.generation) {
+    if (
+      this.#input === undefined ||
+      this.#inputGeneration !== this.generation
+    ) {
       this.#inputGeneration = this.generation;
       this.#input = document.createElement("input");
-      this.bindSearch(this.#input, () => this.#controller()?.directory, () => {
-        if (this.#controller()?.getSnapshot().view !== "contacts")
-          this.#controller()?.back();
-        else if (this.hasAttribute("closable")) this.#close();
-      });
+      this.bindSearch(
+        this.#input,
+        () => this.#controller()?.directory,
+        () => {
+          if (this.#controller()?.getSnapshot().view !== "contacts")
+            this.#controller()?.back();
+          else if (this.hasAttribute("closable")) this.#close();
+        },
+      );
     }
     const directory = controller.directory.getSnapshot();
     root.dataset.view = snapshot.view;
@@ -389,7 +407,10 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
           ? () => this.#close()
           : undefined;
     if (back !== undefined) {
-      const button = this.decorate(document.createElement("button"), "backButton");
+      const button = this.decorate(
+        document.createElement("button"),
+        "backButton",
+      );
       button.type = "button";
       button.className = "pmfa-btn pmfa-btn-ghost pmfa-btn-icon";
       button.dataset.focusKey = "back";
@@ -426,7 +447,10 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
       body.className = "pmfa-newchat-body";
       body.setAttribute("aria-busy", String(directory.status === "loading"));
       if (snapshot.view === "contacts" && controller.canCreateGroup) {
-        const action = this.decorate(document.createElement("button"), "newChatAction");
+        const action = this.decorate(
+          document.createElement("button"),
+          "newChatAction",
+        );
         action.type = "button";
         action.className = "pmfa-person pmfa-newchat-action";
         action.dataset.focusKey = "new-group";
@@ -447,7 +471,10 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
         const phone = this.#phoneRow(controller, directory);
         if (phone !== undefined) body.append(phone);
       }
-      const state = this.directoryState(directory, () => void controller.directory.retry());
+      const state = this.directoryState(
+        directory,
+        () => void controller.directory.retry(),
+      );
       if (state !== undefined) body.append(state);
       if (directory.results.length > 0) {
         const heading = textElement("h3", this.text("newChat.contacts"));
@@ -472,13 +499,17 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
         const count = textElement(
           "span",
           this.text("newChat.selected", {
-            count: new Intl.NumberFormat(this.locale().code).format(snapshot.selected.length),
+            count: new Intl.NumberFormat(this.locale().code).format(
+              snapshot.selected.length,
+            ),
           }),
         );
         count.className = "pmfa-newchat-note";
         count.setAttribute("role", "status");
-        const next = actionButton(this.text("newChat.next"), "pmfa-btn pmfa-btn-primary", () =>
-          controller.next(),
+        const next = actionButton(
+          this.text("newChat.next"),
+          "pmfa-btn pmfa-btn-primary",
+          () => controller.next(),
         );
         next.dataset.focusKey = "next";
         next.disabled = snapshot.selected.length === 0;
@@ -487,13 +518,22 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
       }
     }
     root.addEventListener("keydown", (event) => {
-      if (event.key === "Escape" && event.target !== this.#input && back !== undefined) {
+      if (
+        event.key === "Escape" &&
+        event.target !== this.#input &&
+        back !== undefined
+      ) {
         event.preventDefault();
         back();
       }
     });
     queueMicrotask(() => {
-      if (viewChanged) this.root.querySelector<HTMLElement>("[data-focus-key=search], [data-focus-key=group-name]")?.focus();
+      if (viewChanged)
+        this.root
+          .querySelector<HTMLElement>(
+            "[data-focus-key=search], [data-focus-key=group-name]",
+          )
+          ?.focus();
       else restoreFocus(this.root, focused);
     });
     return [root];
@@ -504,9 +544,14 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
     snapshot: ContactDirectorySnapshot,
   ): HTMLElement | undefined {
     const phone = snapshot.phone;
-    if (phone === undefined || !controller.directory.canLookup) return undefined;
+    if (phone === undefined || !controller.directory.canLookup)
+      return undefined;
     const digits = phone.replace(/\D/g, "");
-    if (snapshot.results.some((contact) => contact.phoneNumber?.replace(/\D/g, "") === digits))
+    if (
+      snapshot.results.some(
+        (contact) => contact.phoneNumber?.replace(/\D/g, "") === digits,
+      )
+    )
       return undefined;
     const { lookup } = snapshot;
     if (lookup.status === "found") {
@@ -525,8 +570,10 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
     }
     const wrap = element("div");
     wrap.className = "pmfa-newchat-lookup";
-    const check = actionButton(this.text("newChat.checkNumber", { phone }), "pmfa-btn", () =>
-      void controller.directory.lookupPhone(),
+    const check = actionButton(
+      this.text("newChat.checkNumber", { phone }),
+      "pmfa-btn",
+      () => void controller.directory.lookupPhone(),
     );
     check.prepend(icon("search"));
     check.dataset.focusKey = "lookup";
@@ -547,12 +594,18 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
     return wrap;
   }
 
-  #chips(controller: NewChatController, snapshot: NewChatSnapshot, removable: boolean): HTMLElement {
+  #chips(
+    controller: NewChatController,
+    snapshot: NewChatSnapshot,
+    removable: boolean,
+  ): HTMLElement {
     const chips = element("ul");
     chips.className = "pmfa-pick-chips";
     chips.setAttribute(
       "aria-label",
-      this.text("newChat.selected", { count: String(snapshot.selected.length) }),
+      this.text("newChat.selected", {
+        count: String(snapshot.selected.length),
+      }),
     );
     for (const contact of snapshot.selected) {
       const name = contactDisplayName(contact);
@@ -563,7 +616,10 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
         remove.type = "button";
         remove.className = "pmfa-pick-chip-remove";
         remove.dataset.focusKey = `chip:${contact.id}`;
-        remove.setAttribute("aria-label", this.text("newChat.removeMember", { name }));
+        remove.setAttribute(
+          "aria-label",
+          this.text("newChat.removeMember", { name }),
+        );
         remove.append(icon("close"));
         remove.addEventListener("click", () => controller.toggle(contact));
         chip.append(remove);
@@ -573,7 +629,10 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
     return chips;
   }
 
-  #groupForm(controller: NewChatController, snapshot: NewChatSnapshot): HTMLElement {
+  #groupForm(
+    controller: NewChatController,
+    snapshot: NewChatSnapshot,
+  ): HTMLElement {
     const form = document.createElement("form");
     form.className = "pmfa-newchat-group";
     form.addEventListener("submit", (event) => {
@@ -596,13 +655,18 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
     const count = textElement(
       "p",
       this.text("group.members", {
-        count: new Intl.NumberFormat(this.locale().code).format(snapshot.selected.length),
+        count: new Intl.NumberFormat(this.locale().code).format(
+          snapshot.selected.length,
+        ),
       }),
     );
     count.className = "pmfa-newchat-note";
     form.append(field, count, this.#chips(controller, snapshot, false));
     if (snapshot.error !== undefined) {
-      const error = textElement("p", `${this.text("newChat.createError")}: ${snapshot.error}`);
+      const error = textElement(
+        "p",
+        `${this.text("newChat.createError")}: ${snapshot.error}`,
+      );
       error.className = "pmfa-error";
       error.setAttribute("role", "alert");
       form.append(error);
@@ -611,7 +675,9 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
     submit.type = "submit";
     submit.className = "pmfa-btn pmfa-btn-primary";
     submit.dataset.focusKey = "create";
-    submit.textContent = this.text(snapshot.creating ? "newChat.creating" : "newChat.create");
+    submit.textContent = this.text(
+      snapshot.creating ? "newChat.creating" : "newChat.create",
+    );
     submit.disabled = snapshot.creating || snapshot.groupName.trim() === "";
     form.append(submit);
     return form;
@@ -696,7 +762,9 @@ export class PolymorfaContactListElement extends DirectoryElement<ContactDirecto
     owned.dispose();
   }
 
-  protected renderContent(snapshot: ContactDirectorySnapshot | undefined): readonly Node[] {
+  protected renderContent(
+    snapshot: ContactDirectorySnapshot | undefined,
+  ): readonly Node[] {
     const directory = this.configuredController<ContactDirectoryController>();
     const focused = focusKey(this.root);
     const root = this.decorate(element("section"), "contactDirectory");
@@ -714,10 +782,17 @@ export class PolymorfaContactListElement extends DirectoryElement<ContactDirecto
       return [root];
     }
     if (!this.hasAttribute("no-search")) {
-      if (this.#input === undefined || this.#inputGeneration !== this.generation) {
+      if (
+        this.#input === undefined ||
+        this.#inputGeneration !== this.generation
+      ) {
         this.#inputGeneration = this.generation;
         this.#input = document.createElement("input");
-        this.bindSearch(this.#input, () => this.configuredController<ContactDirectoryController>(), () => undefined);
+        this.bindSearch(
+          this.#input,
+          () => this.configuredController<ContactDirectoryController>(),
+          () => undefined,
+        );
       }
       root.append(this.searchField(directory, this.#input));
     }
@@ -750,34 +825,61 @@ export class PolymorfaContactListElement extends DirectoryElement<ContactDirecto
 
 const SETTINGS: readonly {
   readonly label: MessageKey;
-  readonly options: readonly { readonly label: MessageKey; readonly change: GroupSettingChange }[];
+  readonly options: readonly {
+    readonly label: MessageKey;
+    readonly change: GroupSettingChange;
+  }[];
 }[] = [
   {
     label: "group.editInfo",
     options: [
-      { label: "group.everyone", change: { setting: "infoEditing", adminsOnly: false } },
-      { label: "group.adminsOnly", change: { setting: "infoEditing", adminsOnly: true } },
+      {
+        label: "group.everyone",
+        change: { setting: "infoEditing", adminsOnly: false },
+      },
+      {
+        label: "group.adminsOnly",
+        change: { setting: "infoEditing", adminsOnly: true },
+      },
     ],
   },
   {
     label: "group.sendMessages",
     options: [
-      { label: "group.everyone", change: { setting: "messaging", adminsOnly: false } },
-      { label: "group.adminsOnly", change: { setting: "messaging", adminsOnly: true } },
+      {
+        label: "group.everyone",
+        change: { setting: "messaging", adminsOnly: false },
+      },
+      {
+        label: "group.adminsOnly",
+        change: { setting: "messaging", adminsOnly: true },
+      },
     ],
   },
   {
     label: "group.addOthers",
     options: [
-      { label: "group.everyone", change: { setting: "memberAdd", mode: "all_member_add" } },
-      { label: "group.adminsOnly", change: { setting: "memberAdd", mode: "admin_add" } },
+      {
+        label: "group.everyone",
+        change: { setting: "memberAdd", mode: "all_member_add" },
+      },
+      {
+        label: "group.adminsOnly",
+        change: { setting: "memberAdd", mode: "admin_add" },
+      },
     ],
   },
   {
     label: "group.approve",
     options: [
-      { label: "group.on", change: { setting: "joinApproval", required: true } },
-      { label: "group.off", change: { setting: "joinApproval", required: false } },
+      {
+        label: "group.on",
+        change: { setting: "joinApproval", required: true },
+      },
+      {
+        label: "group.off",
+        change: { setting: "joinApproval", required: false },
+      },
     ],
   },
 ];
@@ -807,7 +909,8 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
   #addInput: HTMLInputElement | undefined;
   #status: string | undefined;
   /** Names for participants, for example from your contacts. */
-  resolveName: ((participant: BrowserGroupParticipant) => string | undefined) | undefined;
+  resolveName:
+    ((participant: BrowserGroupParticipant) => string | undefined) | undefined;
 
   get source(): GroupSource | undefined {
     return this.#source;
@@ -827,7 +930,11 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
     this.render();
   }
 
-  attributeChangedCallback(name: string, previous: string | null, next: string | null): void {
+  attributeChangedCallback(
+    name: string,
+    previous: string | null,
+    next: string | null,
+  ): void {
     if (name === "group-id" && previous !== next) this.#reset();
     else this.render();
   }
@@ -881,7 +988,8 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
         : undefined);
     if (source === undefined) return;
     this.#owned = new GroupController(source, groupId, {
-      canManage: this.#source !== undefined || client?.can("groups_manage") === true,
+      canManage:
+        this.#source !== undefined || client?.can("groups_manage") === true,
     });
     this.controller = this.#owned;
     void this.#owned.load();
@@ -895,7 +1003,9 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
     const client = this.client;
     const source =
       this.#contacts ??
-      (client?.can("read_contact") === true ? createApiContactSource(client) : undefined);
+      (client?.can("read_contact") === true
+        ? createApiContactSource(client)
+        : undefined);
     if (source === undefined) return undefined;
     this.#directory = new ContactDirectoryController(source);
     this.watchDirectory(this.#directory);
@@ -903,7 +1013,8 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
   }
 
   #nameOf(participant: BrowserGroupParticipant): string {
-    if (participant.id === this.getAttribute("self-id")) return this.text("group.you");
+    if (participant.id === this.getAttribute("self-id"))
+      return this.text("group.you");
     const known = this.#directory
       ?.getSnapshot()
       .contacts.find((contact) => contact.id === participant.id);
@@ -916,14 +1027,19 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
     );
   }
 
-  protected renderContent(snapshot: GroupSnapshot | undefined): readonly Node[] {
+  protected renderContent(
+    snapshot: GroupSnapshot | undefined,
+  ): readonly Node[] {
     const controller = this.#controller();
     const focused = focusKey(this.root);
     const root = this.decorate(element("section"), "groupDetails");
     root.className = this.rootClass("pmfa-group");
     root.setAttribute("aria-labelledby", "pmfa-group-title");
     const busy = snapshot?.pending !== undefined;
-    root.setAttribute("aria-busy", String(snapshot?.status === "loading" || busy));
+    root.setAttribute(
+      "aria-busy",
+      String(snapshot?.status === "loading" || busy),
+    );
     const head = this.decorate(element("header"), "drawerHeader");
     head.className = "pmfa-group-head";
     const title = textElement("h2", this.text("group.info"));
@@ -931,14 +1047,19 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
     title.id = "pmfa-group-title";
     head.append(title);
     if (this.hasAttribute("closable")) {
-      const close = this.decorate(document.createElement("button"), "drawerClose");
+      const close = this.decorate(
+        document.createElement("button"),
+        "drawerClose",
+      );
       close.type = "button";
       close.className = "pmfa-btn pmfa-btn-ghost pmfa-btn-icon";
       close.dataset.focusKey = "close";
       close.setAttribute("aria-label", this.text("common.close"));
       close.append(icon("close"));
       close.addEventListener("click", () =>
-        this.dispatchEvent(new CustomEvent("pmfa-close", { bubbles: true, composed: true })),
+        this.dispatchEvent(
+          new CustomEvent("pmfa-close", { bubbles: true, composed: true }),
+        ),
       );
       head.append(close);
     }
@@ -962,7 +1083,9 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
       if (this.#status !== "left") {
         this.#status = "left";
         queueMicrotask(() =>
-          this.dispatchEvent(new CustomEvent("pmfa-left", { bubbles: true, composed: true })),
+          this.dispatchEvent(
+            new CustomEvent("pmfa-left", { bubbles: true, composed: true }),
+          ),
         );
       }
       const note = textElement("p", this.text("group.left"));
@@ -979,7 +1102,11 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
         node.setAttribute("role", "alert");
         node.append(
           textElement("p", this.text("group.loadError")),
-          actionButton(this.text("common.retry"), "pmfa-btn", () => void controller.load()),
+          actionButton(
+            this.text("common.retry"),
+            "pmfa-btn",
+            () => void controller.load(),
+          ),
         );
         root.append(node);
       } else {
@@ -1001,19 +1128,24 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
     const meta = textElement(
       "p",
       this.text("group.members", {
-        count: new Intl.NumberFormat(this.locale().code).format(info.participants.length),
+        count: new Intl.NumberFormat(this.locale().code).format(
+          info.participants.length,
+        ),
       }) +
         (info.createdAt > 0
           ? ` · ${this.text("group.created", {
-              date: new Intl.DateTimeFormat(this.locale().code, { dateStyle: "medium" }).format(
-                info.createdAt * 1000,
-              ),
+              date: new Intl.DateTimeFormat(this.locale().code, {
+                dateStyle: "medium",
+              }).format(info.createdAt * 1000),
             })}`
           : ""),
     );
     meta.className = "pmfa-group-meta";
     hero.append(meta);
-    body.append(hero, this.#field("description", info.description, manage, busy, controller));
+    body.append(
+      hero,
+      this.#field("description", info.description, manage, busy, controller),
+    );
     if (manage) {
       const add = this.#addMembers(info.participants, busy, controller);
       if (add !== undefined) body.append(add);
@@ -1038,7 +1170,9 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
     busy: boolean,
     controller: GroupController,
   ): HTMLElement {
-    const label = this.text(kind === "name" ? "group.rename" : "group.description");
+    const label = this.text(
+      kind === "name" ? "group.rename" : "group.description",
+    );
     if (this.#editing === kind) {
       const form = document.createElement("form");
       form.className = "pmfa-group-edit";
@@ -1047,7 +1181,9 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
       labelNode.className = "pmfa-label";
       labelNode.setAttribute("for", id);
       const input =
-        kind === "description" ? document.createElement("textarea") : document.createElement("input");
+        kind === "description"
+          ? document.createElement("textarea")
+          : document.createElement("input");
       input.id = id;
       input.className = "pmfa-input";
       input.dataset.focusKey = `edit:${kind}`;
@@ -1057,10 +1193,14 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
       else input.required = true;
       const actions = element("span");
       actions.className = "pmfa-group-edit-actions";
-      const cancel = actionButton(this.text("common.cancel"), "pmfa-btn pmfa-btn-ghost", () => {
-        this.#editing = undefined;
-        this.render();
-      });
+      const cancel = actionButton(
+        this.text("common.cancel"),
+        "pmfa-btn pmfa-btn-ghost",
+        () => {
+          this.#editing = undefined;
+          this.render();
+        },
+      );
       const save = document.createElement("button");
       save.type = "submit";
       save.className = "pmfa-btn pmfa-btn-primary";
@@ -1070,7 +1210,10 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
       form.append(labelNode, input, actions);
       form.addEventListener("submit", (event) => {
         event.preventDefault();
-        const run = kind === "name" ? controller.rename(input.value) : controller.describe(input.value);
+        const run =
+          kind === "name"
+            ? controller.rename(input.value)
+            : controller.describe(input.value);
         void run.then((ok) => {
           if (ok) {
             this.#editing = undefined;
@@ -1090,15 +1233,21 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
     }
     const shown = textElement(
       "span",
-      value === "" && kind === "description" ? this.text("group.noDescription") : value,
+      value === "" && kind === "description"
+        ? this.text("group.noDescription")
+        : value,
     );
     shown.className = value === "" ? "pmfa-group-empty" : "pmfa-group-value";
     field.append(shown);
     if (manage) {
-      const edit = actionButton(this.text("group.edit"), "pmfa-btn pmfa-btn-ghost", () => {
-        this.#editing = kind;
-        this.render();
-      });
+      const edit = actionButton(
+        this.text("group.edit"),
+        "pmfa-btn pmfa-btn-ghost",
+        () => {
+          this.#editing = kind;
+          this.render();
+        },
+      );
       edit.dataset.focusKey = `edit-button:${kind}`;
       edit.setAttribute("aria-label", `${this.text("group.edit")}: ${label}`);
       edit.disabled = busy;
@@ -1117,11 +1266,15 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
     const sorted = [...participants].sort(
       (a, b) =>
         Number(b.id === self) - Number(a.id === self) ||
-        Number(b.isAdmin || b.isSuperAdmin) - Number(a.isAdmin || a.isSuperAdmin),
+        Number(b.isAdmin || b.isSuperAdmin) -
+          Number(a.isAdmin || a.isSuperAdmin),
     );
     const list = this.decorate(element("ul"), "groupParticipants");
     list.className = "pmfa-group-members";
-    list.setAttribute("aria-label", this.text("group.members", { count: String(participants.length) }));
+    list.setAttribute(
+      "aria-label",
+      this.text("group.members", { count: String(participants.length) }),
+    );
     for (const participant of sorted) {
       const name = this.#nameOf(participant);
       const admin = participant.isAdmin || participant.isSuperAdmin;
@@ -1132,7 +1285,10 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
       const nameNode = textElement("span", name);
       nameNode.className = "pmfa-person-name";
       text.append(nameNode);
-      if (participant.phoneNumber !== undefined && participant.phoneNumber !== name) {
+      if (
+        participant.phoneNumber !== undefined &&
+        participant.phoneNumber !== name
+      ) {
         const sub = textElement("span", participant.phoneNumber);
         sub.className = "pmfa-person-sub";
         text.append(sub);
@@ -1148,7 +1304,10 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
         menu.className = "pmfa-conv-menu";
         const summary = document.createElement("summary");
         summary.dataset.focusKey = `member:${participant.id}`;
-        summary.setAttribute("aria-label", this.text("group.memberActions", { name }));
+        summary.setAttribute(
+          "aria-label",
+          this.text("group.memberActions", { name }),
+        );
         summary.append(icon("more"));
         const items = element("div");
         items.className = "pmfa-conv-menu-items";
@@ -1160,13 +1319,19 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
           "",
           () => {
             close();
-            void controller.participants(admin ? "demote" : "promote", [participant.id]);
+            void controller.participants(admin ? "demote" : "promote", [
+              participant.id,
+            ]);
           },
         );
-        const remove = actionButton(this.text("group.remove"), "pmfa-menu-danger", () => {
-          close();
-          void controller.participants("remove", [participant.id]);
-        });
+        const remove = actionButton(
+          this.text("group.remove"),
+          "pmfa-menu-danger",
+          () => {
+            close();
+            void controller.participants("remove", [participant.id]);
+          },
+        );
         role.disabled = busy;
         remove.disabled = busy;
         items.append(role, remove);
@@ -1190,13 +1355,21 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
     controller: GroupController,
   ): HTMLElement | undefined {
     if (!this.#adding) {
-      if (this.#contacts === undefined && this.client?.can("read_contact") !== true) return undefined;
-      const open = actionButton(this.text("group.addMembers"), "pmfa-btn", () => {
-        this.#adding = true;
-        const directory = this.#directoryController();
-        if (directory?.getSnapshot().status === "idle") void directory.load();
-        this.render();
-      });
+      if (
+        this.#contacts === undefined &&
+        this.client?.can("read_contact") !== true
+      )
+        return undefined;
+      const open = actionButton(
+        this.text("group.addMembers"),
+        "pmfa-btn",
+        () => {
+          this.#adding = true;
+          const directory = this.#directoryController();
+          if (directory?.getSnapshot().status === "idle") void directory.load();
+          this.render();
+        },
+      );
       open.prepend(icon("plus"));
       open.dataset.focusKey = "add-open";
       open.disabled = busy;
@@ -1208,10 +1381,14 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
     wrap.className = "pmfa-group-add";
     if (this.#addInput === undefined) {
       this.#addInput = document.createElement("input");
-      this.bindSearch(this.#addInput, () => this.#directory, () => {
-        this.#adding = false;
-        this.render();
-      });
+      this.bindSearch(
+        this.#addInput,
+        () => this.#directory,
+        () => {
+          this.#adding = false;
+          this.render();
+        },
+      );
     }
     wrap.append(this.searchField(directory, this.#addInput));
     const snapshot = directory.getSnapshot();
@@ -1220,7 +1397,9 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
     const members = new Set(participants.map((participant) => participant.id));
     wrap.append(
       this.contactRows(
-        filterContacts(snapshot.contacts, snapshot.query).filter((contact) => !members.has(contact.id)),
+        filterContacts(snapshot.contacts, snapshot.query).filter(
+          (contact) => !members.has(contact.id),
+        ),
         {
           label: this.text("group.addMembers"),
           selectable: true,
@@ -1235,20 +1414,28 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
     );
     const actions = element("span");
     actions.className = "pmfa-group-edit-actions";
-    const cancel = actionButton(this.text("common.cancel"), "pmfa-btn pmfa-btn-ghost", () => {
-      this.#adding = false;
-      this.#picked.clear();
-      this.render();
-    });
-    const add = actionButton(this.text("group.add"), "pmfa-btn pmfa-btn-primary", () => {
-      void controller.participants("add", [...this.#picked]).then((ok) => {
-        if (ok) {
-          this.#adding = false;
-          this.#picked.clear();
-          this.render();
-        }
-      });
-    });
+    const cancel = actionButton(
+      this.text("common.cancel"),
+      "pmfa-btn pmfa-btn-ghost",
+      () => {
+        this.#adding = false;
+        this.#picked.clear();
+        this.render();
+      },
+    );
+    const add = actionButton(
+      this.text("group.add"),
+      "pmfa-btn pmfa-btn-primary",
+      () => {
+        void controller.participants("add", [...this.#picked]).then((ok) => {
+          if (ok) {
+            this.#adding = false;
+            this.#picked.clear();
+            this.render();
+          }
+        });
+      },
+    );
     add.dataset.focusKey = "add-submit";
     add.disabled = busy || this.#picked.size === 0;
     actions.append(cancel, add);
@@ -1274,30 +1461,42 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
       row.className = "pmfa-group-invite";
       const code = textElement("code", link);
       code.className = "pmfa-group-code";
-      const copy = actionButton(this.text(this.#copied ? "group.copied" : "group.copy"), "pmfa-btn", () => {
-        void globalThis.navigator?.clipboard?.writeText(link).then(
-          () => {
-            this.#copied = true;
-            this.render();
-          },
-          () => undefined,
-        );
-      });
+      const copy = actionButton(
+        this.text(this.#copied ? "group.copied" : "group.copy"),
+        "pmfa-btn",
+        () => {
+          void globalThis.navigator?.clipboard?.writeText(link).then(
+            () => {
+              this.#copied = true;
+              this.render();
+            },
+            () => undefined,
+          );
+        },
+      );
       copy.dataset.focusKey = "copy";
       row.append(code, copy);
       section.append(row);
     } else {
-      const show = actionButton(this.text("group.showInvite"), "pmfa-btn", () => void controller.showInviteCode());
+      const show = actionButton(
+        this.text("group.showInvite"),
+        "pmfa-btn",
+        () => void controller.showInviteCode(),
+      );
       show.prepend(icon("link"));
       show.dataset.focusKey = "show-invite";
       show.disabled = busy;
       section.append(show);
     }
     if (manage) {
-      const reset = actionButton(this.text("group.resetInvite"), "pmfa-btn pmfa-btn-ghost", () => {
-        this.#copied = false;
-        void controller.revokeInviteCode();
-      });
+      const reset = actionButton(
+        this.text("group.resetInvite"),
+        "pmfa-btn pmfa-btn-ghost",
+        () => {
+          this.#copied = false;
+          void controller.revokeInviteCode();
+        },
+      );
       reset.dataset.focusKey = "reset-invite";
       reset.disabled = busy;
       section.append(reset);
@@ -1323,8 +1522,10 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
       const options = element("span");
       options.className = "pmfa-segmented";
       for (const option of setting.options) {
-        const choice = actionButton(this.text(option.label), "pmfa-btn", () =>
-          void controller.changeSetting(option.change),
+        const choice = actionButton(
+          this.text(option.label),
+          "pmfa-btn",
+          () => void controller.changeSetting(option.change),
         );
         choice.dataset.focusKey = `${setting.label}:${option.label}`;
         choice.disabled = busy;
@@ -1334,11 +1535,19 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
       section.append(row);
     }
     if (!this.#confirmLeave) {
-      const leave = actionButton(this.text("group.leave"), "pmfa-btn pmfa-group-leave", () => {
-        this.#confirmLeave = true;
-        this.render();
-        queueMicrotask(() => this.root.querySelector<HTMLElement>("[data-focus-key=leave-cancel]")?.focus());
-      });
+      const leave = actionButton(
+        this.text("group.leave"),
+        "pmfa-btn pmfa-group-leave",
+        () => {
+          this.#confirmLeave = true;
+          this.render();
+          queueMicrotask(() =>
+            this.root
+              .querySelector<HTMLElement>("[data-focus-key=leave-cancel]")
+              ?.focus(),
+          );
+        },
+      );
       leave.dataset.focusKey = "leave";
       leave.disabled = busy;
       section.append(leave);
@@ -1349,17 +1558,28 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
       confirm.setAttribute("aria-label", this.text("group.leave"));
       const actions = element("span");
       actions.className = "pmfa-group-edit-actions";
-      const cancel = actionButton(this.text("common.cancel"), "pmfa-btn pmfa-btn-ghost", () => {
-        this.#confirmLeave = false;
-        this.render();
-      });
+      const cancel = actionButton(
+        this.text("common.cancel"),
+        "pmfa-btn pmfa-btn-ghost",
+        () => {
+          this.#confirmLeave = false;
+          this.render();
+        },
+      );
       cancel.dataset.focusKey = "leave-cancel";
-      const leave = actionButton(this.text("group.leave"), "pmfa-btn pmfa-btn-danger", () => {
-        void controller.leave();
-      });
+      const leave = actionButton(
+        this.text("group.leave"),
+        "pmfa-btn pmfa-btn-danger",
+        () => {
+          void controller.leave();
+        },
+      );
       leave.disabled = busy;
       actions.append(cancel, leave);
-      confirm.append(textElement("p", this.text("group.leaveConfirm")), actions);
+      confirm.append(
+        textElement("p", this.text("group.leaveConfirm")),
+        actions,
+      );
       section.append(confirm);
     }
     return section;

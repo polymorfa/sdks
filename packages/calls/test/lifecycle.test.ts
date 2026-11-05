@@ -353,7 +353,9 @@ describe("Customer-scoped client tokens", () => {
     });
     void socket.connect().catch(() => undefined);
     await flush();
-    expect(FakeWebSocket.instances[0]!.url).toBe("wss://api.example/voip/ws?session=sales");
+    expect(FakeWebSocket.instances[0]!.url).toBe(
+      "wss://api.example/voip/ws?session=sales",
+    );
     socket.close();
   });
 });

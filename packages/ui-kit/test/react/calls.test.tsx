@@ -1403,9 +1403,9 @@ it("starts display capture from the share control and disables the camera until 
   // that would contradict it.
   expect(stop.hasAttribute("aria-pressed")).toBe(false);
   expect(
-    host.querySelector('[aria-label="Turn camera on"]')!.hasAttribute(
-      "aria-pressed",
-    ),
+    host
+      .querySelector('[aria-label="Turn camera on"]')!
+      .hasAttribute("aria-pressed"),
   ).toBe(false);
   await act(async () => {
     stop.click();

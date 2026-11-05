@@ -30,7 +30,9 @@ export function icon(name: ChatIconName): SVGSVGElement {
 }
 
 /** Shared base: a provider client, its permissions and one warning each. */
-export abstract class ClientElement<T extends object> extends PolymorfaElement<T> {
+export abstract class ClientElement<
+  T extends object,
+> extends PolymorfaElement<T> {
   #client: PolymorfaClient | undefined;
   #unsubscribeClient: (() => void) | undefined;
   #configured = false;

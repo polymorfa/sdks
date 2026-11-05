@@ -27,13 +27,7 @@ import {
 } from "../browser/index.js";
 import type { BrowserGroupParticipant } from "../browser/messaging/types.js";
 import type { SlotClassNames } from "../appearance/index.js";
-import {
-  Icon,
-  text,
-  useShell,
-  useSlots,
-  type Slots,
-} from "./components.js";
+import { Icon, text, useShell, useSlots, type Slots } from "./components.js";
 import {
   useOptionalPolymorfaClient,
   usePermissions,
@@ -47,7 +41,9 @@ const NO_SNAPSHOT = () => undefined;
 
 /** `useController` for a controller that may be absent. */
 function useOptionalController<T>(
-  controller: { getSnapshot(): T; subscribe(listener: () => void): () => void } | undefined,
+  controller:
+    | { getSnapshot(): T; subscribe(listener: () => void): () => void }
+    | undefined,
 ): T | undefined {
   return useSyncExternalStore(
     controller?.subscribe ?? NO_SUBSCRIPTION,
@@ -231,13 +227,20 @@ export function ContactList({
   classNames,
 }: ContactListProps) {
   const client = useOptionalPolymorfaClient();
-  if (controller === undefined && contacts === undefined && client === undefined)
+  if (
+    controller === undefined &&
+    contacts === undefined &&
+    client === undefined
+  )
     throw new Error(
       '<ContactList/> needs <PolymorfaProvider tokenEndpoint="/api/polymorfa/token"> or a contacts source.',
     );
   const directory = useOwnedController<ContactDirectoryController>(
     controller,
-    () => new ContactDirectoryController(contacts ?? createApiContactSource(client!)),
+    () =>
+      new ContactDirectoryController(
+        contacts ?? createApiContactSource(client!),
+      ),
   )!;
   const snapshot: ContactDirectorySnapshot = useController(directory);
   useEffect(() => {
@@ -245,7 +248,12 @@ export function ContactList({
   }, [directory]);
   const configuration = usePolymorfa();
   const slots = useSlots(classNames);
-  const root = useShell(slots, "contactDirectory", "pmfa-newchat pmfa-contacts", className);
+  const root = useShell(
+    slots,
+    "contactDirectory",
+    "pmfa-newchat pmfa-contacts",
+    className,
+  );
   const headingId = useId();
   const label = text(configuration, "newChat.contacts");
   return (
@@ -268,7 +276,10 @@ export function ContactList({
           />
         </div>
       )}
-      <div className="pmfa-newchat-body" aria-busy={snapshot.status === "loading"}>
+      <div
+        className="pmfa-newchat-body"
+        aria-busy={snapshot.status === "loading"}
+      >
         <DirectoryState
           snapshot={snapshot}
           configuration={configuration}
@@ -427,7 +438,49 @@ export interface NewChatProps {
  * is not saved, or create a group. Opens the chosen conversation through
  * `onOpen`; it never sends a message by itself.
  */
-export function NewChat({
+export function NewChat(props: NewChatProps) {
+  const client = useOptionalPolymorfaClient();
+  const permissions = usePermissions();
+  const configuration = usePolymorfa();
+  const slots = useSlots(props.classNames);
+  const root = useShell(slots, "newChat", "pmfa-newchat", props.className);
+  const needsApi =
+    props.controller === undefined &&
+    client !== undefined &&
+    (props.contacts === undefined || props.groups === undefined);
+  if (needsApi && permissions.snapshot?.grant === undefined) {
+    const failed =
+      permissions.status === "error" ||
+      permissions.status === "unauthenticated";
+    return (
+      <section {...root} data-pmfa="new-chat" aria-busy={!failed}>
+        <p className="pmfa-newchat-state" role={failed ? "alert" : "status"}>
+          {text(
+            configuration,
+            failed ? "newChat.loadError" : "newChat.loading",
+          )}
+        </p>
+        {failed && (
+          <button
+            type="button"
+            className="pmfa-btn"
+            onClick={() => void client.refresh().catch(() => undefined)}
+          >
+            {text(configuration, "common.retry")}
+          </button>
+        )}
+        {props.onClose !== undefined && (
+          <button type="button" className="pmfa-btn" onClick={props.onClose}>
+            {text(configuration, "common.close")}
+          </button>
+        )}
+      </section>
+    );
+  }
+  return <NewChatPanel {...props} />;
+}
+
+function NewChatPanel({
   controller,
   contacts,
   groups,
@@ -441,7 +494,11 @@ export function NewChat({
   const permissions = usePermissions();
   const latestOpen = useRef(onOpen);
   latestOpen.current = onOpen;
-  if (controller === undefined && contacts === undefined && client === undefined)
+  if (
+    controller === undefined &&
+    contacts === undefined &&
+    client === undefined
+  )
     throw new Error(
       '<NewChat/> needs <PolymorfaProvider tokenEndpoint="/api/polymorfa/token"> or a contacts source.',
     );
@@ -472,8 +529,7 @@ export function NewChat({
   useEffect(() => {
     searchRef.current?.focus();
   }, [snapshot.view]);
-  const back =
-    snapshot.view === "contacts" ? onClose : () => newChat.back();
+  const back = snapshot.view === "contacts" ? onClose : () => newChat.back();
   const heading =
     snapshot.view === "contacts"
       ? (title ?? text(configuration, "newChat.title"))
@@ -491,7 +547,9 @@ export function NewChat({
         value={directory.query}
         placeholder={text(configuration, "newChat.search")}
         aria-label={text(configuration, "newChat.search")}
-        onChange={(event) => newChat.directory.setQuery(event.currentTarget.value)}
+        onChange={(event) =>
+          newChat.directory.setQuery(event.currentTarget.value)
+        }
         onKeyDown={(event) => {
           if (event.key === "ArrowDown") {
             event.preventDefault();
@@ -514,7 +572,11 @@ export function NewChat({
       data-pmfa="new-chat"
       data-view={snapshot.view}
       onKeyDown={(event) => {
-        if (event.key === "Escape" && back !== undefined && directory.query === "") {
+        if (
+          event.key === "Escape" &&
+          back !== undefined &&
+          directory.query === ""
+        ) {
           event.preventDefault();
           back();
         }
@@ -558,7 +620,9 @@ export function NewChat({
               maxLength={100}
               required
               autoComplete="off"
-              onChange={(event) => newChat.setGroupName(event.currentTarget.value)}
+              onChange={(event) =>
+                newChat.setGroupName(event.currentTarget.value)
+              }
             />
           </label>
           <p className="pmfa-newchat-note">
@@ -631,7 +695,10 @@ export function NewChat({
                 {...slots("newChatAction", "pmfa-person pmfa-newchat-action")}
                 onClick={() => newChat.startGroup()}
               >
-                <span className="pmfa-avatar pmfa-newchat-action-icon" aria-hidden="true">
+                <span
+                  className="pmfa-avatar pmfa-newchat-action-icon"
+                  aria-hidden="true"
+                >
                   <Icon name="group" />
                 </span>
                 <span className="pmfa-person-text">
@@ -679,9 +746,9 @@ export function NewChat({
             <footer className="pmfa-newchat-foot">
               <span role="status" className="pmfa-newchat-note">
                 {text(configuration, "newChat.selected", {
-                  count: new Intl.NumberFormat(configuration.locale.code).format(
-                    snapshot.selected.length,
-                  ),
+                  count: new Intl.NumberFormat(
+                    configuration.locale.code,
+                  ).format(snapshot.selected.length),
                 })}
               </span>
               <button
@@ -717,7 +784,9 @@ export interface GroupDetailsProps {
   /** Contacts offered by "Add members". Omit to hide adding members. */
   readonly contacts?: ContactDirectorySource | ContactDirectoryController;
   /** Names for participants, for example from your contacts. */
-  readonly resolveName?: (participant: BrowserGroupParticipant) => string | undefined;
+  readonly resolveName?: (
+    participant: BrowserGroupParticipant,
+  ) => string | undefined;
   readonly onClose?: () => void;
   /** Called after this account exits the group. */
   readonly onLeft?: () => void;
@@ -726,38 +795,67 @@ export interface GroupDetailsProps {
 }
 
 const SETTINGS: readonly {
-  readonly label: "group.editInfo" | "group.sendMessages" | "group.addOthers" | "group.approve";
+  readonly label:
+    | "group.editInfo"
+    | "group.sendMessages"
+    | "group.addOthers"
+    | "group.approve";
   readonly options: readonly {
-    readonly label: "group.everyone" | "group.adminsOnly" | "group.on" | "group.off";
+    readonly label:
+      "group.everyone" | "group.adminsOnly" | "group.on" | "group.off";
     readonly change: GroupSettingChange;
   }[];
 }[] = [
   {
     label: "group.editInfo",
     options: [
-      { label: "group.everyone", change: { setting: "infoEditing", adminsOnly: false } },
-      { label: "group.adminsOnly", change: { setting: "infoEditing", adminsOnly: true } },
+      {
+        label: "group.everyone",
+        change: { setting: "infoEditing", adminsOnly: false },
+      },
+      {
+        label: "group.adminsOnly",
+        change: { setting: "infoEditing", adminsOnly: true },
+      },
     ],
   },
   {
     label: "group.sendMessages",
     options: [
-      { label: "group.everyone", change: { setting: "messaging", adminsOnly: false } },
-      { label: "group.adminsOnly", change: { setting: "messaging", adminsOnly: true } },
+      {
+        label: "group.everyone",
+        change: { setting: "messaging", adminsOnly: false },
+      },
+      {
+        label: "group.adminsOnly",
+        change: { setting: "messaging", adminsOnly: true },
+      },
     ],
   },
   {
     label: "group.addOthers",
     options: [
-      { label: "group.everyone", change: { setting: "memberAdd", mode: "all_member_add" } },
-      { label: "group.adminsOnly", change: { setting: "memberAdd", mode: "admin_add" } },
+      {
+        label: "group.everyone",
+        change: { setting: "memberAdd", mode: "all_member_add" },
+      },
+      {
+        label: "group.adminsOnly",
+        change: { setting: "memberAdd", mode: "admin_add" },
+      },
     ],
   },
   {
     label: "group.approve",
     options: [
-      { label: "group.on", change: { setting: "joinApproval", required: true } },
-      { label: "group.off", change: { setting: "joinApproval", required: false } },
+      {
+        label: "group.on",
+        change: { setting: "joinApproval", required: true },
+      },
+      {
+        label: "group.off",
+        change: { setting: "joinApproval", required: false },
+      },
     ],
   },
 ];
@@ -808,12 +906,19 @@ export function GroupDetails({
       ? undefined
       : () => new ContactDirectoryController(contacts),
   );
-  const people: ContactDirectorySnapshot | undefined = useOptionalController(directory);
+  const people: ContactDirectorySnapshot | undefined =
+    useOptionalController(directory);
   useEffect(() => {
     if (directory?.getSnapshot().status === "idle") void directory.load();
   }, [directory]);
   const known = useMemo(
-    () => new Map((people?.contacts ?? []).map((contact) => [contact.id, contactDisplayName(contact)])),
+    () =>
+      new Map(
+        (people?.contacts ?? []).map((contact) => [
+          contact.id,
+          contactDisplayName(contact),
+        ]),
+      ),
     [people],
   );
   const latestLeft = useRef(onLeft);
@@ -842,7 +947,8 @@ export function GroupDetails({
     return list.sort(
       (a, b) =>
         Number(b.id === selfId) - Number(a.id === selfId) ||
-        Number(b.isAdmin || b.isSuperAdmin) - Number(a.isAdmin || a.isSuperAdmin),
+        Number(b.isAdmin || b.isSuperAdmin) -
+          Number(a.isAdmin || a.isSuperAdmin),
     );
   }, [info, selfId]);
 
@@ -873,7 +979,9 @@ export function GroupDetails({
         {snapshot.pending !== undefined
           ? ""
           : snapshot.failed !== undefined && snapshot.failed !== "load"
-            ? text(configuration, "group.failed", { error: snapshot.error ?? "" })
+            ? text(configuration, "group.failed", {
+                error: snapshot.error ?? "",
+              })
             : snapshot.done !== undefined &&
                 snapshot.done !== "leave" &&
                 snapshot.done !== "inviteCode"
@@ -882,12 +990,18 @@ export function GroupDetails({
       </p>
 
       {snapshot.status === "left" ? (
-        <p className="pmfa-newchat-state">{text(configuration, "group.left")}</p>
+        <p className="pmfa-newchat-state">
+          {text(configuration, "group.left")}
+        </p>
       ) : info === undefined ? (
         snapshot.status === "error" ? (
           <div className="pmfa-newchat-state" role="alert">
             <p>{text(configuration, "group.loadError")}</p>
-            <button type="button" className="pmfa-btn" onClick={() => void group.load()}>
+            <button
+              type="button"
+              className="pmfa-btn"
+              onClick={() => void group.load()}
+            >
               {text(configuration, "common.retry")}
             </button>
           </div>
@@ -960,7 +1074,10 @@ export function GroupDetails({
               const admin = participant.isAdmin || participant.isSuperAdmin;
               const self = participant.id === selfId;
               return (
-                <li key={participant.id} className="pmfa-person pmfa-group-member">
+                <li
+                  key={participant.id}
+                  className="pmfa-person pmfa-group-member"
+                >
                   <Avatar id={participant.id} name={name} slots={slots} />
                   <span className="pmfa-person-text">
                     <span className="pmfa-person-name">{name}</span>
@@ -982,33 +1099,47 @@ export function GroupDetails({
                       onKeyDown={(event) => {
                         if (event.key === "Escape") {
                           event.currentTarget.open = false;
-                          event.currentTarget.querySelector<HTMLElement>("summary")?.focus();
+                          event.currentTarget
+                            .querySelector<HTMLElement>("summary")
+                            ?.focus();
                         }
                       }}
                     >
                       <summary
-                        aria-label={text(configuration, "group.memberActions", { name })}
+                        aria-label={text(configuration, "group.memberActions", {
+                          name,
+                        })}
                       >
                         <Icon name="more" />
                       </summary>
                       <div className="pmfa-conv-menu-items">
                         <button
                           type="button"
-                          
+
                           disabled={busy}
                           onClick={(event) => {
-                            event.currentTarget.closest("details")?.removeAttribute("open");
-                            void group.participants(admin ? "demote" : "promote", [participant.id]);
+                            event.currentTarget
+                              .closest("details")
+                              ?.removeAttribute("open");
+                            void group.participants(
+                              admin ? "demote" : "promote",
+                              [participant.id],
+                            );
                           }}
                         >
-                          {text(configuration, admin ? "group.dismissAdmin" : "group.makeAdmin")}
+                          {text(
+                            configuration,
+                            admin ? "group.dismissAdmin" : "group.makeAdmin",
+                          )}
                         </button>
                         <button
                           type="button"
                           className="pmfa-menu-danger"
                           disabled={busy}
                           onClick={(event) => {
-                            event.currentTarget.closest("details")?.removeAttribute("open");
+                            event.currentTarget
+                              .closest("details")
+                              ?.removeAttribute("open");
                             void group.participants("remove", [participant.id]);
                           }}
                         >
@@ -1022,10 +1153,18 @@ export function GroupDetails({
             })}
           </ul>
 
-          <section className="pmfa-group-section" aria-label={text(configuration, "group.inviteLink")}>
-            <h3 className="pmfa-newchat-section">{text(configuration, "group.inviteLink")}</h3>
+          <section
+            className="pmfa-group-section"
+            aria-label={text(configuration, "group.inviteLink")}
+          >
+            <h3 className="pmfa-newchat-section">
+              {text(configuration, "group.inviteLink")}
+            </h3>
             {snapshot.inviteCode !== undefined ? (
-              <InviteCode code={snapshot.inviteCode} configuration={configuration} />
+              <InviteCode
+                code={snapshot.inviteCode}
+                configuration={configuration}
+              />
             ) : (
               <button
                 type="button"
@@ -1051,11 +1190,22 @@ export function GroupDetails({
 
           {manage ? (
             <section className="pmfa-group-section">
-              <h3 className="pmfa-newchat-section">{text(configuration, "group.settings")}</h3>
-              <p className="pmfa-newchat-note">{text(configuration, "group.settingsNote")}</p>
+              <h3 className="pmfa-newchat-section">
+                {text(configuration, "group.settings")}
+              </h3>
+              <p className="pmfa-newchat-note">
+                {text(configuration, "group.settingsNote")}
+              </p>
               {SETTINGS.map((setting) => (
-                <div key={setting.label} className="pmfa-group-setting" role="group" aria-label={text(configuration, setting.label)}>
-                  <span className="pmfa-group-setting-label">{text(configuration, setting.label)}</span>
+                <div
+                  key={setting.label}
+                  className="pmfa-group-setting"
+                  role="group"
+                  aria-label={text(configuration, setting.label)}
+                >
+                  <span className="pmfa-group-setting-label">
+                    {text(configuration, setting.label)}
+                  </span>
                   <span className="pmfa-segmented">
                     {setting.options.map((option) => (
                       <button
@@ -1078,7 +1228,9 @@ export function GroupDetails({
               />
             </section>
           ) : (
-            <p className="pmfa-newchat-note">{text(configuration, "group.readOnly")}</p>
+            <p className="pmfa-newchat-note">
+              {text(configuration, "group.readOnly")}
+            </p>
           )}
         </div>
       )}
@@ -1149,7 +1301,11 @@ function EditableField({
           />
         )}
         <span className="pmfa-group-edit-actions">
-          <button type="button" className="pmfa-btn pmfa-btn-ghost" onClick={() => setDraft(undefined)}>
+          <button
+            type="button"
+            className="pmfa-btn pmfa-btn-ghost"
+            onClick={() => setDraft(undefined)}
+          >
             {text(configuration, "common.cancel")}
           </button>
           <button
@@ -1233,13 +1389,27 @@ function LeaveGroup({
       </button>
     );
   return (
-    <div className="pmfa-group-confirm" role="alertdialog" aria-label={text(configuration, "group.leave")}>
+    <div
+      className="pmfa-group-confirm"
+      role="alertdialog"
+      aria-label={text(configuration, "group.leave")}
+    >
       <p>{text(configuration, "group.leaveConfirm")}</p>
       <span className="pmfa-group-edit-actions">
-        <button type="button" className="pmfa-btn pmfa-btn-ghost" autoFocus onClick={() => setConfirming(false)}>
+        <button
+          type="button"
+          className="pmfa-btn pmfa-btn-ghost"
+          autoFocus
+          onClick={() => setConfirming(false)}
+        >
           {text(configuration, "common.cancel")}
         </button>
-        <button type="button" className="pmfa-btn pmfa-btn-danger" disabled={disabled} onClick={onLeave}>
+        <button
+          type="button"
+          className="pmfa-btn pmfa-btn-danger"
+          disabled={disabled}
+          onClick={onLeave}
+        >
           {text(configuration, "group.leave")}
         </button>
       </span>
@@ -1266,16 +1436,25 @@ function AddMembers({
   const [picked, setPicked] = useState<readonly string[]>([]);
   const snapshot: ContactDirectorySnapshot = useController(directory);
   useEffect(() => {
-    if (open && directory.getSnapshot().status === "idle") void directory.load();
+    if (open && directory.getSnapshot().status === "idle")
+      void directory.load();
   }, [open, directory]);
   const members = useMemo(() => new Set(existing), [existing]);
   const candidates = useMemo(
-    () => filterContacts(snapshot.contacts, snapshot.query).filter((contact) => !members.has(contact.id)),
+    () =>
+      filterContacts(snapshot.contacts, snapshot.query).filter(
+        (contact) => !members.has(contact.id),
+      ),
     [snapshot.contacts, snapshot.query, members],
   );
   if (!open)
     return (
-      <button type="button" className="pmfa-btn" disabled={disabled} onClick={() => setOpen(true)}>
+      <button
+        type="button"
+        className="pmfa-btn"
+        disabled={disabled}
+        onClick={() => setOpen(true)}
+      >
         <Icon name="plus" />
         {text(configuration, "group.addMembers")}
       </button>
@@ -1294,7 +1473,11 @@ function AddMembers({
           onChange={(event) => directory.setQuery(event.currentTarget.value)}
         />
       </div>
-      <DirectoryState snapshot={snapshot} configuration={configuration} onRetry={() => void directory.retry()} />
+      <DirectoryState
+        snapshot={snapshot}
+        configuration={configuration}
+        onRetry={() => void directory.retry()}
+      />
       <ContactRows
         contacts={candidates}
         label={text(configuration, "group.addMembers")}

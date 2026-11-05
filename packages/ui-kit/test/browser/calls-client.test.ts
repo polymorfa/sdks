@@ -18,6 +18,7 @@ afterEach(async () => {
 function fixture(
   extra: {
     diagnostics?: boolean;
+    clientTokenSession?: string;
     getClientToken?: Parameters<typeof createBrowserCalls>[0]["getClientToken"];
   } = {},
 ) {
@@ -100,6 +101,27 @@ function event(
 }
 
 describe("browser widget and shared calls client", () => {
+  it("connects Customer-scoped calls and keeps the selected Number on requests", async () => {
+    const f = fixture({ clientTokenSession: "number/one" });
+    const socket = await f.connect();
+    const url = new URL(socket.url);
+    expect(url.origin).toBe("wss://api.polymorfa.test");
+    expect(url.searchParams.get("session")).toBe("number/one");
+    expect(socket.texts[0]).toEqual({ type: "auth", token: "pmfa_ct_test" });
+    expect(f.calls.connected).toBe(true);
+    await f.calls.controller.place("+15550100");
+    const placed = f.fetch.mock.calls.find(
+      ([input]) => new URL(String(input)).pathname === "/messaging/voip/calls",
+    );
+    expect(placed).toBeDefined();
+    expect(new URL(String(placed![0])).searchParams.get("session")).toBe(
+      "number/one",
+    );
+    expect(new Headers(placed![1]?.headers).get("authorization")).toBe(
+      "Bearer pmfa_ct_test",
+    );
+  });
+
   it("places a group through the shared controller and exposes re-ring", async () => {
     const f = fixture();
     await f.connect();

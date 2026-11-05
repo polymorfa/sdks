@@ -28,7 +28,10 @@ export interface DirectoryContact {
 export interface ContactDirectorySource {
   list(signal?: AbortSignal): Promise<readonly DirectoryContact[]>;
   /** Resolve a phone number that is not in the list. `null`: not on WhatsApp. */
-  lookup?(phone: string, signal?: AbortSignal): Promise<DirectoryContact | null>;
+  lookup?(
+    phone: string,
+    signal?: AbortSignal,
+  ): Promise<DirectoryContact | null>;
 }
 
 export type PhoneLookup =
@@ -40,7 +43,11 @@ export type PhoneLookup =
       readonly contact: DirectoryContact;
     }
   | { readonly status: "not_found"; readonly phone: string }
-  | { readonly status: "error"; readonly phone: string; readonly error: string };
+  | {
+      readonly status: "error";
+      readonly phone: string;
+      readonly error: string;
+    };
 
 export interface ContactDirectorySnapshot extends ControllerSnapshot {
   readonly status: "idle" | "loading" | "ready" | "error";

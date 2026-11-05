@@ -32,7 +32,9 @@ const contacts: DirectoryContact[] = [
   { id: "3", pushName: "linus", phoneNumber: "+15550003" },
 ];
 
-function contactSource(): ContactDirectorySource & { lookup: ReturnType<typeof vi.fn> } {
+function contactSource(): ContactDirectorySource & {
+  lookup: ReturnType<typeof vi.fn>;
+} {
   return {
     list: vi.fn(async () => contacts),
     lookup: vi.fn(async (phone: string) =>
@@ -50,14 +52,28 @@ function groupSource(): GroupSource & { current: BrowserGroup } {
       ownerId: "1",
       createdAt: 1_700_000_000,
       participants: [
-        { id: "1", phoneNumber: "+15550001", isAdmin: true, isSuperAdmin: true },
-        { id: "2", phoneNumber: "+15550002", isAdmin: false, isSuperAdmin: false },
+        {
+          id: "1",
+          phoneNumber: "+15550001",
+          isAdmin: true,
+          isSuperAdmin: true,
+        },
+        {
+          id: "2",
+          phoneNumber: "+15550002",
+          isAdmin: false,
+          isSuperAdmin: false,
+        },
       ],
     } as BrowserGroup,
   };
   return Object.assign(state, {
     retrieve: vi.fn(async () => state.current),
-    create: vi.fn(async (input: { name: string }) => ({ ...state.current, id: "555", name: input.name })),
+    create: vi.fn(async (input: { name: string }) => ({
+      ...state.current,
+      id: "555",
+      name: input.name,
+    })),
     setSubject: vi.fn(async (_id: string, value: string) => {
       state.current = { ...state.current, name: value };
     }),
@@ -81,6 +97,7 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   host.remove();
+  vi.unstubAllGlobals();
 });
 
 async function settle() {
@@ -96,7 +113,10 @@ async function render(node: React.ReactNode) {
 
 function type(input: HTMLInputElement, value: string) {
   act(() => {
-    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    const setter = Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value",
+    )!.set!;
     setter.call(input, value);
     input.dispatchEvent(new Event("input", { bubbles: true }));
   });
@@ -110,9 +130,66 @@ function click(node: Element | null | undefined) {
 const byLabel = (label: string) =>
   host.querySelector<HTMLElement>(`[aria-label="${label}"]`);
 const buttonText = (label: string) =>
-  [...host.querySelectorAll("button")].find((button) => button.textContent?.trim() === label);
+  [...host.querySelectorAll("button")].find(
+    (button) => button.textContent?.trim() === label,
+  );
 
 describe("<NewChat/>", () => {
+  it.each([false, true])(
+    "waits for the initial grant before loading contacts (manage=%s)",
+    async (manage) => {
+      let finish!: (response: Response) => void;
+      const token = new Promise<Response>((resolve) => {
+        finish = resolve;
+      });
+      const fetch = vi.fn(async (input: RequestInfo | URL) => {
+        if (String(input) === "/api/polymorfa/token") return token;
+        expect(new URL(String(input)).pathname).toContain("/contacts");
+        return Response.json({
+          success: true,
+          data: [{ id: "1", name: "Ada Lovelace", phoneNumber: "+15550001" }],
+        });
+      });
+      vi.stubGlobal("fetch", fetch);
+      await act(async () =>
+        root.render(
+          <PolymorfaProvider tokenEndpoint="/api/polymorfa/token">
+            <NewChat onOpen={() => undefined} />
+          </PolymorfaProvider>,
+        ),
+      );
+      expect(fetch).toHaveBeenCalledTimes(1);
+      expect(host.querySelector("[role=alert]")).toBeNull();
+      expect(host.querySelector("[role=status]")?.textContent).toContain(
+        "Loading",
+      );
+      await act(async () =>
+        finish(
+          Response.json({
+            value: "pmfa_ct_Zml4dHVyZQ",
+            audience: "browser",
+            expiresAt: Date.now() + 600_000,
+            grant: {
+              session: "support",
+              conversations: "all",
+              allow: ["read_contact", ...(manage ? ["groups_manage"] : [])],
+            },
+          }),
+        ),
+      );
+      await settle();
+      expect(
+        host.querySelector("[data-contact-id='1']")?.textContent,
+      ).toContain("Ada Lovelace");
+      expect(host.querySelector("[role=alert]")).toBeNull();
+      expect(fetch).toHaveBeenCalledTimes(2);
+      if (manage) {
+        click(buttonText("New group"));
+        expect(host.querySelector("h2")?.textContent).toBe("Add group members");
+      } else expect(buttonText("New group")).toBeUndefined();
+    },
+  );
+
   it("lists contacts, searches and opens the chosen conversation", async () => {
     const onOpen = vi.fn();
     await render(<NewChat contacts={contactSource()} onOpen={onOpen} />);
@@ -126,7 +203,11 @@ describe("<NewChat/>", () => {
     expect(host.querySelectorAll("[data-contact-id]")).toHaveLength(1);
     click(host.querySelector("[data-contact-id='2']"));
     expect(onOpen).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "2", kind: "direct", name: "Grace Hopper" }),
+      expect.objectContaining({
+        id: "2",
+        kind: "direct",
+        name: "Grace Hopper",
+      }),
     );
     // No group source and no grant: no "New group" row.
     expect(buttonText("New group")).toBeUndefined();
@@ -136,9 +217,17 @@ describe("<NewChat/>", () => {
     const onOpen = vi.fn();
     const source = contactSource();
     await render(<NewChat contacts={source} onOpen={onOpen} />);
-    type(byLabel("Search name or number") as HTMLInputElement, "+1 555 999 0000");
-    await act(async () => buttonText("Check +15559990000 on WhatsApp")!.click());
-    expect(source.lookup).toHaveBeenCalledWith("+15559990000", expect.any(AbortSignal));
+    type(
+      byLabel("Search name or number") as HTMLInputElement,
+      "+1 555 999 0000",
+    );
+    await act(async () =>
+      buttonText("Check +15559990000 on WhatsApp")!.click(),
+    );
+    expect(source.lookup).toHaveBeenCalledWith(
+      "+15559990000",
+      expect.any(AbortSignal),
+    );
     click(
       [...host.querySelectorAll("button")].find((button) =>
         button.textContent?.includes("Message +15559990000"),
@@ -148,9 +237,16 @@ describe("<NewChat/>", () => {
   });
 
   it("says when a number is not on WhatsApp", async () => {
-    await render(<NewChat contacts={contactSource()} onOpen={() => undefined} />);
-    type(byLabel("Search name or number") as HTMLInputElement, "+1 555 123 4567");
-    await act(async () => buttonText("Check +15551234567 on WhatsApp")!.click());
+    await render(
+      <NewChat contacts={contactSource()} onOpen={() => undefined} />,
+    );
+    type(
+      byLabel("Search name or number") as HTMLInputElement,
+      "+1 555 123 4567",
+    );
+    await act(async () =>
+      buttonText("Check +15551234567 on WhatsApp")!.click(),
+    );
     expect(host.querySelector("[role=status]")?.textContent).toBe(
       "+15551234567 is not on WhatsApp",
     );
@@ -162,7 +258,9 @@ describe("<NewChat/>", () => {
       .mockRejectedValueOnce(new Error("offline"))
       .mockResolvedValueOnce(contacts);
     await render(<NewChat contacts={{ list }} onOpen={() => undefined} />);
-    expect(host.querySelector("[role=alert]")?.textContent).toContain("Unable to load contacts");
+    expect(host.querySelector("[role=alert]")?.textContent).toContain(
+      "Unable to load contacts",
+    );
     await act(async () => buttonText("Retry")!.click());
     expect(host.querySelectorAll("[data-contact-id]")).toHaveLength(3);
   });
@@ -170,13 +268,22 @@ describe("<NewChat/>", () => {
   it("creates a group in two steps with checkbox rows", async () => {
     const onOpen = vi.fn();
     const groups = groupSource();
-    await render(<NewChat contacts={contactSource()} groups={groups} onOpen={onOpen} onClose={() => undefined} />);
+    await render(
+      <NewChat
+        contacts={contactSource()}
+        groups={groups}
+        onOpen={onOpen}
+        onClose={() => undefined}
+      />,
+    );
     click(buttonText("New group"));
     expect(host.querySelector("h2")?.textContent).toBe("Add group members");
     const ada = host.querySelector("[data-contact-id='1']")!;
     expect(ada.getAttribute("role")).toBe("checkbox");
     click(ada);
-    expect(host.querySelector("[data-contact-id='1']")!.getAttribute("aria-checked")).toBe("true");
+    expect(
+      host.querySelector("[data-contact-id='1']")!.getAttribute("aria-checked"),
+    ).toBe("true");
     expect(byLabel("Remove Ada Lovelace")).not.toBeNull();
     click(buttonText("Next"));
     const name = host.querySelector<HTMLInputElement>("input[required]")!;
@@ -187,15 +294,23 @@ describe("<NewChat/>", () => {
       { name: "Book club", participants: ["1"] },
       expect.any(AbortSignal),
     );
-    expect(onOpen).toHaveBeenCalledWith(expect.objectContaining({ id: "555", kind: "group" }));
+    expect(onOpen).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "555", kind: "group" }),
+    );
   });
 
   it("moves through rows with the arrow keys", async () => {
-    await render(<NewChat contacts={contactSource()} onOpen={() => undefined} />);
-    const first = host.querySelector<HTMLButtonElement>("[data-contact-id='1']")!;
+    await render(
+      <NewChat contacts={contactSource()} onOpen={() => undefined} />,
+    );
+    const first = host.querySelector<HTMLButtonElement>(
+      "[data-contact-id='1']",
+    )!;
     first.focus();
     act(() => {
-      first.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+      first.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }),
+      );
     });
     expect(document.activeElement?.getAttribute("data-contact-id")).toBe("2");
   });
@@ -204,7 +319,14 @@ describe("<NewChat/>", () => {
 describe("<GroupDetails/>", () => {
   it("shows the roster and renames, demotes and removes through the source", async () => {
     const source = groupSource();
-    await render(<GroupDetails groupId="120363" source={source} selfId="1" contacts={contactSource()} />);
+    await render(
+      <GroupDetails
+        groupId="120363"
+        source={source}
+        selfId="1"
+        contacts={contactSource()}
+      />,
+    );
     expect(host.textContent).toContain("Launch");
     expect(host.textContent).toContain("2 members");
     const members = [...host.querySelectorAll(".pmfa-group-member")];
@@ -213,14 +335,20 @@ describe("<GroupDetails/>", () => {
     // No actions on yourself.
     expect(members[0]!.querySelector("details")).toBeNull();
     click(byLabel("Edit: Group name"));
-    const input = host.querySelector<HTMLInputElement>(".pmfa-group-edit input")!;
+    const input = host.querySelector<HTMLInputElement>(
+      ".pmfa-group-edit input",
+    )!;
     type(input, "Launch v2");
     await act(async () => buttonText("Save")!.click());
     expect(source.setSubject).toHaveBeenCalledWith("120363", "Launch v2");
     expect(host.textContent).toContain("Launch v2");
-    expect(host.querySelector("[role=status].pmfa-group-status")?.textContent).toBe("Saved");
+    expect(
+      host.querySelector("[role=status].pmfa-group-status")?.textContent,
+    ).toBe("Saved");
     await act(async () => buttonText("Make group admin")!.click());
-    expect(source.participants).toHaveBeenCalledWith("120363", "promote", ["2"]);
+    expect(source.participants).toHaveBeenCalledWith("120363", "promote", [
+      "2",
+    ]);
     await act(async () => buttonText("Remove from group")!.click());
     expect(source.participants).toHaveBeenCalledWith("120363", "remove", ["2"]);
   });
@@ -229,23 +357,49 @@ describe("<GroupDetails/>", () => {
     const source = groupSource();
     const onLeft = vi.fn();
     await render(
-      <GroupDetails groupId="120363" source={source} contacts={contactSource()} onLeft={onLeft} />,
+      <GroupDetails
+        groupId="120363"
+        source={source}
+        contacts={contactSource()}
+        onLeft={onLeft}
+      />,
     );
     click(buttonText("Add members"));
     await act(async () => undefined);
     // Existing members are not offered again.
-    expect([...host.querySelectorAll(".pmfa-group-add [data-contact-id]")].map((row) => row.getAttribute("data-contact-id"))).toEqual(["3"]);
+    expect(
+      [...host.querySelectorAll(".pmfa-group-add [data-contact-id]")].map(
+        (row) => row.getAttribute("data-contact-id"),
+      ),
+    ).toEqual(["3"]);
     click(host.querySelector(".pmfa-group-add [data-contact-id='3']"));
     await act(async () => buttonText("Add")!.click());
     expect(source.participants).toHaveBeenCalledWith("120363", "add", ["3"]);
-    const messaging = host.querySelector('[role=group][aria-label="Send messages"]')!;
-    await act(async () => [...messaging.querySelectorAll("button")].find((b) => b.textContent === "Only admins")!.click());
-    expect(source.setting).toHaveBeenCalledWith("120363", { setting: "messaging", adminsOnly: true });
+    const messaging = host.querySelector(
+      '[role=group][aria-label="Send messages"]',
+    )!;
+    await act(async () =>
+      [...messaging.querySelectorAll("button")]
+        .find((b) => b.textContent === "Only admins")!
+        .click(),
+    );
+    expect(source.setting).toHaveBeenCalledWith("120363", {
+      setting: "messaging",
+      adminsOnly: true,
+    });
     await act(async () => buttonText("Show invite code")!.click());
-    expect(host.querySelector(".pmfa-group-code")?.textContent).toBe("https://chat.whatsapp.com/abc");
+    expect(host.querySelector(".pmfa-group-code")?.textContent).toBe(
+      "https://chat.whatsapp.com/abc",
+    );
     click(buttonText("Exit group"));
     expect(host.querySelector("[role=alertdialog]")).not.toBeNull();
-    await act(async () => host.querySelector<HTMLButtonElement>("[role=alertdialog] .pmfa-btn-danger")!.click());
+    await act(async () =>
+      host
+        .querySelector<HTMLButtonElement>(
+          "[role=alertdialog] .pmfa-btn-danger",
+        )!
+        .click(),
+    );
     expect(source.leave).toHaveBeenCalledWith("120363");
     expect(onLeft).toHaveBeenCalledOnce();
     expect(host.textContent).toContain("You exited this group.");
@@ -272,9 +426,30 @@ describe("<Inbox/> new chat and groups", () => {
       conversation: () => ({
         load: async () => ({
           messages: [
-            { id: "m1", text: "Hi all", createdAt: 1, direction: "inbound", status: "sent", sender: { id: "1", name: "Ada" } },
-            { id: "m2", text: "Second", createdAt: 2, direction: "inbound", status: "sent", sender: { id: "1", name: "Ada" } },
-            { id: "m3", text: "Hello", createdAt: 3, direction: "inbound", status: "sent", sender: { id: "2", phoneNumber: "+15550002" } },
+            {
+              id: "m1",
+              text: "Hi all",
+              createdAt: 1,
+              direction: "inbound",
+              status: "sent",
+              sender: { id: "1", name: "Ada" },
+            },
+            {
+              id: "m2",
+              text: "Second",
+              createdAt: 2,
+              direction: "inbound",
+              status: "sent",
+              sender: { id: "1", name: "Ada" },
+            },
+            {
+              id: "m3",
+              text: "Hello",
+              createdAt: 3,
+              direction: "inbound",
+              status: "sent",
+              sender: { id: "2", phoneNumber: "+15550002" },
+            },
           ],
         }),
         subscribe: () => () => undefined,
@@ -287,7 +462,9 @@ describe("<Inbox/> new chat and groups", () => {
     const onSelect = vi.fn();
     await render(
       <Inbox
-        source={inboxSource([{ id: "9", name: "Existing", lastActivity: 1, unreadCount: 0 }])}
+        source={inboxSource([
+          { id: "9", name: "Existing", lastActivity: 1, unreadCount: 0 },
+        ])}
         contacts={contactSource()}
         onSelect={onSelect}
       />,
@@ -296,10 +473,16 @@ describe("<Inbox/> new chat and groups", () => {
     await settle();
     expect(host.querySelector("[data-pmfa=new-chat]")).not.toBeNull();
     expect(host.querySelector("[data-pmfa=conversation-list]")).toBeNull();
-    await act(async () => host.querySelector<HTMLButtonElement>("[data-contact-id='1']")!.click());
+    await act(async () =>
+      host.querySelector<HTMLButtonElement>("[data-contact-id='1']")!.click(),
+    );
     expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: "1" }));
-    expect(host.querySelector("[data-pmfa=inbox]")?.getAttribute("data-view")).toBe("thread");
-    expect(host.querySelector(".pmfa-thread-name")?.textContent).toBe("Ada Lovelace");
+    expect(
+      host.querySelector("[data-pmfa=inbox]")?.getAttribute("data-view"),
+    ).toBe("thread");
+    expect(host.querySelector(".pmfa-thread-name")?.textContent).toBe(
+      "Ada Lovelace",
+    );
     expect(host.querySelector("[data-pmfa=conversation-list]")).not.toBeNull();
   });
 
@@ -307,21 +490,32 @@ describe("<Inbox/> new chat and groups", () => {
     const groups = groupSource();
     await render(
       <Inbox
-        source={inboxSource([{ id: "120363", kind: "group", name: "Launch", lastActivity: 1, unreadCount: 0 }])}
+        source={inboxSource([
+          {
+            id: "120363",
+            kind: "group",
+            name: "Launch",
+            lastActivity: 1,
+            unreadCount: 0,
+          },
+        ])}
         contacts={contactSource()}
         groups={groups}
         defaultConversationId="120363"
       />,
     );
     await settle();
-    expect([...host.querySelectorAll(".pmfa-msg-sender")].map((node) => node.textContent)).toEqual([
-      "Ada",
-      "+15550002",
-    ]);
+    expect(
+      [...host.querySelectorAll(".pmfa-msg-sender")].map(
+        (node) => node.textContent,
+      ),
+    ).toEqual(["Ada", "+15550002"]);
     click(byLabel("Show group info"));
     await act(async () => undefined);
     expect(host.querySelector("[data-pmfa=group-details]")).not.toBeNull();
-    expect(byLabel("Hide group info")?.getAttribute("aria-expanded")).toBe("true");
+    expect(byLabel("Hide group info")?.getAttribute("aria-expanded")).toBe(
+      "true",
+    );
   });
 });
 
@@ -330,8 +524,22 @@ describe("<MessageList/> quotes in groups", () => {
     const controller = new ConversationController({
       load: async () => ({
         messages: [
-          { id: "a", text: "Original", createdAt: 1, direction: "inbound", status: "sent", sender: { id: "5", name: "Linus" } },
-          { id: "b", text: "Reply", createdAt: 2, direction: "outbound", status: "sent", replyTo: "a" },
+          {
+            id: "a",
+            text: "Original",
+            createdAt: 1,
+            direction: "inbound",
+            status: "sent",
+            sender: { id: "5", name: "Linus" },
+          },
+          {
+            id: "b",
+            text: "Reply",
+            createdAt: 2,
+            direction: "outbound",
+            status: "sent",
+            replyTo: "a",
+          },
         ],
       }),
       subscribe: () => () => undefined,
@@ -364,7 +572,9 @@ describe("public contact lists", () => {
     expect(list.className).toMatch(/\bpmfa\b/);
     expect(list.getAttribute("aria-label")).toBe("Team");
     expect(document.getElementById("pmfa-component-styles")).not.toBeNull();
-    const rows = [...host.querySelectorAll<HTMLButtonElement>("[data-contact-id]")];
+    const rows = [
+      ...host.querySelectorAll<HTMLButtonElement>("[data-contact-id]"),
+    ];
     expect(rows[0]!.className).toContain("row");
     expect(rows[1]!.getAttribute("aria-checked")).toBe("true");
     expect(host.querySelectorAll(".meta")).toHaveLength(3);
@@ -374,11 +584,17 @@ describe("public contact lists", () => {
 
   it("ContactList loads, searches and selects", async () => {
     const onSelect = vi.fn();
-    await render(<ContactList contacts={contactSource()} onSelect={onSelect} />);
-    expect(host.querySelector("[data-pmfa=contact-list] h2")?.textContent).toBe("Contacts on WhatsApp");
+    await render(
+      <ContactList contacts={contactSource()} onSelect={onSelect} />,
+    );
+    expect(host.querySelector("[data-pmfa=contact-list] h2")?.textContent).toBe(
+      "Contacts on WhatsApp",
+    );
     type(host.querySelector<HTMLInputElement>("input[type=search]")!, "linus");
     expect(host.querySelectorAll("[data-contact-id]")).toHaveLength(1);
-    act(() => host.querySelector<HTMLButtonElement>("[data-contact-id='3']")!.click());
+    act(() =>
+      host.querySelector<HTMLButtonElement>("[data-contact-id='3']")!.click(),
+    );
     expect(onSelect).toHaveBeenCalledWith(contacts[2]);
   });
 });

@@ -158,7 +158,9 @@ export class CallsClient extends Emitter<ClientEvents> {
     this.#api =
       options.api ??
       new HttpCallsApi({
-        ...(options.clientTokenSession === undefined ? {} : { clientTokenSession: options.clientTokenSession }),
+        ...(options.clientTokenSession === undefined
+          ? {}
+          : { clientTokenSession: options.clientTokenSession }),
         token: credential!,
         ...(options.baseUrl === undefined ? {} : { baseUrl: options.baseUrl }),
         ...(options.fetch === undefined ? {} : { fetch: options.fetch }),

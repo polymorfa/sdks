@@ -44,7 +44,10 @@ export interface GroupSource {
   revokeInviteCode(groupId: string): Promise<string>;
   setting(groupId: string, change: GroupSettingChange): Promise<void>;
   leave(groupId: string): Promise<void>;
-  joinInfo?(code: string, signal?: AbortSignal): Promise<BrowserGroupInviteInfo>;
+  joinInfo?(
+    code: string,
+    signal?: AbortSignal,
+  ): Promise<BrowserGroupInviteInfo>;
   join?(code: string): Promise<void>;
 }
 
@@ -188,8 +191,17 @@ export class GroupController extends ObservableController<GroupSnapshot> {
 
   /** Leave the group. The conversation stays readable; sending stops. */
   async leave(): Promise<boolean> {
-    const ok = await this.#run("leave", () => this.source.leave(this.groupId), false);
-    if (ok) this.transition({ ...base(this.getSnapshot()), status: "left", done: "leave" });
+    const ok = await this.#run(
+      "leave",
+      () => this.source.leave(this.groupId),
+      false,
+    );
+    if (ok)
+      this.transition({
+        ...base(this.getSnapshot()),
+        status: "left",
+        done: "leave",
+      });
     return ok;
   }
 
@@ -215,8 +227,17 @@ export class GroupController extends ObservableController<GroupSnapshot> {
   ): Promise<boolean> {
     this.assertActive();
     const current = this.getSnapshot();
-    if (current.pending !== undefined || !this.canManage) return false;
-    const { error: _error, failed: _failed, done: _done, ...kept } = base(current);
+    if (
+      current.pending !== undefined ||
+      (!this.canManage && operation !== "inviteCode")
+    )
+      return false;
+    const {
+      error: _error,
+      failed: _failed,
+      done: _done,
+      ...kept
+    } = base(current);
     void _error;
     void _failed;
     void _done;

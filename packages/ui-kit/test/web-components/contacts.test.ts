@@ -38,7 +38,12 @@ function groupSource(): GroupSource {
     createdAt: 1_700_000_000,
     participants: [
       { id: "1", isAdmin: true, isSuperAdmin: false },
-      { id: "2", phoneNumber: "+15550002", isAdmin: false, isSuperAdmin: false },
+      {
+        id: "2",
+        phoneNumber: "+15550002",
+        isAdmin: false,
+        isSuperAdmin: false,
+      },
     ],
   };
   return {
@@ -67,7 +72,10 @@ function client(allow: readonly PolymorfaPermission[]) {
   });
 }
 
-function shadowButton(host: Element, text: string): HTMLButtonElement | undefined {
+function shadowButton(
+  host: Element,
+  text: string,
+): HTMLButtonElement | undefined {
   return [...host.shadowRoot!.querySelectorAll("button")].find((button) =>
     button.textContent?.includes(text),
   );
@@ -82,67 +90,106 @@ afterEach(() => {
 describe("<pmfa-new-chat>", () => {
   it("lists contacts, filters and fires pmfa-open", async () => {
     defineUiKit({ client: client([]) });
-    const element = document.createElement("pmfa-new-chat") as PolymorfaNewChatElement;
+    const element = document.createElement(
+      "pmfa-new-chat",
+    ) as PolymorfaNewChatElement;
     element.contacts = contactSource();
     const opened = vi.fn();
-    element.addEventListener("pmfa-open", (event) => opened((event as CustomEvent<InboxConversation>).detail));
+    element.addEventListener("pmfa-open", (event) =>
+      opened((event as CustomEvent<InboxConversation>).detail),
+    );
     document.body.append(element);
     await vi.waitFor(() =>
-      expect(element.shadowRoot!.querySelectorAll("[data-contact-id]")).toHaveLength(2),
+      expect(
+        element.shadowRoot!.querySelectorAll("[data-contact-id]"),
+      ).toHaveLength(2),
     );
-    const search = element.shadowRoot!.querySelector<HTMLInputElement>("input[type=search]")!;
+    const search =
+      element.shadowRoot!.querySelector<HTMLInputElement>(
+        "input[type=search]",
+      )!;
     search.value = "hopper";
     search.dispatchEvent(new Event("input"));
-    expect(element.shadowRoot!.querySelectorAll("[data-contact-id]")).toHaveLength(1);
-    element.shadowRoot!.querySelector<HTMLButtonElement>("[data-contact-id='2']")!.click();
-    expect(opened).toHaveBeenCalledWith(expect.objectContaining({ id: "2", kind: "direct" }));
+    expect(
+      element.shadowRoot!.querySelectorAll("[data-contact-id]"),
+    ).toHaveLength(1);
+    element
+      .shadowRoot!.querySelector<HTMLButtonElement>("[data-contact-id='2']")!
+      .click();
+    expect(opened).toHaveBeenCalledWith(
+      expect.objectContaining({ id: "2", kind: "direct" }),
+    );
     // The token grants no groups_manage and no groups source was given.
     expect(shadowButton(element, "New group")).toBeUndefined();
   });
 
   it("creates a group when the grant allows it, and honours no-groups", async () => {
     defineUiKit({ client: client(["read_contact", "groups_manage"]) });
-    const element = document.createElement("pmfa-new-chat") as PolymorfaNewChatElement;
+    const element = document.createElement(
+      "pmfa-new-chat",
+    ) as PolymorfaNewChatElement;
     element.contacts = contactSource();
     const groups = groupSource();
     element.groups = groups;
     const opened = vi.fn();
-    element.addEventListener("pmfa-open", (event) => opened((event as CustomEvent).detail));
+    element.addEventListener("pmfa-open", (event) =>
+      opened((event as CustomEvent).detail),
+    );
     document.body.append(element);
-    await vi.waitFor(() => expect(shadowButton(element, "New group")).toBeDefined());
+    await vi.waitFor(() =>
+      expect(shadowButton(element, "New group")).toBeDefined(),
+    );
     shadowButton(element, "New group")!.click();
-    const row = element.shadowRoot!.querySelector<HTMLButtonElement>("[data-contact-id='1']")!;
+    const row = element.shadowRoot!.querySelector<HTMLButtonElement>(
+      "[data-contact-id='1']",
+    )!;
     expect(row.getAttribute("role")).toBe("checkbox");
     row.click();
     expect(
-      element.shadowRoot!.querySelector("[data-contact-id='1']")!.getAttribute("aria-checked"),
+      element
+        .shadowRoot!.querySelector("[data-contact-id='1']")!
+        .getAttribute("aria-checked"),
     ).toBe("true");
     shadowButton(element, "Next")!.click();
-    const name = element.shadowRoot!.querySelector<HTMLInputElement>("input[required]")!;
+    const name =
+      element.shadowRoot!.querySelector<HTMLInputElement>("input[required]")!;
     name.value = "Book club";
     name.dispatchEvent(new Event("input"));
-    element.shadowRoot!.querySelector("form")!.dispatchEvent(new Event("submit", { cancelable: true }));
+    element
+      .shadowRoot!.querySelector("form")!
+      .dispatchEvent(new Event("submit", { cancelable: true }));
     await vi.waitFor(() =>
-      expect(opened).toHaveBeenCalledWith(expect.objectContaining({ id: "555", kind: "group" })),
+      expect(opened).toHaveBeenCalledWith(
+        expect.objectContaining({ id: "555", kind: "group" }),
+      ),
     );
-    expect(groups.create).toHaveBeenCalledWith({ name: "Book club", participants: ["1"] }, expect.any(AbortSignal));
+    expect(groups.create).toHaveBeenCalledWith(
+      { name: "Book club", participants: ["1"] },
+      expect.any(AbortSignal),
+    );
 
     element.setAttribute("no-groups", "");
     await vi.waitFor(() =>
-      expect(element.shadowRoot!.querySelectorAll("[data-contact-id]")).toHaveLength(2),
+      expect(
+        element.shadowRoot!.querySelectorAll("[data-contact-id]"),
+      ).toHaveLength(2),
     );
     expect(shadowButton(element, "New group")).toBeUndefined();
   });
 
   it("closes from its back button when closable", async () => {
     defineUiKit({ client: client([]) });
-    const element = document.createElement("pmfa-new-chat") as PolymorfaNewChatElement;
+    const element = document.createElement(
+      "pmfa-new-chat",
+    ) as PolymorfaNewChatElement;
     element.setAttribute("closable", "");
     element.contacts = contactSource();
     const closed = vi.fn();
     element.addEventListener("pmfa-close", closed);
     document.body.append(element);
-    element.shadowRoot!.querySelector<HTMLButtonElement>('[aria-label="Close"]')!.click();
+    element
+      .shadowRoot!.querySelector<HTMLButtonElement>('[aria-label="Close"]')!
+      .click();
     expect(closed).toHaveBeenCalledOnce();
   });
 });
@@ -150,27 +197,41 @@ describe("<pmfa-new-chat>", () => {
 describe("<pmfa-group-details>", () => {
   it("renders the roster and sends member changes through the source", async () => {
     defineUiKit({ client: client([]) });
-    const element = document.createElement("pmfa-group-details") as PolymorfaGroupDetailsElement;
+    const element = document.createElement(
+      "pmfa-group-details",
+    ) as PolymorfaGroupDetailsElement;
     const source = groupSource();
     element.source = source;
     element.setAttribute("group-id", "120363");
     element.setAttribute("self-id", "1");
     document.body.append(element);
-    await vi.waitFor(() => expect(element.shadowRoot!.textContent).toContain("Launch"));
-    const members = [...element.shadowRoot!.querySelectorAll(".pmfa-group-member")];
+    await vi.waitFor(() =>
+      expect(element.shadowRoot!.textContent).toContain("Launch"),
+    );
+    const members = [
+      ...element.shadowRoot!.querySelectorAll(".pmfa-group-member"),
+    ];
     expect(members[0]!.textContent).toContain("You");
     expect(members[0]!.querySelector("details")).toBeNull();
     shadowButton(element, "Make group admin")!.click();
     await vi.waitFor(() =>
-      expect(source.participants).toHaveBeenCalledWith("120363", "promote", ["2"]),
+      expect(source.participants).toHaveBeenCalledWith("120363", "promote", [
+        "2",
+      ]),
     );
     await vi.waitFor(() =>
-      expect(element.shadowRoot!.querySelector(".pmfa-group-status")?.textContent).toBe("Saved"),
+      expect(
+        element.shadowRoot!.querySelector(".pmfa-group-status")?.textContent,
+      ).toBe("Saved"),
     );
     shadowButton(element, "Exit group")!.click();
     const left = vi.fn();
     element.addEventListener("pmfa-left", left);
-    element.shadowRoot!.querySelector<HTMLButtonElement>("[role=alertdialog] .pmfa-btn-danger")!.click();
+    element
+      .shadowRoot!.querySelector<HTMLButtonElement>(
+        "[role=alertdialog] .pmfa-btn-danger",
+      )!
+      .click();
     await vi.waitFor(() => expect(left).toHaveBeenCalledOnce());
   });
 
@@ -178,13 +239,19 @@ describe("<pmfa-group-details>", () => {
     const api = client(["groups_read"]);
     await api.refresh();
     defineUiKit({ client: api });
-    const element = document.createElement("pmfa-group-details") as PolymorfaGroupDetailsElement;
+    const element = document.createElement(
+      "pmfa-group-details",
+    ) as PolymorfaGroupDetailsElement;
     // A controller supplied by the host decides what is offered.
     const { GroupController } = await import("@polymorfa/ui-kit/internal");
-    element.controller = new GroupController(groupSource(), "120363", { canManage: false });
+    element.controller = new GroupController(groupSource(), "120363", {
+      canManage: false,
+    });
     document.body.append(element);
     await vi.waitFor(() =>
-      expect(element.shadowRoot!.textContent).toContain("You can view this group but not change it."),
+      expect(element.shadowRoot!.textContent).toContain(
+        "You can view this group but not change it.",
+      ),
     );
     expect(shadowButton(element, "Exit group")).toBeUndefined();
   });
@@ -192,21 +259,127 @@ describe("<pmfa-group-details>", () => {
 
 describe("<pmfa-inbox> new chat and group info", () => {
   const rows: InboxConversation[] = [
-    { id: "120363", kind: "group", name: "Launch", lastActivity: 2, unreadCount: 0 },
+    {
+      id: "120363",
+      kind: "group",
+      name: "Launch",
+      lastActivity: 2,
+      unreadCount: 0,
+    },
   ];
   const inboxSource: InboxDataSource = {
     listConversations: async () => ({ conversations: rows }),
     conversation: () => ({
       load: async () => ({
         messages: [
-          { id: "m1", text: "Hi", createdAt: 1, direction: "inbound", status: "sent", sender: { id: "1", name: "Ada" } },
-          { id: "m2", text: "Again", createdAt: 2, direction: "inbound", status: "sent", sender: { id: "1", name: "Ada" } },
+          {
+            id: "m1",
+            text: "Hi",
+            createdAt: 1,
+            direction: "inbound",
+            status: "sent",
+            sender: { id: "1", name: "Ada" },
+          },
+          {
+            id: "m2",
+            text: "Again",
+            createdAt: 2,
+            direction: "inbound",
+            status: "sent",
+            sender: { id: "1", name: "Ada" },
+          },
         ],
       }),
       subscribe: () => () => undefined,
       send: vi.fn(),
     }),
   };
+
+  it.each(["new-chat", "call-log", "group-details"])(
+    "keeps the connected %s controller during inbox activity",
+    async (kind) => {
+      defineUiKit({
+        client: client([
+          "read_messages",
+          "read_contact",
+          "groups_read",
+          "groups_manage",
+        ]),
+      });
+      let changed!: Parameters<NonNullable<InboxDataSource["subscribe"]>>[0];
+      const inbox = document.createElement(
+        "pmfa-inbox",
+      ) as PolymorfaInboxElement;
+      inbox.source = {
+        ...inboxSource,
+        subscribe: (listener) => {
+          changed = listener;
+          return () => undefined;
+        },
+      };
+      inbox.contacts = contactSource();
+      inbox.groups = groupSource();
+      inbox.callLog = { list: async () => ({ entries: [] }) };
+      document.body.append(inbox);
+      await vi.waitFor(() =>
+        expect(
+          inbox.shadowRoot!.querySelector("[data-conversation-id='120363']"),
+        ).not.toBeNull(),
+      );
+      if (kind === "new-chat")
+        inbox
+          .shadowRoot!.querySelector<HTMLButtonElement>(
+            "[data-inbox-new-chat]",
+          )!
+          .click();
+      else if (kind === "call-log")
+        inbox
+          .shadowRoot!.querySelector<HTMLButtonElement>(
+            "[data-inbox-view='calls']",
+          )!
+          .click();
+      else {
+        inbox
+          .shadowRoot!.querySelector<HTMLButtonElement>(
+            "[data-conversation-id='120363']",
+          )!
+          .click();
+        inbox
+          .shadowRoot!.querySelector<HTMLButtonElement>("[data-group-info]")!
+          .click();
+      }
+      const selector = `pmfa-${kind}`;
+      const panel = inbox.shadowRoot!.querySelector(
+        selector,
+      ) as PolymorfaNewChatElement;
+      await vi.waitFor(() => expect(panel.controller).toBeDefined());
+      const owned = panel.controller!;
+      const dispose = vi.spyOn(
+        owned as typeof owned & { dispose(): void },
+        "dispose",
+      );
+      const search =
+        panel.shadowRoot!.querySelector<HTMLInputElement>("input[type=search]");
+      if (search !== null) {
+        search.value = "ada";
+        search.dispatchEvent(new Event("input"));
+      }
+      changed({
+        type: "conversation",
+        conversation: { ...rows[0]!, lastActivity: 3 },
+      });
+      expect(inbox.shadowRoot!.querySelector(selector)).toBe(panel);
+      expect(panel.isConnected).toBe(true);
+      expect(panel.controller).toBe(owned);
+      expect(dispose).not.toHaveBeenCalled();
+      if (search !== null)
+        expect(
+          panel.shadowRoot!.querySelector<HTMLInputElement>(
+            "input[type=search]",
+          )?.value,
+        ).toBe("ada");
+    },
+  );
 
   it("opens <pmfa-new-chat> and starts a draft thread", async () => {
     const api = client(["read_messages", "read_contact"]);
@@ -215,21 +388,35 @@ describe("<pmfa-inbox> new chat and group info", () => {
     inbox.source = inboxSource;
     inbox.contacts = contactSource();
     const selected = vi.fn();
-    inbox.addEventListener("pmfa-select", (event) => selected((event as CustomEvent).detail));
+    inbox.addEventListener("pmfa-select", (event) =>
+      selected((event as CustomEvent).detail),
+    );
     document.body.append(inbox);
     await vi.waitFor(() =>
-      expect(inbox.shadowRoot!.querySelector("[data-inbox-new-chat]")).not.toBeNull(),
+      expect(
+        inbox.shadowRoot!.querySelector("[data-inbox-new-chat]"),
+      ).not.toBeNull(),
     );
-    inbox.shadowRoot!.querySelector<HTMLButtonElement>("[data-inbox-new-chat]")!.click();
-    const panel = inbox.shadowRoot!.querySelector("pmfa-new-chat") as PolymorfaNewChatElement;
+    inbox
+      .shadowRoot!.querySelector<HTMLButtonElement>("[data-inbox-new-chat]")!
+      .click();
+    const panel = inbox.shadowRoot!.querySelector(
+      "pmfa-new-chat",
+    ) as PolymorfaNewChatElement;
     expect(panel).not.toBeNull();
     await vi.waitFor(() =>
-      expect(panel.shadowRoot!.querySelectorAll("[data-contact-id]")).toHaveLength(2),
+      expect(
+        panel.shadowRoot!.querySelectorAll("[data-contact-id]"),
+      ).toHaveLength(2),
     );
-    panel.shadowRoot!.querySelector<HTMLButtonElement>("[data-contact-id='1']")!.click();
+    panel
+      .shadowRoot!.querySelector<HTMLButtonElement>("[data-contact-id='1']")!
+      .click();
     expect(selected).toHaveBeenCalledWith(expect.objectContaining({ id: "1" }));
     expect(inbox.shadowRoot!.querySelector("pmfa-new-chat")).toBeNull();
-    expect(inbox.shadowRoot!.querySelector(".pmfa-thread-name")?.textContent).toBe("Ada Lovelace");
+    expect(
+      inbox.shadowRoot!.querySelector(".pmfa-thread-name")?.textContent,
+    ).toBe("Ada Lovelace");
   });
 
   it("shows group info beside a group thread", async () => {
@@ -239,45 +426,80 @@ describe("<pmfa-inbox> new chat and group info", () => {
     inbox.groups = groupSource();
     document.body.append(inbox);
     await vi.waitFor(() =>
-      expect(inbox.shadowRoot!.querySelector("[data-conversation-id='120363']")).not.toBeNull(),
+      expect(
+        inbox.shadowRoot!.querySelector("[data-conversation-id='120363']"),
+      ).not.toBeNull(),
     );
-    inbox.shadowRoot!.querySelector<HTMLButtonElement>("[data-conversation-id='120363']")!.click();
-    const toggle = inbox.shadowRoot!.querySelector<HTMLButtonElement>("[data-group-info]")!;
+    inbox
+      .shadowRoot!.querySelector<HTMLButtonElement>(
+        "[data-conversation-id='120363']",
+      )!
+      .click();
+    const toggle =
+      inbox.shadowRoot!.querySelector<HTMLButtonElement>("[data-group-info]")!;
     expect(toggle.getAttribute("aria-label")).toBe("Show group info");
     toggle.click();
-    const info = inbox.shadowRoot!.querySelector("pmfa-group-details") as PolymorfaGroupDetailsElement;
+    const info = inbox.shadowRoot!.querySelector(
+      "pmfa-group-details",
+    ) as PolymorfaGroupDetailsElement;
     expect(info.getAttribute("group-id")).toBe("120363");
-    await vi.waitFor(() => expect(info.shadowRoot!.textContent).toContain("2 members"));
-    expect(inbox.shadowRoot!.querySelector(".pmfa-inbox")!.hasAttribute("data-contact-open")).toBe(true);
+    await vi.waitFor(() =>
+      expect(info.shadowRoot!.textContent).toContain("2 members"),
+    );
+    expect(
+      inbox
+        .shadowRoot!.querySelector(".pmfa-inbox")!
+        .hasAttribute("data-contact-open"),
+    ).toBe(true);
     const list = inbox.shadowRoot!.querySelector("pmfa-message-list")!;
     await vi.waitFor(() =>
-      expect([...list.shadowRoot!.querySelectorAll(".pmfa-msg-sender")].map((node) => node.textContent)).toEqual([
-        "Ada",
-        "Ada",
-      ]),
+      expect(
+        [...list.shadowRoot!.querySelectorAll(".pmfa-msg-sender")].map(
+          (node) => node.textContent,
+        ),
+      ).toEqual(["Ada", "Ada"]),
     );
     // Only the run's first message shows the name; CSS hides the rest.
-    expect(list.shadowRoot!.querySelectorAll(".pmfa-msg-start .pmfa-msg-sender")).toHaveLength(1);
+    expect(
+      list.shadowRoot!.querySelectorAll(".pmfa-msg-start .pmfa-msg-sender"),
+    ).toHaveLength(1);
   });
 });
 
 describe("<pmfa-contact-list>", () => {
   it("lists, filters and fires pmfa-select with checkbox rows", async () => {
     defineUiKit({ client: client([]) });
-    const list = document.createElement("pmfa-contact-list") as PolymorfaContactListElement;
+    const list = document.createElement(
+      "pmfa-contact-list",
+    ) as PolymorfaContactListElement;
     list.contacts = contactSource();
     list.setAttribute("selectable", "");
     list.selectedIds = ["1"];
     const selected = vi.fn();
-    list.addEventListener("pmfa-select", (event) => selected((event as CustomEvent).detail));
+    list.addEventListener("pmfa-select", (event) =>
+      selected((event as CustomEvent).detail),
+    );
     document.body.append(list);
-    await vi.waitFor(() => expect(list.shadowRoot!.querySelectorAll("[data-contact-id]")).toHaveLength(2));
-    expect(list.shadowRoot!.querySelector("[data-contact-id='1']")!.getAttribute("aria-checked")).toBe("true");
-    const search = list.shadowRoot!.querySelector<HTMLInputElement>("input[type=search]")!;
+    await vi.waitFor(() =>
+      expect(
+        list.shadowRoot!.querySelectorAll("[data-contact-id]"),
+      ).toHaveLength(2),
+    );
+    expect(
+      list
+        .shadowRoot!.querySelector("[data-contact-id='1']")!
+        .getAttribute("aria-checked"),
+    ).toBe("true");
+    const search =
+      list.shadowRoot!.querySelector<HTMLInputElement>("input[type=search]")!;
     search.value = "grace";
     search.dispatchEvent(new Event("input"));
-    expect(list.shadowRoot!.querySelectorAll("[data-contact-id]")).toHaveLength(1);
-    list.shadowRoot!.querySelector<HTMLButtonElement>("[data-contact-id='2']")!.click();
+    expect(list.shadowRoot!.querySelectorAll("[data-contact-id]")).toHaveLength(
+      1,
+    );
+    list
+      .shadowRoot!.querySelector<HTMLButtonElement>("[data-contact-id='2']")!
+      .click();
     expect(selected).toHaveBeenCalledWith(contacts[1]);
   });
 });

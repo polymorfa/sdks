@@ -193,7 +193,8 @@ export const PT_BR_MESSAGES = {
   "group.copy": "Copiar",
   "group.copied": "Copiado",
   "group.settings": "Configurações do grupo",
-  "group.settingsNote": "O WhatsApp não informa a configuração atual. Escolher uma opção a aplica.",
+  "group.settingsNote":
+    "O WhatsApp não informa a configuração atual. Escolher uma opção a aplica.",
   "group.editInfo": "Editar dados do grupo",
   "group.sendMessages": "Enviar mensagens",
   "group.addOthers": "Adicionar outros membros",
@@ -203,7 +204,8 @@ export const PT_BR_MESSAGES = {
   "group.on": "Ativado",
   "group.off": "Desativado",
   "group.leave": "Sair do grupo",
-  "group.leaveConfirm": "Sair deste grupo? Você deixará de receber as mensagens dele.",
+  "group.leaveConfirm":
+    "Sair deste grupo? Você deixará de receber as mensagens dele.",
   "group.left": "Você saiu deste grupo.",
   "group.saved": "Salvo",
   "group.failed": "A alteração não foi concluída: {error}",

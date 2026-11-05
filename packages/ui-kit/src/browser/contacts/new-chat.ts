@@ -47,7 +47,9 @@ export function conversationForContact(
     ...(contact.phoneNumber === undefined
       ? {}
       : { phoneNumber: contact.phoneNumber }),
-    ...(contact.avatarUrl === undefined ? {} : { avatarUrl: contact.avatarUrl }),
+    ...(contact.avatarUrl === undefined
+      ? {}
+      : { avatarUrl: contact.avatarUrl }),
     lastActivity: 0,
     unreadCount: 0,
   };
@@ -80,7 +82,9 @@ export class NewChatController extends ObservableController<NewChatSnapshot> {
       { view: "contacts", selected: [], groupName: "", creating: false },
       options.now,
     );
-    this.#ownsDirectory = !(options.contacts instanceof ContactDirectoryController);
+    this.#ownsDirectory = !(
+      options.contacts instanceof ContactDirectoryController
+    );
     this.directory =
       options.contacts instanceof ContactDirectoryController
         ? options.contacts
@@ -141,16 +145,27 @@ export class NewChatController extends ObservableController<NewChatSnapshot> {
   back(): void {
     const { view } = this.getSnapshot();
     this.#create.abort();
-    if (view === "groupDetails") this.#set({ view: "groupMembers", creating: false });
+    if (view === "groupDetails")
+      this.#set({ view: "groupMembers", creating: false });
     else if (view === "groupMembers")
-      this.#set({ view: "contacts", selected: [], groupName: "", creating: false });
+      this.#set({
+        view: "contacts",
+        selected: [],
+        groupName: "",
+        creating: false,
+      });
   }
 
   /** Return to the contacts list and clear the search and any group draft. */
   reset(): void {
     this.#create.abort();
     this.directory.setQuery("");
-    this.#set({ view: "contacts", selected: [], groupName: "", creating: false });
+    this.#set({
+      view: "contacts",
+      selected: [],
+      groupName: "",
+      creating: false,
+    });
   }
 
   setGroupName(groupName: string): void {
@@ -178,7 +193,12 @@ export class NewChatController extends ObservableController<NewChatSnapshot> {
         abort.signal,
       );
       if (abort.signal.aborted) return undefined;
-      this.#set({ view: "contacts", selected: [], groupName: "", creating: false });
+      this.#set({
+        view: "contacts",
+        selected: [],
+        groupName: "",
+        creating: false,
+      });
       this.#onOpen?.(conversationForGroup(group));
       return group;
     } catch (cause) {
@@ -198,8 +218,12 @@ export class NewChatController extends ObservableController<NewChatSnapshot> {
 
   #set(fields: Partial<Omit<NewChatSnapshot, "revision" | "updatedAt">>): void {
     try {
-      const { revision: _r, updatedAt: _u, error: _e, ...current } =
-        this.getSnapshot();
+      const {
+        revision: _r,
+        updatedAt: _u,
+        error: _e,
+        ...current
+      } = this.getSnapshot();
       void _r;
       void _u;
       void _e;

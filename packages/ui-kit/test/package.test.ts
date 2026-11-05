@@ -77,6 +77,12 @@ describe("@polymorfa/ui-kit package", () => {
       expect.arrayContaining([
         "LICENSE",
         "README.md",
+        "docs/appearance.md",
+        "docs/browser.md",
+        "docs/devtools.md",
+        "docs/react.md",
+        "docs/store.md",
+        "docs/web-components.md",
         "dist/browser/index.js",
         "dist/browser/internal.js",
         "dist/react/index.js",

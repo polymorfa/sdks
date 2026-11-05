@@ -1000,11 +1000,15 @@ Read one number's calls with the other party's identity through
 The route requires the regional call-history API deployment; this source
 change does not make it available on a deployed API or package registry.
 
-```rust
+```rust,no_run
+# async fn read_call_history(messaging: &polymorfa_sdk::MessagingClient) -> polymorfa_sdk::Result<()> {
 let page = messaging.calls().list("support",
     &polymorfa_sdk::session_calls::ListSessionCallsParams {
         limit: Some(25), outcome: Some("missed".into()), ..Default::default()
     }, Default::default()).await?;
+# let _ = page;
+# Ok(())
+# }
 ```
 
 The response contains `data` and a nullable `nextCursor` (`Data` and

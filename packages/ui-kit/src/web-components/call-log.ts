@@ -75,7 +75,9 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
     const client = this.client;
     const source =
       this.#source ??
-      (client?.can("read_calls") === true ? createApiCallLogSource(client) : undefined);
+      (client?.can("read_calls") === true
+        ? createApiCallLogSource(client)
+        : undefined);
     if (source === undefined) return;
     this.#owned = new CallLogController(source);
     this.controller = this.#owned;
@@ -90,7 +92,9 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
   }
 
   #emit(type: string, detail: unknown): void {
-    this.dispatchEvent(new CustomEvent(type, { detail, bubbles: true, composed: true }));
+    this.dispatchEvent(
+      new CustomEvent(type, { detail, bubbles: true, composed: true }),
+    );
   }
 
   #summary(entry: CallLogEntry): string {
@@ -117,15 +121,20 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
     return [
       `${this.text(kind)} ${this.text(entry.video ? "callLog.video" : "callLog.voice")}`,
       when,
-      entry.outcome === "answered" && entry.durationSeconds !== undefined ? duration(entry.durationSeconds) : "",
+      entry.outcome === "answered" && entry.durationSeconds !== undefined
+        ? duration(entry.durationSeconds)
+        : "",
     ]
       .filter((part) => part !== "")
       .join(" · ");
   }
 
-  protected renderContent(snapshot: CallLogSnapshot | undefined): readonly Node[] {
+  protected renderContent(
+    snapshot: CallLogSnapshot | undefined,
+  ): readonly Node[] {
     const controller = this.configuredController<CallLogController>();
-    const focused = (this.root.activeElement as HTMLElement | null)?.dataset.focusKey;
+    const focused = (this.root.activeElement as HTMLElement | null)?.dataset
+      .focusKey;
     const root = this.decorate(element("section"), "callLog");
     root.className = this.rootClass("pmfa-inbox-list pmfa-call-log");
     root.setAttribute("aria-labelledby", "pmfa-call-log-title");
@@ -148,13 +157,19 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
       button.type = "button";
       button.dataset.focusKey = `filter:${filter}`;
       button.setAttribute("aria-pressed", String(snapshot?.filter === filter));
-      button.textContent = this.text(filter === "all" ? "callLog.all" : "callLog.missed");
+      button.textContent = this.text(
+        filter === "all" ? "callLog.all" : "callLog.missed",
+      );
       button.addEventListener("click", () => controller?.setFilter(filter));
       filters.append(button);
     }
     head.append(heading, filters);
     root.append(head);
-    if (snapshot === undefined || snapshot.status === "idle" || snapshot.status === "loading") {
+    if (
+      snapshot === undefined ||
+      snapshot.status === "idle" ||
+      snapshot.status === "loading"
+    ) {
       const state = textElement("p", this.text("callLog.loading"));
       state.className = "pmfa-newchat-state";
       state.setAttribute("role", "status");
@@ -170,8 +185,13 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
       retry.addEventListener("click", () => void controller?.load());
       state.append(textElement("p", this.text("callLog.loadError")), retry);
       root.append(state);
-    } else if (snapshot.groups.length === 0) {
-      const state = textElement("p", this.text(snapshot.filter === "missed" ? "callLog.noMissed" : "callLog.empty"));
+    } else if (snapshot.groups.length === 0 && !snapshot.hasMore) {
+      const state = textElement(
+        "p",
+        this.text(
+          snapshot.filter === "missed" ? "callLog.noMissed" : "callLog.empty",
+        ),
+      );
       state.className = "pmfa-newchat-state";
       root.append(state);
     } else {
@@ -179,15 +199,24 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
       list.className = "pmfa-call-rows";
       list.setAttribute("aria-label", this.text("callLog.title"));
       list.addEventListener("keydown", (event) => {
-        if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
-        const rows = Array.from(list.querySelectorAll<HTMLButtonElement>("button[data-call-id]"));
+        if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key))
+          return;
+        const rows = Array.from(
+          list.querySelectorAll<HTMLButtonElement>("button[data-call-id]"),
+        );
         const index = rows.indexOf(event.target as HTMLButtonElement);
         if (index < 0) return;
         event.preventDefault();
-        const target = event.key === "Home" ? 0 : event.key === "End" ? rows.length - 1 : index + (event.key === "ArrowDown" ? 1 : -1);
+        const target =
+          event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? rows.length - 1
+              : index + (event.key === "ArrowDown" ? 1 : -1);
         rows[Math.max(0, Math.min(rows.length - 1, target))]?.focus();
       });
-      for (const group of snapshot.groups) list.append(this.#row(group.latest, group.entries.length));
+      for (const group of snapshot.groups)
+        list.append(this.#row(group.latest, group.entries.length));
       if (snapshot.hasMore) {
         const more = document.createElement("button");
         more.type = "button";
@@ -204,13 +233,18 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
     }
     if (focused !== undefined)
       queueMicrotask(() =>
-        this.root.querySelector<HTMLElement>(`[data-focus-key="${CSS.escape(focused)}"]`)?.focus({ preventScroll: true }),
+        this.root
+          .querySelector<HTMLElement>(
+            `[data-focus-key="${CSS.escape(focused)}"]`,
+          )
+          ?.focus({ preventScroll: true }),
       );
     return [root];
   }
 
   #row(entry: CallLogEntry, count: number): HTMLElement {
-    const name = entry.peer.name ?? entry.peer.phoneNumber ?? entry.peer.id ?? "?";
+    const name =
+      entry.peer.name ?? entry.peer.phoneNumber ?? entry.peer.id ?? "?";
     const missed = entry.outcome === "missed" && entry.direction === "inbound";
     const item = element("li");
     item.className = "pmfa-call-entry";
@@ -220,7 +254,10 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
     row.dataset.callId = entry.id;
     row.dataset.focusKey = `call:${entry.id}`;
     const summary = this.#summary(entry);
-    const countText = count > 1 ? ` ${this.text("callLog.count", { count: String(count) })}` : "";
+    const countText =
+      count > 1
+        ? ` ${this.text("callLog.count", { count: String(count) })}`
+        : "";
     row.setAttribute("aria-label", `${name}${countText}, ${summary}`);
     const conversation: InboxConversation | undefined =
       entry.conversationId === undefined
@@ -230,7 +267,9 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
             kind: "direct",
             ...(entry.session === undefined ? {} : { session: entry.session }),
             ...(entry.peer.name === undefined ? {} : { name: entry.peer.name }),
-            ...(entry.peer.phoneNumber === undefined ? {} : { phoneNumber: entry.peer.phoneNumber }),
+            ...(entry.peer.phoneNumber === undefined
+              ? {}
+              : { phoneNumber: entry.peer.phoneNumber }),
             lastActivity: 0,
             unreadCount: 0,
           };
@@ -241,7 +280,10 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
     const avatar = this.decorate(element("span"), "avatar");
     avatar.className = "pmfa-avatar";
     avatar.setAttribute("aria-hidden", "true");
-    avatar.style.setProperty("--pmfa-avatar-hue", String(hue(entry.peer.id ?? entry.id)));
+    avatar.style.setProperty(
+      "--pmfa-avatar-hue",
+      String(hue(entry.peer.id ?? entry.id)),
+    );
     avatar.textContent = initials(name);
     const text = element("span");
     text.className = "pmfa-person-text";
@@ -254,18 +296,26 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
     }
     const sub = element("span");
     sub.className = "pmfa-person-sub pmfa-call-sub";
-    const direction = icon(entry.direction === "inbound" ? "callIn" : "callOut");
+    const direction = icon(
+      entry.direction === "inbound" ? "callIn" : "callOut",
+    );
     direction.classList.add("pmfa-call-dir");
     sub.append(direction, document.createTextNode(summary));
     text.append(nameNode, sub);
     row.append(avatar, text);
     item.append(row);
-    if (entry.peer.phoneNumber !== undefined && !this.hasAttribute("no-call-back")) {
+    if (
+      entry.peer.phoneNumber !== undefined &&
+      !this.hasAttribute("no-call-back")
+    ) {
       const back = document.createElement("button");
       back.type = "button";
       back.className = "pmfa-btn pmfa-btn-ghost pmfa-btn-icon pmfa-call-back";
       back.dataset.focusKey = `back:${entry.id}`;
-      const label = this.text(entry.video ? "callLog.videoBack" : "callLog.callBack", { name });
+      const label = this.text(
+        entry.video ? "callLog.videoBack" : "callLog.callBack",
+        { name },
+      );
       back.setAttribute("aria-label", label);
       back.title = label;
       back.append(icon(entry.video ? "video" : "phone"));

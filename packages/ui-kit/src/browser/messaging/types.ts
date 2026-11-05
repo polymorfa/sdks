@@ -305,7 +305,8 @@ export interface BrowserCallRecord {
   readonly sessionId: string;
   readonly direction: "inbound" | "outbound";
   readonly upstream: "linked_device" | "cloud_api";
-  readonly outcome: "answered" | "missed" | "declined" | "failed" | "in_progress";
+  readonly outcome:
+    "answered" | "missed" | "declined" | "failed" | "in_progress";
   readonly state: "offered" | "accepted" | "rejected" | "missed" | "ended";
   readonly hasVideo: boolean;
   /** Null when the call did not report the other party. */

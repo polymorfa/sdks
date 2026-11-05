@@ -1,4 +1,10 @@
-import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import {
   CallLogController,
   createApiCallLogSource,
@@ -82,14 +88,18 @@ export function callSummary(
 }
 
 /** The conversation a call log row opens. */
-export function conversationForCall(entry: CallLogEntry): InboxConversation | undefined {
+export function conversationForCall(
+  entry: CallLogEntry,
+): InboxConversation | undefined {
   if (entry.conversationId === undefined) return undefined;
   return {
     id: entry.conversationId,
     kind: "direct",
     ...(entry.session === undefined ? {} : { session: entry.session }),
     ...(entry.peer.name === undefined ? {} : { name: entry.peer.name }),
-    ...(entry.peer.phoneNumber === undefined ? {} : { phoneNumber: entry.peer.phoneNumber }),
+    ...(entry.peer.phoneNumber === undefined
+      ? {}
+      : { phoneNumber: entry.peer.phoneNumber }),
     lastActivity: 0,
     unreadCount: 0,
   };
@@ -145,15 +155,30 @@ export function CallLog({
   }, [log]);
   const configuration = usePolymorfa();
   const slots = useSlots(classNames);
-  const root = useShell(slots, "callLog", "pmfa-inbox-list pmfa-call-log", className);
+  const root = useShell(
+    slots,
+    "callLog",
+    "pmfa-inbox-list pmfa-call-log",
+    className,
+  );
   const headingId = useId();
   const listRef = useRef<HTMLUListElement>(null);
   const canCall = client !== undefined && permissions.can("voip_place");
   function move(event: KeyboardEvent<HTMLButtonElement>, index: number) {
-    const rows = listRef.current?.querySelectorAll<HTMLButtonElement>("button[data-call-id]");
+    const rows = listRef.current?.querySelectorAll<HTMLButtonElement>(
+      "button[data-call-id]",
+    );
     if (rows === undefined) return;
     const target =
-      event.key === "ArrowDown" ? index + 1 : event.key === "ArrowUp" ? index - 1 : event.key === "Home" ? 0 : event.key === "End" ? rows.length - 1 : undefined;
+      event.key === "ArrowDown"
+        ? index + 1
+        : event.key === "ArrowUp"
+          ? index - 1
+          : event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? rows.length - 1
+              : undefined;
     if (target === undefined) return;
     event.preventDefault();
     rows[Math.max(0, Math.min(target, rows.length - 1))]?.focus();
@@ -167,7 +192,11 @@ export function CallLog({
           </h2>
           {headerActions}
         </div>
-        <div className="pmfa-inbox-filters" role="group" aria-label={text(configuration, "callLog.filters")}>
+        <div
+          className="pmfa-inbox-filters"
+          role="group"
+          aria-label={text(configuration, "callLog.filters")}
+        >
           {(["all", "missed"] as const).map((filter) => (
             <button
               key={filter}
@@ -175,26 +204,42 @@ export function CallLog({
               aria-pressed={snapshot.filter === filter}
               onClick={() => log.setFilter(filter)}
             >
-              {text(configuration, filter === "all" ? "callLog.all" : "callLog.missed")}
+              {text(
+                configuration,
+                filter === "all" ? "callLog.all" : "callLog.missed",
+              )}
             </button>
           ))}
         </div>
       </div>
       {snapshot.status === "idle" || snapshot.status === "loading" ? (
-        <p className="pmfa-newchat-state" role="status">{text(configuration, "callLog.loading")}</p>
+        <p className="pmfa-newchat-state" role="status">
+          {text(configuration, "callLog.loading")}
+        </p>
       ) : snapshot.status === "error" ? (
         <div className="pmfa-newchat-state" role="alert">
           <p>{text(configuration, "callLog.loadError")}</p>
-          <button type="button" className="pmfa-btn" onClick={() => void log.load()}>
+          <button
+            type="button"
+            className="pmfa-btn"
+            onClick={() => void log.load()}
+          >
             {text(configuration, "common.retry")}
           </button>
         </div>
-      ) : snapshot.groups.length === 0 ? (
+      ) : snapshot.groups.length === 0 && !snapshot.hasMore ? (
         <p className="pmfa-newchat-state">
-          {text(configuration, snapshot.filter === "missed" ? "callLog.noMissed" : "callLog.empty")}
+          {text(
+            configuration,
+            snapshot.filter === "missed" ? "callLog.noMissed" : "callLog.empty",
+          )}
         </p>
       ) : (
-        <ul {...slots("callLog", "pmfa-call-rows")} ref={listRef} aria-label={text(configuration, "callLog.title")}>
+        <ul
+          {...slots("callLog", "pmfa-call-rows")}
+          ref={listRef}
+          aria-label={text(configuration, "callLog.title")}
+        >
           {snapshot.groups.map((group, index) => (
             <CallRow
               key={group.key}
@@ -209,7 +254,12 @@ export function CallLog({
           ))}
           {snapshot.hasMore && (
             <li>
-              <button type="button" className="pmfa-btn pmfa-btn-ghost pmfa-call-more" disabled={snapshot.status === "loading_more"} onClick={() => void log.loadMore()}>
+              <button
+                type="button"
+                className="pmfa-btn pmfa-btn-ghost pmfa-call-more"
+                disabled={snapshot.status === "loading_more"}
+                onClick={() => void log.loadMore()}
+              >
                 {text(configuration, "callLog.loadMore")}
               </button>
             </li>
@@ -243,12 +293,19 @@ function CallRow({
   const conversation = conversationForCall(entry);
   const count = group.entries.length;
   const summary = callSummary(configuration, entry);
-  const back = text(configuration, entry.video ? "callLog.videoBack" : "callLog.callBack", { name });
+  const back = text(
+    configuration,
+    entry.video ? "callLog.videoBack" : "callLog.callBack",
+    { name },
+  );
   return (
     <li className="pmfa-call-entry">
       <button
         type="button"
-        {...slots("callLogItem", `pmfa-person pmfa-call${missed ? " pmfa-call-missed" : ""}`)}
+        {...slots(
+          "callLogItem",
+          `pmfa-person pmfa-call${missed ? " pmfa-call-missed" : ""}`,
+        )}
         data-call-id={entry.id}
         disabled={conversation === undefined || onOpen === undefined}
         aria-label={`${name}${count > 1 ? ` ${text(configuration, "callLog.count", { count: String(count) })}` : ""}, ${summary}`}
@@ -259,22 +316,40 @@ function CallRow({
         <span className="pmfa-person-text">
           <span className="pmfa-person-name">
             {name}
-            {count > 1 && <span className="pmfa-call-count"> {text(configuration, "callLog.count", { count: String(count) })}</span>}
+            {count > 1 && (
+              <span className="pmfa-call-count">
+                {" "}
+                {text(configuration, "callLog.count", { count: String(count) })}
+              </span>
+            )}
           </span>
           <span className="pmfa-person-sub pmfa-call-sub">
-            <Icon name={entry.direction === "inbound" ? "callIn" : "callOut"} className="pmfa-icon pmfa-call-dir" />
+            <Icon
+              name={entry.direction === "inbound" ? "callIn" : "callOut"}
+              className="pmfa-icon pmfa-call-dir"
+            />
             {summary}
           </span>
         </span>
       </button>
       {entry.peer.phoneNumber !== undefined &&
         (onCall !== undefined ? (
-          <button type="button" className="pmfa-btn pmfa-btn-ghost pmfa-btn-icon pmfa-call-back" aria-label={back} title={back} onClick={() => onCall(entry)}>
+          <button
+            type="button"
+            className="pmfa-btn pmfa-btn-ghost pmfa-btn-icon pmfa-call-back"
+            aria-label={back}
+            title={back}
+            onClick={() => onCall(entry)}
+          >
             <Icon name={entry.video ? "video" : "phone"} />
           </button>
         ) : canCall ? (
           <span className="pmfa-call-back">
-            <CallButton to={entry.peer.phoneNumber} video={entry.video} variant="icon" />
+            <CallButton
+              to={entry.peer.phoneNumber}
+              video={entry.video}
+              variant="icon"
+            />
           </span>
         ) : null)}
     </li>

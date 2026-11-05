@@ -537,8 +537,8 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
         session: grant.session,
         // Wrapper-only permissions stay on this handler. An empty API action
         // set is an explicit zero ceiling, never omission/follow-live-rules.
-        allow: grant.allow.filter(
-          (action) => CUSTOMER_TOKEN_ACTIONS.has(action),
+        allow: grant.allow.filter((action) =>
+          CUSTOMER_TOKEN_ACTIONS.has(action),
         ),
         ephemeralId: grant.ephemeralId,
         ttlSeconds: grant.ttlSeconds,
@@ -550,9 +550,7 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
         CUSTOMER_TOKEN_ACTIONS.has(action),
       );
       if (allow.length === 0)
-        throw new TypeError(
-          "A customer grant needs at least one API action.",
-        );
+        throw new TypeError("A customer grant needs at least one API action.");
       body = {
         customer: grant.customer!,
         allow,

@@ -35,7 +35,11 @@ React-only for now.
 
 ```html
 <pmfa-new-chat closable></pmfa-new-chat>
-<pmfa-group-details group-id="120363012345678901" self-id="447700900123" closable></pmfa-group-details>
+<pmfa-group-details
+  group-id="120363012345678901"
+  self-id="447700900123"
+  closable
+></pmfa-group-details>
 <script type="module">
   const chat = document.querySelector("pmfa-new-chat");
   chat.addEventListener("pmfa-open", (event) => openConversation(event.detail));
@@ -61,7 +65,11 @@ list on its own and fires `pmfa-select`.
 Vue binds the events with `@pmfa-open`:
 
 ```vue
-<pmfa-new-chat closable @pmfa-open="open($event.detail)" @pmfa-close="closed = true" />
+<pmfa-new-chat
+  closable
+  @pmfa-open="open($event.detail)"
+  @pmfa-close="closed = true"
+/>
 ```
 
 Svelte 5 uses `onpmfa-open`:

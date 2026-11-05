@@ -251,26 +251,70 @@ export class BrowserContactsResource {
   }
 
   /** Block a contact (`contacts_manage`). */
-  block(contactId: string, options: BrowserActionOptions = {}): Promise<BrowserActionResponse<BrowserSuccessResponse>> {
-    return this.transport.request({ method: "POST", path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/block`, ...options });
+  block(
+    contactId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<BrowserActionResponse<BrowserSuccessResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/block`,
+      ...options,
+    });
   }
 
-  unblock(contactId: string, options: BrowserActionOptions = {}): Promise<BrowserActionResponse<BrowserSuccessResponse>> {
-    return this.transport.request({ method: "POST", path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/unblock`, ...options });
+  unblock(
+    contactId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<BrowserActionResponse<BrowserSuccessResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/unblock`,
+      ...options,
+    });
   }
 
   /** Blocked contacts (`read_contact`). */
-  blocked(options: BrowserActionOptions = {}): Promise<BrowserActionResponse<BrowserSuccessEnvelope<readonly BrowserContact[]>>> {
-    return this.transport.request({ method: "GET", path: `${sessionRoot(this.session)}/contacts/blocked`, ...options });
+  blocked(
+    options: BrowserActionOptions = {},
+  ): Promise<
+    BrowserActionResponse<BrowserSuccessEnvelope<readonly BrowserContact[]>>
+  > {
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionRoot(this.session)}/contacts/blocked`,
+      ...options,
+    });
   }
 
   /** The contact's About text and account details (`read_contact`). */
-  info(contactId: string, options: BrowserActionOptions = {}): Promise<BrowserActionResponse<BrowserSuccessEnvelope<Readonly<Record<string, unknown>>>>> {
-    return this.transport.request({ method: "GET", path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/info`, ...options });
+  info(
+    contactId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<
+    BrowserActionResponse<
+      BrowserSuccessEnvelope<Readonly<Record<string, unknown>>>
+    >
+  > {
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/info`,
+      ...options,
+    });
   }
 
-  businessProfile(contactId: string, options: BrowserActionOptions = {}): Promise<BrowserActionResponse<BrowserSuccessEnvelope<Readonly<Record<string, unknown>>>>> {
-    return this.transport.request({ method: "GET", path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/business-profile`, ...options });
+  businessProfile(
+    contactId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<
+    BrowserActionResponse<
+      BrowserSuccessEnvelope<Readonly<Record<string, unknown>>>
+    >
+  > {
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/business-profile`,
+      ...options,
+    });
   }
 
   check(
@@ -310,11 +354,22 @@ export class BrowserCallsResource {
   ): Promise<BrowserActionResponse<BrowserCallPage>> {
     if (
       params.limit !== undefined &&
-      (!Number.isInteger(params.limit) || params.limit < 1 || params.limit > 100)
+      (!Number.isInteger(params.limit) ||
+        params.limit < 1 ||
+        params.limit > 100)
     )
-      throw new BrowserValidationError("limit must be 1 to 100.", "invalid_limit");
+      throw new BrowserValidationError(
+        "limit must be 1 to 100.",
+        "invalid_limit",
+      );
     const query: Record<string, string> = {};
-    for (const key of ["cursor", "direction", "outcome", "since", "until"] as const) {
+    for (const key of [
+      "cursor",
+      "direction",
+      "outcome",
+      "since",
+      "until",
+    ] as const) {
       const value = params[key];
       if (value !== undefined) query[key] = value;
     }
@@ -342,11 +397,16 @@ export class BrowserGroupsResource {
     private readonly session: string,
   ) {}
 
-  list(options: BrowserActionOptions = {}): Promise<Envelope<readonly BrowserGroup[]>> {
+  list(
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<readonly BrowserGroup[]>> {
     return this.call("GET", "", undefined, options);
   }
 
-  retrieve(groupId: string, options: BrowserActionOptions = {}): Promise<Envelope<BrowserGroup>> {
+  retrieve(
+    groupId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserGroup>> {
     return this.call("GET", this.group(groupId), undefined, options);
   }
 
@@ -354,14 +414,30 @@ export class BrowserGroupsResource {
     groupId: string,
     options: BrowserActionOptions = {},
   ): Promise<Envelope<readonly BrowserGroupParticipant[]>> {
-    return this.call("GET", `${this.group(groupId)}/participants`, undefined, options);
+    return this.call(
+      "GET",
+      `${this.group(groupId)}/participants`,
+      undefined,
+      options,
+    );
   }
 
-  inviteCode(groupId: string, options: BrowserActionOptions = {}): Promise<Envelope<BrowserGroupInviteCode>> {
-    return this.call("GET", `${this.group(groupId)}/invite-code`, undefined, options);
+  inviteCode(
+    groupId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserGroupInviteCode>> {
+    return this.call(
+      "GET",
+      `${this.group(groupId)}/invite-code`,
+      undefined,
+      options,
+    );
   }
 
-  joinInfo(code: string, options: BrowserActionOptions = {}): Promise<Envelope<BrowserGroupInviteInfo>> {
+  joinInfo(
+    code: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserGroupInviteInfo>> {
     requireText(code, "An invite code is required.", "missing_invite_code");
     return this.transport.request({
       method: "GET",
@@ -371,8 +447,15 @@ export class BrowserGroupsResource {
     });
   }
 
-  create(body: BrowserCreateGroupRequest, options: BrowserActionOptions = {}): Promise<Envelope<BrowserGroup>> {
-    requireText(body.name.trim(), "A group name is required.", "missing_group_name");
+  create(
+    body: BrowserCreateGroupRequest,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserGroup>> {
+    requireText(
+      body.name.trim(),
+      "A group name is required.",
+      "missing_group_name",
+    );
     requireIds(body.participants);
     return this.call("POST", "", body, withIdempotencyKey(options));
   }
@@ -383,60 +466,156 @@ export class BrowserGroupsResource {
   }
 
   leave(groupId: string, options: BrowserActionOptions = {}): Promise<Done> {
-    return this.call("POST", `${this.group(groupId)}/leave`, undefined, options);
+    return this.call(
+      "POST",
+      `${this.group(groupId)}/leave`,
+      undefined,
+      options,
+    );
   }
 
-  setSubject(groupId: string, value: string, options: BrowserActionOptions = {}): Promise<Done> {
-    requireText(value.trim(), "A group name is required.", "missing_group_name");
-    return this.call("PUT", `${this.group(groupId)}/subject`, { value }, options);
+  setSubject(
+    groupId: string,
+    value: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    requireText(
+      value.trim(),
+      "A group name is required.",
+      "missing_group_name",
+    );
+    return this.call(
+      "PUT",
+      `${this.group(groupId)}/subject`,
+      { value },
+      options,
+    );
   }
 
-  setDescription(groupId: string, value: string, options: BrowserActionOptions = {}): Promise<Done> {
-    return this.call("PUT", `${this.group(groupId)}/description`, { value }, options);
+  setDescription(
+    groupId: string,
+    value: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "PUT",
+      `${this.group(groupId)}/description`,
+      { value },
+      options,
+    );
   }
 
-  revokeInviteCode(groupId: string, options: BrowserActionOptions = {}): Promise<Envelope<BrowserGroupInviteCode>> {
-    return this.call("POST", `${this.group(groupId)}/invite-code/revoke`, undefined, options);
+  revokeInviteCode(
+    groupId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserGroupInviteCode>> {
+    return this.call(
+      "POST",
+      `${this.group(groupId)}/invite-code/revoke`,
+      undefined,
+      options,
+    );
   }
 
-  addParticipants(groupId: string, participants: readonly string[], options: BrowserActionOptions = {}): Promise<Done> {
+  addParticipants(
+    groupId: string,
+    participants: readonly string[],
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
     return this.members(groupId, "participants/add", participants, options);
   }
 
-  removeParticipants(groupId: string, participants: readonly string[], options: BrowserActionOptions = {}): Promise<Done> {
+  removeParticipants(
+    groupId: string,
+    participants: readonly string[],
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
     return this.members(groupId, "participants/remove", participants, options);
   }
 
-  promote(groupId: string, participants: readonly string[], options: BrowserActionOptions = {}): Promise<Done> {
+  promote(
+    groupId: string,
+    participants: readonly string[],
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
     return this.members(groupId, "admin/promote", participants, options);
   }
 
-  demote(groupId: string, participants: readonly string[], options: BrowserActionOptions = {}): Promise<Done> {
+  demote(
+    groupId: string,
+    participants: readonly string[],
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
     return this.members(groupId, "admin/demote", participants, options);
   }
 
   /** Base64 image bytes; client tokens cannot pass a URL. */
-  setPicture(groupId: string, base64: string, options: BrowserActionOptions = {}): Promise<Done> {
+  setPicture(
+    groupId: string,
+    base64: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
     requireText(base64, "base64 is required.", "missing_picture");
-    return this.call("PUT", `${this.group(groupId)}/picture`, { base64 }, options);
+    return this.call(
+      "PUT",
+      `${this.group(groupId)}/picture`,
+      { base64 },
+      options,
+    );
   }
 
   /** Only admins may edit the group name, description and picture. */
-  setInfoEditing(groupId: string, adminsOnly: boolean, options: BrowserActionOptions = {}): Promise<Done> {
-    return this.call("PUT", `${this.group(groupId)}/settings/info-edit`, { adminsOnly }, options);
+  setInfoEditing(
+    groupId: string,
+    adminsOnly: boolean,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "PUT",
+      `${this.group(groupId)}/settings/info-edit`,
+      { adminsOnly },
+      options,
+    );
   }
 
   /** Only admins may send messages. */
-  setMessaging(groupId: string, adminsOnly: boolean, options: BrowserActionOptions = {}): Promise<Done> {
-    return this.call("PUT", `${this.group(groupId)}/settings/messages`, { adminsOnly }, options);
+  setMessaging(
+    groupId: string,
+    adminsOnly: boolean,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "PUT",
+      `${this.group(groupId)}/settings/messages`,
+      { adminsOnly },
+      options,
+    );
   }
 
-  setMemberAddMode(groupId: string, mode: BrowserGroupMemberAddMode, options: BrowserActionOptions = {}): Promise<Done> {
-    return this.call("PUT", `${this.group(groupId)}/settings/member-add`, { mode }, options);
+  setMemberAddMode(
+    groupId: string,
+    mode: BrowserGroupMemberAddMode,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "PUT",
+      `${this.group(groupId)}/settings/member-add`,
+      { mode },
+      options,
+    );
   }
 
-  setJoinApproval(groupId: string, required: boolean, options: BrowserActionOptions = {}): Promise<Done> {
-    return this.call("PUT", `${this.group(groupId)}/settings/join-approval`, { required }, options);
+  setJoinApproval(
+    groupId: string,
+    required: boolean,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "PUT",
+      `${this.group(groupId)}/settings/join-approval`,
+      { required },
+      options,
+    );
   }
 
   private members(
@@ -446,12 +625,20 @@ export class BrowserGroupsResource {
     options: BrowserActionOptions,
   ): Promise<Done> {
     requireIds(participants);
-    return this.call("POST", `${this.group(groupId)}/${action}`, { participants }, options);
+    return this.call(
+      "POST",
+      `${this.group(groupId)}/${action}`,
+      { participants },
+      options,
+    );
   }
 
   private group(groupId: string): string {
     if (!/^[1-9][0-9]{0,18}$/.test(groupId))
-      throw new BrowserValidationError("Group IDs are decimal strings.", "invalid_group_id");
+      throw new BrowserValidationError(
+        "Group IDs are decimal strings.",
+        "invalid_group_id",
+      );
     return `/${groupId}`;
   }
 
@@ -475,7 +662,11 @@ function requireText(value: string, message: string, code: string): void {
 }
 
 function requireIds(ids: readonly string[]): void {
-  if (ids.length === 0 || ids.length > 256 || ids.some((id) => !/^[1-9][0-9]{0,18}$/.test(id)))
+  if (
+    ids.length === 0 ||
+    ids.length > 256 ||
+    ids.some((id) => !/^[1-9][0-9]{0,18}$/.test(id))
+  )
     throw new BrowserValidationError(
       "Pass 1 to 256 participant user IDs.",
       "invalid_participants",

@@ -379,8 +379,11 @@ function withSessionQuery(
   session: string,
 ): BrowserTransport {
   return new Proxy(transport, {
-    get(target, property, receiver) {
-      if (property !== "request") return Reflect.get(target, property, receiver);
+    get(target, property) {
+      if (property !== "request") {
+        const value = Reflect.get(target, property, target);
+        return typeof value === "function" ? value.bind(target) : value;
+      }
       return (request: Parameters<BrowserTransport["request"]>[0]) =>
         target.request({
           ...request,

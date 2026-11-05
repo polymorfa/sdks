@@ -988,7 +988,10 @@ export function Inbox({
             setComposing(false);
           }}
         >
-          {text(configuration, value === "chats" ? "inbox.chats" : "inbox.calls")}
+          {text(
+            configuration,
+            value === "chats" ? "inbox.chats" : "inbox.calls",
+          )}
         </button>
       ))}
     </div>
@@ -1083,7 +1086,9 @@ export function Inbox({
           controller={inbox}
           {...(title === undefined ? {} : { title })}
           {...(classNames === undefined ? {} : { classNames })}
-          {...(canNewChat ? { onNewConversation: () => setComposing(true) } : {})}
+          {...(canNewChat
+            ? { onNewConversation: () => setComposing(true) }
+            : {})}
           {...(switcher === undefined ? {} : { headerActions: switcher })}
           onSelect={(conversation) => latestSelect.current?.(conversation)}
         />

@@ -183,4 +183,7 @@ const CUSTOMER_ACTIONS: ReadonlySet<string> = new Set([
   "business_read",
   "presence_write",
 ]);
-const SESSION_ACTIONS: ReadonlySet<string> = new Set([...CUSTOMER_ACTIONS, "mcp"]);
+const SESSION_ACTIONS: ReadonlySet<string> = new Set([
+  ...CUSTOMER_ACTIONS,
+  "mcp",
+]);

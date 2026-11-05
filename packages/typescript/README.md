@@ -1172,8 +1172,12 @@ one page of the number's calls, newest first, with the other party in `peer`
 `cursor` for the next page. Client tokens need the `read_calls` action.
 
 ```ts
-const calls = await messaging.calls.list("support", { outcome: "missed", limit: 25 });
-for (const call of calls.data.data) console.log(call.callId, call.peer?.phoneNumber);
+const calls = await messaging.calls.list("support", {
+  outcome: "missed",
+  limit: 25,
+});
+for (const call of calls.data.data)
+  console.log(call.callId, call.peer?.phoneNumber);
 
 await messaging.calls.reject(
   "support",

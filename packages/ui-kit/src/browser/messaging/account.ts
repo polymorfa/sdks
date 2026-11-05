@@ -109,44 +109,127 @@ abstract class SessionResource {
  * off), and chat changes (`conversations_manage`).
  */
 export class BrowserChatsResource extends SessionResource {
-  list(params: BrowserListChatsParams = {}, options: BrowserActionOptions = {}): Promise<BrowserActionResponse<BrowserPage<BrowserRecord>>> {
+  list(
+    params: BrowserListChatsParams = {},
+    options: BrowserActionOptions = {},
+  ): Promise<BrowserActionResponse<BrowserPage<BrowserRecord>>> {
     return this.call("GET", "/chats", options, { query: { ...params } });
   }
-  retrieve(conversation: string, options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
-    return this.call("GET", `/chats/${segment(conversation, "conversation")}`, options);
+  retrieve(
+    conversation: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
+    return this.call(
+      "GET",
+      `/chats/${segment(conversation, "conversation")}`,
+      options,
+    );
   }
-  messages(conversation: string, params: BrowserListMessagesParams = {}, options: BrowserActionOptions = {}): Promise<BrowserActionResponse<BrowserPage<BrowserRecord>>> {
+  messages(
+    conversation: string,
+    params: BrowserListMessagesParams = {},
+    options: BrowserActionOptions = {},
+  ): Promise<BrowserActionResponse<BrowserPage<BrowserRecord>>> {
     const { types, ...rest } = params;
-    return this.call("GET", `/chats/${segment(conversation, "conversation")}/messages`, options, {
-      query: { ...rest, ...(types === undefined ? {} : { types: types.join(",") }) },
-    });
+    return this.call(
+      "GET",
+      `/chats/${segment(conversation, "conversation")}/messages`,
+      options,
+      {
+        query: {
+          ...rest,
+          ...(types === undefined ? {} : { types: types.join(",") }),
+        },
+      },
+    );
   }
-  message(conversation: string, messageId: string, options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
-    return this.call("GET", `/chats/${segment(conversation, "conversation")}/messages/${segment(messageId, "message")}`, options);
+  message(
+    conversation: string,
+    messageId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
+    return this.call(
+      "GET",
+      `/chats/${segment(conversation, "conversation")}/messages/${segment(messageId, "message")}`,
+      options,
+    );
   }
   /** How to fetch a stored message's media. */
-  media(conversation: string, messageId: string, options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
-    return this.call("GET", `/chats/${segment(conversation, "conversation")}/messages/${segment(messageId, "message")}/media`, options);
+  media(
+    conversation: string,
+    messageId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
+    return this.call(
+      "GET",
+      `/chats/${segment(conversation, "conversation")}/messages/${segment(messageId, "message")}/media`,
+      options,
+    );
   }
-  archive(conversation: string, options: BrowserActionOptions = {}): Promise<Done> {
-    return this.call("POST", `/chats/${segment(conversation, "conversation")}/archive`, options);
+  archive(
+    conversation: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "POST",
+      `/chats/${segment(conversation, "conversation")}/archive`,
+      options,
+    );
   }
-  unarchive(conversation: string, options: BrowserActionOptions = {}): Promise<Done> {
-    return this.call("POST", `/chats/${segment(conversation, "conversation")}/unarchive`, options);
+  unarchive(
+    conversation: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "POST",
+      `/chats/${segment(conversation, "conversation")}/unarchive`,
+      options,
+    );
   }
   /** Disappearing messages for a chat or group. `0` turns them off. */
-  setDisappearing(conversation: string, durationSeconds: BrowserDisappearingSeconds, options: BrowserActionOptions = {}): Promise<Done> {
+  setDisappearing(
+    conversation: string,
+    durationSeconds: BrowserDisappearingSeconds,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
     if (!DISAPPEARING.has(durationSeconds))
-      throw new BrowserValidationError("Use 0, 86400, 604800 or 7776000 seconds.", "invalid_duration");
-    return this.call("PUT", `/chats/${segment(conversation, "conversation")}/disappearing`, options, { body: { durationSeconds } });
+      throw new BrowserValidationError(
+        "Use 0, 86400, 604800 or 7776000 seconds.",
+        "invalid_duration",
+      );
+    return this.call(
+      "PUT",
+      `/chats/${segment(conversation, "conversation")}/disappearing`,
+      options,
+      { body: { durationSeconds } },
+    );
   }
-  editMessage(conversation: string, messageId: string, text: string, options: BrowserActionOptions = {}): Promise<Done> {
-    if (text.length === 0) throw new BrowserValidationError("text is required.", "missing_text");
-    return this.call("PUT", `/chats/${segment(conversation, "conversation")}/messages/${segment(messageId, "message")}`, options, { body: { text } });
+  editMessage(
+    conversation: string,
+    messageId: string,
+    text: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    if (text.length === 0)
+      throw new BrowserValidationError("text is required.", "missing_text");
+    return this.call(
+      "PUT",
+      `/chats/${segment(conversation, "conversation")}/messages/${segment(messageId, "message")}`,
+      options,
+      { body: { text } },
+    );
   }
   /** Deletes a message for everyone. */
-  deleteMessage(conversation: string, messageId: string, options: BrowserActionOptions = {}): Promise<Done> {
-    return this.call("DELETE", `/chats/${segment(conversation, "conversation")}/messages/${segment(messageId, "message")}`, options);
+  deleteMessage(
+    conversation: string,
+    messageId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "DELETE",
+      `/chats/${segment(conversation, "conversation")}/messages/${segment(messageId, "message")}`,
+      options,
+    );
   }
 }
 
@@ -155,64 +238,133 @@ export class BrowserLabelsResource extends SessionResource {
   list(options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
     return this.call("GET", "/labels", options);
   }
-  forChat(conversation: string, options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
-    return this.call("GET", `/labels/chats/${segment(conversation, "conversation")}`, options);
+  forChat(
+    conversation: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
+    return this.call(
+      "GET",
+      `/labels/chats/${segment(conversation, "conversation")}`,
+      options,
+    );
   }
-  create(input: { readonly name: string; readonly color?: number }, options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
-    if (input.name.trim() === "") throw new BrowserValidationError("A label name is required.", "missing_name");
+  create(
+    input: { readonly name: string; readonly color?: number },
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
+    if (input.name.trim() === "")
+      throw new BrowserValidationError(
+        "A label name is required.",
+        "missing_name",
+      );
     return this.call("POST", "/labels", options, { body: input });
   }
-  update(labelId: string, input: { readonly name?: string; readonly color?: number }, options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
+  update(
+    labelId: string,
+    input: { readonly name?: string; readonly color?: number },
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
     if (input.name === undefined && input.color === undefined)
-      throw new BrowserValidationError("Provide name, color or both.", "empty_update");
-    return this.call("PUT", `/labels/${segment(labelId, "label")}`, options, { body: input });
+      throw new BrowserValidationError(
+        "Provide name, color or both.",
+        "empty_update",
+      );
+    return this.call("PUT", `/labels/${segment(labelId, "label")}`, options, {
+      body: input,
+    });
   }
   delete(labelId: string, options: BrowserActionOptions = {}): Promise<Done> {
     return this.call("DELETE", `/labels/${segment(labelId, "label")}`, options);
   }
   /** Replaces a chat's labels (up to 20). */
-  setForChat(conversation: string, labels: readonly string[], options: BrowserActionOptions = {}): Promise<Done> {
-    if (labels.length > 20) throw new BrowserValidationError("A chat takes up to 20 labels.", "too_many_labels");
-    return this.call("PUT", `/labels/chats/${segment(conversation, "conversation")}`, options, { body: { labels } });
+  setForChat(
+    conversation: string,
+    labels: readonly string[],
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    if (labels.length > 20)
+      throw new BrowserValidationError(
+        "A chat takes up to 20 labels.",
+        "too_many_labels",
+      );
+    return this.call(
+      "PUT",
+      `/labels/chats/${segment(conversation, "conversation")}`,
+      options,
+      { body: { labels } },
+    );
   }
 }
 
 /** The account's own profile and privacy (`profile_read`, `profile_manage`). */
 export class BrowserProfileResource extends SessionResource {
-  retrieve(options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
+  retrieve(
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
     return this.call("GET", "/profile", options);
   }
   setName(name: string, options: BrowserActionOptions = {}): Promise<Done> {
-    if (name.trim() === "") throw new BrowserValidationError("A name is required.", "missing_name");
+    if (name.trim() === "")
+      throw new BrowserValidationError("A name is required.", "missing_name");
     return this.call("PUT", "/profile/name", options, { body: { name } });
   }
   setStatus(status: string, options: BrowserActionOptions = {}): Promise<Done> {
     return this.call("PUT", "/profile/status", options, { body: { status } });
   }
   /** Base64 image bytes; client tokens cannot pass a URL. */
-  setPicture(base64: string, options: BrowserActionOptions = {}): Promise<Done> {
-    if (base64.length === 0) throw new BrowserValidationError("base64 is required.", "missing_picture");
+  setPicture(
+    base64: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    if (base64.length === 0)
+      throw new BrowserValidationError(
+        "base64 is required.",
+        "missing_picture",
+      );
     return this.call("PUT", "/profile/picture", options, { body: { base64 } });
   }
   removePicture(options: BrowserActionOptions = {}): Promise<Done> {
     return this.call("DELETE", "/profile/picture", options);
   }
-  privacy(options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
+  privacy(
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
     return this.call("GET", "/privacy", options);
   }
-  setPrivacy(setting: BrowserPrivacySetting, value: BrowserPrivacyValue, options: BrowserActionOptions = {}): Promise<Done> {
-    return this.call("PUT", `/privacy/${segment(setting, "setting")}`, options, { body: { value } });
+  setPrivacy(
+    setting: BrowserPrivacySetting,
+    value: BrowserPrivacyValue,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "PUT",
+      `/privacy/${segment(setting, "setting")}`,
+      options,
+      { body: { value } },
+    );
   }
   /** The disappearing-message timer for new chats. */
-  setDefaultDisappearing(durationSeconds: BrowserDisappearingSeconds, options: BrowserActionOptions = {}): Promise<Done> {
+  setDefaultDisappearing(
+    durationSeconds: BrowserDisappearingSeconds,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
     if (!DISAPPEARING.has(durationSeconds))
-      throw new BrowserValidationError("Use 0, 86400, 604800 or 7776000 seconds.", "invalid_duration");
-    return this.call("PUT", "/privacy/disappearing/default", options, { body: { durationSeconds } });
+      throw new BrowserValidationError(
+        "Use 0, 86400, 604800 or 7776000 seconds.",
+        "invalid_duration",
+      );
+    return this.call("PUT", "/privacy/disappearing/default", options, {
+      body: { durationSeconds },
+    });
   }
-  businessProfile(options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
+  businessProfile(
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
     return this.call("GET", "/business/profile", options);
   }
-  quickReplies(options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
+  quickReplies(
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
     return this.call("GET", "/business/quick-replies", options);
   }
 }
@@ -222,38 +374,91 @@ export class BrowserChannelsResource extends SessionResource {
   list(options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
     return this.call("GET", "/channels", options);
   }
-  retrieve(channelId: string, options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
-    return this.call("GET", `/channels/${segment(channelId, "channel")}`, options);
+  retrieve(
+    channelId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
+    return this.call(
+      "GET",
+      `/channels/${segment(channelId, "channel")}`,
+      options,
+    );
   }
-  messages(channelId: string, params: Query = {}, options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
-    return this.call("GET", `/channels/${segment(channelId, "channel")}/messages`, options, { query: params });
+  messages(
+    channelId: string,
+    params: Query = {},
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
+    return this.call(
+      "GET",
+      `/channels/${segment(channelId, "channel")}/messages`,
+      options,
+      { query: params },
+    );
   }
   follow(channelId: string, options: BrowserActionOptions = {}): Promise<Done> {
-    return this.call("POST", `/channels/${segment(channelId, "channel")}/follow`, options);
+    return this.call(
+      "POST",
+      `/channels/${segment(channelId, "channel")}/follow`,
+      options,
+    );
   }
-  unfollow(channelId: string, options: BrowserActionOptions = {}): Promise<Done> {
-    return this.call("POST", `/channels/${segment(channelId, "channel")}/unfollow`, options);
+  unfollow(
+    channelId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "POST",
+      `/channels/${segment(channelId, "channel")}/unfollow`,
+      options,
+    );
   }
   mute(channelId: string, options: BrowserActionOptions = {}): Promise<Done> {
-    return this.call("POST", `/channels/${segment(channelId, "channel")}/mute`, options);
+    return this.call(
+      "POST",
+      `/channels/${segment(channelId, "channel")}/mute`,
+      options,
+    );
   }
   unmute(channelId: string, options: BrowserActionOptions = {}): Promise<Done> {
-    return this.call("POST", `/channels/${segment(channelId, "channel")}/unmute`, options);
+    return this.call(
+      "POST",
+      `/channels/${segment(channelId, "channel")}/unmute`,
+      options,
+    );
   }
 }
 
 /** Catalog reads (`business_read`). */
 export class BrowserCatalogResource extends SessionResource {
-  catalog(options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
+  catalog(
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
     return this.call("GET", "/business/catalog", options);
   }
-  collections(options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
+  collections(
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
     return this.call("GET", "/business/collections", options);
   }
-  collection(collectionId: string, options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
-    return this.call("GET", `/business/collections/${segment(collectionId, "collection")}`, options);
+  collection(
+    collectionId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
+    return this.call(
+      "GET",
+      `/business/collections/${segment(collectionId, "collection")}`,
+      options,
+    );
   }
-  product(productId: string, options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
-    return this.call("GET", `/business/products/${segment(productId, "product")}`, options);
+  product(
+    productId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserRecord>> {
+    return this.call(
+      "GET",
+      `/business/products/${segment(productId, "product")}`,
+      options,
+    );
   }
 }
