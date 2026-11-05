@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
+import { checkInteractiveSupplement } from "./interactive-supplement.mjs";
 
 const HTTP_METHODS = new Set([
   "get",
@@ -47,6 +48,7 @@ function main() {
       ...extractOperations("platform", readJson(args.platform)),
     ];
     const report = compareCoverage(actual, ledger, args.strict === true);
+    checkInteractiveSupplement(resolve(import.meta.dirname, ".."), { ledger });
     if (args.report !== undefined) {
       writeFileSync(args.report, `${JSON.stringify(report, null, 2)}\n`);
     } else {

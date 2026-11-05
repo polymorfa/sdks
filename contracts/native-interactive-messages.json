@@ -1,0 +1,231 @@
+{
+  "schemaVersion": 1,
+  "pin": "contracts/interactive-messages.json",
+  "sourceCommit": "3766dc9aef4669aa6eec79919e4388c59ad75794",
+  "sourceSha256": "40daa415c68780699172c97011eb97fe2288234274cdc417023ba05a9e63170b",
+  "contractSha256": "d370e621cfb177e087e9f294ec1347c0ec45abefbc4b77a599c615babf3b497e",
+  "baseline": {
+    "sourceApiCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
+    "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a",
+    "operations": 579
+  },
+  "baselineUnchanged": true,
+  "published": false,
+  "claim": "Source and synthetic native wire-fixture attribution only. This does not establish runtime acceptance, package publication or customer availability.",
+  "fields": {
+    "mediaHeader": "/buttonsContent/properties/buttons/properties/media",
+    "carousel": "/carouselContent/properties/carousel"
+  },
+  "campaignEvidence": "Stable reply ID and media forwarding on the existing createPlatformCampaign request. This is native source/wire attribution, not an additional accepted API contract.",
+  "languages": {
+    "typescript": {
+      "sendMethod": "MessagingClient.messages.send",
+      "campaignMethod": "Client.campaigns.create",
+      "mediaHeader": {
+        "sourceFile": "src/messaging/types.ts",
+        "symbols": ["ButtonsMedia", "InteractiveMediaSource"],
+        "testFile": "test/messages.test.ts",
+        "testNeedles": [
+          "preserves mixed controls and a media header without splitting transport",
+          "client.messages.send",
+          "toEqual(body)"
+        ]
+      },
+      "carousel": {
+        "sourceFile": "src/messaging/types.ts",
+        "symbols": ["CarouselCard", "CarouselMessageContent"],
+        "testFile": "test/messages.test.ts",
+        "testNeedles": [
+          "preserves one %i-card request and every card's media and reply ID",
+          "it.each([2, 10])",
+          "client.messages.send",
+          "toHaveLength(1)"
+        ]
+      },
+      "campaignReplies": {
+        "sourceFile": "src/platform/types.ts",
+        "symbols": ["CampaignMessage", "readonly id?: string"],
+        "testFile": "test/campaign-41-wire.test.ts",
+        "testNeedles": [
+          "preserves typed campaign reply IDs and media on the public wire",
+          "offer-stable",
+          "client.campaigns.create"
+        ]
+      }
+    },
+    "go": {
+      "sendMethod": "MessagingClient.Messages.Send",
+      "campaignMethod": "OrganizationClient.Campaigns.Create",
+      "mediaHeader": {
+        "sourceFile": "interactive.go",
+        "symbols": ["ButtonsMedia", "InteractiveMediaSource"],
+        "testFile": "interactive_test.go",
+        "testNeedles": [
+          "TestInteractiveMediaAndCarouselWire",
+          "client.Messages().Send",
+          "\"image\", \"video\", \"document\""
+        ]
+      },
+      "carousel": {
+        "sourceFile": "interactive.go",
+        "symbols": ["CarouselCard", "CarouselContent"],
+        "testFile": "interactive_test.go",
+        "testNeedles": [
+          "TestInteractiveMediaAndCarouselWire",
+          "outer footer lost",
+          "nested video preview lost",
+          "client.Messages().Send"
+        ]
+      },
+      "campaignReplies": {
+        "sourceFile": "campaign_existing.go",
+        "symbols": ["CampaignComposedButton", "json:\"id,omitempty\""],
+        "testFile": "interactive_test.go",
+        "testNeedles": [
+          "TestInteractiveCampaignStableReplyIDWire",
+          "offer-stable",
+          "client.Campaigns().Create"
+        ]
+      }
+    },
+    "python": {
+      "sendMethod": "AsyncMessagingClient.messages.send",
+      "campaignMethod": "AsyncClient.campaigns.create",
+      "mediaHeader": {
+        "sourceFile": "src/polymorfa/message_content.py",
+        "symbols": ["ButtonsMedia", "MediaButtons"],
+        "testFile": "tests/test_message_content.py",
+        "testNeedles": [
+          "test_public_send_all_composed_variants_context_and_response",
+          "client.messages.send",
+          "\"type\": \"document\""
+        ]
+      },
+      "carousel": {
+        "sourceFile": "src/polymorfa/message_content.py",
+        "symbols": ["CarouselCard", "CarouselContent"],
+        "testFile": "tests/test_message_content.py",
+        "testNeedles": [
+          "test_public_send_all_composed_variants_context_and_response",
+          "\"carousel\"",
+          "Outer only",
+          "card-9"
+        ]
+      },
+      "campaignReplies": {
+        "sourceFile": "src/polymorfa/campaign_models.py",
+        "symbols": ["CampaignMessageButtonFields", "id: NotRequired[str]"],
+        "testFile": "tests/test_campaigns.py",
+        "testNeedles": [
+          "test_composed_campaign_preserves_reply_id_and_media_on_wire",
+          "offer-stable",
+          "client.campaigns.create"
+        ]
+      }
+    },
+    "php": {
+      "sendMethod": "MessagingClient::messages.send",
+      "campaignMethod": "Client::campaigns.create",
+      "mediaHeader": {
+        "sourceFile": "src/MessageModels.php",
+        "symbols": ["ButtonsMedia", "InteractiveMedia"],
+        "testFile": "tests/messaging_complete.php",
+        "testNeedles": [
+          "nativeCases",
+          "->messages->send",
+          "'type' => 'document'"
+        ]
+      },
+      "carousel": {
+        "sourceFile": "src/MessageModels.php",
+        "symbols": ["CarouselCard", "CarouselVideo"],
+        "testFile": "tests/messaging_complete.php",
+        "testNeedles": ["nativeCases", "'carousel'", "Outer only", "card-9"]
+      },
+      "campaignReplies": {
+        "sourceFile": "src/CampaignModels.php",
+        "symbols": ["CampaignMessage", "id?:string"],
+        "testFile": "tests/campaigns.php",
+        "testNeedles": [
+          "nativeCases",
+          "offer-stable",
+          "->campaigns->create($interactive)"
+        ]
+      }
+    },
+    "rust": {
+      "sendMethod": "MessagingClient.messages.send",
+      "campaignMethod": "OrganizationClient.campaigns.create",
+      "mediaHeader": {
+        "sourceFile": "src/message_content.rs",
+        "symbols": ["ButtonsMedia", "InteractiveMediaSource"],
+        "testFile": "tests/message_content.rs",
+        "testNeedles": [
+          "all_typed_message_content_variants_round_trip_on_the_wire",
+          "\"type\":\"document\"",
+          ".messages()",
+          ".send("
+        ]
+      },
+      "carousel": {
+        "sourceFile": "src/message_content.rs",
+        "symbols": ["CarouselCard", "CarouselMessageContent"],
+        "testFile": "tests/message_content.rs",
+        "testNeedles": [
+          "all_typed_message_content_variants_round_trip_on_the_wire",
+          "Outer only",
+          "card-9",
+          ".messages()",
+          ".send("
+        ]
+      },
+      "campaignReplies": {
+        "sourceFile": "src/campaigns.rs",
+        "symbols": ["CampaignMessageButton", "pub id: Option<String>"],
+        "testFile": "tests/campaigns.rs",
+        "testNeedles": [
+          "composed_campaign_preserves_reply_id_and_media_on_wire",
+          "offer-stable",
+          ".campaigns()",
+          ".create("
+        ]
+      }
+    },
+    "dotnet": {
+      "sendMethod": "MessagingClient.Messages.SendAsync",
+      "campaignMethod": "OrganizationClient.Campaigns.CreateAsync",
+      "mediaHeader": {
+        "sourceFile": "src/Polymorfa.Sdk/MessageContent.cs",
+        "symbols": ["ButtonsMedia", "InteractiveMediaSource"],
+        "testFile": "tests/Polymorfa.Sdk.Tests/MessageContentTests.cs",
+        "testNeedles": [
+          "MessageContentTests",
+          "\"type\":\"document\"",
+          "client.Messages.SendAsync",
+          "ResourceTests.Equal"
+        ]
+      },
+      "carousel": {
+        "sourceFile": "src/Polymorfa.Sdk/MessageContent.cs",
+        "symbols": ["CarouselCard", "CarouselMessage"],
+        "testFile": "tests/Polymorfa.Sdk.Tests/MessageContentTests.cs",
+        "testNeedles": [
+          "MessageContentTests",
+          "Outer only",
+          "card-9",
+          "client.Messages.SendAsync"
+        ]
+      },
+      "campaignReplies": {
+        "sourceFile": "src/Polymorfa.Sdk/Campaigns.cs",
+        "symbols": ["PlatformCampaignButton", "string? Id = null"],
+        "testFile": "tests/Polymorfa.Sdk.Tests/CampaignExistingTests.cs",
+        "testNeedles": [
+          "CampaignExistingTests",
+          "offer-stable",
+          "c.Campaigns.CreateAsync"
+        ]
+      }
+    }
+  }
+}

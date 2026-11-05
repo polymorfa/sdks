@@ -14,8 +14,6 @@ reconciliation, accepted staging/production API evidence, and publication are
 separate unfinished gates. `campaign-20261014-contract.test.ts` checks all thirty
 wire operations; it does not establish provider delivery or deployed access.
 
-## Interactive button candidate
-
 ## Interactive message candidate
 
 `interactive-messages.json` pins button, carousel and list branches to draft API PR #562.
@@ -24,6 +22,16 @@ Native list bounds follow the thirty-row contract; Official lists retain ten row
 Official API replies retain the three-button limit. SDK arrays preserve all
 parameters. Replace the draft pin with the accepted API revision and verify
 matching staging before package publication.
+
+`native-interactive-messages.json` attributes the pinned media-header and carousel
+fields to public source and native wire fixtures in all six languages. It also
+records the existing composed-campaign stable Reply ID fixtures without adding
+an accepted campaign contract. Each language registers this inventory in its
+coverage ledger. Both shared coverage commands check the pin, snapshot bytes,
+public mappings and evidence; removed registrations or stale attribution fail.
+The accepted API/SDK baseline stays unchanged. These checks establish source
+attribution. Native execution, physical package checks and matching API acceptance
+remain separate requirements.
 
 ## Request log supplement
 
