@@ -200,10 +200,26 @@ describe("error codes", () => {
         new URL("../../../contracts/idempotency-replay.json", import.meta.url),
         "utf8",
       ),
-    ) as { errorCodes: string[]; sourceCommit: string; published: boolean };
+    ) as {
+      errorCodes: string[];
+      sourceCommit: string;
+      published: boolean;
+      conversionDeduplication: {
+        operationId: string;
+        description: string;
+        responses: Record<string, unknown>;
+      };
+    };
     expect(replay.sourceCommit).toMatch(/^[0-9a-f]{40}$/);
     expect(replay.published).toBe(false);
     expect(replay.errorCodes).toContain("idempotency_replay_unavailable");
+    expect(replay.conversionDeduplication.operationId).toBe(
+      "recordCampaignConversion",
+    );
+    expect(replay.conversionDeduplication.description).toContain(
+      "422 idempotency_conflict",
+    );
+    expect(replay.conversionDeduplication.responses["422"]).toBeDefined();
     const published = new Set([
       ...replay.errorCodes,
       ...round2.errorCodes,
