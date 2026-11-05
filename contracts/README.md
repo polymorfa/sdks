@@ -6,6 +6,10 @@
 `scripts/sync-idempotency-replay-contract.mjs` from committed generated API
 documents. It records the exact backend source, both complete input hashes,
 the idempotency error enums and 28 unchanged one-hour header parameters.
+It also explicitly pins conversion deduplication: different details for an
+existing `eventId` return `422 idempotency_conflict` in this source contract.
+The older baseline remains unchanged, and the transport still maps a received
+409 to `PolymorfaConflictError` and a received 422 to `PolymorfaValidationError`.
 The global baseline snapshots remain unchanged. The error catalog recognizes
 both the new replay-unavailable code and legacy completed responses.
 
