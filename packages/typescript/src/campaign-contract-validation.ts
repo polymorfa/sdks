@@ -473,20 +473,22 @@ export function validateProfileList(
     cursor: input.cursor,
     limit: input.limit,
   });
-  if (input.tag !== undefined) {
-    const tag = bytes(input.tag, "params.tag", 1, 48);
+  const tagValue = input.tag;
+  if (tagValue !== undefined) {
+    const tag = bytes(tagValue, "params.tag", 1, 48);
     if (hasAsciiControl(tag))
       invalid("params.tag", "must not contain control characters");
     query.tag = tag;
   }
-  if (input.phonePrefix !== undefined) {
+  const phonePrefix = input.phonePrefix;
+  if (phonePrefix !== undefined) {
     if (
-      typeof input.phonePrefix !== "string" ||
-      !/^\+[0-9]{1,15}$/.test(input.phonePrefix) ||
-      hasAsciiControl(input.phonePrefix)
+      typeof phonePrefix !== "string" ||
+      !/^\+[0-9]{1,15}$/.test(phonePrefix) ||
+      hasAsciiControl(phonePrefix)
     )
       invalid("params.phonePrefix", "must be + followed by 1-15 digits");
-    query.phonePrefix = input.phonePrefix;
+    query.phonePrefix = phonePrefix;
   }
   return query;
 }

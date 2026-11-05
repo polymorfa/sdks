@@ -250,3 +250,32 @@ it("uses the portable candidate filter boundary without broadening consent", asy
   ).toBe("null");
   expect(server.requests.at(-1)!.path).not.toContain("phonePrefix");
 });
+
+it("captures a present phonePrefix getter before validation and transport", async () => {
+  const { server, resource } = await setup();
+  let reads = 0;
+  const params: ListAudienceProfilesParams = {
+    get phonePrefix() {
+      reads++;
+      return reads === 5 ? "44" : "+44";
+    },
+  };
+  await resource.list(params);
+  const url = new URL(server.requests[0]!.path, "https://example.test");
+  expect(url.searchParams.get("phonePrefix")).toBe("+44");
+  expect(reads).toBe(1);
+});
+it("captures a present tag getter before validation and transport", async () => {
+  const { server, resource } = await setup();
+  let reads = 0;
+  const params: ListAudienceProfilesParams = {
+    get tag() {
+      reads++;
+      return reads === 1 ? "vip" : "other";
+    },
+  };
+  await resource.list(params);
+  const url = new URL(server.requests[0]!.path, "https://example.test");
+  expect(url.searchParams.get("tag")).toBe("vip");
+  expect(reads).toBe(1);
+});

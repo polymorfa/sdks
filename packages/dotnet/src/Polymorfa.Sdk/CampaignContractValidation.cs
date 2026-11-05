@@ -169,7 +169,12 @@ internal static class CampaignContractValidation
     internal static IReadOnlyList<KeyValuePair<string, string>> ProfileList(ListAudienceProfilesParameters? input)
     {
         _ = Page(input is null ? null : new ListAudienceProfilesParameters(input.Cursor, input.Limit));
-        if (input?.Tag is { } tag && (Utf8.GetByteCount(tag) < 1 || Utf8.GetByteCount(tag) > 48 || Control(tag))) Invalid("tag");
+        if (input?.Tag is { } tag)
+        {
+            Unicode(tag);
+            var count = Utf8.GetByteCount(tag);
+            if (count < 1 || count > 48 || Control(tag)) Invalid("tag");
+        }
         if (input?.PhonePrefix is { } prefix && !Regex.IsMatch(prefix, "\\A\\+[0-9]{1,15}\\z", RegexOptions.CultureInvariant)) Invalid("phonePrefix");
         return Resource.Query(input).ToArray();
     }
