@@ -4646,6 +4646,13 @@
       "baselineUnchanged": true,
       "published": false,
       "language": "rust"
+    },
+    "newsletterObservations": {
+      "inventory": "contracts/newsletter-observations.json",
+      "baselineUnchanged": true,
+      "published": false,
+      "language": "rust",
+      "testFile": "packages/rust/tests/newsletter_observations.rs"
     }
   }
 }

@@ -18406,6 +18406,12 @@
       "inventory": "contracts/native-calls-simultaneous-calls.json",
       "baselineUnchanged": true,
       "published": false
+    },
+    "newsletterObservations": {
+      "inventory": "contracts/newsletter-observations.json",
+      "baselineUnchanged": true,
+      "published": false,
+      "wireEvidence": "POL-81 native fixtures: newsletter observations and optional channel forwards"
     }
   }
 }

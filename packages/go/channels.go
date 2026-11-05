@@ -66,6 +66,7 @@ type ChannelMessage struct {
 	Type           string                `json:"type"`
 	Timestamp      string                `json:"timestamp"`
 	Views          int64                 `json:"views"`
+	Forwards       *int64                `json:"forwards,omitempty"`
 	ReactionCounts map[string]int64      `json:"reactionCounts"`
 	Text           string                `json:"text,omitempty"`
 }

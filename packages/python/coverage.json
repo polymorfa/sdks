@@ -4646,6 +4646,13 @@
       "baselineUnchanged": true,
       "published": false,
       "language": "python"
+    },
+    "newsletterObservations": {
+      "inventory": "contracts/newsletter-observations.json",
+      "baselineUnchanged": true,
+      "published": false,
+      "language": "python",
+      "testFile": "packages/python/tests/test_newsletter_observations.py"
     }
   }
 }

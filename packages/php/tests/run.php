@@ -271,4 +271,6 @@ require __DIR__.'/official_round2.php';
 
 require __DIR__.'/campaign_webhook_metadata.php';
 
+require __DIR__.'/newsletter_observations.php';
+
 require __DIR__.'/passkeys.php';

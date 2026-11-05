@@ -1,0 +1,16 @@
+{
+  "position": 123,
+  "id": "9007199254740994",
+  "whatsapp_ids": {
+    "linked_devices": "native-observed"
+  },
+  "whatsapp_id": "native-observed",
+  "conversation": {
+    "id": "9007199254740993"
+  },
+  "type": "text",
+  "timestamp": "2023-11-14T22:13:21Z",
+  "views": 11,
+  "forwards": 0,
+  "reactionCounts": {}
+}

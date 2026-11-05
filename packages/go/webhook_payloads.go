@@ -441,11 +441,36 @@ type CallConnectionLeftPayload struct {
 	Participant  string `json:"participant"`
 	Reason       string `json:"reason"`
 }
+type NewsletterViewCount struct {
+	Type  *string `json:"type,omitempty"`
+	Count int64   `json:"count"`
+}
+type NewsletterMessageReference struct {
+	ID          string             `json:"id"`
+	WhatsAppIDs WhatsAppMessageIDs `json:"whatsapp_ids"`
+}
+type NewsletterMessageObservation struct {
+	Position       int64                       `json:"position"`
+	Message        *NewsletterMessageReference `json:"message,omitempty"`
+	Timestamp      *string                     `json:"timestamp,omitempty"`
+	ViewCounts     *[]NewsletterViewCount      `json:"viewCounts,omitempty"`
+	Forwards       *int64                      `json:"forwards,omitempty"`
+	ReactionCounts *map[string]int64           `json:"reactionCounts,omitempty"`
+}
+type NewsletterMilestone struct {
+	Position     int64   `json:"position"`
+	Type         string  `json:"type"`
+	Value        int64   `json:"value"`
+	ReactionCode *string `json:"reactionCode,omitempty"`
+}
 type NewsletterUpdatePayload struct {
 	webhookPayloadBase
-	ID     string `json:"id"`
-	Action string `json:"action"`
-	Muted  *bool  `json:"muted,omitempty"`
+	ID              string                          `json:"id"`
+	Action          string                          `json:"action"`
+	Muted           *bool                           `json:"muted,omitempty"`
+	SourceTimestamp *string                         `json:"sourceTimestamp,omitempty"`
+	Messages        *[]NewsletterMessageObservation `json:"messages,omitempty"`
+	Milestone       *NewsletterMilestone            `json:"milestone,omitempty"`
 }
 type WebhookBlocklistChange struct {
 	Action      string `json:"action"`

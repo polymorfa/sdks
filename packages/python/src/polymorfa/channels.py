@@ -38,6 +38,7 @@ class ChannelMessage(TypedDict):
     type: str
     timestamp: str
     views: int
+    forwards: NotRequired[int]
     reactionCounts: dict[str, int]
     text: NotRequired[str]
 
