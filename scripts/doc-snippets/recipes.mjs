@@ -1,7 +1,7 @@
 // Requests come from the pinned OpenAPI and existing native wire fixtures.
 // Calls are handwritten in the language modules. Never derive arguments from
 // contracts/coverage.json's display-only method names.
-export const sourceCommit = "3bc031e92578fbdf32a1fdef1b72cf4f59c5c976";
+export const sourceCommit = "1ba7c09a3b0da7cec76e48169361a63f0c76f8c1";
 export const apiVersion = "2026-09-22";
 export const languages = [
   "typescript",
