@@ -224,10 +224,12 @@ func (r *WhatsAppMediaResource) directPost(ctx context.Context, target string, b
 		return nil, uploadStatus(response.StatusCode)
 	}
 	value, err := io.ReadAll(io.LimitReader(response.Body, 65537))
+	// A body closed by cancellation can finish as EOF rather than a read error.
+	// Preserve the deadline/cancellation result before parsing an empty location.
+	if ctx.Err() != nil {
+		return nil, contextError(ctx, nil)
+	}
 	if err != nil {
-		if ctx.Err() != nil {
-			return nil, contextError(ctx, nil)
-		}
 		return nil, &directUploadFailure{retry: true, final: &Error{Kind: ConnectionError, Message: "The upload response could not be read."}}
 	}
 	if len(value) > 65536 || (len(value) > 0 && !json.Valid(value)) {
