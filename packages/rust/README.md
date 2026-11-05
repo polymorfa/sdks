@@ -1018,8 +1018,15 @@ struct literals, or use `..Default::default()`. `None` means omission.
 
 Source-only usage fragment with an already constructed team client:
 
-```rust
+```rust,no_run
+use polymorfa_sdk::campaign_contracts::ListAudienceProfilesParameters;
+use polymorfa_sdk::{OrganizationClient, RequestOptions};
+
+# async fn list_profiles(client: &OrganizationClient) -> polymorfa_sdk::Result<()> {
 let page = client.audience_profiles().list(&ListAudienceProfilesParameters {
     tag: Some("vip".into()), phone_prefix: Some("+44".into()), ..Default::default()
 }, RequestOptions::default()).await?;
+# let _ = page;
+# Ok(())
+# }
 ```
