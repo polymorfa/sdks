@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "21b628c03111224da6223b92471529ac7fe781e8",
+  "sourceCommit": "8c6c8e70d4fa0921755c473f9ebf76f839660b45",
   "sources": [
     {
       "path": "apps/api/docs/openapi.json",
-      "sha256": "3fd951da3acd5f8a1d4303135fd6881a5834730208efcee94b2f4f4fbea7dd31",
+      "sha256": "b2c59618d64441956e845268fb38651d11c30eaf705a548549fb5a6c7d165186",
       "info": {
         "title": "Polymorfa WhatsApp API",
         "version": "1.0.0",
