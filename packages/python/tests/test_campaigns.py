@@ -18,15 +18,17 @@ async def test_composed_campaign_preserves_reply_id_and_media_on_wire():
     body = {
         "projectId": "11111111-1111-4111-8111-111111111111",
         "name": "Interactive",
-        "messagesArray": [{
-            "version": 2,
-            "source": "Choose an offer",
-            "media": {"kind": "image", "url": "https://example.test/offer"},
-            "buttons": [
-                {"kind": "reply", "label": "Choose", "id": "offer-stable"},
-                {"kind": "link", "label": "Open", "url": "https://example.test/offer"},
-            ],
-        }],
+        "messagesArray": [
+            {
+                "version": 2,
+                "source": "Choose an offer",
+                "media": {"kind": "image", "url": "https://example.test/offer"},
+                "buttons": [
+                    {"kind": "reply", "label": "Choose", "id": "offer-stable"},
+                    {"kind": "link", "label": "Open", "url": "https://example.test/offer"},
+                ],
+            }
+        ],
     }
     requests = []
 

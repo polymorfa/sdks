@@ -148,31 +148,63 @@ pub enum MessageButton {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum InteractiveMediaSource {
-    Url { url: String, #[serde(rename = "mimeType", skip_serializing_if = "Option::is_none")] mime_type: Option<String> },
-    Base64 { base64: String, #[serde(rename = "mimeType", skip_serializing_if = "Option::is_none")] mime_type: Option<String> },
+    Url {
+        url: String,
+        #[serde(rename = "mimeType", skip_serializing_if = "Option::is_none")]
+        mime_type: Option<String>,
+    },
+    Base64 {
+        base64: String,
+        #[serde(rename = "mimeType", skip_serializing_if = "Option::is_none")]
+        mime_type: Option<String>,
+    },
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ButtonsMedia {
-    Image { #[serde(flatten)] source: InteractiveMediaSource },
-    Video { #[serde(flatten)] source: InteractiveMediaSource, #[serde(skip_serializing_if = "Option::is_none")] thumbnail: Option<String> },
-    Document { #[serde(flatten)] source: InteractiveMediaSource, #[serde(skip_serializing_if = "Option::is_none")] filename: Option<String> },
+    Image {
+        #[serde(flatten)]
+        source: InteractiveMediaSource,
+    },
+    Video {
+        #[serde(flatten)]
+        source: InteractiveMediaSource,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        thumbnail: Option<String>,
+    },
+    Document {
+        #[serde(flatten)]
+        source: InteractiveMediaSource,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        filename: Option<String>,
+    },
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CarouselVideo {
-    #[serde(flatten)] pub source: InteractiveMediaSource,
-    #[serde(skip_serializing_if = "Option::is_none")] pub thumbnail: Option<String>,
+    #[serde(flatten)]
+    pub source: InteractiveMediaSource,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub thumbnail: Option<String>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum CarouselCard {
-    Image { body: String, buttons: Vec<MessageButton>, image: InteractiveMediaSource },
-    Video { body: String, buttons: Vec<MessageButton>, video: CarouselVideo },
+    Image {
+        body: String,
+        buttons: Vec<MessageButton>,
+        image: InteractiveMediaSource,
+    },
+    Video {
+        body: String,
+        buttons: Vec<MessageButton>,
+        video: CarouselVideo,
+    },
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CarouselMessageContent {
     pub body: String,
-    #[serde(skip_serializing_if = "Option::is_none")] pub footer: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub footer: Option<String>,
     pub cards: Vec<CarouselCard>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -410,8 +442,12 @@ pub struct OrderStatusMessageContent {
 impl crate::models::MessageContent {
     pub(crate) fn validate_interactive(&self) -> crate::Result<()> {
         match self {
-            Self::Buttons { buttons } if buttons.title.is_some() && buttons.media.is_some() => Err(crate::transport::configuration("A button media header cannot have a title.")),
-            Self::Carousel { carousel } if !(2..=10).contains(&carousel.cards.len()) => Err(crate::transport::configuration("A carousel requires 2–10 cards.")),
+            Self::Buttons { buttons } if buttons.title.is_some() && buttons.media.is_some() => Err(
+                crate::transport::configuration("A button media header cannot have a title."),
+            ),
+            Self::Carousel { carousel } if !(2..=10).contains(&carousel.cards.len()) => Err(
+                crate::transport::configuration("A carousel requires 2–10 cards."),
+            ),
             _ => Ok(()),
         }
     }

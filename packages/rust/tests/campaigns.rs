@@ -27,8 +27,14 @@ async fn composed_campaign_preserves_reply_id_and_media_on_wire() {
     });
     let request: CreatePlatformCampaignRequest = serde_json::from_value(body.clone()).unwrap();
     wire_organization!(
-        client, "POST", "/platform/campaigns", Some(body), json!({"data": campaign()}),
-        client.campaigns().create(&request, RequestOptions::default())
+        client,
+        "POST",
+        "/platform/campaigns",
+        Some(body),
+        json!({"data": campaign()}),
+        client
+            .campaigns()
+            .create(&request, RequestOptions::default())
     );
 }
 fn recipients() -> serde_json::Value {

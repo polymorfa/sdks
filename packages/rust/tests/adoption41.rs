@@ -199,7 +199,7 @@ async fn campaign_typed_mapping_null_patches_open_messages_and_normalized_result
                 buttons: Some(
                     (0..4)
                         .map(|_| CampaignMessageButton {
-                id: None,
+                            id: None,
                             kind: CampaignMessageButtonKind::Reply,
                             label: "".into(),
                             url: None,

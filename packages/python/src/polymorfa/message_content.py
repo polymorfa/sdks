@@ -233,7 +233,15 @@ class Base64DocumentButtonHeader(InteractiveBase64Media):
     filename: NotRequired[str]
 
 
-ButtonsMedia = UrlImageButtonHeader | UrlVideoButtonHeader | UrlDocumentButtonHeader | Base64ImageButtonHeader | Base64VideoButtonHeader | Base64DocumentButtonHeader
+ButtonsMedia = (
+    UrlImageButtonHeader
+    | UrlVideoButtonHeader
+    | UrlDocumentButtonHeader
+    | Base64ImageButtonHeader
+    | Base64VideoButtonHeader
+    | Base64DocumentButtonHeader
+)
+
 
 class ButtonBody(TypedDict):
     body: str
