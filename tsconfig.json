@@ -5,18 +5,36 @@
     "moduleResolution": "NodeNext",
     "jsx": "react-jsx",
     "paths": {
-      "@polymorfa/browser": ["./packages/browser/src/index.ts"],
-      "@polymorfa/browser/internal": ["./packages/browser/src/internal.ts"],
       "@polymorfa/sdk": ["./packages/typescript/src/index.ts"],
       "@polymorfa/sdk/calls": ["./packages/calls/src/index.ts"],
       "@polymorfa/sdk/calls/internal": ["./packages/calls/src/internal.ts"],
-      "@polymorfa/devtools": ["./packages/devtools/src/index.ts"],
-      "@polymorfa/elements": ["./packages/elements/src/index.ts"],
+      "@polymorfa/ui-kit": ["./packages/ui-kit/src/browser/index.ts"],
+      "@polymorfa/ui-kit/internal": [
+        "./packages/ui-kit/src/browser/internal.ts"
+      ],
+      "@polymorfa/ui-kit/react": ["./packages/ui-kit/src/react/index.ts"],
+      "@polymorfa/ui-kit/web-components": [
+        "./packages/ui-kit/src/web-components/index.ts"
+      ],
+      "@polymorfa/ui-kit/web-components/chat": [
+        "./packages/ui-kit/src/web-components/chat.ts"
+      ],
+      "@polymorfa/ui-kit/web-components/templates": [
+        "./packages/ui-kit/src/web-components/templates.ts"
+      ],
+      "@polymorfa/ui-kit/web-components/calls": [
+        "./packages/ui-kit/src/web-components/calls.ts"
+      ],
+      "@polymorfa/ui-kit/appearance": [
+        "./packages/ui-kit/src/appearance/index.ts"
+      ],
+      "@polymorfa/ui-kit/store": ["./packages/ui-kit/src/store/index.ts"],
+      "@polymorfa/ui-kit/store/react": ["./packages/ui-kit/src/store/react.ts"],
+      "@polymorfa/ui-kit/devtools": ["./packages/ui-kit/src/devtools/index.ts"],
+      "@polymorfa/ui-kit/devtools/production": [
+        "./packages/ui-kit/src/devtools/production.ts"
+      ],
       "@polymorfa/nextjs": ["./packages/nextjs/src/index.ts"],
-      "@polymorfa/react": ["./packages/react/src/index.ts"],
-      "@polymorfa/store": ["./packages/store/src/index.ts"],
-      "@polymorfa/store/react": ["./packages/store/src/react.ts"],
-      "@polymorfa/ui": ["./packages/ui/src/index.ts"],
       "@polymorfa/storage": ["./packages/storage/src/index.ts"],
       "@polymorfa/storage/d1": ["./packages/storage/src/adapters/d1.ts"],
       "@polymorfa/storage/d1-bridge": ["./packages/storage/src/d1-bridge.ts"]
