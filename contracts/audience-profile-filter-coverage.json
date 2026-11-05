@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "note": "Scoped list-filter attribution, separate from baseline and other supplement pins. Native wire tests and package/environment acceptance remain separate.",
-  "sourceSdkCommit": "0bd3033352b7884d51646e1f2636f4032a32772d",
+  "sourceSdkCommit": "1ae594c6faca282f8c49607b42c29589eb3ef872",
   "principal": "organization",
   "contract": {
     "path": "contracts/audience-profiles.json",
