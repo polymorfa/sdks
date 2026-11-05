@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "note": "Scoped list-filter attribution, separate from baseline and other supplement pins. Native wire tests and package/environment acceptance remain separate.",
+  "sourceSdkCommit": "1a9620ee2d8c269b3993f6d6e94a59d5ee6a059b",
+  "principal": "organization",
+  "contract": {
+    "path": "contracts/audience-profiles.json",
+    "repository": "polymorfa/polymorfa",
+    "commit": "561c9ebcefdf05784870e8ad5a88652f721da82a",
+    "sourcePath": "apps/api/docs/openapi.management.json",
+    "sourceSha256": "3a4370816296cf96296d643e3d823185c64d354ca29ac24343cebff774d43319",
+    "blobSha1": "e06a52c1bbb79d7421a0f5d975872ecddc6fa41a"
+  },
+  "operation": {
+    "operationId": "listAudienceProfiles",
+    "method": "GET",
+    "path": "/platform/audience-profiles"
+  },
+  "queryParameters": ["cursor", "limit", "tag", "phonePrefix"],
+  "languages": {
+    "typescript": {
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.audienceProfiles.list",
+      "method": "list",
+      "sourceFiles": [
+        "src/platform/audience-profiles.ts",
+        "src/campaign-contracts.ts",
+        "src/campaign-contract-validation.ts"
+      ],
+      "testFile": "test/audience-profiles.test.ts",
+      "parameters": {
+        "tag": "tag",
+        "phonePrefix": "phonePrefix"
+      }
+    },
+    "go": {
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.AudienceProfiles().List",
+      "method": "List",
+      "sourceFiles": [
+        "audience_profiles.go",
+        "audience_profile_types.go",
+        "campaign_contract_validation.go"
+      ],
+      "testFile": "audience_profile_filters_test.go",
+      "parameters": {
+        "tag": "Tag",
+        "phonePrefix": "PhonePrefix"
+      }
+    },
+    "python": {
+      "status": "covered",
+      "sdkMethod": "AudienceProfiles.list",
+      "method": "list",
+      "sourceFiles": [
+        "src/polymorfa/campaign_profiles.py",
+        "src/polymorfa/campaign_contract_models.py",
+        "src/polymorfa/campaign_contract_validation.py"
+      ],
+      "testFile": "tests/test_audience_profile_filters.py",
+      "parameters": {
+        "tag": "tag",
+        "phonePrefix": "phonePrefix"
+      }
+    },
+    "php": {
+      "status": "covered",
+      "sdkMethod": "AudienceProfiles::list",
+      "method": "list",
+      "sourceFiles": [
+        "src/Resources/AudienceProfiles.php",
+        "src/AudienceProfileModels.php",
+        "src/CampaignContractValidation.php"
+      ],
+      "testFile": "tests/campaign_contracts.php",
+      "parameters": {
+        "tag": "tag",
+        "phonePrefix": "phonePrefix"
+      }
+    },
+    "rust": {
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.audience_profiles().list",
+      "method": "list",
+      "sourceFiles": [
+        "src/campaign_contract_resources.rs",
+        "src/campaign_contracts.rs",
+        "src/campaign_contract_validation.rs"
+      ],
+      "testFile": "tests/campaign_contracts.rs",
+      "parameters": {
+        "tag": "tag",
+        "phonePrefix": "phone_prefix"
+      }
+    },
+    "dotnet": {
+      "status": "covered",
+      "sdkMethod": "OrganizationClient.AudienceProfiles.ListAsync",
+      "method": "ListAsync",
+      "sourceFiles": [
+        "src/Polymorfa.Sdk/AudienceProfiles.cs",
+        "src/Polymorfa.Sdk/CampaignContractModels.cs",
+        "src/Polymorfa.Sdk/CampaignContractValidation.cs"
+      ],
+      "testFile": "tests/Polymorfa.Sdk.Tests/CampaignContractTests.cs",
+      "parameters": {
+        "tag": "Tag",
+        "phonePrefix": "PhonePrefix"
+      }
+    }
+  }
+}

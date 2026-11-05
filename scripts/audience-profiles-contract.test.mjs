@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url";
+import { checkAudienceProfileFilterCoverage } from "./audience-profile-filter-coverage.mjs";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { readFileSync } from "node:fs";
@@ -104,4 +106,63 @@ test("the source binding has eight closed operations, UUID paging and accepted s
   assert.equal(limit.minimum, 1);
   assert.equal(limit.maximum, 100);
   assert.equal(limit.default, 25);
+});
+
+const coverageRoot = fileURLToPath(new URL("..", import.meta.url));
+const filterCoverage = JSON.parse(
+  readFileSync(
+    new URL(
+      "../contracts/audience-profile-filter-coverage.json",
+      import.meta.url,
+    ),
+    "utf8",
+  ),
+);
+
+test("the checked filter supplement attributes every public SDK and wire test", () => {
+  assert.deepEqual(checkAudienceProfileFilterCoverage(coverageRoot), {
+    operations: 1,
+    filters: 2,
+    languages: 6,
+  });
+});
+test("filter coverage refuses missing languages, query fields and stale API pins", () => {
+  for (const mutate of [
+    (value) => {
+      delete value.languages.rust;
+    },
+    (value) => {
+      value.queryParameters.pop();
+    },
+    (value) => {
+      value.contract.commit = "0".repeat(40);
+    },
+    (value) => {
+      value.contract.blobSha1 = "0".repeat(40);
+    },
+    (value) => {
+      value.languages.typescript.sdkMethod = "AudienceProfiles.noSuchMethod";
+    },
+    (value) => {
+      delete value.languages.go.parameters.phonePrefix;
+    },
+  ]) {
+    const value = structuredClone(filterCoverage);
+    mutate(value);
+    assert.throws(() =>
+      checkAudienceProfileFilterCoverage(coverageRoot, value),
+    );
+  }
+});
+test("filter coverage refuses absent or escaping evidence instead of counting it", () => {
+  for (const path of [
+    "test/no-such-filter-wire.test.ts",
+    "../outside.test.ts",
+  ]) {
+    const value = structuredClone(filterCoverage);
+    value.languages.typescript.testFile = path;
+    assert.throws(() =>
+      checkAudienceProfileFilterCoverage(coverageRoot, value),
+    );
+  }
 });
