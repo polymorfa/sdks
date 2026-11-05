@@ -565,7 +565,12 @@ discovery uses `BridgeClient`, and the CLI listener protocol stays CLI-only; the
    reviewed counts, zero changed fingerprints, valid public method mappings,
    and source snapshot integrity.
 
-`npm run check:coverage` uses the checked-in snapshots. Its strict flag requires
+`npm run check:coverage` uses the checked-in snapshots. The checker always
+validates interactive supplement registration when reading the repository's
+`contracts/coverage.json`; use `--interactive-supplement` when checking a candidate
+copy of that ledger. Independent contract fixtures remain generic coverage
+inputs and do not inherit the repository's separately pinned supplement.
+Its strict flag requires
 a ledger row for every operation; it does not require every row to be covered.
 The cross-repository workflow compares an exact source revision and reports
 missing or changed contracts for follow-up. Its dedicated GitHub App must have

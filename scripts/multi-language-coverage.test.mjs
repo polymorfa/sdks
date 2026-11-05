@@ -223,7 +223,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { spawnSync } from "node:child_process";
 
-test("the shared coverage CLI rejects a missing interactive registration", () => {
+test("the shared coverage CLI rejects a candidate ledger missing interactive registration", () => {
   const parent = resolve(homedir(), ".polymorfa-agent-work");
   mkdirSync(parent, { recursive: true });
   const work = mkdtempSync(resolve(parent, "sdk-interactive-coverage-"));
@@ -245,6 +245,7 @@ test("the shared coverage CLI rejects a missing interactive registration", () =>
         "--ledger",
         path,
         "--strict",
+        "--interactive-supplement",
       ],
       { encoding: "utf8" },
     );

@@ -48,7 +48,16 @@ function main() {
       ...extractOperations("platform", readJson(args.platform)),
     ];
     const report = compareCoverage(actual, ledger, args.strict === true);
-    checkInteractiveSupplement(resolve(import.meta.dirname, ".."), { ledger });
+    const root = resolve(import.meta.dirname, "..");
+    // The generic checker also serves isolated contracts and test fixtures.
+    // Enforce the repository supplement for its real ledger, or explicitly
+    // when validating a candidate copy of that ledger.
+    if (
+      resolve(args.ledger) === resolve(root, "contracts/coverage.json") ||
+      args["interactive-supplement"] === true
+    ) {
+      checkInteractiveSupplement(root, { ledger });
+    }
     if (args.report !== undefined) {
       writeFileSync(args.report, `${JSON.stringify(report, null, 2)}\n`);
     } else {
@@ -76,8 +85,8 @@ function parseArguments(argv) {
         "Usage: check-coverage --messaging <spec> --platform <spec> --ledger <ledger> [--report <file>]",
       );
     }
-    if (flag === "--strict") {
-      values.strict = true;
+    if (flag === "--strict" || flag === "--interactive-supplement") {
+      values[flag.slice(2)] = true;
       continue;
     }
     const value = argv[index + 1];
