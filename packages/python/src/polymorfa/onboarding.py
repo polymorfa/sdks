@@ -7,6 +7,11 @@ from typing import Literal
 from typing_extensions import NotRequired, TypedDict
 
 from . import campaign_contract_validation as V
+from .business_account_modes import (
+    TestingAccountMode,
+    TestingAccountModeInput,
+    validate_testing_account_mode,
+)
 from .campaign_contract_response import acknowledged
 from .errors import ValidationError
 from .messaging import O, Resource, segment
@@ -194,6 +199,20 @@ class UnlinkedDevice(TypedDict):
 
 
 class Testing(Resource):
+    @acknowledged()
+    async def set_account_mode(
+        self, session: str, body: TestingAccountModeInput, *, options: RequestOptions = O
+    ) -> ApiResponse[TestingAccountMode]:
+        self._server()
+        V.text(session, "session", 1, 256)
+        validate_testing_account_mode(body)
+        return await self._request(
+            "PUT",
+            f"/messaging/{segment(session)}/phone/account-mode",
+            body=V.capture(body),
+            options=options,
+        )
+
     async def create_history_fixture(
         self, project_id: str, body: HistoryFixture, *, options: RequestOptions = O
     ) -> ApiResponse[CreatedHistoryFixture]:

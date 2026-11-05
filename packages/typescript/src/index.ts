@@ -369,6 +369,7 @@ export type {
   AsyncAcceptedData,
   ButtonsMessageContent,
   BusinessProfile,
+  ContactEncryption,
   BusinessProfileCategory,
   BusinessProfileHours,
   BusinessQuickReply,

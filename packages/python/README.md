@@ -910,3 +910,32 @@ async def confirm_explicitly():
     # Call only after an explicit decision based on the current state.
     return await client.passkeys.confirm(session, supplied_confirmation)
 ```
+
+
+## Test-number account modes
+
+The Business supplement is pinned separately to API source
+`f391fb49bbffddb45459525091fe8851182fc298` in
+`contracts/business-account-modes.json`. The existing API baseline remains unchanged.
+This source support does not establish hosted availability or package publication.
+
+Use a trusted-server Messaging client to change a Test number's account mode:
+
+```python
+result = await client.testing.set_account_mode(
+    "demo", {"accountType": "business_app", "primaryPlatform": "ios"}
+)
+```
+
+The request requires `accountType`: `whatsapp_app`, `business_app`, `meta_cloud`
+or `meta_coexistence`. Phone modes accept `primaryPlatform` (`android` or `ios`);
+omit it for `meta_cloud`. Legacy `personal` and `business` names are rejected.
+A change unlinks companions, which must pair again. The response distinguishes a
+completed unchanged mode with `changed: false`. Client tokens cannot perform this
+operation. It does not convert a real WhatsApp account.
+
+QuickLink `configuration.testing.configuration` uses the same mode names and
+platform rule while preserving other simulation fields. Business contact profiles
+retain optional `encryption`: `end_to_end`, `hybrid` or `not_end_to_end`. Omission
+remains omission. These fields describe API responses, not a new encryption
+control in the SDK.

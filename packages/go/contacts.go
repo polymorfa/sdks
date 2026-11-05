@@ -45,6 +45,7 @@ type BusinessProfileHours struct {
 	CloseTime string `json:"closeTime"`
 }
 type BusinessProfile struct {
+	Encryption *ContactEncryption `json:"encryption,omitempty"`
 	ConversationReference
 	Address       string                    `json:"address"`
 	Email         string                    `json:"email"`

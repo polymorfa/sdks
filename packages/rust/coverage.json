@@ -4646,6 +4646,12 @@
       "baselineUnchanged": true,
       "published": false,
       "language": "rust"
+    },
+    "businessAccountModes": {
+      "inventory": "contracts/native-business-account-modes.json",
+      "baselineUnchanged": true,
+      "published": false,
+      "language": "rust"
     }
   }
 }
