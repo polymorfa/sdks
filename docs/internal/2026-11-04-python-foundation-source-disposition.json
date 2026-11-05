@@ -581,7 +581,7 @@
       ],
       "authored_semantics": "URLError/TimeoutError/OSError become TransportError with no cause; interrupted response preserves request ID; all HTTP/response contexts close.",
       "current_source_semantics": "httpx timeout/connection failures have semantic metadata and no raw exception chaining; async streams close and root/view ownership specified.",
-      "disposition": "Transport safety replaced through current async implementation; historical error class names not aliases.",
+      "disposition": "Transport safety replaced through current async implementation; historical error class names not aliases. Historical limitation: http.client.IncompleteRead is not caught by the old urllib exception handlers; the original unresolved finding concerned that old implementation. It is not restored by this reconciliation. Current HTTPX transport and its qualification remain authoritative.",
       "evidence": [
         "packages/python/src/polymorfa/transport.py",
         "packages/python/src/polymorfa/client.py",
@@ -853,7 +853,7 @@
     {
       "id": "S20",
       "authored_paths": ["packages/python/tests/test_client.py"],
-      "authored_semantics": "Seven stdlib tests: project/auth/header mapping, canonical team key/base origin rejection, 401/HTML secrecy, no redirect forwarding, no500retry, HTML, malformed JSON and non-list data success failures; no oversize-response test, pinned OpenAPI project route.",
+      "authored_semantics": "Seven stdlib tests: project/auth/header mapping, canonical team key/base origin rejection, 401/HTML secrecy, no credential forwarding on redirects, no retry after HTTP 500, HTML, malformed JSON and non-list data success failures; no oversize-response test, pinned OpenAPI project route.",
       "current_source_semantics": "Current async project/credential/error/redirect tests cover replacement intent, not old-only policy assertions.",
       "disposition": "Retain exact historical tests, never weaken or relabel old passes as current runtime evidence. Old7pass/currentcompile remain historical only.",
       "evidence": [
@@ -999,13 +999,13 @@
       "semantic_ids": ["S19"]
     }
   ],
-  "historical_checks": "2026-10-30 old Python7pass/currentPythoncompile were historical at their then heads, not final-source/native/consumer/admission evidence. No new source checks performed.",
+  "historical_checks": "2026-10-30 old Python test run (7 passed)/then-current Python compilation were historical at their then heads, not final-source/native/consumer/admission evidence. No new source checks performed.",
   "constraints": [
     "No old interface, workflow, dependency, retention, key policy or output shape restored.",
     "No claim that absent old semantics are byte/behavior equivalent.",
-    "Current SDK production audit6moderates, Rust1.85diskfailure, publisherreader and source-pin eligibility gates remain independently owned.",
+    "Current SDK production audit with six moderate findings, Rust 1.85 disk failure, publisher/reader and source-pin eligibility gates remain independently owned.",
     "Current CLI SDK-containing-package gate remains genuine.",
-    "No provider/SSH/host/pool/deploy or current914V8 custody change."
+    "No provider/SSH/host/pool/deploy or separate 914 V8 custody change."
   ],
   "historical_packet": {
     "sha256": "f41af418bff03fced5e9d084a982c04e24db423a8a1f5bb675a4576b0d769baa",
