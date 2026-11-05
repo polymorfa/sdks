@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "cc90353c4cf1ce560ebc960fdfa2eebd4f3281b6",
+  "sourceCommit": "349e67c1aa3ebd0afc3d0b42075ad48a5215b2ef",
   "sources": [
     {
       "path": "apps/api/docs/openapi.json",
