@@ -853,7 +853,7 @@
     {
       "id": "S20",
       "authored_paths": ["packages/python/tests/test_client.py"],
-      "authored_semantics": "Seven stdlib tests: project/auth/header mapping, canonical team key/base origin rejection, 401/HTML secrecy, no credential forwarding on redirects, no retry after HTTP 500, HTML, malformed JSON and non-list data success failures; no oversize-response test, pinned OpenAPI project route.",
+      "authored_semantics": "Seven stdlib tests: project/auth/header mapping, canonical team key/base origin rejection, 401/HTML secrecy, no credential forwarding on redirects, no retry after a server failure, HTML, malformed JSON and non-list data success failures; no oversize-response test, pinned OpenAPI project route.",
       "current_source_semantics": "Current async project/credential/error/redirect tests cover replacement intent, not old-only policy assertions.",
       "disposition": "Retain exact historical tests, never weaken or relabel old passes as current runtime evidence. The old seven-test pass and the then-current Python compilation remain historical evidence only.",
       "evidence": [
