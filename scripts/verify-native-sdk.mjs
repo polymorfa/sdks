@@ -89,6 +89,14 @@ if (language === "go") {
       throw new Error("PHP framework host verification failed");
   }
 } else if (language === "rust") {
+  // Keep the full all-feature suite small enough to link on normal CI disks.
+  // Debug assertions, optimization, test selection and cache settings are unchanged.
+  const validationProfiles = [
+    "--config",
+    "profile.dev.debug=0",
+    "--config",
+    "profile.test.debug=0",
+  ];
   run("node", [resolve(root, "examples/rust/yew/build-elements.mjs")]);
   for (const [manifest, target] of [
     ["examples/rust/axum/Cargo.toml", undefined],
@@ -111,13 +119,14 @@ if (language === "go") {
   run("cargo", ["fmt", "--check"]);
   run("cargo", [
     "clippy",
+    ...validationProfiles,
     "--all-targets",
     "--all-features",
     "--",
     "-D",
     "warnings",
   ]);
-  run("cargo", ["test", "--all-features"]);
+  run("cargo", ["test", ...validationProfiles, "--all-features"]);
   const coreManifest = resolve(cwd, "storage-core/Cargo.toml");
   run("cargo", ["fmt", "--manifest-path", coreManifest, "--check"]);
   run("cargo", [
