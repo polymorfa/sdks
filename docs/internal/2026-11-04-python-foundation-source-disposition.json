@@ -1,0 +1,1015 @@
+{
+  "schema_version": 1,
+  "purpose": "Retain historical authored source semantics and exact provenance during ordinary two-parent source reconciliation; no runtime restoration or publication/acceptance claim.",
+  "disposition_authority": "Original source owner reconciliation under the human workflow of 2026-11-05. Preserve accepted main runtime and all authored history; retain candidate-only semantics here rather than restoring unaccepted interfaces or policies. No runtime/consumer/release pass is asserted.",
+  "repository": "polymorfa/sdks",
+  "owning_pull_request": 368,
+  "original_head": "98403be5b48201224c34502155989202ce96e703",
+  "reconciliation_main": "a6fc6ea5a5f71a33cce364cf021a1bb974906e93",
+  "main_tree": "bb37d9f4c33704d4db6f2a654f60e3ccd8dc3bb6",
+  "original_authored_commits": [
+    {
+      "sha": "27c53543b62f40584e9b85a3a0c4fa1bf9bcd5e2",
+      "parents": ["293429ec83f291e0f3552cd045203eb54d94d4ce"],
+      "message": "Add bounded Python Platform SDK source foundation",
+      "tree": "79bd1f1caa61538254ca7d78e2bd36e9da69cabb"
+    },
+    {
+      "sha": "98403be5b48201224c34502155989202ce96e703",
+      "parents": ["27c53543b62f40584e9b85a3a0c4fa1bf9bcd5e2"],
+      "message": "Document Python SDK release preparation gates",
+      "tree": "13e66bd8b5eefcca9830a104a3fcdf8537adba1f"
+    }
+  ],
+  "semantics": [
+    {
+      "id": "S01",
+      "authored_paths": [
+        "packages/python/src/polymorfa_sdk/__init__.py",
+        "packages/python/src/polymorfa_sdk/client.py",
+        "packages/python/README.md"
+      ],
+      "authored_semantics": "Synchronous Client(api_key=...) in import polymorfa_sdk; mutable Client builds urllib opener and ProjectsResource; frozen Response/Project/ResponseMetadata dataclasses.",
+      "current_source_semantics": "AsyncClient(Credential(...)) in polymorfa; immutable scoped async clients, httpx lifecycle/close/context management and ApiResponse/TypedDict types.",
+      "disposition": "Distinct interface not ported. The active instruction identifies the synchronous policy as intentionally unaccepted; preserve exact text/history, do not invent sync demand.",
+      "evidence": [
+        "packages/python/src/polymorfa/client.py",
+        "packages/python/src/polymorfa/platform.py",
+        "packages/python/README.md"
+      ],
+      "old_objects": [
+        {
+          "path": "packages/python/src/polymorfa_sdk/__init__.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "1e30bbef90ec30fb89b5214b5f606571a9a88a59"
+        },
+        {
+          "path": "packages/python/src/polymorfa_sdk/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "11abc316c69b92e3dff8638be67844fb3e66a41d"
+        },
+        {
+          "path": "packages/python/README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "f8d511b4520dee6133fc54acef6b05ec001c34a4"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/src/polymorfa/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c816b39d17a08fea275d0f8c5f436a23c752753e"
+        },
+        {
+          "path": "packages/python/src/polymorfa/platform.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "9c1b2ba14f1d36dbb81159961458ecb2f8919919"
+        },
+        {
+          "path": "packages/python/README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "ee75fb9af1ca20410a02e8ee3b379f5eef5c3959"
+        }
+      ]
+    },
+    {
+      "id": "S02",
+      "authored_paths": ["packages/python/src/polymorfa_sdk/client.py"],
+      "authored_semantics": "Only projects.list; GET /platform/projects, Authorization bearer team key, Accept application/json; sessions:read described, server authority retained.",
+      "current_source_semantics": "AsyncClient organization-only boundary and projects.list issue the same read route; typed ProjectWithStats data envelope. SDK source is not proof of server permission/deployment.",
+      "disposition": "Core route intent replaced; no missing project read identified.",
+      "evidence": [
+        "packages/python/src/polymorfa/client.py",
+        "packages/python/src/polymorfa/platform.py",
+        "packages/python/src/polymorfa/platform_core.py",
+        "packages/python/tests/test_platform_core.py"
+      ],
+      "old_objects": [
+        {
+          "path": "packages/python/src/polymorfa_sdk/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "11abc316c69b92e3dff8638be67844fb3e66a41d"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/src/polymorfa/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c816b39d17a08fea275d0f8c5f436a23c752753e"
+        },
+        {
+          "path": "packages/python/src/polymorfa/platform.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "9c1b2ba14f1d36dbb81159961458ecb2f8919919"
+        },
+        {
+          "path": "packages/python/src/polymorfa/platform_core.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "95d921511b5626884f75a557ed70fcf7a010eb82"
+        },
+        {
+          "path": "packages/python/tests/test_platform_core.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2845d81d543ff85f3ac47aa411f5ec2556b118ef"
+        }
+      ]
+    },
+    {
+      "id": "S03",
+      "authored_paths": [
+        "packages/python/src/polymorfa_sdk/client.py",
+        "packages/python/src/polymorfa_sdk/__init__.py"
+      ],
+      "authored_semantics": "Exact pmfa_ plus 72-character regex; intended team-only interface, but no explicit project/client prefix-family exclusion inside that length; supplied non-team fixture shapes rejected. ValueError on framing failure.",
+      "current_source_semantics": "Explicit principal Credential validates CRC32 opaque framing/canonical encoding and refuses project/client credentials in AsyncClient; semantic ConfigurationError.",
+      "disposition": "Exact-length regex intentionally excluded. Do not regress growing opaque keys or principal boundaries.",
+      "evidence": [
+        "packages/python/src/polymorfa/transport.py",
+        "packages/python/src/polymorfa/client.py",
+        "packages/python/tests/test_credential_opaque.py"
+      ],
+      "old_objects": [
+        {
+          "path": "packages/python/src/polymorfa_sdk/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "11abc316c69b92e3dff8638be67844fb3e66a41d"
+        },
+        {
+          "path": "packages/python/src/polymorfa_sdk/__init__.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "1e30bbef90ec30fb89b5214b5f606571a9a88a59"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/src/polymorfa/transport.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "730eb9b42327e94f400baa29e50d9bd5638766b1"
+        },
+        {
+          "path": "packages/python/src/polymorfa/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c816b39d17a08fea275d0f8c5f436a23c752753e"
+        },
+        {
+          "path": "packages/python/tests/test_credential_opaque.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "d3d00aa55bfed17fa8545b2d40ea66488f31f4db"
+        }
+      ]
+    },
+    {
+      "id": "S04",
+      "authored_paths": ["packages/python/src/polymorfa_sdk/client.py"],
+      "authored_semantics": "HTTPS origin or loopback HTTP; forbids userinfo, query, fragment and path beyond slash; custom base origin; no browser/WASM runtime rejection.",
+      "current_source_semantics": "Transport retains origin validation; Credential additionally restricts server credentials on emscripten/wasi.",
+      "disposition": "Origin safety replaced; do not remove current runtime/principal safeguards.",
+      "evidence": ["packages/python/src/polymorfa/transport.py"],
+      "old_objects": [
+        {
+          "path": "packages/python/src/polymorfa_sdk/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "11abc316c69b92e3dff8638be67844fb3e66a41d"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/src/polymorfa/transport.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "730eb9b42327e94f400baa29e50d9bd5638766b1"
+        }
+      ]
+    },
+    {
+      "id": "S05",
+      "authored_paths": [
+        "packages/python/src/polymorfa_sdk/client.py",
+        "packages/python/README.md"
+      ],
+      "authored_semantics": "timeout defaults 10 seconds; rejects <=0 but not NaN/infinity/bool by explicit finite check; blocking urllib timeout.",
+      "current_source_semantics": "30-second async default; positive finite RequestOptions timeout and cancellation behavior.",
+      "disposition": "Different timeout/API policy preserved in provenance, not restored. No current default changed.",
+      "evidence": [
+        "packages/python/src/polymorfa/transport.py",
+        "packages/python/README.md"
+      ],
+      "old_objects": [
+        {
+          "path": "packages/python/src/polymorfa_sdk/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "11abc316c69b92e3dff8638be67844fb3e66a41d"
+        },
+        {
+          "path": "packages/python/README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "f8d511b4520dee6133fc54acef6b05ec001c34a4"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/src/polymorfa/transport.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "730eb9b42327e94f400baa29e50d9bd5638766b1"
+        },
+        {
+          "path": "packages/python/README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "ee75fb9af1ca20410a02e8ee3b379f5eef5c3959"
+        }
+      ]
+    },
+    {
+      "id": "S06",
+      "authored_paths": [
+        "packages/python/src/polymorfa_sdk/client.py",
+        "packages/python/README.md"
+      ],
+      "authored_semantics": "Optional YYYY-MM-DD api_version; omit header by default; example uses 2026-03-20; User-Agent polymorfa-python-sdk/0.1.",
+      "current_source_semantics": "Default API_VERSION 2026-09-22, request overrides and reserved headers; versioned polymorfa-python User-Agent plus Python version.",
+      "disposition": "Preserve current version identity/default. Historical date example is not current version authority.",
+      "evidence": [
+        "packages/python/src/polymorfa/transport.py",
+        "packages/python/README.md"
+      ],
+      "old_objects": [
+        {
+          "path": "packages/python/src/polymorfa_sdk/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "11abc316c69b92e3dff8638be67844fb3e66a41d"
+        },
+        {
+          "path": "packages/python/README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "f8d511b4520dee6133fc54acef6b05ec001c34a4"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/src/polymorfa/transport.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "730eb9b42327e94f400baa29e50d9bd5638766b1"
+        },
+        {
+          "path": "packages/python/README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "ee75fb9af1ca20410a02e8ee3b379f5eef5c3959"
+        }
+      ]
+    },
+    {
+      "id": "S07",
+      "authored_paths": ["packages/python/src/polymorfa_sdk/client.py"],
+      "authored_semantics": "stdlib build_opener uses default proxy/environment handling; no explicit trust_env=False; custom _NoRedirect opener.",
+      "current_source_semantics": "httpx transport explicitly trust_env=False, proxy option and follow_redirects=False; JSON redirects rejected before body/retry.",
+      "disposition": "Current explicit transport/redirect boundary retained; not identical proxy semantics.",
+      "evidence": [
+        "packages/python/src/polymorfa/transport.py",
+        "packages/python/tests/test_client.py"
+      ],
+      "old_objects": [
+        {
+          "path": "packages/python/src/polymorfa_sdk/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "11abc316c69b92e3dff8638be67844fb3e66a41d"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/src/polymorfa/transport.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "730eb9b42327e94f400baa29e50d9bd5638766b1"
+        },
+        {
+          "path": "packages/python/tests/test_client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "89888ffe255e7484a652bbd73a6579be051c2226"
+        }
+      ]
+    },
+    {
+      "id": "S08",
+      "authored_paths": ["packages/python/src/polymorfa_sdk/client.py"],
+      "authored_semantics": "Every JSON success/error read capped at 2 MiB plus one byte; oversize success ProtocolError, oversize error drops body.",
+      "current_source_semantics": "Current request JSON body uses aread; no equivalent 2 MiB cap in inspected transport.",
+      "disposition": "Real candidate-only bound, not claimed replaced. Active instruction says responsecap is intentionally unaccepted. No cap silently introduced or current bound claimed.",
+      "evidence": ["packages/python/src/polymorfa/transport.py"],
+      "old_objects": [
+        {
+          "path": "packages/python/src/polymorfa_sdk/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "11abc316c69b92e3dff8638be67844fb3e66a41d"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/src/polymorfa/transport.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "730eb9b42327e94f400baa29e50d9bd5638766b1"
+        }
+      ]
+    },
+    {
+      "id": "S09",
+      "authored_paths": [
+        "packages/python/src/polymorfa_sdk/client.py",
+        "packages/python/src/polymorfa_sdk/errors.py"
+      ],
+      "authored_semantics": "Success requires exact parsed MIME application/json; invalid Unicode/JSON raises ProtocolError; Project parsing requires object/data list/dict items, string _id/name/slug/stage, development|production, exact bool isActive and nonnegative exact int counts.",
+      "current_source_semantics": "Transport object/envelope handling and typed ProjectWithStats API; preserves unknown response fields. Current project list has no equivalent per-field dataclass validator; JSON decoder rejects non-JSON numeric constants.",
+      "disposition": "Strict Project runtime schema validation and projection are distinct exclusions, not parity. Do not confuse typing with validation or impose old schema on current responses.",
+      "evidence": [
+        "packages/python/src/polymorfa/platform.py",
+        "packages/python/src/polymorfa/platform_core.py",
+        "packages/python/src/polymorfa/transport.py",
+        "packages/python/README.md"
+      ],
+      "old_objects": [
+        {
+          "path": "packages/python/src/polymorfa_sdk/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "11abc316c69b92e3dff8638be67844fb3e66a41d"
+        },
+        {
+          "path": "packages/python/src/polymorfa_sdk/errors.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "9fcd52a4e06dd09065ede942a3fa739869aa401c"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/src/polymorfa/platform.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "9c1b2ba14f1d36dbb81159961458ecb2f8919919"
+        },
+        {
+          "path": "packages/python/src/polymorfa/platform_core.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "95d921511b5626884f75a557ed70fcf7a010eb82"
+        },
+        {
+          "path": "packages/python/src/polymorfa/transport.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "730eb9b42327e94f400baa29e50d9bd5638766b1"
+        },
+        {
+          "path": "packages/python/README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "ee75fb9af1ca20410a02e8ee3b379f5eef5c3959"
+        }
+      ]
+    },
+    {
+      "id": "S10",
+      "authored_paths": ["packages/python/src/polymorfa_sdk/client.py"],
+      "authored_semantics": "Projects projected from _id to Project.id; extra fields dropped; list returned directly as Response.data; stats ints only; no pagination.",
+      "current_source_semantics": "Current DataEnvelope[list[ProjectWithStats]] retains API field naming/envelope and optional project fields; AsyncClient has broader resources/pagination.",
+      "disposition": "Current envelope is authoritative; do not restore old property mapping or narrow success fields.",
+      "evidence": [
+        "packages/python/src/polymorfa/platform.py",
+        "packages/python/src/polymorfa/platform_core.py",
+        "packages/python/tests/test_platform_core.py"
+      ],
+      "old_objects": [
+        {
+          "path": "packages/python/src/polymorfa_sdk/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "11abc316c69b92e3dff8638be67844fb3e66a41d"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/src/polymorfa/platform.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "9c1b2ba14f1d36dbb81159961458ecb2f8919919"
+        },
+        {
+          "path": "packages/python/src/polymorfa/platform_core.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "95d921511b5626884f75a557ed70fcf7a010eb82"
+        },
+        {
+          "path": "packages/python/tests/test_platform_core.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2845d81d543ff85f3ac47aa411f5ec2556b118ef"
+        }
+      ]
+    },
+    {
+      "id": "S11",
+      "authored_paths": [
+        "packages/python/src/polymorfa_sdk/client.py",
+        "packages/python/src/polymorfa_sdk/errors.py"
+      ],
+      "authored_semantics": "Metadata includes only request_id and applied api_version; HTTP status on errors; immutable response dataclasses.",
+      "current_source_semantics": "ApiResponse/ResponseMetadata also contain status, attempts, selected safe headers, transport/routing/operation information.",
+      "disposition": "Request/version metadata intent replaced and expanded; exact old return type remains historical.",
+      "evidence": ["packages/python/src/polymorfa/transport.py"],
+      "old_objects": [
+        {
+          "path": "packages/python/src/polymorfa_sdk/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "11abc316c69b92e3dff8638be67844fb3e66a41d"
+        },
+        {
+          "path": "packages/python/src/polymorfa_sdk/errors.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "9fcd52a4e06dd09065ede942a3fa739869aa401c"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/src/polymorfa/transport.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "730eb9b42327e94f400baa29e50d9bd5638766b1"
+        }
+      ]
+    },
+    {
+      "id": "S12",
+      "authored_paths": [
+        "packages/python/src/polymorfa_sdk/client.py",
+        "packages/python/src/polymorfa_sdk/errors.py"
+      ],
+      "authored_semantics": "No retry of any request, including GET/500/ambiguous failure; one blocking attempt only.",
+      "current_source_semantics": "Configurable default two retries; only safe methods/keyed writes, replay/operation-ID fences, Retry-After and async cancellation. Zero retries configurable.",
+      "disposition": "No-retry-only policy intentionally excluded; current retry guards must not change.",
+      "evidence": [
+        "packages/python/src/polymorfa/transport.py",
+        "packages/python/tests/test_client.py",
+        "packages/python/README.md"
+      ],
+      "old_objects": [
+        {
+          "path": "packages/python/src/polymorfa_sdk/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "11abc316c69b92e3dff8638be67844fb3e66a41d"
+        },
+        {
+          "path": "packages/python/src/polymorfa_sdk/errors.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "9fcd52a4e06dd09065ede942a3fa739869aa401c"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/src/polymorfa/transport.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "730eb9b42327e94f400baa29e50d9bd5638766b1"
+        },
+        {
+          "path": "packages/python/tests/test_client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "89888ffe255e7484a652bbd73a6579be051c2226"
+        },
+        {
+          "path": "packages/python/README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "ee75fb9af1ca20410a02e8ee3b379f5eef5c3959"
+        }
+      ]
+    },
+    {
+      "id": "S13",
+      "authored_paths": [
+        "packages/python/src/polymorfa_sdk/client.py",
+        "packages/python/src/polymorfa_sdk/errors.py"
+      ],
+      "authored_semantics": "HTTP errors expose generic HTTP status text, only lowercase underscore/digit code <=80 from nested JSON, request ID; never upstream message/raw body; 401/403 semantic classes only.",
+      "current_source_semantics": "Broader semantic classes and metadata; redacted JSON message/code/details/links, safe non-JSON fallback, credential-redaction helper.",
+      "disposition": "Safety intent replaced; exact error taxonomy/message/code-filter/field policy is distinct. No claim that current exposes no upstream JSON fields.",
+      "evidence": [
+        "packages/python/src/polymorfa/errors.py",
+        "packages/python/src/polymorfa/transport.py",
+        "packages/python/tests/test_client.py",
+        "packages/python/tests/test_credential_opaque.py"
+      ],
+      "old_objects": [
+        {
+          "path": "packages/python/src/polymorfa_sdk/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "11abc316c69b92e3dff8638be67844fb3e66a41d"
+        },
+        {
+          "path": "packages/python/src/polymorfa_sdk/errors.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "9fcd52a4e06dd09065ede942a3fa739869aa401c"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/src/polymorfa/errors.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "fba556ecc0f70134c3d1040d8397866f1fae36bf"
+        },
+        {
+          "path": "packages/python/src/polymorfa/transport.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "730eb9b42327e94f400baa29e50d9bd5638766b1"
+        },
+        {
+          "path": "packages/python/tests/test_client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "89888ffe255e7484a652bbd73a6579be051c2226"
+        },
+        {
+          "path": "packages/python/tests/test_credential_opaque.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "d3d00aa55bfed17fa8545b2d40ea66488f31f4db"
+        }
+      ]
+    },
+    {
+      "id": "S14",
+      "authored_paths": [
+        "packages/python/src/polymorfa_sdk/client.py",
+        "packages/python/src/polymorfa_sdk/errors.py"
+      ],
+      "authored_semantics": "URLError/TimeoutError/OSError become TransportError with no cause; interrupted response preserves request ID; all HTTP/response contexts close.",
+      "current_source_semantics": "httpx timeout/connection failures have semantic metadata and no raw exception chaining; async streams close and root/view ownership specified.",
+      "disposition": "Transport safety replaced through current async implementation; historical error class names not aliases. Historical limitation: http.client.IncompleteRead is not caught by the old urllib exception handlers; the original unresolved finding concerned that old implementation. It is not restored by this reconciliation. Current HTTPX transport and its qualification remain authoritative.",
+      "evidence": [
+        "packages/python/src/polymorfa/transport.py",
+        "packages/python/src/polymorfa/client.py",
+        "packages/python/tests/test_client.py"
+      ],
+      "old_objects": [
+        {
+          "path": "packages/python/src/polymorfa_sdk/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "11abc316c69b92e3dff8638be67844fb3e66a41d"
+        },
+        {
+          "path": "packages/python/src/polymorfa_sdk/errors.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "9fcd52a4e06dd09065ede942a3fa739869aa401c"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/src/polymorfa/transport.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "730eb9b42327e94f400baa29e50d9bd5638766b1"
+        },
+        {
+          "path": "packages/python/src/polymorfa/client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c816b39d17a08fea275d0f8c5f436a23c752753e"
+        },
+        {
+          "path": "packages/python/tests/test_client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "89888ffe255e7484a652bbd73a6579be051c2226"
+        }
+      ]
+    },
+    {
+      "id": "S15",
+      "authored_paths": [
+        "packages/python/pyproject.toml",
+        "packages/python/src/polymorfa_sdk/py.typed",
+        "packages/python/src/polymorfa_sdk/__init__.py"
+      ],
+      "authored_semantics": "setuptools>=69, Python>=3.11, zero runtime dependencies, distribution polymorfa-sdk 0.1.0.dev0, author/repository metadata, package-data polymorfa_sdk/py.typed.",
+      "current_source_semantics": "Hatchling>=1.26, Python>=3.10, httpx/cryptography/typing-extensions plus optional integrations; distribution/version same, import polymorfa, different package artifacts.",
+      "disposition": "Do not duplicate packaging, erase current dependencies or assert registry publication. Current physical-package eligibility remains a gate. Old marker/export inventory retained in text.",
+      "evidence": [
+        "packages/python/pyproject.toml",
+        "packages/python/README.md"
+      ],
+      "old_objects": [
+        {
+          "path": "packages/python/pyproject.toml",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "6e4fb3dfdab05f87f8d34478770fece138ae9279"
+        },
+        {
+          "path": "packages/python/src/polymorfa_sdk/py.typed",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "8b137891791fe96927ad78e64b0aad7bded08bdc"
+        },
+        {
+          "path": "packages/python/src/polymorfa_sdk/__init__.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "1e30bbef90ec30fb89b5214b5f606571a9a88a59"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/pyproject.toml",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "a23bfd54b77163725b0e8298873aef9fe2800061"
+        },
+        {
+          "path": "packages/python/README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "ee75fb9af1ca20410a02e8ee3b379f5eef5c3959"
+        }
+      ]
+    },
+    {
+      "id": "S16",
+      "authored_paths": [".github/workflows/python-ci.yml"],
+      "authored_semantics": "Separate foundation CI for dev/main and selected paths; Python3.11/3.12, checkout/setup, pip install build+ruff0.16.9, ruff check/format, stdlib unittest and wheel/sdist build.",
+      "current_source_semantics": "Current native SDK workflow invokes actual native producer/check suite and packaging workflow; root owns workflow/resource decisions.",
+      "disposition": "No old workflow restored. Existing current workflow/toolchain/audit failures are not waived.",
+      "evidence": [
+        ".github/workflows/native-sdks.yml",
+        ".github/workflows/native-release.yml",
+        "scripts/verify-native-sdk.mjs",
+        "AGENTS.md"
+      ],
+      "old_objects": [
+        {
+          "path": ".github/workflows/python-ci.yml",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "c021f8e4d010c5c40218d568772502de4971f865"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": ".github/workflows/native-sdks.yml",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "3c69c5d6882e086d9812d3a403bd4fe8e86bc853"
+        },
+        {
+          "path": ".github/workflows/native-release.yml",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "4b4fc9521b86e567cbc32c9fc84eeed532af9447"
+        },
+        {
+          "path": "scripts/verify-native-sdk.mjs",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "cbe2fc10e889fefd0f44a835324e9691c47acd14"
+        },
+        {
+          "path": "AGENTS.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "bb093dcc7f4be7f0255f095f61335e43d51c4780"
+        }
+      ]
+    },
+    {
+      "id": "S17",
+      "authored_paths": [".prettierignore", "packages/python/.gitignore"],
+      "authored_semantics": "Ignore candidate .venv/build/egg-info caches, dist, pycache/pyc and uv.lock.",
+      "current_source_semantics": "Current tree has its own ignore/configuration entries; full per-path typed comparisons retained.",
+      "disposition": "Tooling policy retained from main; do not overwrite ignore files to revive old layout. No original ignored assets inspected.",
+      "evidence": [".prettierignore", "packages/python/.gitignore"],
+      "old_objects": [
+        {
+          "path": ".prettierignore",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "46123e03e35b14e277c36f9458455213b53c7b0f"
+        },
+        {
+          "path": "packages/python/.gitignore",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "dabe46b365eca7d247e79fc6aa28f882750a5abf"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": ".prettierignore",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "6174c1f8799699df95d7bbab5606245834ae504c"
+        },
+        {
+          "path": "packages/python/.gitignore",
+          "absent": true
+        }
+      ]
+    },
+    {
+      "id": "S18",
+      "authored_paths": [
+        "README.md",
+        "packages/python/README.md",
+        "docs/releasing.md"
+      ],
+      "authored_semantics": "Source installation example and statement only project listing; unpublished/outside npm workflow; proposed release identity/approval before upload.",
+      "current_source_semantics": "Current README documents async breadth, package-local source status and current release guide/workflows.",
+      "disposition": "Historical availability statements are dated evidence, not current public/registry authority. No public doc rollback.",
+      "evidence": [
+        "README.md",
+        "packages/python/README.md",
+        "docs/releasing.md"
+      ],
+      "old_objects": [
+        {
+          "path": "README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "de8a5cb923bf5153b501b2dd3ccb7085bc0bf740"
+        },
+        {
+          "path": "packages/python/README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "f8d511b4520dee6133fc54acef6b05ec001c34a4"
+        },
+        {
+          "path": "docs/releasing.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "f8d7d05de7de2166edef022961ff05c19ed3315d"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "a7f026f154392f999852f5817ae5d2cc41b4a084"
+        },
+        {
+          "path": "packages/python/README.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "ee75fb9af1ca20410a02e8ee3b379f5eef5c3959"
+        },
+        {
+          "path": "docs/releasing.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "5fd54cd07e807731b9631289949dca758d49449c"
+        }
+      ]
+    },
+    {
+      "id": "S19",
+      "authored_paths": [
+        "docs/internal/python-release-preparation-2026-09-26.md"
+      ],
+      "authored_semantics": "110-line dated handoff: pinned original API commit, PyPI404/name normalization, Python3.11/dev0 candidate, no PyPI workflow then, incidental8npm dev publishing warning, proposed trusted publisher/environment sequence, exact later Mintlify edits and scopes, owner/release five-part limits.",
+      "current_source_semantics": "Current release tooling/eligibility differs. This historical handoff is absent from main, not replaced byte-for-byte.",
+      "disposition": "Genuinely unique engineering provenance. Retain exact old blob/commit/text in source disposition and immutable API packet; new inert provenance record warranted, no stale release instructions adopted.",
+      "evidence": [
+        "docs/releasing.md",
+        ".github/workflows/native-release.yml",
+        "AGENTS.md"
+      ],
+      "old_objects": [
+        {
+          "path": "docs/internal/python-release-preparation-2026-09-26.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "cf687fb7c1021691116852cdbc7190d095d0b83c"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "docs/releasing.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "5fd54cd07e807731b9631289949dca758d49449c"
+        },
+        {
+          "path": ".github/workflows/native-release.yml",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "4b4fc9521b86e567cbc32c9fc84eeed532af9447"
+        },
+        {
+          "path": "AGENTS.md",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "bb093dcc7f4be7f0255f095f61335e43d51c4780"
+        }
+      ]
+    },
+    {
+      "id": "S20",
+      "authored_paths": ["packages/python/tests/test_client.py"],
+      "authored_semantics": "Seven stdlib tests: project/auth/header mapping, canonical team key/base origin rejection, 401/HTML secrecy, no credential forwarding on redirects, no retry after a server failure, HTML, malformed JSON and non-list data success failures; no oversize-response test, pinned OpenAPI project route.",
+      "current_source_semantics": "Current async project/credential/error/redirect tests cover replacement intent, not old-only policy assertions.",
+      "disposition": "Retain exact historical tests, never weaken or relabel old passes as current runtime evidence. The old seven-test pass and the then-current Python compilation remain historical evidence only.",
+      "evidence": [
+        "packages/python/tests/test_platform_core.py",
+        "packages/python/tests/test_client.py",
+        "packages/python/tests/test_credential_opaque.py"
+      ],
+      "old_objects": [
+        {
+          "path": "packages/python/tests/test_client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "47f6990cd2fa70e4d252f438694b6419eb5261a7"
+        }
+      ],
+      "current_objects": [
+        {
+          "path": "packages/python/tests/test_platform_core.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "2845d81d543ff85f3ac47aa411f5ec2556b118ef"
+        },
+        {
+          "path": "packages/python/tests/test_client.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "89888ffe255e7484a652bbd73a6579be051c2226"
+        },
+        {
+          "path": "packages/python/tests/test_credential_opaque.py",
+          "mode": "100644",
+          "type": "blob",
+          "sha": "d3d00aa55bfed17fa8545b2d40ea66488f31f4db"
+        }
+      ]
+    }
+  ],
+  "exact_authored_hunks": [
+    {
+      "path": ".github/workflows/python-ci.yml",
+      "hunk_header": "@@ -0,0 +1,36 @@",
+      "exact_text_sha256": "7175730b83b5ed9bfeaef4e9686e8d29ae796e2ea99023f11b3dd3e3cba540fa",
+      "exact_text": "@@ -0,0 +1,36 @@\n+name: Python SDK foundation\n+\n+on:\n+  pull_request:\n+    branches: [dev, main]\n+    paths:\n+      - \"packages/python/**\"\n+      - \".github/workflows/python-ci.yml\"\n+      - \"contracts/openapi.platform.json\"\n+  push:\n+    branches: [dev, main]\n+    paths:\n+      - \"packages/python/**\"\n+      - \".github/workflows/python-ci.yml\"\n+      - \"contracts/openapi.platform.json\"\n+\n+permissions:\n+  contents: read\n+\n+jobs:\n+  verify:\n+    runs-on: ubuntu-latest\n+    strategy:\n+      fail-fast: false\n+      matrix:\n+        python-version: [\"3.11\", \"3.12\"]\n+    steps:\n+      - uses: actions/checkout@v6\n+      - uses: actions/setup-python@v6\n+        with:\n+          python-version: ${{ matrix.python-version }}\n+      - run: python -m pip install ./packages/python build ruff==0.16.9\n+      - run: ruff check packages/python/src packages/python/tests\n+      - run: ruff format --check packages/python/src packages/python/tests\n+      - run: python -m unittest discover -s packages/python/tests -v\n+      - run: python -m build packages/python\n",
+      "semantic_ids": ["S16"]
+    },
+    {
+      "path": ".prettierignore",
+      "hunk_header": "@@ -1,4 +1,7 @@",
+      "exact_text_sha256": "c0bebe423371e5da5e2aa2c2e9c1cbfd381cb7455966cd63d1b45e0878e057d4",
+      "exact_text": "@@ -1,4 +1,7 @@\n node_modules/\n+packages/python/.venv/\n+packages/python/build/\n+packages/python/src/*.egg-info/\n packages/*/dist/\n examples/calls-example/dist/\n coverage/\n",
+      "semantic_ids": ["S17"]
+    },
+    {
+      "path": "README.md",
+      "hunk_header": "@@ -29,6 +29,10 @@",
+      "exact_text_sha256": "ee6f7ffe7d0ddfcc69ea825b55ccb58aea8def28fb141ec956e6dd87b76ebc92",
+      "exact_text": "@@ -29,6 +29,10 @@\n | `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |\n | `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |\n \n+The separate [Python source package](packages/python/README.md) implements only\n+authenticated Platform project listing. It is not part of the npm workspace or\n+the npm `dev` release, and is not published to PyPI.\n+\n The public packages are complete development artifacts on `dev`. They\n publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the\n Polymorfa npm organization. No mobile-native binding is part of this milestone.\n",
+      "semantic_ids": ["S18"]
+    },
+    {
+      "path": "docs/releasing.md",
+      "hunk_header": "@@ -24,6 +24,11 @@",
+      "exact_text_sha256": "268ff58457cddb00d8762a227c7ad19e9d6b2b3bd29df78af58406aa5938fe06",
+      "exact_text": "@@ -24,6 +24,11 @@\n \n The `latest` dist-tag is never changed.\n \n+The Python source package in `packages/python` is outside this npm workflow.\n+It has no PyPI publishing workflow or published-version claim. Review its\n+distribution name, version scheme, trusted publisher, and release checks before\n+any Python package publication.\n+\n ### Packages\n \n Published, in order: `@polymorfa/sdk`, `@polymorfa/browser`, `@polymorfa/ui`,\n",
+      "semantic_ids": ["S18"]
+    },
+    {
+      "path": "packages/python/.gitignore",
+      "hunk_header": "@@ -0,0 +1,7 @@",
+      "exact_text_sha256": "d6c230461a321ff230b55c950b05311591438cb4e5127b0f9c9c25f87a28bdf7",
+      "exact_text": "@@ -0,0 +1,7 @@\n+.venv/\n+build/\n+dist/\n+*.egg-info/\n+__pycache__/\n+*.pyc\n+uv.lock\n",
+      "semantic_ids": ["S17"]
+    },
+    {
+      "path": "packages/python/README.md",
+      "hunk_header": "@@ -0,0 +1,47 @@",
+      "exact_text_sha256": "bb1d024e45dc74b2ab9e61890daa155abca04df63da2d6f0a4d0b0072ffef3fa",
+      "exact_text": "@@ -0,0 +1,47 @@\n+# Polymorfa Python SDK foundation\n+\n+This source package contains a small, synchronous Python 3.11+ server client for\n+the Platform API. It is not published to PyPI. The only resource implemented is\n+`Client.projects.list()`, which calls `GET /platform/projects` with a team API\n+key carrying `sessions:read`. Project tokens and browser client tokens are not\n+accepted. The server still decides whether the key may access the route.\n+\n+Install from a checked-out, reviewed SDK commit:\n+\n+```bash\n+python -m pip install ./packages/python\n+```\n+\n+```python\n+import os\n+from polymorfa_sdk import Client\n+\n+client = Client(api_key=os.environ[\"POLYMORFA_API_KEY\"])\n+response = client.projects.list()\n+for project in response.data:\n+    print(project.id, project.name, project.stage)\n+print(response.metadata.request_id)\n+```\n+\n+The default base URL is `https://api.polymorfa.com`. `base_url` accepts another\n+HTTPS origin for the target environment, or loopback HTTP for local tests.\n+`api_version=\"2026-03-20\"` sends `Polymorfa-Version` when an explicit version is\n+needed. `timeout` is in seconds and defaults to 10.\n+\n+Responses contain typed `Project` values and the API's request ID and applied\n+version headers. Non-JSON success bodies and unexpected project-list shapes\n+raise `ProtocolError`. HTTP errors retain status, a safe error code when\n+present, and the request ID; they never include the server's raw body or the\n+API key. Transport failures raise `TransportError`. This client makes no\n+automatic retry, including after an ambiguous failure. Redirects are not\n+followed with the credential.\n+\n+This package does not yet implement project creation, other Platform resources,\n+Messaging, webhooks, streaming, pagination, async transport, or SDK publication.\n+Its package name and release process must be reviewed before any PyPI release.\n+\n+From the repository root, run the offline tests with:\n+\n+```bash\n+uv run --python 3.11 --project packages/python python -m unittest discover -s packages/python/tests\n+```\n",
+      "semantic_ids": ["S01", "S05", "S06", "S18"]
+    },
+    {
+      "path": "packages/python/pyproject.toml",
+      "hunk_header": "@@ -0,0 +1,22 @@",
+      "exact_text_sha256": "5f0ae8b7d63a8a0d433f7444ad93c500f173ede3d11996b2551d2437c3aafd7f",
+      "exact_text": "@@ -0,0 +1,22 @@\n+[build-system]\n+requires = [\"setuptools>=69\"]\n+build-backend = \"setuptools.build_meta\"\n+\n+[project]\n+name = \"polymorfa-sdk\"\n+version = \"0.1.0.dev0\"\n+description = \"Small server-side Python client for the Polymorfa Platform API\"\n+readme = \"README.md\"\n+requires-python = \">=3.11\"\n+license = \"MIT\"\n+authors = [{ name = \"Polymorfa\" }]\n+dependencies = []\n+\n+[project.urls]\n+Repository = \"https://github.com/polymorfa/sdks\"\n+\n+[tool.setuptools.packages.find]\n+where = [\"src\"]\n+\n+[tool.setuptools.package-data]\n+polymorfa_sdk = [\"py.typed\"]\n",
+      "semantic_ids": ["S15"]
+    },
+    {
+      "path": "packages/python/src/polymorfa_sdk/__init__.py",
+      "hunk_header": "@@ -0,0 +1,23 @@",
+      "exact_text_sha256": "71e648d256f0ddbed43949761945ad47b53200af822175a04647df41faf2c0b7",
+      "exact_text": "@@ -0,0 +1,23 @@\n+\"\"\"Bounded server-side Polymorfa Platform API client.\"\"\"\n+\n+from .client import Client, Project, ProjectsResource, Response, ResponseMetadata\n+from .errors import (\n+    AuthenticationError,\n+    AuthorizationError,\n+    PolymorfaError,\n+    ProtocolError,\n+    TransportError,\n+)\n+\n+__all__ = [\n+    \"AuthenticationError\",\n+    \"AuthorizationError\",\n+    \"Client\",\n+    \"PolymorfaError\",\n+    \"Project\",\n+    \"ProjectsResource\",\n+    \"ProtocolError\",\n+    \"Response\",\n+    \"ResponseMetadata\",\n+    \"TransportError\",\n+]\n",
+      "semantic_ids": ["S01", "S03", "S15"]
+    },
+    {
+      "path": "packages/python/src/polymorfa_sdk/client.py",
+      "hunk_header": "@@ -0,0 +1,225 @@",
+      "exact_text_sha256": "ea6616b0711ea48c6cdb1e4e52ee3a9aa9d55640a93af4472b3c00573dc010e1",
+      "exact_text": "@@ -0,0 +1,225 @@\n+\"\"\"Synchronous, server-only Platform API transport and project listing.\"\"\"\n+\n+from __future__ import annotations\n+\n+import json\n+import re\n+from dataclasses import dataclass\n+from typing import Generic, Literal, NoReturn, TypeVar\n+from urllib.error import HTTPError, URLError\n+from urllib.parse import urlsplit\n+from urllib.request import HTTPRedirectHandler, Request, build_opener\n+\n+from .errors import (\n+    AuthenticationError,\n+    AuthorizationError,\n+    PolymorfaError,\n+    ProtocolError,\n+    TransportError,\n+)\n+\n+T = TypeVar(\"T\")\n+_API_KEY = re.compile(r\"^pmfa_[A-Za-z0-9_-]{72}$\")\n+_MAX_RESPONSE_BYTES = 2 * 1024 * 1024\n+\n+\n+@dataclass(frozen=True)\n+class ResponseMetadata:\n+    request_id: str | None\n+    api_version: str | None\n+\n+\n+@dataclass(frozen=True)\n+class Response(Generic[T]):\n+    data: T\n+    metadata: ResponseMetadata\n+\n+\n+@dataclass(frozen=True)\n+class Project:\n+    id: str\n+    name: str\n+    slug: str\n+    stage: Literal[\"development\", \"production\"]\n+    is_active: bool\n+    active_sessions: int\n+    total_sessions: int\n+    total_messages: int\n+\n+\n+class _NoRedirect(HTTPRedirectHandler):\n+    def redirect_request(self, request, fp, code, msg, headers, newurl):\n+        return None\n+\n+\n+class Client:\n+    \"\"\"A team API key client. This foundation exposes project listing only.\"\"\"\n+\n+    def __init__(\n+        self,\n+        *,\n+        api_key: str,\n+        base_url: str = \"https://api.polymorfa.com\",\n+        api_version: str | None = None,\n+        timeout: float = 10.0,\n+    ) -> None:\n+        if not _API_KEY.fullmatch(api_key):\n+            raise ValueError(\"A canonical team API key is required\")\n+        address = urlsplit(base_url)\n+        if (\n+            address.scheme not in {\"http\", \"https\"}\n+            or not address.hostname\n+            or address.username\n+            or address.password\n+            or address.query\n+            or address.fragment\n+            or address.path not in {\"\", \"/\"}\n+            or (\n+                address.scheme == \"http\"\n+                and address.hostname not in {\"localhost\", \"127.0.0.1\", \"::1\"}\n+            )\n+        ):\n+            raise ValueError(\n+                \"base_url must be an HTTPS origin or a loopback HTTP origin\"\n+            )\n+        if timeout <= 0:\n+            raise ValueError(\"timeout must be positive\")\n+        if api_version is not None and not re.fullmatch(\n+            r\"\\d{4}-\\d{2}-\\d{2}\", api_version\n+        ):\n+            raise ValueError(\"api_version must be a YYYY-MM-DD date\")\n+        self._base_url = base_url.rstrip(\"/\")\n+        self._api_key = api_key\n+        self._api_version = api_version\n+        self._timeout = timeout\n+        self._opener = build_opener(_NoRedirect())\n+        self.projects = ProjectsResource(self)\n+\n+    def _get(self, path: str) -> tuple[object, ResponseMetadata]:\n+        headers = {\n+            \"Accept\": \"application/json\",\n+            \"Authorization\": f\"Bearer {self._api_key}\",\n+            \"User-Agent\": \"polymorfa-python-sdk/0.1\",\n+        }\n+        if self._api_version is not None:\n+            headers[\"Polymorfa-Version\"] = self._api_version\n+        request = Request(self._base_url + path, headers=headers, method=\"GET\")\n+        try:\n+            response = self._opener.open(request, timeout=self._timeout)\n+        except HTTPError as error:\n+            self._raise_http(error)\n+        except (URLError, TimeoutError, OSError):\n+            raise TransportError(\"Polymorfa API connection failed\") from None\n+        with response:\n+            metadata = ResponseMetadata(\n+                response.headers.get(\"X-Request-Id\"),\n+                response.headers.get(\"Polymorfa-Version\"),\n+            )\n+            if not response.headers.get_content_type() == \"application/json\":\n+                raise ProtocolError(\n+                    \"Polymorfa API returned a non-JSON response\",\n+                    status=response.status,\n+                    request_id=metadata.request_id,\n+                )\n+            try:\n+                body = response.read(_MAX_RESPONSE_BYTES + 1)\n+            except (OSError, TimeoutError):\n+                raise TransportError(\n+                    \"Polymorfa API response was interrupted\",\n+                    request_id=metadata.request_id,\n+                ) from None\n+            if len(body) > _MAX_RESPONSE_BYTES:\n+                raise ProtocolError(\n+                    \"Polymorfa API response exceeded the size limit\",\n+                    status=response.status,\n+                    request_id=metadata.request_id,\n+                )\n+            try:\n+                return json.loads(body), metadata\n+            except (UnicodeDecodeError, json.JSONDecodeError):\n+                raise ProtocolError(\n+                    \"Polymorfa API returned invalid JSON\",\n+                    status=response.status,\n+                    request_id=metadata.request_id,\n+                ) from None\n+\n+    def _raise_http(self, error: HTTPError) -> NoReturn:\n+        with error:\n+            request_id = error.headers.get(\"X-Request-Id\")\n+            code = None\n+            if error.headers.get_content_type() == \"application/json\":\n+                try:\n+                    body = error.read(_MAX_RESPONSE_BYTES + 1)\n+                except (OSError, TimeoutError):\n+                    body = b\"\"\n+                if len(body) <= _MAX_RESPONSE_BYTES:\n+                    try:\n+                        parsed = json.loads(body)\n+                        if isinstance(parsed, dict) and isinstance(\n+                            parsed.get(\"error\"), dict\n+                        ):\n+                            raw_code = parsed[\"error\"].get(\"code\")\n+                            if isinstance(raw_code, str) and re.fullmatch(\n+                                r\"[a-z0-9_]{1,80}\", raw_code\n+                            ):\n+                                code = raw_code\n+                    except (UnicodeDecodeError, json.JSONDecodeError):\n+                        pass\n+        error_type = {401: AuthenticationError, 403: AuthorizationError}.get(\n+            error.code, PolymorfaError\n+        )\n+        raise error_type(\n+            f\"Polymorfa API request failed with HTTP {error.code}\",\n+            status=error.code,\n+            code=code,\n+            request_id=request_id,\n+        ) from None\n+\n+\n+class ProjectsResource:\n+    def __init__(self, client: Client) -> None:\n+        self._client = client\n+\n+    def list(self) -> Response[list[Project]]:\n+        \"\"\"List projects for a team key with ``sessions:read`` scope.\"\"\"\n+        payload, metadata = self._client._get(\"/platform/projects\")\n+        if not isinstance(payload, dict) or not isinstance(payload.get(\"data\"), list):\n+            raise ProtocolError(\n+                \"Project list response has an unexpected shape\",\n+                request_id=metadata.request_id,\n+            )\n+        projects: list[Project] = []\n+        for item in payload[\"data\"]:\n+            if not isinstance(item, dict):\n+                raise ProtocolError(\n+                    \"Project list response has an unexpected shape\",\n+                    request_id=metadata.request_id,\n+                )\n+            fields = (\"_id\", \"name\", \"slug\", \"stage\")\n+            counts = (\"activeSessions\", \"totalSessions\", \"totalMessages\")\n+            if (\n+                any(not isinstance(item.get(field), str) for field in fields)\n+                or item[\"stage\"] not in {\"development\", \"production\"}\n+                or type(item.get(\"isActive\")) is not bool\n+                or any(\n+                    type(item.get(field)) is not int or item[field] < 0\n+                    for field in counts\n+                )\n+            ):\n+                raise ProtocolError(\n+                    \"Project list response has an unexpected shape\",\n+                    request_id=metadata.request_id,\n+                )\n+            projects.append(\n+                Project(\n+                    id=item[\"_id\"],\n+                    name=item[\"name\"],\n+                    slug=item[\"slug\"],\n+                    stage=item[\"stage\"],\n+                    is_active=item[\"isActive\"],\n+                    active_sessions=item[\"activeSessions\"],\n+                    total_sessions=item[\"totalSessions\"],\n+                    total_messages=item[\"totalMessages\"],\n+                )\n+            )\n+        return Response(projects, metadata)\n",
+      "semantic_ids": [
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "S05",
+        "S06",
+        "S07",
+        "S08",
+        "S09",
+        "S10",
+        "S11",
+        "S12",
+        "S13",
+        "S14"
+      ]
+    },
+    {
+      "path": "packages/python/src/polymorfa_sdk/errors.py",
+      "hunk_header": "@@ -0,0 +1,32 @@",
+      "exact_text_sha256": "4e83e8dca86e87e7898d5228c1853ebf276fb9208e78e845607f9d9ce41f1a6a",
+      "exact_text": "@@ -0,0 +1,32 @@\n+\"\"\"Errors expose safe status and request identifiers, never credentials or raw bodies.\"\"\"\n+\n+\n+class PolymorfaError(Exception):\n+    def __init__(\n+        self,\n+        message: str,\n+        *,\n+        status: int | None = None,\n+        code: str | None = None,\n+        request_id: str | None = None,\n+    ) -> None:\n+        super().__init__(message)\n+        self.status = status\n+        self.code = code\n+        self.request_id = request_id\n+\n+\n+class AuthenticationError(PolymorfaError):\n+    \"\"\"The API refused the server credential.\"\"\"\n+\n+\n+class AuthorizationError(PolymorfaError):\n+    \"\"\"The credential lacks permission for the operation.\"\"\"\n+\n+\n+class TransportError(PolymorfaError):\n+    \"\"\"No trustworthy API response was received; no retry was attempted.\"\"\"\n+\n+\n+class ProtocolError(PolymorfaError):\n+    \"\"\"The API response did not match this method's documented shape.\"\"\"\n",
+      "semantic_ids": ["S09", "S11", "S12", "S13", "S14"]
+    },
+    {
+      "path": "packages/python/src/polymorfa_sdk/py.typed",
+      "hunk_header": "@@ -0,0 +1 @@",
+      "exact_text_sha256": "6a864f920fbf139dacd57530847a8bce06b069d451e49e7eb360cab39d4b0d41",
+      "exact_text": "@@ -0,0 +1 @@\n+\n",
+      "semantic_ids": ["S15"]
+    },
+    {
+      "path": "packages/python/tests/test_client.py",
+      "hunk_header": "@@ -0,0 +1,167 @@",
+      "exact_text_sha256": "9afe41a7aea16fd3a4da071b4239320088f4c9feae033ca5fb2f5a83b0ab9748",
+      "exact_text": "@@ -0,0 +1,167 @@\n+import json\n+import threading\n+import unittest\n+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer\n+from pathlib import Path\n+\n+from polymorfa_sdk import (\n+    AuthenticationError,\n+    Client,\n+    PolymorfaError,\n+    Project,\n+    ProtocolError,\n+)\n+\n+KEY = \"pmfa_\" + \"A\" * 72\n+ROOT = Path(__file__).resolve().parents[3]\n+\n+\n+class Server:\n+    def __init__(self, status=200, content_type=\"application/json\", body=b\"{}\"):\n+        self.requests = []\n+        state = self\n+\n+        class Handler(BaseHTTPRequestHandler):\n+            def do_GET(self):\n+                state.requests.append((self.path, dict(self.headers)))\n+                self.send_response(status)\n+                self.send_header(\"Content-Type\", content_type)\n+                self.send_header(\"X-Request-Id\", \"req_test\")\n+                self.send_header(\"Polymorfa-Version\", \"2026-03-20\")\n+                if status == 302:\n+                    self.send_header(\"Location\", \"/redirect-target\")\n+                self.end_headers()\n+                self.wfile.write(body)\n+\n+            def log_message(self, *_args):\n+                pass\n+\n+        self.server = ThreadingHTTPServer((\"127.0.0.1\", 0), Handler)\n+        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)\n+\n+    def __enter__(self):\n+        self.thread.start()\n+        return self\n+\n+    def __exit__(self, *_args):\n+        self.server.shutdown()\n+        self.server.server_close()\n+        self.thread.join()\n+\n+    @property\n+    def url(self):\n+        return f\"http://127.0.0.1:{self.server.server_port}\"\n+\n+\n+class ClientTests(unittest.TestCase):\n+    def test_project_list_contract_and_authentication(self):\n+        body = json.dumps(\n+            {\n+                \"data\": [\n+                    {\n+                        \"_id\": \"project_1\",\n+                        \"name\": \"Support\",\n+                        \"slug\": \"support\",\n+                        \"stage\": \"development\",\n+                        \"isActive\": True,\n+                        \"activeSessions\": 2,\n+                        \"totalSessions\": 3,\n+                        \"totalMessages\": 40,\n+                    }\n+                ]\n+            }\n+        ).encode()\n+        with Server(body=body) as server:\n+            response = Client(\n+                api_key=KEY, base_url=server.url, api_version=\"2026-03-20\"\n+            ).projects.list()\n+            self.assertEqual(\n+                response.data,\n+                [\n+                    Project(\n+                        \"project_1\", \"Support\", \"support\", \"development\", True, 2, 3, 40\n+                    )\n+                ],\n+            )\n+            self.assertEqual(response.metadata.request_id, \"req_test\")\n+            self.assertEqual(response.metadata.api_version, \"2026-03-20\")\n+            self.assertEqual(len(server.requests), 1)\n+            path, headers = server.requests[0]\n+            self.assertEqual(path, \"/platform/projects\")\n+            self.assertEqual(headers[\"Authorization\"], f\"Bearer {KEY}\")\n+            self.assertEqual(headers[\"Polymorfa-Version\"], \"2026-03-20\")\n+\n+    def test_rejects_non_team_credentials_and_remote_plaintext(self):\n+        for key in (\n+            \"\",\n+            \"pmfa_pt_\" + \"A\" * 94,\n+            \"pmfa_ct_\" + \"A\" * 40,\n+            \"pmfa_\" + \"A\" * 71,\n+        ):\n+            with self.subTest(key=key[:8]), self.assertRaises(ValueError):\n+                Client(api_key=key)\n+        with self.assertRaises(ValueError):\n+            Client(api_key=KEY, base_url=\"http://api.polymorfa.com\")\n+        with self.assertRaises(ValueError):\n+            Client(api_key=KEY, base_url=\"https://user:secret@api.polymorfa.com\")\n+\n+    def test_401_and_html_errors_do_not_expose_secret_or_body(self):\n+        with Server(\n+            status=401, body=b'{\"error\":{\"code\":\"unauthorized\",\"message\":\"private\"}}'\n+        ) as server:\n+            with self.assertRaises(AuthenticationError) as caught:\n+                Client(api_key=KEY, base_url=server.url).projects.list()\n+            self.assertEqual(caught.exception.status, 401)\n+            self.assertEqual(caught.exception.code, \"unauthorized\")\n+            self.assertEqual(caught.exception.request_id, \"req_test\")\n+            self.assertNotIn(KEY, str(caught.exception))\n+            self.assertNotIn(\"private\", str(caught.exception))\n+        with Server(\n+            status=502, content_type=\"text/html\", body=b\"<b>proxy secret</b>\"\n+        ) as server:\n+            with self.assertRaises(PolymorfaError) as caught:\n+                Client(api_key=KEY, base_url=server.url).projects.list()\n+            self.assertEqual(caught.exception.status, 502)\n+            self.assertNotIn(\"proxy secret\", str(caught.exception))\n+\n+    def test_redirect_does_not_forward_credential(self):\n+        with Server(status=302) as server:\n+            with self.assertRaises(PolymorfaError) as caught:\n+                Client(api_key=KEY, base_url=server.url).projects.list()\n+            self.assertEqual(caught.exception.status, 302)\n+            self.assertEqual(len(server.requests), 1)\n+\n+    def test_server_failure_is_not_retried(self):\n+        with Server(\n+            status=503, body=b'{\"error\":{\"code\":\"service_unavailable\"}}'\n+        ) as server:\n+            with self.assertRaises(PolymorfaError) as caught:\n+                Client(api_key=KEY, base_url=server.url).projects.list()\n+            self.assertEqual(caught.exception.status, 503)\n+            self.assertEqual(caught.exception.code, \"service_unavailable\")\n+            self.assertEqual(len(server.requests), 1)\n+\n+    def test_invalid_success_response_fails_closed(self):\n+        for content_type, body in (\n+            (\"text/html\", b\"<html>\"),\n+            (\"application/json\", b\"not json\"),\n+            (\"application/json\", b'{\"data\":{}}'),\n+        ):\n+            with (\n+                self.subTest(content_type=content_type, body=body),\n+                Server(content_type=content_type, body=body) as server,\n+                self.assertRaises(ProtocolError),\n+            ):\n+                Client(api_key=KEY, base_url=server.url).projects.list()\n+\n+    def test_project_route_is_present_in_pinned_platform_contract(self):\n+        spec = json.loads((ROOT / \"contracts/openapi.platform.json\").read_text())\n+        operation = spec[\"paths\"][\"/platform/projects\"][\"get\"]\n+        self.assertEqual(operation[\"operationId\"], \"listProjects\")\n+        self.assertEqual(operation[\"x-polymorfa-resource-boundary\"], \"organization\")\n+        self.assertEqual(operation[\"x-required-scope\"], \"sessions:read\")\n+        self.assertIn({\"ApiKeyAuth\": []}, operation[\"security\"])\n+\n+\n+if __name__ == \"__main__\":\n+    unittest.main()\n",
+      "semantic_ids": ["S20"]
+    },
+    {
+      "path": "docs/internal/python-release-preparation-2026-09-26.md",
+      "hunk_header": "@@ -0,0 +1,110 @@",
+      "exact_text_sha256": "d4c798ed982923b2839a618c5c62ff10bdb45bf4413cb93e8cc2ed626b0eda5e",
+      "exact_text": "@@ -0,0 +1,110 @@\n+# Python SDK release preparation (2026-09-26)\n+\n+This is an internal handoff for the local source foundation at `27c53543` on\n+`codex/python-sdk-foundation-20260926`. It does not authorize publication or\n+assert that a Python distribution or deployed route is available.\n+\n+## Distribution identity\n+\n+The candidate distribution is `polymorfa-sdk`; the import is `polymorfa_sdk`.\n+The local `pyproject.toml` sets version `0.1.0.dev0` and Python `>=3.11`.\n+Read-only requests to PyPI's project JSON and Simple endpoints returned HTTP\n+404 for `polymorfa-sdk` on 2026-09-26. The normalized aliases\n+`polymorfa_sdk` and `polymorfa.sdk` also returned 404. This shows no public\n+project entry at the time of the check, not that the name is reserved or\n+guaranteed to be accepted on upload. PyPI normalizes those three spellings to\n+the same project name. Recheck immediately before the first upload.\n+\n+Sources: [name normalization](https://packaging.python.org/en/latest/specifications/name-normalization/),\n+[PyPI name retention](https://docs.pypi.org/project-management/name-retention/),\n+and [pending trusted publishers](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/).\n+\n+## Existing CI and release behavior\n+\n+The local `.github/workflows/python-ci.yml` runs Ruff, offline unit tests, and\n+wheel/sdist build on Python 3.11 and 3.12 for Python package or Platform\n+contract changes. It does not publish. The SDK's existing\n+`.github/workflows/publish-dev.yml` runs on every `dev` push without a path\n+filter, verifies and packs all eight public npm workspaces, and publishes each\n+under npm's `dev` tag with a fresh timestamp version. A merge containing only\n+Python code would therefore still initiate that npm publication. It does not\n+move npm `latest`. The current `origin/dev` at\n+`bd94b733e79f008c4254225f6654c98741907c6c` has no Python CI or PyPI\n+publishing workflow; the Python CI file exists only in the local foundation.\n+\n+## Proposed first release, subject to owner choice\n+\n+1. Owner confirms the distribution/import names and whether `0.1.0.dev0` is\n+   the intended initial prerelease version. Decide whether a Python source PR\n+   may merge while PyPI and public documentation remain gated, given the\n+   monorepo rule that customer-facing SDK changes include Mintlify docs.\n+   Also decide whether the incidental eight-workspace npm `dev` publication\n+   from that merge is authorized. Do not silently change release automation.\n+2. Before a Python publication, repository/PyPI owners configure a dedicated\n+   trusted publisher for `polymorfa/sdks` with the exact release workflow\n+   filename and a protected GitHub environment. A pending publisher can create\n+   a new project on the first upload but does not reserve its name. Keep\n+   `id-token: write` scoped to the publish job; require explicit release\n+   approval. Do not store a PyPI token in the repository.\n+3. The release workflow should build a wheel and sdist from the approved\n+   source, validate metadata/README and archive contents, install the wheel in\n+   a clean Python 3.11 environment, run the offline contract tests, and upload\n+   only the reviewed artifacts. After upload, verify the exact PyPI version,\n+   files/digests, and install from the registry. Publication needs separate\n+   authorization; no workflow or trusted publisher is configured by this\n+   handoff.\n+\n+Sources: [PyPI trusted publishers](https://docs.pypi.org/trusted-publishers/),\n+[publisher configuration](https://docs.pypi.org/trusted-publishers/adding-a-publisher/),\n+[publishing workflow](https://docs.pypi.org/trusted-publishers/using-a-publisher/),\n+[security model](https://docs.pypi.org/trusted-publishers/security-model/),\n+[packaging flow](https://packaging.python.org/en/latest/flow/), and\n+[README validation](https://packaging.python.org/en/latest/guides/making-a-pypi-friendly-readme/).\n+\n+## Exact public documentation after release evidence\n+\n+Public Mintlify changes belong in a separate isolated monorepo worktree, not\n+in this SDK repository. Once the owner has settled release sequencing, the\n+artifact exists, and customer route availability is verified:\n+\n+- Add `docs/sdks/python/installation.mdx` with the verified exact\n+  `pip install polymorfa-sdk==<version>` command, Python 3.11+ requirement,\n+  server-side team API key with `sessions:read`, and a runnable\n+  `Client.projects.list()` example. State that this is only project listing;\n+  document typed project fields, response metadata, safe HTTP/transport/\n+  protocol errors, no automatic retries or credential-forwarding redirects,\n+  and no support for project or browser tokens. Link the existing project-list\n+  API reference. Avoid a broad parity or deployed-availability claim.\n+- Update `docs/sdks/overview.mdx` to link that page, name the verified version\n+  and narrow capability, and add the page under `Tools and clients` in\n+  `docs/docs.json`. Review the affected TypeScript page for cross-language\n+  wording. The existing API reference for `GET /platform/projects` needs no\n+  route/shape change from this package.\n+- Add `docs/changelog.mdx` only when a customer-visible release actually ships,\n+  dated for that release. Run `scripts/mint-docs.sh broken-links --check-anchors`\n+  and `scripts/mint-docs.sh validate` from the monorepo root on the docs change.\n+\n+The public docs guide requires released, verified behavior. A PyPI artifact\n+alone does not establish that the API route is deployed or accepted in the\n+intended customer environment; live verification remains an owner gate.\n+\n+## Five-part assessment\n+\n+- **API — unaffected:** The Python client reads the pinned Platform OpenAPI\n+  `GET /platform/projects` contract at API commit\n+  `9b64c70b622593aeda7364b7603ba6790144594e`; it changes no handler,\n+  scope, request, or response. Deployment/acceptance is not verified here.\n+- **SDKs — local source updated, publication blocked:** The Python package is a\n+  bounded synchronous foundation, not broad parity. TypeScript/npm packages\n+  are unchanged by its source, though a `dev` merge would publish fresh npm\n+  prerelease artifacts under the current workflow.\n+- **CLI — unaffected:** No command, flag, or SDK registry dependency changes;\n+  CLI does not consume this Python package.\n+- **Docs — blocked:** The exact Mintlify edits above depend on the distribution\n+  choice, a verified artifact, and truthful route-availability evidence.\n+- **Feature release — blocked:** No new feature flag or entitlement is needed\n+  for a client to call the existing route. Distribution approval, publication,\n+  deployment evidence, and customer acceptance remain separate release gates.\n+\n+No PyPI name was registered, no package was published, and no live feature test\n+was run during this preparation.\n",
+      "semantic_ids": ["S19"]
+    }
+  ],
+  "historical_checks": "2026-10-30 old Python test run (7 passed)/then-current Python compilation were historical at their then heads, not final-source/native/consumer/admission evidence. No new source checks performed.",
+  "constraints": [
+    "No old interface, workflow, dependency, retention, key policy or output shape restored.",
+    "No claim that absent old semantics are byte/behavior equivalent.",
+    "This change clears the six moderate SDK production audit findings (glob GHSA-3g3m-2fjr-6pw4 and minimatch GHSA-g3hv-75wg-m249) by overriding glob to 14.0.2 under the Firestore rimraf path. Rust 1.85 disk failure, publisher/reader and source-pin eligibility gates remain independently owned.",
+    "Current CLI SDK-containing-package gate remains genuine.",
+    "No provider/SSH/host/pool/deploy or separate 914 V8 custody change."
+  ],
+  "historical_packet": {
+    "sha256": "f41af418bff03fced5e9d084a982c04e24db423a8a1f5bb675a4576b0d769baa",
+    "date": "2026-11-04",
+    "description": "Authenticated API source/object DATA; this record includes the exact authored hunk text so historical provenance does not depend on a private artifact path."
+  }
+}
