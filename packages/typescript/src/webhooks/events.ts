@@ -657,7 +657,8 @@ export interface NewsletterMessageObservation {
   readonly reactionCounts?: Readonly<Record<string, number>>;
 }
 export interface NewsletterMilestone {
-  readonly position: number;
+  /** Channel position of the related post. Absent for channel-level milestones such as follower counts. */
+  readonly position?: number;
   readonly type: string;
   readonly value: number;
   readonly reactionCode?: string;

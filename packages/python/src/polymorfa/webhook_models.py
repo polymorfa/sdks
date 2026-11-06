@@ -475,7 +475,8 @@ class NewsletterMessageObservation(TypedDict):
 
 
 class NewsletterMilestone(TypedDict):
-    position: int
+    # Related post position. Absent for channel-level milestones such as follower counts.
+    position: NotRequired[int]
     type: str
     value: int
     reactionCode: NotRequired[str]

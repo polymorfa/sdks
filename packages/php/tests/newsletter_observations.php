@@ -9,7 +9,7 @@ $newsletterSigned = static function (mixed $value) use ($newsletterFixture): Pol
     return Polymorfa\Webhooks::constructDelivery($raw, hash_hmac('sha256', $raw, $newsletterFixture->secret), $newsletterFixture->secret);
 };
 $newsletterBatch = $newsletterSigned((object) ['object'=>'event_batch','version'=>1,'id'=>$newsletterFixture->batchId,'events'=>$newsletterFixture->events]);
-check($newsletterBatch instanceof Polymorfa\WebhookEventBatch && count($newsletterBatch->events) === 3, 'newsletter batch');
+check($newsletterBatch instanceof Polymorfa\WebhookEventBatch && count($newsletterBatch->events) === 4, 'newsletter batch');
 foreach ($newsletterFixture->events as $i => $expected) {
     $event = $newsletterSigned($expected);
     check($event instanceof Polymorfa\WebhookEvent && $event->knownEvent() !== null, 'newsletter typed event');
@@ -25,5 +25,7 @@ check($newsletterLive['messages'][0]['forwards'] === 0 && $newsletterLive['messa
 check($newsletterLive['messages'][1] === ['position'=>124], 'newsletter missing reference');
 $newsletterMilestone = $newsletterBatch->events[1]->knownEvent()['payload'];
 check($newsletterMilestone['milestone']['type'] === 'FUTURE_MILESTONE' && $newsletterMilestone['milestone']['value'] === 0, 'newsletter unknown milestone');
+$newsletterChannelMilestone = $newsletterBatch->events[3]->knownEvent()['payload']['milestone'];
+check($newsletterChannelMilestone === ['type'=>'FOLLOWS','value'=>1000] && !array_key_exists('position', $newsletterChannelMilestone), 'newsletter channel-level milestone without position');
 $newsletterChannel = json_decode(file_get_contents($newsletterDir.'channel-message.json'), true, 512, JSON_THROW_ON_ERROR);
 check($newsletterChannel['forwards'] === 0, 'channel reported forward zero');

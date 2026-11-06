@@ -53,8 +53,13 @@ func TestNewsletterObservationDelivery(t *testing.T) {
 				t.Fatal("missing/zero/empty metadata lost")
 			}
 		}
-		if typed.Action == "milestone" && (typed.Milestone.Type != "FUTURE_MILESTONE" || typed.Milestone.Value != 0) {
-			t.Fatal("milestone lost")
+		if typed.Action == "milestone" {
+			m := typed.Milestone
+			post := m.Type == "FUTURE_MILESTONE" && m.Value == 0 && m.Position != nil && *m.Position == 123
+			channel := m.Type == "FOLLOWS" && m.Value == 1000 && m.Position == nil
+			if !post && !channel {
+				t.Fatalf("milestone lost: %+v", m)
+			}
 		}
 	}
 	signed := func(raw []byte) VerifiedWebhookDelivery {
@@ -78,7 +83,7 @@ func TestNewsletterObservationDelivery(t *testing.T) {
 	}
 	batch, _ := json.Marshal(map[string]any{"object": "event_batch", "version": 1, "id": fixture.BatchID, "events": fixture.Events})
 	delivery := signed(batch)
-	if delivery.Batch == nil || len(delivery.Batch.Events) != 3 {
+	if delivery.Batch == nil || len(delivery.Batch.Events) != 4 {
 		t.Fatal("batch lost")
 	}
 	for i, event := range delivery.Batch.Events {

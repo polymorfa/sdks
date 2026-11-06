@@ -1,8 +1,8 @@
 {
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "d60f08042a5e3f36e53a7b378be7b7e710e80e9f",
+  "sourceCommit": "e292c7dc3f3a52c1c9f732af46af775437a2ecf9",
   "sourcePath": "apps/api/docs/openapi.json",
-  "sourceSha256": "9253f7fcf7b6e802411cc2f9b3b28bbf7c1e45e90c2ebee7fc461f5627ca9a32",
+  "sourceSha256": "c1e81be3deb9d83e5467e4f4d128d58c67e88ca483fea650f9b9d139e5555ac8",
   "polymorfaVersion": "2026-09-22",
   "published": false,
   "scope": "POL-81 newsletter.update metadata and optional ChannelMessage.forwards; baseline snapshots unchanged",
@@ -120,7 +120,8 @@
             "type": "integer",
             "minimum": 0,
             "maximum": 9007199254740991,
-            "exclusiveMinimum": true
+            "exclusiveMinimum": true,
+            "description": "Channel position of the related post. Absent for channel-level milestones such as follower counts."
           },
           "type": {
             "type": "string",
@@ -138,7 +139,7 @@
             "maxLength": 128
           }
         },
-        "required": ["position", "type", "value"]
+        "required": ["type", "value"]
       },
       "ChannelMessage": {
         "type": "object",
@@ -258,7 +259,8 @@
           },
           "phoneNumber": {
             "type": "string",
-            "pattern": "^\\+[1-9]\\d{1,14}$"
+            "pattern": "^\\+[1-9]\\d{1,14}$",
+            "description": "Phone number reported by WhatsApp, when available. It can differ from the number supplied for lookup. Use id for later actions and replies."
           },
           "bsuid": {
             "type": "string",

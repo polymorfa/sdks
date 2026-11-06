@@ -359,7 +359,9 @@ payload!(NewsletterMessageObservation {position:u64} {message:NewsletterMessageR
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct NewsletterMilestone {
-    pub position: u64,
+    /// Related post position. `None` for channel-level milestones such as follower counts.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub position: Option<u64>,
     #[serde(rename = "type")]
     pub milestone_type: String,
     pub value: u64,

@@ -458,7 +458,9 @@ type NewsletterMessageObservation struct {
 	ReactionCounts *map[string]int64           `json:"reactionCounts,omitempty"`
 }
 type NewsletterMilestone struct {
-	Position     int64   `json:"position"`
+	// Position is the related post's channel position. It is nil for
+	// channel-level milestones such as follower counts.
+	Position     *int64  `json:"position,omitempty"`
 	Type         string  `json:"type"`
 	Value        int64   `json:"value"`
 	ReactionCode *string `json:"reactionCode,omitempty"`

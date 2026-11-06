@@ -69,6 +69,19 @@ describe("newsletter metadata", () => {
     expect(live.payload.messages?.[0]?.forwards).toBe(0);
     expect(live.payload.messages?.[0]?.reactionCounts).toEqual({});
     expect(live.payload.messages?.[1]).toEqual({ position: 124 });
+    const channelMilestone = batch.events[3];
+    if (!channelMilestone || !isEvent(channelMilestone, "newsletter.update"))
+      throw new Error("Expected channel milestone");
+    expect(channelMilestone.payload.milestone).toEqual({
+      type: "FOLLOWS",
+      value: 1000,
+    });
+    expect("position" in (channelMilestone.payload.milestone ?? {})).toBe(
+      false,
+    );
+    expectTypeOf<NewsletterMilestone["position"]>().toEqualTypeOf<
+      number | undefined
+    >();
     expectTypeOf<NewsletterViewCount["count"]>().toEqualTypeOf<number>();
     const channel: ChannelMessage = load("channel-message");
     expect(channel.forwards).toBe(0);

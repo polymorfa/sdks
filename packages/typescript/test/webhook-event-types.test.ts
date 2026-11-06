@@ -442,7 +442,7 @@ type ExpectedPayloads = {
       readonly reactionCounts?: Readonly<Record<string, number>>;
     }[];
     readonly milestone?: {
-      readonly position: number;
+      readonly position?: number;
       readonly type: string;
       readonly value: number;
       readonly reactionCode?: string;

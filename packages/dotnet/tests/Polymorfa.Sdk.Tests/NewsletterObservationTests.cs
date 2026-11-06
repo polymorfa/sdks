@@ -27,6 +27,16 @@ internal static class NewsletterObservationTests
                 var rows = typed.Payload.Messages!;
                 if (rows[0].Forwards != 0 || rows[0].ReactionCounts?.Count != 0 || rows[1].Message is not null || rows[1].Forwards is not null) throw new Exception("newsletter metadata lost");
             }
+            if (typed.Payload.Milestone is { } milestone)
+            {
+                var ok = milestone.Type switch
+                {
+                    "FUTURE_MILESTONE" => milestone.Position == 123,
+                    "FOLLOWS" => milestone.Position is null && milestone.Value == 1000,
+                    _ => false,
+                };
+                if (!ok) throw new Exception("newsletter milestone position lost");
+            }
         }
         foreach (var expected in events)
         {
@@ -37,6 +47,7 @@ internal static class NewsletterObservationTests
         }
         var batchBytes = JsonSerializer.SerializeToUtf8Bytes(new { @object = "event_batch", version = 1, id = root.GetProperty("batchId").GetString(), events });
         var batch = (WebhookEventBatch)Signed(batchBytes);
+        if (batch.Events.Count != 4) throw new Exception("newsletter batch lost");
         for (var i = 0; i < events.Length; i++) Check(batch.Events[i], events[i]);
         var channel = JsonSerializer.Deserialize<ChannelMessage>(File.ReadAllText(Path.Combine(path, "channel-message.json")), json)!;
         if (channel.Forwards != 0) throw new Exception("channel forward zero lost");

@@ -64,7 +64,8 @@ public sealed record CallConnectionLeftPayload(string CallId, string ConnectionI
 public sealed record NewsletterViewCount(long Count, string? Type = null);
 public sealed record NewsletterMessageReference(string Id, [property: JsonPropertyName("whatsapp_ids")] WhatsAppMessageIds WhatsAppIds);
 public sealed record NewsletterMessageObservation(long Position, NewsletterMessageReference? Message = null, string? Timestamp = null, IReadOnlyList<NewsletterViewCount>? ViewCounts = null, long? Forwards = null, IReadOnlyDictionary<string, long>? ReactionCounts = null);
-public sealed record NewsletterMilestone(long Position, string Type, long Value, string? ReactionCode = null);
+/// <summary>Position is the related post's channel position. It is null for channel-level milestones such as follower counts.</summary>
+public sealed record NewsletterMilestone(string Type, long Value, long? Position = null, string? ReactionCode = null);
 public sealed record NewsletterUpdatePayload(string Id, string Action, bool? Muted = null)
 {
     public string? SourceTimestamp { get; init; }

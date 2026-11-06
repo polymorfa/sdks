@@ -1,0 +1,8 @@
+{
+  "id": "9007199254740993",
+  "action": "milestone",
+  "milestone": {
+    "type": "FOLLOWS",
+    "value": 1000
+  }
+}

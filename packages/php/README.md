@@ -1001,6 +1001,9 @@ A row's `position` is an ordering cursor. Its optional `message` reference is
 present only when an original WhatsApp message ID was observed. A partial
 reference alone does not authorize message actions. No message body is included.
 
+A milestone's `position` key names the related post. It is absent for
+channel-level milestones, such as follower counts (`FOLLOWS`).
+
 After verifying the delivery signature and dispatching individual batch members:
 
 ```php

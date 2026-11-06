@@ -24,6 +24,16 @@ fn newsletter_metadata_roundtrips_in_native_single_and_batch_deliveries() {
             assert!(rows[1].message.is_none());
             assert!(rows[1].forwards.is_none());
         }
+        if let Some(milestone) = payload.milestone.as_ref() {
+            match milestone.milestone_type.as_str() {
+                "FUTURE_MILESTONE" => assert_eq!(milestone.position, Some(123)),
+                "FOLLOWS" => {
+                    assert_eq!(milestone.position, None);
+                    assert_eq!(milestone.value, 1000);
+                }
+                other => panic!("unexpected milestone {other}"),
+            }
+        }
     };
     for expected in fixture["events"].as_array().unwrap() {
         let event = parse_verified_event(&serde_json::to_vec(expected).unwrap()).unwrap();
@@ -39,6 +49,7 @@ fn newsletter_metadata_roundtrips_in_native_single_and_batch_deliveries() {
         WebhookDelivery::Batch(batch) => batch,
         _ => panic!("batch lost"),
     };
+    assert_eq!(batch.events.len(), 4);
     for (index, event) in batch.events.iter().enumerate() {
         check(event, &fixture["events"][index]);
     }

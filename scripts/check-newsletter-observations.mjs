@@ -60,6 +60,21 @@ assert.deepEqual(live.messages[0].viewCounts, [
   { type: "views", count: 11 },
 ]);
 assert.equal(fixture.events[1].payload.milestone.type, "FUTURE_MILESTONE");
+assert.equal(fixture.events[3].payload.milestone.type, "FOLLOWS");
+assert.equal("position" in fixture.events[3].payload.milestone, false);
+for (const name of ["milestone", "milestone-channel"])
+  assert.ok(
+    payload(read(`contracts/fixtures/newsletter-observations/${name}.json`)),
+    JSON.stringify(payload.errors),
+  );
+assert.equal(
+  payload({
+    id: "123",
+    action: "milestone",
+    milestone: { position: 0, type: "FOLLOWS", value: 1 },
+  }),
+  false,
+);
 for (const [language, evidence] of Object.entries(
   contract.nativeCounterparts,
 )) {

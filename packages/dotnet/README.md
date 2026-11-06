@@ -1047,6 +1047,9 @@ A row's `position` is an ordering cursor. Its optional `message` reference is
 present only when an original WhatsApp message ID was observed. A partial
 reference alone does not authorize message actions. No message body is included.
 
+`NewsletterMilestone.Position` names the related post. It is `null` for
+channel-level milestones, such as follower counts (`FOLLOWS`).
+
 After verifying the delivery signature and dispatching individual batch members:
 
 ```csharp

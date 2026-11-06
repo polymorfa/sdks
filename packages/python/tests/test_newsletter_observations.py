@@ -44,5 +44,10 @@ def test_newsletter_single_batch_and_fixture_roundtrip() -> None:
     assert live["messages"][0]["reactionCounts"] == {}
     assert live["messages"][1] == {"position": 124}
     assert live["messages"][0]["viewCounts"] == [{"count": 0}, {"type": "views", "count": 11}]
+    channel_milestone = cast(NewsletterUpdatePayload, batch.events[3].payload)["milestone"]
+    assert channel_milestone == {"type": "FOLLOWS", "value": 1000}
+    assert "position" not in channel_milestone
+    standalone = json.loads((FIXTURES / "milestone-channel.json").read_text())
+    assert "position" not in standalone["milestone"]
     channel = cast(ChannelMessage, json.loads((FIXTURES / "channel-message.json").read_text()))
     assert channel["forwards"] == 0
