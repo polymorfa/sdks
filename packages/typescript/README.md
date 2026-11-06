@@ -508,8 +508,9 @@ an optional language; the API defaults to `en_US`.
 Deleting a name deletes all its languages. Create, edit and delete make one attempt,
 even if an idempotency key or a retry override is supplied. Create and delete
 send your `idempotencyKey` to the API, so a manual retry with the same key
-returns `PolymorfaConflictError` (`idempotency_completed`) instead of writing
-again. Edit has no key; list or retrieve the template to reconcile an
+does not submit the same write again while its receipt is retained. Keep the first
+response; a retry may report that replay data is unavailable. Edit has no key;
+list or retrieve the template to reconcile an
 uncertain result before submitting another write.
 
 ```ts
@@ -1415,8 +1416,11 @@ These methods send an `Idempotency-Key` on every call:
 If you don't pass `idempotencyKey`, the SDK generates a random UUID for the
 call. Every automatic retry of that call reuses the key, so the API never
 runs the write twice. If the first attempt succeeded but its response was lost,
-the retry fails with `PolymorfaConflictError` (`idempotency_completed`) instead
-of sending the message again. Pass your own key, such as
+the retained receipt prevents another execution within the endpoint\'s window.
+Response replay depends on the API contract and available replay data. A retry
+can report `503 idempotency_replay_unavailable` without executing the write again.
+When the API returns a replayed response, it has
+`metadata.headers["idempotent-replayed"] === "true"`. Pass your own key, such as
 an order event ID, to deduplicate across processes or restarts:
 
 ```ts
@@ -1430,8 +1434,18 @@ await messaging.messages.send(
 );
 ```
 
-The API keeps each key for 24 hours per credential. Reusing a key for a
-different request fails with `PolymorfaConflictError` (`idempotency_conflict`).
+Messaging writes and campaign lifecycle requests on both APIs use a one-hour
+receipt window in the response-replay contract. Other Platform operations keep
+their documented windows. Older pinned contracts can have different windows
+and can return the legacy `idempotency_completed` error. Reusing a key for a different request fails with
+`PolymorfaValidationError` (`422 idempotency_conflict`) in the response-replay
+contract. A recorded error does not prove the write had no effect. Reconcile
+message events, webhooks or the resource before deciding whether another write
+is safe. Never change keys merely to bypass an uncertain result. Keep the first
+response: opaque response bodies are not retained by default. Denied or missing
+exact replay data returns `503 idempotency_replay_unavailable` with `Retry-After`.
+The SDK's configured retry policy reuses the same key; waiting does not guarantee
+that replay data becomes available.
 A retry that arrives while the first request is still running receives
 `idempotency_in_progress`, and the SDK retries it after `Retry-After`. When a
 response carries `Idempotent-Replayed: true`, the SDK treats it as final and
@@ -2151,9 +2165,9 @@ and was cancelled immediately. Check for null before calling
 scheduled start can be stopped or rescheduled. Rescheduling after sending has
 started returns `409`.
 Launch, reschedule, pause, resume, and stop generate one idempotency key per call unless you
-pass one. Automatic retries reuse that key; a completed replay returns the
-API's `idempotency_completed` conflict, so inspect the campaign state after a
-lost response.
+pass one. Automatic retries reuse that key. Keep the original response and
+inspect the campaign after a lost response; unavailable replay data does not
+permit another execution with a fresh key.
 
 #### A/B tests (beta)
 
@@ -2288,7 +2302,7 @@ on the team's opt-out list is recorded as `opted_out`, with no recipient link
 and no value. The decision is fixed when the conversion is recorded.
 `eventId` deduplicates per project: sending the same body again returns the
 original with `replayed: true`, so retries are safe. Changing any detail
-answers `409 idempotency_conflict`. Amounts are integer minor units of an ISO
+answers `422 idempotency_conflict`. Amounts are integer minor units of an ISO
 4217 currency. The report sums them per currency, as decimal strings, and never
 converts between currencies. Values are as reported, not verified payments.
 
@@ -2310,10 +2324,12 @@ members, and `Client.optOuts` reads and replaces team keyword settings.
 Platform `create` route has no replay contract, so the SDK sends it once and
 does not accept an idempotency key or retry setting. After a lost create
 response, inspect the campaign list before creating another draft. For launch
-and reschedule, a supplied key is preserved across retries within the API's
-24-hour replay window. If the outcome remains uncertain after that window,
-reconcile campaign state before starting another request; see
-[Idempotent sends](#idempotent-sends).
+and reschedule, a supplied key is preserved across retries. The older pinned
+Platform contract has a 24-hour replay window; the response-replay contract uses
+the one-hour receipt window described in [Idempotent sends](#idempotent-sends).
+Use the window of the API contract serving the request. If the outcome remains
+uncertain, reconcile campaign state before starting another request. Retrying
+after the receipt expires can run the operation again.
 `archive` returns a receipt for a completed, failed, or cancelled campaign;
 other states return `409`. A pending final event or active delivery run also
 returns `409`; retry after both finish. Platform `delete` accepts draft,
