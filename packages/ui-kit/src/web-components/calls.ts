@@ -215,7 +215,6 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
               ?.setHandRaised(!snapshot.handRaised)
               .catch(() => undefined),
         );
-        hand.setAttribute("aria-pressed", String(snapshot.handRaised === true));
         panel.append(hand);
         for (const emoji of ["👍", "❤️", "😂", "😮", "😢", "🙏"] as const)
           panel.append(
@@ -308,10 +307,6 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
                 : controller.startScreenShare()
             ).catch(() => undefined);
           },
-        );
-        share.setAttribute(
-          "aria-pressed",
-          String(snapshot.screenSharing === true),
         );
         panel.append(share);
       }

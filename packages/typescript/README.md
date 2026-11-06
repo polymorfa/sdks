@@ -1164,7 +1164,21 @@ Identity resolution accepts an ID, phone number, or BSUID. Calling and security
 code checks require a connected Linked Device Number; identity resolution also
 supports Cloud Numbers when their business portfolio is configured.
 
+The source-only `messaging.calls.list(session, params)` method requires a
+matching package release and regional call-history API deployment. It returns
+one page of the number's calls, newest first, with the other party in `peer`
+(user ID, phone number, username). The records are served from the number's data region. Filter by
+`direction`, `outcome`, `since` and `until`, and pass `nextCursor` as
+`cursor` for the next page. Client tokens need the `read_calls` action.
+
 ```ts
+const calls = await messaging.calls.list("support", {
+  outcome: "missed",
+  limit: 25,
+});
+for (const call of calls.data.data)
+  console.log(call.callId, call.peer?.phoneNumber);
+
 await messaging.calls.reject(
   "support",
   incomingCallId,

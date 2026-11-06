@@ -1,3 +1,10 @@
+import {
+  BrowserCatalogResource,
+  BrowserChannelsResource,
+  BrowserChatsResource,
+  BrowserLabelsResource,
+  BrowserProfileResource,
+} from "./account.js";
 import { BrowserValidationError } from "../errors.js";
 import {
   BrowserTransport,
@@ -9,7 +16,15 @@ import type {
   BrowserAsyncAcceptedData,
   BrowserChatPresenceData,
   BrowserContact,
+  BrowserCallPage,
   BrowserContactCheckResult,
+  BrowserListCallsParams,
+  BrowserCreateGroupRequest,
+  BrowserGroup,
+  BrowserGroupInviteCode,
+  BrowserGroupInviteInfo,
+  BrowserGroupMemberAddMode,
+  BrowserGroupParticipant,
   BrowserMessageResult,
   BrowserMessageReceipt,
   BrowserPairingCode,
@@ -23,6 +38,7 @@ import type {
   BrowserSendMessageRequest,
   BrowserStarRequest,
   BrowserSuccessEnvelope,
+  BrowserSuccessResponse,
   BrowserTypingRequest,
 } from "./types.js";
 
@@ -34,6 +50,13 @@ export class BrowserMessagingClient {
   readonly messages: BrowserMessagesResource;
   readonly presence: BrowserPresenceResource;
   readonly contacts: BrowserContactsResource;
+  readonly groups: BrowserGroupsResource;
+  readonly calls: BrowserCallsResource;
+  readonly chats: BrowserChatsResource;
+  readonly labels: BrowserLabelsResource;
+  readonly profile: BrowserProfileResource;
+  readonly channels: BrowserChannelsResource;
+  readonly catalog: BrowserCatalogResource;
   readonly widget: BrowserWidgetResource;
 
   constructor(options: BrowserMessagingClientOptions) {
@@ -48,6 +71,13 @@ export class BrowserMessagingClient {
     this.messages = new BrowserMessagesResource(transport, session);
     this.presence = new BrowserPresenceResource(transport, session);
     this.contacts = new BrowserContactsResource(transport, session);
+    this.groups = new BrowserGroupsResource(transport, session);
+    this.calls = new BrowserCallsResource(transport, session);
+    this.chats = new BrowserChatsResource(transport, session);
+    this.labels = new BrowserLabelsResource(transport, session);
+    this.profile = new BrowserProfileResource(transport, session);
+    this.channels = new BrowserChannelsResource(transport, session);
+    this.catalog = new BrowserCatalogResource(transport, session);
     this.widget = new BrowserWidgetResource(transport, session);
   }
 }
@@ -148,6 +178,19 @@ export class BrowserPresenceResource {
     });
   }
 
+  /** Set the account's own availability (`presence_write`). */
+  set(
+    presence: "available" | "unavailable",
+    options: BrowserActionOptions = {},
+  ): Promise<BrowserActionResponse<BrowserSuccessResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionRoot(this.session)}/presence`,
+      body: { presence },
+      ...options,
+    });
+  }
+
   subscribe(
     chatId: string,
     options: BrowserActionOptions = {},
@@ -207,6 +250,73 @@ export class BrowserContactsResource {
     });
   }
 
+  /** Block a contact (`contacts_manage`). */
+  block(
+    contactId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<BrowserActionResponse<BrowserSuccessResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/block`,
+      ...options,
+    });
+  }
+
+  unblock(
+    contactId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<BrowserActionResponse<BrowserSuccessResponse>> {
+    return this.transport.request({
+      method: "POST",
+      path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/unblock`,
+      ...options,
+    });
+  }
+
+  /** Blocked contacts (`read_contact`). */
+  blocked(
+    options: BrowserActionOptions = {},
+  ): Promise<
+    BrowserActionResponse<BrowserSuccessEnvelope<readonly BrowserContact[]>>
+  > {
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionRoot(this.session)}/contacts/blocked`,
+      ...options,
+    });
+  }
+
+  /** The contact's About text and account details (`read_contact`). */
+  info(
+    contactId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<
+    BrowserActionResponse<
+      BrowserSuccessEnvelope<Readonly<Record<string, unknown>>>
+    >
+  > {
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/info`,
+      ...options,
+    });
+  }
+
+  businessProfile(
+    contactId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<
+    BrowserActionResponse<
+      BrowserSuccessEnvelope<Readonly<Record<string, unknown>>>
+    >
+  > {
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/business-profile`,
+      ...options,
+    });
+  }
+
   check(
     phone: string | readonly string[],
     options: BrowserActionOptions = {},
@@ -229,6 +339,338 @@ export class BrowserContactsResource {
       ...options,
     });
   }
+}
+
+/** The number's calls, newest first, with each caller's identity (`read_calls`). */
+export class BrowserCallsResource {
+  constructor(
+    private readonly transport: BrowserTransport,
+    private readonly session: string,
+  ) {}
+
+  list(
+    params: BrowserListCallsParams = {},
+    options: BrowserActionOptions = {},
+  ): Promise<BrowserActionResponse<BrowserCallPage>> {
+    if (
+      params.limit !== undefined &&
+      (!Number.isInteger(params.limit) ||
+        params.limit < 1 ||
+        params.limit > 100)
+    )
+      throw new BrowserValidationError(
+        "limit must be 1 to 100.",
+        "invalid_limit",
+      );
+    const query: Record<string, string> = {};
+    for (const key of [
+      "cursor",
+      "direction",
+      "outcome",
+      "since",
+      "until",
+    ] as const) {
+      const value = params[key];
+      if (value !== undefined) query[key] = value;
+    }
+    if (params.limit !== undefined) query.limit = String(params.limit);
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionRoot(this.session)}/calls`,
+      query,
+      ...options,
+    });
+  }
+}
+
+type Envelope<T> = BrowserActionResponse<BrowserSuccessEnvelope<T>>;
+type Done = BrowserActionResponse<BrowserSuccessResponse>;
+
+/**
+ * Group reads need `groups_read`; changes need `groups_manage`. Creating a
+ * group and adding participants also need the session's recipient mode to be
+ * `any`. The picture and capabilities routes are server-only.
+ */
+export class BrowserGroupsResource {
+  constructor(
+    private readonly transport: BrowserTransport,
+    private readonly session: string,
+  ) {}
+
+  list(
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<readonly BrowserGroup[]>> {
+    return this.call("GET", "", undefined, options);
+  }
+
+  retrieve(
+    groupId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserGroup>> {
+    return this.call("GET", this.group(groupId), undefined, options);
+  }
+
+  participants(
+    groupId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<readonly BrowserGroupParticipant[]>> {
+    return this.call(
+      "GET",
+      `${this.group(groupId)}/participants`,
+      undefined,
+      options,
+    );
+  }
+
+  inviteCode(
+    groupId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserGroupInviteCode>> {
+    return this.call(
+      "GET",
+      `${this.group(groupId)}/invite-code`,
+      undefined,
+      options,
+    );
+  }
+
+  joinInfo(
+    code: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserGroupInviteInfo>> {
+    requireText(code, "An invite code is required.", "missing_invite_code");
+    return this.transport.request({
+      method: "GET",
+      path: `${sessionRoot(this.session)}/groups/join-info`,
+      query: { code },
+      ...options,
+    });
+  }
+
+  create(
+    body: BrowserCreateGroupRequest,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserGroup>> {
+    requireText(
+      body.name.trim(),
+      "A group name is required.",
+      "missing_group_name",
+    );
+    requireIds(body.participants);
+    return this.call("POST", "", body, withIdempotencyKey(options));
+  }
+
+  join(code: string, options: BrowserActionOptions = {}): Promise<Done> {
+    requireText(code, "An invite code is required.", "missing_invite_code");
+    return this.call("POST", "/join", { code }, options);
+  }
+
+  leave(groupId: string, options: BrowserActionOptions = {}): Promise<Done> {
+    return this.call(
+      "POST",
+      `${this.group(groupId)}/leave`,
+      undefined,
+      options,
+    );
+  }
+
+  setSubject(
+    groupId: string,
+    value: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    requireText(
+      value.trim(),
+      "A group name is required.",
+      "missing_group_name",
+    );
+    return this.call(
+      "PUT",
+      `${this.group(groupId)}/subject`,
+      { value },
+      options,
+    );
+  }
+
+  setDescription(
+    groupId: string,
+    value: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "PUT",
+      `${this.group(groupId)}/description`,
+      { value },
+      options,
+    );
+  }
+
+  revokeInviteCode(
+    groupId: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Envelope<BrowserGroupInviteCode>> {
+    return this.call(
+      "POST",
+      `${this.group(groupId)}/invite-code/revoke`,
+      undefined,
+      options,
+    );
+  }
+
+  addParticipants(
+    groupId: string,
+    participants: readonly string[],
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.members(groupId, "participants/add", participants, options);
+  }
+
+  removeParticipants(
+    groupId: string,
+    participants: readonly string[],
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.members(groupId, "participants/remove", participants, options);
+  }
+
+  promote(
+    groupId: string,
+    participants: readonly string[],
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.members(groupId, "admin/promote", participants, options);
+  }
+
+  demote(
+    groupId: string,
+    participants: readonly string[],
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.members(groupId, "admin/demote", participants, options);
+  }
+
+  /** Base64 image bytes; client tokens cannot pass a URL. */
+  setPicture(
+    groupId: string,
+    base64: string,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    requireText(base64, "base64 is required.", "missing_picture");
+    return this.call(
+      "PUT",
+      `${this.group(groupId)}/picture`,
+      { base64 },
+      options,
+    );
+  }
+
+  /** Only admins may edit the group name, description and picture. */
+  setInfoEditing(
+    groupId: string,
+    adminsOnly: boolean,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "PUT",
+      `${this.group(groupId)}/settings/info-edit`,
+      { adminsOnly },
+      options,
+    );
+  }
+
+  /** Only admins may send messages. */
+  setMessaging(
+    groupId: string,
+    adminsOnly: boolean,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "PUT",
+      `${this.group(groupId)}/settings/messages`,
+      { adminsOnly },
+      options,
+    );
+  }
+
+  setMemberAddMode(
+    groupId: string,
+    mode: BrowserGroupMemberAddMode,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "PUT",
+      `${this.group(groupId)}/settings/member-add`,
+      { mode },
+      options,
+    );
+  }
+
+  setJoinApproval(
+    groupId: string,
+    required: boolean,
+    options: BrowserActionOptions = {},
+  ): Promise<Done> {
+    return this.call(
+      "PUT",
+      `${this.group(groupId)}/settings/join-approval`,
+      { required },
+      options,
+    );
+  }
+
+  private members(
+    groupId: string,
+    action: string,
+    participants: readonly string[],
+    options: BrowserActionOptions,
+  ): Promise<Done> {
+    requireIds(participants);
+    return this.call(
+      "POST",
+      `${this.group(groupId)}/${action}`,
+      { participants },
+      options,
+    );
+  }
+
+  private group(groupId: string): string {
+    if (!/^[1-9][0-9]{0,18}$/.test(groupId))
+      throw new BrowserValidationError(
+        "Group IDs are decimal strings.",
+        "invalid_group_id",
+      );
+    return `/${groupId}`;
+  }
+
+  private call<T>(
+    method: "GET" | "POST" | "PUT",
+    path: string,
+    body: unknown,
+    options: BrowserActionOptions,
+  ): Promise<BrowserActionResponse<T>> {
+    return this.transport.request({
+      method,
+      path: `${sessionRoot(this.session)}/groups${path}`,
+      ...(body === undefined ? {} : { body }),
+      ...options,
+    });
+  }
+}
+
+function requireText(value: string, message: string, code: string): void {
+  if (value.length === 0) throw new BrowserValidationError(message, code);
+}
+
+function requireIds(ids: readonly string[]): void {
+  if (
+    ids.length === 0 ||
+    ids.length > 256 ||
+    ids.some((id) => !/^[1-9][0-9]{0,18}$/.test(id))
+  )
+    throw new BrowserValidationError(
+      "Pass 1 to 256 participant user IDs.",
+      "invalid_participants",
+    );
 }
 
 export class BrowserWidgetResource {

@@ -676,7 +676,12 @@ function callEvent(state: StoredCallState | undefined): StoreReducer {
       state: "ringing",
       startedAt: context.time,
     };
-    const from = identity(payload.from);
+    const reported = identity(payload.from);
+    // Later call events often carry only the ID; keep what earlier ones knew.
+    const from =
+      reported !== undefined && existing.from?.id === reported.id
+        ? { ...existing.from, ...reported }
+        : reported;
     let next: StoredCall = applyFields(
       existing,
       pick({

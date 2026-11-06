@@ -338,3 +338,24 @@ fn lifecycle_handshake(
     assert!(req.headers().get("authorization").is_none());
     Ok(response)
 }
+
+#[tokio::test]
+async fn session_call_history_native_http_contract() {
+    use polymorfa_sdk::session_calls::*;
+    let params = ListSessionCallsParams {
+        limit: Some(10),
+        cursor: Some("c1".into()),
+        outcome: Some("missed".into()),
+        ..Default::default()
+    };
+    wire_messaging!(
+        client,
+        "GET",
+        "/messaging/support%20line/calls?cursor=c1&limit=10&outcome=missed",
+        None,
+        json!({"success":true,"data":[{"callId":"C1","projectId":"p","sessionId":"support line","direction":"inbound","upstream":"linked_device","outcome":"missed","state":"missed","hasVideo":false,"peer":{"id":"15550100","phoneNumber":"+15550100"},"startedAt":"2026-10-27T10:00:00Z","connectedAt":null,"endedAt":null,"durationSeconds":null,"endReason":null}],"nextCursor":"next"}),
+        client
+            .calls()
+            .list("support line", &params, RequestOptions::default())
+    );
+}

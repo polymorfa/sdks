@@ -28,6 +28,7 @@ func (c *MessagingClient) ClientTokens() *ClientTokens  { return &ClientTokens{c
 func (c *MessagingClient) VoIP() *VoIP                  { return &VoIP{c.t} }
 func (c *MessagingClient) Media() *MessagingMedia       { return &MessagingMedia{c.t} }
 func (c *MessagingClient) Chats() *Chats                { return &Chats{c.t} }
+func (c *MessagingClient) SessionCalls() *SessionCalls  { return &SessionCalls{c.t} }
 func serverOnly(t *transport) error {
 	if t.config.Credential.Kind == ClientToken {
 		return configuration("credential", "This operation requires an team key or project token.")

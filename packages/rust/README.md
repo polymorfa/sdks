@@ -992,3 +992,27 @@ async fn confirm_explicitly(client: &polymorfa_sdk::MessagingClient, session: &s
 # Ok(())
 # }
 ```
+
+## Number call history (unreleased source)
+
+Read one number's calls with the other party's identity through
+`GET /messaging/{session}/calls`. Client tokens need `read_calls`.
+The route requires the regional call-history API deployment; this source
+change does not make it available on a deployed API or package registry.
+
+```rust,no_run
+# async fn read_call_history(messaging: &polymorfa_sdk::MessagingClient) -> polymorfa_sdk::Result<()> {
+let page = messaging.calls().list("support",
+    &polymorfa_sdk::session_calls::ListSessionCallsParams {
+        limit: Some(25), outcome: Some("missed".into()), ..Default::default()
+    }, Default::default()).await?;
+# let _ = page;
+# Ok(())
+# }
+```
+
+The response contains `data` and a nullable `nextCursor` (`Data` and
+`NextCursor` in .NET; `next_cursor` in Rust). Pass a returned cursor in the
+next request. Filters include direction, outcome and ISO 8601 start-time
+bounds `since`/`until`. `peer` may be null; its user ID, phone number and
+username may each be absent. Platform call records keep `peerRef`.

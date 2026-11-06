@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "ff82061b9f872f1f39bc1fca3584df83209c4c52",
-  "sourceFilesSha256": "4b157347cdf705f6be7fdce859b1313dc2d9523ebaefdbbdebf3030ba8bf0341",
+  "sourceCommit": "94d28a4b8e558b3cb67d633cd61f5cf3c8e1c0f9",
+  "sourceFilesSha256": "e7866dead16533b494f2eb414c7a987167dedbf434591dd662b9e28044a4fe39",
   "apiVersion": "2026-09-22",
   "apiSourceCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
   "specs": {
