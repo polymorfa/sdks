@@ -69,8 +69,13 @@
     "vitest": "^3.2.7"
   },
   "overrides": {
-    "glob": "14.0.2",
-    "minimatch@>=7.0.0 <11.0.1": "11.0.1",
+    "@google-cloud/firestore-api@0.2.0": {
+      "google-gax@5.0.8": {
+        "rimraf@5.0.10": {
+          "glob": "14.0.2"
+        }
+      }
+    },
     "miniflare": {
       "undici": "^7.29.1",
       "sharp": "^0.35.5"
