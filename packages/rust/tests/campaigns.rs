@@ -66,6 +66,70 @@ fn campaign_reply_id_builder_preserves_legacy_ids_and_rejects_conflicts() {
     assert!(legacy.clone().with_reply_id("different").is_err());
     assert!(legacy.with_reply_id("stable").is_ok());
 }
+/// Struct literals bypass `with_reply_id`; campaign create/update validation
+/// must still reject a non-string extension ID before any connection opens.
+#[tokio::test]
+async fn campaign_requests_reject_non_string_extension_id_before_http() {
+    use std::sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    };
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let base = format!("http://{}", listener.local_addr().unwrap());
+    let accepted = Arc::new(AtomicUsize::new(0));
+    let counter = accepted.clone();
+    let server = tokio::spawn(async move {
+        while let Ok((_socket, _)) = listener.accept().await {
+            counter.fetch_add(1, Ordering::SeqCst);
+        }
+    });
+    let mut extensions = std::collections::BTreeMap::new();
+    extensions.insert("id".to_string(), json!(123));
+    let button = CampaignMessageButton {
+        kind: CampaignMessageButtonKind::Reply,
+        label: "Choose".into(),
+        url: None,
+        phone: None,
+        extensions,
+    };
+    let message: CampaignMessage = serde_json::from_value(json!({
+        "version": 2, "source": "Choose an offer",
+        "buttons": [{"kind": "reply", "label": "Choose"}]
+    }))
+    .unwrap();
+    let messages = vec![CampaignMessage {
+        buttons: Some(vec![button]),
+        ..message
+    }];
+    let mut create: CreatePlatformCampaignRequest = serde_json::from_value(json!({
+        "projectId": "11111111-1111-4111-8111-111111111111", "name": "Interactive"
+    }))
+    .unwrap();
+    create.messages_array = Some(messages.clone());
+    let update = UpdatePlatformCampaignRequest {
+        messages_array: Some(messages),
+        ..Default::default()
+    };
+    let params: PlatformCampaignParameters =
+        serde_json::from_value(json!({"projectId": "11111111-1111-4111-8111-111111111111"}))
+            .unwrap();
+    let client = support::organization(base);
+    let campaigns = client.campaigns();
+    let created = campaigns.create(&create, RequestOptions::default()).await;
+    assert_eq!(created.unwrap_err().kind, ErrorKind::Validation);
+    let updated = campaigns
+        .update(
+            "campaign",
+            Some(&update),
+            &params,
+            RequestOptions::default(),
+        )
+        .await;
+    assert_eq!(updated.unwrap_err().kind, ErrorKind::Validation);
+    tokio::task::yield_now().await;
+    assert_eq!(accepted.load(Ordering::SeqCst), 0, "request reached HTTP");
+    server.abort();
+}
 fn recipients() -> serde_json::Value {
     json!([{"id":"recipient","phone":"+15551234567","variables":{"name":"Alex"},"variantKey":"a","status":"read","attempts":1,"lastError":null,"externalMessageId":"message","queuedAt":1000,"sentAt":1100,"deliveredAt":1200,"readAt":1300,"failedAt":null,"respondedAt":1400,"messagesSent":0,"failureReason":null,"nextMessageAt":null,"sequenceError":null,"followUp":null}])
 }

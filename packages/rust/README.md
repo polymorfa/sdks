@@ -949,8 +949,11 @@ separate three-reply contract. The API remains authoritative for sender
 availability, media sizes, control limits and campaign sendability.
 
 The existing struct-literal fields stay unchanged. Legacy string IDs in
-`extensions["id"]` remain supported; the builder rejects an attempt to replace
-one with a different ID. Non-string extension IDs fail before HTTP.
+`extensions["id"]` remain supported. `with_reply_id` returns an error when
+`extensions["id"]` already holds a different or non-string value. Campaign
+create and update requests reject a non-string `extensions["id"]` with a
+validation error before any HTTP request, including buttons built without
+`with_reply_id`.
 
 ```rust
 use polymorfa_sdk::campaigns::{CampaignMessageButton, CampaignMessageButtonKind};
