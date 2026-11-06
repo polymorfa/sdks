@@ -37,7 +37,10 @@
       "tag": "vip\n"
     },
     {
-      "tag": ""
+      "tag": "\u007f"
+    },
+    {
+      "tag": "vip\u007f"
     },
     {
       "phonePrefix": "+"

@@ -3,6 +3,7 @@ import { afterEach, expect, expectTypeOf, it } from "vitest";
 import {
   Client,
   PolymorfaConflictError,
+  PolymorfaValidationError,
   type ListAudienceProfilesParams,
   type PutAudienceProfileRequest,
 } from "../src/index.js";
@@ -303,3 +304,36 @@ it.each(["\u{1F642}".repeat(12), "\ufffd"])(
     ).toBe(tag);
   },
 );
+
+it("surfaces the API's invalid_parameter envelope for a rejected list filter", async () => {
+  const server = await startTestServer(() => ({
+    status: 400,
+    body: JSON.stringify({
+      error: {
+        type: "invalid_request_error",
+        code: "invalid_parameter",
+        message: "tag must be 1-48 UTF-8 bytes without control characters",
+        param: null,
+        request_id: "req_filter",
+      },
+      data: null,
+      docs: "https://docs.polymorfa.com/api/errors#invalid-parameter",
+    }),
+  }));
+  servers.push(server);
+  const resource = new Client({
+    baseUrl: server.url,
+    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    maxNetworkRetries: 0,
+  }).audienceProfiles;
+  const failure = await resource
+    .list({ tag: "vip", phonePrefix: "+44" })
+    .catch((error: unknown) => error);
+  expect(failure).toBeInstanceOf(PolymorfaValidationError);
+  expect(failure).toMatchObject({
+    status: 400,
+    code: "invalid_parameter",
+    requestId: "req_filter",
+  });
+  expect(server.requests).toHaveLength(1);
+});

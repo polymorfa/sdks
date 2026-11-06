@@ -1008,9 +1008,10 @@ and `hasMore: false` end pagination. Limit defaults to 25 and ranges from 1 to
 100. Omit optional values instead of serializing null or empty strings.
 The literal tag `"null"` remains a tag. Consent-history paging has no filters.
 
-The API's validation response is HTTP400 with an `error` string; no stable
-server error code is promised. SDK preflight errors keep their existing native
-exception types. The nested import resource and canonical `csvBase64` payload
+Invalid filters, cursors and limits return HTTP 400 with the standard error
+envelope: `error.type` is `invalid_request_error` and `error.code` is
+`invalid_parameter`. SDK preflight validation rejects the same values before
+sending and keeps its existing native exception types. The nested import resource and canonical `csvBase64` payload
 are unchanged. No import aliases or new CSV encoder are introduced.
 
 `ListAudienceProfilesParameters` adds public optional fields. Update exhaustive
