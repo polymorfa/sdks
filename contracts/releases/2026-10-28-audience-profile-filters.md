@@ -26,3 +26,5 @@ SDK input commit: 725c5ab530e73a17e007c397430b32f53df26442. The export commit is
 Corrected SDK input commit: 7b8ef11e176dfbb3ada805daf98b919134ac253c. Native Rust compilation caught the canonical patch adding fields to recipient-export parameters; this child restores that unrelated struct and adds the fields only to profile-list parameters. Earlier source/export commits and the compiler failure remain preserved.
 
 Python import-order correction input: b92ec6bdc352c0a7a630ee977970c511572754c8. Only the owned test import block changes after the prior export; both test function bodies and assertions are identical. Current-head CI/review and package/environment gates remain separate.
+
+Error-envelope and fixture correction input: 0fb6528ab0bace4bdf2c1f7c6c7419845f55c9dd. The six READMEs now state the standard HTTP 400 `invalid_parameter` envelope that the pinned BadRequest response and merged API return. The DEL tag case is written as an escape, with a trailing-DEL case added. Runtime validation is unchanged.
