@@ -26,6 +26,7 @@ final class Messages extends Resource
     public function send(string $session, array $body, ?RequestOptions $options = null): ApiResponse
     {
         [$body, $settings] = self::prepareDescriptors($body, $options ?? new RequestOptions());
+        \Polymorfa\InteractiveMessageValidation::validate($body['content']);
         if (array_key_exists('requestPhoneNumber', $body['content'])) {
             $body['content']['requestPhoneNumber'] = new \stdClass();
         }

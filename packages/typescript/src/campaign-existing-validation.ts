@@ -168,6 +168,7 @@ function followUp(value: unknown): void {
     contractUuid(message.templateId, "followUp.message.templateId");
   }
 }
+/** Validate composed-message fields and delay bounds; leave delivery limits to the API. */
 function composed(value: unknown, mayBeDrip: boolean): void {
   if (!Array.isArray(value) || value.length > 10) invalid("messagesArray");
   for (const item of value) {
@@ -199,7 +200,7 @@ function composed(value: unknown, mayBeDrip: boolean): void {
         const button = contractObject(b, "button");
         enumValue(button.kind, ["reply", "link", "call"], "button.kind");
         contractString(button.label, "button.label", 0);
-        for (const key of ["url", "phone"])
+        for (const key of ["url", "phone", "id"])
           if (present(button, key)) contractString(button[key], key, 0);
       }
     }
