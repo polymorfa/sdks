@@ -41,7 +41,7 @@ recipe. Its schemas and union branches are validated against the pinned OpenAPI.
 No optional request fields are included in this initial catalog.
 
 There are **31 operations per language**, 186 complete programs. Each language's
-coverage ledger contains 442 covered operations, leaving **411 omitted per
+coverage ledger contains 445 covered operations, leaving **414 omitted per
 language**. The initial recipes cover text sends, message actions, session
 lifecycle, business profiles/catalogs/collections and project event listing.
 The remaining operations have no verified recipe in this catalog and retain

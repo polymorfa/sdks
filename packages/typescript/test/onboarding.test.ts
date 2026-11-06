@@ -39,7 +39,7 @@ it("uploads fixture content separately and advances an existing QuickLink withou
   expect(JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body))).toEqual(input);
   expect(JSON.parse(String(fetcher.mock.calls[1]?.[1]?.body))).toEqual(signup);
   expect(String(fetcher.mock.calls[0]?.[0])).toContain(
-    "/messaging/testing/project-a/history-fixtures",
+    "/messaging/projects/project-a/test-history-fixtures",
   );
   expect(String(fetcher.mock.calls[1]?.[0])).toContain(
     "/messaging/cloud-api/embedded-signup",

@@ -17,7 +17,7 @@ namespace Polymorfa;
  * @phpstan-type HistoryMessage array{id:string,senderPhone:string,text:string,timestamp:int|float,fromMe:bool}
  * @phpstan-type Fixture 'message.received'|'message.ack'|'message.failed'|'call.received'|'call.missed'|'call.ended'|'session.status'|'session.restriction_updated'|'template.status'
  * @phpstan-type Overrides array{text?:string,from?:string,pushName?:string,mediaType?:'image'|'video'|'audio'|'document'|'sticker',caption?:string,ackStatus?:'delivered'|'read'|'played'|'error',messageId?:string,failureReason?:'invalid_recipient'|'session_not_connected'|'ack_timeout'|'send_failed'|'blocked_by_safety',video?:bool,durationSeconds?:int|float,callEndReason?:'user_hangup'|'timeout'|'lost_connection'|'rejected'|'call_restricted',restrictionActive?:bool,status?:'CONNECTING'|'CONNECTED'|'DISCONNECTED',statusReason?:'SCAN_QR'|'AUTO_RECONNECT'|'FAILED'|'MANUAL_STOP'|'QR_TIMEOUT'|'LOGGED_OUT'|'TEMPORARY_BAN'|'STREAM_ERROR',templateName?:string,templateStatus?:'APPROVED'|'REJECTED',reason?:string}
- * @phpstan-type Trigger array{session:string,event:Fixture,overrides?:Overrides,fromSession?:string}
+ * @phpstan-type Trigger array{event:Fixture,overrides?:Overrides,fromNumber?:string}
  * @phpstan-type TriggerResult array{event:Fixture,session:string,delivery:'generated'|'simulated',eventId:?string,source:'test'|'runtime'}
  * @phpstan-type Phone array{session:string,phone:string,online:bool,devices:list<array{deviceId:int}>}
  */

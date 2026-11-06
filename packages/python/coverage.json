@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a",
+  "sourceSdkCommit": "a7dd02cf1655e386642b9401358b725de4903a60",
   "operations": [
     {
       "family": "messaging",
@@ -717,7 +717,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/testing/{projectId}/events/fixtures",
+      "path": "/messaging/test-events/fixtures",
       "status": "covered",
       "sdkMethod": "AsyncMessagingClient.testing.list_event_fixtures",
       "testFile": "tests/test_onboarding.py"
@@ -1333,7 +1333,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/testing/{projectId}/events",
+      "path": "/messaging/{session}/test-events",
       "status": "covered",
       "sdkMethod": "AsyncMessagingClient.testing.trigger_event",
       "testFile": "tests/test_onboarding.py"
@@ -1341,7 +1341,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/testing/{projectId}/history-fixtures",
+      "path": "/messaging/projects/{projectId}/test-history-fixtures",
       "status": "covered",
       "sdkMethod": "AsyncMessagingClient.testing.create_history_fixture",
       "testFile": "tests/test_onboarding.py"
@@ -4633,6 +4633,30 @@
       "status": "excluded",
       "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority.",
       "milestone": "excluded-contract"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/phone",
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.testing.get_phone",
+      "testFile": "tests/test_onboarding.py"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/phone/devices/{deviceId}/unlink",
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.testing.unlink_phone_device",
+      "testFile": "tests/test_onboarding.py"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/phone/messages",
+      "status": "covered",
+      "sdkMethod": "AsyncMessagingClient.testing.send_phone_message",
+      "testFile": "tests/test_onboarding.py"
     }
   ],
   "supplements": {

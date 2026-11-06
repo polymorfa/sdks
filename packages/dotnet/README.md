@@ -39,7 +39,7 @@ Known webhooks have typed payloads for all 84 names in the pinned TypeScript con
 
 `Events.LiveSource` and `EventStreamSource` feed decoded webhook bodies to an application-owned store. Each subscription resumes from its saved cursor and skips events whose body was not retained. Dispose the subscription to stop delivery; await `DisposeAsync` or `Completion` to wait for stream cleanup. `OnError` receives terminal stream or listener failures.
 
-The existing coverage ledger records 442 covered operations. The separate campaign/custody supplement adds 30 source implementations with TCP fixtures; its ledger adoption is pending. Graph and testing-phone supplements retain their separate fixtures. This is source-level contract coverage, not a registry release or hosted acceptance result.
+The existing coverage ledger records 445 covered operations. The separate campaign/custody supplement adds 30 source implementations with TCP fixtures; its ledger adoption is pending. Graph and testing-phone supplements retain their separate fixtures. This is source-level contract coverage, not a registry release or hosted acceptance result.
 
 `CallsClient` tracks incoming and outgoing calls. `Call` provides answer, join, reject, leave, end, participant controls and typed media frames. Connections authenticate in the first WebSocket frame, refresh expiring credentials, detect missed heartbeats and reconnect within a bounded attempt budget. Media reconnect preserves connection identity and acknowledged preferences. `CallsTokenSource` shares concurrent provider requests while preserving each caller's cancellation. PCM uses the rate announced in `Call.SampleRate`; H.264 frames retain timestamps. Outgoing H.264 uses the protocol's reserved source zero; received source ownership is exposed separately.
 
@@ -1090,3 +1090,14 @@ var state = await client.Passkeys.GetConfirmationAsync(session);
 Task<ApiResponse<SuccessEnvelope<PasskeyConfirmation>>> ConfirmExplicitly() =>
     client.Passkeys.ConfirmAsync(session, suppliedConfirmation);
 ```
+
+## Number-scoped Test operations
+
+The Test phone methods take a Number ID, without a project argument:
+~~~csharp
+var phone = await client.Testing.GetPhoneAsync("support");
+var testEvent = await client.Testing.TriggerEventAsync("support", new("call.missed", FromNumber: "sales"));
+var fixtures = await client.Testing.ListEventFixturesAsync();
+~~~
+
+Send-phone-message and unlink-device helpers use the same Number scope. The trigger body contains event, optional overrides and optional fromNumber; it does not contain session or fromSession. The static fixture catalog has no project argument. History-fixture creation remains project-scoped. These operations require a server credential and the API’s Test-number access checks; a helper does not grant access or make a real Number a Test number.
