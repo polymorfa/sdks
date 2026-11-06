@@ -908,16 +908,16 @@
     },
     {
       "path": "README.md",
-      "hunk_header": "@@ -28,6 +28,10 @@",
-      "exact_text_sha256": "b4ec41039ffa4e7ff414b1ed99ea0acc6fd2e3849f5357a549427cb8d92d425b",
-      "exact_text": "@@ -28,6 +28,10 @@\n | `@polymorfa/store`     | Browser              | Opt-in IndexedDB store for webhook-shaped events, with live sources and chat data |\n | `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |\n | `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |\n+\n+The separate [Python source package](packages/python/README.md) implements only\n+authenticated Platform project listing. It is not part of the npm workspace or\n+the npm `dev` release, and is not published to PyPI.\n \n The public packages are complete development artifacts on `dev`. They\n publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the\n",
+      "hunk_header": "@@ -29,6 +29,10 @@",
+      "exact_text_sha256": "ee6f7ffe7d0ddfcc69ea825b55ccb58aea8def28fb141ec956e6dd87b76ebc92",
+      "exact_text": "@@ -29,6 +29,10 @@\n | `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |\n | `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |\n \n+The separate [Python source package](packages/python/README.md) implements only\n+authenticated Platform project listing. It is not part of the npm workspace or\n+the npm `dev` release, and is not published to PyPI.\n+\n The public packages are complete development artifacts on `dev`. They\n publish to npm only as `dev` prereleases, never as `latest`. Their names are the intended public identities in the\n Polymorfa npm organization. No mobile-native binding is part of this milestone.\n",
       "semantic_ids": ["S18"]
     },
     {
       "path": "docs/releasing.md",
-      "hunk_header": "@@ -23,6 +23,11 @@",
-      "exact_text_sha256": "829c400f5f1488c9320b62383d114046423d43d5e2f385defb0e742e625a93a5",
-      "exact_text": "@@ -23,6 +23,11 @@\n    example on a rerun) is skipped.\n \n The `latest` dist-tag is never changed.\n+\n+The Python source package in `packages/python` is outside this npm workflow.\n+It has no PyPI publishing workflow or published-version claim. Review its\n+distribution name, version scheme, trusted publisher, and release checks before\n+any Python package publication.\n \n ### Packages\n \n",
+      "hunk_header": "@@ -24,6 +24,11 @@",
+      "exact_text_sha256": "268ff58457cddb00d8762a227c7ad19e9d6b2b3bd29df78af58406aa5938fe06",
+      "exact_text": "@@ -24,6 +24,11 @@\n \n The `latest` dist-tag is never changed.\n \n+The Python source package in `packages/python` is outside this npm workflow.\n+It has no PyPI publishing workflow or published-version claim. Review its\n+distribution name, version scheme, trusted publisher, and release checks before\n+any Python package publication.\n+\n ### Packages\n \n Published, in order: `@polymorfa/sdk`, `@polymorfa/browser`, `@polymorfa/ui`,\n",
       "semantic_ids": ["S18"]
     },
     {
@@ -1003,7 +1003,7 @@
   "constraints": [
     "No old interface, workflow, dependency, retention, key policy or output shape restored.",
     "No claim that absent old semantics are byte/behavior equivalent.",
-    "Current SDK production audit with six moderate findings, Rust 1.85 disk failure, publisher/reader and source-pin eligibility gates remain independently owned.",
+    "This change clears the six moderate SDK production audit findings (glob GHSA-3g3m-2fjr-6pw4 and minimatch GHSA-g3hv-75wg-m249) by overriding glob to 14.0.2 under the Firestore rimraf path. Rust 1.85 disk failure, publisher/reader and source-pin eligibility gates remain independently owned.",
     "Current CLI SDK-containing-package gate remains genuine.",
     "No provider/SSH/host/pool/deploy or separate 914 V8 custody change."
   ],
