@@ -8,8 +8,12 @@
 import {
   createBrowserCalls,
   createClientTokenProvider,
-} from "@polymorfa/browser";
-import { CallSurface, DialPad, PolymorfaProvider } from "@polymorfa/react";
+} from "@polymorfa/ui-kit";
+import {
+  CallSurface,
+  DialPad,
+  PolymorfaProvider,
+} from "@polymorfa/ui-kit/react";
 
 const calls = createBrowserCalls({
   session: "support",

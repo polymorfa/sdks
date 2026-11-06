@@ -6,7 +6,7 @@ you write is two files: the handler route (about 20 lines) and the page
 
 | Step | What you do                                                                                                      | Time |
 | ---- | ---------------------------------------------------------------------------------------------------------------- | ---- |
-| 1    | `npm install @polymorfa/sdk @polymorfa/nextjs @polymorfa/react`                                                  | 30 s |
+| 1    | `npm install @polymorfa/sdk @polymorfa/nextjs @polymorfa/ui-kit`                                                 | 30 s |
 | 2    | Copy `.env.example` to `.env.local` and fill in the API key, session and webhook secret                          | 60 s |
 | 3    | Add `app/api/polymorfa/[...route]/route.ts`                                                                      | 90 s |
 | 4    | Add `app/inbox/page.tsx`                                                                                         | 30 s |

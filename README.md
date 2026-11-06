@@ -2,9 +2,10 @@
 
 Handwritten API clients, UI packages, and developer tooling for Polymorfa.
 
-The repository contains the TypeScript server SDK, a framework-neutral
-browser runtime, shared UI contracts, Web Components, React bindings, thin
-Next.js server helpers, and a production-gated developer assistant. The exact Messaging and Platform sources are pinned in
+The repository contains the TypeScript server SDK, the UI Kit (a
+framework-neutral browser runtime, shared UI contracts, web components, React
+bindings, an opt-in event store and a production-gated developer assistant in
+one package), and thin Next.js server helpers. The exact Messaging and Platform sources are pinned in
 `contracts/source.json`; the Graph-compatible catalog, marketing status and
 Flow encryption routes are pinned to the same API commit in
 `contracts/cloud-api-supplements.json`. Full Graph API parity is outside this
@@ -18,17 +19,17 @@ HMS enablement, deployment, and SDK publication.
 
 ## Package architecture
 
-| Package                | Runtime              | Responsibility                                                                    |
-| ---------------------- | -------------------- | --------------------------------------------------------------------------------- |
-| `@polymorfa/sdk`       | Server               | Messaging, management, system, and Bridge server clients                          |
-| `@polymorfa/sdk/calls` | Node.js 22+, Browser | Calls lifecycle, answer/join/leave, and programmatic media sockets                |
-| `@polymorfa/browser`   | Browser              | Client-token transport and framework-neutral product controllers                  |
-| `@polymorfa/ui`        | Isomorphic           | Appearance, locale, direction, motion, and diagnostic contracts                   |
-| `@polymorfa/elements`  | Browser              | Portable custom elements for React-free, Vue, Svelte, and plain HTML applications |
-| `@polymorfa/react`     | Browser              | React bindings over the same controllers                                          |
-| `@polymorfa/store`     | Browser              | Opt-in IndexedDB store for webhook-shaped events, with live sources and chat data |
-| `@polymorfa/nextjs`    | Server               | App Router-compatible client-token and webhook helpers                            |
-| `@polymorfa/devtools`  | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
+| Package                            | Runtime              | Responsibility                                                                    |
+| ---------------------------------- | -------------------- | --------------------------------------------------------------------------------- |
+| `@polymorfa/sdk`                   | Server               | Messaging, management, system, and Bridge server clients                          |
+| `@polymorfa/sdk/calls`             | Node.js 22+, Browser | Calls lifecycle, answer/join/leave, and programmatic media sockets                |
+| `@polymorfa/ui-kit`                | Browser              | Client-token transport and framework-neutral product controllers                  |
+| `@polymorfa/ui-kit/appearance`     | Isomorphic           | Appearance, locale, direction, motion, and diagnostic contracts                   |
+| `@polymorfa/ui-kit/web-components` | Browser              | Portable custom elements for React-free, Vue, Svelte, and plain HTML applications |
+| `@polymorfa/ui-kit/react`          | Browser              | React bindings over the same controllers                                          |
+| `@polymorfa/ui-kit/store`          | Browser              | Opt-in IndexedDB store for webhook-shaped events, with live sources and chat data |
+| `@polymorfa/nextjs`                | Server               | App Router-compatible client-token and webhook helpers                            |
+| `@polymorfa/ui-kit/devtools`       | Development browser  | Configuration, theme, viewport, network, and redacted diagnostic assistant        |
 
 The `@polymorfa/sdk` package root supports Node.js 20+, Cloudflare Workers,
 Deno, and Bun for HTTP clients and native webhook verification. Its `/node`
@@ -38,6 +39,10 @@ SDK changes target `main`. Nightly prereleases use npm's `dev` tag after matchin
 staging acceptance; stable releases require matching production acceptance and
 the protected release workflow. Source availability does not establish package
 publication or feature availability. See [the release gates](docs/releasing.md).
+
+The UI Kit packages are `@polymorfa/ui-kit` and its subpaths. React is an
+optional peer dependency used only by `/react` and `/store/react`. See the
+[UI Kit guide](packages/ui-kit/README.md) for the import map.
 
 For a small browser preview against staging, see the [Calls example](examples/calls-example/README.md).
 
@@ -50,7 +55,7 @@ publication:
 
 ```bash
 npm install @polymorfa/sdk@dev
-npm install @polymorfa/browser@dev   # browser apps
+npm install @polymorfa/ui-kit@dev   # browser apps
 ```
 
 Pin an exact version for reproducible installs. Check
@@ -62,7 +67,7 @@ git clone --branch main https://github.com/polymorfa/sdks.git
 cd sdks
 npm ci
 npm run build:workspaces
-npm pack -w @polymorfa/sdk           # add -w @polymorfa/browser for browser apps
+npm pack -w @polymorfa/sdk           # add -w @polymorfa/ui-kit for browser apps
 npm install /path/to/sdks/polymorfa-sdk-0.1.0-dev.0.tgz   # from your application
 ```
 
@@ -88,7 +93,7 @@ Node.js 20 or newer is required. The package has no runtime dependencies.
 
 The programmatic Calls client ships inside the same package as the
 `@polymorfa/sdk/calls` subpath; there is no separate Calls package to install.
-`@polymorfa/browser` depends on `@polymorfa/sdk` and uses this same Calls
+`@polymorfa/ui-kit` depends on `@polymorfa/sdk` and uses this same Calls
 client, so errors raised by browser calls are the classes exported from
 `@polymorfa/sdk/calls`:
 
@@ -757,7 +762,7 @@ resources described above. Dashboard and staff routes retain their separate
 credential requirements.
 
 `Client.events.stream()` exposes the server event stream as an `AsyncIterable`,
-and `Client.events.liveSource()` adapts it for `@polymorfa/store`. Both require
+and `Client.events.liveSource()` adapts it for `@polymorfa/ui-kit/store`. Both require
 the server event stream's scope and beta access. `polymorfa listen` connects to
 a separate CLI-only forwarding protocol; its `pmfa_ls_` credential cannot be
 used by `Client`, `MessagingClient`, or their raw request helpers.
@@ -800,7 +805,7 @@ to the returned `data.url`.
 import {
   BrowserMessagingClient,
   createClientTokenProvider,
-} from "@polymorfa/browser";
+} from "@polymorfa/ui-kit";
 
 const getClientToken = createClientTokenProvider();
 const messaging = new BrowserMessagingClient({
@@ -828,9 +833,10 @@ controller without exposing a server key, project slug, or submission session.
 The controller models standard, carousel, authentication, and limited-time
 offer definitions and keeps saving separate from Meta submission.
 
-`@polymorfa/elements` provides custom elements for plain HTML and for frameworks
-that interoperate with the Custom Elements standard. `@polymorfa/react`
-provides idiomatic hooks and components, including controlled and SDK-owned
+The UI Kit web components in `@polymorfa/ui-kit/web-components` are custom
+elements for plain HTML and for frameworks that interoperate with the Custom
+Elements standard. The UI Kit React components in `@polymorfa/ui-kit/react`
+provide idiomatic hooks and components, including controlled and SDK-owned
 controller lifecycles.
 
 ### Call links in this source revision
@@ -891,7 +897,7 @@ short-lived client token, receives lifecycle events, and exposes the active
 model as `controller.call`. Pass its controller to React or Web Components.
 
 ```ts
-import { createBrowserCalls } from "@polymorfa/browser";
+import { createBrowserCalls } from "@polymorfa/ui-kit";
 
 const calls = createBrowserCalls({ session: "support", getClientToken });
 await calls.connect();
@@ -932,7 +938,7 @@ connections (quality figures and error codes, no personal data) so the Console
 can show why a call sounded bad or failed. Pass `diagnostics: false` to turn
 this off; `MessagingClient.voip.report()` sends your own.
 
-`@polymorfa/react` ships the complete call UI: `CallSurface` (incoming card,
+`@polymorfa/ui-kit/react` ships the complete call UI: `CallSurface` (incoming card,
 stage, control dock, and a pop-out window), plus `IncomingCallCard`,
 `CallStage`, `CallControls`, `ParticipantVideoGrid`, `ParticipantList`, and
 `DialPad` for composition. The design mirrors
@@ -941,13 +947,13 @@ colors derive from the shared appearance variables.
 
 ### Local event store
 
-`@polymorfa/store` keeps an opt-in IndexedDB copy of webhook-shaped events for
+`@polymorfa/ui-kit/store` keeps an opt-in IndexedDB copy of webhook-shaped events for
 applications that store messages themselves. Your backend receives webhooks
 and streams them to the browser; the store files messages, conversations,
 contacts, presence, calls, labels, sessions, templates, and other events into
 separate stores and feeds `ConversationController` through
 `createStoreConversationSource()`. Message content is written to the device;
-see the [store guide](packages/store/README.md#privacy) for encryption,
+see the [store guide](packages/ui-kit/docs/store.md#privacy) for encryption,
 redaction, and retention.
 
 ## Next.js and dev mode
@@ -961,7 +967,7 @@ Template routes use the same application-owned authorization boundary. Project
 scope and Cloud API session selection are resolver callbacks that run only on
 the server; browser-provided replacements are ignored.
 
-`@polymorfa/devtools` provides an explicit development overlay for appearance,
+`@polymorfa/ui-kit/devtools` provides an explicit development overlay for appearance,
 RTL, motion, viewport and network testing plus redacted request diagnostics. It
 only enables when trusted build and token environments match and are both
 non-production. Query-string flags cannot enable it, and the `production`

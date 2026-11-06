@@ -1,11 +1,11 @@
 import {
-  definePolymorfa,
+  defineUiKit,
   type PolymorfaSessionStatusElement,
   type PolymorfaConnectWhatsAppElement,
   type PolymorfaInboxElement,
-} from "@polymorfa/elements";
-import { PolymorfaClient } from "@polymorfa/browser";
-let client: ReturnType<typeof definePolymorfa> | undefined;
+} from "@polymorfa/ui-kit/web-components";
+import { PolymorfaClient } from "@polymorfa/ui-kit";
+let client: ReturnType<typeof defineUiKit> | undefined;
 export async function mount(tokenEndpoint: string) {
   client?.dispose();
   const response = await fetch("/example/config", {
@@ -14,7 +14,7 @@ export async function mount(tokenEndpoint: string) {
   if (!response.ok)
     throw new Error("Application configuration could not be loaded.");
   const config = (await response.json()) as { apiBaseUrl: string };
-  client = definePolymorfa({
+  client = defineUiKit({
     client: new PolymorfaClient({ tokenEndpoint, baseUrl: config.apiBaseUrl }),
   });
   for (const element of document.querySelectorAll<

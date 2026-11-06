@@ -1,8 +1,11 @@
 "use client";
 
-import { DevAssistant, mountDevAssistant } from "@polymorfa/devtools";
-import { PolymorfaProvider } from "@polymorfa/react";
-import { createLocale, type AppearanceInput } from "@polymorfa/ui";
+import { DevAssistant, mountDevAssistant } from "@polymorfa/ui-kit/devtools";
+import { PolymorfaProvider } from "@polymorfa/ui-kit/react";
+import {
+  createLocale,
+  type AppearanceInput,
+} from "@polymorfa/ui-kit/appearance";
 import { useEffect, useMemo, type ReactNode } from "react";
 
 import { isRtl, type Settings } from "../ui/context.js";

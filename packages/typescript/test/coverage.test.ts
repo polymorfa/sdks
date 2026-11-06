@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 import { describe, expect, it } from "vitest";
-import { BrowserMessagingClient } from "../../browser/src/index.js";
+import { BrowserMessagingClient } from "../../ui-kit/src/browser/index.js";
 import {
   BridgeClient,
   Client,
