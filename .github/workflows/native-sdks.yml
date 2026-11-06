@@ -50,6 +50,10 @@ jobs:
         run: node scripts/native-sdk-matrix.mjs >> "$GITHUB_OUTPUT"
 
   verify:
+    env:
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
+      CARGO_INCREMENTAL: "0"
     needs: matrix
     if: needs.matrix.outputs.enabled == 'true'
     runs-on: ubuntu-latest

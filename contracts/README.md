@@ -773,3 +773,7 @@ and tests. These are scoped supplements; the global `171a9683` baseline is
 unchanged. `published: false` retains the release hold. Accepted API source
 alone does not prove deployment, registry publication or installed-client
 acceptance. PHP and Rust qualification remains pending.
+
+## Audience profile list filters
+
+Run node scripts/extract-audience-profiles-contract.mjs --api-repo <API checkout> to bind only the eight public profile operations and their complete component closure from merged API #567. Add --check for drift validation. Global and other supplement pins remain separate. See [source, compatibility and release gates](releases/2026-10-28-audience-profile-filters.md).

@@ -53,6 +53,10 @@ try {
     $ccSend = $ccMessaging->campaigns->testSend('slug', '33333333-3333-4333-8333-333333333333', $ccSendBody);
     ccCheck($ccSend->data['data']['variables'] === [] && $ccSend->data['data']['messageId'] === null, 'Test-send preserves empty dictionary and required null');
 
+    $ccHttp->post($ccUrl.'/__case', ['json' => ['method' => 'GET', 'path' => '/platform/audience-profiles?tag=%C3%A9%20vip&phonePrefix=%2B44', 'body' => null, 'authorization' => $ccCredential->authorization(), 'response' => '{"data":[],"page":{"nextCursor":null,"hasMore":false}}']]);
+    $ccFiltered = $ccClient->audienceProfiles->list(['tag' => 'é vip', 'phonePrefix' => '+44']);
+    ccCheck($ccFiltered->data['page']['nextCursor'] === null && $ccFiltered->data['page']['hasMore'] === false, 'Profile filter query preserves literal plus and terminal page');
+
     // The body-size cap applies to the bytes admitted by HTTP, not an imagined encoding.
     $ccCsv = str_repeat("\xEF\xBF\xBF", 3495253);
     $ccBase64 = base64_encode($ccCsv);

@@ -606,7 +606,7 @@ impl AudienceProfiles<'_> {
             self.0,
             Method::GET,
             "/platform/audience-profiles",
-            &v::page(p)?,
+            &v::profile_list(p)?,
             None,
             o,
             false,
