@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "349e67c1aa3ebd0afc3d0b42075ad48a5215b2ef",
+  "sourceCommit": "1001684aff8317a455f74e526009f37cd3d98f2b",
   "sources": [
     {
       "path": "apps/api/docs/openapi.json",
-      "sha256": "1ecc75ae891a5458a189f2681ee7b556cace98ebf45ba43e609421578846249d",
+      "sha256": "32d44bb25f21ef63b1552526cb73433495d2c691a11f8d1326b9b7a9ad0a650a",
       "info": {
         "title": "Polymorfa WhatsApp API",
         "version": "1.0.0",
@@ -18,11 +18,11 @@
     },
     {
       "path": "apps/api/docs/openapi.management.json",
-      "sha256": "b6cee79497a10821732d56216da7a506e0d55f606f9307c2d1e01cafe520daa2",
+      "sha256": "ac3879ecb9da2c05bef3cd5605a2b143eb4ca6e7ce04feb3a0f30358a3f5fada",
       "info": {
         "title": "Polymorfa Console & Management API",
         "version": "1.0.0",
-        "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (279 endpoints): each endpoint declares either a scoped `pmfa_` team key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (125 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+        "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (282 endpoints): each endpoint declares either a scoped `pmfa_` team key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (128 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
       }
     }
   ],
