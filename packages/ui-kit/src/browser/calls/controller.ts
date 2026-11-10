@@ -294,6 +294,7 @@ export interface CallsSnapshot extends ControllerSnapshot {
   readonly exclusive: boolean;
   /** Participants of the displayed call. */
   readonly participants: readonly CallParticipant[];
+  readonly waitingRoom?: import("@polymorfa/sdk/calls/internal").WaitingRoomState;
   readonly handRaised?: boolean;
   readonly socialSupported?: boolean;
   readonly socialError?: boolean;
@@ -1281,6 +1282,29 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     await this.#socialAction(() => call.setHandRaised(raised));
   }
 
+  async setApprovalRequired(enabled: boolean): Promise<void> {
+    await this.#moderateWaitingRoom({ operation: "toggle", enabled });
+  }
+  async admitParticipant(participantId: string): Promise<void> {
+    await this.#moderateWaitingRoom({ operation: "admit", participantId });
+  }
+  async denyParticipant(participantId: string): Promise<void> {
+    await this.#moderateWaitingRoom({ operation: "deny", participantId });
+  }
+  async #moderateWaitingRoom(
+    action: import("@polymorfa/sdk/calls/internal").WaitingRoomAction,
+  ): Promise<void> {
+    const state = this.getSnapshot();
+    const media = this.#media;
+    if (
+      state.status !== "connected" ||
+      !state.waitingRoom?.isAdmin ||
+      !media?.moderateWaitingRoom
+    )
+      throw new Error("Waiting-room administrator authority required.");
+    await media.moderateWaitingRoom(action);
+  }
+
   async #socialAction(action: () => Promise<void>): Promise<void> {
     const callId = this.getSnapshot().callId;
     try {
@@ -1343,7 +1367,17 @@ export class CallsController extends ObservableController<CallsSnapshot> {
             )
               return;
             const shared = this.#backend.getCall?.(callId);
-            if (frame.type === "reaction" || frame.type === "hand_state") {
+            if (frame.type === "waiting_room") {
+              shared?._remoteWaitingRoom(frame.state);
+              this.transition({
+                ...callFields(current),
+                status: current.status,
+                waitingRoom: frame.state,
+              });
+            } else if (
+              frame.type === "reaction" ||
+              frame.type === "hand_state"
+            ) {
               shared?._remoteSocial(frame);
               if (frame.type === "reaction") {
                 if (this.#reactionTimer !== undefined)
@@ -1901,6 +1935,14 @@ export class CallsController extends ObservableController<CallsSnapshot> {
     this.#diagnostics = undefined;
     const media = this.#media;
     this.#media = undefined;
+    const current = this.getSnapshot();
+    if (current.waitingRoom !== undefined) {
+      if (current.callId !== undefined)
+        this.#backend.getCall?.(current.callId)?._remoteWaitingRoom(undefined);
+      const fields = callFields(current);
+      delete (fields as { waitingRoom?: unknown }).waitingRoom;
+      this.transition({ ...fields, status: current.status });
+    }
     await media?.close(options);
   }
   #fail(
@@ -1947,6 +1989,11 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   protected override transition(
     next: Omit<CallsSnapshot, "revision" | "updatedAt">,
   ): void {
+    if (next.status === "ended" || next.status === "error") {
+      const fields = { ...next };
+      delete (fields as { waitingRoom?: unknown }).waitingRoom;
+      next = fields;
+    }
     super.transition({
       ...next,
       invitations: [...this.#invitations.values()],
@@ -2081,6 +2128,9 @@ function callFields(
       ? {}
       : { answeredBy: snapshot.answeredBy }),
     participants: snapshot.participants,
+    ...(snapshot.waitingRoom === undefined
+      ? {}
+      : { waitingRoom: snapshot.waitingRoom }),
     handRaised: snapshot.handRaised ?? false,
     socialSupported: snapshot.socialSupported ?? false,
     socialError: snapshot.socialError ?? false,

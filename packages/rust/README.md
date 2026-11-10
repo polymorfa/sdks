@@ -992,3 +992,26 @@ async fn confirm_explicitly(client: &polymorfa_sdk::MessagingClient, session: &s
 # Ok(())
 # }
 ```
+
+
+## Guest participants and waiting rooms (unreleased)
+
+Call participants and participant webhooks can include optional `guest` and
+`name` fields. A guest can have an opaque public ID without a phone number.
+The name is self-reported; display it as text and never use it for authorization.
+A name change updates the existing participant ID.
+
+`call.snapshot().await.waiting_room` exposes the latest waiting-room state and pending public
+identities. Host controls are `call.set_approval_required(true).await?`,
+`call.admit_participant("739182640518203").await?` and
+`call.deny_participant("739182640518203").await?`.
+They require the current media connection, call-owner authority and current
+provider administrator state. Pass a pending participant's public ID, never a
+provider address. Commands wait for a matching acknowledgement and do not
+change the roster optimistically. A timeout or connection loss leaves the
+outcome unknown. Inspect fresh state before trying again; reconnect does not
+replay moderation commands.
+
+These methods require the matching unreleased backend. Source and local package
+builds do not establish registry publication or deployed availability. They do
+not enable anonymous Polymorfa access or guest messaging.

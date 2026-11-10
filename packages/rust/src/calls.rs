@@ -66,6 +66,8 @@ pub struct Participant {
     pub video: bool,
     pub state: String,
     pub hand_raised: Option<bool>,
+    pub guest: Option<bool>,
+    pub name: Option<String>,
 }
 #[derive(Serialize)]
 struct LeaveRequest<'a> {
@@ -568,6 +570,21 @@ impl MediaSocket {
         }
         let mut frame = serde_json::to_value(update).map_err(|_| configuration("media state"))?;
         frame["type"] = "media_state".into();
+        frame["requestId"] = request_id.into();
+        self.send(Message::Text(frame.to_string().into())).await
+    }
+    /// Send one moderation command. Match its request ID in `read`; never replay.
+    pub async fn moderate_waiting_room(
+        &mut self,
+        request_id: &str,
+        action: &crate::calls_protocol::WaitingRoomAction,
+    ) -> Result<()> {
+        if !is_connection_id(request_id) || !action.is_valid() {
+            return Err(configuration("waiting-room operation and public target"));
+        }
+        let mut frame =
+            serde_json::to_value(action).map_err(|_| configuration("waiting-room operation"))?;
+        frame["type"] = "waiting_room_control".into();
         frame["requestId"] = request_id.into();
         self.send(Message::Text(frame.to_string().into())).await
     }

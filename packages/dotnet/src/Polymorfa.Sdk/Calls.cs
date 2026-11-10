@@ -11,7 +11,7 @@ public sealed record RejectIncomingCallResponse(bool Success, string? Message, S
 public sealed record RejectCallRequest(string? Participant = null);
 public sealed record LeaveCallRequest(string ConnectionId, string? Participant = null);
 public sealed record AddCallParticipantRequest(string To);
-public sealed record CallParticipant(string Id, bool AudioMuted, bool Video, string State, string? PhoneNumber = null, string? Bsuid = null, string? Username = null, bool? HandRaised = null);
+public sealed record CallParticipant(string Id, bool AudioMuted, bool Video, string State, string? PhoneNumber = null, string? Bsuid = null, string? Username = null, bool? HandRaised = null, bool? Guest = null, string? Name = null);
 public sealed record CreateCallLinkRequest(string Session, bool? Video = null);
 public sealed record PreviewCallLinkRequest(string Session, string Token, bool? Video = null);
 public sealed record CreatedCallLink(string Session, string Token, string Url, bool Video);

@@ -329,6 +329,21 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
                     ))
                     .await
                     .unwrap();
+                media.send(Message::Text(json!({"type":"waiting_room","state":{"enabled":true,"isAdmin":true,"inWaitingRoom":false,"users":[{"id":"123","audioMuted":false,"video":false,"state":"invited","guest":true,"name":"Ada Guest"}]}}).to_string().into())).await.unwrap();
+                let command: Value =
+                    serde_json::from_str(media.next().await.unwrap().unwrap().to_text().unwrap())
+                        .unwrap();
+                assert_eq!(command["type"], "waiting_room_control");
+                assert_eq!(command["participantId"], "123");
+                media
+                    .send(Message::Text(
+                        json!({"type":"waiting_room_result","requestId":"unrelated","ok":true})
+                            .to_string()
+                            .into(),
+                    ))
+                    .await
+                    .unwrap();
+                media.send(Message::Text(json!({"type":"waiting_room_result","requestId":command["requestId"],"ok":true}).to_string().into())).await.unwrap();
                 let binary = media.next().await.unwrap().unwrap();
                 assert_eq!(binary.into_data().as_ref(), [1, 3, 0, 253, 255]);
                 let (stream, _) = listener.accept().await.unwrap();
@@ -406,6 +421,20 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
         vec![43]
     );
     assert_eq!(call.snapshot().await.video_sources[0].label, "15550000001");
+    loop {
+        if call.snapshot().await.waiting_room.is_some() {
+            break;
+        }
+        let _ = receive(&mut events).await;
+    }
+    assert_eq!(
+        call.snapshot().await.waiting_room.as_ref().unwrap().users[0]
+            .name
+            .as_deref(),
+        Some("Ada Guest")
+    );
+    call.admit_participant("123").await.unwrap();
+    assert_eq!(call.snapshot().await.waiting_room.unwrap().users.len(), 1);
     call.write_audio(vec![3, -3]).await.unwrap();
     call.leave().await.unwrap();
     close_rx.await.unwrap();

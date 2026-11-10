@@ -429,6 +429,7 @@ type CallVideoSource struct {
 	ConnectionID, ConnectionParticipant string
 }
 type CallSnapshot struct {
+	WaitingRoom                             *CallWaitingRoom
 	ID, Direction, Peer, State, EndReason   string
 	HasVideo                                bool
 	Capabilities                            CallCapabilities
@@ -476,15 +477,38 @@ func (c *Call) Snapshot() CallSnapshot {
 	v := c.snapshot
 	v.Participants = append([]CallParticipant{}, v.Participants...)
 	for i := range v.Participants {
+		if v.Participants[i].Guest != nil {
+			guest := *v.Participants[i].Guest
+			v.Participants[i].Guest = &guest
+		}
 		if v.Participants[i].HandRaised != nil {
 			raised := *v.Participants[i].HandRaised
 			v.Participants[i].HandRaised = &raised
 		}
 	}
+	if v.WaitingRoom != nil {
+		room := *v.WaitingRoom
+		room.Users = append([]CallParticipant(nil), room.Users...)
+		for i := range room.Users {
+			if room.Users[i].Guest != nil {
+				guest := *room.Users[i].Guest
+				room.Users[i].Guest = &guest
+			}
+			if room.Users[i].HandRaised != nil {
+				raised := *room.Users[i].HandRaised
+				room.Users[i].HandRaised = &raised
+			}
+		}
+		v.WaitingRoom = &room
+	}
 	v.VideoSources = map[uint32]CallVideoSource{}
 	for k, s := range c.snapshot.VideoSources {
 		if s.Participant != nil {
 			participant := *s.Participant
+			if participant.Guest != nil {
+				guest := *participant.Guest
+				participant.Guest = &guest
+			}
 			if participant.HandRaised != nil {
 				raised := *participant.HandRaised
 				participant.HandRaised = &raised
@@ -529,6 +553,7 @@ func (c *Call) finish(reason string) {
 	c.snapshot.RemoteAudioMuted = nil
 	media := c.media
 	c.media = nil
+	c.snapshot.WaitingRoom = nil
 	c.mu.Unlock()
 	c.emit(CallEvent{Type: "ended", Reason: reason})
 	c.cancel()
@@ -708,6 +733,7 @@ func (c *Call) readMedia(m *CallsMediaSocket) {
 				return
 			}
 			c.media = nil
+			c.snapshot.WaitingRoom = nil
 			c.snapshot.RemoteAudioMuted = nil
 			c.snapshot.VideoSources = map[uint32]CallVideoSource{}
 			c.mu.Unlock()
@@ -773,6 +799,8 @@ func (c *Call) failMedia(err error) {
 func (c *Call) control(f MediaControlFrame) {
 	c.mu.Lock()
 	switch f.Type {
+	case "waiting_room":
+		c.snapshot.WaitingRoom = f.WaitingRoom
 	case "participant_joined", "participant_state":
 		if !validCallParticipant(f.Participant) {
 			c.mu.Unlock()
@@ -867,6 +895,27 @@ func (c *Call) SetMediaState(ctx context.Context, a, v, screen *bool) error {
 	}
 	return err
 }
+func (c *Call) SetApprovalRequired(ctx context.Context, enabled bool) error {
+	return c.moderateWaitingRoom(ctx, "toggle", "", &enabled)
+}
+func (c *Call) AdmitParticipant(ctx context.Context, id string) error {
+	return c.moderateWaitingRoom(ctx, "admit", id, nil)
+}
+func (c *Call) DenyParticipant(ctx context.Context, id string) error {
+	return c.moderateWaitingRoom(ctx, "deny", id, nil)
+}
+func (c *Call) moderateWaitingRoom(ctx context.Context, operation, id string, enabled *bool) error {
+	c.mu.Lock()
+	media := c.media
+	room := c.snapshot.WaitingRoom
+	admin := room != nil && room.IsAdmin
+	c.mu.Unlock()
+	if media == nil || !admin {
+		return &Error{Kind: ConflictError, Code: "waiting_room_admin_required", Message: "Waiting-room administrator authority is required."}
+	}
+	return media.ModerateWaitingRoom(ctx, operation, id, enabled)
+}
+
 func (c *Call) AddParticipant(ctx context.Context, to string) (CallParticipant, error) {
 	if c.Snapshot().State == "ended" {
 		return CallParticipant{}, &Error{Kind: ConflictError, Code: "invalid_state", Message: "Call ended."}

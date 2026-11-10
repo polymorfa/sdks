@@ -25,6 +25,19 @@ func parseMediaControlFrame(b []byte) (MediaControlFrame, bool) {
 		return f, false
 	}
 	switch f.Type {
+	case "waiting_room_result":
+		return f, connectionPattern.MatchString(f.RequestID) && f.OK != nil && (*f.OK || f.Code != "")
+	case "waiting_room":
+		var state map[string]json.RawMessage
+		if f.WaitingRoom == nil || json.Unmarshal(shape["state"], &state) != nil || state["enabled"] == nil || state["isAdmin"] == nil || state["inWaitingRoom"] == nil || f.WaitingRoom.Users == nil {
+			return f, false
+		}
+		for _, p := range f.WaitingRoom.Users {
+			if !validCallParticipant(&p) {
+				return f, false
+			}
+		}
+		return f, true
 	case "media_state":
 		return f, connectionPattern.MatchString(f.RequestID) && f.AudioMuted != nil && f.VideoEnabled != nil
 	case "media_error":

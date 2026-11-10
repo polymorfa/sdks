@@ -2155,6 +2155,9 @@ export type VoipParticipantState = "invited" | "ringing" | "connected" | "left";
 
 export interface VoipParticipant {
   readonly handRaised?: boolean;
+  /** Provider guest marker; the supplied name is not verified identity. */
+  readonly guest?: boolean;
+  readonly name?: string;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;

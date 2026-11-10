@@ -129,6 +129,17 @@ func TestCallsMediaNativeSocket(t *testing.T) {
 		off := false
 		state.VideoEnabled = &off
 		wsjson.Write(ctx, conn, state)
+		var waiting MediaControlFrame
+		if err = wsjson.Read(ctx, conn, &waiting); err != nil {
+			done <- err
+			return
+		}
+		if waiting.Type != "waiting_room_control" || waiting.Operation != "admit" || waiting.ParticipantID != "123" {
+			t.Error(waiting)
+		}
+		ok := true
+		wsjson.Write(ctx, conn, MediaControlFrame{Type: "waiting_room_result", RequestID: "unrelated", OK: &ok})
+		wsjson.Write(ctx, conn, MediaControlFrame{Type: "waiting_room_result", RequestID: waiting.RequestID, OK: &ok})
 		done <- nil
 		var leave MediaControlFrame
 		wsjson.Read(ctx, conn, &leave)
@@ -169,6 +180,9 @@ func TestCallsMediaNativeSocket(t *testing.T) {
 	state, err := socket.UpdateMediaState(ctx, &muted, nil, nil)
 	if err != nil || state.AudioMuted == nil || !*state.AudioMuted {
 		t.Fatal(state, err)
+	}
+	if err = socket.ModerateWaitingRoom(ctx, "admit", "123", nil); err != nil {
+		t.Fatal(err)
 	}
 	if err = <-done; err != nil {
 		t.Fatal(err)

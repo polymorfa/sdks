@@ -37,6 +37,8 @@ class CallParticipant(TypedDict):
     video: bool
     state: Literal["invited", "ringing", "connected", "left"]
     handRaised: NotRequired[bool]
+    guest: NotRequired[bool]
+    name: NotRequired[str]
     phoneNumber: NotRequired[str]
     bsuid: NotRequired[str]
     username: NotRequired[str]
@@ -167,3 +169,10 @@ class ErrorReport(CallConnection):
 
 
 CallReport = QualityReport | ErrorReport
+
+
+class CallWaitingRoom(TypedDict):
+    enabled: bool
+    isAdmin: bool
+    inWaitingRoom: bool
+    users: list[CallParticipant]

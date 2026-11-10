@@ -1,5 +1,7 @@
 import {
   MediaStateCommands,
+  WaitingRoomCommands,
+  type WaitingRoomAction,
   parseMediaControlValue,
   type MediaStateReply,
   parseMediaControl,
@@ -134,6 +136,7 @@ export interface CallMediaCallbacks {
       MediaControlFrame,
       {
         type:
+          | "waiting_room"
           | "reaction"
           | "hand_state"
           | "participant_joined"
@@ -183,6 +186,7 @@ export interface CallMediaSession {
   readonly remoteStream: MediaStream;
   /** One entry per remote video source. Optional for fakes. */
   readonly remoteVideos?: readonly RemoteVideo[];
+  moderateWaitingRoom?(action: WaitingRoomAction): Promise<void>;
   setMuted(muted: { readonly audio?: boolean; readonly video?: boolean }): void;
   /** Display capture replaces this connection's camera; never captures system audio. */
   startScreenShare?(signal: AbortSignal): Promise<void>;
@@ -341,6 +345,11 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       id: CALLS_DATA_CHANNEL.id,
     });
     const mediaControls = new MediaStateCommands((frame) => {
+      if (control.readyState !== "open") return false;
+      control.send(JSON.stringify(frame));
+      return true;
+    });
+    const waitingControls = new WaitingRoomCommands((frame) => {
       if (control.readyState !== "open") return false;
       control.send(JSON.stringify(frame));
       return true;
@@ -542,10 +551,15 @@ export class WebRtcMediaFactory implements CallMediaFactory {
 
     control.onmessage = (event: MessageEvent) => {
       const social = parseMediaControl(event.data);
+      if (!closed && social?.type === "waiting_room_result") {
+        waitingControls.receive(social);
+        return;
+      }
       if (
         !closed &&
         social !== undefined &&
-        (social.type === "reaction" ||
+        (social.type === "waiting_room" ||
+          social.type === "reaction" ||
           social.type === "hand_state" ||
           social.type === "participant_joined" ||
           social.type === "participant_state" ||
@@ -935,10 +949,12 @@ export class WebRtcMediaFactory implements CallMediaFactory {
             restartIce: (restartSignal: AbortSignal) =>
               renegotiate({ iceRestart: true }, restartSignal),
           }),
+      moderateWaitingRoom: (action) => waitingControls.execute(action),
       close: async (options = {}) => {
         if (closed) return;
         closed = true;
         mediaControls.close();
+        waitingControls.close();
         if (screen !== undefined) {
           screen.track.removeEventListener("ended", screen.onEnded);
           local.removeTrack(screen.track);

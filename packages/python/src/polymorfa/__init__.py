@@ -241,6 +241,7 @@ from .transport import (
     RequestOptions,
     ResponseMetadata,
 )
+from .voip_models import CallWaitingRoom
 from .webhook_models import MessageReceivedEvent, TypedWebhookEvent, UnknownWebhookEvent
 from .webhook_types import is_event
 from .webhooks import (
@@ -311,6 +312,7 @@ __all__ = [
     "CallEndReason",
     "CallReporter",
     "CallVideoSource",
+    "CallWaitingRoom",
     "CallsClient",
     "CallsError",
     "CallsToken",

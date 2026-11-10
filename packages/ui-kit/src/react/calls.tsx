@@ -1166,6 +1166,7 @@ export interface ParticipantVideoGridProps extends ControllerProps {
 
 function defaultVideoLabel(video: RemoteVideoInfo, locale: Locale): string {
   return (
+    video.participant?.name ??
     video.participant?.phoneNumber ??
     video.participant?.id ??
     video.connectionParticipant ??
@@ -1268,7 +1269,26 @@ export function ParticipantList({
   const participants = (snapshot.participants ?? []).filter(
     (p) => p.state !== "left",
   );
-  if (participants.length === 0) return null;
+  const room = snapshot.waitingRoom;
+  const [pending, setPending] = useState(false);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    setPending(false);
+    setFailed(false);
+  }, [snapshot.callId]);
+  const moderate = async (action: () => Promise<void>) => {
+    setPending(true);
+    setFailed(false);
+    try {
+      await action();
+    } catch {
+      setFailed(true);
+    } finally {
+      setPending(false);
+    }
+  };
+  const admin = snapshot.status === "connected" && room?.isAdmin === true;
+  if (participants.length === 0 && room === undefined) return null;
   return (
     <div
       className={root.className}
@@ -1292,11 +1312,13 @@ export function ParticipantList({
               <li key={participant.id}>
                 <span>
                   {resolveName?.(participant) ??
+                    participant.name ??
                     participant.phoneNumber ??
                     participant.id}
                 </span>
                 <span className="pmfa-calls-others-state">
                   {[
+                    participant.guest ? t(locale, "calls.guest") : undefined,
                     state === undefined ? undefined : t(locale, state),
                     participant.handRaised
                       ? t(locale, "calls.handRaised")
@@ -1312,6 +1334,72 @@ export function ParticipantList({
             );
           })}
         </ul>
+        {room !== undefined && (
+          <section aria-label={t(locale, "calls.waitingRoom")}>
+            <h3 className="pmfa-calls-others-title">
+              {t(locale, "calls.waitingRoom")}
+            </h3>
+            {admin && (
+              <label>
+                <input
+                  type="checkbox"
+                  checked={room.enabled}
+                  disabled={pending}
+                  onChange={(event) =>
+                    void moderate(() =>
+                      resolved.setApprovalRequired(event.target.checked),
+                    )
+                  }
+                />
+                {t(locale, "calls.approvalRequired")}
+              </label>
+            )}
+            <ul>
+              {room.users.map((participant) => (
+                <li key={participant.id}>
+                  <span>
+                    {resolveName?.(participant) ??
+                      participant.name ??
+                      participant.phoneNumber ??
+                      participant.id}
+                    {participant.guest ? ` · ${t(locale, "calls.guest")}` : ""}
+                  </span>
+                  {admin && (
+                    <span>
+                      <button
+                        type="button"
+                        className="pmfa-btn"
+                        disabled={pending}
+                        onClick={() =>
+                          void moderate(() =>
+                            resolved.admitParticipant(participant.id),
+                          )
+                        }
+                      >
+                        {t(locale, "calls.admit")}
+                      </button>
+                      <button
+                        type="button"
+                        className="pmfa-btn"
+                        disabled={pending}
+                        onClick={() =>
+                          void moderate(() =>
+                            resolved.denyParticipant(participant.id),
+                          )
+                        }
+                      >
+                        {t(locale, "calls.deny")}
+                      </button>
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            {failed && (
+              <p role="alert">{t(locale, "calls.waitingRoomFailed")}</p>
+            )}
+          </section>
+        )}
       </div>
     </div>
   );

@@ -10,7 +10,7 @@ namespace Polymorfa;
  * @phpstan-type PreviewCallLinkRequest array{session:string,video?:bool,token:string}
  * @phpstan-type CreatedCallLink array{session:string,token:string,url:string,video:bool}
  * @phpstan-type PreviewedCallLink array{session:string,video:bool,creator:Identity,approvalRequired:bool,isAdmin:bool}
- * @phpstan-type Participant array{id:string,audioMuted:bool,video:bool,state:'invited'|'ringing'|'connected'|'left',handRaised?:bool,phoneNumber?:string,bsuid?:string,username?:string}
+ * @phpstan-type Participant array{id:string,audioMuted:bool,video:bool,state:'invited'|'ringing'|'connected'|'left',handRaised?:bool,guest?:bool,name?:string,phoneNumber?:string,bsuid?:string,username?:string}
  * @phpstan-type CallSettings array{simultaneousCallsCoverageExcludedUntil:string|null,callsEnabled:bool,conferenceMode:bool,inboundRoute:'clients'|'sip_trunk',sipTrunkId:string|null,sipClaim:bool,hostCloudApiCalls:bool,simultaneousCalls:bool,revision:int,updatedAt:string|null}
  * @phpstan-type PermissionLimit array{period:string,maxAllowed:int,used:int,resetsAt:string|null}
  * @phpstan-type PermissionAction array{allowed:bool,limits:list<PermissionLimit>}

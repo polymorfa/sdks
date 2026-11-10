@@ -87,6 +87,26 @@ async def test_native_lifecycle_query_isolation_and_incoming_answer_pcm_video_co
             await socket.send_json({"type": "ready", "sampleRate": 24000, "video": True})
             await socket.send_json({"type": "remote_media", "audioMuted": True})
             await socket.send_json({"type": "hand_state", "raised": False, "supported": True})
+            await socket.send_json(
+                {
+                    "type": "waiting_room",
+                    "state": {
+                        "enabled": True,
+                        "isAdmin": True,
+                        "inWaitingRoom": False,
+                        "users": [
+                            {
+                                "id": "123",
+                                "audioMuted": False,
+                                "video": False,
+                                "state": "invited",
+                                "guest": True,
+                                "name": "Ada Guest",
+                            }
+                        ],
+                    },
+                }
+            )
             media_ready.set()
             async for message in socket:
                 if message.type == WSMsgType.BINARY:
@@ -103,6 +123,18 @@ async def test_native_lifecycle_query_isolation_and_incoming_answer_pcm_video_co
                                 "audioMuted": frame.get("audioMuted", False),
                                 "videoEnabled": frame.get("videoEnabled", True),
                                 "screenSharing": frame.get("screenSharing", False),
+                            }
+                        )
+                    elif frame["type"] == "waiting_room_control":
+                        assert frame["participantId"] == "123" and frame["operation"] == "admit"
+                        await socket.send_json(
+                            {"type": "waiting_room_result", "requestId": "unrelated", "ok": True}
+                        )
+                        await socket.send_json(
+                            {
+                                "type": "waiting_room_result",
+                                "requestId": frame["requestId"],
+                                "ok": True,
                             }
                         )
                     elif frame["type"] == "leave":
@@ -153,6 +185,12 @@ async def test_native_lifecycle_query_isolation_and_incoming_answer_pcm_video_co
             }
             assert call.hand_raised is False and call.social_supported is True
             assert call.remote_audio_muted is True
+            assert (
+                call.waiting_room is not None
+                and call.waiting_room["users"][0]["name"] == "Ada Guest"
+            )
+            await call.admit_participant("123")
+            assert call.waiting_room["users"][0]["id"] == "123"
             await call.send_reaction("👍")
             await call.set_hand_raised(True)
             await call.leave()
@@ -509,3 +547,19 @@ async def test_claimed_incoming_never_declines_another_participants_call():
             assert call.end_reason == "claimed"
         finally:
             await client.disconnect()
+
+
+def test_guest_participant_metadata_is_typed_without_a_phone_number():
+    from polymorfa.calls_runtime import _is_participant
+
+    guest = {
+        "id": "123",
+        "audioMuted": False,
+        "video": False,
+        "state": "connected",
+        "guest": True,
+        "name": "<Ada Guest>",
+    }
+    assert _is_participant(guest)
+    assert not _is_participant({**guest, "guest": "true"})
+    assert not _is_participant({**guest, "name": 42})

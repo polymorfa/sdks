@@ -1,4 +1,9 @@
 import {
+  WaitingRoomCommands,
+  type WaitingRoomAction,
+  type WaitingRoomState,
+} from "./waiting-room.js";
+import {
   MediaStateCommands,
   type MediaState,
   type MediaStateUpdate,
@@ -90,6 +95,7 @@ export interface MediaClose {
 }
 
 type Events = {
+  waitingRoom: [WaitingRoomState];
   remoteMute: [boolean | null];
   ready: [MediaReady];
   audio: [Int16Array];
@@ -114,6 +120,9 @@ type Events = {
  */
 export class MediaSocket extends Emitter<Events> {
   readonly #o: MediaSocketOptions;
+  readonly #waitingControls = new WaitingRoomCommands((frame) =>
+    this.send(frame),
+  );
   readonly #mediaControls = new MediaStateCommands((frame) => this.send(frame));
   readonly #WS: typeof globalThis.WebSocket;
   #socket: WebSocket | undefined;
@@ -317,6 +326,7 @@ export class MediaSocket extends Emitter<Events> {
     socket.onclose = (event) => {
       this.#stopHeartbeat();
       this.#mediaControls.close();
+      this.#waitingControls.close();
       if (this.#socket === socket) this.#socket = undefined;
       this.#closed = true;
       this.#ready = false;
@@ -341,6 +351,10 @@ export class MediaSocket extends Emitter<Events> {
   }
 
   /** Synchronize this connection's microphone and camera with the call. */
+  moderateWaitingRoom(action: WaitingRoomAction): Promise<void> {
+    return this.#waitingControls.execute(action);
+  }
+
   setMediaState(update: MediaStateUpdate): Promise<MediaState> {
     return this.#mediaControls.set(update);
   }
@@ -376,6 +390,7 @@ export class MediaSocket extends Emitter<Events> {
     this.#closed = true;
     this.#stopHeartbeat();
     this.#mediaControls.close();
+    this.#waitingControls.close();
     this.#pending?.(new Error("Media socket closed before media was bridged."));
     const socket = this.#socket;
     this.#socket = undefined;
@@ -430,6 +445,12 @@ export class MediaSocket extends Emitter<Events> {
       case "media_state":
       case "media_error":
         this.#mediaControls.receive(frame);
+        return;
+      case "waiting_room":
+        this.emit("waitingRoom", frame.state);
+        return;
+      case "waiting_room_result":
+        this.#waitingControls.receive(frame);
         return;
       case "remote_media":
         this.emit("remoteMute", frame.audioMuted);
@@ -490,6 +511,7 @@ export class MediaSocket extends Emitter<Events> {
         // Treat a silent socket as lost so the call can reconnect it.
         this.#stopHeartbeat();
         this.#mediaControls.close();
+        this.#waitingControls.close();
         this.#closed = true;
         this.#socket = undefined;
         this.#ready = false;

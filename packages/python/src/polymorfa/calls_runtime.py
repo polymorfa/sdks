@@ -23,8 +23,8 @@ from .calls_tracks import AudioTrack, VideoTrack
 from .client import AsyncMessagingClient
 from .errors import AuthenticationError, ConfigurationError, ConflictError
 from .models import CallAcceptance, CallPlacement
-from .transport import SDK_VERSION, Credential, JsonObject, RequestOptions
-from .voip_models import CallParticipant, CallReaction, CallReport, HandRaised
+from .transport import SDK_VERSION, Credential, Json, JsonObject, RequestOptions
+from .voip_models import CallParticipant, CallReaction, CallReport, CallWaitingRoom, HandRaised
 
 CallState = Literal["incoming", "ringing", "connecting", "connected", "reconnecting", "ended"]
 CallDirection = Literal["inbound", "outbound"]
@@ -117,6 +117,7 @@ class Call:
         self._preferences: MediaStateUpdate = {}
         self._reconnects = 0
         self._participants: dict[str, CallParticipant] = {}
+        self.waiting_room: CallWaitingRoom | None = None
         self._roster_revision = 0
         self._participant_revisions: dict[str, int] = {}
         self._departed: set[str] = set()
@@ -345,6 +346,7 @@ class Call:
             await media.close()
             if self._media is media:
                 self._media = None
+                self.waiting_room = None
             raise
 
     async def _monitor_media(self) -> None:
@@ -355,6 +357,7 @@ class Call:
                 return
             await media.close()
             self._media = None
+            self.waiting_room = None
             self._clear_video_sources()
             code = close_code(cause)
             if (media.claimed and code != 4401) or code in (1000, 4409, 4400, 4403, 1008, 1009):
@@ -395,7 +398,19 @@ class Call:
 
     async def _control(self, frame: JsonObject) -> None:
         kind = frame.get("type")
-        if kind == "remote_media" and (
+        if kind == "waiting_room":
+            state = frame.get("state")
+            if (
+                isinstance(state, dict)
+                and all(
+                    isinstance(state.get(key), bool)
+                    for key in ("enabled", "isAdmin", "inWaitingRoom")
+                )
+                and isinstance(state.get("users"), list)
+                and all(_is_participant(user) for user in cast(list[Json], state["users"]))
+            ):
+                self.waiting_room = cast(CallWaitingRoom, dict(state))
+        elif kind == "remote_media" and (
             frame.get("audioMuted") is None or isinstance(frame.get("audioMuted"), bool)
         ):
             self.remote_audio_muted = cast(bool | None, frame.get("audioMuted"))
@@ -458,6 +473,29 @@ class Call:
         else:
             self._participants[participant_id] = participant
             self._departed.discard(participant_id)
+
+    async def set_approval_required(self, enabled: bool) -> None:
+        await self._moderate_waiting_room("toggle", enabled=enabled)
+
+    async def admit_participant(self, participant_id: str) -> None:
+        await self._moderate_waiting_room("admit", participant_id=participant_id)
+
+    async def deny_participant(self, participant_id: str) -> None:
+        await self._moderate_waiting_room("deny", participant_id=participant_id)
+
+    async def _moderate_waiting_room(
+        self, operation: str, participant_id: str | None = None, enabled: bool | None = None
+    ) -> None:
+        if (
+            self._media is None
+            or self.waiting_room is None
+            or self.waiting_room.get("isAdmin") is not True
+        ):
+            raise CallsError(
+                "Waiting-room administrator authority is required.",
+                code="waiting_room_admin_required",
+            )
+        await self._media.moderate_waiting_room(operation, participant_id, enabled)
 
     async def set_media_state(self, update: MediaStateUpdate) -> MediaStateUpdate:
         if self._media is None:
@@ -633,6 +671,8 @@ def _is_participant(value: object) -> bool:
         and isinstance(value.get("audioMuted"), bool)
         and isinstance(value.get("video"), bool)
         and value.get("state") in ("invited", "ringing", "connected", "left")
+        and ("guest" not in value or isinstance(value["guest"], bool))
+        and ("name" not in value or isinstance(value["name"], str))
     )
 
 

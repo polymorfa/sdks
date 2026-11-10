@@ -10,6 +10,9 @@ function callsCheck(bool $condition, string $message): void
         throw new RuntimeException($message);
     }
 }
+$guest = Polymorfa\CallParticipant::fromArray(['id'=>'123','audioMuted'=>false,'video'=>false,'state'=>'connected','guest'=>true,'name'=>'<Ada Guest>']);
+callsCheck($guest?->guest === true && $guest->label() === '<Ada Guest>' && $guest->phoneNumber === null, 'Guest metadata without a phone');
+callsCheck(Polymorfa\CallParticipant::fromArray(['id'=>'123','audioMuted'=>false,'video'=>false,'state'=>'connected','guest'=>'true']) === null, 'Malformed guest marker');
 $old = Credential::projectToken('pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
 $fresh = Credential::projectToken('pmfa_pt_YmJiYmJiYmJiYmJiYmJiYmJiYmKK0GQs');
 $now = 100.;
@@ -151,6 +154,9 @@ try {
     for ($i = 0;$i < 8;$i++) {
         $events = array_merge($events, $client->poll());
     }
+    callsCheck($incoming->waitingRoom?->users[0]->name === 'Ada Guest', 'Typed guest waiting state');
+    $incoming->admitParticipant('123');
+    callsCheck($incoming->waitingRoom?->users[0]->id === '123', 'Acknowledgement leaves roster authoritative');
     callsCheck(isset($incoming->participants['15550000001']) && $incoming->remoteAudioMuted === true && $incoming->videoSources[42]->connectionParticipant === 'server:other', 'Typed roster, remote audio, and video owner');
     callsCheck(count(array_filter($events, static fn ($event): bool => $event->value instanceof AudioFrame && $event->value->samples === [2,-2])) >= 1, 'Native PCM decoded');
     callsCheck(!isset($incoming->videoSources[43]) && count(array_filter($events, static fn ($event): bool => $event->type === 'keyframe_request')) >= 1, 'Native source removal and keyframe request');

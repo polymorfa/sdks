@@ -910,3 +910,26 @@ async def confirm_explicitly():
     # Call only after an explicit decision based on the current state.
     return await client.passkeys.confirm(session, supplied_confirmation)
 ```
+
+
+## Guest participants and waiting rooms (unreleased)
+
+Call participants and participant webhooks can include optional `guest` and
+`name` fields. A guest can have an opaque public ID without a phone number.
+The name is self-reported; display it as text and never use it for authorization.
+A name change updates the existing participant ID.
+
+`call.waiting_room` exposes the latest waiting-room state and pending public
+identities. Host controls are `await call.set_approval_required(True)`,
+`await call.admit_participant("739182640518203")` and
+`await call.deny_participant("739182640518203")`.
+They require the current media connection, call-owner authority and current
+provider administrator state. Pass a pending participant's public ID, never a
+provider address. Commands wait for a matching acknowledgement and do not
+change the roster optimistically. A timeout or connection loss leaves the
+outcome unknown. Inspect fresh state before trying again; reconnect does not
+replay moderation commands.
+
+These methods require the matching unreleased backend. Source and local package
+builds do not establish registry publication or deployed availability. They do
+not enable anonymous Polymorfa access or guest messaging.

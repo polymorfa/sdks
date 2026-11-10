@@ -14,7 +14,9 @@ final readonly class CallParticipant
         public ?string $phoneNumber = null,
         public ?string $bsuid = null,
         public ?string $username = null,
-        public bool $handRaised = false
+        public bool $handRaised = false,
+        public ?bool $guest = null,
+        public ?string $name = null
     ) {
     }
     /** @param array<string,mixed> $data */
@@ -24,7 +26,7 @@ final readonly class CallParticipant
             || !in_array($data['state'] ?? null, ['invited','ringing','connected','left'], true)) {
             return null;
         }
-        foreach (['phoneNumber','bsuid','username'] as $key) {
+        foreach (['phoneNumber','bsuid','username','name'] as $key) {
             if (isset($data[$key]) && !is_string($data[$key])) {
                 return null;
             }
@@ -32,11 +34,12 @@ final readonly class CallParticipant
         if (isset($data['handRaised']) && !is_bool($data['handRaised'])) {
             return null;
         }
-        /** @var array{id:string,audioMuted:bool,video:bool,state:string,phoneNumber?:string,bsuid?:string,username?:string,handRaised?:bool} $data */
-        return new self($data['id'], $data['audioMuted'], $data['video'], $data['state'], $data['phoneNumber'] ?? null, $data['bsuid'] ?? null, $data['username'] ?? null, $data['handRaised'] ?? false);
+        if (array_key_exists('guest', $data) && !is_bool($data['guest'])) { return null; }
+        /** @var array{id:string,audioMuted:bool,video:bool,state:string,phoneNumber?:string,bsuid?:string,username?:string,handRaised?:bool,guest?:bool,name?:string} $data */
+        return new self($data['id'], $data['audioMuted'], $data['video'], $data['state'], $data['phoneNumber'] ?? null, $data['bsuid'] ?? null, $data['username'] ?? null, $data['handRaised'] ?? false, $data['guest'] ?? null, $data['name'] ?? null);
     }
     public function label(): string
     {
-        return $this->phoneNumber ?? $this->username ?? $this->id;
+        return $this->name ?? $this->phoneNumber ?? $this->username ?? $this->id;
     }
 }

@@ -68,6 +68,8 @@ type AddCallParticipantRequest struct {
 	To string `json:"to"`
 }
 type CallParticipant struct {
+	Guest       *bool  `json:"guest,omitempty"`
+	Name        string `json:"name,omitempty"`
 	HandRaised  *bool  `json:"handRaised,omitempty"`
 	ID          string `json:"id"`
 	PhoneNumber string `json:"phoneNumber,omitempty"`
