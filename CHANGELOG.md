@@ -8,7 +8,7 @@
   previously rejected this value. Source compatibility: Rust exhaustive
   `match` on the verdict enums and `ClaimEvidence` struct literals, Go unkeyed `BanSafeClaimEvidence`
   literals and the C# `BanSafeClaimEvidence` constructor/Deconstruct need the
-  added members. Pinned to unmerged API #845 source `5ccd3dcb`; package
+  added members. Pinned to unmerged API #845 source `f70bfd00`; package
   publication waits for that API change to merge and deploy.
 - All six server SDKs expose optional automatic-pause `reason`/`code` and
   optional recipient-skip `messageIndex`/`followUpId` from accepted API source

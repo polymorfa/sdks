@@ -1,16 +1,16 @@
 {
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "5ccd3dcb7016d87994bcf19c58f2cc148ac82428",
+  "sourceCommit": "f70bfd002857dcfd22541dbe6787c0de6e68890e",
   "published": false,
   "scope": "Ban Credit claim waivers: verdict linked_device_interactive and claim evidence linkedDeviceInteractive (polymorfa/polymorfa#845, unmerged). Other SDK contracts retain their recorded source revisions.",
   "sources": {
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
-      "sha256": "d079404de6616a906f3517bff4bef11d2a11b5bb374527f6b42bfca20166de5b"
+      "sha256": "66a15c733e79bed64982883c19f73a196434c409557762c061fb4c9cc9f2f03f"
     },
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
-      "sha256": "7ee09a4735d4e34cb2f6f0b712c4fd04970994f093d034cc9701df41b487c5e8"
+      "sha256": "4ab7649b01873b0b530a2b35e99ead508748f869a3318429c184d30e4defe39b"
     }
   },
   "verdicts": {
