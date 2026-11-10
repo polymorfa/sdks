@@ -1273,13 +1273,7 @@ export type BanSafeClaimVerdict =
    * days before the ban. Ban Credit does not cover it: the claim opens `denied`
    * with amount 0 and cannot be approved.
    */
-  | "linked_device_interactive"
-  /**
-   * The number posted a referral message to WhatsApp groups during the 30 days
-   * before the ban. Ban Credit does not cover it: the claim opens `denied` with
-   * amount 0 and cannot be approved.
-   */
-  | "referral_group_send";
+  | "linked_device_interactive";
 
 export interface BanSafeClaimEvidence {
   readonly attributionRuleVersion: number | null;
@@ -1303,12 +1297,6 @@ export interface BanSafeClaimEvidence {
    * filed. `false` for claims filed before this was recorded.
    */
   readonly linkedDeviceInteractive: boolean;
-  /**
-   * Whether this number posted a referral message to WhatsApp groups inside
-   * the window. When `true`, Ban Credit does not cover the ban and the claim is
-   * denied when filed. `false` for claims filed before this was recorded.
-   */
-  readonly referralGroupSend: boolean;
 }
 
 export interface BanSafeClaim {

@@ -26,7 +26,7 @@ interface Supplement {
   };
 }
 
-// Pinned to the API source revision that adds the two Ban Credit waivers.
+// Pinned to the API source revision that adds the Ban Credit waiver.
 const supplement = JSON.parse(
   readFileSync(
     fileURLToPath(
@@ -46,7 +46,6 @@ const CLAIM_VERDICTS: Record<BanSafeClaimVerdict, true> = {
   inconclusive: true,
   simultaneous_calls: true,
   linked_device_interactive: true,
-  referral_group_send: true,
 };
 const PAYLOAD_VERDICTS: Record<BanSafeClaimPayload["verdict"], true> = {
   ...CLAIM_VERDICTS,
@@ -73,15 +72,12 @@ describe("Ban Credit waiver claim contract", () => {
 
   it("types the waiver evidence flags as required booleans", () => {
     const evidence = supplement.evidence.BanSafeClaimEvidence;
-    for (const field of ["linkedDeviceInteractive", "referralGroupSend"]) {
+    for (const field of ["linkedDeviceInteractive"]) {
       expect(evidence.required).toContain(field);
       expect(evidence.properties[field]?.type).toBe("boolean");
     }
     expectTypeOf<
       BanSafeClaimEvidence["linkedDeviceInteractive"]
-    >().toEqualTypeOf<boolean>();
-    expectTypeOf<
-      BanSafeClaimEvidence["referralGroupSend"]
     >().toEqualTypeOf<boolean>();
   });
 });

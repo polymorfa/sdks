@@ -1137,7 +1137,6 @@ pub enum BanSafeClaimStatus {
 pub enum BanSafeClaimVerdict {
     SimultaneousCalls,
     LinkedDeviceInteractive,
-    ReferralGroupSend,
     OtherDevice,
     CustomerConduct,
     SharedNetwork,

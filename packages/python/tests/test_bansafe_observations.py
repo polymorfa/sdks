@@ -158,7 +158,6 @@ CLAIM = {
         "sharedConnection": False,
         "simultaneousCalls": False,
         "linkedDeviceInteractive": False,
-        "referralGroupSend": False,
         "measuredHours": 100,
     },
     "summary": "Review",

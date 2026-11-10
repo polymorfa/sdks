@@ -38,7 +38,6 @@ ClaimVerdict = Literal[
     "shared_network",
     "simultaneous_calls",
     "linked_device_interactive",
-    "referral_group_send",
     "ours",
     "inconclusive",
 ]
@@ -255,7 +254,6 @@ class IncidentReceipt(TypedDict):
 class ClaimEvidence(TypedDict):
     simultaneousCalls: bool
     linkedDeviceInteractive: bool
-    referralGroupSend: bool
     attributionRuleVersion: int | None
     windowDays: int
     deviceEvidence: bool

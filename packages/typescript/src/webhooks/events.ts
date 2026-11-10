@@ -943,9 +943,7 @@ export interface BanSafeClaimPayload {
     /** Simultaneous calls voided Ban Insurance; the claim is denied when filed. */
     | "simultaneous_calls"
     /** An interactive message sent from a linked device voided Ban Credit; the claim is denied when filed. */
-    | "linked_device_interactive"
-    /** A referral message posted to WhatsApp groups voided Ban Credit; the claim is denied when filed. */
-    | "referral_group_send";
+    | "linked_device_interactive";
   readonly windowStart: string;
   readonly windowEnd: string;
   /** Decimal cent amounts with up to six fractional digits. */

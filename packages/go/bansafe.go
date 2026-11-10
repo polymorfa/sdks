@@ -184,7 +184,6 @@ type BanSafeIncidentReceipt struct {
 type BanSafeClaimEvidence struct {
 	SimultaneousCalls       bool `json:"simultaneousCalls"`
 	LinkedDeviceInteractive bool `json:"linkedDeviceInteractive"`
-	ReferralGroupSend       bool `json:"referralGroupSend"`
 	AttributionRuleVersion  *int `json:"attributionRuleVersion"`
 	WindowDays              int  `json:"windowDays"`
 	DeviceEvidence          bool `json:"deviceEvidence"`

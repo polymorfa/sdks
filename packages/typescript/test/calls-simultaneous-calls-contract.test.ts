@@ -47,10 +47,7 @@ const keys = (schema: Schema | undefined) =>
 // or extra key fails to compile. Verdicts added later are pinned by their own
 // supplement (ban-credit-waivers.json).
 const VERDICTS: Record<
-  Exclude<
-    BanSafeClaimVerdict,
-    "linked_device_interactive" | "referral_group_send"
-  >,
+  Exclude<BanSafeClaimVerdict, "linked_device_interactive">,
   true
 > = {
   other_device: true,
