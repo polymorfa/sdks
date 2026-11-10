@@ -1340,7 +1340,7 @@ export function ParticipantList({
               {t(locale, "calls.waitingRoom")}
             </h3>
             {admin && (
-              <label>
+              <label className="pmfa-calls-approval">
                 <input
                   type="checkbox"
                   checked={room.enabled}
@@ -1365,10 +1365,10 @@ export function ParticipantList({
                     {participant.guest ? ` · ${t(locale, "calls.guest")}` : ""}
                   </span>
                   {admin && (
-                    <span>
+                    <span className="pmfa-calls-waiting-actions">
                       <button
                         type="button"
-                        className="pmfa-btn"
+                        className="pmfa-calls-btn pmfa-calls-moderate"
                         disabled={pending}
                         onClick={() =>
                           void moderate(() =>
@@ -1380,7 +1380,7 @@ export function ParticipantList({
                       </button>
                       <button
                         type="button"
-                        className="pmfa-btn"
+                        className="pmfa-calls-btn pmfa-calls-moderate"
                         disabled={pending}
                         onClick={() =>
                           void moderate(() =>
@@ -2169,6 +2169,11 @@ export const CALLS_STYLES = `
 .pmfa-calls-others-title { font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: var(--pmfa-calls-muted); }
 .pmfa-calls-incoming .pmfa-calls-others-title, .pmfa-calls-others-state { color: var(--pmfa-calls-stage-muted); }
 .pmfa-calls-people .pmfa-calls-others-state { color: var(--pmfa-calls-muted); }
+.pmfa-calls-approval { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 13px; }
+.pmfa-calls-approval input { width: 18px; height: 18px; margin: 0; accent-color: var(--pmfa-calls-accent); }
+.pmfa-calls-waiting-actions { display: inline-flex; flex: 0 0 auto; gap: 8px; }
+.pmfa-calls-moderate { min-height: 44px; padding: 0 12px; border: 1px solid var(--pmfa-calls-border); border-radius: 8px; background: var(--pmfa-calls-accent-soft); color: var(--pmfa-calls-fg); font: inherit; }
+.pmfa-calls-moderate:hover { border-color: var(--pmfa-calls-accent); }
 .pmfa-calls-others-state { font-size: 12px; white-space: nowrap; }
 .pmfa-calls-chip { appearance: none; border: 1px solid var(--pmfa-calls-stage-line); background: transparent; color: inherit; font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 999px; cursor: pointer; }
 .pmfa-calls-chip:hover { background: oklch(1 0 0 / 0.12); }
