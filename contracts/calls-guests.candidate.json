@@ -5,7 +5,7 @@
   "apiVersion": "2026-09-22",
   "candidateSource": {
     "repository": "polymorfa/polymorfa",
-    "commit": "2e0a5054c31d8d1786e884c7216508fe4a3b86fd",
+    "commit": "0983e9263de1f0887b249faf9d85207d543989e3",
     "branch": "rajeh/pol-172-calling-guests",
     "files": [
       {
@@ -27,6 +27,18 @@
       {
         "path": "apps/api/packages/shared/src/voip.ts",
         "sha256": "0c767095cb38dc4c52080f29531841dc70ed11b28842238d77061baed97c8d73"
+      },
+      {
+        "path": "docs/api-reference/openapi.json",
+        "sha256": "1befe5c78b583a490bcd7aa57a0d88de2f5e803420fe5bbcd9f708f9ca45ce63"
+      },
+      {
+        "path": "docs/api-reference/features/webhook-events.json",
+        "sha256": "2011c0e391700988b9647a4275b64838a9f37e340d982090634c3dec92d09d76"
+      },
+      {
+        "path": "docs/openapi.json",
+        "sha256": "5c148f5a06124e81d26974b24e3d12127fb9263fdcac97d45d2a651953e89e48"
       }
     ]
   },
