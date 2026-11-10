@@ -5,7 +5,7 @@
   "apiVersion": "2026-09-22",
   "candidateSource": {
     "repository": "polymorfa/polymorfa",
-    "commit": "047fc06f2b64d3665ef83c308e3ce46dd1a5986c",
+    "commit": "2e0a5054c31d8d1786e884c7216508fe4a3b86fd",
     "branch": "rajeh/pol-172-calling-guests",
     "files": [
       {
@@ -18,11 +18,11 @@
       },
       {
         "path": "apps/api/docs/calls-media-socket.md",
-        "sha256": "7794a576ceddbdf1f262f517e90f28a8084b1429cea565d800d89a19507522b5"
+        "sha256": "7390c19e267f50d271827335bcc2035dcc7ef9f69888c91de33b56f0e6f56f09"
       },
       {
         "path": "apps/api/internal/voip/waiting_room_controls.go",
-        "sha256": "522f4d9a61be349a75add5ff36cd515ccc91eb46f4a9d81a99fe2e2f7a168f15"
+        "sha256": "45963fb73149b636a3f628f4da584d8f29186e79ce208fbef38aa82c7dab7ca6"
       },
       {
         "path": "apps/api/packages/shared/src/voip.ts",
@@ -76,12 +76,21 @@
     "matching staging acceptance before nightly",
     "matching production acceptance before stable",
     "registry publication and physical package consumption",
-    "native guest Noise/signaling and decoded media acceptance"
+    "native paired-host waiting-room moderation acceptance",
+    "final provider-ACK library composition and backend pin"
   ],
   "limits": [
     "Does not create anonymous Polymorfa accounts or credentials",
     "Guest chat is excluded",
     "Synthetic local wire acceptance is not WhatsApp production acceptance",
     "Baseline coverage ledgers and API version remain unchanged"
-  ]
+  ],
+  "simulatorAcceptance": {
+    "barback": "0c0d2a1461c836fc801604e1d2e178ccfc803793",
+    "meowcaller": "92df4d737ba638bc3942dc07fe9cc0130d61ed82",
+    "hypermeow": "7f135a812f07bbbe41fe7559d946d6667bf6a998",
+    "evidence": "group-owner receipt: HTTP guest registration, Noise, Signal bootstrap/rekey, converged rosters, six-direction decoded MLow tone and H264 identity/SSRC/color",
+    "pairedHostModeration": false,
+    "productionAcceptance": false
+  }
 }
