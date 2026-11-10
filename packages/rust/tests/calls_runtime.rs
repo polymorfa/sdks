@@ -246,6 +246,7 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
         }
     }));
     let (close_tx, close_rx) = tokio::sync::oneshot::channel();
+    let (moderation_tx, moderation_rx) = tokio::sync::oneshot::channel();
     let server = tokio::spawn(async move {
         let (stream, _) = listener.accept().await.unwrap();
         let mut lifecycle = accept_hdr_async(stream, client_lifecycle_protocol)
@@ -343,9 +344,14 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
                     ))
                     .await
                     .unwrap();
-                media.send(Message::Text(json!({"type":"waiting_room_result","requestId":command["requestId"],"ok":true}).to_string().into())).await.unwrap();
-                let binary = media.next().await.unwrap().unwrap();
+                moderation_tx.send(()).unwrap();
+                let binary = tokio::time::timeout(Duration::from_millis(200), media.next())
+                    .await
+                    .expect("audio must flow before the moderation acknowledgement")
+                    .unwrap()
+                    .unwrap();
                 assert_eq!(binary.into_data().as_ref(), [1, 3, 0, 253, 255]);
+                media.send(Message::Text(json!({"type":"waiting_room_result","requestId":command["requestId"],"ok":true}).to_string().into())).await.unwrap();
                 let (stream, _) = listener.accept().await.unwrap();
                 let (head, body, _) = http(stream, json!({"success":true})).await;
                 assert_eq!(head, "POST /messaging/voip/calls/outbound/leave HTTP/1.1");
@@ -358,6 +364,7 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
         let _ = lifecycle.next().await;
     });
     let mut o = options(format!("http://{addr}"));
+    o.media_control_timeout = Duration::from_secs(1);
     o.participant = Some("forged-server-identity".into());
     let client = CallsClient::new(source, o).unwrap();
     let mut events = client.subscribe();
@@ -433,9 +440,14 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
             .as_deref(),
         Some("Ada Guest")
     );
-    call.admit_participant("123").await.unwrap();
-    assert_eq!(call.snapshot().await.waiting_room.unwrap().users.len(), 1);
+    let admission = tokio::spawn({
+        let call = call.clone();
+        async move { call.admit_participant("123").await }
+    });
+    moderation_rx.await.unwrap();
     call.write_audio(vec![3, -3]).await.unwrap();
+    admission.await.unwrap().unwrap();
+    assert_eq!(call.snapshot().await.waiting_room.unwrap().users.len(), 1);
     call.leave().await.unwrap();
     close_rx.await.unwrap();
     assert_eq!(call.snapshot().await.end_reason, Some(CallEndReason::Left));

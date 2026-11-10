@@ -361,10 +361,23 @@ try {
 } catch (Polymorfa\TimeoutException $error) {
     callsCheck($error->errorCode === 'media_control_timeout' && !$effectCall->audioMuted, 'Missing acknowledgement cannot mutate preferences');
 }
+$firstMedia->frames[] = ['type' => 'waiting_room','state' => ['enabled' => true,'isAdmin' => true,'inWaitingRoom' => false,'users' => []]];
+$effects->poll();
+callsCheck($effectCall->waitingRoom?->isAdmin === true, 'Current socket grants waiting-room authority');
 $firstMedia->frames[] = Polymorfa\CallsSocketErrors::closed(4401);
 $effects->poll();
+callsCheck($effectCall->waitingRoom === null, 'Socket loss clears waiting-room authority immediately');
 usleep(2000);
 $effects->poll();
+callsCheck($effectCall->waitingRoom === null, 'Reattach requires a fresh waiting-room snapshot');
+$beforeModeration = count($secondMedia->sent);
+try {
+    $effectCall->admitParticipant('123');
+    throw new RuntimeException('Expected fresh administrator authority.');
+} catch (Polymorfa\ConflictException $error) {
+    callsCheck($error->errorCode === 'waiting_room_admin_required', 'Stale administrator authority cannot moderate');
+}
+callsCheck(count($secondMedia->sent) === $beforeModeration, 'No moderation write before fresh authority');
 callsCheck($mediaAttempt === 2 && count($secondMedia->sent) === 1 && json_decode($firstMedia->sent[0]['data'], true)['connectionId'] === json_decode($secondMedia->sent[0]['data'], true)['connectionId'], 'Unknown media command is not replayed on stable-ID reattach');
 $before = count($secondMedia->sent);
 $cancelled = new CancellationToken();

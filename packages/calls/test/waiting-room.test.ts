@@ -73,7 +73,16 @@ it("accepts guest waiting identities without phones and rejects malformed metada
       enabled: true,
       isAdmin: true,
       inWaitingRoom: false,
-      users: [{ id: "123", state: "invited", audioMuted: false, video: false, guest: true, name: "<Guest>" }],
+      users: [
+        {
+          id: "123",
+          state: "invited",
+          audioMuted: false,
+          video: false,
+          guest: true,
+          name: "<Guest>",
+        },
+      ],
     },
   };
   expect(parseMediaControl(JSON.stringify(frame))).toEqual(frame);

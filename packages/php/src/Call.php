@@ -303,6 +303,7 @@ final class Call
     }
     private function attach(?CancellationToken $cancellation = null): void
     {
+        $this->waitingRoom = null;
         $this->transition('connecting');
         $this->media = $this->client->media($this, $this->refreshNext, $cancellation);
         $this->refreshNext = false;
@@ -362,6 +363,7 @@ final class Call
             }
             $this->media?->close();
             $this->clearVideoSources();
+            $this->waitingRoom = null;
             if ($error instanceof ConflictException) {
                 $this->finish($error->errorCode === 'call_ended' ? 'remote_hangup' : 'claimed');
                 return;
@@ -381,6 +383,7 @@ final class Call
             }
             $this->media?->close();
             $this->clearVideoSources();
+            $this->waitingRoom = null;
             $this->state = 'reconnecting';
             $this->retryAt = microtime(true) + $this->client->options->minBackoff;
         }

@@ -222,7 +222,7 @@ struct CallInner {
     client: Arc<ClientInner>,
     snapshot: Mutex<CallSnapshot>,
     operation: Mutex<()>,
-    media: Mutex<Option<mpsc::Sender<MediaCommand>>>,
+    media: Mutex<Option<MediaCommands>>,
     cancel: CancellationToken,
     accepted: AtomicBool,
     claimed: AtomicBool,
@@ -233,6 +233,11 @@ impl std::fmt::Debug for Call {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Call").field("id", &self.0.id).finish()
     }
+}
+#[derive(Clone)]
+struct MediaCommands {
+    frames: mpsc::Sender<MediaCommand>,
+    controls: mpsc::Sender<MediaCommand>,
 }
 enum MediaCommand {
     Waiting(
@@ -850,7 +855,12 @@ impl Call {
             .clone()
             .ok_or_else(|| invalid("media_control_unavailable", "No media is attached"))?;
         let (tx, rx) = oneshot::channel();
-        sender.try_send(build(tx)).map_err(|_| {
+        let command = build(tx);
+        let queue = match &command {
+            MediaCommand::Audio(..) | MediaCommand::Video(..) => &sender.frames,
+            MediaCommand::State(..) | MediaCommand::Waiting(..) => &sender.controls,
+        };
+        queue.try_send(command).map_err(|_| {
             invalid(
                 "media_control_unavailable",
                 "Media command queue is full or closed",
@@ -1001,12 +1011,14 @@ impl Call {
             let mut s = self.0.snapshot.lock().await;
             s.sample_rate = socket.sample_rate;
         }
-        let (tx, rx) = mpsc::channel(16);
-        *self.0.media.lock().await = Some(tx);
+        // A provider acknowledgement serializes controls, while PCM and video keep flowing.
+        let (frames, frame_rx) = mpsc::channel(16);
+        let (controls, control_rx) = mpsc::channel(16);
+        *self.0.media.lock().await = Some(MediaCommands { frames, controls });
         self.transition(CallState::Connected).await;
         let call = self.clone();
         tokio::spawn(async move {
-            media_worker(call, socket, rx).await;
+            media_worker(call, socket, frame_rx, control_rx).await;
         });
         Ok(())
     }
@@ -1248,6 +1260,7 @@ async fn media_worker(
     call: Call,
     mut socket: MediaSocket,
     mut commands: mpsc::Receiver<MediaCommand>,
+    mut controls: mpsc::Receiver<MediaCommand>,
 ) {
     let mut preferences = MediaStateUpdate::default();
     let mut pending: Option<PendingState> = None;
@@ -1270,7 +1283,12 @@ async fn media_worker(
         _=tokio::time::sleep_until(deadline),if pending.is_some() || waiting.is_some()=>{if let Some(p)=pending.take(){let _=p.reply.send(Err(invalid("media_control_unknown","Media control timed out; its outcome is unknown")));}
         if let Some(p)=waiting.take(){let _=p.reply.send(Err(invalid("waiting_room_control_unknown","Waiting-room control timed out; its outcome is unknown")));}continue;},
         _=tokio::time::sleep_until(next_beat)=>{if awaiting_pong{Err(invalid("media_lost","Media heartbeat timed out"))}else{match socket.ping().await{Ok(())=>{awaiting_pong=true;next_beat=tokio::time::Instant::now()+heartbeat;continue;},Err(error)=>Err(error)}}},
-        command=commands.recv(),if pending.is_none() && waiting.is_none()=>{match command{Some(MediaCommand::Waiting(action,reply))=>{let id=create_connection_id();match socket.moderate_waiting_room(&id,&action).await{Ok(())=>{waiting=Some(PendingWaiting{id,reply,deadline:tokio::time::Instant::now()+call.0.client.options.media_control_timeout});continue;},Err(error)=>{let fatal=(error.kind==ErrorKind::Connection).then(||error.clone());let _=reply.send(Err(error));if let Some(error)=fatal{Err(error)}else{continue;}}}},Some(MediaCommand::Audio(pcm,reply))=>{let result=socket.write_audio(&pcm).await;let fatal=result.as_ref().err().cloned();let _=reply.send(result);if let Some(error)=fatal{Err(error)}else{continue;}},Some(MediaCommand::Video(frame,reply))=>{let result=socket.write_video(&frame).await;let fatal=result.as_ref().err().filter(|e|e.kind==ErrorKind::Connection).cloned();let _=reply.send(result);if let Some(error)=fatal{Err(error)}else{continue;}},Some(MediaCommand::State(update,reply))=>{let id=create_connection_id();match socket.set_media_state(&id,&update).await {Ok(())=>{pending=Some(PendingState{id,update,reply,deadline:tokio::time::Instant::now()+call.0.client.options.media_control_timeout});continue;},Err(error)=>{let fatal=(error.kind==ErrorKind::Connection).then(||error.clone());let _=reply.send(Err(error));if let Some(error)=fatal{Err(error)}else{continue;}}}},None=>break,}},
+        command=async {
+            tokio::select! {
+                frame=commands.recv()=>frame,
+                control=controls.recv(),if pending.is_none() && waiting.is_none()=>control,
+            }
+        }=>{match command{Some(MediaCommand::Waiting(action,reply))=>{let id=create_connection_id();match socket.moderate_waiting_room(&id,&action).await{Ok(())=>{waiting=Some(PendingWaiting{id,reply,deadline:tokio::time::Instant::now()+call.0.client.options.media_control_timeout});continue;},Err(error)=>{let fatal=(error.kind==ErrorKind::Connection).then(||error.clone());let _=reply.send(Err(error));if let Some(error)=fatal{Err(error)}else{continue;}}}},Some(MediaCommand::Audio(pcm,reply))=>{let result=socket.write_audio(&pcm).await;let fatal=result.as_ref().err().cloned();let _=reply.send(result);if let Some(error)=fatal{Err(error)}else{continue;}},Some(MediaCommand::Video(frame,reply))=>{let result=socket.write_video(&frame).await;let fatal=result.as_ref().err().filter(|e|e.kind==ErrorKind::Connection).cloned();let _=reply.send(result);if let Some(error)=fatal{Err(error)}else{continue;}},Some(MediaCommand::State(update,reply))=>{let id=create_connection_id();match socket.set_media_state(&id,&update).await {Ok(())=>{pending=Some(PendingState{id,update,reply,deadline:tokio::time::Instant::now()+call.0.client.options.media_control_timeout});continue;},Err(error)=>{let fatal=(error.kind==ErrorKind::Connection).then(||error.clone());let _=reply.send(Err(error));if let Some(error)=fatal{Err(error)}else{continue;}}}},None=>break,}},
         frame=socket.read()=>match frame{Ok(Some(frame))=>Ok(frame),Ok(None)=>{call.finish(CallEndReason::RemoteHangup).await;break;},Err(error)=>Err(error)}
         };
         match outcome {
@@ -1401,7 +1419,7 @@ async fn media_worker(
                 }
                 // Commands already queued for this connection are refused rather than replayed
                 // after a socket drop, so a caller never mistakes an uncertain write for a retry.
-                while let Ok(command) = commands.try_recv() {
+                while let Ok(command) = commands.try_recv().or_else(|_| controls.try_recv()) {
                     match command {
                         MediaCommand::Audio(_, reply)
                         | MediaCommand::Video(_, reply)
