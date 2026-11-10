@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "f70bfd002857dcfd22541dbe6787c0de6e68890e",
+  "sourceCommit": "1cea9af76a74ff74b6bda1896e84e526d119ebc7",
   "published": false,
   "scope": "Ban Credit claim waivers: verdict linked_device_interactive and claim evidence linkedDeviceInteractive (polymorfa/polymorfa#845, unmerged). Other SDK contracts retain their recorded source revisions.",
   "sources": {
