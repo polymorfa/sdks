@@ -3,7 +3,7 @@
 ## Ban Credit claim waivers
 
 `ban-credit-waivers.json` pins the `BanSafeClaim` and `BanSafeClaimPayload`
-verdict enums and the `linkedDeviceInteractive` claim evidence field to API source `1cea9af76a74ff74b6bda1896e84e526d119ebc7`
+verdict enums and the `linkedDeviceInteractive` claim evidence field to API source `38487509fa14dcad94e09df8c85f544e516b01cd`
 (polymorfa/polymorfa#845, unmerged). It is held with `published: false`.
 `ban-credit-waivers-contract.test.ts` checks the TypeScript types against it;
 each native package has a decoding test. No operation is added. Re-pin to the
