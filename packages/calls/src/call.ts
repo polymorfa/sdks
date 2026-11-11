@@ -83,7 +83,7 @@ export interface AnswerOptions {
  */
 export interface CallVideoSource {
   readonly id: number;
-  /** Display label: the participant's number or ID, or the other connection's participant reference. */
+  /** Display label: the participant's name, number or ID, or the other connection's participant reference. */
   readonly label: string;
   /** The WhatsApp participant sending this video. */
   readonly participant?: Participant;
@@ -128,7 +128,10 @@ function videoSource(source: MediaVideoSource): CallVideoSource {
   if (source.participant !== undefined)
     return {
       id: source.source,
-      label: source.participant.phoneNumber ?? source.participant.id,
+      label:
+        source.participant.name ??
+        source.participant.phoneNumber ??
+        source.participant.id,
       participant: source.participant,
     };
   return {

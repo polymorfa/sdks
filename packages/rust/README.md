@@ -999,7 +999,8 @@ async fn confirm_explicitly(client: &polymorfa_sdk::MessagingClient, session: &s
 Call participants and participant webhooks can include optional `guest` and
 `name` fields. A guest can have an opaque public ID without a phone number.
 The name is self-reported; display it as text and never use it for authorization.
-A name change updates the existing participant ID.
+A name change updates the existing participant ID. Video-source labels prefer the
+name, then the phone number, then the public ID.
 
 `call.snapshot().await.waiting_room` exposes the latest waiting-room state and pending public
 identities. Host controls are `call.set_approval_required(true).await?`,
@@ -1010,7 +1011,8 @@ provider administrator state. Pass a pending participant's public ID, never a
 provider address. Commands wait for a matching acknowledgement and do not
 change the roster optimistically. A timeout or connection loss leaves the
 outcome unknown. Inspect fresh state before trying again; reconnect does not
-replay moderation commands.
+replay moderation commands. Dropping a moderation future while its command is still queued
+cancels that command. Cancellation after sending does not roll back its effect.
 
 These methods require the matching unreleased backend. Source and local package
 builds do not establish registry publication or deployed availability. They do

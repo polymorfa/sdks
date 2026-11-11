@@ -74,4 +74,34 @@ describe("@polymorfa/sdk/calls public entry point", () => {
       { source: 4, keyframe: true, timestampUs: 10, data },
     ]);
   });
+  it.each([
+    [{ name: "Ada Guest", phoneNumber: "+15550100" }, "Ada Guest"],
+    [{ name: "Ada Guest", guest: true }, "Ada Guest"],
+    [{ phoneNumber: "+15550100" }, "+15550100"],
+    [{}, "123"],
+  ])(
+    "uses the participant name, number, then ID for video labels",
+    (metadata, label) => {
+      const call = new Call({
+        id: "C",
+        session: "s",
+        direction: "inbound",
+        peer: "",
+        video: true,
+        api: fakeApi(),
+        media: {},
+      });
+      call.video._source({
+        source: 5,
+        participant: {
+          id: "123",
+          audioMuted: false,
+          video: true,
+          state: "connected",
+          ...metadata,
+        },
+      });
+      expect(call.video.sources.get(5)?.label).toBe(label);
+    },
+  );
 });

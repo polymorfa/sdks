@@ -841,7 +841,10 @@ func (c *Call) control(f MediaControlFrame) {
 	case "video_source":
 		source := CallVideoSource{ID: f.Source, Participant: f.Participant, ConnectionID: f.ConnectionID, ConnectionParticipant: f.ConnectionParticipant}
 		if f.Participant != nil {
-			source.Label = f.Participant.PhoneNumber
+			source.Label = f.Participant.Name
+			if source.Label == "" {
+				source.Label = f.Participant.PhoneNumber
+			}
 			if source.Label == "" {
 				source.Label = f.Participant.ID
 			}

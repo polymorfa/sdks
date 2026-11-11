@@ -244,11 +244,13 @@ final class Call
             $id=bin2hex(random_bytes(12));
             $request=['type'=>'waiting_room_control','requestId'=>$id,'operation'=>$operation];
             if ($operation==='toggle') { $request['enabled']=$enabled; } else { $request['participantId']=$participantId; }
-            $media->sendControl($request);
+            try { $media->sendControl($request); }
+            catch (\Throwable $error) { $this->waitingRoom=null; throw $error; }
             $deadline=microtime(true)+$this->client->options->controlTimeout;
             while(microtime(true)<$deadline){
                 $cancellation?->throwIfCancelled();
-                $frame=$media->poll(min(0.1,max(0.001,$deadline-microtime(true))));
+                try { $frame=$media->poll(min(0.1,max(0.001,$deadline-microtime(true)))); }
+                catch (\Throwable $error) { $this->waitingRoom=null; throw $error; }
                 if(is_array($frame) && ($frame['type']??null)==='waiting_room_result' && ($frame['requestId']??null)===$id){
                     if(($frame['ok']??null)===true){return;}
                     throw new ConflictException('Waiting-room control was refused.',is_string($frame['code']??null)?$frame['code']:'waiting_room_control_unknown');

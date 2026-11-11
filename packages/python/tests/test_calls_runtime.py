@@ -8,7 +8,7 @@ from aiohttp import WSMsgType, web
 
 from polymorfa import AudioFrame, ConflictError, VideoFrame
 from polymorfa.calls_lifecycle import LifecycleSocket
-from polymorfa.calls_runtime import CallsClient
+from polymorfa.calls_runtime import Call, CallsClient
 from polymorfa.calls_tokens import CallsError, CallsToken, CallsTokenSource
 
 SERVER = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
@@ -563,3 +563,20 @@ def test_guest_participant_metadata_is_typed_without_a_phone_number():
     assert _is_participant(guest)
     assert not _is_participant({**guest, "guest": "true"})
     assert not _is_participant({**guest, "name": 42})
+
+
+@pytest.mark.parametrize("reason", ["left", "hangup", "remote_hangup"])
+async def test_terminal_call_clears_waiting_room_before_publishing_ended(reason):
+    client = CallsClient(SERVER, "support", diagnostics=False)
+    call = Call(client, "terminal", "inbound", "123", False)
+    call.waiting_room = {"enabled": True, "isAdmin": True, "inWaitingRoom": False, "users": []}
+    original_state = call._state
+
+    def observe_state(state):
+        if state == "ended":
+            assert call.waiting_room is None
+        original_state(state)
+
+    call._state = observe_state
+    await call._finish(reason)
+    assert call.ended and call.waiting_room is None

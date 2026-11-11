@@ -928,7 +928,8 @@ provider administrator state. Pass a pending participant's public ID, never a
 provider address. Commands wait for a matching acknowledgement and do not
 change the roster optimistically. A timeout or connection loss leaves the
 outcome unknown. Inspect fresh state before trying again; reconnect does not
-replay moderation commands.
+replay moderation commands. Terminal cleanup clears the waiting-room snapshot
+before publishing the ended state.
 
 These methods require the matching unreleased backend. Source and local package
 builds do not establish registry publication or deployed availability. They do

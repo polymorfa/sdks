@@ -646,6 +646,7 @@ class Call:
             return
         self.end_reason = reason
         self.ended_at = time.time()
+        self.waiting_room = None
         self._state("ended")
         self._ended_event.set()
         self.audio._close()

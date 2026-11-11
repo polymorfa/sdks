@@ -247,6 +247,7 @@ final class CallsTestSocket implements Polymorfa\PollingCallSocket
             return null;
         }
         $frame = array_shift($this->frames);
+        if ($frame instanceof Closure) { $frame = $frame($this); }
         if ($frame instanceof Throwable) {
             throw $frame;
         }
@@ -379,6 +380,33 @@ try {
 }
 callsCheck(count($secondMedia->sent) === $beforeModeration, 'No moderation write before fresh authority');
 callsCheck($mediaAttempt === 2 && count($secondMedia->sent) === 1 && json_decode($firstMedia->sent[0]['data'], true)['connectionId'] === json_decode($secondMedia->sent[0]['data'], true)['connectionId'], 'Unknown media command is not replayed on stable-ID reattach');
+$secondMedia->frames[] = ['type'=>'waiting_room','state'=>['enabled'=>true,'isAdmin'=>true,'inWaitingRoom'=>false,'users'=>[]]];
+$effects->poll();
+$secondMedia->frames[] = static function (CallsTestSocket $socket): array {
+    $sent=json_decode($socket->sent[array_key_last($socket->sent)]['data'],true);
+    return ['type'=>'waiting_room_result','requestId'=>$sent['requestId'],'ok'=>false,'code'=>'waiting_room_target_unavailable'];
+};
+try {
+    $effectCall->denyParticipant('123');
+    throw new RuntimeException('Expected provider refusal.');
+} catch (Polymorfa\ConflictException $error) {
+    callsCheck($error->errorCode==='waiting_room_target_unavailable' && $effectCall->waitingRoom?->isAdmin===true, 'Ordinary moderation refusal retains current authority');
+}
+$secondMedia->frames[] = new Polymorfa\ConnectionException('lost during moderation','connection_error');
+try {
+    $effectCall->admitParticipant('123');
+    throw new RuntimeException('Expected moderation socket failure.');
+} catch (Polymorfa\ConnectionException) {
+    callsCheck($effectCall->waitingRoom===null, 'Pending moderation socket failure clears authority immediately');
+}
+$beforeModeration=count($secondMedia->sent);
+try {
+    $effectCall->denyParticipant('123');
+    throw new RuntimeException('Expected fresh authority after socket failure.');
+} catch (Polymorfa\ConflictException $error) {
+    callsCheck($error->errorCode==='waiting_room_admin_required', 'Lost socket authority cannot authorize another command');
+}
+callsCheck(count($secondMedia->sent)===$beforeModeration, 'Lost authority blocks moderation writes');
 $before = count($secondMedia->sent);
 $cancelled = new CancellationToken();
 $cancelled->cancel();

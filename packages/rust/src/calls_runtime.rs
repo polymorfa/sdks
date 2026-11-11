@@ -1288,7 +1288,7 @@ async fn media_worker(
                 frame=commands.recv()=>frame,
                 control=controls.recv(),if pending.is_none() && waiting.is_none()=>control,
             }
-        }=>{match command{Some(MediaCommand::Waiting(action,reply))=>{let id=create_connection_id();match socket.moderate_waiting_room(&id,&action).await{Ok(())=>{waiting=Some(PendingWaiting{id,reply,deadline:tokio::time::Instant::now()+call.0.client.options.media_control_timeout});continue;},Err(error)=>{let fatal=(error.kind==ErrorKind::Connection).then(||error.clone());let _=reply.send(Err(error));if let Some(error)=fatal{Err(error)}else{continue;}}}},Some(MediaCommand::Audio(pcm,reply))=>{let result=socket.write_audio(&pcm).await;let fatal=result.as_ref().err().cloned();let _=reply.send(result);if let Some(error)=fatal{Err(error)}else{continue;}},Some(MediaCommand::Video(frame,reply))=>{let result=socket.write_video(&frame).await;let fatal=result.as_ref().err().filter(|e|e.kind==ErrorKind::Connection).cloned();let _=reply.send(result);if let Some(error)=fatal{Err(error)}else{continue;}},Some(MediaCommand::State(update,reply))=>{let id=create_connection_id();match socket.set_media_state(&id,&update).await {Ok(())=>{pending=Some(PendingState{id,update,reply,deadline:tokio::time::Instant::now()+call.0.client.options.media_control_timeout});continue;},Err(error)=>{let fatal=(error.kind==ErrorKind::Connection).then(||error.clone());let _=reply.send(Err(error));if let Some(error)=fatal{Err(error)}else{continue;}}}},None=>break,}},
+        }=>{match command{Some(MediaCommand::Waiting(action,reply))=>{if reply.is_closed(){continue;}let id=create_connection_id();match socket.moderate_waiting_room(&id,&action).await{Ok(())=>{waiting=Some(PendingWaiting{id,reply,deadline:tokio::time::Instant::now()+call.0.client.options.media_control_timeout});continue;},Err(error)=>{let fatal=(error.kind==ErrorKind::Connection).then(||error.clone());let _=reply.send(Err(error));if let Some(error)=fatal{Err(error)}else{continue;}}}},Some(MediaCommand::Audio(pcm,reply))=>{let result=socket.write_audio(&pcm).await;let fatal=result.as_ref().err().cloned();let _=reply.send(result);if let Some(error)=fatal{Err(error)}else{continue;}},Some(MediaCommand::Video(frame,reply))=>{let result=socket.write_video(&frame).await;let fatal=result.as_ref().err().filter(|e|e.kind==ErrorKind::Connection).cloned();let _=reply.send(result);if let Some(error)=fatal{Err(error)}else{continue;}},Some(MediaCommand::State(update,reply))=>{let id=create_connection_id();match socket.set_media_state(&id,&update).await {Ok(())=>{pending=Some(PendingState{id,update,reply,deadline:tokio::time::Instant::now()+call.0.client.options.media_control_timeout});continue;},Err(error)=>{let fatal=(error.kind==ErrorKind::Connection).then(||error.clone());let _=reply.send(Err(error));if let Some(error)=fatal{Err(error)}else{continue;}}}},None=>break,}},
         frame=socket.read()=>match frame{Ok(Some(frame))=>Ok(frame),Ok(None)=>{call.finish(CallEndReason::RemoteHangup).await;break;},Err(error)=>Err(error)}
         };
         match outcome {
@@ -1421,9 +1421,13 @@ async fn media_worker(
                 // after a socket drop, so a caller never mistakes an uncertain write for a retry.
                 while let Ok(command) = commands.try_recv().or_else(|_| controls.try_recv()) {
                     match command {
-                        MediaCommand::Audio(_, reply)
-                        | MediaCommand::Video(_, reply)
-                        | MediaCommand::Waiting(_, reply) => {
+                        MediaCommand::Waiting(_, reply) => {
+                            let _ = reply.send(Err(invalid(
+                                "waiting_room_control_unknown",
+                                "Media connection dropped",
+                            )));
+                        }
+                        MediaCommand::Audio(_, reply) | MediaCommand::Video(_, reply) => {
                             let _ = reply.send(Err(invalid(
                                 "media_control_unknown",
                                 "Media connection dropped",
@@ -1595,8 +1599,9 @@ fn video_label(owner: &VideoSourceOwner) -> String {
             .clone()
             .unwrap_or_else(|| connection_id.clone()),
         VideoSourceOwner::Participant { participant } => participant
-            .phone_number
+            .name
             .clone()
+            .or_else(|| participant.phone_number.clone())
             .unwrap_or_else(|| participant.id.clone()),
     }
 }
@@ -1622,5 +1627,41 @@ fn update_participant(s: &mut CallSnapshot, participant: Participant) {
         *old = participant;
     } else {
         s.participants.push(participant);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn guest_video_labels_prefer_names_and_keep_fallbacks() {
+        for (metadata, expected) in [
+            (
+                serde_json::json!({"name":"Ada Guest","phoneNumber":"+15550001","guest":true}),
+                "Ada Guest",
+            ),
+            (serde_json::json!({"phoneNumber":"+15550001"}), "+15550001"),
+            (serde_json::json!({}), "123"),
+        ] {
+            let mut value =
+                serde_json::json!({"id":"123","audioMuted":false,"video":true,"state":"connected"});
+            value
+                .as_object_mut()
+                .unwrap()
+                .extend(metadata.as_object().unwrap().clone());
+            let participant: Participant = serde_json::from_value(value).unwrap();
+            assert_eq!(
+                video_label(&VideoSourceOwner::Participant { participant }),
+                expected
+            );
+        }
+        assert_eq!(
+            video_label(&VideoSourceOwner::Connection {
+                connection_id: "connection_other".into(),
+                connection_participant: Some("server:other".into())
+            }),
+            "server:other"
+        );
     }
 }

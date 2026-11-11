@@ -352,6 +352,15 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
                     .unwrap();
                 assert_eq!(binary.into_data().as_ref(), [1, 3, 0, 253, 255]);
                 media.send(Message::Text(json!({"type":"waiting_room_result","requestId":command["requestId"],"ok":true}).to_string().into())).await.unwrap();
+                let next: Value =
+                    serde_json::from_str(media.next().await.unwrap().unwrap().to_text().unwrap())
+                        .unwrap();
+                assert_eq!(
+                    next["operation"], "toggle",
+                    "a canceled queued deny must not be sent"
+                );
+                assert_eq!(next["enabled"], false);
+                media.send(Message::Text(json!({"type":"waiting_room_result","requestId":next["requestId"],"ok":true}).to_string().into())).await.unwrap();
                 let (stream, _) = listener.accept().await.unwrap();
                 let (head, body, _) = http(stream, json!({"success":true})).await;
                 assert_eq!(head, "POST /messaging/voip/calls/outbound/leave HTTP/1.1");
@@ -445,8 +454,17 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
         async move { call.admit_participant("123").await }
     });
     moderation_rx.await.unwrap();
+    {
+        let mut canceled = std::pin::pin!(call.deny_participant("123"));
+        assert!(futures_util::poll!(&mut canceled).is_pending());
+    }
+    let toggle = tokio::spawn({
+        let call = call.clone();
+        async move { call.set_approval_required(false).await }
+    });
     call.write_audio(vec![3, -3]).await.unwrap();
     admission.await.unwrap().unwrap();
+    toggle.await.unwrap().unwrap();
     assert_eq!(call.snapshot().await.waiting_room.unwrap().users.len(), 1);
     call.leave().await.unwrap();
     close_rx.await.unwrap();

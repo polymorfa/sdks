@@ -900,7 +900,7 @@ it("reauthorizes waiting-room moderation over HTTP without automatic replay", as
     resource.moderateWaitingRoom(
       "call-1",
       { connectionId: "owner_connection", control },
-      { maxNetworkRetries: 3 },
+      { idempotencyKey: "waiting-room-test", maxNetworkRetries: 3 },
     ),
   ).rejects.toBeDefined();
   expect(server.requests).toHaveLength(2);
