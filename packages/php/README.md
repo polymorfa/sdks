@@ -1047,7 +1047,8 @@ $confirmExplicitly = fn () => $client->passkeys->confirm($session, $suppliedConf
 Call participants and participant webhooks can include optional `guest` and
 `name` fields. A guest can have an opaque public ID without a phone number.
 The name is self-reported; display it as text and never use it for authorization.
-A name change updates the existing participant ID.
+A name change updates the existing participant ID. Empty display names fall back to
+the phone number, username or public ID.
 
 `$call->waitingRoom` exposes the latest waiting-room state and pending public
 identities. Host controls are `$call->setApprovalRequired(true)`,

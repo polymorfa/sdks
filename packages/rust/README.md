@@ -999,8 +999,8 @@ async fn confirm_explicitly(client: &polymorfa_sdk::MessagingClient, session: &s
 Call participants and participant webhooks can include optional `guest` and
 `name` fields. A guest can have an opaque public ID without a phone number.
 The name is self-reported; display it as text and never use it for authorization.
-A name change updates the existing participant ID. Video-source labels prefer the
-name, then the phone number, then the public ID.
+A name change updates the existing participant ID. Video-source labels use the
+first nonempty name, phone number or public ID.
 
 `call.snapshot().await.waiting_room` exposes the latest waiting-room state and pending public
 identities. Host controls are `call.set_approval_required(true).await?`,

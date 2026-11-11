@@ -891,6 +891,7 @@ describe("unified calls UI", () => {
     const participant = {
       id: "123",
       phoneNumber: "+15550100",
+      name: "",
       audioMuted: false,
       video: true,
       state: "connected" as const,
@@ -991,6 +992,32 @@ describe("unified calls UI", () => {
     ).toEqual(["+15550101In call · Muted", "p2Ringing"]);
     f.emit({ type: "participantLeft", callId: "P", participantId: "p1" });
     expect(host.querySelectorAll("li")).toHaveLength(1);
+    f.controller.dispose();
+  });
+
+  it.each([
+    [{ name: "", phoneNumber: "+15550101" }, "+15550101"],
+    [{ name: "", guest: true }, "123"],
+    [{ name: "0", guest: true }, "0"],
+  ])("uses visible participant labels for empty names", (metadata, label) => {
+    const f = feedFixture();
+    const host = mount(<ParticipantList controller={f.controller} />);
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "P", from: "+15550100", video: false },
+    });
+    f.emit({
+      type: "participant",
+      callId: "P",
+      participant: {
+        id: "123",
+        audioMuted: false,
+        video: false,
+        state: "connected",
+        ...metadata,
+      },
+    });
+    expect(host.querySelector("li span")?.textContent).toBe(label);
     f.controller.dispose();
   });
 

@@ -77,6 +77,10 @@ describe("@polymorfa/sdk/calls public entry point", () => {
   it.each([
     [{ name: "Ada Guest", phoneNumber: "+15550100" }, "Ada Guest"],
     [{ name: "Ada Guest", guest: true }, "Ada Guest"],
+    [{ name: "", phoneNumber: "+15550100" }, "+15550100"],
+    [{ name: "", guest: true }, "123"],
+    [{ name: "", phoneNumber: "" }, "123"],
+    [{ name: "0", phoneNumber: "+15550100" }, "0"],
     [{ phoneNumber: "+15550100" }, "+15550100"],
     [{}, "123"],
   ])(

@@ -129,8 +129,8 @@ function videoSource(source: MediaVideoSource): CallVideoSource {
     return {
       id: source.source,
       label:
-        source.participant.name ??
-        source.participant.phoneNumber ??
+        source.participant.name ||
+        source.participant.phoneNumber ||
         source.participant.id,
       participant: source.participant,
     };

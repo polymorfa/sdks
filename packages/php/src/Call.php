@@ -406,6 +406,7 @@ final class Call
             return;
         }
         if ($type === 'error' && is_string($frame['code'] ?? null)) {
+            $this->waitingRoom = null;
             throw CallsSocketErrors::control($frame['code']);
         }
         if ($type === 'waiting_room' && is_array($frame['state'] ?? null)) { $this->waitingRoom=CallWaitingRoom::fromArray($frame['state']); }

@@ -250,8 +250,8 @@ capture and leaves the saved camera off; the screen-sharing state is cleared.
 
 `Participant.guest` and `Participant.name` are optional provider metadata. A
 guest can have an opaque public ID without `phoneNumber`. Names are self-reported;
-render them as text and use the public ID to track name/state changes. Video-source
-labels prefer the name, then the phone number, then the public ID.
+render them as text and use the public ID to track name/state changes. Default video-source
+labels use the first nonempty name, phone number or public ID.
 
 `call.waitingRoom` and the `waitingRoom` event expose approval state and pending
 participants. The current host administrator can call

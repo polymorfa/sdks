@@ -1601,7 +1601,13 @@ fn video_label(owner: &VideoSourceOwner) -> String {
         VideoSourceOwner::Participant { participant } => participant
             .name
             .clone()
-            .or_else(|| participant.phone_number.clone())
+            .filter(|name| !name.is_empty())
+            .or_else(|| {
+                participant
+                    .phone_number
+                    .clone()
+                    .filter(|phone| !phone.is_empty())
+            })
             .unwrap_or_else(|| participant.id.clone()),
     }
 }
@@ -1642,6 +1648,16 @@ mod tests {
                 "Ada Guest",
             ),
             (serde_json::json!({"phoneNumber":"+15550001"}), "+15550001"),
+            (
+                serde_json::json!({"name":"","phoneNumber":"+15550001"}),
+                "+15550001",
+            ),
+            (serde_json::json!({"name":"","guest":true}), "123"),
+            (serde_json::json!({"name":"","phoneNumber":""}), "123"),
+            (
+                serde_json::json!({"name":"0","phoneNumber":"+15550001"}),
+                "0",
+            ),
             (serde_json::json!({}), "123"),
         ] {
             let mut value =

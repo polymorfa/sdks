@@ -356,7 +356,7 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
           list.append(
             textElement(
               "li",
-              `${participant.name ?? participant.phoneNumber ?? participant.id}${participant.guest ? ` · ${messages["calls.guest"]}` : ""}${participant.handRaised ? ` · ${messages["calls.handRaised"]}` : ""}`,
+              `${participant.name || participant.phoneNumber || participant.id}${participant.guest ? ` · ${messages["calls.guest"]}` : ""}${participant.handRaised ? ` · ${messages["calls.handRaised"]}` : ""}`,
               participant.audioMuted ? "participant muted" : "participant",
             ),
           );
@@ -413,7 +413,7 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
       for (const participant of room.users) {
         const item = textElement(
           "li",
-          `${participant.name ?? participant.phoneNumber ?? participant.id}${participant.guest ? ` · ${messages["calls.guest"]}` : ""}`,
+          `${participant.name || participant.phoneNumber || participant.id}${participant.guest ? ` · ${messages["calls.guest"]}` : ""}`,
           "waiting-participant",
         );
         if (admin) {

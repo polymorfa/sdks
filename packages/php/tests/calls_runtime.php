@@ -12,6 +12,10 @@ function callsCheck(bool $condition, string $message): void
 }
 $guest = Polymorfa\CallParticipant::fromArray(['id'=>'123','audioMuted'=>false,'video'=>false,'state'=>'connected','guest'=>true,'name'=>'<Ada Guest>']);
 callsCheck($guest?->guest === true && $guest->label() === '<Ada Guest>' && $guest->phoneNumber === null, 'Guest metadata without a phone');
+foreach ([[['name'=>'','phoneNumber'=>'+15550001'], '+15550001'], [['name'=>''], '123'], [['name'=>'','phoneNumber'=>'','username'=>'nickname'], 'nickname'], [['name'=>'0'], '0']] as [$metadata,$label]) {
+    $participant=Polymorfa\CallParticipant::fromArray(array_merge(['id'=>'123','audioMuted'=>false,'video'=>false,'state'=>'connected','guest'=>true],$metadata));
+    callsCheck($participant?->label()===$label, 'Empty guest name uses a visible fallback while nonempty names are preserved');
+}
 callsCheck(Polymorfa\CallParticipant::fromArray(['id'=>'123','audioMuted'=>false,'video'=>false,'state'=>'connected','guest'=>'true']) === null, 'Malformed guest marker');
 $old = Credential::projectToken('pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
 $fresh = Credential::projectToken('pmfa_pt_YmJiYmJiYmJiYmJiYmJiYmJiYmKK0GQs');
@@ -392,6 +396,23 @@ try {
 } catch (Polymorfa\ConflictException $error) {
     callsCheck($error->errorCode==='waiting_room_target_unavailable' && $effectCall->waitingRoom?->isAdmin===true, 'Ordinary moderation refusal retains current authority');
 }
+$secondMedia->frames[] = ['type'=>'error','code'=>'authentication_failed'];
+try {
+    $effectCall->admitParticipant('123');
+    throw new RuntimeException('Expected media authentication error frame.');
+} catch (Polymorfa\AuthenticationException $error) {
+    callsCheck($error->errorCode==='authentication_failed' && $effectCall->waitingRoom===null, 'Media error frame clears moderation authority before throwing');
+}
+$beforeErrorRetry=count($secondMedia->sent);
+try {
+    $effectCall->denyParticipant('123');
+    throw new RuntimeException('Expected fresh authority after media error frame.');
+} catch (Polymorfa\ConflictException $error) {
+    callsCheck($error->errorCode==='waiting_room_admin_required', 'Media error frame blocks subsequent moderation');
+}
+callsCheck(count($secondMedia->sent)===$beforeErrorRetry, 'No moderation write after media error frame');
+$secondMedia->frames[] = ['type'=>'waiting_room','state'=>['enabled'=>true,'isAdmin'=>true,'inWaitingRoom'=>false,'users'=>[]]];
+$effects->poll();
 $secondMedia->frames[] = new Polymorfa\ConnectionException('lost during moderation','connection_error');
 try {
     $effectCall->admitParticipant('123');

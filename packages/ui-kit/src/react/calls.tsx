@@ -1158,20 +1158,22 @@ export function CallStage({
 export interface ParticipantVideoGridProps extends ControllerProps {
   readonly className?: string;
   /**
-   * Label for a tile. Defaults to the participant's number or ID, then the
-   * participant reference of another app connection, then "Participant".
+   * Label for a tile. Defaults to the first nonempty participant name,
+   * number or ID, then another app connection's participant reference,
+   * then "Participant".
    */
   readonly labelVideo?: (video: RemoteVideoInfo) => string | undefined;
 }
 
 function defaultVideoLabel(video: RemoteVideoInfo, locale: Locale): string {
-  return (
-    video.participant?.name ??
-    video.participant?.phoneNumber ??
-    video.participant?.id ??
-    video.connectionParticipant ??
-    t(locale, "calls.participant")
-  );
+  if (video.participant !== undefined) {
+    return (
+      video.participant.name ||
+      video.participant.phoneNumber ||
+      video.participant.id
+    );
+  }
+  return video.connectionParticipant ?? t(locale, "calls.participant");
 }
 
 function VideoTile({
@@ -1312,9 +1314,9 @@ export function ParticipantList({
               <li key={participant.id}>
                 <span>
                   {resolveName?.(participant) ??
-                    participant.name ??
-                    participant.phoneNumber ??
-                    participant.id}
+                    (participant.name ||
+                      participant.phoneNumber ||
+                      participant.id)}
                 </span>
                 <span className="pmfa-calls-others-state">
                   {[
@@ -1359,9 +1361,9 @@ export function ParticipantList({
                 <li key={participant.id}>
                   <span>
                     {resolveName?.(participant) ??
-                      participant.name ??
-                      participant.phoneNumber ??
-                      participant.id}
+                      (participant.name ||
+                        participant.phoneNumber ||
+                        participant.id)}
                     {participant.guest ? ` · ${t(locale, "calls.guest")}` : ""}
                   </span>
                   {admin && (

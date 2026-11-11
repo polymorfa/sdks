@@ -40,6 +40,9 @@ final readonly class CallParticipant
     }
     public function label(): string
     {
-        return $this->name ?? $this->phoneNumber ?? $this->username ?? $this->id;
+        foreach ([$this->name, $this->phoneNumber, $this->username] as $label) {
+            if ($label !== null && $label !== '') { return $label; }
+        }
+        return $this->id;
     }
 }
