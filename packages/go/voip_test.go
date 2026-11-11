@@ -5,6 +5,9 @@ import (
 )
 
 var voipFixtures = []operationFixture{
+	{"MessagingClient.VoIP.ModerateWaitingRoom", "POST", "/messaging/voip/calls/x/waiting-room", "", `{"connectionId":"connection","control":{"type":"waiting_room_control","requestId":"request_123","operation":"deny","participantId":"123"}}`, `{"success":true,"data":{"type":"waiting_room_result","requestId":"request_123","ok":true}}`, "data.ok", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+		return wireData(m.VoIP().ModerateWaitingRoom(ctx, "x", WaitingRoomControlRequest{ConnectionID: "connection", Control: WaitingRoomControl{Type: "waiting_room_control", RequestID: "request_123", Operation: "deny", ParticipantID: "123"}}))
+	}},
 	{"MessagingClient.VoIP.Place", "POST", "/messaging/voip/calls", "", `{"to":"+15551234567","session":"s"}`, `{"success":true,"data":{"callId":"call","session":"s","video":false}}`, "data.callId", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(m.VoIP().Place(ctx, PlaceCallRequest{To: "+15551234567", Session: "s"}))
 	}},

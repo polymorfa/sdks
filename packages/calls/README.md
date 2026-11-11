@@ -264,8 +264,11 @@ The pending roster changes only when the provider reports new state.
 Browsers use the matching methods on the UI Kit Calls controller. React's
 `ParticipantList` and the `<pmfa-call>` Web Component show guest labels and
 pending-participant controls when the current connection is an administrator.
-The browser uses the WebRTC data channel; native processes use the authenticated
-media WebSocket. Both carry the same public identities and acknowledgements.
+The browser receives snapshots on WebRTC and sends moderation through the
+Messaging API so every command rechecks its credential and Number/project
+authority. The credential-less data channel refuses moderation effects.
+Programmatic processes keep the authenticated media WebSocket and its credential
+rechecks. Both paths use the same public identities and provider acknowledgements.
 
 These additions require the matching unreleased backend and SDK. They do not
 provide anonymous Polymorfa accounts or enable guest messaging.

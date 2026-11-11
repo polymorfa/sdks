@@ -3109,3 +3109,21 @@ export interface GroupCapabilities {
   }[];
 }
 export type GetGroupCapabilitiesResponse = SuccessEnvelope<GroupCapabilities>;
+
+/** A waiting-room action sent through per-request API authorization. */
+export type VoipWaitingRoomControlRequest = {
+  connectionId: string;
+  participant?: string;
+  control: { type: "waiting_room_control"; requestId: string } & (
+    | { operation: "toggle"; enabled: boolean }
+    | { operation: "admit" | "deny"; participantId: string }
+  );
+};
+export interface VoipWaitingRoomControlResult {
+  type: "waiting_room_result";
+  requestId: string;
+  ok: boolean;
+  code?: string;
+}
+export type VoipWaitingRoomControlResponse =
+  SuccessEnvelope<VoipWaitingRoomControlResult>;

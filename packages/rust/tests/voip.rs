@@ -345,3 +345,29 @@ fn simultaneous_claim_verdicts_and_evidence() {
     let evidence: polymorfa_sdk::bansafe::ClaimEvidence = serde_json::from_value(json!({"attributionRuleVersion":null,"windowDays":30,"deviceEvidence":false,"otherDevices":0,"restrictedInWindow":false,"criticalFindingDays":0,"sharedConnection":false,"simultaneousCalls":true,"measuredHours":0})).unwrap();
     assert!(evidence.simultaneous_calls);
 }
+
+#[tokio::test]
+async fn waiting_room_http_control_uses_current_api_authority() {
+    let body = WaitingRoomControlRequest {
+        connection_id: "owner_connection".into(),
+        participant: None,
+        control: WaitingRoomControl::Command {
+            request_id: "request_123".into(),
+            action: polymorfa_sdk::calls_protocol::WaitingRoomAction::Deny {
+                participant_id: "123".into(),
+            },
+        },
+    };
+    wire_messaging!(
+        client,
+        "POST",
+        "/messaging/voip/calls/call/waiting-room",
+        Some(
+            json!({"connectionId":"owner_connection","control":{"type":"waiting_room_control","requestId":"request_123","operation":"deny","participantId":"123"}})
+        ),
+        json!({"success":true,"data":{"type":"waiting_room_result","requestId":"request_123","ok":true}}),
+        client
+            .voip()
+            .moderate_waiting_room("call", &body, RequestOptions::default())
+    );
+}

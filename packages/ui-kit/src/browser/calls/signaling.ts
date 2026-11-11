@@ -1,5 +1,8 @@
 import {
   CallClaimedError,
+  parseMediaControlValue,
+  type WaitingRoomRequest,
+  type WaitingRoomResult,
   CallsDisabledError,
   type AcceptCallOptions,
   type AcceptCallResult,
@@ -30,6 +33,13 @@ export interface OfferRequest {
 }
 
 export interface CallsSignaling {
+  /** Moderation must use the API's live credential checks, not the data channel. */
+  moderateWaitingRoom?(
+    callId: string,
+    connectionId: string,
+    control: WaitingRoomRequest,
+    signal?: AbortSignal,
+  ): Promise<WaitingRoomResult>;
   offer(
     callId: string,
     request: OfferRequest,
@@ -91,6 +101,28 @@ export class CallsSignalingClient implements CallsSignaling {
     this.#transport = transport;
     this.#prefix = apiPrefix.replace(/\/$/, "");
   }
+  async moderateWaitingRoom(
+    callId: string,
+    connectionId: string,
+    control: WaitingRoomRequest,
+    signal?: AbortSignal,
+  ): Promise<WaitingRoomResult> {
+    const response = await this.#transport.request<{ readonly data: unknown }>({
+      method: "POST",
+      path: this.#path(callId, "/waiting-room"),
+      body: { connectionId, control },
+      maxNetworkRetries: 0,
+      ...(signal === undefined ? {} : { signal }),
+    });
+    const result = parseMediaControlValue(response.data.data);
+    if (
+      result?.type !== "waiting_room_result" ||
+      result.requestId !== control.requestId
+    )
+      throw new Error("Waiting-room control response was not confirmed.");
+    return result;
+  }
+
   async offer(
     callId: string,
     request: OfferRequest,

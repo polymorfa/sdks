@@ -350,8 +350,20 @@ export class WebRtcMediaFactory implements CallMediaFactory {
       return true;
     });
     const waitingControls = new WaitingRoomCommands((frame) => {
-      if (control.readyState !== "open") return false;
-      control.send(JSON.stringify(frame));
+      const moderate = this.#signaling.moderateWaitingRoom;
+      if (!moderate || closed || signal.aborted) return false;
+      void moderate
+        .call(this.#signaling, callId, connectionId, frame, signal)
+        .then(
+          (result) => waitingControls.receive(result),
+          () =>
+            waitingControls.receive({
+              type: "waiting_room_result",
+              requestId: frame.requestId,
+              ok: false,
+              code: "waiting_room_control_unknown",
+            }),
+        );
       return true;
     });
     let screen:
@@ -551,10 +563,8 @@ export class WebRtcMediaFactory implements CallMediaFactory {
 
     control.onmessage = (event: MessageEvent) => {
       const social = parseMediaControl(event.data);
-      if (!closed && social?.type === "waiting_room_result") {
-        waitingControls.receive(social);
-        return;
-      }
+      // Moderation results come only from the authenticated HTTP request.
+      if (social?.type === "waiting_room_result") return;
       if (
         !closed &&
         social !== undefined &&

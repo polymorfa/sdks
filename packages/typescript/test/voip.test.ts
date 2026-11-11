@@ -875,3 +875,44 @@ describe("VoipResource", () => {
     expect(update.maxConcurrency).toBe(rules.maxConcurrency);
   });
 });
+
+it("reauthorizes waiting-room moderation over HTTP without automatic replay", async () => {
+  const control = {
+    type: "waiting_room_control" as const,
+    requestId: "request_123",
+    operation: "deny" as const,
+    participantId: "123",
+  };
+  const server = await serve([
+    json({
+      success: true,
+      data: { type: "waiting_room_result", requestId: "request_123", ok: true },
+    }),
+    json({ error: "unavailable" }, 503),
+  ]);
+  const resource = client(server).voip;
+  const reply = await resource.moderateWaitingRoom("call-1", {
+    connectionId: "owner_connection",
+    control,
+  });
+  expect(reply.data.data.ok).toBe(true);
+  await expect(
+    resource.moderateWaitingRoom(
+      "call-1",
+      { connectionId: "owner_connection", control },
+      { maxNetworkRetries: 3 },
+    ),
+  ).rejects.toBeDefined();
+  expect(server.requests).toHaveLength(2);
+  expect(server.requests[0]).toMatchObject({
+    method: "POST",
+    path: "/messaging/voip/calls/call-1/waiting-room",
+  });
+  expect(() =>
+    resource.moderateWaitingRoom("call-1", {
+      connectionId: "owner_connection",
+      control: { ...control, participantId: "222@lid" },
+    }),
+  ).toThrow(PolymorfaValidationError);
+  expect(server.requests).toHaveLength(2);
+});

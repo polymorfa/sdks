@@ -1325,3 +1325,69 @@ describe("an end that arrives before its invitation", () => {
     },
   );
 });
+
+describe("authenticated browser waiting-room signaling", () => {
+  const control = {
+    type: "waiting_room_control" as const,
+    requestId: "request_123",
+    operation: "deny" as const,
+    participantId: "123",
+  };
+  it("sends the held connection and correlated operation with a current token", async () => {
+    const fetch = vi.fn<typeof globalThis.fetch>(async () =>
+      Response.json({
+        success: true,
+        data: {
+          type: "waiting_room_result",
+          requestId: control.requestId,
+          ok: true,
+        },
+      }),
+    );
+    const transport = new BrowserTransport({
+      baseUrl: "https://api.polymorfa.test",
+      getClientToken: async () => "pmfa_ct_test",
+      fetch,
+      maxNetworkRetries: 3,
+    });
+    const client = new CallsSignalingClient(transport);
+    expect(
+      await client.moderateWaitingRoom("call-1", "owner_connection", control),
+    ).toMatchObject({ ok: true, requestId: "request_123" });
+    expect(fetch).toHaveBeenCalledOnce();
+    const [url, init] = fetch.mock.calls[0]!;
+    expect(String(url)).toBe(
+      "https://api.polymorfa.test/messaging/voip/calls/call-1/waiting-room",
+    );
+    expect(new Headers(init?.headers).get("authorization")).toBe(
+      "Bearer pmfa_ct_test",
+    );
+    expect(JSON.parse(String(init?.body))).toEqual({
+      connectionId: "owner_connection",
+      control,
+    });
+  });
+  it.each([401, 403, 503, "network"] as const)(
+    "does not replay moderation after %s",
+    async (status) => {
+      const fetch = vi.fn<typeof globalThis.fetch>(async () => {
+        if (status === "network") throw new TypeError("offline");
+        return Response.json(
+          { code: "permission_denied", error: "Refused" },
+          { status },
+        );
+      });
+      const client = new CallsSignalingClient(
+        new BrowserTransport({
+          getClientToken: async () => "pmfa_ct_test",
+          fetch,
+          maxNetworkRetries: 3,
+        }),
+      );
+      await expect(
+        client.moderateWaitingRoom("call-1", "owner_connection", control),
+      ).rejects.toBeDefined();
+      expect(fetch).toHaveBeenCalledOnce();
+    },
+  );
+});

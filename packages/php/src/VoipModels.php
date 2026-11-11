@@ -19,6 +19,9 @@ namespace Polymorfa;
  * @phpstan-type CheckRequest array{session:string,to:string}
  * @phpstan-type CallCheck array{allowed:bool,refusal:'calls_disabled'|'call_recipient_opted_out'|'call_destination_blocked'|'call_permission_required'|'call_limit_reached'|null,permission:PermissionState|null}
  * @phpstan-type Reaction array{connectionId:string,participant?:string,emoji:''|'👍'|'❤️'|'😂'|'😮'|'😢'|'🙏'}
+ * @phpstan-type WaitingRoomControl (array{type:'waiting_room_control',requestId:string,operation:'toggle',enabled:bool}|array{type:'waiting_room_control',requestId:string,operation:'admit'|'deny',participantId:string})
+ * @phpstan-type WaitingRoomControlRequest array{connectionId:string,participant?:string,control:WaitingRoomControl}
+ * @phpstan-type WaitingRoomControlResult array{type:'waiting_room_result',requestId:string,ok:bool,code?:string}
  * @phpstan-type HandRaised array{connectionId:string,participant?:string,raised:bool}
  * @phpstan-type ReportClient array{sdk:string,version:string,platform:'browser'|'node'|'other'}
  * @phpstan-type Quality array{rttMs?:int,jitterMs?:int,packetsLost?:int,packetsReceived?:int,audioCodec?:string,videoCodec?:string,candidateType?:'host'|'srflx'|'prflx'|'relay',reconnects?:int}
