@@ -1,10 +1,20 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import {
+  readFileSync,
+  writeFileSync,
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+} from "node:fs";
+import { join } from "node:path";
+import { homedir } from "node:os";
+import { pathToFileURL } from "node:url";
 import {
   validateAcceptance,
   releaseVersion,
   validateFeatureContractPins,
+  validateGuestCallPublication,
   multiSourcePins,
   campaignSupplementPins,
   expectedContract,
@@ -295,4 +305,179 @@ test("A two-audience supplement is checked per family and honours its hold", () 
       ),
     /not been reconciled/,
   );
+});
+
+test("guest-call hold blocks the real publisher after other supplements are reconciled", async () => {
+  const parent = join(
+    homedir(),
+    ".polymorfa-agent-work",
+    "guest-calls",
+    "release-gate-fixtures",
+  );
+  mkdirSync(parent, { recursive: true });
+  const fixture = mkdtempSync(join(parent, "guest-hold-"));
+  mkdirSync(join(fixture, "scripts"));
+  mkdirSync(join(fixture, "contracts"));
+  mkdirSync(join(fixture, "packages/typescript/src"), { recursive: true });
+  copyFileSync(
+    new URL("./release-gate.mjs", import.meta.url),
+    join(fixture, "scripts/release-gate.mjs"),
+  );
+  copyFileSync(
+    new URL("../packages/typescript/src/version.ts", import.meta.url),
+    join(fixture, "packages/typescript/src/version.ts"),
+  );
+  const source = JSON.parse(
+    readFileSync(new URL("../contracts/source.json", import.meta.url)),
+  );
+  writeFileSync(join(fixture, "contracts/source.json"), JSON.stringify(source));
+  for (const snapshot of ["openapi.messaging.json", "openapi.platform.json"])
+    copyFileSync(
+      new URL("../contracts/" + snapshot, import.meta.url),
+      join(fixture, "contracts", snapshot),
+    );
+  for (const name of [
+    "calls-simultaneous-calls.json",
+    "analytics-device-signals.json",
+    "abprops-capabilities.json",
+    "request-logs.json",
+    "client-token-ceilings.json",
+    "campaign-ab-tests.json",
+    "campaign-message-variations.json",
+    "campaign-follow-ups.json",
+    "campaign-custody-20261014.json",
+    "campaign-frequency-cap.json",
+    "campaign-segments-drip.json",
+    "official-api-round2.json",
+  ]) {
+    const pin = JSON.parse(
+      readFileSync(new URL("../contracts/" + name, import.meta.url)),
+    );
+    pin.repository = source.repository;
+    pin.commit = source.commit;
+    pin.sourceCommit = source.commit;
+    pin.published = true;
+    if (pin.sources) {
+      for (const [family, value] of Object.entries(pin.sources)) {
+        value.sourcePath = source.contracts[family].sourcePath;
+        value.sourceSha256 = source.contracts[family].sha256;
+      }
+    } else {
+      pin.sourcePath = source.contracts[pin.family].sourcePath;
+      pin.sourceSha256 = source.contracts[pin.family].sha256;
+    }
+    writeFileSync(join(fixture, "contracts", name), JSON.stringify(pin));
+  }
+  const candidate = JSON.parse(
+    readFileSync(
+      new URL("../contracts/calls-guests.candidate.json", import.meta.url),
+    ),
+  );
+  const candidatePath = join(fixture, "contracts/calls-guests.candidate.json");
+  writeFileSync(candidatePath, JSON.stringify(candidate));
+  const publisher = await import(
+    pathToFileURL(join(fixture, "scripts/release-gate.mjs")).href
+  );
+  assert.throws(
+    () => publisher.expectedContract(),
+    /Guest calls.*held from publication/,
+  );
+  candidate.sourceAccepted = candidate.published = true;
+  candidate.httpControl.sourceAccepted = candidate.httpControl.published = true;
+  candidate.candidateSource.repository = source.repository;
+  candidate.candidateSource.commit = source.commit;
+  candidate.candidateSource.files = [
+    {
+      path: source.contracts.messaging.sourcePath,
+      sha256: source.contracts.messaging.sha256,
+    },
+  ];
+  writeFileSync(candidatePath, JSON.stringify(candidate));
+  assert.equal(publisher.expectedContract().sourceSha, source.commit);
+});
+
+test("guest-call publication binds both holds, version, repository, commit and Messaging hash", () => {
+  const source = {
+    repository: "polymorfa/polymorfa",
+    commit: expected.sourceSha,
+    contracts: expected.contracts,
+  };
+  const candidate = {
+    schemaVersion: 1,
+    sourceAccepted: true,
+    published: true,
+    httpControl: { sourceAccepted: true, published: true },
+    apiVersion: expected.apiVersion,
+    candidateSource: {
+      repository: source.repository,
+      commit: source.commit,
+      files: [
+        {
+          path: source.contracts.messaging.sourcePath,
+          sha256: source.contracts.messaging.sha256,
+        },
+      ],
+    },
+  };
+  validateGuestCallPublication(source, candidate, expected.apiVersion);
+  for (const delta of [
+    { sourceAccepted: false },
+    { sourceAccepted: undefined },
+    { published: false },
+    { published: undefined },
+    { httpControl: undefined },
+    { httpControl: { sourceAccepted: false, published: true } },
+    { httpControl: { sourceAccepted: true, published: false } },
+    { httpControl: { published: true } },
+    { httpControl: { sourceAccepted: true } },
+    { apiVersion: "2000-01-01" },
+    {
+      candidateSource: {
+        ...candidate.candidateSource,
+        repository: "other/repo",
+      },
+    },
+    {
+      candidateSource: { ...candidate.candidateSource, commit: "f".repeat(40) },
+    },
+    {
+      candidateSource: {
+        ...candidate.candidateSource,
+        files: [
+          {
+            path: source.contracts.messaging.sourcePath,
+            sha256: "f".repeat(64),
+          },
+        ],
+      },
+    },
+    {
+      candidateSource: {
+        ...candidate.candidateSource,
+        files: [
+          {
+            path: source.contracts.platform.sourcePath,
+            sha256: source.contracts.platform.sha256,
+          },
+        ],
+      },
+    },
+    { candidateSource: { ...candidate.candidateSource, files: [] } },
+    {
+      candidateSource: {
+        ...candidate.candidateSource,
+        files: [
+          ...candidate.candidateSource.files,
+          ...candidate.candidateSource.files,
+        ],
+      },
+    },
+  ])
+    assert.throws(() =>
+      validateGuestCallPublication(
+        source,
+        { ...candidate, ...delta },
+        expected.apiVersion,
+      ),
+    );
 });
