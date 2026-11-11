@@ -53,20 +53,9 @@
       "authority": "self-reported display only"
     }
   },
-  "mediaTransports": [
-    "WebSocket",
-    "WebRTC data channel"
-  ],
-  "frames": [
-    "waiting_room",
-    "waiting_room_control",
-    "waiting_room_result"
-  ],
-  "operations": [
-    "toggle",
-    "admit",
-    "deny"
-  ],
+  "mediaTransports": ["WebSocket", "WebRTC data channel"],
+  "frames": ["waiting_room", "waiting_room_control", "waiting_room_result"],
+  "operations": ["toggle", "admit", "deny"],
   "authority": [
     "authenticated tenant and Number",
     "current call owner",
@@ -88,22 +77,14 @@
       "packages/ui-kit/test/browser/calls.test.ts",
       "packages/typescript/test/voip.test.ts"
     ],
-    "go": [
-      "packages/go/calls_socket_test.go"
-    ],
-    "python": [
-      "packages/python/tests/test_calls_runtime.py"
-    ],
+    "go": ["packages/go/calls_socket_test.go"],
+    "python": ["packages/python/tests/test_calls_runtime.py"],
     "php": [
       "packages/php/tests/calls_runtime.php",
       "packages/php/tests/calls-runtime-server.php"
     ],
-    "dotnet": [
-      "packages/dotnet/tests/Polymorfa.Sdk.Tests/CallsClientTests.cs"
-    ],
-    "rust": [
-      "packages/rust/tests/calls_runtime.rs"
-    ]
+    "dotnet": ["packages/dotnet/tests/Polymorfa.Sdk.Tests/CallsClientTests.cs"],
+    "rust": ["packages/rust/tests/calls_runtime.rs"]
   },
   "releaseGates": [
     "accepted API source and contract",

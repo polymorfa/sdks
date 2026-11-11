@@ -3512,7 +3512,6 @@ const confirmExplicitly = () =>
   client.passkeys.confirm(session, suppliedConfirmation);
 ```
 
-
 ### Authenticated HTTP moderation (unreleased)
 
 `client.voip.moderateWaitingRoom` sends a correlated action to
