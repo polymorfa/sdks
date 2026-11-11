@@ -5,7 +5,7 @@
   "apiVersion": "2026-09-22",
   "candidateSource": {
     "repository": "polymorfa/polymorfa",
-    "commit": "4bc7d8a377767e100a8832c1c77ddf983503140c",
+    "commit": "c544725b57f198a9eebf70a6edf18383bad07073",
     "branch": "rajeh/pol-172-calling-guests",
     "files": [
       {
@@ -18,7 +18,7 @@
       },
       {
         "path": "apps/api/docs/calls-media-socket.md",
-        "sha256": "bd905226aa3b2974735db9032677226e7b91c4f4aff453169d2015c8275e120e"
+        "sha256": "6a72d45e5e26cc9beb6709edef1cd670b2b468d116c295e384ff76a2fda79634"
       },
       {
         "path": "apps/api/internal/voip/waiting_room_controls.go",
@@ -39,6 +39,26 @@
       {
         "path": "docs/openapi.json",
         "sha256": "2a0bc68388cc8f4b42f731dd5bc271fb580d6112c1bf4e5ac88292482c5eeea7"
+      },
+      {
+        "path": "apps/api/packages/api/src/lib/calls-socket-auth.ts",
+        "sha256": "499e55b250b559b8a0d380cba859cf0e483f7cbccc6d191be22e0747d13970da"
+      },
+      {
+        "path": "apps/api/packages/api/src/lib/credential-capabilities.ts",
+        "sha256": "c0fb9309b6c6474d49502ac4d3171bce0f7ef4c5359f3dfff56937a0a46dc661"
+      },
+      {
+        "path": "apps/api/packages/api/src/routes/voip.ts",
+        "sha256": "0b3068d9e0e2dad543c9aa2efabb524788b440b11eaebf5e9fce3b4dbadee385"
+      },
+      {
+        "path": "apps/api/packages/api/src/routes/voip-media-socket.ts",
+        "sha256": "5d2bb1843733e3e1111cd9121e02fa9ddfa168cbdc233deb4f3eb1591c3593d8"
+      },
+      {
+        "path": "apps/api/docs/security.md",
+        "sha256": "02a2a22157b077a4d3c49ff074e8f6dd5e60670f160dc6e411d86de8ca103f62"
       }
     ]
   },
@@ -57,6 +77,7 @@
   "frames": ["waiting_room", "waiting_room_control", "waiting_room_result"],
   "operations": ["toggle", "admit", "deny"],
   "authority": [
+    "live signaling permission on each command",
     "authenticated tenant and Number",
     "current call owner",
     "exact media connection generation",
@@ -110,7 +131,7 @@
     "productionAcceptance": false
   },
   "controlTransports": {
-    "programmatic": "authenticated media WebSocket with credential rechecks",
+    "programmatic": "authenticated media WebSocket with per-command API credential and voip_signal rechecks",
     "browser": "per-request authenticated Messaging HTTP; WebRTC data channel is snapshots only"
   },
   "httpControl": {
@@ -154,5 +175,14 @@
   "documentationSnippets": {
     "newHttpOperation": "withheld pending accepted API source/spec binding; cURL fallback remains",
     "baselineRecipes": "revalidated against current SDK source without advancing accepted API contract"
+  },
+  "apiAdmissionEvidence": {
+    "sourceFiles": [
+      "apps/api/packages/api/src/lib/__tests__/calls-socket-auth.test.ts",
+      "apps/api/packages/api/src/routes/__tests__/voip-media-socket.test.ts",
+      "apps/api/packages/api/scripts/smoke-voip-media-proxy.ts"
+    ],
+    "credentialChain": "Real API credential/client-rule middleware with synthetic authority stores; rejects under-permitted/revoked clients and scope changes before forwarding.",
+    "transport": "Actual loopback WebSocket with recording authority and upstream; denied/authorized control delivery and binary media. No live WhatsApp or deployed acceptance."
   }
 }
