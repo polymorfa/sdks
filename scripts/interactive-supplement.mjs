@@ -9,9 +9,9 @@ export const INTERACTIVE_INVENTORY =
   "contracts/native-interactive-messages.json";
 const PIN = "contracts/interactive-messages.json";
 const BASELINE = {
-  sourceApiCommit: "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
+  sourceApiCommit: "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
   sourceSdkCommit: "e24cb176fc1124f5fe852ff6c77902648fd13b4a",
-  operations: 579,
+  operations: 671,
 };
 const FIELDS = {
   mediaHeader: "/buttonsContent/properties/buttons/properties/media",

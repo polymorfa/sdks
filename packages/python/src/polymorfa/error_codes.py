@@ -111,7 +111,6 @@ KnownPolymorfaErrorCode = Literal[
     "team_deletion_scheduled",
     "terms_acceptance_required",
     "terms_activation_blocked",
-    "idempotency_replay_unavailable",
 ]
 
 POLYMORFA_ERROR_CODES = frozenset(
@@ -127,7 +126,6 @@ POLYMORFA_ERROR_CODES = frozenset(
         "team_deletion_scheduled",
         "terms_acceptance_required",
         "terms_activation_blocked",
-        "idempotency_replay_unavailable",
         "invalid_credential",
         "entitlement_required",
         "cloud_template_authority_restricted",

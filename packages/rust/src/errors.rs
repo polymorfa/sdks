@@ -234,7 +234,6 @@ pub const POLYMORFA_ERROR_CODES: &[&str] = &[
     "team_deletion_scheduled",
     "terms_acceptance_required",
     "terms_activation_blocked",
-    "idempotency_replay_unavailable",
 ];
 
 pub fn is_known_error_code(code: &str) -> bool {

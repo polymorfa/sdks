@@ -130,7 +130,11 @@ compares their paths and fields. The full snapshots are not repinned here.
 The snapshots are byte-identical copies of `apps/api/docs/openapi.json`
 (sha256 `0c66f1ee…b071`) and `apps/api/docs/openapi.management.json`
 (sha256 `bee9be6c…c485`) at `polymorfa/polymorfa` commit
-`f180dc1ee2bd45dbecf01702f73bdd75c664634b`, the pushed head of #887. It
+`f180dc1ee2bd45dbecf01702f73bdd75c664634b`, the pushed head of #887. #887
+merged into `polymorfa/polymorfa` `dev` as
+`a3db53e74c6e24507ca01e2ff6ecba19358422c7`, whose two API specifications are
+byte-identical to these snapshots (same hashes). `source.json` and the ledger
+keep `f180dc1ee2` as the pinned contract revision. It
 contains the team rename and later API dev changes. The ledger holds 671
 operations. All 579 earlier rows were re-fingerprinted. 285 changed only by
 documented response headers; the shared `PublicError` enum grew for every

@@ -3,7 +3,8 @@
 ## Unreleased
 
 - Breaking: every public "organization" name is now "team", matching API
-  contract revision `f180dc1ee2` of polymorfa/polymorfa#887. There are no
+  contract revision `f180dc1ee2` of polymorfa/polymorfa#887, merged into API
+  `dev` as `a3db53e74c` with byte-identical specifications. There are no
   deprecated aliases. Update call sites in all six SDKs:
   - Credentials: TypeScript `{ type: "organizationApiKey" }` is
     `{ type: "teamApiKey" }` and `validateOrganizationApiKey` is
