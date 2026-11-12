@@ -22,8 +22,8 @@ type Analytics struct {
 	projectID string
 }
 
-func (c *OrganizationClient) Analytics() *Analytics { return &Analytics{t: c.t} }
-func (c *ProjectClient) Analytics() *Analytics      { return &Analytics{c.t, c.projectID} }
+func (c *TeamClient) Analytics() *Analytics    { return &Analytics{t: c.t} }
+func (c *ProjectClient) Analytics() *Analytics { return &Analytics{c.t, c.projectID} }
 func analyticsError(code, message string) error {
 	return &Error{Kind: ValidationError, Code: code, Message: message}
 }

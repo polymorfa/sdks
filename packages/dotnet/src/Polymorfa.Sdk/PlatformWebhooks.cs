@@ -7,7 +7,7 @@ public sealed record WebhookHeaderInput(string Name, string Value)
 }
 public sealed record WebhookHeaderMetadata(string Name);
 public sealed record WebhookSigningSecretMetadata(int Version, string CreatedAt, string? PreviousValidUntil);
-public sealed record PlatformWebhook(string Id, string OrganizationId, string Owner, string? ProjectId, string Url, IReadOnlyList<string> EventTypes, bool Enabled, string Format, WebhookRetryPolicy RetryPolicy, IReadOnlyList<WebhookHeaderMetadata> Headers, WebhookSigningSecretMetadata Secret, string CreatedAt, string UpdatedAt, WebhookBatching Batching);
+public sealed record PlatformWebhook(string Id, string TeamId, string Owner, string? ProjectId, string Url, IReadOnlyList<string> EventTypes, bool Enabled, string Format, WebhookRetryPolicy RetryPolicy, IReadOnlyList<WebhookHeaderMetadata> Headers, WebhookSigningSecretMetadata Secret, string CreatedAt, string UpdatedAt, WebhookBatching Batching);
 public sealed record CreatePlatformWebhookInput(string Url, IReadOnlyList<string> EventTypes, bool? Enabled = null, string? Format = null, WebhookRetryPolicy? RetryPolicy = null, IReadOnlyList<WebhookHeaderInput>? Headers = null, WebhookBatchingInput? Batching = null);
 public sealed record UpdatePlatformWebhookInput(string? Url = null, IReadOnlyList<string>? EventTypes = null, bool? Enabled = null, string? Format = null, WebhookRetryPolicy? RetryPolicy = null, IReadOnlyList<WebhookHeaderInput>? Headers = null, WebhookBatchingInput? Batching = null);
 public sealed record ListPlatformWebhooksParameters(string? EventType = null, bool? Enabled = null, int? Limit = null, string? Cursor = null);
@@ -26,11 +26,11 @@ public sealed record WebhookSecretRotationReceipt(string WebhookId, string? Oper
 }
 public sealed record WebhookDeliveryCapabilities(bool Retryable);
 public sealed record WebhookDeliveryOutcome(int? StatusCode, string? ErrorCode);
-public sealed record WebhookDelivery(string Id, string OrganizationId, string? ProjectId, string EventId, string WebhookId, string Status, int AttemptCount, WebhookDeliveryCapabilities Capabilities, string PayloadAvailability, string? ReplayableUntil, string MetadataExpiresAt, string? NextAttemptAt, string? LastAttemptAt, string? CompletedAt, string CreatedAt, string UpdatedAt, WebhookDeliveryOutcome? LastOutcome);
+public sealed record WebhookDelivery(string Id, string TeamId, string? ProjectId, string EventId, string WebhookId, string Status, int AttemptCount, WebhookDeliveryCapabilities Capabilities, string PayloadAvailability, string? ReplayableUntil, string MetadataExpiresAt, string? NextAttemptAt, string? LastAttemptAt, string? CompletedAt, string CreatedAt, string UpdatedAt, WebhookDeliveryOutcome? LastOutcome);
 public sealed record ListWebhookDeliveriesParameters(string? WebhookId = null, string? EventId = null, string? Status = null, string? Since = null, string? Until = null, int? Limit = null, string? Cursor = null);
 public sealed record ListDeliveryAttemptsParameters(int? Limit = null, string? Cursor = null);
 public sealed record WebhookDeliveryAttemptResponse(string ContentType, string Excerpt, bool Truncated);
-public sealed record WebhookDeliveryAttempt(string Id, string OrganizationId, string? ProjectId, string DeliveryId, int Number, string Status, string? StartedAt, string? CompletedAt, string? NextRetryAt, double? DurationMs, int? StatusCode, string? ErrorCode, WebhookDeliveryAttemptResponse? Response, string MetadataExpiresAt);
+public sealed record WebhookDeliveryAttempt(string Id, string TeamId, string? ProjectId, string DeliveryId, int Number, string Status, string? StartedAt, string? CompletedAt, string? NextRetryAt, double? DurationMs, int? StatusCode, string? ErrorCode, WebhookDeliveryAttemptResponse? Response, string MetadataExpiresAt);
 public sealed record WebhookDeliveryRetryReceipt(string DeliveryId, string AttemptId, string OperationId, IdempotencyReceipt Idempotency);
 public sealed class PlatformWebhooks : Resource
 {
@@ -50,7 +50,7 @@ public sealed class PlatformWebhooks : Resource
     public Task<ApiResponse<WebhookDeletionReceipt>> DeleteAsync(string webhookId, RequestOptions? options = null) => Unwrap<WebhookDeletionReceipt>(HttpMethod.Delete, Path(webhookId), null, options);
     public Task<ApiResponse<EventReplayReceipt>> TestAsync(string webhookId, TestPlatformWebhookInput? body = null, RequestOptions? options = null)
     {
-        if (!project && body is TestProjectWebhookPayloadInput) throw new PolymorfaValidationException("Organization webhook tests do not accept body or sessionId.", "invalid_parameter");
+        if (!project && body is TestProjectWebhookPayloadInput) throw new PolymorfaValidationException("Team webhook tests do not accept body or sessionId.", "invalid_parameter");
         return Unwrap<EventReplayReceipt>(HttpMethod.Post, Path(webhookId) + "/tests", body ?? new(), options);
     }
     public Task<ApiResponse<WebhookSecretRotationReceipt>> RotateSecretAsync(string webhookId, RotateWebhookSecretInput? body = null, RequestOptions? options = null) => Unwrap<WebhookSecretRotationReceipt>(HttpMethod.Post, Path(webhookId) + "/secret-rotations", body ?? new(), options);

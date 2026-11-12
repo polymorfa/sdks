@@ -5,7 +5,7 @@ Handwritten server SDK for PHP 8.2+, with Guzzle, OpenSSL and cURL. Package iden
 ```php
 use Polymorfa\{Credential, MessagingClient, RequestOptions};
 
-$client = new MessagingClient(Credential::organizationApiKey(getenv('POLYMORFA_API_KEY')));
+$client = new MessagingClient(Credential::teamApiKey(getenv('POLYMORFA_API_KEY')));
 $response = $client->messages->send('support', [
     'conversation' => ['phoneNumber' => '+15551234567'],
     'content' => ['text' => 'Hello'],
@@ -14,7 +14,7 @@ $messageId = $response->data['data']['id'];
 $requestId = $response->metadata->requestId;
 ```
 
-`Client` manages Platform resources; `Client::project($projectId)` returns an immutable project view. `ProjectClient` accepts an team key or project token and cannot rebind to another project. `MessagingClient` also accepts constrained client tokens for supported messaging actions; server-only operations reject them before a request.
+`Client` manages Platform resources; `Client::project($projectId)` returns an immutable project view. `ProjectClient` accepts a team key or project token and cannot rebind to another project. `MessagingClient` also accepts constrained client tokens for supported messaging actions; server-only operations reject them before a request.
 
 Response array shapes have handwritten PHPStan types. Responses retain metadata, including status, attempts, version and request ID. Errors use status-specific exception classes and retain safe server error fields. Raw access is an explicit escape hatch, and project raw access remains confined to its project. Request options include per-request version, timeout, idempotency key, headers and cooperative cancellation. Reserved authentication headers cannot be overridden.
 
@@ -92,7 +92,7 @@ Responses retain entitlement and applied-state fields; configuring a
 setting does not grant access. Send the version from a recent health-policy
 read when updating it.
 
-Platform account resources expose organization details, members, API-key and
+Platform account resources expose team details, members, API-key and
 project-token metadata. `projects` creates development projects, lists Hybrid
 Link merge candidates and submits or approves production enrollment. `sessions`
 provides lifecycle and batch controls, tier quotes, quote confirmation and
@@ -115,9 +115,9 @@ through `iterateRecords()`. Project views always select their own usage project.
 A usage record or configured gate does not establish a customer charge.
 
 `sipTrunks` provides typed trunk configuration, endpoint discovery and credential
-rotation. For organization clients, `list($projectId)` and
+rotation. For team clients, `list($projectId)` and
 `create($input, $projectId)` select a project. Project views use their own project.
-When a project view uses an team key, writes first verify the trunk's
+When a project view uses a team key, writes first verify the trunk's
 project using a read without the write's idempotency key. An environment without
 SIP hosting returns the `sip_not_hosted` endpoint variant.
 
@@ -137,7 +137,7 @@ Platform developer resources expose typed event, operation, webhook and delivery
 records with payload availability and idempotency receipts. `events.listIndexed`
 keeps 64-bit ingestion offsets as decimal strings and rejects non-advancing pages.
 `operations.wait` uses bounded server long polls; cancellation creates one
-idempotency key per invocation. Organization and immutable project views use
+idempotency key per invocation. Team and immutable project views use
 their respective native routes. `requestLogs.list`, `follow` and `tail` read the
 project log; tail reverses backfill into chronological order, follows new records,
 honors cancellation and bounds `Retry-After` delays.
@@ -684,7 +684,7 @@ These additions are unpublished and do not establish feature availability.
 Messaging campaign helpers include `links`, `testSend`, `createReplyFlow`,
 `getReplyFlow`, `setReplyFlow` and `exportRecipients`. They require an
 team key or Project token. Platform `campaigns` exposes the
-matching helpers plus `listLaunchApprovals` and organization-only `getSettings`.
+matching helpers plus `listLaunchApprovals` and team-only `getSettings`.
 A Project view exposes exactly the seven Project campaign helpers, with the
 Project captured by its readonly resource. It rejects caller-supplied Project
 selection fields.
@@ -692,7 +692,7 @@ selection fields.
 ```php
 use Polymorfa\{Client, Credential, RequestOptions};
 
-$platform = new Client(Credential::organizationApiKey(getenv('POLYMORFA_API_KEY')));
+$platform = new Client(Credential::teamApiKey(getenv('POLYMORFA_API_KEY')));
 $project = $platform->project($projectId);
 $sent = $project->campaigns->testSend($campaignId, [
     'sessionId' => $sessionId,
@@ -712,7 +712,7 @@ body consumption and at reads; an underlying blocking read remains bounded by
 the configured read timeout. Cancelling an HTTP waiter does not undo an
 admitted operation.
 
-Organization clients also expose `audiences->createFromCampaign`,
+Team clients also expose `audiences->createFromCampaign`,
 `audienceProfiles->{list,retrieve,put,delete,listConsent}` and
 `audienceProfiles->imports->{create,retrieve,cancel}`. Profiles contain
 customer-supplied campaign data. They do not synchronize WhatsApp contacts.

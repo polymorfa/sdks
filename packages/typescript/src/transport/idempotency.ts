@@ -6,9 +6,9 @@ import { PolymorfaConfigurationError } from "../errors.js";
  *
  * The explicit key option wins, then one case-insensitive header value.
  * Otherwise one random key is generated per call,
- * so every automatic retry of that call reuses it. The endpoint determines the
- * retry response: completed messaging writes return idempotency_completed
- * without the original response body.
+ * so every automatic retry of that call reuses it. The API contract and
+ * available replay data determine the response. Keep the same key while
+ * reconciling an uncertain outcome; a new key may execute another write.
  */
 export function withIdempotencyKey(options: RequestOptions): RequestOptions {
   let key = options.idempotencyKey;

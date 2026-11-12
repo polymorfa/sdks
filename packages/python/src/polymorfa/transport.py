@@ -82,18 +82,18 @@ def _opaque_shape(value: str, prefix: str) -> bool:
 
 @dataclass(frozen=True)
 class Credential:
-    kind: Literal["organization_api_key", "project_token", "client_token"]
+    kind: Literal["team_api_key", "project_token", "client_token"]
     value: str = field(repr=False)
 
     def __post_init__(self) -> None:
-        if self.kind == "organization_api_key" and self.value.startswith(
+        if self.kind == "team_api_key" and self.value.startswith(
             ("pmfa_pt_", "pmfa_ct_", "pmfa_ls_", "pmfa_at_", "pmfa_wst_", "pmfa_sd_")
         ):
             raise ConfigurationError("credential")
         if self.kind == "client_token":
             valid = _client_shape(self.value)
         else:
-            prefix = {"organization_api_key": "pmfa_", "project_token": "pmfa_pt_"}.get(self.kind)
+            prefix = {"team_api_key": "pmfa_", "project_token": "pmfa_pt_"}.get(self.kind)
             valid = prefix is not None and _opaque_shape(self.value, prefix)
         if not valid:
             raise ConfigurationError("credential")

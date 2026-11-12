@@ -236,7 +236,7 @@ async fn platform_batching_native_settings_wire() {
         } else {
             "/platform"
         };
-        let hook = json!({"id":"w","organizationId":"o","owner":if project {"project"}else{"organization"},"projectId":if project {Some("project")}else{None},"url":"https://example.test","eventTypes":[],"enabled":true,"format":"native","retryPolicy":{"maximumAttempts":3,"backoff":"exponential","initialDelaySeconds":5},"headers":[],"secret":{"version":1,"createdAt":"now","previousValidUntil":null},"createdAt":"now","updatedAt":"now","batching":{"enabled":false,"maxEvents":100,"windowMs":1000}});
+        let hook = json!({"id":"w","teamId":"o","owner":if project {"project"}else{"team"},"projectId":if project {Some("project")}else{None},"url":"https://example.test","eventTypes":[],"enabled":true,"format":"native","retryPolicy":{"maximumAttempts":3,"backoff":"exponential","initialDelaySeconds":5},"headers":[],"secret":{"version":1,"createdAt":"now","previousValidUntil":null},"createdAt":"now","updatedAt":"now","batching":{"enabled":false,"maxEvents":100,"windowMs":1000}});
         let body =
             json!({"url":"https://example.test","eventTypes":[],"batching":{"enabled":false}});
         let receipt = json!({"webhook":hook,"operationId":null,"idempotency":{"id":"i","key":"k","replayed":false,"createdAt":"now","expiresAt":"later"},"secret":null,"secretAvailable":false});
@@ -247,7 +247,7 @@ async fn platform_batching_native_settings_wire() {
             json!({"data":receipt.clone()}),
         )
         .await;
-        let owner = support::organization(base);
+        let owner = support::team(base);
         let p = owner.project("project").unwrap();
         let resource = if project {
             p.webhooks()
@@ -274,7 +274,7 @@ async fn platform_batching_native_settings_wire() {
             json!({"data":receipt}),
         )
         .await;
-        let owner = support::organization(base);
+        let owner = support::team(base);
         let p = owner.project("project").unwrap();
         let resource = if project {
             p.webhooks()

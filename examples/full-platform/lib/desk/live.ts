@@ -7,7 +7,7 @@ import type {
 
 import type { Operator } from "../auth.js";
 import { env, optionalEnv } from "../env.js";
-import { messaging, organization } from "../polymorfa.js";
+import { messaging, team } from "../polymorfa.js";
 import { emit } from "../realtime.js";
 import { InputError } from "../route.js";
 import type { DeskData, InboundMessage, MessagePage } from "./data.js";
@@ -401,10 +401,9 @@ export class PolymorfaDesk implements DeskData {
   /** BanSafe Health needs the team key; without it health is unknown. */
   async #health(): Promise<Map<string, number | null>> {
     const scores = new Map<string, number | null>();
-    if (optionalEnv("POLYMORFA_ORGANIZATION_API_KEY") === undefined)
-      return scores;
+    if (optionalEnv("POLYMORFA_TEAM_API_KEY") === undefined) return scores;
     try {
-      const page = await organization().banSafe.listHealth({
+      const page = await team().banSafe.listHealth({
         projectId: env.projectId(),
         limit: 100,
       });

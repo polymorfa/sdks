@@ -1,5 +1,5 @@
 import { env } from "../../../../lib/env.js";
-import { organization, project } from "../../../../lib/polymorfa.js";
+import { team, project } from "../../../../lib/polymorfa.js";
 import { WEBHOOK_EVENTS } from "../../../../lib/webhooks.js";
 import {
   action,
@@ -12,12 +12,10 @@ import {
 } from "../../../../lib/route.js";
 
 // Durable webhook endpoints and their deliveries. Project endpoints use the
-// project view; `?owner=organization` selects organization-owned endpoints
+// project view; `?owner=team` selects team-owned endpoints
 // for both reads and actions.
 function ownerOf(url: URL) {
-  return url.searchParams.get("owner") === "organization"
-    ? organization()
-    : project();
+  return url.searchParams.get("owner") === "team" ? team() : project();
 }
 
 export const GET = route("admin", async ({ url }) => {

@@ -212,7 +212,7 @@ class Usage(PlatformResource):
         if (
             self._project_id is not None
             or self._transport._credential is None
-            or self._transport._credential.kind != "organization_api_key"
+            or self._transport._credential.kind != "team_api_key"
         ):
             raise ConfigurationError("credential")
         return await self._unwrapped(

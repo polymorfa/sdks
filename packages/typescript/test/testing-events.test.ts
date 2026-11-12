@@ -7,7 +7,7 @@ import {
   TEST_EVENT_FIXTURES,
   type TriggerTestEventRequest,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -16,7 +16,7 @@ function client(response: Response) {
   return {
     fetcher,
     client: new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
       baseUrl: "https://api.example",
       fetch: fetcher,
     }),
@@ -181,9 +181,9 @@ it("rejects client tokens before transport", () => {
       session: "test-a",
       event: "session.status",
     }),
-  ).toThrow("requires an team key or project token");
+  ).toThrow("requires a team key or project token");
   expect(() => messaging.testing.listEventFixtures("project-a")).toThrow(
-    "requires an team key or project token",
+    "requires a team key or project token",
   );
   expect(fetcher).not.toHaveBeenCalled();
 });
@@ -226,7 +226,7 @@ it("sends an optional Idempotency-Key and retries safely with it", async () => {
     responses.shift()!,
   );
   const messaging = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: "https://api.example",
     fetch: fetcher,
   });

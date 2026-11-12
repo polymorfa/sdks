@@ -2,12 +2,12 @@
   "paths": {
     "/platform/webhooks": {
       "get": {
-        "operationId": "listOrganizationWebhooks",
+        "operationId": "listTeamWebhooks",
         "tags": ["webhooks"],
         "summary": "List team webhooks",
         "description": "Lists only team-owned webhook endpoints. Project-owned endpoints are excluded.\n\nAPI keys require `webhooks:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhooks:read",
         "security": [
@@ -90,7 +90,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/OrganizationWebhook"
+                        "$ref": "#/components/schemas/TeamWebhook"
                       }
                     },
                     "page": {
@@ -114,12 +114,12 @@
         }
       },
       "post": {
-        "operationId": "createOrganizationWebhook",
+        "operationId": "createTeamWebhook",
         "tags": ["webhooks"],
-        "summary": "Create an team webhook",
-        "description": "Creates an team-owned webhook and returns its generated signing secret once.\n\nAPI keys require `webhooks:manage`. Project tokens are not accepted.",
+        "summary": "Create a team webhook",
+        "description": "Creates a team-owned webhook and returns its generated signing secret once.\n\nAPI keys require `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhooks:manage",
         "security": [
@@ -147,7 +147,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateOrganizationWebhookInput"
+                "$ref": "#/components/schemas/CreateTeamWebhookInput"
               }
             }
           }
@@ -183,7 +183,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhookCreationReceipt"
+                      "$ref": "#/components/schemas/TeamWebhookCreationReceipt"
                     }
                   },
                   "required": ["data"]
@@ -208,12 +208,12 @@
     },
     "/platform/webhooks/{webhookId}": {
       "get": {
-        "operationId": "getOrganizationWebhook",
+        "operationId": "getTeamWebhook",
         "tags": ["webhooks"],
-        "summary": "Get an team webhook",
+        "summary": "Get a team webhook",
         "description": "Returns one team-owned webhook without secret values.\n\nAPI keys require `webhooks:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhooks:read",
         "security": [
@@ -266,7 +266,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhook"
+                      "$ref": "#/components/schemas/TeamWebhook"
                     }
                   },
                   "required": ["data"]
@@ -289,12 +289,12 @@
         }
       },
       "patch": {
-        "operationId": "updateOrganizationWebhook",
+        "operationId": "updateTeamWebhook",
         "tags": ["webhooks"],
-        "summary": "Update an team webhook",
+        "summary": "Update a team webhook",
         "description": "Updates settings without rotating the signing secret.\n\nAPI keys require `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhooks:manage",
         "security": [
@@ -331,7 +331,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateOrganizationWebhookInput"
+                "$ref": "#/components/schemas/UpdateTeamWebhookInput"
               }
             }
           }
@@ -367,7 +367,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhookMutationReceipt"
+                      "$ref": "#/components/schemas/TeamWebhookMutationReceipt"
                     }
                   },
                   "required": ["data"]
@@ -393,12 +393,12 @@
         }
       },
       "delete": {
-        "operationId": "deleteOrganizationWebhook",
+        "operationId": "deleteTeamWebhook",
         "tags": ["webhooks"],
-        "summary": "Delete an team webhook",
+        "summary": "Delete a team webhook",
         "description": "Deletes one team-owned webhook.\n\nAPI keys require `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhooks:manage",
         "security": [
@@ -461,7 +461,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhookDeletionReceipt"
+                      "$ref": "#/components/schemas/TeamWebhookDeletionReceipt"
                     }
                   },
                   "required": ["data"]
@@ -489,12 +489,12 @@
     },
     "/platform/webhooks/{webhookId}/secret-rotations": {
       "post": {
-        "operationId": "rotateOrganizationWebhookSecret",
+        "operationId": "rotateTeamWebhookSecret",
         "tags": ["webhooks"],
-        "summary": "Rotate an team webhook secret",
+        "summary": "Rotate a team webhook secret",
         "description": "Rotates the signing secret and returns the new secret once.\n\nAPI keys require `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhooks:manage",
         "security": [
@@ -567,7 +567,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhookSecretRotationReceipt"
+                      "$ref": "#/components/schemas/TeamWebhookSecretRotationReceipt"
                     }
                   },
                   "required": ["data"]
@@ -595,12 +595,12 @@
     },
     "/platform/webhooks/{webhookId}/tests": {
       "post": {
-        "operationId": "testOrganizationWebhook",
+        "operationId": "testTeamWebhook",
         "tags": ["webhooks"],
         "summary": "Send a team webhook test",
         "description": "Creates a synthetic team event and a traceable webhook delivery.\n\nAPI keys require `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhooks:manage",
         "security": [
@@ -637,7 +637,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TestOrganizationWebhookInput"
+                "$ref": "#/components/schemas/TestTeamWebhookInput"
               }
             }
           }
@@ -673,7 +673,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhookTestReceipt"
+                      "$ref": "#/components/schemas/TeamWebhookTestReceipt"
                     }
                   },
                   "required": ["data"]
@@ -1767,7 +1767,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -1829,7 +1829,7 @@
         },
         "required": [
           "id",
-          "organizationId",
+          "teamId",
           "owner",
           "projectId",
           "url",
@@ -2057,7 +2057,7 @@
         },
         "required": ["nextCursor", "hasMore"]
       },
-      "OrganizationWebhookTestReceipt": {
+      "TeamWebhookTestReceipt": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -2079,7 +2079,7 @@
         },
         "required": ["eventId", "deliveryId", "operationId", "idempotency"]
       },
-      "TestOrganizationWebhookInput": {
+      "TestTeamWebhookInput": {
         "type": "object",
         "additionalProperties": false,
         "description": "A team webhook test accepts an optional event type. Supplied event bodies and session IDs are rejected with HTTP 400.",
@@ -2091,7 +2091,7 @@
           }
         }
       },
-      "OrganizationWebhookSecretRotationReceipt": {
+      "TeamWebhookSecretRotationReceipt": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -2128,7 +2128,7 @@
           "idempotency"
         ]
       },
-      "OrganizationWebhookDeletionReceipt": {
+      "TeamWebhookDeletionReceipt": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -2151,12 +2151,12 @@
         },
         "required": ["webhookId", "deleted", "operationId", "idempotency"]
       },
-      "OrganizationWebhookMutationReceipt": {
+      "TeamWebhookMutationReceipt": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "webhook": {
-            "$ref": "#/components/schemas/OrganizationWebhook"
+            "$ref": "#/components/schemas/TeamWebhook"
           },
           "operationId": {
             "type": "string",
@@ -2169,7 +2169,7 @@
         },
         "required": ["webhook", "operationId", "idempotency"]
       },
-      "OrganizationWebhook": {
+      "TeamWebhook": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -2177,13 +2177,13 @@
             "type": "string",
             "format": "uuid"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
           "owner": {
             "type": "string",
-            "enum": ["organization"]
+            "enum": ["team"]
           },
           "projectId": {
             "type": "string",
@@ -2240,7 +2240,7 @@
         },
         "required": [
           "id",
-          "organizationId",
+          "teamId",
           "owner",
           "projectId",
           "url",
@@ -2255,7 +2255,7 @@
           "updatedAt"
         ]
       },
-      "UpdateOrganizationWebhookInput": {
+      "UpdateTeamWebhookInput": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -2300,12 +2300,12 @@
         },
         "minProperties": 1
       },
-      "OrganizationWebhookCreationReceipt": {
+      "TeamWebhookCreationReceipt": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "webhook": {
-            "$ref": "#/components/schemas/OrganizationWebhook"
+            "$ref": "#/components/schemas/TeamWebhook"
           },
           "operationId": {
             "type": "string",
@@ -2332,7 +2332,7 @@
           "secretAvailable"
         ]
       },
-      "CreateOrganizationWebhookInput": {
+      "CreateTeamWebhookInput": {
         "type": "object",
         "additionalProperties": false,
         "properties": {

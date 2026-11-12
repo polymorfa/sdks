@@ -733,7 +733,7 @@
                 }
               },
               "403": {
-                "description": "`permission_denied`: a project token attempted to launch a segment campaign; use a team API key or signed-in dashboard session. `feature_unavailable`: either audience beta is unavailable for a segment campaign, or the campaign has tracked links and its link tracking beta is unavailable. `bansafe_org_suspended` while the team is suspended.",
+                "description": "`permission_denied`: a project token attempted to launch a segment campaign; use a team API key or signed-in dashboard session. `feature_unavailable`: either audience beta is unavailable for a segment campaign, or the campaign has tracked links and its link tracking beta is unavailable. `bansafe_team_suspended` while the team is suspended.",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -1988,7 +1988,7 @@
             "summary": "List audience segments",
             "description": "Lists the team's saved segments with cursor pagination. Reads stay available after beta withdrawal.\n\nAPI keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:read",
             "security": [
@@ -2082,7 +2082,7 @@
             "summary": "Create an audience segment",
             "description": "Saves a named rule set over the team's audience profiles. A team holds at most 100 segments. Every campaign a rule names must belong to the team. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nAPI keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:manage",
             "security": [
@@ -2176,7 +2176,7 @@
             "summary": "Preview audience segment rules",
             "description": "Evaluates unsaved rules now and returns counts and up to five masked matching profiles. Nothing is saved. A campaign evaluates its segment again when it launches, so counts can change. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nAPI keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:manage",
             "security": [
@@ -2265,7 +2265,7 @@
             "summary": "Get an audience segment",
             "description": "Returns one saved segment.\n\nAPI keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:read",
             "security": [
@@ -2345,7 +2345,7 @@
             "summary": "Update an audience segment",
             "description": "Replaces the name, the rules or both at the observed revision; a stale revision answers `409`. A draft campaign that uses the segment evaluates the new rules when it launches. Campaigns already launched keep their recipients. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nAPI keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:manage",
             "security": [
@@ -2454,7 +2454,7 @@
             "summary": "Delete an audience segment",
             "description": "Deletes the segment at the observed revision. Answers `409` while an unlaunched draft campaign uses it as its audience. Launched campaigns keep their recipients and `segmentSnapshot`; their `segmentId` becomes null. Deletion stays available after beta withdrawal.\n\nAPI keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:manage",
             "security": [
@@ -2561,7 +2561,7 @@
             "summary": "Preview an audience segment",
             "description": "Evaluates the saved segment now and returns counts, up to five masked matching profiles and the evaluated `revision`. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nAPI keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:read",
             "security": [

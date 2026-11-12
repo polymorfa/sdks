@@ -155,8 +155,8 @@ func TestSyncActualNativeAPIStreamPersistsBeforeACK(t *testing.T) {
 		<-r.Context().Done()
 	}))
 	defer server.Close()
-	key := polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}
-	client, err := polymorfa.NewOrganizationClient(polymorfa.Config{Credential: key, BaseURL: server.URL})
+	key := polymorfa.Credential{Kind: polymorfa.TeamAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}
+	client, err := polymorfa.NewTeamClient(polymorfa.Config{Credential: key, BaseURL: server.URL})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -210,7 +210,7 @@ func TestSyncInvalidStreamPayloadNeverPassesDurableCursor(t *testing.T) {
 				}
 			}))
 			defer server.Close()
-			client, err := polymorfa.NewOrganizationClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: server.URL})
+			client, err := polymorfa.NewTeamClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.TeamAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: server.URL})
 			if err != nil {
 				t.Fatal(err)
 			}

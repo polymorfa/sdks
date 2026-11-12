@@ -76,14 +76,14 @@ public sealed record UpdateWebhookRequest(string? Url = null, IReadOnlyList<stri
 
 public sealed record ProjectIcon(string Type, string Value, string? Color = null, string? StorageId = null);
 public sealed record CreateProjectRequest(string Name, ProjectIcon? Icon = null, string? DefaultTier = null);
-public sealed record CreatedProject(string Id, string OrgId, string Name, string Slug, ProjectIcon Icon, string DefaultTier, bool IsActive, string Stage);
-public sealed record ProjectWithStats([property: JsonPropertyName("_id")] string Id, [property: JsonPropertyName("_creationTime")] long CreationTime, string OrgId, string Name, string Slug, ProjectIcon Icon, string DefaultTier, bool IsActive, string Stage, long ActiveSessions, long TotalSessions, long TotalMessages, long? LastActivity, string? IconUrl);
+public sealed record CreatedProject(string Id, string TeamId, string Name, string Slug, ProjectIcon Icon, string DefaultTier, bool IsActive, string Stage);
+public sealed record ProjectWithStats([property: JsonPropertyName("_id")] string Id, [property: JsonPropertyName("_creationTime")] long CreationTime, string TeamId, string Name, string Slug, ProjectIcon Icon, string DefaultTier, bool IsActive, string Stage, long ActiveSessions, long TotalSessions, long TotalMessages, long? LastActivity, string? IconUrl);
 public sealed record ProductionBusiness(string Name, string Website, string SupportEmail);
 public sealed record ProductionEnrollmentRequest(ProductionBusiness Business);
-public sealed record ProductionEnrollmentResult(string Id, string OrgId, string Name, string Slug, string Stage, string OperationId, string EnrollmentStatus, string BillingMode);
+public sealed record ProductionEnrollmentResult(string Id, string TeamId, string Name, string Slug, string Stage, string OperationId, string EnrollmentStatus, string BillingMode);
 public sealed record ProductionEnrollmentCommandResult(string OperationId, string Action, bool Accepted);
 
-public sealed record EventRecord(string Id, string OrganizationId, string? ProjectId, string Type, string Source, string Environment, string CreatedAt, string PayloadAvailability, EncodedEventPayload? Payload, string? ReplayableUntil, string MetadataExpiresAt);
+public sealed record EventRecord(string Id, string TeamId, string? ProjectId, string Type, string Source, string Environment, string CreatedAt, string PayloadAvailability, EncodedEventPayload? Payload, string? ReplayableUntil, string MetadataExpiresAt);
 public sealed record EncodedEventPayload(string Encoding, string Data, string ContentType = "application/json");
 public sealed record EventStreamAcknowledgement(string Cursor, long Sequence);
 public sealed record EventStreamAcknowledgementReceipt(string StreamId, string AcknowledgedCursor, long Sequence, bool Replayed);

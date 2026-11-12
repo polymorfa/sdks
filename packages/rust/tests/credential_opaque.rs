@@ -15,7 +15,7 @@ fn opaque_golden_and_rejections() {
     for v in fixture["opaque"].as_array().unwrap() {
         let token = v["token"].as_str().unwrap();
         if v["kind"] == "key" {
-            assert!(Credential::organization_api_key(token).is_ok());
+            assert!(Credential::team_api_key(token).is_ok());
         } else {
             assert!(Credential::project_token(token).is_ok());
         }
@@ -26,7 +26,7 @@ fn opaque_golden_and_rejections() {
             format!("{token}!"),
         ] {
             if v["kind"] == "key" {
-                assert!(Credential::organization_api_key(bad).is_err());
+                assert!(Credential::team_api_key(bad).is_err());
             } else {
                 assert!(Credential::project_token(bad).is_err());
             }
@@ -52,7 +52,7 @@ fn opaque_golden_and_rejections() {
         raw.extend_from_slice(&(crc ^ 0xffffffff).to_be_bytes());
         let body = URL_SAFE_NO_PAD.encode(&raw);
         assert!(body.len() > 512);
-        assert!(Credential::organization_api_key(format!("pmfa_{body}")).is_ok());
+        assert!(Credential::team_api_key(format!("pmfa_{body}")).is_ok());
         assert!(Credential::project_token(format!("pmfa_pt_{body}")).is_ok());
         assert!(Credential::client_token(format!(
             "pmfa_ct_{}",
@@ -84,7 +84,7 @@ async fn native_wire_reflection() {
         let token = v["token"].as_str().unwrap();
         credentials.push((
             if v["kind"] == "key" {
-                Credential::organization_api_key(token).unwrap()
+                Credential::team_api_key(token).unwrap()
             } else {
                 Credential::project_token(token).unwrap()
             },

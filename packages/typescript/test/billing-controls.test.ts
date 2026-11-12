@@ -4,7 +4,7 @@ import {
   PolymorfaValidationError,
   PolymorfaConflictError,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 const id = "11111111-1111-4111-8111-111111111111",
   other = "22222222-2222-4222-8222-222222222222";
@@ -21,7 +21,7 @@ it("serializes limits and single/reordered project and number priorities using r
   }));
   const client = new Client({
     baseUrl: server.url,
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     maxNetworkRetries: 0,
   });
   await client.billing.getLimits({ projectId: id });
@@ -96,7 +96,7 @@ it("preserves a stale revision conflict without retrying or rewriting the reques
   }));
   const client = new Client({
     baseUrl: server.url,
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     maxNetworkRetries: 0,
   });
   await expect(
@@ -130,7 +130,7 @@ it("serializes singleton customer controls with both revisions and validates bef
   }));
   const client = new Client({
     baseUrl: server.url,
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     maxNetworkRetries: 0,
   });
   await client.billing.getResourceControls("customer", id);
@@ -165,7 +165,7 @@ it("filters project directories without loading customer and number lists", asyn
   }));
   const client = new Client({
     baseUrl: server.url,
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     maxNetworkRetries: 0,
   });
   await client.billing.getLimits({ projectId: id, scope: "project" });
@@ -185,7 +185,7 @@ it("serializes project-scoped mixed funding controls and rejects duplicate or in
   }));
   const client = new Client({
     baseUrl: server.url,
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     maxNetworkRetries: 0,
   });
   await client.billing.getPriorities({ projectId: id });
@@ -236,7 +236,7 @@ it("normalizes scoped IDs, preserves distinct resource kinds, and validates proj
   }));
   const client = new Client({
     baseUrl: server.url,
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     maxNetworkRetries: 0,
   });
   const resourceId = "AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA";

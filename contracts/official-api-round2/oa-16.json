@@ -1770,7 +1770,7 @@
                   "whatsapp_group_suspended",
                   "whatsapp_group_has_no_participants",
                   "bansafe_suspended",
-                  "bansafe_org_suspended",
+                  "bansafe_team_suspended",
                   "bansafe_cold_blocked",
                   "bansafe_cold_held",
                   "bansafe_throttled",
@@ -1798,7 +1798,7 @@
               "request_log_url": {
                 "type": "string",
                 "format": "uri",
-                "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+                "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
               }
             },
             "required": ["type", "code", "message", "param", "request_id"]

@@ -12,9 +12,9 @@ internal static class MediaApiTests
         foreach (var invalidUrl in new[] { "/relative?Expires=1800000000", "invalid", "https://storage.example/object", "https://storage.example/object?Expires=-1800000000", "https://storage.example/object?Expires=123", "https://storage.example/object?expires=1800000000", "https://storage.example/object?X-Amz-Date=bad&X-Amz-Expires=900", "https://storage.example/object?X-Amz-Date=20261011T123000Z&X-Amz-Expires=999999999999999999999" }) ResourceTests.True(MessagingMedia.SignedUrlExpiry(invalidUrl) is null);
         await Messaging("GET", "/messaging/media/media1/info", null, """{"success":true,"data":{"id":"media1","session":"support","messageId":"m1","mimeType":"audio/ogg","fileLength":9007199254740993,"persisted":true,"s3Url":"https://storage.example/once"}}""", async c => ResourceTests.Equal((await c.Media.RetrieveAsync("media1")).Data.Data.FileLength, 9007199254740993L));
         await Messaging("POST", "/messaging/media/media1/download-and-save", null, """{"success":true}""", async c => ResourceTests.True((await c.Media.PersistAsync("media1")).Data.Success));
-        await Organization("GET", "/platform/media/media1", null, """{"data":{"id":"media1","state":"ready"}}""", async c => ResourceTests.Equal((await c.Media.RetrieveAsync("media1")).Data.Data.GetProperty("state").GetString(), "ready"));
-        await Organization("DELETE", "/platform/media/media1", null, """{"data":{"deleted":true}}""", async c => ResourceTests.True((await c.Media.DeleteAsync("media1")).Data.Data.GetProperty("deleted").GetBoolean()));
-        await Organization("POST", "/platform/media/uploads", """{"filename":"voice.ogg","contentType":"audio/ogg"}""", """{"data":{"uploadId":"up1","url":"https://storage.example/once"}}""", async c => ResourceTests.Equal((await c.Media.CreateUploadAsync(JsonSerializer.SerializeToElement(new { filename = "voice.ogg", contentType = "audio/ogg" }))).Data.Data.GetProperty("uploadId").GetString(), "up1"));
+        await Team("GET", "/platform/media/media1", null, """{"data":{"id":"media1","state":"ready"}}""", async c => ResourceTests.Equal((await c.Media.RetrieveAsync("media1")).Data.Data.GetProperty("state").GetString(), "ready"));
+        await Team("DELETE", "/platform/media/media1", null, """{"data":{"deleted":true}}""", async c => ResourceTests.True((await c.Media.DeleteAsync("media1")).Data.Data.GetProperty("deleted").GetBoolean()));
+        await Team("POST", "/platform/media/uploads", """{"filename":"voice.ogg","contentType":"audio/ogg"}""", """{"data":{"uploadId":"up1","url":"https://storage.example/once"}}""", async c => ResourceTests.Equal((await c.Media.CreateUploadAsync(JsonSerializer.SerializeToElement(new { filename = "voice.ogg", contentType = "audio/ogg" }))).Data.Data.GetProperty("uploadId").GetString(), "up1"));
         Filenames(); await DirectMedia(); await StoredHistoryMedia(); await RedirectIsolation(); await DownloadUrl(); await InvalidRedirect(); await CancelledRead();
         Console.WriteLine("PASS media API paths, native binary/history downloads, credential-free redirect chain, URL expiry and cancellation");
     }
@@ -32,8 +32,8 @@ internal static class MediaApiTests
             ResourceTests.Equal(ContentDisposition.ParseFilename(header), expected);
     }
     private static Task Messaging(string method, string path, string? body, string response, Func<MessagingClient, Task> invoke) => ResourceTests.Messaging(method, path, body, response, invoke);
-    private static Task Organization(string method, string path, string? body, string response, Func<OrganizationClient, Task> invoke) => BillingTests.Organization(method, path, body, response, invoke);
-    private static MessagingClient Client(WireFixture fixture) => new(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0, Timeout = TimeSpan.FromSeconds(3) });
+    private static Task Team(string method, string path, string? body, string response, Func<TeamClient, Task> invoke) => BillingTests.Team(method, path, body, response, invoke);
+    private static MessagingClient Client(WireFixture fixture) => new(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0, Timeout = TimeSpan.FromSeconds(3) });
     private static async Task DirectMedia()
     {
         using var fixture = new WireFixture(); var serving = fixture.ServeAsync("GET", "/messaging/media/media1", null, "\0\u0001\u0002", responseHeaders: new Dictionary<string, string> { ["content-type"] = "audio/ogg", ["content-disposition"] = "attachment; filename*=UTF-8''voice%20note.ogg" });

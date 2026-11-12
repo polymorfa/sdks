@@ -1,34 +1,34 @@
 #[allow(dead_code)]
 mod support;
-use polymorfa_sdk::{organization::*, RequestOptions};
+use polymorfa_sdk::{team::*, RequestOptions};
 use serde_json::json;
 #[tokio::test]
-async fn organization_identity_and_credential_metadata_native_wire() {
-    wire_organization!(
+async fn team_identity_and_credential_metadata_native_wire() {
+    wire_team!(
         client,
         "GET",
         "/platform/team",
         None,
         json!({"data":{"id":"team","externalId":"external","name":"Team","slug":null,"email":"team@example.com","timezone":"UTC","creditBalanceCents":100.123456,"lowBalanceThresholdCents":20.123456,"billingEmail":null,"status":"active","plan":"payg","planStatus":null,"isActive":true,"createdAt":1000,"updatedAt":2000}}),
-        client.organizations().retrieve(RequestOptions::default())
+        client.teams().retrieve(RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/members",
         None,
-        json!({"data":[{"_id":"member","_creationTime":1000.0,"orgId":"team","userId":"user","email":"user@example.com","name":null,"role":"owner","status":"active","invitedAt":null,"joinedAt":1000}]}),
+        json!({"data":[{"_id":"member","_creationTime":1000.0,"teamId":"team","userId":"user","email":"user@example.com","name":null,"role":"owner","status":"active","invitedAt":null,"joinedAt":1000}]}),
         client.members().list(RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/keys",
         None,
-        json!({"data":[{"_id":"key","_creationTime":1000.0,"id":"key","keyId":"key","start":"pmfa","last4":"abcd","orgId":"team","label":"server","scopes":1,"source":"api","expiresAt":3000,"lastUsed":2000,"isActive":true}]}),
+        json!({"data":[{"_id":"key","_creationTime":1000.0,"id":"key","keyId":"key","start":"pmfa","last4":"abcd","teamId":"team","label":"server","scopes":1,"source":"api","expiresAt":3000,"lastUsed":2000,"isActive":true}]}),
         client.api_keys().list(RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "DELETE",
         "/platform/keys/key%2Fid",
@@ -38,7 +38,7 @@ async fn organization_identity_and_credential_metadata_native_wire() {
             .api_keys()
             .deactivate("key/id", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/tokens?projectId=project",
@@ -50,8 +50,8 @@ async fn organization_identity_and_credential_metadata_native_wire() {
     );
 }
 #[tokio::test]
-async fn organization_audit_and_security_incident_native_wire() {
-    wire_organization!(
+async fn team_audit_and_security_incident_native_wire() {
+    wire_team!(
         client,
         "GET",
         "/platform/audit?action=send&resource=message&limit=20",
@@ -66,15 +66,15 @@ async fn organization_audit_and_security_incident_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/incidents",
         None,
-        json!({"data":[{"id":"incident","keyId":"key","tokenType":"org","source":"detection","url":null,"ref":null,"resolution":"pending","detectedAt":1000,"acknowledgedAt":null,"acknowledgedBy":null,"createdAt":1000}]}),
+        json!({"data":[{"id":"incident","keyId":"key","tokenType":"team","source":"detection","url":null,"ref":null,"resolution":"pending","detectedAt":1000,"acknowledgedAt":null,"acknowledgedBy":null,"createdAt":1000}]}),
         client.security_incidents().list(RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/incidents/incident/acknowledge",

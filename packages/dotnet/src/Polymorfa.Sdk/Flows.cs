@@ -13,7 +13,7 @@ public sealed record UpdateFlowRequest(long ExpectedUpdatedAt, string? Name = nu
 public sealed record FlowProviderRequest(string SessionId, IReadOnlyList<string>? Categories = null, string? RequestId = null);
 public sealed record FlowProviderOperation(string Id, string? RequestId, string FlowId, string FlowName, string SessionId, string Session, string Action, string State, string? Resolution, string? WabaId, string? MetaFlowId, string? DefinitionDigest, string? ProviderStatus, string? ErrorCode, int? ProviderCode, int? ProviderSubcode, long CreatedAt, long UpdatedAt, long? CompletedAt);
 public sealed record FlowProviderResult(FlowProviderOperation? Operation, FlowDraft Flow);
-public sealed record FlowEndpoint(string Id, string OrgId, string ProjectId, string FlowId, string SessionId, string Mode, string? Url, string? FunctionId, string? DeploymentId, bool Enabled, long Revision, string EndpointUri, long CreatedAt, long UpdatedAt);
+public sealed record FlowEndpoint(string Id, string TeamId, string ProjectId, string FlowId, string SessionId, string Mode, string? Url, string? FunctionId, string? DeploymentId, bool Enabled, long Revision, string EndpointUri, long CreatedAt, long UpdatedAt);
 public sealed record ManagedFlowEncryptionKey(string Id, string State, string Fingerprint, string PublicKey, string? ErrorCode, long CreatedAt, long? ActivatedAt, long? RetireAfter);
 public record FlowEncryptionCustody(string Custody, string? ActiveKeyId, IReadOnlyList<ManagedFlowEncryptionKey> Keys);
 public sealed record FlowEncryptionKeyRotation(string Custody, string? ActiveKeyId, IReadOnlyList<ManagedFlowEncryptionKey> Keys, ManagedFlowEncryptionKey Key) : FlowEncryptionCustody(Custody, ActiveKeyId, Keys);

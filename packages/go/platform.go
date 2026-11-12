@@ -73,7 +73,7 @@ func (r *Webhooks) Delete(ctx context.Context, id string, o ...RequestOptions) (
 }
 func (r *Webhooks) Test(ctx context.Context, id string, b TestWebhookRequest, o ...RequestOptions) (Response[EventReplayReceipt], error) {
 	if r.prefix == "/platform" && (b.Body != nil || b.SessionID != "") {
-		return Response[EventReplayReceipt]{}, validation("Organization webhook tests cannot accept body or sessionId.")
+		return Response[EventReplayReceipt]{}, validation("Team webhook tests cannot accept body or sessionId.")
 	}
 	return unwrapped[EventReplayReceipt](ctx, r.t, "POST", r.prefix+"/webhooks/"+escaped(id)+"/tests", nil, b, options(o))
 }

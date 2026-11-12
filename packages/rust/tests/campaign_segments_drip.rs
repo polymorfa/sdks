@@ -6,7 +6,7 @@ mod support;
 use polymorfa_sdk::{
     audience_segments::*, campaign_contracts::CampaignRecipientFailureReason,
     campaign_contracts::CampaignRetargetOutcome, campaigns::*, ClientOptions, ErrorKind,
-    MessagingClient, OrganizationClient, RequestOptions,
+    MessagingClient, RequestOptions, TeamClient,
 };
 use serde_json::{json, Number, Value};
 use std::sync::{
@@ -87,7 +87,7 @@ fn project() -> PlatformCampaignParameters {
 #[tokio::test]
 async fn frequency_cap_reads_replaces_and_removes_with_observed_revision() {
     let settings = json!({"data":{"teamId":PROJECT,"maxPer24Hours":2,"maxPer7Days":5,"revision":1,"updatedAt":null}});
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/campaign-settings/frequency-cap",
@@ -97,7 +97,7 @@ async fn frequency_cap_reads_replaces_and_removes_with_observed_revision() {
             .campaigns()
             .get_frequency_cap(RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/campaign-settings/frequency-cap",
@@ -112,7 +112,7 @@ async fn frequency_cap_reads_replaces_and_removes_with_observed_revision() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/campaign-settings/frequency-cap",
@@ -132,7 +132,7 @@ async fn frequency_cap_reads_replaces_and_removes_with_observed_revision() {
 #[tokio::test]
 async fn frequency_cap_fields_reasons_and_analytics_on_both_surfaces() {
     let cap = Some(Some(limits()));
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/campaigns",
@@ -150,7 +150,7 @@ async fn frequency_cap_fields_reasons_and_analytics_on_both_surfaces() {
         },
         ..Default::default()
     };
-    wire_organization!(
+    wire_team!(
         client,
         "PATCH",
         &format!("/platform/campaigns/c?projectId={PROJECT}"),
@@ -206,7 +206,7 @@ async fn frequency_cap_fields_reasons_and_analytics_on_both_surfaces() {
             .campaigns()
             .list_recipients(PROJECT, "c", &reason, RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         &format!("/platform/campaigns/c/recipients?projectId={PROJECT}&reason=frequency_cap&status=skipped"),
@@ -224,7 +224,7 @@ async fn frequency_cap_fields_reasons_and_analytics_on_both_surfaces() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         &format!("/platform/campaigns/c/analytics?projectId={PROJECT}"),
@@ -260,7 +260,7 @@ async fn frequency_cap_fields_reasons_and_analytics_on_both_surfaces() {
 
 #[tokio::test]
 async fn audience_segments_wire_revisions_pagination_and_previews() {
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/audience-segments?limit=10&cursor=next",
@@ -274,7 +274,7 @@ async fn audience_segments_wire_revisions_pagination_and_previews() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/audience-segments/s%2F1",
@@ -284,7 +284,7 @@ async fn audience_segments_wire_revisions_pagination_and_previews() {
             .audience_segments()
             .retrieve("s/1", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/audience-segments",
@@ -298,7 +298,7 @@ async fn audience_segments_wire_revisions_pagination_and_previews() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PATCH",
         "/platform/audience-segments/s",
@@ -316,7 +316,7 @@ async fn audience_segments_wire_revisions_pagination_and_previews() {
     );
     let mut saved = preview();
     saved["revision"] = json!(2);
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/audience-segments/s/preview",
@@ -326,7 +326,7 @@ async fn audience_segments_wire_revisions_pagination_and_previews() {
             .audience_segments()
             .preview("s", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/audience-segments/preview",
@@ -336,7 +336,7 @@ async fn audience_segments_wire_revisions_pagination_and_previews() {
             .audience_segments()
             .preview_rules(&rules(), RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "DELETE",
         "/platform/audience-segments/s?expectedRevision=2",
@@ -426,7 +426,7 @@ async fn writes_previews_and_enrollment_are_sent_once_with_safe_errors() {
                 json!({"error":{"code":code,"message":"Unavailable, deleted segment or evaluation timeout"}}),
             )
             .await;
-            let org = OrganizationClient::new(
+            let team = TeamClient::new(
                 support::credential(),
                 ClientOptions {
                     base_url: base.clone(),
@@ -452,7 +452,7 @@ async fn writes_previews_and_enrollment_are_sent_once_with_safe_errors() {
                 variables: None,
             };
             let error = match call {
-                0 => org
+                0 => team
                     .campaigns()
                     .update_frequency_cap(
                         &UpdateCampaignFrequencyCapRequest {
@@ -464,7 +464,7 @@ async fn writes_previews_and_enrollment_are_sent_once_with_safe_errors() {
                     )
                     .await
                     .map(|_| ()),
-                1 => org
+                1 => team
                     .audience_segments()
                     .update(
                         "s",
@@ -477,7 +477,7 @@ async fn writes_previews_and_enrollment_are_sent_once_with_safe_errors() {
                     )
                     .await
                     .map(|_| ()),
-                2 => org
+                2 => team
                     .audience_segments()
                     .create(
                         &CreateAudienceSegmentRequest {
@@ -488,22 +488,22 @@ async fn writes_previews_and_enrollment_are_sent_once_with_safe_errors() {
                     )
                     .await
                     .map(|_| ()),
-                3 => org
+                3 => team
                     .audience_segments()
                     .delete("s", 2, caller)
                     .await
                     .map(|_| ()),
-                4 => org
+                4 => team
                     .audience_segments()
                     .preview("s", caller)
                     .await
                     .map(|_| ()),
-                5 => org
+                5 => team
                     .audience_segments()
                     .preview_rules(&rules(), caller)
                     .await
                     .map(|_| ()),
-                6 => org
+                6 => team
                     .campaigns()
                     .enroll(
                         "c",
@@ -544,7 +544,7 @@ async fn writes_previews_and_enrollment_are_sent_once_with_safe_errors() {
         json!({"error":{"code":"unavailable","message":"retry"}}),
     )
     .await;
-    let org = OrganizationClient::new(
+    let team = TeamClient::new(
         support::credential(),
         ClientOptions {
             base_url: base,
@@ -552,7 +552,7 @@ async fn writes_previews_and_enrollment_are_sent_once_with_safe_errors() {
         },
     )
     .unwrap();
-    assert!(org
+    assert!(team
         .audience_segments()
         .retrieve("s", RequestOptions::default())
         .await
@@ -567,7 +567,7 @@ async fn writes_previews_and_enrollment_are_sent_once_with_safe_errors() {
 #[tokio::test]
 async fn malformed_segments_blank_ids_projects_and_step_bounds_fail_before_sending() {
     let (base, count, _) = counting(200, json!({"data":{}})).await;
-    let org = OrganizationClient::new(
+    let team = TeamClient::new(
         support::credential(),
         ClientOptions {
             base_url: base,
@@ -576,7 +576,7 @@ async fn malformed_segments_blank_ids_projects_and_step_bounds_fail_before_sendi
     )
     .unwrap();
     for blank in ["", " "] {
-        let error = org
+        let error = team
             .audience_segments()
             .retrieve(blank, RequestOptions::default())
             .await
@@ -592,7 +592,7 @@ async fn malformed_segments_blank_ids_projects_and_step_bounds_fail_before_sendi
         }],
     };
     assert_eq!(
-        org.audience_segments()
+        team.audience_segments()
             .preview_rules(&unknown, RequestOptions::default())
             .await
             .unwrap_err()
@@ -600,7 +600,7 @@ async fn malformed_segments_blank_ids_projects_and_step_bounds_fail_before_sendi
         ErrorKind::Validation
     );
     for project_id in ["", "not-a-uuid"] {
-        let error = org
+        let error = team
             .campaigns()
             .enroll(
                 "c",
@@ -628,7 +628,7 @@ async fn malformed_segments_blank_ids_projects_and_step_bounds_fail_before_sendi
             messages_array: Some(vec![step(86401)]),
             ..serde_json::from_value(json!({"projectId":PROJECT,"name":"o"})).unwrap()
         };
-        assert!(org
+        assert!(team
             .campaigns()
             .create(&body, RequestOptions::default())
             .await
@@ -638,7 +638,7 @@ async fn malformed_segments_blank_ids_projects_and_step_bounds_fail_before_sendi
         messages_array: Some(vec![step(2592001)]),
         ..Default::default()
     };
-    assert!(org
+    assert!(team
         .campaigns()
         .update("c", Some(&over), &project(), RequestOptions::default())
         .await
@@ -678,7 +678,7 @@ async fn drip_partial_patch_enrollment_and_stored_reads() {
         messages_array: Some(steps),
         ..serde_json::from_value(json!({"projectId":PROJECT,"name":"VIP drip"})).unwrap()
     };
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/campaigns",
@@ -701,7 +701,7 @@ async fn drip_partial_patch_enrollment_and_stored_reads() {
         },
         ..Default::default()
     };
-    wire_organization!(
+    wire_team!(
         client,
         "PATCH",
         &format!("/platform/campaigns/c?projectId={PROJECT}"),
@@ -735,7 +735,7 @@ async fn drip_partial_patch_enrollment_and_stored_reads() {
         },
         ..Default::default()
     };
-    wire_organization!(
+    wire_team!(
         client,
         "PATCH",
         &format!("/platform/campaigns/c?projectId={PROJECT}"),
@@ -745,7 +745,7 @@ async fn drip_partial_patch_enrollment_and_stored_reads() {
             .campaigns()
             .update("c", Some(&clear), &project(), RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PATCH",
         &format!("/platform/campaigns/c?projectId={PROJECT}"),
@@ -765,7 +765,7 @@ async fn drip_partial_patch_enrollment_and_stored_reads() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/campaigns/c%2F1/enrollments",

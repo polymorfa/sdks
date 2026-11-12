@@ -40,8 +40,8 @@ try {
             usleep(10000);
         }
     }
-    $ecCredential = Polymorfa\Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
-    $ecOrg = new Polymorfa\Client($ecCredential, baseUrl:$ecUrl);
+    $ecCredential = Polymorfa\Credential::teamApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
+    $ecTeam = new Polymorfa\Client($ecCredential, baseUrl:$ecUrl);
     $ecMessaging = new Polymorfa\MessagingClient($ecCredential, baseUrl:$ecUrl);
     $ecProject = '11111111-1111-4111-8111-111111111111';
     $ecId = '33333333-3333-4333-8333-333333333333';
@@ -58,7 +58,7 @@ try {
     $ecInput = ['name' => 'Campaign','variableMapping' => ['0' => [],'__proto__' => ['fallback' => 'zero']],'trackedLinks' => []];
     $ecWire = ['name' => 'Campaign','variableMapping' => (object)['0' => (object)[],'__proto__' => (object)['fallback' => 'zero']],'trackedLinks' => []];
     $ecRun('POST', '/messaging/projects/slug/campaigns', $ecWire, ['success' => true,'data' => $ecCampaign], fn () => $ecMessaging->campaigns->create('slug', $ecInput));
-    ecRaises(fn () => $ecOrg->project($ecProject)->sessionConfiguration->update(['configuration' => ['set' => ['historySync' => ['delivery' => 'archive']]],'revision' => 0]), Polymorfa\ConfigurationException::class);
+    ecRaises(fn () => $ecTeam->project($ecProject)->sessionConfiguration->update(['configuration' => ['set' => ['historySync' => ['delivery' => 'archive']]],'revision' => 0]), Polymorfa\ConfigurationException::class);
     ecRaises(fn () => $ecRun('POST', '/messaging/s/history/chunks/retry', ['syncType' => 'FULL','chunkOrder' => 0], ['success' => false,'data' => ['requestId' => 'request','status' => 'requested']], fn () => $ecMessaging->historySync->requestChunkRetry('s', ['syncType' => 'FULL','chunkOrder' => 0]), ['version' => '2026-10-14']), Polymorfa\ServerException::class);
     require __DIR__.'/existing_contract_cases.php';
     require __DIR__.'/existing_contract_nine.php';

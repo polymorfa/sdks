@@ -29,7 +29,7 @@ class CreateProject(TypedDict):
 
 class CreatedProject(TypedDict):
     id: str
-    orgId: str
+    teamId: str
     name: str
     slug: str
     icon: ProjectIcon
@@ -41,7 +41,7 @@ class CreatedProject(TypedDict):
 class ProjectWithStats(TypedDict):
     _id: str
     _creationTime: int
-    orgId: str
+    teamId: str
     name: str
     slug: str
     icon: ProjectIcon | JsonObject
@@ -67,7 +67,7 @@ class ProductionEnrollment(TypedDict):
 
 class ProductionEnrollmentResult(TypedDict):
     id: str
-    orgId: str
+    teamId: str
     name: str
     slug: str
     stage: Literal["development"]

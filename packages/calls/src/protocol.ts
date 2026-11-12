@@ -8,7 +8,7 @@ import type { MediaStateRequest, MediaStateReply } from "./media-state.js";
  *    platform answers `ready`. Server credentials name the session with
  *    `?session=` (and optionally `&participant=`); client tokens send no query
  *    parameters. A later `auth` frame replaces an expiring token and must
- *    resolve to the same organization, project, session and participant. The
+ *    resolve to the same team, project, session and participant. The
  *    platform closes the socket with 4401 once the token stops authorizing
  *    the session.
  *

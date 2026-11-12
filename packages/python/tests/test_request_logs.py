@@ -71,7 +71,7 @@ async def test_native_public_request_log_list_follow_all_fields_filters_metadata
         client = (
             AsyncProjectClient(Credential("project_token", PROJECT_TOKEN), PROJECT, base_url=base)
             if project_credential
-            else AsyncClient(Credential("organization_api_key", SERVER), base_url=base)
+            else AsyncClient(Credential("team_api_key", SERVER), base_url=base)
         )
         try:
             options = RequestOptions(headers={"x-proof": "logs"})
@@ -121,7 +121,7 @@ async def test_native_public_request_log_list_follow_all_fields_filters_metadata
 
 
 async def test_request_log_scope_cursor_and_timezone_guards_before_network():
-    async with AsyncClient(Credential("organization_api_key", SERVER)) as client:
+    async with AsyncClient(Credential("team_api_key", SERVER)) as client:
         with pytest.raises(ConfigurationError):
             await client.request_logs.list()
         with pytest.raises(ValidationError):
@@ -139,7 +139,7 @@ async def test_native_cursor_accepts_empty_filters_and_keeps_server_cursor():
 
     async with (
         wire(handler) as base,
-        AsyncClient(Credential("organization_api_key", SERVER), base_url=base) as client,
+        AsyncClient(Credential("team_api_key", SERVER), base_url=base) as client,
     ):
         await client.project(PROJECT).request_logs.list(
             {"status": [], "method": []}, cursor="opaque_cursor", limit=1
@@ -161,7 +161,7 @@ async def test_native_request_log_malformed_page_retains_metadata(body):
 
     async with (
         wire(handler) as base,
-        AsyncClient(Credential("organization_api_key", SERVER), base_url=base) as client,
+        AsyncClient(Credential("team_api_key", SERVER), base_url=base) as client,
     ):
         with pytest.raises(ServerError) as failure:
             await client.project(PROJECT).request_logs.list()
@@ -191,7 +191,7 @@ async def test_actual_tail_backfill_order_follow_more_and_rate_limit_zero_retry(
 
     async with (
         wire(handler) as base,
-        AsyncClient(Credential("organization_api_key", SERVER), base_url=base) as client,
+        AsyncClient(Credential("team_api_key", SERVER), base_url=base) as client,
     ):
         seen = []
         async for entry in client.project(PROJECT).request_logs.tail(
@@ -230,7 +230,7 @@ async def test_actual_tail_rate_wait_one_second_then_stop_without_yield():
 
     async with (
         wire(handler) as base,
-        AsyncClient(Credential("organization_api_key", SERVER), base_url=base) as client,
+        AsyncClient(Credential("team_api_key", SERVER), base_url=base) as client,
     ):
         seen = [
             item
@@ -277,7 +277,7 @@ async def test_actual_tail_graceful_stop_cancels_request_idle_or_rate_wait(mode,
 
     async with (
         wire(handler) as base,
-        AsyncClient(Credential("organization_api_key", SERVER), base_url=base) as client,
+        AsyncClient(Credential("team_api_key", SERVER), base_url=base) as client,
     ):
         iterator = client.project(PROJECT).request_logs.tail(
             stop=stop, interval_seconds=60, options=RequestOptions(max_network_retries=0)
@@ -313,7 +313,7 @@ async def test_actual_tail_graceful_stop_cancels_request_idle_or_rate_wait(mode,
     ],
 )
 async def test_tail_bounds_before_network(interval, backfill):
-    async with AsyncClient(Credential("organization_api_key", SERVER)) as client:
+    async with AsyncClient(Credential("team_api_key", SERVER)) as client:
         with pytest.raises(ValidationError):
             await anext(
                 client.request_logs.tail(

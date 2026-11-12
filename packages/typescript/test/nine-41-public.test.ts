@@ -12,7 +12,7 @@ import {
   type HistorySyncPayload,
 } from "../src/index.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 const projectId = "018f0000-0000-7000-8000-000000000001",
   otherId = "018f0000-0000-7000-8000-000000000002";
 const servers: TestServer[] = [];
@@ -136,7 +136,7 @@ it("retains simultaneous A/B request-log views, cursors and large string identit
   });
   servers.push(server);
   const c = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const a = c.project(projectId),

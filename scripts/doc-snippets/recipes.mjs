@@ -1,7 +1,7 @@
 // Requests come from the pinned OpenAPI and existing native wire fixtures.
 // Calls are handwritten in the language modules. Never derive arguments from
 // contracts/coverage.json's display-only method names.
-export const sourceCommit = "9945169305f84fc0ff88d9e5d5bb6f38ace87750";
+export const sourceCommit = "1a94340422999ecf25f2ad309c1dcfc741af6ca3";
 export const apiVersion = "2026-09-22";
 export const languages = [
   "typescript",
@@ -56,7 +56,7 @@ export const recipes = {
   deleteBusinessCoverPhoto: messaging(),
   setBusinessCartEnabled: messaging({ body: { enabled: true } }),
   setBusinessProductVisibility: messaging({ body: { hidden: true } }),
-  listProjects: { client: "organization", request: {} },
+  listProjects: { client: "team", request: {} },
   listProjectEvents: { client: "project", request: {} },
 };
 export const p = (name) => JSON.stringify(`{{${name}}}`);

@@ -717,14 +717,6 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/testing/{projectId}/events/fixtures",
-      "status": "covered",
-      "sdkMethod": "MessagingClient::testing.listEventFixtures",
-      "testFile": "tests/onboarding.php"
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
       "path": "/messaging/voip/calls/{id}/candidates",
       "status": "excluded",
       "reason": "used internally by the Calls SDK; not part of the public API",
@@ -1326,25 +1318,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/quicklinks",
-      "status": "covered",
-      "sdkMethod": "MessagingClient::quickLinks.create",
-      "testFile": "tests/messaging_complete.php"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/testing/{projectId}/events",
-      "status": "covered",
-      "sdkMethod": "MessagingClient::testing.triggerEvent",
-      "testFile": "tests/onboarding.php"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/testing/{projectId}/history-fixtures",
-      "status": "covered",
-      "sdkMethod": "MessagingClient::testing.createHistoryFixture",
-      "testFile": "tests/onboarding.php"
+      "status": "partial",
+      "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (primaryPlatform) that this SDK does not yet type.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "messaging",
@@ -1470,9 +1446,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/webhooks",
-      "status": "covered",
-      "sdkMethod": "MessagingClient::webhooks.create",
-      "testFile": "tests/messaging_complete.php"
+      "status": "partial",
+      "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (phoneOfflineStartDay) that this SDK does not yet type.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "messaging",
@@ -1766,9 +1742,9 @@
       "family": "messaging",
       "method": "PUT",
       "path": "/messaging/webhooks/{id}",
-      "status": "covered",
-      "sdkMethod": "MessagingClient::webhooks.update",
-      "testFile": "tests/messaging_complete.php"
+      "status": "partial",
+      "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (phoneOfflineStartDay) that this SDK does not yet type.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "platform",
@@ -1821,7 +1797,7 @@
     {
       "family": "platform",
       "method": "DELETE",
-      "path": "/console/organization/avatar",
+      "path": "/console/team/avatar",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -1949,14 +1925,6 @@
     {
       "family": "platform",
       "method": "DELETE",
-      "path": "/platform/keys/{keyId}",
-      "status": "covered",
-      "sdkMethod": "Client::apiKeys.deactivate",
-      "testFile": "tests/accounts.php"
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
       "path": "/platform/media/{mediaId}",
       "status": "covered",
       "sdkMethod": "Client::media.delete",
@@ -2007,7 +1975,7 @@
       "method": "DELETE",
       "path": "/platform/templates/{templateId}",
       "status": "excluded",
-      "reason": "This dashboard-only route does not accept the team key used by Client.",
+      "reason": "This dashboard-only route does not accept the team server API key used by Client.",
       "milestone": "credential-boundary"
     },
     {
@@ -2063,7 +2031,7 @@
       "method": "GET",
       "path": "/console/audit",
       "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; team keys and project tokens are not accepted.",
+      "reason": "Console-only operation requires dashboard identity; team API keys and project tokens are not accepted.",
       "milestone": "excluded-contract"
     },
     {
@@ -2151,7 +2119,7 @@
       "method": "GET",
       "path": "/console/insights/log-calendar",
       "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; team keys and project tokens are not accepted.",
+      "reason": "Console-only operation requires dashboard identity; team API keys and project tokens are not accepted.",
       "milestone": "excluded-contract"
     },
     {
@@ -2167,7 +2135,7 @@
       "method": "GET",
       "path": "/console/insights/number-options",
       "status": "excluded",
-      "reason": "Private Console selector requires dashboard identity; team keys and project tokens are not accepted.",
+      "reason": "Private Console selector requires dashboard identity; team API keys and project tokens are not accepted.",
       "milestone": "excluded-contract"
     },
     {
@@ -2221,7 +2189,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/organizations/{slug}",
+      "path": "/console/teams/{slug}",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -2239,7 +2207,7 @@
       "method": "GET",
       "path": "/console/projects/{projectId}/logging",
       "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; team keys and project tokens are not accepted.",
+      "reason": "Console-only operation requires dashboard identity; team API keys and project tokens are not accepted.",
       "milestone": "excluded-contract"
     },
     {
@@ -2837,14 +2805,6 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/keys",
-      "status": "covered",
-      "sdkMethod": "Client::apiKeys.list",
-      "testFile": "tests/accounts.php"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
       "path": "/platform/media/{mediaId}",
       "status": "covered",
       "sdkMethod": "Client::media.retrieve",
@@ -3159,7 +3119,7 @@
       "method": "GET",
       "path": "/platform/team",
       "status": "covered",
-      "sdkMethod": "Client::organizations.retrieve",
+      "sdkMethod": "Client::teams.retrieve",
       "testFile": "tests/accounts.php"
     },
     {
@@ -3167,7 +3127,7 @@
       "method": "GET",
       "path": "/platform/templates",
       "status": "excluded",
-      "reason": "This dashboard-only route does not accept the team key used by Client.",
+      "reason": "This dashboard-only route does not accept the team server API key used by Client.",
       "milestone": "credential-boundary"
     },
     {
@@ -3175,16 +3135,8 @@
       "method": "GET",
       "path": "/platform/templates/{templateId}",
       "status": "excluded",
-      "reason": "This dashboard-only route does not accept the team key used by Client.",
+      "reason": "This dashboard-only route does not accept the team server API key used by Client.",
       "milestone": "credential-boundary"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/tokens",
-      "status": "covered",
-      "sdkMethod": "Client::projectTokens.list",
-      "testFile": "tests/accounts.php"
     },
     {
       "family": "platform",
@@ -3301,7 +3253,7 @@
     {
       "family": "platform",
       "method": "PATCH",
-      "path": "/console/organization",
+      "path": "/console/team",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -3382,9 +3334,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/projects/{projectId}/webhooks/{webhookId}",
-      "status": "covered",
-      "sdkMethod": "Client::webhooks.update",
-      "testFile": "tests/developer.php"
+      "status": "partial",
+      "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (phoneOfflineStartDay) that this SDK does not yet type.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "platform",
@@ -3407,7 +3359,7 @@
       "method": "PATCH",
       "path": "/platform/templates/{templateId}",
       "status": "excluded",
-      "reason": "This dashboard-only route does not accept the team key used by Client.",
+      "reason": "This dashboard-only route does not accept the team server API key used by Client.",
       "milestone": "credential-boundary"
     },
     {
@@ -3422,9 +3374,9 @@
       "family": "platform",
       "method": "PATCH",
       "path": "/platform/webhooks/{webhookId}",
-      "status": "covered",
-      "sdkMethod": "Client::webhooks.update",
-      "testFile": "tests/developer.php"
+      "status": "partial",
+      "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (phoneOfflineStartDay) that this SDK does not yet type.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "platform",
@@ -3573,7 +3525,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organization-invitations/{invitationId}/accept",
+      "path": "/console/team-invitations/{invitationId}/accept",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -3581,7 +3533,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organization/avatar/uploads",
+      "path": "/console/team/avatar/uploads",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -3589,7 +3541,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organizations/ensure",
+      "path": "/console/teams/ensure",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -3629,7 +3581,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/quicklink/logo/org",
+      "path": "/console/quicklink/logo/team",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -4134,9 +4086,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/projects/{projectId}/webhooks",
-      "status": "covered",
-      "sdkMethod": "Client::webhooks.create",
-      "testFile": "tests/developer.php"
+      "status": "partial",
+      "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (phoneOfflineStartDay) that this SDK does not yet type.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "platform",
@@ -4263,7 +4215,7 @@
       "method": "POST",
       "path": "/platform/templates",
       "status": "excluded",
-      "reason": "This dashboard-only route does not accept the team key used by Client.",
+      "reason": "This dashboard-only route does not accept the team server API key used by Client.",
       "milestone": "credential-boundary"
     },
     {
@@ -4318,9 +4270,9 @@
       "family": "platform",
       "method": "POST",
       "path": "/platform/webhooks",
-      "status": "covered",
-      "sdkMethod": "Client::webhooks.create",
-      "testFile": "tests/developer.php"
+      "status": "partial",
+      "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (phoneOfflineStartDay) that this SDK does not yet type.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "platform",
@@ -4389,7 +4341,7 @@
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/console/organization/avatar",
+      "path": "/console/team/avatar",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -4407,7 +4359,7 @@
       "method": "PUT",
       "path": "/console/projects/{projectId}/logging/drains",
       "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; team keys and project tokens are not accepted.",
+      "reason": "Console-only operation requires dashboard identity; team API keys and project tokens are not accepted.",
       "milestone": "excluded-contract"
     },
     {
@@ -4415,7 +4367,7 @@
       "method": "PUT",
       "path": "/console/projects/{projectId}/logging/sampling",
       "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; team keys and project tokens are not accepted.",
+      "reason": "Console-only operation requires dashboard identity; team API keys and project tokens are not accepted.",
       "milestone": "excluded-contract"
     },
     {
@@ -4566,9 +4518,9 @@
       "family": "platform",
       "method": "PUT",
       "path": "/platform/sessions/{session}/call-settings",
-      "status": "covered",
-      "sdkMethod": "MessagingClient::$voip->updateCallSettings",
-      "testFile": "tests/voip.php"
+      "status": "partial",
+      "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (acceptTerms, termsLocale) that this SDK does not yet type.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "platform",
@@ -4633,6 +4585,790 @@
       "status": "excluded",
       "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority.",
       "milestone": "excluded-contract"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/calls",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/catalogs",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.catalogs.list",
+      "testFile": "tests/official_round2.php"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/catalogs/{catalogId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.catalogs.retrieve",
+      "testFile": "tests/official_round2.php"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/catalogs/{catalogId}/products",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.catalogs.listProducts",
+      "testFile": "tests/official_round2.php"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/groups/{id}/capabilities",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/marketing-messages/status",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.cloudMarketing.getStatus",
+      "testFile": "tests/official_round2.php"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/passkey/challenge/{ticketId}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/passkey/confirmation",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/phone",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/stickers",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaign-reply-flows/{id}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/links",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients/export",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/test-events/fixtures",
+      "status": "missing",
+      "reason": "The API moved this operation from GET /messaging/testing/{projectId}/events/fixtures to GET /messaging/test-events/fixtures; the SDK method for the old path (MessagingClient::testing.listEventFixtures) is not yet updated.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/catalogs/{catalogId}/sync",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.catalogs.sync",
+      "testFile": "tests/official_round2.php"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/history/chunks/retry",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/history/media/delete",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/media/upload-grants",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/media/uploads",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/passkey/assertion",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/passkey/challenge",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/passkey/confirmation",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/phone/devices/{deviceId}/unlink",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/phone/messages",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/stickers/recents/bootstrap",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/stickers/recents/remove",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/stickers/reuploads",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/test-events",
+      "status": "missing",
+      "reason": "The API moved this operation from POST /messaging/testing/{projectId}/events to POST /messaging/{session}/test-events; the SDK method for the old path (MessagingClient::testing.triggerEvent) is not yet updated.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/customer-pairing/exchange",
+      "status": "excluded",
+      "reason": "Credential-free public route used by hosted pairing pages, browser extensions or customer invitations, not by server SDK callers.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectId}/test-history-fixtures",
+      "status": "missing",
+      "reason": "The API moved this operation from POST /messaging/testing/{projectId}/history-fixtures to POST /messaging/projects/{projectId}/test-history-fixtures; the SDK method for the old path (MessagingClient::testing.createHistoryFixture) is not yet updated.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaign-reply-flows",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/enrollments",
+      "status": "covered",
+      "sdkMethod": "MessagingClient::campaigns.enroll",
+      "testFile": "tests/campaign_segments_drip.php"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/test-send",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/passkey/verify",
+      "status": "excluded",
+      "reason": "Credential-free public route used by hosted pairing pages, browser extensions or customer invitations, not by server SDK callers.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/passkey",
+      "status": "excluded",
+      "reason": "Credential-free public route used by hosted pairing pages, browser extensions or customer invitations, not by server SDK callers.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/passkey/confirmation",
+      "status": "excluded",
+      "reason": "Credential-free public route used by hosted pairing pages, browser extensions or customer invitations, not by server SDK callers.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/official-groups/{group}/picture",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.officialGroups.setPicture",
+      "testFile": "tests/official_round2.php"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/phone/account-mode",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{session}/stickers/favorite",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reply-flow",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/keys/{keyId}",
+      "status": "excluded",
+      "reason": "Moved from DELETE /platform/keys/{keyId} to a dashboard-identity Console route by polymorfa/polymorfa#887; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/projects/{projectId}/regional-data/access/{accessId}",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/audience-profile-imports/{jobId}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/audience-profiles/{phone}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/audience-segments/{segmentId}",
+      "status": "covered",
+      "sdkMethod": "Client::audienceSegments.delete",
+      "testFile": "tests/campaign_segments_drip.php"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/api/account/feature-terms",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/api/account/legal",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/keys",
+      "status": "excluded",
+      "reason": "Moved from GET /platform/keys to a dashboard-identity Console route by polymorfa/polymorfa#887; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/numbers/{session}/catalogs",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/numbers/{session}/catalogs/{catalogId}",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/numbers/{session}/catalogs/{catalogId}/products",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/regional-data/settings",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-profile-imports/{jobId}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-profiles",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-profiles/{phone}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-profiles/{phone}/consent",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-segments",
+      "status": "covered",
+      "sdkMethod": "Client::audienceSegments.list",
+      "testFile": "tests/campaign_segments_drip.php"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-segments/{segmentId}",
+      "status": "covered",
+      "sdkMethod": "Client::audienceSegments.retrieve",
+      "testFile": "tests/campaign_segments_drip.php"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-segments/{segmentId}/preview",
+      "status": "covered",
+      "sdkMethod": "Client::audienceSegments.preview",
+      "testFile": "tests/campaign_segments_drip.php"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaign-reply-flows/{replyFlowId}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaign-settings",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaign-settings/frequency-cap",
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.getFrequencyCap",
+      "testFile": "tests/campaign_segments_drip.php"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/approvals",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/links",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/recipients/export",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/feature-terms",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/optouts/confirmation-settings",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/optouts/confirmation-summary",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/customers/{customerId}/signal-custody",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/request-logs",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/signal-custody",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/audience-segments/{segmentId}",
+      "status": "covered",
+      "sdkMethod": "Client::audienceSegments.update",
+      "testFile": "tests/campaign_segments_drip.php"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/api/account/feature-terms/{key}/accept",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/api/account/feature-terms/{key}/withdraw",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/api/account/legal/accept",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/campaigns/{campaignId}/approvals/{approvalId}/approve",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/campaigns/{campaignId}/approvals/{approvalId}/reject",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/projects/{projectId}/numbers/{session}/catalogs/{catalogId}/sync",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/projects/{projectId}/regional-data/access",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/projects/{projectId}/regional-data/client-tokens",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audience-profile-imports",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audience-segments",
+      "status": "covered",
+      "sdkMethod": "Client::audienceSegments.create",
+      "testFile": "tests/campaign_segments_drip.php"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audience-segments/preview",
+      "status": "covered",
+      "sdkMethod": "Client::audienceSegments.previewRules",
+      "testFile": "tests/campaign_segments_drip.php"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audiences/from-campaign",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaign-reply-flows",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/enrollments",
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.enroll",
+      "testFile": "tests/campaign_segments_drip.php"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/test-send",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/feature-terms/{key}/accept",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/feature-terms/{key}/withdraw",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/sessions/{sessionId}/inspector/claim/release",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/campaign-settings",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/projects/{projectId}/regional-data/settings",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/audience-profiles/{phone}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/campaign-settings/frequency-cap",
+      "status": "covered",
+      "sdkMethod": "Client::campaigns.updateFrequencyCap",
+      "testFile": "tests/campaign_segments_drip.php"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/campaigns/{campaignId}/reply-flow",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/optouts/confirmation-settings",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/customers/{customerId}/signal-custody",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/signal-custody",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
     }
   ],
   "supplements": {

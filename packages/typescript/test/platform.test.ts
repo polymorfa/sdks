@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { PolymorfaConfigurationError } from "../src/errors.js";
@@ -31,8 +31,8 @@ async function platformServer(): Promise<{
     requests: server.requests,
     client: new Client({
       credential: {
-        type: "organizationApiKey",
-        value: ORGANIZATION_API_KEY,
+        type: "teamApiKey",
+        value: TEAM_API_KEY,
       },
       baseUrl: server.url,
       maxNetworkRetries: 0,
@@ -46,7 +46,7 @@ describe("Client credentials", () => {
       () =>
         new Client({
           credential: {
-            type: "organizationApiKey",
+            type: "teamApiKey",
             value: "pmfa_ct_YnJvd3Nlcg",
           },
         }),
@@ -55,7 +55,7 @@ describe("Client credentials", () => {
       () =>
         new Client({
           credential: {
-            type: "organizationApiKey",
+            type: "teamApiKey",
             value: PROJECT_TOKEN,
           },
         }),
@@ -63,11 +63,11 @@ describe("Client credentials", () => {
   });
 });
 
-describe("Client organizations and projects", () => {
-  it("retrieves the active organization without exposing dashboard-only updates", async () => {
+describe("Client teams and projects", () => {
+  it("retrieves the active team without exposing dashboard-only updates", async () => {
     const { client, requests } = await platformServer();
-    await client.organizations.retrieve();
-    expect(client.organizations).not.toHaveProperty("update");
+    await client.teams.retrieve();
+    expect(client.teams).not.toHaveProperty("update");
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "GET /platform/team",
     ]);

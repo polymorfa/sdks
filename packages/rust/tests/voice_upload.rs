@@ -77,7 +77,7 @@ async fn bytes_and_stream_uploads_never_forward_api_credentials_and_complete_wit
             assert!(!head.contains("idempotency-key:"));
             reply(&mut socket, json!({"data":asset()})).await;
         });
-        let client = support::organization(base);
+        let client = support::team(base);
         let voice = client.voice();
         let audio = voice.audio("project").unwrap();
         let request = CreateAudioUploadRequest {
@@ -110,7 +110,7 @@ async fn bytes_and_stream_uploads_never_forward_api_credentials_and_complete_wit
 }
 #[tokio::test]
 async fn malformed_or_empty_bytes_fail_before_asset_creation() {
-    let client = support::organization("http://127.0.0.1:1".into());
+    let client = support::team("http://127.0.0.1:1".into());
     let voice = client.voice();
     let audio = voice.audio("project").unwrap();
     for (size, bytes) in [(4, b"abc".as_slice()), (0, b"".as_slice())] {
@@ -148,7 +148,7 @@ async fn storage_redirect_failure_never_echoes_capability_or_completes() {
                 .is_err()
         );
     });
-    let client = support::organization(base);
+    let client = support::team(base);
     let error = client
         .voice()
         .audio("project")

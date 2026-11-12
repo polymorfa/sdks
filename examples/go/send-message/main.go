@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	client, err := polymorfa.NewMessagingClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: os.Getenv("POLYMORFA_API_KEY")}})
+	client, err := polymorfa.NewMessagingClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.TeamAPIKey, Value: os.Getenv("POLYMORFA_API_KEY")}})
 	if err != nil {
 		fail(err)
 	}

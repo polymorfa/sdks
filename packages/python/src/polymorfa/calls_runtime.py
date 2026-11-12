@@ -52,7 +52,7 @@ def _credential(value: str) -> Credential:
         if value.startswith("pmfa_ct_")
         else "project_token"
         if value.startswith("pmfa_pt_")
-        else "organization_api_key",
+        else "team_api_key",
         value,
     )
 

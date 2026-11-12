@@ -87,7 +87,7 @@ Copy `.env.example` to `.env.local` and fill it in:
 | ------------------------------------ | ----------------------------------------------------------------------------------- |
 | `ACME_DEMO_DATA`                     | `true` forces demo data even when credentials are set                               |
 | `POLYMORFA_PROJECT_TOKEN`            | `MessagingClient`, `BridgeClient`, and the project view of `Client` (`pmfa_pt_...`) |
-| `POLYMORFA_ORGANIZATION_API_KEY`     | The organization `Client` in the admin area and BanSafe Health (`pmfa_...`)         |
+| `POLYMORFA_TEAM_API_KEY`             | The team `Client` in the admin area and BanSafe Health (`pmfa_...`)                 |
 | `POLYMORFA_PROJECT_ID`               | The project the project token is bound to                                           |
 | `POLYMORFA_PROJECT_SLUG`             | Template and Messaging campaign routes                                              |
 | `POLYMORFA_SESSION`                  | The session (number) the support team uses                                          |
@@ -204,7 +204,7 @@ flowchart LR
 | Theme, accent, density, locale and direction                           | `PolymorfaProvider`, `appearance.darkVariables`, `createLocale`                                                     | `app/providers.tsx`, `ui/pages/settings.tsx`                       |
 | Development assistant                                                  | `DevAssistant`, `mountDevAssistant` (`position`, `defaultOpen`, `offset`)                                           | `app/providers.tsx`                                                |
 | Web Components                                                         | `definePolymorfaElements`, `pmfa-message-list`, `pmfa-template-builder`                                             | `app/elements/elements.tsx`                                        |
-| Admin: organization, members, API keys, project tokens                 | `Client.organizations`, `members`, `apiKeys`, `projectTokens`                                                       | `app/api/admin/organization/route.ts`                              |
+| Admin: team, members, API keys, project tokens                         | `Client.teams`, `members`, `apiKeys`, `projectTokens`                                                               | `app/api/admin/team/route.ts`                                      |
 | Admin: projects, billing, security, customers, audiences, opt-outs     | `Client.projects`, `billing`, `auditLogs`, `securityIncidents`, `sessionBans`, `customers`, `audiences`, `optOuts`  | `app/api/admin/*`                                                  |
 | Admin: call policy and do-not-call list                                | `Client.callPolicy`, `callOptOuts`                                                                                  | `app/api/admin/call-consent/route.ts`                              |
 | Admin: webhooks, deliveries, events, session settings, platform        | `Client<"project">.webhooks`, `webhookDeliveries`, `events`, `sessionConfiguration`, `SystemClient`, `BridgeClient` | `app/api/admin/*`                                                  |
@@ -228,17 +228,17 @@ Polymorfa.
 
 ## Credentials by area
 
-| Area                                               | Credential                                                |
-| -------------------------------------------------- | --------------------------------------------------------- |
-| `app/api/desk/*`                                   | Project token through `MessagingClient` (or demo data)    |
-| `app/api/messaging/*`                              | Project token through `MessagingClient`                   |
-| `app/api/messaging/media` upload action            | Team key (`Client.media`), admin role only                |
-| `app/api/admin/*` except the rows below            | Team key through `Client`                                 |
-| `app/api/admin/events`, `webhooks`                 | Project token through `Client<"project">`                 |
-| `app/api/admin/webhooks` `GET ?owner=organization` | Team key through `Client`                                 |
-| `app/api/admin/settings`                           | Team key and project token views                          |
-| `app/api/admin/bridge`                             | Project token (`BridgeClient`), no key for `SystemClient` |
-| Browser pages                                      | Short-lived `pmfa_ct_` client tokens minted by the server |
+| Area                                       | Credential                                                |
+| ------------------------------------------ | --------------------------------------------------------- |
+| `app/api/desk/*`                           | Project token through `MessagingClient` (or demo data)    |
+| `app/api/messaging/*`                      | Project token through `MessagingClient`                   |
+| `app/api/messaging/media` upload action    | Team key (`Client.media`), admin role only                |
+| `app/api/admin/*` except the rows below    | Team key through `Client`                                 |
+| `app/api/admin/events`, `webhooks`         | Project token through `Client<"project">`                 |
+| `app/api/admin/webhooks` `GET ?owner=team` | Team key through `Client`                                 |
+| `app/api/admin/settings`                   | Team key and project token views                          |
+| `app/api/admin/bridge`                     | Project token (`BridgeClient`), no key for `SystemClient` |
+| Browser pages                              | Short-lived `pmfa_ct_` client tokens minted by the server |
 
 Browsers never receive a server credential. `lib/polymorfa.ts` calls
 `assertServerRuntime()` before constructing a credentialed client, and

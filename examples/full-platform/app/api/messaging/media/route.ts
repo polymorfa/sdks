@@ -1,5 +1,5 @@
 import { env } from "../../../../lib/env.js";
-import { messaging, organization } from "../../../../lib/polymorfa.js";
+import { messaging, team } from "../../../../lib/polymorfa.js";
 import {
   InputError,
   action,
@@ -76,7 +76,7 @@ export const POST = route("agent", async ({ body, operator, request }) => {
           { status: 403, headers: { "Cache-Control": "no-store, private" } },
         );
       }
-      return organization().media.createUpload(
+      return team().media.createUpload(
         {
           projectId: env.projectId(),
           contentType: oneOf(body, "contentType", UPLOAD_TYPES),

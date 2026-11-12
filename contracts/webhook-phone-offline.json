@@ -14,7 +14,7 @@
     }
   },
   "schemas": {
-    "CreateOrganizationWebhookInput": {
+    "CreateTeamWebhookInput": {
       "family": "platform",
       "property": {
         "type": "integer",
@@ -36,7 +36,7 @@
       },
       "required": false
     },
-    "UpdateOrganizationWebhookInput": {
+    "UpdateTeamWebhookInput": {
       "family": "platform",
       "property": {
         "type": "integer",
@@ -56,7 +56,7 @@
       },
       "required": false
     },
-    "OrganizationWebhook": {
+    "TeamWebhook": {
       "family": "platform",
       "property": {
         "type": "integer",

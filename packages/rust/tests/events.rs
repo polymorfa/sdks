@@ -21,7 +21,7 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 
 fn event(id: &str, project: Option<&str>) -> serde_json::Value {
-    json!({"id":id,"organizationId":"org","projectId":project,"type":"message.received","source":"runtime","environment":"development","createdAt":"2026-10-11T12:00:00Z","payloadAvailability":"not_retained","payload":null,"replayableUntil":null,"metadataExpiresAt":"2026-11-11T12:00:00Z"})
+    json!({"id":id,"teamId":"team","projectId":project,"type":"message.received","source":"runtime","environment":"development","createdAt":"2026-10-11T12:00:00Z","payloadAvailability":"not_retained","payload":null,"replayableUntil":null,"metadataExpiresAt":"2026-11-11T12:00:00Z"})
 }
 async fn headers(socket: &mut tokio::net::TcpStream) -> String {
     let mut head = Vec::new();
@@ -41,7 +41,7 @@ async fn reply(socket: &mut tokio::net::TcpStream, value: serde_json::Value) {
 }
 
 #[tokio::test]
-async fn organization_and_project_event_retrieve_replay_ack_native_wire() {
+async fn team_and_project_event_retrieve_replay_ack_native_wire() {
     for (path, project) in [
         ("/platform", None),
         ("/platform/projects/project", Some("project")),
@@ -54,12 +54,12 @@ async fn organization_and_project_event_retrieve_replay_ack_native_wire() {
             json!({"data":expected}),
         )
         .await;
-        let organization = support::organization(base);
-        let view = organization.project("project").unwrap();
+        let team = support::team(base);
+        let view = team.project("project").unwrap();
         let resource = if project.is_some() {
             view.events()
         } else {
-            organization.events()
+            team.events()
         };
         let response = resource
             .retrieve_with_payload("event/one", true, RequestOptions::default())
@@ -74,12 +74,12 @@ async fn organization_and_project_event_retrieve_replay_ack_native_wire() {
             json!({"data":[expected],"page":{"nextCursor":null,"hasMore":false}}),
         )
         .await;
-        let organization = support::organization(base);
-        let view = organization.project("project").unwrap();
+        let team = support::team(base);
+        let view = team.project("project").unwrap();
         let resource = if project.is_some() {
             view.events()
         } else {
-            organization.events()
+            team.events()
         };
         let page = resource
             .list(
@@ -102,12 +102,12 @@ async fn organization_and_project_event_retrieve_replay_ack_native_wire() {
             json!({"data":receipt}),
         )
         .await;
-        let organization = support::organization(base);
-        let view = organization.project("project").unwrap();
+        let team = support::team(base);
+        let view = team.project("project").unwrap();
         let resource = if project.is_some() {
             view.events()
         } else {
-            organization.events()
+            team.events()
         };
         let response = resource
             .replay(
@@ -133,7 +133,7 @@ async fn organization_and_project_event_retrieve_replay_ack_native_wire() {
         json!({"data":receipt}),
     )
     .await;
-    let response = support::organization(base)
+    let response = support::team(base)
         .project("project")
         .unwrap()
         .events()
@@ -179,8 +179,8 @@ async fn event_cursor_and_indexed_pagination_follow_native_http_requests() {
                 reply(&mut socket,json!({"data":[event(if page==0 { "one" } else { "two" },Some("project"))],"page":metadata})).await;
             }
         });
-        let organization = support::organization(base);
-        let project = organization.project("project").unwrap();
+        let team = support::team(base);
+        let project = team.project("project").unwrap();
         let parameters = if indexed {
             EventListParameters {
                 after_offset: Some("0".into()),
@@ -208,7 +208,7 @@ async fn event_cursor_and_indexed_pagination_follow_native_http_requests() {
         assert!(stream.next().await.is_none());
         server.await.unwrap();
     }
-    let client = support::organization("http://localhost:1".into());
+    let client = support::team("http://localhost:1".into());
     let invalid = EventListParameters {
         after_offset: Some("0".into()),
         cursor: Some("cursor".into()),
@@ -263,7 +263,7 @@ async fn native_sse_resumes_checkpoint_retention_gap_and_terminal_revocation() {
     });
     let gaps = Arc::new(AtomicUsize::new(0));
     let observed = gaps.clone();
-    let client = support::organization(base);
+    let client = support::team(base);
     let project = client.project("project").unwrap();
     let stream = project
         .events()
@@ -315,7 +315,7 @@ fn sse_parser_handles_split_utf8_crlf_comments_multiline_and_null_id() {
 async fn cancelled_stream_ends_cleanly() {
     let cancellation = CancellationToken::new();
     cancellation.cancel();
-    let client = support::organization("http://localhost:1".into());
+    let client = support::team("http://localhost:1".into());
     let project = client.project("project").unwrap();
     let mut stream = project
         .events()
@@ -375,7 +375,7 @@ async fn live_source_pushes_retained_bodies_with_cursor_and_isolates_unsubscribe
         }
     });
     let parent_cancel = CancellationToken::new();
-    let source = support::organization(base)
+    let source = support::team(base)
         .project("project")
         .unwrap()
         .events()

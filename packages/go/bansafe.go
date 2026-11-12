@@ -56,7 +56,7 @@ type BanSafeHealthProjection struct {
 type BanSafeNumberEnforcement struct {
 	Rung                string   `json:"rung"`
 	PreviousRung        string   `json:"previousRung"`
-	OrganizationFloor   string   `json:"organizationFloor"`
+	TeamFloor           string   `json:"teamFloor"`
 	Reason              string   `json:"reason"`
 	Source              string   `json:"source"`
 	ThroughputPerMinute *float64 `json:"throughputPerMinute"`
@@ -135,7 +135,7 @@ type BanSafeEnforcementSummary struct {
 	ProjectID           string                    `json:"projectId"`
 	Rung                string                    `json:"rung"`
 	PreviousRung        string                    `json:"previousRung"`
-	OrganizationFloor   string                    `json:"organizationFloor"`
+	TeamFloor           string                    `json:"teamFloor"`
 	Reason              string                    `json:"reason"`
 	Source              string                    `json:"source"`
 	ThroughputPerMinute *float64                  `json:"throughputPerMinute"`
@@ -375,7 +375,7 @@ type ListBanSafeHealthActionsParams struct {
 }
 type BanSafe struct{ t *transport }
 
-func (c *OrganizationClient) BanSafe() *BanSafe { return &BanSafe{c.t} }
+func (c *TeamClient) BanSafe() *BanSafe { return &BanSafe{c.t} }
 func (r *BanSafe) ListHealth(ctx context.Context, p ListBanSafeHealthParams, o ...RequestOptions) (*CursorPage[BanSafeNumber], error) {
 	return page[BanSafeNumber](ctx, r.t, "/platform/bansafe/health", p.query(), options(o))
 }

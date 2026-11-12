@@ -6,7 +6,7 @@ require dirname(__DIR__,2).'/packages/php/vendor/autoload.php';
 
 use Polymorfa\{AudioFrame,Credential,MediaSocket};
 
-$socket=new MediaSocket(Credential::organizationApiKey((string)getenv('POLYMORFA_API_KEY')),
+$socket=new MediaSocket(Credential::teamApiKey((string)getenv('POLYMORFA_API_KEY')),
     (string)getenv('POLYMORFA_CALL_ID'),(string)getenv('POLYMORFA_CONNECTION_ID'),
     participant:(string)getenv('POLYMORFA_PARTICIPANT'));
 try {

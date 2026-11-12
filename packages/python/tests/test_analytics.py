@@ -280,10 +280,10 @@ ANALYTICS = {
 PROMETHEUS = "# TYPE polymorfa_analytics_enabled gauge\npolymorfa_analytics_enabled 1\n"
 
 
-@pytest.mark.parametrize("scope", ["organization", "project", "project_token"])
+@pytest.mark.parametrize("scope", ["team", "project", "project_token"])
 @pytest.mark.parametrize("method", ["get", "metrics"])
 async def test_public_analytics_methods_full_typed_response_and_bound_route(scope, method):
-    project = scope != "organization"
+    project = scope != "team"
     path = f"/platform/projects/{PROJECT}/analytics" if project else "/platform/analytics"
     params = (
         {"projectId": PROJECT.upper(), "sessionId": SESSION, "start": 0, "end": 1}
@@ -328,7 +328,7 @@ async def test_public_analytics_methods_full_typed_response_and_bound_route(scop
         )
         if scope == "project_token"
         else Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     )
@@ -372,7 +372,7 @@ async def test_analytics_disabled_response_and_default_prometheus_format():
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -397,7 +397,7 @@ async def test_metrics_invalid_controls_fail_before_request(params):
     seen = []
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(lambda r: seen.append(r)),
@@ -424,7 +424,7 @@ async def test_analytics_invalid_filters_ranges_and_bound_project(params):
     seen = []
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(lambda r: seen.append(r)),
@@ -447,7 +447,7 @@ async def test_analytics_invalid_filters_ranges_and_bound_project(params):
 async def test_metrics_invalid_body_and_content_type_keep_metadata(format, body, content_type):
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(

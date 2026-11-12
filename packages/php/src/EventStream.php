@@ -6,7 +6,7 @@ namespace Polymorfa;
 
 /**
  * @phpstan-import-type EncodedPayload from DeveloperModels
- * @phpstan-type StreamedEvent array{id:string,organizationId:string,projectId:string,type:string,source:'runtime'|'platform'|'test',environment:'development'|'production',createdAt:string,payloadAvailability:'available'|'not_retained'|'unavailable',payload:EncodedPayload|null,replayableUntil:?string,metadataExpiresAt:string}
+ * @phpstan-type StreamedEvent array{id:string,teamId:string,projectId:string,type:string,source:'runtime'|'platform'|'test',environment:'development'|'production',createdAt:string,payloadAvailability:'available'|'not_retained'|'unavailable',payload:EncodedPayload|null,replayableUntil:?string,metadataExpiresAt:string}
  * @implements \IteratorAggregate<int,array{event:StreamedEvent,webhook:?WebhookEvent,cursor:string,streamId:string,sequence:int}> */
 final class EventStream implements \IteratorAggregate
 {

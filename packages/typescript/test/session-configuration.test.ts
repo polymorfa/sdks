@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { Client, MessagingClient } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 
 describe("session configuration", () => {
   it("binds defaults to the selected project and preserves resets and revisions", async () => {
@@ -8,7 +8,7 @@ describe("session configuration", () => {
       Response.json({ data: { effective: {}, revisions: { project: 2 } } }),
     );
     const client = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       fetch,
     });
     await client.sessionConfiguration.retrieve();
@@ -27,7 +27,7 @@ describe("session configuration", () => {
   });
   it("exposes new creation only through QuickLink", () => {
     const client = new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
     });
     expect(client.sessions).not.toHaveProperty("create");
     expect(client.quickLinks.create).toBeTypeOf("function");

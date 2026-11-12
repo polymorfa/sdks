@@ -1,5 +1,25 @@
 # Contract coverage
 
+## Idempotency response replay
+
+`idempotency-replay.json` is produced by
+`scripts/sync-idempotency-replay-contract.mjs` from committed generated API
+documents. It records the exact backend source, both complete input hashes,
+the idempotency error enums and 28 unchanged one-hour header parameters.
+It also explicitly pins conversion deduplication: different details for an
+existing `eventId` return `422 idempotency_conflict` in this source contract.
+The older baseline remains unchanged, and the transport still maps a received
+409 to `PolymorfaConflictError` and a received 422 to `PolymorfaValidationError`.
+The global baseline snapshots remain unchanged. The error catalog recognizes
+both the new replay-unavailable code and legacy completed responses.
+
+The supplement is source-only and has `published: false`. It does not establish
+deployed access or a sensitive-content retention exception. Opaque message and
+campaign responses are not retained by default. Missing replay data preserves
+the execution fence; clients must reconcile an uncertain outcome before deciding
+whether another write is safe. SDK package publication requires matching API
+acceptance through the existing release process.
+
 ## Campaign and custody additions
 
 `campaign-custody-20261014.json` pins thirty machine-accessible operations and
@@ -105,6 +125,32 @@ compares their paths and fields. The full snapshots are not repinned here.
 
 ## Full snapshots
 
+## Contract revision f180dc1ee2
+
+The snapshots are byte-identical copies of `apps/api/docs/openapi.json`
+(sha256 `0c66f1ee…b071`) and `apps/api/docs/openapi.management.json`
+(sha256 `bee9be6c…c485`) at `polymorfa/polymorfa` commit
+`f180dc1ee2bd45dbecf01702f73bdd75c664634b`, the pushed head of #887. #887
+merged into `polymorfa/polymorfa` `dev` as
+`a3db53e74c6e24507ca01e2ff6ecba19358422c7`, whose two API specifications are
+byte-identical to these snapshots (same hashes). `source.json` and the ledger
+keep `f180dc1ee2` as the pinned contract revision. It
+contains the team rename and later API dev changes. The ledger holds 671
+operations. All 579 earlier rows were re-fingerprinted. 285 changed only by
+documented response headers; the shared `PublicError` enum grew for every
+operation. An operation whose request gained a field or enum value that a
+language does not type is `partial` for that language, with the field names in
+the reason. A covered row whose response gained fields that a language does not
+type lists them under `untypedResponseFields`; the call itself is unaffected.
+Both come from a name search of each package's source, not a field-level proof.
+The 98 operations added or moved since 171a9683 are `covered` where the
+campaign-supplement and official-round-2 inventories attribute native methods,
+`excluded` for credential-free pages and dashboard-identity routes, and
+`missing` otherwise, including operations whose typed methods exist only in
+separately pinned TypeScript supplements. `retiredOperations` lists the six
+operations whose paths left the specification; their SDK methods still exist.
+The `selfhost` and `platform-native` specifications are not SDK inputs.
+
 The current snapshots are byte-identical copies of the Messaging and Platform
 contracts at API dev merge commit `171a9683ff45d11a4b5d3917dc428ad2722b0d99`.
 The full revision contains the inherited Logs and Usage contracts and all four
@@ -136,7 +182,7 @@ operation fingerprints and the public API contract remain unchanged. The ledger
 then contained 569 operations: 429 covered and 140 excluded.
 The preceding private `usageInsight` contract at
 `49b529fd74f42fdd6bb30671ebd4b0ec8e9558f3`
-added exact org/project/number scope metadata and immutable-number filtering.
+added exact team/project/number scope metadata and immutable-number filtering.
 The selected number's current UTC monthly completed outgoing calls and included
 allowance remain separate from the chart period. Unknown tiers have no allowance
 read; known unlimited tiers are explicit. Request logs and serverless receipts
@@ -232,7 +278,7 @@ participants add optional `handRaised`.
 moving a launched campaign that is waiting to start. The Messaging update is
 sent once after an uncertain response because its route has no replay key;
 reschedule uses the API's idempotency key. The Platform reschedule request names
-`projectId` for an team key. The other refreshed operation
+`projectId` for a team key. The other refreshed operation
 fingerprints were checked against their existing method paths and types.
 files at API `dev` merge commit `e818ba62830d3727a7822379bb46c1fece90ef1b`
 (API PR #433, which corrects the payment order amount and status schemas from
@@ -316,7 +362,7 @@ this Calls ledger. Existing hosted-history message reads now type the optional
 `mediaRetrieval` status and remain covered.
 
 The Platform event-list contract adds `afterOffset` and indexed page metadata
-for both organization and project routes. `Client.events.list` and project-view
+for both team and project routes. `Client.events.list` and project-view
 `events.list` expose `FollowableIndexedEventPage` in that mode; `nextPage()` follows
 `nextOffset` rather than combining an offset with a cursor.
 Both views also expose `events.listIndexed` with explicit `page.nextOffset` and
@@ -337,7 +383,7 @@ all 15 Functions routes already merged to API `dev`.
 
 HMS history adds four server-only Messaging reads under
 `MessagingClient.chats`: `list`, `retrieve`, `listMessages`, and
-`retrieveMessage`. All four are covered; they require an team key or
+`retrieveMessage`. All four are covered; they require a team key or
 project token, their respective `chats:read` or `messages:read` scope, HMS on
 the Number, and `messaging.history` beta enrollment. Client tokens are refused
 locally. Pagination retains both cursors and the data-region response header.
@@ -365,19 +411,19 @@ narrows the previous BanSafe health band; SDK types follow those schemas.
 An earlier schema refresh changes only `POST /platform/campaigns`: its required
 body is now `CreatePlatformCampaignRequest`, with required `name`, named optional
 fields, and no additional top-level properties. The SDK requires `projectId`
-because its Platform campaign resource belongs to organization clients. The
+because its Platform campaign resource belongs to team clients. The
 six opaque JSON fields remain `unknown`, while `senderConfig` remains an open
 object. No routes were added or removed by this schema refresh.
 
 This revision also covers `GET /platform/usage`, `/platform/usage/records`,
 and `/platform/gates` through `Client.usage.summary`, `listRecords`, and
 `listGates`. `iterateRecords` follows record-page cursors. Usage is measured
-but not charged; gate state requires an team key.
+but not charged; gate state requires a team key.
 
 The Campaigns P0 revision added these operations. Audiences gain member
 management (`POST`/`GET /platform/audiences/{listId}/members` and
 `DELETE .../{phone}`), campaigns gain recipient append and listing on both
-surfaces, and the organization gains STOP/START keyword settings
+surfaces, and the team gains STOP/START keyword settings
 (`GET`/`PUT /platform/optouts/settings`). All eight are covered by
 `Client.audiences`, `Client.campaigns`, `Client.optOuts` and
 `MessagingClient.campaigns`.
@@ -398,7 +444,7 @@ single-campaign Platform operations: `GET`, `PATCH` and `DELETE`
 `/recipients`. It is deliberately `required: false`: a team API key is not
 bound to one project and must name the owning project, while a project token is
 bound to its own project and must omit it at the API. The SDK exposes
-`Client.campaigns` only on organization clients, so its types require
+`Client.campaigns` only on team clients, so its types require
 `projectId`; project views and project-token clients do not expose that resource.
 `Client.campaigns.retrieve`,
 `update`, `delete`, `analytics` and `events` take a `PlatformCampaignParams`
@@ -540,7 +586,7 @@ to the shared `PublicError` enum, which changes the fingerprint of every
 Messaging operation that returns it. The Console-only
 `/console/call-settings/{sessionId}` routes are excluded.
 
-The unified `Client` owns organization control-plane resources and creates
+The unified `Client` owns team control-plane resources and creates
 immutable project views with `client.project(projectId)`. QuickLink management
 uses `Client.quickLinkSettings`; obsolete `/v1/widget` mappings are gone.
 Credential-free service probes use `SystemClient`, project-token Bridge route
@@ -594,7 +640,7 @@ The main Messaging and Platform snapshots use the pinned Hybrid Link API branch;
 Functions subset retains its separate source revision.
 
 All 15 Functions methods require `client.project(projectId).functions` and an
-organization enabled for Functions. The SDK never retries Function mutations or
+team enabled for Functions. The SDK never retries Function mutations or
 invocations automatically. Browser/client-token SDKs do not expose this server
 control plane. A local implementation or installed method does not establish
 hosted availability.
@@ -777,8 +823,9 @@ Current metadata describes source packages and omits registry install commands.
 
 ## Machine-credential fixture supplement
 
-`machine-credentials.v1.json` is the byte-identical API #647 fixture from merged
-source `e95d02da674da8242453c2a41efd48883fa04734`. Its producer path, blob and hash
+`machine-credentials.v1.json` is the byte-identical API #647 fixture as renamed
+by polymorfa/polymorfa#887, from contract revision
+`61610853b494061513534fdb528d44d4fead2bdb`. Its producer path, blob and hash
 are in `machine-credentials.source.json`. `npm run check:machine-credentials`
 checks provenance and shared consumption in all six languages. Native credential
 tests check framing, growth, unchanged wire transport and diagnostic redaction.

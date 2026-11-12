@@ -8,7 +8,7 @@ from polymorfa import AsyncMessagingClient, Credential, RequestOptions
 
 async def main() -> None:
     async with AsyncMessagingClient(
-        Credential("organization_api_key", os.environ["POLYMORFA_API_KEY"])
+        Credential("team_api_key", os.environ["POLYMORFA_API_KEY"])
     ) as client:
         response = await client.messages.send(
             os.environ["POLYMORFA_SESSION"],

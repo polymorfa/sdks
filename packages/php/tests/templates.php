@@ -3,7 +3,7 @@
 declare(strict_types=1);
 $definition = ['version' => 1,'kind' => 'standard','category' => 'UTILITY','language' => 'en_US','header' => ['format' => 'text','text' => 'Header'],'body' => 'Hello {{name}}','buttons' => [['type' => 'url','text' => 'Details','url' => 'https://fixture.invalid']],'variables' => [['name' => 'name','type' => 'text','example' => 'Ada']]];
 $projectTemplate = ['id' => 'template','name' => 'welcome','category' => 'UTILITY','language' => 'en_US','status' => 'DRAFT','kind' => 'standard','definition' => $definition,'sampleValues' => ['name' => 'Ada'],'cloudLinks' => [],'createdAt' => 1,'updatedAt' => 2];
-$cloudTemplate = ['id' => 'cloud','tenantId' => 'org','session' => 'session','wabaId' => 'waba','name' => 'welcome','language' => 'en_US','category' => 'UTILITY','status' => 'APPROVED','components' => [['type' => 'BODY','text' => 'Hi']],'createdAt' => '2026-10-11T00:00:00Z','updatedAt' => '2026-10-11T00:00:00Z'];
+$cloudTemplate = ['id' => 'cloud','tenantId' => 'team','session' => 'session','wabaId' => 'waba','name' => 'welcome','language' => 'en_US','category' => 'UTILITY','status' => 'APPROVED','components' => [['type' => 'BODY','text' => 'Hi']],'createdAt' => '2026-10-11T00:00:00Z','updatedAt' => '2026-10-11T00:00:00Z'];
 $envelope = fn ($data) => ['success' => true,'data' => $data];
 nativeCases([
  ['GET','/messaging/projects/project/templates',null,$envelope([$projectTemplate]),fn ($c) => $c->templates->list('project')],

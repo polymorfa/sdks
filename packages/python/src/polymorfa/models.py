@@ -217,7 +217,7 @@ class Webhook(TypedDict):
 
 class Project(TypedDict):
     id: str
-    orgId: str
+    teamId: str
     name: str
     slug: str
     icon: JsonObject

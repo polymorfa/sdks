@@ -40,16 +40,16 @@ function mocked(array $responses, array &$history): HttpClient
 }
 
 require __DIR__.'/credential_opaque.php';
-$credential = Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
+$credential = Credential::teamApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
 foreach (['pt', 'ct', 'ls', 'at', 'wst', 'sd'] as $prefix) {
-    raises(fn () => Credential::organizationApiKey('pmfa_' . $prefix . '_' . str_repeat('a', 72 - strlen($prefix) - 1)), ConfigurationException::class);
+    raises(fn () => Credential::teamApiKey('pmfa_' . $prefix . '_' . str_repeat('a', 72 - strlen($prefix) - 1)), ConfigurationException::class);
 }
 check(!str_contains(var_export($credential->__debugInfo(), true), str_repeat('a', 72)), 'Credential redaction');
 $receipt = ['success' => true, 'data' => ['id' => 'msg_1', 'whatsapp_ids' => ['linked_devices' => 'provider_1'],
     'conversation' => ['id' => 'user_1'], 'timestamp' => '2026-09-22T00:00:00Z', 'status' => 'sent', 'type' => 'text']];
 $link = ['success' => true, 'data' => ['id' => 'link_1', 'url' => 'https://link.polymorfa.com/link_1', 'session' => 'support',
     'purpose' => 'initial', 'connectionGoal' => 'single', 'expiresAt' => null]];
-$hook = ['success' => true, 'data' => ['id' => 'hook_1', 'tenantId' => 'org_1', 'url' => 'https://example.com/hook', 'events' => ['message.received'],
+$hook = ['success' => true, 'data' => ['id' => 'hook_1', 'tenantId' => 'team_1', 'url' => 'https://example.com/hook', 'events' => ['message.received'],
     'retries' => ['attempts' => 1, 'delaySeconds' => 1, 'policy' => 'constant'], 'headers' => [], 'enabled' => true, 'createdAt' => '2026-09-22T00:00:00Z']];
 $cases = [
     ['POST', '/messaging/support/messages/send', ['conversation' => ['phoneNumber' => '+15551234567'], 'content' => ['text' => 'Hello']], $receipt,

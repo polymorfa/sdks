@@ -3,8 +3,8 @@ import pytest
 
 from polymorfa import AsyncClient, Credential
 
-ORG = {
-    "id": "org_1",
+TEAM = {
+    "id": "team_1",
     "externalId": "external_1",
     "name": "Example",
     "slug": None,
@@ -23,7 +23,7 @@ ORG = {
 MEMBER = {
     "_id": "member_1",
     "_creationTime": 1,
-    "orgId": "org_1",
+    "teamId": "team_1",
     "userId": "user_1",
     "email": "owner@example.com",
     "name": None,
@@ -39,7 +39,7 @@ KEY = {
     "keyId": "key_1",
     "start": "pmfa",
     "last4": "abcd",
-    "orgId": "org_1",
+    "teamId": "team_1",
     "label": "Server",
     "scopes": 1,
     "source": "api",
@@ -88,7 +88,7 @@ BAN = {
 INCIDENT = {
     "id": "incident_1",
     "keyId": "key_1",
-    "tokenType": "organization",
+    "tokenType": "team",
     "source": "api",
     "url": None,
     "ref": None,
@@ -99,7 +99,7 @@ INCIDENT = {
     "createdAt": 1,
 }
 CASES = [
-    ("GET", "/platform/team", {}, ORG, lambda c: c.organizations.retrieve()),
+    ("GET", "/platform/team", {}, TEAM, lambda c: c.teams.retrieve()),
     ("GET", "/platform/members", {}, [MEMBER], lambda c: c.members.list()),
     ("GET", "/platform/keys", {}, [KEY], lambda c: c.api_keys.list()),
     (
@@ -137,22 +137,22 @@ CASES = [
 
 
 @pytest.mark.parametrize("method,path,query,data,invoke", CASES)
-async def test_organization_metadata_methods(method, path, query, data, invoke):
+async def test_team_metadata_methods(method, path, query, data, invoke):
     def handler(request):
         assert request.method == method and request.url.path == path
         assert dict(request.url.params) == query and not request.content
         assert request.headers["authorization"] == "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
-        return httpx.Response(200, json={"data": data}, headers={"x-request-id": "req_org"})
+        return httpx.Response(200, json={"data": data}, headers={"x-request-id": "req_team"})
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await invoke(client)
-        assert result.data == {"data": data} and result.metadata.request_id == "req_org"
+        assert result.data == {"data": data} and result.metadata.request_id == "req_team"
         assert result.metadata.status == 200
         if path in ("/platform/keys", "/platform/tokens"):
             assert "value" not in result.data["data"][0]

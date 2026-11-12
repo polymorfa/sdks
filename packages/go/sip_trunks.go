@@ -123,13 +123,13 @@ type SIPTrunks struct {
 	projectID   string
 	confineByID bool
 }
-type OrganizationSIPTrunks struct{ *SIPTrunks }
+type TeamSIPTrunks struct{ *SIPTrunks }
 
-func (c *OrganizationClient) SIPTrunks() *OrganizationSIPTrunks {
-	return &OrganizationSIPTrunks{&SIPTrunks{t: c.t}}
+func (c *TeamClient) SIPTrunks() *TeamSIPTrunks {
+	return &TeamSIPTrunks{&SIPTrunks{t: c.t}}
 }
 func (c *ProjectClient) SIPTrunks() *SIPTrunks {
-	return &SIPTrunks{c.t, c.projectID, c.t.config.Credential.Kind == OrganizationAPIKey}
+	return &SIPTrunks{c.t, c.projectID, c.t.config.Credential.Kind == TeamAPIKey}
 }
 func sipTrunkPath(id string) (string, error) {
 	if strings.TrimSpace(id) == "" {
@@ -137,7 +137,7 @@ func sipTrunkPath(id string) (string, error) {
 	}
 	return "/platform/sip-trunks/" + escaped(id), nil
 }
-func (r *OrganizationSIPTrunks) List(ctx context.Context, projectID string, o ...RequestOptions) (Response[[]SIPTrunk], error) {
+func (r *TeamSIPTrunks) List(ctx context.Context, projectID string, o ...RequestOptions) (Response[[]SIPTrunk], error) {
 	if err := validateProjectID(projectID); err != nil {
 		return Response[[]SIPTrunk]{}, err
 	}
@@ -149,7 +149,7 @@ func (r *SIPTrunks) List(ctx context.Context, o ...RequestOptions) (Response[[]S
 func (r *SIPTrunks) list(ctx context.Context, id string, o RequestOptions) (Response[[]SIPTrunk], error) {
 	return unwrapped[[]SIPTrunk](ctx, r.t, "GET", "/platform/sip-trunks", url.Values{"projectId": {id}}, nil, o)
 }
-func (r *OrganizationSIPTrunks) Create(ctx context.Context, projectID string, b CreateSIPTrunkRequest, o ...RequestOptions) (Response[SIPTrunkCreated], error) {
+func (r *TeamSIPTrunks) Create(ctx context.Context, projectID string, b CreateSIPTrunkRequest, o ...RequestOptions) (Response[SIPTrunkCreated], error) {
 	if err := validateProjectID(projectID); err != nil {
 		return Response[SIPTrunkCreated]{}, err
 	}

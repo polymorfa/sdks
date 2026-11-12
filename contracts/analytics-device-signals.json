@@ -11,7 +11,7 @@
         "operationId": "exportWhatsAppAnalyticsMetrics",
         "tags": ["Analytics"],
         "summary": "Export analytics metrics",
-        "description": "**Required scope:** `sessions:read`\n\nAuthenticated metrics for a customer's Prometheus or OpenTelemetry Collector. Requires live Analytics enablement. Disabled Analytics returns only enablement and export-window metrics, with no business measurements. All samples are gauges: counts describe an overlapping window, not monotonic counters. Do not use rate() or increase() on them. Labels contain number/project record IDs and bounded categories, never contact identities or message content. Null or unmeasured values are omitted; coverage and observation timestamps are included. API request vitals retain project/organization scope even when filtering a number.",
+        "description": "**Required scope:** `sessions:read`\n\nAuthenticated metrics for a customer's Prometheus or OpenTelemetry Collector. Requires live Analytics enablement. Disabled Analytics returns only enablement and export-window metrics, with no business measurements. All samples are gauges: counts describe an overlapping window, not monotonic counters. Do not use rate() or increase() on them. Labels contain number/project record IDs and bounded categories, never contact identities or message content. Null or unmeasured values are omitted; coverage and observation timestamps are included. API request vitals retain project/team scope even when filtering a number.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -33,10 +33,10 @@
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "One number record UUID, within the authorized project or organization."
+              "description": "One number record UUID, within the authorized project or team."
             },
             "required": false,
-            "description": "One number record UUID, within the authorized project or organization.",
+            "description": "One number record UUID, within the authorized project or team.",
             "name": "sessionId",
             "in": "query"
           },
@@ -309,7 +309,7 @@
         "operationId": "exportProjectWhatsAppAnalyticsMetrics",
         "tags": ["Analytics"],
         "summary": "Export project analytics metrics",
-        "description": "**Required scope:** `sessions:read`\n\nAuthenticated metrics for a customer's Prometheus or OpenTelemetry Collector. Requires live Analytics enablement. Disabled Analytics returns only enablement and export-window metrics, with no business measurements. All samples are gauges: counts describe an overlapping window, not monotonic counters. Do not use rate() or increase() on them. Labels contain number/project record IDs and bounded categories, never contact identities or message content. Null or unmeasured values are omitted; coverage and observation timestamps are included. API request vitals retain project/organization scope even when filtering a number.",
+        "description": "**Required scope:** `sessions:read`\n\nAuthenticated metrics for a customer's Prometheus or OpenTelemetry Collector. Requires live Analytics enablement. Disabled Analytics returns only enablement and export-window metrics, with no business measurements. All samples are gauges: counts describe an overlapping window, not monotonic counters. Do not use rate() or increase() on them. Labels contain number/project record IDs and bounded categories, never contact identities or message content. Null or unmeasured values are omitted; coverage and observation timestamps are included. API request vitals retain project/team scope even when filtering a number.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -331,10 +331,10 @@
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "One number record UUID, within the authorized project or organization."
+              "description": "One number record UUID, within the authorized project or team."
             },
             "required": false,
-            "description": "One number record UUID, within the authorized project or organization.",
+            "description": "One number record UUID, within the authorized project or team.",
             "name": "sessionId",
             "in": "query"
           },
@@ -625,7 +625,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization.",
+            "description": "Project to read. Omit to total every project in the team.",
             "schema": {
               "type": "string"
             }
@@ -921,7 +921,7 @@
                   "whatsapp_group_suspended",
                   "whatsapp_group_has_no_participants",
                   "bansafe_suspended",
-                  "bansafe_org_suspended",
+                  "bansafe_team_suspended",
                   "bansafe_cold_blocked",
                   "bansafe_cold_held",
                   "bansafe_throttled",
@@ -946,7 +946,7 @@
               "request_log_url": {
                 "type": "string",
                 "format": "uri",
-                "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+                "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
               }
             },
             "required": ["type", "code", "message", "param", "request_id"]

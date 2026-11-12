@@ -5,7 +5,7 @@ use polymorfa_sdk::{
     cloud_graph::graph_transport_headers,
     models::MessageTransport,
     raw::{DecodedRawPage, RawRequest},
-    ClientOptions, Error, ErrorKind, OrganizationClient, ProjectClient, RequestOptions,
+    ClientOptions, Error, ErrorKind, ProjectClient, RequestOptions, TeamClient,
 };
 use reqwest::Method;
 use serde_json::{json, Value};
@@ -97,9 +97,9 @@ fn request(path: &str) -> RawRequest {
     }
 }
 #[tokio::test]
-async fn organization_raw_custom_decoder_cursor_body_headers_and_empty_page_iteration() {
+async fn team_raw_custom_decoder_cursor_body_headers_and_empty_page_iteration() {
     let (base, server) = raw_server("/platform").await;
-    let client = support::organization(base);
+    let client = support::team(base);
     let page = client
         .raw_paginate(request("/platform/raw"), decode, Some("position"))
         .await
@@ -192,7 +192,7 @@ async fn raw_decoder_errors_and_cancelled_next_page_are_preserved() {
     server.await.unwrap();
     let response = json!({"records":[],"resume":"next"});
     let (base, server) = support::wire("GET", "/raw", None, response).await;
-    let client = OrganizationClient::new(
+    let client = TeamClient::new(
         support::credential(),
         ClientOptions {
             base_url: base,
