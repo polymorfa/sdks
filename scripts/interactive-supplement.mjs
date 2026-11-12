@@ -10,8 +10,8 @@ export const INTERACTIVE_INVENTORY =
 const PIN = "contracts/interactive-messages.json";
 const BASELINE = {
   sourceApiCommit: "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
-  sourceSdkCommit: "e24cb176fc1124f5fe852ff6c77902648fd13b4a",
-  operations: 579,
+  sourceSdkCommit: "a7dd02cf1655e386642b9401358b725de4903a60",
+  operations: 582,
 };
 const FIELDS = {
   mediaHeader: "/buttonsContent/properties/buttons/properties/media",
