@@ -19,6 +19,7 @@ import {
   validateCatalog,
 } from "./doc-snippets/catalog.mjs";
 import { languages } from "./doc-snippets/recipes.mjs";
+import { nativeCargoCommand, nativeCargoTargetArgs } from "./native-cargo.mjs";
 
 function run(command, args, cwd, env = {}) {
   const result = spawnSync(command, args, {
@@ -37,6 +38,10 @@ function run(command, args, cwd, env = {}) {
 const json = (path, data) =>
   writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`);
 
+/**
+ * Compile every exported program against a physical package without executing API calls.
+ * Optional negative verification must fail on the substituted nonexistent public method.
+ */
 export async function verify(language, { negativeTest = false } = {}) {
   if (!languages.includes(language))
     throw new Error(`Choose ${languages.join(", ")}`);
@@ -265,6 +270,7 @@ export async function verify(language, { negativeTest = false } = {}) {
         { DOTNET_ROLL_FORWARD: "Major" },
       );
   } else {
+    const cargo = nativeCargoCommand();
     // Cargo's unpublished dependency patch can annotate its source lockfile.
     // Package an exact archived source tree so verification never edits checkout
     // inputs or consumes a developer's ignored files.
@@ -285,35 +291,59 @@ export async function verify(language, { negativeTest = false } = {}) {
     run("tar", ["-xf", archive, "-C", source], work);
     const sdkSource = join(source, "packages/rust");
     const target = join(work, "packed");
+    /** Ask the Mac cache manager for its target; other platforms use the verifier staging tree. */
+    const packageTarget = (manifest) =>
+      process.platform === "darwin"
+        ? JSON.parse(
+            run(
+              cargo,
+              [
+                "metadata",
+                "--manifest-path",
+                manifest,
+                "--format-version",
+                "1",
+                "--no-deps",
+              ],
+              sdkSource,
+            ),
+          ).target_directory
+        : target;
+    const coreManifest = join(sdkSource, "storage-core/Cargo.toml");
+    const coreTarget = packageTarget(coreManifest);
     run(
-      "cargo",
+      cargo,
       [
         "package",
         "--manifest-path",
-        join(sdkSource, "storage-core/Cargo.toml"),
-        "--target-dir",
-        target,
+        coreManifest,
+        ...nativeCargoTargetArgs(target),
         "--allow-dirty",
       ],
       sdkSource,
     );
     const version = catalog.packages.rust.version;
-    const core = join(target, "package", `polymorfa-storage-core-${version}`);
+    const core = join(
+      coreTarget,
+      "package",
+      `polymorfa-storage-core-${version}`,
+    );
+    const sdkManifest = join(sdkSource, "Cargo.toml");
+    const sdkTarget = packageTarget(sdkManifest);
     run(
-      "cargo",
+      cargo,
       [
         "package",
         "--manifest-path",
-        join(sdkSource, "Cargo.toml"),
-        "--target-dir",
-        target,
+        sdkManifest,
+        ...nativeCargoTargetArgs(target),
         "--allow-dirty",
         "--config",
         `patch.crates-io.polymorfa-storage-core.path=${JSON.stringify(core)}`,
       ],
       sdkSource,
     );
-    const pkg = join(target, "package", `polymorfa-sdk-${version}`);
+    const pkg = join(sdkTarget, "package", `polymorfa-sdk-${version}`);
     writeFileSync(
       join(work, "Cargo.toml"),
       `[package]\nname = "doc-snippets"\nversion = "0.0.0"\nedition = "2021"\nrust-version = "1.85"\n[dependencies]\npolymorfa-sdk = { path = ${JSON.stringify(pkg)} }\ntokio = { version = "1", features = ["rt", "macros"] }\n[patch.crates-io]\npolymorfa-storage-core = { path = ${JSON.stringify(core)} }\n`,
@@ -330,8 +360,8 @@ export async function verify(language, { negativeTest = false } = {}) {
       join(root, "packages/rust/.cargo/config.toml"),
       join(work, ".cargo/config.toml"),
     );
-    run("cargo", ["generate-lockfile"], work);
-    check = () => run("cargo", ["check", "--locked", "--bins"], work);
+    run(cargo, ["generate-lockfile"], work);
+    check = () => run(cargo, ["check", "--locked", "--bins"], work);
   }
   process.stdout.write(check());
   console.log(

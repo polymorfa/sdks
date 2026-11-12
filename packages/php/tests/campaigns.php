@@ -54,6 +54,11 @@ $cases = [
  ['GET',$base.'/campaign/conversions?projectId=11111111-1111-4111-8111-111111111111',null,$data($report),fn ($c) => $c->campaigns->conversions('campaign', ['projectId' => '11111111-1111-4111-8111-111111111111'])],
 ];
 nativeCases($cases, fn ($credential, $url) => new Polymorfa\Client($credential, baseUrl:$url));
+$interactive = ['projectId' => '11111111-1111-4111-8111-111111111111', 'name' => 'Interactive', 'messagesArray' => [[
+    'version' => 2, 'source' => 'Choose an offer', 'media' => ['kind' => 'image', 'url' => 'https://example.test/offer'],
+    'buttons' => [['kind' => 'reply', 'label' => 'Choose', 'id' => 'offer-stable'], ['kind' => 'link', 'label' => 'Open', 'url' => 'https://example.test/offer']],
+]]];
+nativeCases([['POST', '/platform/campaigns', $interactive, $data($campaign), fn ($c) => $c->campaigns->create($interactive)]], fn ($credential, $url) => new Polymorfa\Client($credential, baseUrl:$url));
 $history = [];
 $client = new Polymorfa\Client($credential, http:mocked([jsonResponse($data($campaign))], $history));
 $client->campaigns->create(['projectId' => '11111111-1111-4111-8111-111111111111'] + $input, new Polymorfa\RequestOptions(idempotencyKey:'ignored', maxNetworkRetries:3));

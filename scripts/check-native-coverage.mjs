@@ -6,6 +6,7 @@ import { resolve, relative, isAbsolute } from "node:path";
 import { SDK_LANGUAGES } from "./check-coverage.mjs";
 import { checkNativeSupplements } from "./native-supplements.mjs";
 import { checkAudienceProfileFilterCoverage } from "./audience-profile-filter-coverage.mjs";
+import { checkInteractiveSupplement } from "./interactive-supplement.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const ledger = JSON.parse(
@@ -102,3 +103,7 @@ if (!requested) {
       " languages",
   );
 }
+const interactive = checkInteractiveSupplement(root);
+console.log(
+  `Interactive supplement: ${interactive.fields} pinned field groups and ${interactive.wireGroups} wire groups attributed in ${interactive.languages} languages; execution and publication remain separate.`,
+);

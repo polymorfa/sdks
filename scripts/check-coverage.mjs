@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import { checkAudienceProfileFilterCoverage } from "./audience-profile-filter-coverage.mjs";
+import { checkInteractiveSupplement } from "./interactive-supplement.mjs";
 
 const HTTP_METHODS = new Set([
   "get",
@@ -39,6 +40,7 @@ export const SDK_LANGUAGES = [
   "rust",
 ];
 
+/** Compare the requested ledger and enforce supplement attribution for repository inputs. */
 function main() {
   try {
     const args = parseArguments(process.argv.slice(2));
@@ -49,6 +51,16 @@ function main() {
     ];
     const report = compareCoverage(actual, ledger, args.strict === true);
     checkAudienceProfileFilterCoverage();
+    const root = resolve(import.meta.dirname, "..");
+    // The generic checker also serves isolated contracts and test fixtures.
+    // Enforce the repository supplement for its real ledger, or explicitly
+    // when validating a candidate copy of that ledger.
+    if (
+      resolve(args.ledger) === resolve(root, "contracts/coverage.json") ||
+      args["interactive-supplement"] === true
+    ) {
+      checkInteractiveSupplement(root, { ledger });
+    }
     if (args.report !== undefined) {
       writeFileSync(args.report, `${JSON.stringify(report, null, 2)}\n`);
     } else {
@@ -67,6 +79,7 @@ if (
 )
   main();
 
+/** Parse explicit spec/ledger paths and boolean gates, rejecting missing option values. */
 function parseArguments(argv) {
   const values = {};
   for (let index = 0; index < argv.length; index += 1) {
@@ -76,8 +89,8 @@ function parseArguments(argv) {
         "Usage: check-coverage --messaging <spec> --platform <spec> --ledger <ledger> [--report <file>]",
       );
     }
-    if (flag === "--strict") {
-      values.strict = true;
+    if (flag === "--strict" || flag === "--interactive-supplement") {
+      values[flag.slice(2)] = true;
       continue;
     }
     const value = argv[index + 1];
