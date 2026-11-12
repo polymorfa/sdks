@@ -21913,6 +21913,11 @@
       "baselineUnchanged": true,
       "published": false
     },
+    "businessAccountModes": {
+      "inventory": "contracts/native-business-account-modes.json",
+      "baselineUnchanged": true,
+      "published": false
+    },
     "interactiveMessages": {
       "inventory": "contracts/native-interactive-messages.json",
       "language": "typescript",

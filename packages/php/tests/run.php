@@ -171,6 +171,7 @@ require __DIR__.'/request_logs.php';
 require __DIR__.'/official_groups.php';
 
 require __DIR__.'/onboarding.php';
+require __DIR__.'/business_account_modes.php';
 
 require __DIR__.'/templates.php';
 

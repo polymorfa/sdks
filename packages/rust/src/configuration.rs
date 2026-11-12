@@ -305,7 +305,9 @@ pub struct TestingConfiguration {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub profile: Option<TestingProfile>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub account_type: Option<String>,
+    pub account_type: Option<crate::business_account_modes::WhatsAppAccountType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub primary_platform: Option<crate::business_account_modes::TestingPrimaryPlatform>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_behavior: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

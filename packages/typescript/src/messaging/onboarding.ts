@@ -1,3 +1,5 @@
+import { contractString } from "../campaign-contract-validation.js";
+import { assertTestingAccountMode } from "./testing-account-mode.js";
 import { requestPhone } from "../campaign-contract-response.js";
 import { existingOptions } from "../campaign-existing-validation.js";
 import {
@@ -13,6 +15,8 @@ import type {
   TestEventFixtureInfo,
   TestingHistoryMessage,
   TestingPhone,
+  TestingAccountMode,
+  TestingAccountModeRequest,
   UnlinkTestingPhoneDeviceResponse,
   TriggerTestEventRequest,
   TriggerTestEventResponse,
@@ -154,6 +158,27 @@ export class TestingResource {
       },
       "send",
       202,
+    );
+  }
+
+  /** Change a Test number's mode. A change unlinks every companion. */
+  setAccountMode(
+    session: string,
+    input: TestingAccountModeRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<TestingAccountMode>> {
+    assertServerCredential(this.credentialType);
+    assertTestingAccountMode(input);
+    contractString(session, "session", 1, 256);
+    return requestPhone(
+      this.transport,
+      {
+        method: "PUT",
+        path: `/messaging/${encodeURIComponent(session)}/phone/account-mode`,
+        body: input,
+        ...existingOptions(options),
+      },
+      "mode",
     );
   }
 

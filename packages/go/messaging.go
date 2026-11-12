@@ -231,6 +231,12 @@ func (r *QuickLinks) Create(ctx context.Context, b CreateQuickLinkRequest, o ...
 	if err := serverOnly(r.t); err != nil {
 		return Response[Envelope[QuickLink]]{}, err
 	}
+	if b.Configuration != nil && b.Configuration.Testing != nil && b.Configuration.Testing.Configuration != nil {
+		v := b.Configuration.Testing.Configuration
+		if err := validateTestingMode(v.AccountType, v.PrimaryPlatform, false); err != nil {
+			return Response[Envelope[QuickLink]]{}, err
+		}
+	}
 	intent, err := quickLinkIntent(b)
 	if err != nil {
 		return Response[Envelope[QuickLink]]{}, err

@@ -5383,6 +5383,12 @@
       "published": false,
       "language": "rust"
     },
+    "businessAccountModes": {
+      "inventory": "contracts/native-business-account-modes.json",
+      "baselineUnchanged": true,
+      "published": false,
+      "language": "rust"
+    },
     "interactiveMessages": {
       "inventory": "contracts/native-interactive-messages.json",
       "language": "rust",

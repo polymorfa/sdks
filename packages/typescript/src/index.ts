@@ -373,6 +373,7 @@ export type {
   CarouselCard,
   CarouselMessageContent,
   BusinessProfile,
+  ContactEncryption,
   BusinessProfileCategory,
   BusinessProfileHours,
   BusinessQuickReply,

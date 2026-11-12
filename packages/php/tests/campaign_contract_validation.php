@@ -137,11 +137,14 @@ foreach (['buttons', 'list'] as $ccKind) {
     $ccConfigure(['method' => 'GET', 'path' => '/platform/campaign-reply-flows/'.$ccFlowId.'?projectId='.$ccProject, 'response' => $ccJson($ccBadFlow)]);
     ccThrows(fn () => $ccTeam->campaigns->getReplyFlow($ccFlowId, ['projectId' => $ccProject]), Polymorfa\ServerException::class);
 }
-$ccConfigure(['method' => 'GET', 'path' => '/messaging/projects/slug/campaigns/'.$ccCampaign.'/recipients/export', 'response' => "phone,status\r\n", 'contentType' => 'text/csv', 'bodyDelaySeconds' => 0.15, 'headers' => ['X-Polymorfa-Operation-Id' => 'csv-admitted']]);
+// Leave time for local scheduling before headers, then stall well beyond the
+// unchanged one-second completion assertion. These assert admitted-body timeouts.
+$ccConfigure(['method' => 'GET', 'path' => '/messaging/projects/slug/campaigns/'.$ccCampaign.'/recipients/export', 'response' => "phone,status\r\n", 'contentType' => 'text/csv', 'bodyDelaySeconds' => 2, 'headers' => ['X-Polymorfa-Operation-Id' => 'csv-admitted']]);
 $ccStarted = microtime(true);
-$ccTimeout = ccThrows(fn () => $ccMessaging->campaigns->exportRecipients('slug', $ccCampaign, [], new Polymorfa\RequestOptions(timeout: 0.04, maxNetworkRetries: 0)), Polymorfa\PolymorfaException::class);
-ccCheck(($ccTimeout instanceof Polymorfa\ConnectionException || $ccTimeout instanceof Polymorfa\TimeoutException) && $ccTimeout->metadata->operationId === 'csv-admitted' && microtime(true) - $ccStarted < 1 && count($ccObservations()) === 1, 'CSV stalled read retains admitted metadata without restarting body');
-$ccConfigure(['method' => 'GET', 'path' => '/platform/campaign-settings', 'response' => $ccJson(['launchApproval' => ['recipientThreshold' => null]]), 'bodyDelaySeconds' => 0.15, 'headers' => ['X-Polymorfa-Operation-Id' => 'json-admitted']]);
-$ccTimeout = ccThrows(fn () => $ccTeam->campaigns->getSettings(new Polymorfa\RequestOptions(timeout: 0.04, maxNetworkRetries: 0)), Polymorfa\TimeoutException::class);
-ccCheck($ccTimeout->metadata->operationId === 'json-admitted' && count($ccObservations()) === 1, 'JSON stalled response retains admitted metadata');
+$ccTimeout = ccThrows(fn () => $ccMessaging->campaigns->exportRecipients('slug', $ccCampaign, [], new Polymorfa\RequestOptions(timeout: 0.25, maxNetworkRetries: 0)), Polymorfa\PolymorfaException::class);
+ccCheck(($ccTimeout instanceof Polymorfa\ConnectionException || $ccTimeout instanceof Polymorfa\TimeoutException) && $ccTimeout->metadata?->operationId === 'csv-admitted' && microtime(true) - $ccStarted < 1 && count($ccObservations()) === 1, 'CSV stalled read retains admitted metadata without restarting body');
+$ccConfigure(['method' => 'GET', 'path' => '/platform/campaign-settings', 'response' => $ccJson(['launchApproval' => ['recipientThreshold' => null]]), 'bodyDelaySeconds' => 2, 'headers' => ['X-Polymorfa-Operation-Id' => 'json-admitted']]);
+$ccStarted = microtime(true);
+$ccTimeout = ccThrows(fn () => $ccTeam->campaigns->getSettings(new Polymorfa\RequestOptions(timeout: 0.25, maxNetworkRetries: 0)), Polymorfa\TimeoutException::class);
+ccCheck($ccTimeout->metadata?->operationId === 'json-admitted' && microtime(true) - $ccStarted < 1 && count($ccObservations()) === 1, 'JSON stalled response retains admitted metadata');
 echo "30 malformed result guards, normalized responses, CSV redirects and native deadlines passed.\n";

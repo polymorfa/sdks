@@ -5383,6 +5383,12 @@
       "published": false,
       "language": "php"
     },
+    "businessAccountModes": {
+      "inventory": "contracts/native-business-account-modes.json",
+      "baselineUnchanged": true,
+      "published": false,
+      "language": "php"
+    },
     "interactiveMessages": {
       "inventory": "contracts/native-interactive-messages.json",
       "language": "php",

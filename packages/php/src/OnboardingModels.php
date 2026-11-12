@@ -19,6 +19,8 @@ namespace Polymorfa;
  * @phpstan-type Overrides array{text?:string,from?:string,pushName?:string,mediaType?:'image'|'video'|'audio'|'document'|'sticker',caption?:string,ackStatus?:'delivered'|'read'|'played'|'error',messageId?:string,failureReason?:'invalid_recipient'|'session_not_connected'|'ack_timeout'|'send_failed'|'blocked_by_safety',video?:bool,durationSeconds?:int|float,callEndReason?:'user_hangup'|'timeout'|'lost_connection'|'rejected'|'call_restricted',restrictionActive?:bool,status?:'CONNECTING'|'CONNECTED'|'DISCONNECTED',statusReason?:'SCAN_QR'|'AUTO_RECONNECT'|'FAILED'|'MANUAL_STOP'|'QR_TIMEOUT'|'LOGGED_OUT'|'TEMPORARY_BAN'|'STREAM_ERROR',templateName?:string,templateStatus?:'APPROVED'|'REJECTED',reason?:string}
  * @phpstan-type Trigger array{session:string,event:Fixture,overrides?:Overrides,fromSession?:string}
  * @phpstan-type TriggerResult array{event:Fixture,session:string,delivery:'generated'|'simulated',eventId:?string,source:'test'|'runtime'}
+ * @phpstan-type AccountModeInput array{accountType:'whatsapp_app'|'business_app'|'meta_cloud'|'meta_coexistence',primaryPlatform?:'android'|'ios'}
+ * @phpstan-type AccountMode array{session:string,accountType:'whatsapp_app'|'business_app'|'meta_cloud'|'meta_coexistence',primaryPlatform:'android'|'ios'|null,changed:bool,unlinkedDevices:list<int>}
  * @phpstan-type Phone array{session:string,phone:string,online:bool,devices:list<array{deviceId:int}>}
  */
 final class OnboardingModels
