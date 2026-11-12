@@ -4516,6 +4516,12 @@
       "published": false,
       "language": "go",
       "testFile": "packages/go/newsletter_observations_test.go"
+    },
+    "interactiveMessages": {
+      "inventory": "contracts/native-interactive-messages.json",
+      "language": "go",
+      "baselineUnchanged": true,
+      "published": false
     }
   }
 }

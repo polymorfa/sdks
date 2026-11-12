@@ -960,6 +960,45 @@ Source contract: [`newsletter-observations.json`](../../contracts/newsletter-obs
 This source supplement does not establish registry publication or API deployment.
 
 
+### Interactive-message candidate (unreleased)
+
+This source targets the separately pinned interactive backend candidate in
+`contracts/interactive-messages.json`. It does not establish hosted availability
+or registry publication. Native button messages support image, video and document
+headers with exactly one URL or base64 source; a title cannot accompany media.
+Carousels contain 2–10 image/video cards. Only the outer carousel has a footer;
+video previews remain inside the video object. Each complete carousel is one
+message request. Linked Devices allow ten controls with at most three CTAs;
+replies can mix with URL/call controls, but not copy/catalog controls.
+
+Composed campaign buttons expose `with_reply_id` and `reply_id`. Preserve the ID
+across label changes and make IDs unique within the message. Existing media and
+carousel-template campaign paths retain the API's sender checks. These are
+composed campaign messages, not reply-flow actions: the latter retain their
+separate three-reply contract. The API remains authoritative for sender
+availability, media sizes, control limits and campaign sendability.
+
+The existing struct-literal fields stay unchanged. Legacy string IDs in
+`extensions["id"]` remain supported. `with_reply_id` returns an error when
+`extensions["id"]` already holds a different or non-string value. Campaign
+create and update requests reject a non-string `extensions["id"]` with a
+validation error before any HTTP request, including buttons built without
+`with_reply_id`.
+
+```rust
+use polymorfa_sdk::campaigns::{CampaignMessageButton, CampaignMessageButtonKind};
+let button = CampaignMessageButton {
+    kind: CampaignMessageButtonKind::Reply,
+    label: "Choose".into(),
+    url: None,
+    phone: None,
+    extensions: Default::default(),
+}
+.with_reply_id("offer-stable")
+.expect("no conflicting extension ID");
+assert_eq!(button.reply_id(), Some("offer-stable"));
+```
+
 ### Call settings exclusion end (Unreleased)
 
 Call-settings GET and PUT responses include the read-only

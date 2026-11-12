@@ -4516,6 +4516,12 @@
       "published": false,
       "language": "dotnet",
       "testFile": "packages/dotnet/tests/Polymorfa.Sdk.Tests/NewsletterObservationTests.cs"
+    },
+    "interactiveMessages": {
+      "inventory": "contracts/native-interactive-messages.json",
+      "language": "dotnet",
+      "baselineUnchanged": true,
+      "published": false
     }
   }
 }

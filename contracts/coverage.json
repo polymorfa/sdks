@@ -18412,6 +18412,12 @@
       "baselineUnchanged": true,
       "published": false,
       "wireEvidence": "POL-81 native fixtures: newsletter observations and optional channel forwards"
+    },
+    "interactiveMessages": {
+      "inventory": "contracts/native-interactive-messages.json",
+      "language": "typescript",
+      "baselineUnchanged": true,
+      "published": false
     }
   }
 }

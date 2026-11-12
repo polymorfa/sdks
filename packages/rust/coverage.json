@@ -4653,6 +4653,12 @@
       "published": false,
       "language": "rust",
       "testFile": "packages/rust/tests/newsletter_observations.rs"
+    },
+    "interactiveMessages": {
+      "inventory": "contracts/native-interactive-messages.json",
+      "language": "rust",
+      "baselineUnchanged": true,
+      "published": false
     }
   }
 }
