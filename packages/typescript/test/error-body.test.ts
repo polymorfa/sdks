@@ -195,7 +195,33 @@ describe("error codes", () => {
         "utf8",
       ),
     ) as { errorCodes: string[] };
+    const replay = JSON.parse(
+      await readFile(
+        new URL("../../../contracts/idempotency-replay.json", import.meta.url),
+        "utf8",
+      ),
+    ) as {
+      errorCodes: string[];
+      sourceCommit: string;
+      published: boolean;
+      conversionDeduplication: {
+        operationId: string;
+        description: string;
+        responses: Record<string, unknown>;
+      };
+    };
+    expect(replay.sourceCommit).toMatch(/^[0-9a-f]{40}$/);
+    expect(replay.published).toBe(false);
+    expect(replay.errorCodes).toContain("idempotency_replay_unavailable");
+    expect(replay.conversionDeduplication.operationId).toBe(
+      "recordCampaignConversion",
+    );
+    expect(replay.conversionDeduplication.description).toContain(
+      "422 idempotency_conflict",
+    );
+    expect(replay.conversionDeduplication.responses["422"]).toBeDefined();
     const published = new Set([
+      ...replay.errorCodes,
       ...round2.errorCodes,
       ...messaging.components.schemas.PublicError!.properties.error.properties
         .code.enum,
@@ -205,7 +231,7 @@ describe("error codes", () => {
     ]);
     // Older API deployments returned this code; keep recognizing it even
     // though the pinned API contract no longer advertises it.
-    const legacyCodes = ["premium_required"];
+    const legacyCodes = ["premium_required", "idempotency_completed"];
     // The baseline remains pinned; these additive1014 codes are also in the
     // independently pinned supplement and do not advance its release status.
     const additiveCodes = [
@@ -223,9 +249,10 @@ describe("error codes", () => {
     );
     for (const code of additiveCodes) expect(supplement).toContain(`"${code}"`);
     expect([...POLYMORFA_ERROR_CODES].sort()).toEqual(
-      [...published, ...legacyCodes, ...additiveCodes].sort(),
+      [...new Set([...published, ...legacyCodes, ...additiveCodes])].sort(),
     );
     expect(isKnownPolymorfaErrorCode("premium_required")).toBe(true);
+    expect(isKnownPolymorfaErrorCode("idempotency_completed")).toBe(true);
   });
 
   it("accepts codes added by a newer API", () => {
