@@ -74,16 +74,25 @@ it("covers exactly the pinned create request fields without closing opaque JSON"
   );
   expect(schema.required).toEqual(["name"]);
   expect(schema.additionalProperties).toBe(false);
-  expect(Object.keys(body).sort()).toEqual(
+  // These beta fields have their own typed wire fixtures in the campaign
+  // segment, drip, frequency-cap and follow-up suites; the type check below
+  // fails if one stops being a request key.
+  const typedElsewhere = [
+    "drip",
+    "followUp",
+    "frequencyCap",
+    "messageVariations",
+    "segmentId",
+    "trackedLinks",
+    "variableMapping",
+  ] as const satisfies readonly (keyof CreatePlatformCampaignRequest)[];
+  expect([...Object.keys(body), ...typedElsewhere].sort()).toEqual(
     Object.keys(schema.properties).sort(),
   );
   for (const field of [
     "composerBlueprint",
-    "messagesArray",
     "audienceRef",
     "complianceConfig",
-    "variants",
-    "variantStrategy",
   ]) {
     expect(schema.properties[field]).toEqual({});
   }

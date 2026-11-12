@@ -738,6 +738,7 @@ const PAYLOADS: {
       externalMessageId: "msg_1",
       variantKey: "a",
       attempt: 1,
+      messageIndex: 0,
     },
     [
       "campaignId",
@@ -757,6 +758,7 @@ const PAYLOADS: {
       attempts: 3,
       error: "send_failed",
       failedAt: 4,
+      messageIndex: 0,
     },
     ["campaignId", "recipientId", "phone", "attempts", "error", "failedAt"],
   ),
@@ -879,8 +881,25 @@ describe("webhook catalog contract", () => {
     );
   });
   it("lists exactly the events the pinned Messaging contract defines", () => {
+    // Contract revision f180dc1ee2 added these events. No SDK types them yet;
+    // remove an entry here when its payload type and fixture land.
+    const pendingEvents = [
+      "campaign.recipient_delivered",
+      "campaign.recipient_link_opened",
+      "campaign.recipient_read",
+      "campaign.recipient_replied",
+      "sticker.update",
+    ];
     const spec = [...specEvents().keys()];
-    expect(spec.sort()).toEqual([...KNOWN_WEBHOOK_EVENT_TYPES].sort());
+    for (const type of pendingEvents) {
+      expect(spec).toContain(type);
+      expect(KNOWN_WEBHOOK_EVENT_TYPES as readonly string[]).not.toContain(
+        type,
+      );
+    }
+    expect(spec.filter((type) => !pendingEvents.includes(type)).sort()).toEqual(
+      [...KNOWN_WEBHOOK_EVENT_TYPES].sort(),
+    );
   });
 
   it.each(Object.entries(PAYLOADS))(

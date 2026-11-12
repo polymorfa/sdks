@@ -197,7 +197,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("171a9683ff45d11a4b5d3917dc428ad2722b0d99");
+    expect(source.commit).toBe("f180dc1ee2bd45dbecf01702f73bdd75c664634b");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -221,7 +221,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.supplements).toBeUndefined();
     expect(source.contracts.platform.sha256).toBe(
-      "7b51c19e27ca66ced5f93e9cd381b43ae1b22ca655e7429d3896e607140a58b4",
+      "bee9be6cc08d2ec78f5eb5e05135bea3751f93af917b8dd6983b26029feac485",
     );
     for (const id of [
       "getWhatsAppAnalytics",
@@ -266,10 +266,19 @@ describe("reconciled coverage evidence", () => {
     "proves $operationId uses its covered HTTP route and body",
     async (fixture) => {
       const mapping = entry(fixture.operationId);
-      expect(mapping.typescript).toEqual({
-        status: "covered",
-        method: `MessagingClient.voip.${fixture.method}`,
-      });
+      if (fixture.operationId === "updateCallSettings") {
+        // The request also accepts acceptTerms and termsLocale, which the SDK
+        // does not type yet; the route and body below are still proven.
+        expect(mapping.typescript).toMatchObject({
+          status: "partial",
+          milestone: "contract-f180dc1ee2-sync",
+        });
+      } else {
+        expect(mapping.typescript).toEqual({
+          status: "covered",
+          method: `MessagingClient.voip.${fixture.method}`,
+        });
+      }
       const fetch = vi.fn(async () =>
         Response.json(fixture.response, { status: fixture.status }),
       );

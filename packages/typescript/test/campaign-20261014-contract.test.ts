@@ -804,7 +804,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
         "utf8",
       ),
     ) as { commit: string };
-    expect(baseline.commit).toBe("171a9683ff45d11a4b5d3917dc428ad2722b0d99");
+    expect(baseline.commit).toBe("f180dc1ee2bd45dbecf01702f73bdd75c664634b");
   });
 
   it("preserves every send variant and accepted whitespace labels without rewriting the graph", async () => {

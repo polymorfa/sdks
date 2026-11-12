@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 const root = new URL("../", import.meta.url);
 const read = (path) => readFileSync(new URL(path, root));
 const source = JSON.parse(read("contracts/machine-credentials.source.json"));
-assert.equal(source.commit, "61610853b494061513534fdb528d44d4fead2bdb");
+assert.equal(source.commit, "f180dc1ee2bd45dbecf01702f73bdd75c664634b");
 assert.equal(source.blob, "f084c3d918ca4c44a68c573c8917dd5997e20087");
 const bytes = read("contracts/machine-credentials.v1.json");
 assert.equal(bytes.length, source.bytes);

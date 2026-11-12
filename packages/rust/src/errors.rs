@@ -227,6 +227,13 @@ pub const POLYMORFA_ERROR_CODES: &[&str] = &[
     "hybrid_group_linked_devices_unavailable",
     "catalog_cache_full",
     "catalog_sync_cooldown",
+    "billing_credit_required",
+    "safe_mode_not_entitled",
+    "warmup_plan_not_entitled",
+    "team_deletion_scheduled",
+    "terms_acceptance_required",
+    "terms_activation_blocked",
+    "idempotency_replay_unavailable",
 ];
 
 pub fn is_known_error_code(code: &str) -> bool {

@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Breaking: every public "organization" name is now "team", matching API
-  contract revision `61610853b4` of polymorfa/polymorfa#887. There are no
+  contract revision `f180dc1ee2` of polymorfa/polymorfa#887. There are no
   deprecated aliases. Update call sites in all six SDKs:
   - Credentials: TypeScript `{ type: "organizationApiKey" }` is
     `{ type: "teamApiKey" }` and `validateOrganizationApiKey` is
@@ -34,7 +34,18 @@
     `POLYMORFA_TEAM_API_KEY` (previously `POLYMORFA_ORGANIZATION_API_KEY`).
 
   Contract snapshots, coverage fingerprints, the machine-credential fixture and
-  the documentation snippet catalog are re-pinned to that revision. Publish
+  the documentation snippet catalog are re-pinned to that revision. The
+  revision also carries later API dev changes. The coverage ledger now holds 671
+  operations: 451 covered, 2 partial, 58 missing and 160 excluded in TypeScript.
+  The TypeScript error-code list adds the new `billing_credit_required`,
+  `safe_mode_not_entitled`, `warmup_plan_not_entitled`, `team_deletion_scheduled`,
+  `terms_acceptance_required`, `terms_activation_blocked` and
+  `idempotency_replay_unavailable` codes, and the campaign recipient sent and
+  failed webhook payloads type the optional `messageIndex`. The Test number
+  routes (`/messaging/testing/...`), `/platform/keys` and `/platform/tokens` left
+  the specification, so `projectTokens.list`, `apiKeys.list` and
+  `apiKeys.deactivate` and the older Test-event helpers target retired paths
+  until a removal or update decision lands. Publish
   these SDKs only after the API change is deployed: a build from this source
   cannot call an API that still uses the old names. Source-only and
   unpublished.

@@ -86,6 +86,28 @@ compares their paths and fields. The full snapshots are not repinned here.
 
 ## Full snapshots
 
+## Contract revision f180dc1ee2
+
+The snapshots are byte-identical copies of `apps/api/docs/openapi.json`
+(sha256 `0c66f1ee…b071`) and `apps/api/docs/openapi.management.json`
+(sha256 `bee9be6c…c485`) at `polymorfa/polymorfa` commit
+`f180dc1ee2bd45dbecf01702f73bdd75c664634b`, the pushed head of #887. It
+contains the team rename and later API dev changes. The ledger holds 671
+operations. All 579 earlier rows were re-fingerprinted. 285 changed only by
+documented response headers; the shared `PublicError` enum grew for every
+operation. An operation whose request gained a field or enum value that a
+language does not type is `partial` for that language, with the field names in
+the reason. A covered row whose response gained fields that a language does not
+type lists them under `untypedResponseFields`; the call itself is unaffected.
+Both come from a name search of each package's source, not a field-level proof.
+The 98 operations added or moved since 171a9683 are `covered` where the
+campaign-supplement and official-round-2 inventories attribute native methods,
+`excluded` for credential-free pages and dashboard-identity routes, and
+`missing` otherwise, including operations whose typed methods exist only in
+separately pinned TypeScript supplements. `retiredOperations` lists the six
+operations whose paths left the specification; their SDK methods still exist.
+The `selfhost` and `platform-native` specifications are not SDK inputs.
+
 The current snapshots are byte-identical copies of the Messaging and Platform
 contracts at API dev merge commit `171a9683ff45d11a4b5d3917dc428ad2722b0d99`.
 The full revision contains the inherited Logs and Usage contracts and all four

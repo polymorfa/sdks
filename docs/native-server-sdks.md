@@ -9,15 +9,15 @@ The implementation reference is the TypeScript server SDK at
 `e24cb176fc1124f5fe852ff6c77902648fd13b4a`, recorded as `sourceSdkCommit` in
 each native `coverage.json`. It pins the TypeScript implementation the native
 ports mirror. It is not API acceptance, deployed availability or registry
-publication. The full Messaging and Platform snapshots remain pinned to API
-source `171a9683ff45d11a4b5d3917dc428ad2722b0d99`; supplements keep their exact
-recorded revisions. No global contract repin is part of this change.
+publication. The full Messaging and Platform snapshots are pinned to API
+source `f180dc1ee2bd45dbecf01702f73bdd75c664634b` (polymorfa/polymorfa#887);
+supplements keep their exact recorded revisions.
 
 `contracts/native-campaign-supplements.json` maps the eleven contact
 frequency-cap, audience-segment and drip operations, plus the affected field
 shapes, from the two integrated campaign supplements to each language's public
-method and wire test. These operations are outside the 579-operation ledger;
-the inventory does not equate that ledger with any later API operation count.
+method and wire test. These operations were outside the earlier 579-operation ledger and are now
+rows in the 671-operation ledger pinned to `f180dc1ee2`.
 `scripts/check-native-coverage.mjs` checks each mapping against the pinned
 supplement, the package source and the named test.
 
@@ -107,5 +107,5 @@ their separate provider protocol. Each grant request itself submits once.
 
 These operations remain held, source-only functionality. They are absent from
 the accepted `9bb1e2e` API source and are not a new accepted producer or release.
-The global API baseline remains `171a9683ff45d11a4b5d3917dc428ad2722b0d99`,
+The global API baseline is `f180dc1ee2bd45dbecf01702f73bdd75c664634b`,
 version `2026-09-22`. Signal producer/interface acceptance remains unassigned.

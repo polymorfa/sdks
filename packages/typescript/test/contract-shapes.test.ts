@@ -191,9 +191,8 @@ describe("SDK types match the pinned contract snapshots", () => {
 
   it("keeps QuickLink creation and Cloud onboarding request fields", () => {
     expect(
-      // The committed baseline intentionally remains unchanged; additive1014
-      // fields have their own public typing/wire fixtures.
-      keys<Omit<CreateQuickLinkRequest, "signalMode">>({
+      keys<CreateQuickLinkRequest>({
+        signalMode: true,
         billingControls: true,
         purpose: true,
         connectionGoal: true,

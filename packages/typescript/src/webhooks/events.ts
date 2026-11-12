@@ -1144,6 +1144,8 @@ export interface CampaignRecipientSentPayload {
   readonly externalMessageId: string;
   readonly variantKey: string;
   readonly attempt: number;
+  /** Position in the campaign's message sequence from 0; absent means 0. */
+  readonly messageIndex?: number;
 }
 
 export interface CampaignRecipientFailedPayload {
@@ -1153,6 +1155,8 @@ export interface CampaignRecipientFailedPayload {
   readonly attempts: number;
   readonly error: string;
   readonly failedAt: number;
+  /** Position in the campaign's message sequence from 0; absent means 0. */
+  readonly messageIndex?: number;
 }
 
 export interface CampaignRecipientSkippedPayload {

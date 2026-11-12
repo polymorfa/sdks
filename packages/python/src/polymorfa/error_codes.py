@@ -104,6 +104,13 @@ KnownPolymorfaErrorCode = Literal[
     "whatsapp_groups_ineligible",
     "whatsapp_rate_limited",
     "zero_knowledge_session",
+    "billing_credit_required",
+    "safe_mode_not_entitled",
+    "warmup_plan_not_entitled",
+    "team_deletion_scheduled",
+    "terms_acceptance_required",
+    "terms_activation_blocked",
+    "idempotency_replay_unavailable",
 ]
 
 POLYMORFA_ERROR_CODES = frozenset(
@@ -113,6 +120,13 @@ POLYMORFA_ERROR_CODES = frozenset(
         "campaign_approval_stale",
         "campaign_variables_missing",
         "zero_knowledge_session",
+        "billing_credit_required",
+        "safe_mode_not_entitled",
+        "warmup_plan_not_entitled",
+        "team_deletion_scheduled",
+        "terms_acceptance_required",
+        "terms_activation_blocked",
+        "idempotency_replay_unavailable",
         "invalid_credential",
         "entitlement_required",
         "cloud_template_authority_restricted",

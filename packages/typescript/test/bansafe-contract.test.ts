@@ -67,6 +67,14 @@ describe("BanSafe canonical contract coverage", () => {
     expect(
       bansafeRows.filter(({ typescript }) => typescript.status === "covered"),
     ).toHaveLength(35);
+    // Claim evidence gained linkedDeviceInteractive in contract revision
+    // f180dc1ee2; the ledger lists it as an untyped response field.
+    expect(
+      bansafeRows
+        .filter(({ typescript }) => "untypedResponseFields" in typescript)
+        .map(({ operationId }) => operationId)
+        .sort(),
+    ).toEqual(["getBanSafeClaim", "listBanSafeClaims"]);
     expect(
       bansafeRows.filter(({ typescript }) => typescript.status === "missing"),
     ).toEqual([]);

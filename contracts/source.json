@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
-  "branch": "dev",
+  "commit": "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
+  "branch": "recovery/org-team-backend-20261028",
   "published": true,
-  "note": "Full Messaging and Platform snapshots pin the merged API dev revision plus the team rename of polymorfa/polymorfa#887 (contract revision 61610853b4). SDK publication and API deployment remain separate gates.",
+  "note": "Full Messaging and Platform snapshots are byte-identical copies of the API specifications at polymorfa/polymorfa#887 pushed head f180dc1ee2 (contract revision f180dc1ee2). That head includes the team rename and later dev changes. SDK publication and API deployment remain separate gates.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "5b5914dd1bee0fc91a98d037305bfe8919950c181477ea1d696ab4fb992ce228"
+      "sha256": "0c66f1ee93923cf57425ac29c01a84c5c140b703ace2160e1b899ee6dad0b071"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "7b51c19e27ca66ced5f93e9cd381b43ae1b22ca655e7429d3896e607140a58b4"
+      "sha256": "bee9be6cc08d2ec78f5eb5e05135bea3751f93af917b8dd6983b26029feac485"
     }
   }
 }
