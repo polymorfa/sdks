@@ -2,12 +2,10 @@ use serde_json::json;
 
 #[test]
 fn ban_credit_waiver_verdicts_and_evidence_round_trip() {
-    for (value, verdict) in [
-        (
-            "linked_device_interactive",
-            polymorfa_sdk::bansafe::ClaimVerdict::LinkedDeviceInteractive,
-        ),
-    ] {
+    for (value, verdict) in [(
+        "linked_device_interactive",
+        polymorfa_sdk::bansafe::ClaimVerdict::LinkedDeviceInteractive,
+    )] {
         let decoded: polymorfa_sdk::bansafe::ClaimVerdict =
             serde_json::from_value(json!(value)).unwrap();
         assert_eq!(decoded, verdict);
