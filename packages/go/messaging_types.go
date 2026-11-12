@@ -119,6 +119,7 @@ type MessageButton struct {
 	CatalogProductID    string `json:"catalogProductId,omitempty"`
 }
 type ButtonsContent struct {
+	Media   *ButtonsMedia   `json:"media,omitempty"`
 	Title   string          `json:"title,omitempty"`
 	Body    string          `json:"body"`
 	Footer  string          `json:"footer,omitempty"`
@@ -230,6 +231,7 @@ type MessageContent struct {
 	ProductList           *ProductListContent           `json:"productList,omitempty"`
 	Order                 *OrderContent                 `json:"order,omitempty"`
 	List                  *ListContent                  `json:"list,omitempty"`
+	Carousel              *CarouselContent              `json:"carousel,omitempty"`
 	Buttons               *ButtonsContent               `json:"buttons,omitempty"`
 	AddressMessage        *AddressContent               `json:"addressMessage,omitempty"`
 	Flow                  *FlowContent                  `json:"flow,omitempty"`

@@ -236,6 +236,12 @@ pub(crate) fn validate_message_extensions(messages: &[CampaignMessage], drip: bo
         if let Some(buttons) = &m.buttons {
             for b in buttons {
                 reserved(&b.extensions, &["kind", "label", "url", "phone"])?;
+                if b.extensions
+                    .get("id")
+                    .is_some_and(|value| !value.is_string())
+                {
+                    return Err(input_error());
+                }
             }
         }
     }
