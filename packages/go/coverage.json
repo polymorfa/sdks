@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a",
+  "sourceSdkCommit": "a7dd02cf1655e386642b9401358b725de4903a60",
   "operations": [
     {
       "family": "messaging",
@@ -717,7 +717,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/testing/{projectId}/events/fixtures",
+      "path": "/messaging/test-events/fixtures",
       "status": "covered",
       "sdkMethod": "MessagingClient.Testing.ListEventFixtures",
       "testFile": "cloud_audiences_test.go"
@@ -1328,7 +1328,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/testing/{projectId}/events",
+      "path": "/messaging/{session}/test-events",
       "status": "covered",
       "sdkMethod": "MessagingClient.Testing.TriggerEvent",
       "testFile": "cloud_audiences_test.go"
@@ -1336,7 +1336,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/testing/{projectId}/history-fixtures",
+      "path": "/messaging/projects/{projectId}/test-history-fixtures",
       "status": "covered",
       "sdkMethod": "MessagingClient.Testing.CreateHistoryFixture",
       "testFile": "cloud_audiences_test.go"
@@ -4496,6 +4496,30 @@
       "path": "/console/insights/vitals",
       "status": "excluded",
       "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority."
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{session}/phone",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.GetPhone",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/phone/devices/{deviceId}/unlink",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.UnlinkPhoneDevice",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{session}/phone/messages",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.SendPhoneMessage",
+      "testFile": "supplements_test.go"
     }
   ],
   "supplements": {

@@ -47,13 +47,13 @@ foreach ([['syncType' => 'FULL','chunkOrder' => -1],['syncType' => 'FULL','chunk
     $ecNoIO(fn () => $ecMessaging->historySync->requestChunkRetry('s', $bad));
 }
 foreach ([0,100] as $device) {
-    $ecNoIO(fn () => $ecMessaging->testing->unlinkPhoneDevice($ecProject, 's', $device), Polymorfa\ValidationException::class);
+    $ecNoIO(fn () => $ecMessaging->testing->unlinkPhoneDevice('s', $device), Polymorfa\ValidationException::class);
 }
 $ecNoIO(fn () => $ecOrg->requestLogs->list());
 $ecNoIO(fn () => $ecA->requestLogs->list(['projectId' => $ecBProject]), Polymorfa\ValidationException::class);
 $ecNoIO(fn () => $ecA->requestLogs->list(['cursor' => 'next','traceId' => 'trace']), Polymorfa\ValidationException::class);
 $ecBrowser = new Polymorfa\MessagingClient($ecPrincipals[2], baseUrl:$ecUrl);
-foreach ([fn () => $ecBrowser->testing->getPhone($ecProject, 's'),fn () => $ecBrowser->testing->sendPhoneMessage($ecProject, 's', ['to' => 'x','text' => 'y']),fn () => $ecBrowser->testing->unlinkPhoneDevice($ecProject, 's', 1),fn () => $ecBrowser->historySync->requestChunkRetry('s', ['syncType' => 'FULL','chunkOrder' => 0]),fn () => $ecBrowser->historySync->deleteChunk('s', '/file', str_repeat('h', 32)),fn () => $ecBrowser->whatsappMedia->createUploadGrant('s', 'image', str_repeat('h', 32)),fn () => $ecBrowser->whatsappMedia->uploadTransport('direct', new Polymorfa\UploadWhatsAppMediaOptions('image'))] as $invoke) {
+foreach ([fn () => $ecBrowser->testing->getPhone('s'),fn () => $ecBrowser->testing->sendPhoneMessage('s', ['to' => 'x','text' => 'y']),fn () => $ecBrowser->testing->unlinkPhoneDevice('s', 1),fn () => $ecBrowser->historySync->requestChunkRetry('s', ['syncType' => 'FULL','chunkOrder' => 0]),fn () => $ecBrowser->historySync->deleteChunk('s', '/file', str_repeat('h', 32)),fn () => $ecBrowser->whatsappMedia->createUploadGrant('s', 'image', str_repeat('h', 32)),fn () => $ecBrowser->whatsappMedia->uploadTransport('direct', new Polymorfa\UploadWhatsAppMediaOptions('image'))] as $invoke) {
     $ecNoIO($invoke);
 }
 $opens = 0;

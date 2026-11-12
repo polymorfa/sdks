@@ -1287,7 +1287,7 @@ async fn group_testing_and_request_log_actual_public_seams_keep_principals_and_e
     let m = support::messaging(wire.base.clone());
     let phone = m
         .testing()
-        .get_phone("p /", "s /", Default::default())
+        .get_phone("s /", Default::default())
         .await
         .unwrap();
     assert!(!phone.data.online);
@@ -1295,7 +1295,6 @@ async fn group_testing_and_request_log_actual_public_seams_keep_principals_and_e
     let sent = m
         .testing()
         .send_phone_message(
-            "p /",
             "s /",
             &SendTestingPhoneMessageRequest {
                 to: "+15550002222".into(),
@@ -1313,7 +1312,7 @@ async fn group_testing_and_request_log_actual_public_seams_keep_principals_and_e
     for device in [1, 99] {
         assert!(
             m.testing()
-                .unlink_phone_device("p /", "s /", device, Default::default())
+                .unlink_phone_device("s /", device, Default::default())
                 .await
                 .unwrap()
                 .data
@@ -1330,27 +1329,26 @@ async fn group_testing_and_request_log_actual_public_seams_keep_principals_and_e
     wire.check(
         1,
         "GET",
-        "/messaging/testing/p%20%2F/numbers/s%20%2F/phone",
+        "/messaging/s%20%2F/phone",
         json!(null),
         "2026-09-22",
     );
     wire.check(
         2,
         "POST",
-        "/messaging/testing/p%20%2F/numbers/s%20%2F/phone/messages",
+        "/messaging/s%20%2F/phone/messages",
         json!({"to":"+15550002222","text":"Synthetic test"}),
         "2026-10-14",
     );
     assert!(!wire.captured()[2].headers.contains_key("idempotency-key"));
     assert!(scoped
         .testing()
-        .get_phone("p", "s", Default::default())
+        .get_phone("s", Default::default())
         .await
         .is_err());
     assert!(scoped
         .testing()
         .send_phone_message(
-            "p",
             "s",
             &SendTestingPhoneMessageRequest {
                 to: "x".into(),
@@ -1362,14 +1360,14 @@ async fn group_testing_and_request_log_actual_public_seams_keep_principals_and_e
         .is_err());
     assert!(scoped
         .testing()
-        .unlink_phone_device("p", "s", 1, Default::default())
+        .unlink_phone_device("s", 1, Default::default())
         .await
         .is_err());
     assert_eq!(wire.captured().len(), 5);
     for device in [0, 100] {
         assert_eq!(
             m.testing()
-                .unlink_phone_device("p", "s", device, Default::default())
+                .unlink_phone_device("s", device, Default::default())
                 .await
                 .unwrap_err()
                 .kind,
@@ -1448,7 +1446,7 @@ async fn public_seam_malformed_errors_and_cancel_are_not_successes() {
     let w = Wire::raw(vec![(200, "<html>fixture</html>".into(), vec![])]).await;
     let e = support::messaging(w.base.clone())
         .testing()
-        .get_phone("p", "s", Default::default())
+        .get_phone("s", Default::default())
         .await
         .unwrap_err();
     assert_eq!(e.code.as_deref(), Some("invalid_response"));
@@ -1462,13 +1460,12 @@ async fn public_seam_malformed_errors_and_cancel_are_not_successes() {
         let error = match kind {
             0 => m
                 .testing()
-                .get_phone("p", "s", Default::default())
+                .get_phone("s", Default::default())
                 .await
                 .unwrap_err(),
             1 => m
                 .testing()
                 .send_phone_message(
-                    "p",
                     "s",
                     &SendTestingPhoneMessageRequest {
                         to: "x".into(),
@@ -1480,7 +1477,7 @@ async fn public_seam_malformed_errors_and_cancel_are_not_successes() {
                 .unwrap_err(),
             _ => m
                 .testing()
-                .unlink_phone_device("p", "s", 1, Default::default())
+                .unlink_phone_device("s", 1, Default::default())
                 .await
                 .unwrap_err(),
         };
@@ -1507,7 +1504,7 @@ async fn public_seam_malformed_errors_and_cancel_are_not_successes() {
     );
     assert_eq!(
         m.testing()
-            .get_phone("p", "s", options.clone())
+            .get_phone("s", options.clone())
             .await
             .unwrap_err()
             .kind,
@@ -1516,7 +1513,6 @@ async fn public_seam_malformed_errors_and_cancel_are_not_successes() {
     assert_eq!(
         m.testing()
             .send_phone_message(
-                "p",
                 "s",
                 &SendTestingPhoneMessageRequest {
                     to: "x".into(),
@@ -1531,7 +1527,7 @@ async fn public_seam_malformed_errors_and_cancel_are_not_successes() {
     );
     assert_eq!(
         m.testing()
-            .unlink_phone_device("p", "s", 1, options.clone())
+            .unlink_phone_device("s", 1, options.clone())
             .await
             .unwrap_err()
             .kind,
@@ -1799,7 +1795,6 @@ async fn regression41_testing_message_requires_its_nullable_id() {
     assert!(support::messaging(w.base.clone())
         .testing()
         .send_phone_message(
-            "p",
             "s",
             &polymorfa_sdk::onboarding::SendTestingPhoneMessageRequest {
                 to: "phone".into(),
@@ -1819,7 +1814,7 @@ async fn regression41_unlink_requires_the_acknowledged_true_outcome() {
     .await;
     assert!(support::messaging(w.base.clone())
         .testing()
-        .unlink_phone_device("p", "s", 1, Default::default())
+        .unlink_phone_device("s", 1, Default::default())
         .await
         .is_err());
 }

@@ -39,9 +39,9 @@ final class ExistingContractConsumer
             self::delivery($config['effective']['historySync']['delivery']);
         }
         $messages->groups->getCapabilities('s', 'g')->data['data']['capabilities'];
-        $messages->testing->getPhone($project, 's')->data['online'];
-        $messages->testing->sendPhoneMessage($project, 's', ['to' => '+15555555555','text' => 'hello'])->data['messageId'];
-        $messages->testing->unlinkPhoneDevice($project, 's', 1)->data['unlinked'];
+        $messages->testing->getPhone('s')->data['online'];
+        $messages->testing->sendPhoneMessage('s', ['to' => '+15555555555','text' => 'hello'])->data['messageId'];
+        $messages->testing->unlinkPhoneDevice('s', 1)->data['unlinked'];
         $org->project($project)->requestLogs->list()->items;
         $messages->whatsappMedia->relayUpload('s', new Polymorfa\EncryptedMediaInfo('image', str_repeat('k', 32), str_repeat('h', 32), str_repeat('e', 32), 1, 26), static fn (?Polymorfa\CancellationToken $c): Psr\Http\Message\StreamInterface => GuzzleHttp\Psr7\Utils::streamFor('cipher'));
         $messages->whatsappMedia->createUploadGrant('s', 'sticker', str_repeat('h', 32));

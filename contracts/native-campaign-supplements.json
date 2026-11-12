@@ -7,8 +7,8 @@
   },
   "baselineLedger": {
     "path": "contracts/coverage.json",
-    "operations": 579,
-    "note": "These supplement operations are outside the pinned 579-operation ledger. Neither file establishes equality with any later API operation inventory."
+    "operations": 582,
+    "note": "These supplement operations are outside the pinned 582-operation ledger. Neither file establishes equality with any later API operation inventory."
   },
   "supplements": [
     {

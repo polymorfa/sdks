@@ -523,16 +523,14 @@ async def test_nine_group_testing_and_history_public_tcp(version):
     ):
         o = RequestOptions(api_version=version)
         assert (await scoped.groups.get_capabilities("a/b", "g/1", options=o)).data["data"] == caps
-        assert (await c.testing.get_phone("p/1", "a/b", options=o)).data["online"] is False
+        assert (await c.testing.get_phone("a/b", options=o)).data["online"] is False
         assert (
             await c.testing.send_phone_message(
-                "p/1", "a/b", {"to": "+15557654321", "text": "test"}, options=o
+                "a/b", {"to": "+15557654321", "text": "test"}, options=o
             )
         ).data["messageId"] is None
         for device in (1, 99):
-            assert (await c.testing.unlink_phone_device("p/1", "a/b", device, options=o)).data[
-                "unlinked"
-            ]
+            assert (await c.testing.unlink_phone_device("a/b", device, options=o)).data["unlinked"]
         for sync in (
             "INITIAL_BOOTSTRAP",
             "INITIAL_STATUS_V3",
@@ -560,7 +558,7 @@ async def test_nine_group_testing_and_history_public_tcp(version):
             is None
         )
         assert calls[0][1] == "/messaging/a%2Fb/groups/g%2F1/capabilities"
-        assert calls[1][1] == "/messaging/testing/p%2F1/numbers/a%2Fb/phone"
+        assert calls[1][1] == "/messaging/a%2Fb/phone"
         assert calls[1][3] == calls[3][3] == calls[4][3] == b""
         assert json.loads(calls[2][3]) == {"to": "+15557654321", "text": "test"}
         assert [x[2]["polymorfa-version"] for x in calls[:5]] == [version or "2026-09-22"] * 5
@@ -568,7 +566,7 @@ async def test_nine_group_testing_and_history_public_tcp(version):
         before = len(calls)
         for device in (0, 100, True):
             with pytest.raises(ValidationError):
-                await c.testing.unlink_phone_device("p", "s", device)
+                await c.testing.unlink_phone_device("s", device)
         for bad in (
             {"chunkMessageId": None},
             {"regenerate": None},
@@ -580,7 +578,7 @@ async def test_nine_group_testing_and_history_public_tcp(version):
                     "s", {"syncType": "RECENT", "chunkOrder": 0} | bad
                 )
         for action in (
-            lambda: scoped.testing.get_phone("p", "s"),
+            lambda: scoped.testing.get_phone("s"),
             lambda: scoped.history_sync.request_chunk_retry(
                 "s", {"syncType": "RECENT", "chunkOrder": 0}
             ),
@@ -605,11 +603,11 @@ async def test_nine_malformed_success_is_safe(operation, bad):
             await (
                 c.groups.get_capabilities("s", "g")
                 if operation == "group"
-                else c.testing.get_phone("p", "s")
+                else c.testing.get_phone("s")
                 if operation == "phone"
-                else c.testing.send_phone_message("p", "s", {"to": "t", "text": "x"})
+                else c.testing.send_phone_message("s", {"to": "t", "text": "x"})
                 if operation == "send"
-                else c.testing.unlink_phone_device("p", "s", 1)
+                else c.testing.unlink_phone_device("s", 1)
                 if operation == "unlink"
                 else c.history_sync.request_chunk_retry(
                     "s", {"syncType": "RECENT", "chunkOrder": 0}
@@ -933,7 +931,7 @@ async def test_no_key_uncertain_writes_are_once(operation):
                 if operation == "audience"
                 else c.audiences.add_members(ID, {"members": []})
                 if operation == "members"
-                else m.testing.send_phone_message("p", "s", {"to": "t", "text": "x"})
+                else m.testing.send_phone_message("s", {"to": "t", "text": "x"})
             )
         assert len(calls) == 1 and "idempotency-key" not in calls[0][2]
 
@@ -1009,11 +1007,11 @@ async def test_nine_cancellation_keeps_cancelled_error(operation):
             action = (
                 m.groups.get_capabilities("s", "g")
                 if operation == "group"
-                else m.testing.get_phone("p", "s")
+                else m.testing.get_phone("s")
                 if operation == "phone"
-                else m.testing.send_phone_message("p", "s", {"to": "t", "text": "x"})
+                else m.testing.send_phone_message("s", {"to": "t", "text": "x"})
                 if operation == "send"
-                else m.testing.unlink_phone_device("p", "s", 1)
+                else m.testing.unlink_phone_device("s", 1)
                 if operation == "unlink"
                 else c.request_logs.list(project_id=PROJECT)
                 if operation == "logs"

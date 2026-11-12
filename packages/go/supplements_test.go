@@ -24,14 +24,14 @@ var supplementFixtures = []operationFixture{
 	{"MessagingClient.FlowEncryption.Register", "POST", "/graph/whatsapp/v26.0/phone/whatsapp_business_encryption", "", `{"business_public_key":"public-key"}`, `{"success":true}`, "success", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		return wireData(m.FlowEncryption().Register(ctx, "phone", RegisterFlowEncryptionKeyRequest{BusinessPublicKey: "public-key"}, CloudGraphVersion{Version: "v26.0"}))
 	}},
-	{"MessagingClient.Testing.GetPhone", "GET", "/messaging/testing/project/numbers/support/phone", "", "", `{"session":"support","phone":"+15551234567","online":false,"devices":[{"deviceId":1}]}`, "devices.0.deviceId", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
-		return wireData(m.Testing().GetPhone(ctx, "project", "support"))
+	{"MessagingClient.Testing.GetPhone", "GET", "/messaging/support/phone", "", "", `{"session":"support","phone":"+15551234567","online":false,"devices":[{"deviceId":1}]}`, "devices.0.deviceId", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+		return wireData(m.Testing().GetPhone(ctx, "support"))
 	}},
-	{"MessagingClient.Testing.SendPhoneMessage", "POST", "/messaging/testing/project/numbers/support/phone/messages", "", `{"to":"+15551234567","text":"Hello"}`, `{"session":"support","to":"+15551234567","messageId":null}`, "to", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
-		return wireData(m.Testing().SendPhoneMessage(ctx, "project", "support", SendTestingPhoneMessageRequest{To: "+15551234567", Text: "Hello"}))
+	{"MessagingClient.Testing.SendPhoneMessage", "POST", "/messaging/support/phone/messages", "", `{"to":"+15551234567","text":"Hello"}`, `{"session":"support","to":"+15551234567","messageId":null}`, "to", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+		return wireData(m.Testing().SendPhoneMessage(ctx, "support", SendTestingPhoneMessageRequest{To: "+15551234567", Text: "Hello"}))
 	}},
-	{"MessagingClient.Testing.UnlinkPhoneDevice", "POST", "/messaging/testing/project/numbers/support/phone/devices/1/unlink", "", "", `{"session":"support","deviceId":1,"unlinked":true}`, "unlinked", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
-		return wireData(m.Testing().UnlinkPhoneDevice(ctx, "project", "support", 1))
+	{"MessagingClient.Testing.UnlinkPhoneDevice", "POST", "/messaging/support/phone/devices/1/unlink", "", "", `{"session":"support","deviceId":1,"unlinked":true}`, "unlinked", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+		return wireData(m.Testing().UnlinkPhoneDevice(ctx, "support", 1))
 	}},
 	{"MessagingClient.Campaigns.Update", "PATCH", "/messaging/projects/project/campaigns/campaign", "", `{"name":"New","scheduledAt":null,"sendWindow":null}`, campaignFixture, "data.name", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
 		name := "New"

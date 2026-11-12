@@ -1,12 +1,12 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "2f1510f901aca1d68398a6dc9dbf243348c672c0",
+  "commit": "eda77760b56095a771c55e5d2df18be23e985377",
   "sourcePath": "apps/api/docs/openapi.json",
-  "sourceSha256": "ea165cf5da67985a8f3c944d4771c6e30a77bb3d081396895454db22b66d9221",
+  "sourceSha256": "5b51b9933e2f002e2f845ee184eb243d62093d8acb4c4101fb4996cc2df79d85",
   "operations": {
     "getTestingPhone": {
       "method": "GET",
-      "path": "/messaging/testing/{projectId}/numbers/{session}/phone",
+      "path": "/messaging/{session}/phone",
       "operation": {
         "operationId": "getTestingPhone",
         "tags": ["Testing"],
@@ -18,15 +18,6 @@
         "summary": "Get a Test number's phone",
         "x-required-scope": "sandbox:read",
         "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "required": true,
-            "name": "projectId",
-            "in": "path"
-          },
           {
             "schema": {
               "type": "string",
@@ -45,7 +36,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TestingPhoneState"
+                  "$ref": "#/schemas/TestingPhoneState"
                 }
               }
             },
@@ -58,38 +49,6 @@
               },
               "X-RateLimit-Reset": {
                 "$ref": "#/components/headers/X-RateLimit-Reset"
-              }
-            }
-          },
-          "400": {
-            "description": "The session is not a Test number in the project",
-            "headers": {
-              "X-RateLimit-Limit": {
-                "$ref": "#/components/headers/X-RateLimit-Limit"
-              },
-              "X-RateLimit-Remaining": {
-                "$ref": "#/components/headers/X-RateLimit-Remaining"
-              },
-              "X-RateLimit-Reset": {
-                "$ref": "#/components/headers/X-RateLimit-Reset"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PublicError"
-                },
-                "example": {
-                  "error": {
-                    "type": "invalid_request_error",
-                    "code": "invalid_parameter",
-                    "message": "Correct the invalid request field.",
-                    "param": null,
-                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
-                  },
-                  "data": null,
-                  "docs": "https://docs.polymorfa.com/api/errors#invalid-parameter"
-                }
               }
             }
           },
@@ -109,7 +68,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/schemas/PublicError"
                 },
                 "example": {
                   "error": {
@@ -126,7 +85,7 @@
             }
           },
           "404": {
-            "description": "Project not found",
+            "description": "Resource not found",
             "headers": {
               "X-RateLimit-Limit": {
                 "$ref": "#/components/headers/X-RateLimit-Limit"
@@ -141,7 +100,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/schemas/PublicError"
                 },
                 "example": {
                   "error": {
@@ -173,7 +132,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/schemas/PublicError"
                 },
                 "example": {
                   "error": {
@@ -191,14 +150,15 @@
           }
         },
         "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sandbox:read</Badge>"
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">sandbox:read</Badge>"
         },
-        "description": "**Required scope:** `sandbox:read`"
+        "x-protocols": ["Linked Device API"],
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sandbox:read`"
       }
     },
     "sendTestingPhoneMessage": {
       "method": "POST",
-      "path": "/messaging/testing/{projectId}/numbers/{session}/phone/messages",
+      "path": "/messaging/{session}/phone/messages",
       "operation": {
         "operationId": "sendTestingPhoneMessage",
         "tags": ["Testing"],
@@ -210,15 +170,6 @@
         "summary": "Send a message from a Test number's phone",
         "x-required-scope": "sandbox:write",
         "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "required": true,
-            "name": "projectId",
-            "in": "path"
-          },
           {
             "schema": {
               "type": "string",
@@ -236,7 +187,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TestingPhoneMessageRequest"
+                "$ref": "#/schemas/TestingPhoneMessageRequest"
               }
             }
           }
@@ -247,7 +198,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TestingPhoneMessage"
+                  "$ref": "#/schemas/TestingPhoneMessage"
                 }
               }
             },
@@ -264,7 +215,7 @@
             }
           },
           "400": {
-            "description": "The session or recipient is not a Test number in the project, or the phone is offline",
+            "description": "Invalid recipient, or the phone is offline",
             "headers": {
               "X-RateLimit-Limit": {
                 "$ref": "#/components/headers/X-RateLimit-Limit"
@@ -279,7 +230,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/schemas/PublicError"
                 },
                 "example": {
                   "error": {
@@ -311,7 +262,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/schemas/PublicError"
                 },
                 "example": {
                   "error": {
@@ -328,7 +279,7 @@
             }
           },
           "404": {
-            "description": "Project not found",
+            "description": "Resource not found",
             "headers": {
               "X-RateLimit-Limit": {
                 "$ref": "#/components/headers/X-RateLimit-Limit"
@@ -343,7 +294,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/schemas/PublicError"
                 },
                 "example": {
                   "error": {
@@ -375,7 +326,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/schemas/PublicError"
                 },
                 "example": {
                   "error": {
@@ -407,7 +358,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/schemas/PublicError"
                 },
                 "example": {
                   "error": {
@@ -425,14 +376,15 @@
           }
         },
         "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sandbox:write</Badge>"
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">sandbox:write</Badge>"
         },
-        "description": "**Required scope:** `sandbox:write`"
+        "x-protocols": ["Linked Device API"],
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sandbox:write`"
       }
     },
     "unlinkTestingPhoneDevice": {
       "method": "POST",
-      "path": "/messaging/testing/{projectId}/numbers/{session}/phone/devices/{deviceId}/unlink",
+      "path": "/messaging/{session}/phone/devices/{deviceId}/unlink",
       "operation": {
         "operationId": "unlinkTestingPhoneDevice",
         "tags": ["Testing"],
@@ -444,15 +396,6 @@
         "summary": "Unlink a companion from a Test number's phone",
         "x-required-scope": "sandbox:write",
         "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            },
-            "required": true,
-            "name": "projectId",
-            "in": "path"
-          },
           {
             "schema": {
               "type": "string",
@@ -482,7 +425,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TestingPhoneUnlink"
+                  "$ref": "#/schemas/TestingPhoneUnlink"
                 }
               }
             },
@@ -499,7 +442,7 @@
             }
           },
           "400": {
-            "description": "The session is not a Test number in the project, or the phone is offline",
+            "description": "The phone is offline",
             "headers": {
               "X-RateLimit-Limit": {
                 "$ref": "#/components/headers/X-RateLimit-Limit"
@@ -514,7 +457,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/schemas/PublicError"
                 },
                 "example": {
                   "error": {
@@ -546,7 +489,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/schemas/PublicError"
                 },
                 "example": {
                   "error": {
@@ -578,7 +521,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/schemas/PublicError"
                 },
                 "example": {
                   "error": {
@@ -610,7 +553,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicError"
+                  "$ref": "#/schemas/PublicError"
                 },
                 "example": {
                   "error": {
@@ -628,9 +571,10 @@
           }
         },
         "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sandbox:write</Badge>"
+          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">sandbox:write</Badge>"
         },
-        "description": "**Required scope:** `sandbox:write`"
+        "x-protocols": ["Linked Device API"],
+        "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sandbox:write`"
       }
     }
   },
@@ -677,6 +621,7 @@
                 "invalid_request_error",
                 "authentication_error",
                 "permission_error",
+                "billing_error",
                 "conflict_error",
                 "rate_limit_error",
                 "api_error",
@@ -686,11 +631,16 @@
             "code": {
               "type": "string",
               "enum": [
+                "zero_knowledge_session",
                 "invalid_parameter",
                 "invalid_credential",
                 "entitlement_required",
                 "cloud_template_authority_restricted",
                 "gate_limit_reached",
+                "billing_credit_required",
+                "addon_required",
+                "safe_mode_not_entitled",
+                "warmup_plan_not_entitled",
                 "method_not_allowed",
                 "permission_denied",
                 "missing_scope",
@@ -703,10 +653,12 @@
                 "stream_cursor_expired",
                 "stream_connection_limit_reached",
                 "state_conflict",
+                "team_deletion_scheduled",
                 "hybrid_routing_paused",
                 "hybrid_choice_required",
                 "hybrid_transition_ineligible",
                 "hybrid_automation_unavailable",
+                "hybrid_group_linked_devices_unavailable",
                 "hybrid_transport_unavailable",
                 "hybrid_target_reference_unavailable",
                 "send_outcome_unknown",
@@ -749,13 +701,18 @@
                 "session_not_ready",
                 "command_dispatch_failed",
                 "result_unknown",
+                "parent_bsuid_not_supported",
                 "recipient_not_on_whatsapp",
                 "conversation_window_closed",
                 "template_not_approved",
                 "media_too_large",
                 "whatsapp_rate_limited",
                 "new_chat_limit_reached",
+                "marketing_disabled_on_cloud_api",
                 "whatsapp_account_restricted",
+                "whatsapp_authorization_required",
+                "whatsapp_payment_method_required",
+                "whatsapp_number_not_registered",
                 "whatsapp_groups_ineligible",
                 "whatsapp_group_creation_paused",
                 "whatsapp_group_limit_reached",
@@ -857,6 +814,31 @@
         }
       },
       "required": ["session", "deviceId", "unlinked"]
+    }
+  },
+  "components": {
+    "headers": {
+      "X-RateLimit-Limit": {
+        "description": "Team request quota per rolling minute, when the per-team request limiter applies.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "X-RateLimit-Remaining": {
+        "description": "Requests left in the per-team quota; zero when this limiter rejects the request.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "X-RateLimit-Reset": {
+        "description": "Unix timestamp in seconds when the oldest counted request leaves the rolling window, when the per-team request limiter applies. Follow Retry-After on a rejected request.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
     }
   }
 }
