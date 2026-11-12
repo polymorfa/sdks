@@ -280,6 +280,9 @@ pub enum MessageContent {
     Buttons {
         buttons: ButtonsMessageContent,
     },
+    Carousel {
+        carousel: CarouselMessageContent,
+    },
     AddressMessage {
         #[serde(rename = "addressMessage")]
         address_message: AddressMessageContent,

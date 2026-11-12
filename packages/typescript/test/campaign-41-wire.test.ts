@@ -190,6 +190,42 @@ it("retains complete independent campaign returns for all thirteen changed metho
   ).toBe(true);
 });
 
+it("preserves typed campaign reply IDs and media on the public wire", async () => {
+  const server = await startTestServer(() => ({
+    body: JSON.stringify({ data: campaign }),
+  }));
+  servers.push(server);
+  const client = new Client({
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
+    baseUrl: server.url,
+    maxNetworkRetries: 0,
+  });
+  const message: CampaignMessage = {
+    version: 2,
+    source: "Choose an offer",
+    media: { kind: "image", url: "https://example.test/offer" },
+    buttons: [
+      { kind: "reply", label: "Choose", id: "offer-stable" },
+      { kind: "link", label: "Open", url: "https://example.test/offer" },
+    ],
+  };
+  await client.campaigns.create({
+    projectId,
+    name: "Interactive",
+    messagesArray: [message],
+  });
+  expect(server.requests).toHaveLength(1);
+  expect(server.requests[0]).toMatchObject({
+    method: "POST",
+    path: "/platform/campaigns",
+  });
+  expect(JSON.parse(server.requests[0]!.body)).toEqual({
+    projectId,
+    name: "Interactive",
+    messagesArray: [message],
+  });
+});
+
 it("refuses cast-injected routes/options and preserves exact ownership", async () => {
   const server = await startTestServer(() => ({
     body: JSON.stringify({ data: campaign }),

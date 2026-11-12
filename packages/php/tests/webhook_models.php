@@ -64,7 +64,7 @@ $signature = 't=0001000,v1='.hash_hmac('sha256', '1000.'.$raw, $key);
 check(Polymorfa\Webhooks::verifyLocal($raw, $signature, $local, nowUnixSeconds:1000)->event === 'future.event', 'Local signature normalizes numeric timestamp and decodes byte key');
 raises(fn () => Polymorfa\Webhooks::verifyLocal($raw, $signature, $local, nowUnixSeconds:1301), Polymorfa\WebhookSignatureException::class);
 raises(fn () => Polymorfa\Webhooks::verifyLocal($raw, strtoupper($signature), $local, nowUnixSeconds:1000), Polymorfa\WebhookSignatureException::class);
-check(count(Polymorfa\ErrorCodes::KNOWN) === 108 && Polymorfa\ErrorCodes::isKnown('voice_unavailable') && !Polymorfa\ErrorCodes::isKnown('future_api_code'), 'Known API code catalog');
+check(count(Polymorfa\ErrorCodes::KNOWN) === 108 && Polymorfa\ErrorCodes::isKnown('idempotency_replay_unavailable') && Polymorfa\ErrorCodes::isKnown('voice_unavailable') && !Polymorfa\ErrorCodes::isKnown('future_api_code'), 'Known API code catalog');
 check(Polymorfa\ErrorCodes::isKnown('catalog_cache_full'), 'Known Official API code: catalog_cache_full');
 check(Polymorfa\ErrorCodes::isKnown('catalog_sync_cooldown'), 'Known Official API code: catalog_sync_cooldown');
 check(Polymorfa\ErrorCodes::isKnown('hybrid_group_linked_devices_unavailable'), 'Known Official API code: hybrid_group_linked_devices_unavailable');

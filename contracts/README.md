@@ -1,5 +1,25 @@
 # Contract coverage
 
+## Idempotency response replay
+
+`idempotency-replay.json` is produced by
+`scripts/sync-idempotency-replay-contract.mjs` from committed generated API
+documents. It records the exact backend source, both complete input hashes,
+the idempotency error enums and 28 unchanged one-hour header parameters.
+It also explicitly pins conversion deduplication: different details for an
+existing `eventId` return `422 idempotency_conflict` in this source contract.
+The older baseline remains unchanged, and the transport still maps a received
+409 to `PolymorfaConflictError` and a received 422 to `PolymorfaValidationError`.
+The global baseline snapshots remain unchanged. The error catalog recognizes
+both the new replay-unavailable code and legacy completed responses.
+
+The supplement is source-only and has `published: false`. It does not establish
+deployed access or a sensitive-content retention exception. Opaque message and
+campaign responses are not retained by default. Missing replay data preserves
+the execution fence; clients must reconcile an uncertain outcome before deciding
+whether another write is safe. SDK package publication requires matching API
+acceptance through the existing release process.
+
 ## Campaign and custody additions
 
 `campaign-custody-20261014.json` pins thirty machine-accessible operations and
@@ -13,6 +33,25 @@ both source audiences. The five native ports, remaining 625-operation contract
 reconciliation, accepted staging/production API evidence, and publication are
 separate unfinished gates. `campaign-20261014-contract.test.ts` checks all thirty
 wire operations; it does not establish provider delivery or deployed access.
+
+## Interactive message candidate
+
+`interactive-messages.json` pins button, carousel and list branches to draft API PR #562.
+Linked Devices accepts ten total controls and at most three CTAs. Replies can mix with URL/call; copy/catalog cannot mix with replies. Carousels contain 2–10 image/video cards with homogeneous controls within each card. Media headers and carousel payloads remain one send.
+Native list bounds follow the thirty-row contract; Official lists retain ten rows.
+Official API replies retain the three-button limit. SDK arrays preserve all
+parameters. Replace the draft pin with the accepted API revision and verify
+matching staging before package publication.
+
+`native-interactive-messages.json` attributes the pinned media-header and carousel
+fields to public source and native wire fixtures in all six languages. It also
+records the existing composed-campaign stable Reply ID fixtures without adding
+an accepted campaign contract. Each language registers this inventory in its
+coverage ledger. Both shared coverage commands check the pin, snapshot bytes,
+public mappings and evidence; removed registrations or stale attribution fail.
+The accepted API/SDK baseline stays unchanged. These checks establish source
+attribution. Native execution, physical package checks and matching API acceptance
+remain separate requirements.
 
 ## Request log supplement
 
@@ -568,7 +607,12 @@ discovery uses `BridgeClient`, and the CLI listener protocol stays CLI-only; the
    reviewed counts, zero changed fingerprints, valid public method mappings,
    and source snapshot integrity.
 
-`npm run check:coverage` uses the checked-in snapshots. Its strict flag requires
+`npm run check:coverage` uses the checked-in snapshots. The checker always
+validates interactive supplement registration when reading the repository's
+`contracts/coverage.json`; use `--interactive-supplement` when checking a candidate
+copy of that ledger. Independent contract fixtures remain generic coverage
+inputs and do not inherit the repository's separately pinned supplement.
+Its strict flag requires
 a ledger row for every operation; it does not require every row to be covered.
 The cross-repository workflow compares an exact source revision and reports
 missing or changed contracts for follow-up. Its dedicated GitHub App must have

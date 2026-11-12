@@ -268,6 +268,54 @@ func TestNativeDocumentPartsAndChangedSourceNeverFinalize(t *testing.T) {
 		})
 	}
 }
+
+type cancelledUploadEOF struct {
+	ctx    context.Context
+	cancel context.CancelFunc
+}
+
+func (body cancelledUploadEOF) Read([]byte) (int, error) {
+	if body.cancel != nil {
+		body.cancel()
+	}
+	<-body.ctx.Done()
+	return 0, io.EOF
+}
+
+func TestNativeDirectBodyEOFStillPreservesCancellation(t *testing.T) {
+	for _, deadline := range []bool{false, true} {
+		t.Run(fmt.Sprintf("deadline=%t", deadline), func(t *testing.T) {
+			ctx, cancel := context.WithCancel(context.Background())
+			if deadline {
+				cancel()
+				ctx, cancel = context.WithTimeout(context.Background(), time.Millisecond)
+			}
+			defer cancel()
+			body := cancelledUploadEOF{ctx: ctx}
+			if !deadline {
+				body.cancel = cancel
+			}
+			config := teamConfig("https://api.example.invalid")
+			config.HTTPClient = &http.Client{Transport: mediaRoundTripper(func(req *http.Request) (*http.Response, error) {
+				return &http.Response{StatusCode: 200, Header: make(http.Header), Body: io.NopCloser(body), Request: req}, nil
+			})}
+			sdk, err := NewMessagingClient(config)
+			if err != nil {
+				t.Fatal(err)
+			}
+			_, err = sdk.WhatsAppMedia().directPost(ctx, "https://cdn.whatsapp.net/mms/image/fixture?auth=synthetic_grant", strings.NewReader("encrypted fixture"), 17)
+			want := CancelledError
+			if deadline {
+				want = TimeoutError
+			}
+			var typed *Error
+			if !errors.As(err, &typed) || typed.Kind != want || typed.Cause != nil || strings.Contains(fmt.Sprintf("%#v", err), "synthetic_grant") {
+				t.Fatal("cancelled EOF lost its safe cancellation classification", err)
+			}
+		})
+	}
+}
+
 func TestNativeDirectBodyDeadlineRedirectAndSourceCancellation(t *testing.T) {
 	var grants, hops atomic.Int32
 	sdk := uploadFixture(t, func(w http.ResponseWriter, req *http.Request) {

@@ -209,6 +209,125 @@ CONTENTS = [
 ]
 
 
+# Interactive supplement fixtures use the normal typed client and idempotency path.
+CONTENTS += [
+    {
+        "buttons": {
+            "body": "Choose",
+            "media": {"type": "image", "url": "https://example.test/header"},
+            "buttons": [
+                {"type": "reply", "text": "Choose", "id": "stable"},
+                {"type": "url", "text": "Open", "url": "https://example.test/offer"},
+            ],
+        }
+    },
+    {
+        "buttons": {
+            "body": "Choose",
+            "media": {
+                "type": "video",
+                "url": "https://example.test/header",
+                "thumbnail": "c3ludGhldGlj",
+            },
+            "buttons": [
+                {"type": "reply", "text": "Choose", "id": "stable"},
+                {"type": "url", "text": "Open", "url": "https://example.test/offer"},
+            ],
+        }
+    },
+    {
+        "buttons": {
+            "body": "Choose",
+            "media": {
+                "type": "document",
+                "url": "https://example.test/header",
+                "filename": "offer.pdf",
+            },
+            "buttons": [
+                {"type": "reply", "text": "Choose", "id": "stable"},
+                {"type": "url", "text": "Open", "url": "https://example.test/offer"},
+            ],
+        }
+    },
+    {
+        "carousel": {
+            "body": "Offers",
+            "footer": "Outer only",
+            "cards": [
+                {
+                    "body": "Offer 0",
+                    "image": {"base64": "c3ludGhldGlj"},
+                    "buttons": [{"type": "reply", "text": "Choose", "id": "card-0"}],
+                },
+                {
+                    "body": "Offer 1",
+                    "video": {"base64": "c3ludGhldGlj", "thumbnail": "c3ludGhldGlj"},
+                    "buttons": [{"type": "reply", "text": "Choose", "id": "card-1"}],
+                },
+            ],
+        }
+    },
+    {
+        "carousel": {
+            "body": "Offers",
+            "footer": "Outer only",
+            "cards": [
+                {
+                    "body": "Offer 0",
+                    "image": {"base64": "c3ludGhldGlj"},
+                    "buttons": [{"type": "reply", "text": "Choose", "id": "card-0"}],
+                },
+                {
+                    "body": "Offer 1",
+                    "video": {"base64": "c3ludGhldGlj", "thumbnail": "c3ludGhldGlj"},
+                    "buttons": [{"type": "reply", "text": "Choose", "id": "card-1"}],
+                },
+                {
+                    "body": "Offer 2",
+                    "image": {"base64": "c3ludGhldGlj"},
+                    "buttons": [{"type": "reply", "text": "Choose", "id": "card-2"}],
+                },
+                {
+                    "body": "Offer 3",
+                    "video": {"base64": "c3ludGhldGlj", "thumbnail": "c3ludGhldGlj"},
+                    "buttons": [{"type": "reply", "text": "Choose", "id": "card-3"}],
+                },
+                {
+                    "body": "Offer 4",
+                    "image": {"base64": "c3ludGhldGlj"},
+                    "buttons": [{"type": "reply", "text": "Choose", "id": "card-4"}],
+                },
+                {
+                    "body": "Offer 5",
+                    "video": {"base64": "c3ludGhldGlj", "thumbnail": "c3ludGhldGlj"},
+                    "buttons": [{"type": "reply", "text": "Choose", "id": "card-5"}],
+                },
+                {
+                    "body": "Offer 6",
+                    "image": {"base64": "c3ludGhldGlj"},
+                    "buttons": [{"type": "reply", "text": "Choose", "id": "card-6"}],
+                },
+                {
+                    "body": "Offer 7",
+                    "video": {"base64": "c3ludGhldGlj", "thumbnail": "c3ludGhldGlj"},
+                    "buttons": [{"type": "reply", "text": "Choose", "id": "card-7"}],
+                },
+                {
+                    "body": "Offer 8",
+                    "image": {"base64": "c3ludGhldGlj"},
+                    "buttons": [{"type": "reply", "text": "Choose", "id": "card-8"}],
+                },
+                {
+                    "body": "Offer 9",
+                    "video": {"base64": "c3ludGhldGlj", "thumbnail": "c3ludGhldGlj"},
+                    "buttons": [{"type": "reply", "text": "Choose", "id": "card-9"}],
+                },
+            ],
+        }
+    },
+]
+
+
 @pytest.mark.parametrize("content", CONTENTS)
 @pytest.mark.parametrize("client_token", [False, True])
 async def test_public_send_all_composed_variants_context_and_response(content, client_token):

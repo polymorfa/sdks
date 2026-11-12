@@ -9,7 +9,7 @@ namespace Polymorfa;
  * @phpstan-type TrackedLink array{key:string,url:string}
  * @phpstan-type VariableBinding array{source?:string,fallback?:string}
  * @phpstan-type VariableMapping array<int|string,VariableBinding>
- * @phpstan-type CampaignMessage array{version?:2,source?:string,media?:array{kind:'image'|'video'|'audio'|'document',url:string,filename?:string,caption?:string,...<string,mixed>},buttons?:list<array{kind:'reply'|'link'|'call',label:string,url?:string,phone?:string,...<string,mixed>}>,footer?:string,delayAfterSec?:int,delayUnit?:'minutes'|'hours'|'days',sendWindow?:StepWindow|null,...<string,mixed>}
+ * @phpstan-type CampaignMessage array{version?:2,source?:string,media?:array{kind:'image'|'video'|'audio'|'document',url:string,filename?:string,caption?:string,...<string,mixed>},buttons?:list<array{kind:'reply'|'link'|'call',label:string,id?:string,url?:string,phone?:string,...<string,mixed>}>,footer?:string,delayAfterSec?:int,delayUnit?:'minutes'|'hours'|'days',sendWindow?:StepWindow|null,...<string,mixed>}
  * @phpstan-type FrequencyCap array{maxPer24Hours:int|null,maxPer7Days:int|null}
  * @phpstan-type FrequencyCapSettings array{teamId:string,maxPer24Hours:int|null,maxPer7Days:int|null,revision:int,updatedAt:int|float|null}
  * @phpstan-type FrequencyCapInput array{maxPer24Hours:int|null,maxPer7Days:int|null,revision:int}

@@ -5382,6 +5382,12 @@
       "baselineUnchanged": true,
       "published": false,
       "language": "php"
+    },
+    "interactiveMessages": {
+      "inventory": "contracts/native-interactive-messages.json",
+      "language": "php",
+      "baselineUnchanged": true,
+      "published": false
     }
   }
 }

@@ -1036,6 +1036,30 @@ pub struct CampaignMessageButton {
     #[serde(flatten)]
     pub extensions: BTreeMap<String, serde_json::Value>,
 }
+impl CampaignMessageButton {
+    /// Set a typed reply ID without changing the existing struct-literal API.
+    /// A different legacy extension ID is an error rather than an overwrite.
+    pub fn with_reply_id(mut self, id: impl Into<String>) -> Result<Self> {
+        let id = id.into();
+        if self
+            .extensions
+            .get("id")
+            .is_some_and(|value| value.as_str() != Some(id.as_str()))
+        {
+            return Err(input_error());
+        }
+        self.extensions
+            .insert("id".into(), serde_json::Value::String(id));
+        Ok(self)
+    }
+
+    /// The reply ID supplied through the builder or a legacy extension.
+    pub fn reply_id(&self) -> Option<&str> {
+        self.extensions
+            .get("id")
+            .and_then(serde_json::Value::as_str)
+    }
+}
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CampaignMessage {

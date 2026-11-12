@@ -190,6 +190,7 @@ pub const POLYMORFA_ERROR_CODES: &[&str] = &[
     "idempotency_conflict",
     "idempotency_in_progress",
     "idempotency_outcome_unknown",
+    "idempotency_replay_unavailable",
     "feature_unavailable",
     "stream_connection_limit_reached",
     "stream_cursor_expired",
