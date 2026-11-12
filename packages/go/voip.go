@@ -7,6 +7,26 @@ import (
 	"strings"
 )
 
+// WaitingRoomControl is a correlated action on the provider's pending roster.
+type WaitingRoomControl struct {
+	Type          string `json:"type"`
+	RequestID     string `json:"requestId"`
+	Operation     string `json:"operation"`
+	Enabled       *bool  `json:"enabled,omitempty"`
+	ParticipantID string `json:"participantId,omitempty"`
+}
+type WaitingRoomControlRequest struct {
+	ConnectionID string             `json:"connectionId"`
+	Participant  string             `json:"participant,omitempty"`
+	Control      WaitingRoomControl `json:"control"`
+}
+type WaitingRoomControlResult struct {
+	Type      string `json:"type"`
+	RequestID string `json:"requestId"`
+	OK        bool   `json:"ok"`
+	Code      string `json:"code,omitempty"`
+}
+
 type PlaceCallRequest struct {
 	To           string   `json:"to,omitempty"`
 	Participants []string `json:"participants,omitempty"`
@@ -68,6 +88,8 @@ type AddCallParticipantRequest struct {
 	To string `json:"to"`
 }
 type CallParticipant struct {
+	Guest       *bool  `json:"guest,omitempty"`
+	Name        string `json:"name,omitempty"`
 	HandRaised  *bool  `json:"handRaised,omitempty"`
 	ID          string `json:"id"`
 	PhoneNumber string `json:"phoneNumber,omitempty"`
@@ -264,6 +286,26 @@ func (r *VoIP) SendReaction(ctx context.Context, id string, b CallReactionReques
 	}
 	return request[Success](ctx, r.t, "POST", callPath(id)+"/reaction", nil, b, noRetry(options(o)))
 }
+
+// ModerateWaitingRoom reauthorizes through the API and never automatically retries.
+// Inspect Data.Data.OK; an unknown outcome must not be replayed.
+func (r *VoIP) ModerateWaitingRoom(ctx context.Context, id string, b WaitingRoomControlRequest, o ...RequestOptions) (Response[Envelope[WaitingRoomControlResult]], error) {
+	if err := r.participant(b.Participant); err != nil {
+		return Response[Envelope[WaitingRoomControlResult]]{}, err
+	}
+	c := b.Control
+	valid := connectionPattern.MatchString(b.ConnectionID) && connectionPattern.MatchString(c.RequestID) && c.Type == "waiting_room_control"
+	if c.Operation == "toggle" {
+		valid = valid && c.Enabled != nil && c.ParticipantID == ""
+	} else {
+		valid = valid && (c.Operation == "admit" || c.Operation == "deny") && c.Enabled == nil && regexp.MustCompile(`^[1-9][0-9]{0,18}$`).MatchString(c.ParticipantID)
+	}
+	if !valid {
+		return Response[Envelope[WaitingRoomControlResult]]{}, validation("Invalid waiting-room control.")
+	}
+	return request[Envelope[WaitingRoomControlResult]](ctx, r.t, "POST", callPath(id)+"/waiting-room", nil, b, noRetry(options(o)))
+}
+
 func (r *VoIP) SetHandRaised(ctx context.Context, id string, b HandRaisedRequest, o ...RequestOptions) (Response[Success], error) {
 	if err := r.participant(b.Participant); err != nil {
 		return Response[Success]{}, err

@@ -30,6 +30,7 @@ final class Call
     public ?float $endedAt = null;
     /** @var array<string,CallParticipant> */ public array $participants = [];
     /** @var array<int,CallVideoSource> */ public array $videoSources = [];
+    public ?CallWaitingRoom $waitingRoom = null;
     private ?MediaSocket $media = null;
     private bool $acceptedLocally = false;
     private bool $claimedBySelf = false;
@@ -229,6 +230,36 @@ final class Call
             $this->mediaBusy = false;
         }
     }
+    public function setApprovalRequired(bool $enabled, ?CancellationToken $cancellation = null): void { $this->moderateWaitingRoom('toggle', null, $enabled, $cancellation); }
+    public function admitParticipant(string $participantId, ?CancellationToken $cancellation = null): void { $this->moderateWaitingRoom('admit', $participantId, null, $cancellation); }
+    public function denyParticipant(string $participantId, ?CancellationToken $cancellation = null): void { $this->moderateWaitingRoom('deny', $participantId, null, $cancellation); }
+    private function moderateWaitingRoom(string $operation, ?string $participantId, ?bool $enabled, ?CancellationToken $cancellation): void
+    {
+        $cancellation?->throwIfCancelled();
+        if ($participantId !== null && !preg_match('/^[1-9][0-9]{0,18}$/D', $participantId)) { throw new ValidationException('Provide a public pending participant ID.'); }
+        if ($this->waitingRoom?->isAdmin !== true) { throw new ConflictException('Waiting-room administrator authority is required.', 'waiting_room_admin_required'); }
+        if ($this->mediaBusy) { throw new ConflictException('A control is pending.', 'waiting_room_unavailable'); }
+        $media = $this->attached(); $this->mediaBusy = true;
+        try {
+            $id=bin2hex(random_bytes(12));
+            $request=['type'=>'waiting_room_control','requestId'=>$id,'operation'=>$operation];
+            if ($operation==='toggle') { $request['enabled']=$enabled; } else { $request['participantId']=$participantId; }
+            try { $media->sendControl($request); }
+            catch (\Throwable $error) { $this->waitingRoom=null; throw $error; }
+            $deadline=microtime(true)+$this->client->options->controlTimeout;
+            while(microtime(true)<$deadline){
+                $cancellation?->throwIfCancelled();
+                try { $frame=$media->poll(min(0.1,max(0.001,$deadline-microtime(true)))); }
+                catch (\Throwable $error) { $this->waitingRoom=null; throw $error; }
+                if(is_array($frame) && ($frame['type']??null)==='waiting_room_result' && ($frame['requestId']??null)===$id){
+                    if(($frame['ok']??null)===true){return;}
+                    throw new ConflictException('Waiting-room control was refused.',is_string($frame['code']??null)?$frame['code']:'waiting_room_control_unknown');
+                }
+                if($frame!==null){$this->mediaFrame($frame);}
+            }
+            throw new TimeoutException('Waiting-room control timed out; its effect is unknown.','waiting_room_control_unknown');
+        }finally{$this->mediaBusy=false;}
+    }
     /** @param array<string,mixed> $payload @internal */ public function lifecycle(string $event, array $payload): void
     {
         if ($this->state === 'ended') {
@@ -274,6 +305,7 @@ final class Call
     }
     private function attach(?CancellationToken $cancellation = null): void
     {
+        $this->waitingRoom = null;
         $this->transition('connecting');
         $this->media = $this->client->media($this, $this->refreshNext, $cancellation);
         $this->refreshNext = false;
@@ -333,6 +365,7 @@ final class Call
             }
             $this->media?->close();
             $this->clearVideoSources();
+            $this->waitingRoom = null;
             if ($error instanceof ConflictException) {
                 $this->finish($error->errorCode === 'call_ended' ? 'remote_hangup' : 'claimed');
                 return;
@@ -352,6 +385,7 @@ final class Call
             }
             $this->media?->close();
             $this->clearVideoSources();
+            $this->waitingRoom = null;
             $this->state = 'reconnecting';
             $this->retryAt = microtime(true) + $this->client->options->minBackoff;
         }
@@ -372,9 +406,11 @@ final class Call
             return;
         }
         if ($type === 'error' && is_string($frame['code'] ?? null)) {
+            $this->waitingRoom = null;
             throw CallsSocketErrors::control($frame['code']);
         }
-        if ($type === 'remote_media' && (is_bool($frame['audioMuted'] ?? null) || array_key_exists('audioMuted', $frame) && $frame['audioMuted'] === null)) {
+        if ($type === 'waiting_room' && is_array($frame['state'] ?? null)) { $this->waitingRoom=CallWaitingRoom::fromArray($frame['state']); }
+        elseif ($type === 'remote_media' && (is_bool($frame['audioMuted'] ?? null) || array_key_exists('audioMuted', $frame) && $frame['audioMuted'] === null)) {
             $this->remoteAudioMuted = $frame['audioMuted'];
         }
         if ($type === 'hand_state' && is_bool($frame['raised'] ?? null) && is_bool($frame['supported'] ?? null)) {
@@ -467,6 +503,7 @@ final class Call
         }
         $this->media?->close();
         $this->media = null;
+        $this->waitingRoom = null;
         $this->clearVideoSources();
         $this->state = 'ended';
         $this->endReason = $reason;

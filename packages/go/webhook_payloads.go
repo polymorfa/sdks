@@ -407,7 +407,9 @@ type CallTelemetryPayload struct {
 	SendKBPS        float64 `json:"sendKbps"`
 }
 type WebhookCallParticipant struct {
-	HandRaised *bool `json:"handRaised,omitempty"`
+	Guest      *bool  `json:"guest,omitempty"`
+	Name       string `json:"name,omitempty"`
+	HandRaised *bool  `json:"handRaised,omitempty"`
 	WebhookIdentity
 	AudioMuted bool   `json:"audioMuted"`
 	Video      bool   `json:"video"`

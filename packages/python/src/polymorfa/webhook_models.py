@@ -407,6 +407,8 @@ class CallTelemetryPayload(TypedDict):
 
 class CallParticipant(TypedDict):
     handRaised: NotRequired[bool]
+    guest: NotRequired[bool]
+    name: NotRequired[str]
     id: str
     phoneNumber: NotRequired[str]
     bsuid: NotRequired[str]

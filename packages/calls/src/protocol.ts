@@ -1,3 +1,8 @@
+import type {
+  WaitingRoomState,
+  WaitingRoomRequest,
+  WaitingRoomResult,
+} from "./waiting-room.js";
 import type { MediaStateRequest, MediaStateReply } from "./media-state.js";
 /**
  * The wire contract between this client and the platform (Calls contract
@@ -272,6 +277,9 @@ export type CallReaction = { readonly emoji: CallReactionEmoji } & (
 );
 export interface Participant {
   readonly handRaised?: boolean;
+  /** Provider guest marker; the supplied name is not verified identity. */
+  readonly guest?: boolean;
+  readonly name?: string;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;
@@ -306,6 +314,8 @@ export type VideoSourceFrame = {
 /** Text frames the platform sends on the media socket. */
 export type MediaControlFrame =
   | MediaStateReply
+  | WaitingRoomResult
+  | { readonly type: "waiting_room"; readonly state: WaitingRoomState }
   | { readonly type: "remote_media"; readonly audioMuted: boolean | null }
   | ({ readonly type: "reaction" } & CallReaction)
   | {
@@ -342,6 +352,7 @@ export type MediaControlFrame =
 
 /** Text frames the client sends on the media socket. */
 export type MediaClientFrame =
+  | WaitingRoomRequest
   | MediaStateRequest
   | {
       readonly type: "auth";
@@ -369,6 +380,25 @@ export function parseMediaControlValue(
   if (parsed === null || typeof parsed !== "object") return undefined;
   const f = parsed as Record<string, unknown>;
   switch (f["type"]) {
+    case "waiting_room": {
+      const state = f["state"] as Record<string, unknown> | undefined;
+      return state &&
+        typeof state === "object" &&
+        typeof state["enabled"] === "boolean" &&
+        typeof state["isAdmin"] === "boolean" &&
+        typeof state["inWaitingRoom"] === "boolean" &&
+        Array.isArray(state["users"]) &&
+        state["users"].every(isParticipant)
+        ? (parsed as MediaControlFrame)
+        : undefined;
+    }
+    case "waiting_room_result":
+      return isConnectionId(f["requestId"]) &&
+        typeof f["ok"] === "boolean" &&
+        optionalString(f["code"]) &&
+        (f["ok"] === true || typeof f["code"] === "string")
+        ? (parsed as MediaControlFrame)
+        : undefined;
     case "media_state":
       return isConnectionId(f["requestId"]) &&
         typeof f["audioMuted"] === "boolean" &&
@@ -470,7 +500,8 @@ export function isParticipant(value: unknown): value is Participant {
     isString(p["id"]) &&
     p["id"].length > 0 &&
     !Object.hasOwn(p, "handle") &&
-    ["phoneNumber", "bsuid", "username"].every((key) =>
+    (p["guest"] === undefined || typeof p["guest"] === "boolean") &&
+    ["phoneNumber", "bsuid", "username", "name"].every((key) =>
       optionalString(p[key]),
     ) &&
     typeof p["audioMuted"] === "boolean" &&

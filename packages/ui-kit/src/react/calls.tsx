@@ -1158,19 +1158,22 @@ export function CallStage({
 export interface ParticipantVideoGridProps extends ControllerProps {
   readonly className?: string;
   /**
-   * Label for a tile. Defaults to the participant's number or ID, then the
-   * participant reference of another app connection, then "Participant".
+   * Label for a tile. Defaults to the first nonempty participant name,
+   * number or ID, then another app connection's participant reference,
+   * then "Participant".
    */
   readonly labelVideo?: (video: RemoteVideoInfo) => string | undefined;
 }
 
 function defaultVideoLabel(video: RemoteVideoInfo, locale: Locale): string {
-  return (
-    video.participant?.phoneNumber ??
-    video.participant?.id ??
-    video.connectionParticipant ??
-    t(locale, "calls.participant")
-  );
+  if (video.participant !== undefined) {
+    return (
+      video.participant.name ||
+      video.participant.phoneNumber ||
+      video.participant.id
+    );
+  }
+  return video.connectionParticipant ?? t(locale, "calls.participant");
 }
 
 function VideoTile({
@@ -1268,7 +1271,26 @@ export function ParticipantList({
   const participants = (snapshot.participants ?? []).filter(
     (p) => p.state !== "left",
   );
-  if (participants.length === 0) return null;
+  const room = snapshot.waitingRoom;
+  const [pending, setPending] = useState(false);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    setPending(false);
+    setFailed(false);
+  }, [snapshot.callId]);
+  const moderate = async (action: () => Promise<void>) => {
+    setPending(true);
+    setFailed(false);
+    try {
+      await action();
+    } catch {
+      setFailed(true);
+    } finally {
+      setPending(false);
+    }
+  };
+  const admin = snapshot.status === "connected" && room?.isAdmin === true;
+  if (participants.length === 0 && room === undefined) return null;
   return (
     <div
       className={root.className}
@@ -1292,11 +1314,13 @@ export function ParticipantList({
               <li key={participant.id}>
                 <span>
                   {resolveName?.(participant) ??
-                    participant.phoneNumber ??
-                    participant.id}
+                    (participant.name ||
+                      participant.phoneNumber ||
+                      participant.id)}
                 </span>
                 <span className="pmfa-calls-others-state">
                   {[
+                    participant.guest ? t(locale, "calls.guest") : undefined,
                     state === undefined ? undefined : t(locale, state),
                     participant.handRaised
                       ? t(locale, "calls.handRaised")
@@ -1312,6 +1336,72 @@ export function ParticipantList({
             );
           })}
         </ul>
+        {room !== undefined && (
+          <section aria-label={t(locale, "calls.waitingRoom")}>
+            <h3 className="pmfa-calls-others-title">
+              {t(locale, "calls.waitingRoom")}
+            </h3>
+            {admin && (
+              <label className="pmfa-calls-approval">
+                <input
+                  type="checkbox"
+                  checked={room.enabled}
+                  disabled={pending}
+                  onChange={(event) =>
+                    void moderate(() =>
+                      resolved.setApprovalRequired(event.target.checked),
+                    )
+                  }
+                />
+                {t(locale, "calls.approvalRequired")}
+              </label>
+            )}
+            <ul>
+              {room.users.map((participant) => (
+                <li key={participant.id}>
+                  <span>
+                    {resolveName?.(participant) ??
+                      (participant.name ||
+                        participant.phoneNumber ||
+                        participant.id)}
+                    {participant.guest ? ` · ${t(locale, "calls.guest")}` : ""}
+                  </span>
+                  {admin && (
+                    <span className="pmfa-calls-waiting-actions">
+                      <button
+                        type="button"
+                        className="pmfa-calls-btn pmfa-calls-moderate"
+                        disabled={pending}
+                        onClick={() =>
+                          void moderate(() =>
+                            resolved.admitParticipant(participant.id),
+                          )
+                        }
+                      >
+                        {t(locale, "calls.admit")}
+                      </button>
+                      <button
+                        type="button"
+                        className="pmfa-calls-btn pmfa-calls-moderate"
+                        disabled={pending}
+                        onClick={() =>
+                          void moderate(() =>
+                            resolved.denyParticipant(participant.id),
+                          )
+                        }
+                      >
+                        {t(locale, "calls.deny")}
+                      </button>
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+            {failed && (
+              <p role="alert">{t(locale, "calls.waitingRoomFailed")}</p>
+            )}
+          </section>
+        )}
       </div>
     </div>
   );
@@ -2081,6 +2171,11 @@ export const CALLS_STYLES = `
 .pmfa-calls-others-title { font-size: 10.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; color: var(--pmfa-calls-muted); }
 .pmfa-calls-incoming .pmfa-calls-others-title, .pmfa-calls-others-state { color: var(--pmfa-calls-stage-muted); }
 .pmfa-calls-people .pmfa-calls-others-state { color: var(--pmfa-calls-muted); }
+.pmfa-calls-approval { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 13px; }
+.pmfa-calls-approval input { width: 18px; height: 18px; margin: 0; accent-color: var(--pmfa-calls-accent); }
+.pmfa-calls-waiting-actions { display: inline-flex; flex: 0 0 auto; gap: 8px; }
+.pmfa-calls-moderate { min-height: 44px; padding: 0 12px; border: 1px solid var(--pmfa-calls-border); border-radius: 8px; background: var(--pmfa-calls-accent-soft); color: var(--pmfa-calls-fg); font: inherit; }
+.pmfa-calls-moderate:hover { border-color: var(--pmfa-calls-accent); }
 .pmfa-calls-others-state { font-size: 12px; white-space: nowrap; }
 .pmfa-calls-chip { appearance: none; border: 1px solid var(--pmfa-calls-stage-line); background: transparent; color: inherit; font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 999px; cursor: pointer; }
 .pmfa-calls-chip:hover { background: oklch(1 0 0 / 0.12); }

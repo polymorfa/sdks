@@ -14,6 +14,8 @@ import type {
   VoipCheckCallResponse,
   VoipCallReportRequest,
   VoipAcceptCallRequest,
+  VoipWaitingRoomControlRequest,
+  VoipWaitingRoomControlResponse,
   VoipAcceptCallResponse,
   VoipAddParticipantRequest,
   VoipAddParticipantResponse,
@@ -282,6 +284,35 @@ export class VoipResource {
     });
   }
   /** Set the Number's shared hand state on an attached call connection. */
+  /** Uses current API authority. Inspect data.ok; unknown outcomes must not be replayed. */
+  moderateWaitingRoom(
+    callId: string,
+    body: VoipWaitingRoomControlRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<VoipWaitingRoomControlResponse>> {
+    this.assertParticipant(body.participant);
+    const c = body.control;
+    if (
+      !CONNECTION_ID_PATTERN.test(body.connectionId) ||
+      !CONNECTION_ID_PATTERN.test(c.requestId) ||
+      c.type !== "waiting_room_control" ||
+      (c.operation === "toggle"
+        ? typeof c.enabled !== "boolean" || "participantId" in c
+        : !["admit", "deny"].includes(c.operation) ||
+          !/^[1-9][0-9]{0,18}$/.test(c.participantId) ||
+          "enabled" in c)
+    ) {
+      throw new PolymorfaValidationError("Invalid waiting-room control.");
+    }
+    return this.transport.request({
+      method: "POST",
+      path: `${callPath(callId)}/waiting-room`,
+      body,
+      ...options,
+      maxNetworkRetries: 0,
+    });
+  }
+
   setHandRaised(
     callId: string,
     body: { connectionId: string; participant?: string; raised: boolean },

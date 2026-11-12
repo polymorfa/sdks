@@ -1113,3 +1113,44 @@ var state = await client.Passkeys.GetConfirmationAsync(session);
 Task<ApiResponse<SuccessEnvelope<PasskeyConfirmation>>> ConfirmExplicitly() =>
     client.Passkeys.ConfirmAsync(session, suppliedConfirmation);
 ```
+
+
+## Guest participants and waiting rooms (unreleased)
+
+Call participants and participant webhooks can include optional `guest` and
+`name` fields. A guest can have an opaque public ID without a phone number.
+The name is self-reported; display it as text and never use it for authorization.
+A name change updates the existing participant ID.
+
+`call.WaitingRoom` exposes the latest waiting-room state and pending public
+identities. Host controls are `await call.SetApprovalRequiredAsync(true)`,
+`await call.AdmitParticipantAsync("739182640518203")` and
+`await call.DenyParticipantAsync("739182640518203")`.
+They require the current media connection, call-owner authority and current
+provider administrator state. Pass a pending participant's public ID, never a
+provider address. Commands wait for a matching acknowledgement and do not
+change the roster optimistically. A timeout or connection loss leaves the
+outcome unknown. Inspect fresh state before trying again; reconnect does not
+replay moderation commands.
+
+These methods require the matching unreleased backend. Source and local package
+builds do not establish registry publication or deployed availability. They do
+not enable anonymous Polymorfa access or guest messaging.
+
+
+### Authenticated HTTP moderation (unreleased)
+
+`client.Calls.ModerateWaitingRoomAsync` sends a correlated action to
+`POST /messaging/voip/calls/{id}/waiting-room`. Supply the held connection ID and
+an action with `type: waiting_room_control`, `requestId`, and either `toggle`
+with `enabled`, or `admit`/`deny` with the pending participant's public ID.
+Server credentials may name their connection's participant; client tokens omit
+that field and need `voip_signal`.
+
+The API checks current credential and Number/project authority per request. Read
+`data.ok` and `data.code`; HTTP success alone does not confirm the provider action.
+The SDK disables automatic network retries for this operation. A missing reply
+or unknown outcome must not be replayed. Browser UI-kit controls use this HTTP
+path; programmatic media WebSocket controls retain their credential rechecks.
+This source requires the matching unreleased backend. It does not enable a
+customer environment or advance package/API availability.

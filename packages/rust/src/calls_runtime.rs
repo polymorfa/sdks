@@ -80,6 +80,7 @@ pub struct CallVideoSource {
 }
 #[derive(Clone, Debug)]
 pub struct CallSnapshot {
+    pub waiting_room: Option<crate::calls_protocol::WaitingRoomState>,
     pub state: CallState,
     pub direction: CallDirection,
     pub peer: String,
@@ -221,7 +222,7 @@ struct CallInner {
     client: Arc<ClientInner>,
     snapshot: Mutex<CallSnapshot>,
     operation: Mutex<()>,
-    media: Mutex<Option<mpsc::Sender<MediaCommand>>>,
+    media: Mutex<Option<MediaCommands>>,
     cancel: CancellationToken,
     accepted: AtomicBool,
     claimed: AtomicBool,
@@ -233,7 +234,16 @@ impl std::fmt::Debug for Call {
         f.debug_struct("Call").field("id", &self.0.id).finish()
     }
 }
+#[derive(Clone)]
+struct MediaCommands {
+    frames: mpsc::Sender<MediaCommand>,
+    controls: mpsc::Sender<MediaCommand>,
+}
 enum MediaCommand {
+    Waiting(
+        crate::calls_protocol::WaitingRoomAction,
+        oneshot::Sender<Result<()>>,
+    ),
     Audio(Vec<i16>, oneshot::Sender<Result<()>>),
     Video(VideoFrame, oneshot::Sender<Result<()>>),
     State(MediaStateUpdate, oneshot::Sender<Result<MediaStateUpdate>>),
@@ -516,6 +526,7 @@ impl CallsClient {
                     claimed_by_other: false,
                     can_join: false,
                 },
+                waiting_room: None,
                 participants: Vec::new(),
                 video_sources: Vec::new(),
                 started_at: SystemTime::now(),
@@ -844,7 +855,12 @@ impl Call {
             .clone()
             .ok_or_else(|| invalid("media_control_unavailable", "No media is attached"))?;
         let (tx, rx) = oneshot::channel();
-        sender.try_send(build(tx)).map_err(|_| {
+        let command = build(tx);
+        let queue = match &command {
+            MediaCommand::Audio(..) | MediaCommand::Video(..) => &sender.frames,
+            MediaCommand::State(..) | MediaCommand::Waiting(..) => &sender.controls,
+        };
+        queue.try_send(command).map_err(|_| {
             invalid(
                 "media_control_unavailable",
                 "Media command queue is full or closed",
@@ -866,6 +882,43 @@ impl Call {
     }
     pub async fn set_media_state(&self, update: MediaStateUpdate) -> Result<MediaStateUpdate> {
         self.command(|reply| MediaCommand::State(update, reply))
+            .await
+    }
+    pub async fn set_approval_required(&self, enabled: bool) -> Result<()> {
+        self.moderate_waiting_room(crate::calls_protocol::WaitingRoomAction::Toggle { enabled })
+            .await
+    }
+    pub async fn admit_participant(&self, participant_id: &str) -> Result<()> {
+        self.moderate_waiting_room(crate::calls_protocol::WaitingRoomAction::Admit {
+            participant_id: participant_id.into(),
+        })
+        .await
+    }
+    pub async fn deny_participant(&self, participant_id: &str) -> Result<()> {
+        self.moderate_waiting_room(crate::calls_protocol::WaitingRoomAction::Deny {
+            participant_id: participant_id.into(),
+        })
+        .await
+    }
+    async fn moderate_waiting_room(
+        &self,
+        action: crate::calls_protocol::WaitingRoomAction,
+    ) -> Result<()> {
+        if !action.is_valid() {
+            return Err(configuration("public pending participant ID"));
+        }
+        if !self
+            .snapshot()
+            .await
+            .waiting_room
+            .is_some_and(|room| room.is_admin)
+        {
+            return Err(invalid(
+                "waiting_room_admin_required",
+                "Waiting-room administrator authority is required",
+            ));
+        }
+        self.command(|reply| MediaCommand::Waiting(action, reply))
             .await
     }
     pub async fn send_reaction(&self, emoji: &str) -> Result<()> {
@@ -958,12 +1011,14 @@ impl Call {
             let mut s = self.0.snapshot.lock().await;
             s.sample_rate = socket.sample_rate;
         }
-        let (tx, rx) = mpsc::channel(16);
-        *self.0.media.lock().await = Some(tx);
+        // A provider acknowledgement serializes controls, while PCM and video keep flowing.
+        let (frames, frame_rx) = mpsc::channel(16);
+        let (controls, control_rx) = mpsc::channel(16);
+        *self.0.media.lock().await = Some(MediaCommands { frames, controls });
         self.transition(CallState::Connected).await;
         let call = self.clone();
         tokio::spawn(async move {
-            media_worker(call, socket, rx).await;
+            media_worker(call, socket, frame_rx, control_rx).await;
         });
         Ok(())
     }
@@ -1190,6 +1245,11 @@ async fn lifecycle_worker(
         run.take();
     }
 }
+struct PendingWaiting {
+    id: String,
+    reply: oneshot::Sender<Result<()>>,
+    deadline: tokio::time::Instant,
+}
 struct PendingState {
     id: String,
     update: MediaStateUpdate,
@@ -1200,9 +1260,11 @@ async fn media_worker(
     call: Call,
     mut socket: MediaSocket,
     mut commands: mpsc::Receiver<MediaCommand>,
+    mut controls: mpsc::Receiver<MediaCommand>,
 ) {
     let mut preferences = MediaStateUpdate::default();
     let mut pending: Option<PendingState> = None;
+    let mut waiting: Option<PendingWaiting> = None;
     let heartbeat = if call.0.client.options.media_heartbeat.is_zero() {
         Duration::from_secs(86400 * 365)
     } else {
@@ -1214,18 +1276,45 @@ async fn media_worker(
         let deadline = pending
             .as_ref()
             .map(|p| p.deadline)
+            .or_else(|| waiting.as_ref().map(|p| p.deadline))
             .unwrap_or(tokio::time::Instant::now() + Duration::from_secs(86400 * 365));
         let outcome = tokio::select! {
         _=call.0.cancel.cancelled()=>{let _=socket.leave().await;break;},
-        _=tokio::time::sleep_until(deadline),if pending.is_some()=>{if let Some(p)=pending.take(){let _=p.reply.send(Err(invalid("media_control_unknown","Media control timed out; its outcome is unknown")));}continue;},
+        _=tokio::time::sleep_until(deadline),if pending.is_some() || waiting.is_some()=>{if let Some(p)=pending.take(){let _=p.reply.send(Err(invalid("media_control_unknown","Media control timed out; its outcome is unknown")));}
+        if let Some(p)=waiting.take(){let _=p.reply.send(Err(invalid("waiting_room_control_unknown","Waiting-room control timed out; its outcome is unknown")));}continue;},
         _=tokio::time::sleep_until(next_beat)=>{if awaiting_pong{Err(invalid("media_lost","Media heartbeat timed out"))}else{match socket.ping().await{Ok(())=>{awaiting_pong=true;next_beat=tokio::time::Instant::now()+heartbeat;continue;},Err(error)=>Err(error)}}},
-        command=commands.recv(),if pending.is_none()=>{match command{Some(MediaCommand::Audio(pcm,reply))=>{let result=socket.write_audio(&pcm).await;let fatal=result.as_ref().err().cloned();let _=reply.send(result);if let Some(error)=fatal{Err(error)}else{continue;}},Some(MediaCommand::Video(frame,reply))=>{let result=socket.write_video(&frame).await;let fatal=result.as_ref().err().filter(|e|e.kind==ErrorKind::Connection).cloned();let _=reply.send(result);if let Some(error)=fatal{Err(error)}else{continue;}},Some(MediaCommand::State(update,reply))=>{let id=create_connection_id();match socket.set_media_state(&id,&update).await {Ok(())=>{pending=Some(PendingState{id,update,reply,deadline:tokio::time::Instant::now()+call.0.client.options.media_control_timeout});continue;},Err(error)=>{let fatal=(error.kind==ErrorKind::Connection).then(||error.clone());let _=reply.send(Err(error));if let Some(error)=fatal{Err(error)}else{continue;}}}},None=>break,}},
+        command=async {
+            tokio::select! {
+                frame=commands.recv()=>frame,
+                control=controls.recv(),if pending.is_none() && waiting.is_none()=>control,
+            }
+        }=>{match command{Some(MediaCommand::Waiting(action,reply))=>{if reply.is_closed(){continue;}let id=create_connection_id();match socket.moderate_waiting_room(&id,&action).await{Ok(())=>{waiting=Some(PendingWaiting{id,reply,deadline:tokio::time::Instant::now()+call.0.client.options.media_control_timeout});continue;},Err(error)=>{let fatal=(error.kind==ErrorKind::Connection).then(||error.clone());let _=reply.send(Err(error));if let Some(error)=fatal{Err(error)}else{continue;}}}},Some(MediaCommand::Audio(pcm,reply))=>{let result=socket.write_audio(&pcm).await;let fatal=result.as_ref().err().cloned();let _=reply.send(result);if let Some(error)=fatal{Err(error)}else{continue;}},Some(MediaCommand::Video(frame,reply))=>{let result=socket.write_video(&frame).await;let fatal=result.as_ref().err().filter(|e|e.kind==ErrorKind::Connection).cloned();let _=reply.send(result);if let Some(error)=fatal{Err(error)}else{continue;}},Some(MediaCommand::State(update,reply))=>{let id=create_connection_id();match socket.set_media_state(&id,&update).await {Ok(())=>{pending=Some(PendingState{id,update,reply,deadline:tokio::time::Instant::now()+call.0.client.options.media_control_timeout});continue;},Err(error)=>{let fatal=(error.kind==ErrorKind::Connection).then(||error.clone());let _=reply.send(Err(error));if let Some(error)=fatal{Err(error)}else{continue;}}}},None=>break,}},
         frame=socket.read()=>match frame{Ok(Some(frame))=>Ok(frame),Ok(None)=>{call.finish(CallEndReason::RemoteHangup).await;break;},Err(error)=>Err(error)}
         };
         match outcome {
             Ok(frame) => {
                 if let MediaFrame::Control(control) = &frame {
                     match control {
+                        MediaControlFrame::WaitingRoom { state } => {
+                            call.0.snapshot.lock().await.waiting_room = Some(state.clone())
+                        }
+                        MediaControlFrame::WaitingRoomResult {
+                            request_id,
+                            ok,
+                            code,
+                        } => {
+                            if waiting.as_ref().is_some_and(|p| p.id == *request_id) {
+                                let p = waiting.take().unwrap();
+                                let _ = p.reply.send(if *ok {
+                                    Ok(())
+                                } else {
+                                    Err(invalid(
+                                        code.as_deref().unwrap_or("waiting_room_control_unknown"),
+                                        "Waiting-room control refused",
+                                    ))
+                                });
+                            }
+                        }
                         MediaControlFrame::Pong => awaiting_pong = false,
                         MediaControlFrame::MediaState {
                             request_id,
@@ -1315,6 +1404,13 @@ async fn media_worker(
             }
             Err(error) => {
                 call.0.snapshot.lock().await.video_sources.clear();
+                call.0.snapshot.lock().await.waiting_room = None;
+                if let Some(p) = waiting.take() {
+                    let _ = p.reply.send(Err(invalid(
+                        "waiting_room_control_unknown",
+                        "Media connection lost; outcome unknown",
+                    )));
+                }
                 if let Some(p) = pending.take() {
                     let _ = p.reply.send(Err(invalid(
                         "media_control_unknown",
@@ -1323,8 +1419,14 @@ async fn media_worker(
                 }
                 // Commands already queued for this connection are refused rather than replayed
                 // after a socket drop, so a caller never mistakes an uncertain write for a retry.
-                while let Ok(command) = commands.try_recv() {
+                while let Ok(command) = commands.try_recv().or_else(|_| controls.try_recv()) {
                     match command {
+                        MediaCommand::Waiting(_, reply) => {
+                            let _ = reply.send(Err(invalid(
+                                "waiting_room_control_unknown",
+                                "Media connection dropped",
+                            )));
+                        }
                         MediaCommand::Audio(_, reply) | MediaCommand::Video(_, reply) => {
                             let _ = reply.send(Err(invalid(
                                 "media_control_unknown",
@@ -1466,6 +1568,13 @@ async fn media_worker(
             }
         }
     }
+    call.0.snapshot.lock().await.waiting_room = None;
+    if let Some(p) = waiting.take() {
+        let _ = p.reply.send(Err(invalid(
+            "waiting_room_control_unknown",
+            "Media connection closed; outcome unknown",
+        )));
+    }
     if let Some(p) = pending.take() {
         let _ = p
             .reply
@@ -1490,8 +1599,15 @@ fn video_label(owner: &VideoSourceOwner) -> String {
             .clone()
             .unwrap_or_else(|| connection_id.clone()),
         VideoSourceOwner::Participant { participant } => participant
-            .phone_number
+            .name
             .clone()
+            .filter(|name| !name.is_empty())
+            .or_else(|| {
+                participant
+                    .phone_number
+                    .clone()
+                    .filter(|phone| !phone.is_empty())
+            })
             .unwrap_or_else(|| participant.id.clone()),
     }
 }
@@ -1517,5 +1633,51 @@ fn update_participant(s: &mut CallSnapshot, participant: Participant) {
         *old = participant;
     } else {
         s.participants.push(participant);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn guest_video_labels_prefer_names_and_keep_fallbacks() {
+        for (metadata, expected) in [
+            (
+                serde_json::json!({"name":"Ada Guest","phoneNumber":"+15550001","guest":true}),
+                "Ada Guest",
+            ),
+            (serde_json::json!({"phoneNumber":"+15550001"}), "+15550001"),
+            (
+                serde_json::json!({"name":"","phoneNumber":"+15550001"}),
+                "+15550001",
+            ),
+            (serde_json::json!({"name":"","guest":true}), "123"),
+            (serde_json::json!({"name":"","phoneNumber":""}), "123"),
+            (
+                serde_json::json!({"name":"0","phoneNumber":"+15550001"}),
+                "0",
+            ),
+            (serde_json::json!({}), "123"),
+        ] {
+            let mut value =
+                serde_json::json!({"id":"123","audioMuted":false,"video":true,"state":"connected"});
+            value
+                .as_object_mut()
+                .unwrap()
+                .extend(metadata.as_object().unwrap().clone());
+            let participant: Participant = serde_json::from_value(value).unwrap();
+            assert_eq!(
+                video_label(&VideoSourceOwner::Participant { participant }),
+                expected
+            );
+        }
+        assert_eq!(
+            video_label(&VideoSourceOwner::Connection {
+                connection_id: "connection_other".into(),
+                connection_participant: Some("server:other".into())
+            }),
+            "server:other"
+        );
     }
 }

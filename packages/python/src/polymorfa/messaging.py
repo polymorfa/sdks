@@ -104,6 +104,8 @@ from .voip_models import (
     PreviewCallLinkRequest,
     PreviewedCallLink,
     SessionCallSettings,
+    WaitingRoomControlRequest,
+    WaitingRoomControlResult,
 )
 
 T = TypeVar("T")
@@ -1041,6 +1043,40 @@ class Voip(Resource):
         return await self._request(
             "POST",
             f"/messaging/voip/calls/{segment(call_id)}/reaction",
+            body=body,
+            options=replace(options, max_network_retries=0),
+        )
+
+    async def moderate_waiting_room(
+        self, call_id: str, body: WaitingRoomControlRequest, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[WaitingRoomControlResult]]:
+        """Reauthorize through the API. Inspect data.ok; uncertain outcomes are never replayed."""
+        self._participant(body.get("participant"))
+        self._connection(body.get("connectionId"))
+        control = body["control"]
+        self._connection(control.get("requestId"))
+        operation = control.get("operation")
+        valid = control.get("type") == "waiting_room_control"
+        if operation == "toggle":
+            valid = (
+                valid
+                and isinstance(control.get("enabled"), bool)
+                and "participantId" not in control
+            )
+        else:
+            target = control.get("participantId")
+            valid = (
+                valid
+                and operation in ("admit", "deny")
+                and "enabled" not in control
+                and isinstance(target, str)
+                and re.fullmatch(r"[1-9][0-9]{0,18}", target) is not None
+            )
+        if not valid:
+            raise ValidationError("Invalid waiting-room control.")
+        return await self._request(
+            "POST",
+            f"/messaging/voip/calls/{segment(call_id)}/waiting-room",
             body=body,
             options=replace(options, max_network_retries=0),
         )

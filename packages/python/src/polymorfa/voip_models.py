@@ -37,6 +37,8 @@ class CallParticipant(TypedDict):
     video: bool
     state: Literal["invited", "ringing", "connected", "left"]
     handRaised: NotRequired[bool]
+    guest: NotRequired[bool]
+    name: NotRequired[str]
     phoneNumber: NotRequired[str]
     bsuid: NotRequired[str]
     username: NotRequired[str]
@@ -167,3 +169,35 @@ class ErrorReport(CallConnection):
 
 
 CallReport = QualityReport | ErrorReport
+
+
+class CallWaitingRoom(TypedDict):
+    enabled: bool
+    isAdmin: bool
+    inWaitingRoom: bool
+    users: list[CallParticipant]
+
+
+class WaitingRoomToggleControl(TypedDict):
+    type: Literal["waiting_room_control"]
+    requestId: str
+    operation: Literal["toggle"]
+    enabled: bool
+
+
+class WaitingRoomParticipantControl(TypedDict):
+    type: Literal["waiting_room_control"]
+    requestId: str
+    operation: Literal["admit", "deny"]
+    participantId: str
+
+
+class WaitingRoomControlRequest(CallConnection):
+    control: WaitingRoomToggleControl | WaitingRoomParticipantControl
+
+
+class WaitingRoomControlResult(TypedDict):
+    type: Literal["waiting_room_result"]
+    requestId: str
+    ok: bool
+    code: NotRequired[str]

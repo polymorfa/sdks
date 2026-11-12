@@ -100,6 +100,26 @@ function event(
 }
 
 describe("browser widget and shared calls client", () => {
+  it("shares waiting-room state with the call and clears it when media closes", async () => {
+    const f = fixture();
+    const socket = await f.connect();
+    await f.calls.controller.place("+15550100");
+    event(socket, "call.accepted", "CALL-OUT");
+    f.callbacks().onConnectionState("connected");
+    const state = {
+      enabled: true,
+      isAdmin: true,
+      inWaitingRoom: false,
+      users: [],
+    };
+    f.callbacks().onControl?.({ type: "waiting_room", state });
+    const call = f.calls.controller.call!;
+    expect(call.waitingRoom).toEqual(state);
+    expect(f.calls.controller.getSnapshot().waitingRoom).toEqual(state);
+    await f.calls.controller.leave();
+    expect(call.waitingRoom).toBeUndefined();
+    expect(f.calls.controller.getSnapshot().waitingRoom).toBeUndefined();
+  });
   it("places a group through the shared controller and exposes re-ring", async () => {
     const f = fixture();
     await f.connect();

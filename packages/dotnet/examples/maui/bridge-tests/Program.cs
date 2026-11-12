@@ -20,6 +20,8 @@ var oversized = false;
 var unauthorized = false;
 var delay = false;
 var html = false;
+var resetBodyAttempted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+var peerDisconnects = 0;
 var server = Task.Run(async () =>
 {
     try
@@ -62,9 +64,20 @@ var server = Task.Run(async () =>
             var contentType = html ? "text/html" : "application/json";
             var bytes = Encoding.UTF8.GetBytes(content);
             var length = oversized ? 1048577 : bytes.Length;
+            var resetPeer = headers.ContainsKey("X-Fixture-Reset");
+            var delayedResponse = delay || resetPeer;
+            // These cases deliberately dispose the response without consuming its body.
+            var expectedDisconnect = delayedResponse || length > 1024 * 1024 || status is >= 300 and < 400;
             await stream.WriteAsync(Encoding.ASCII.GetBytes($"HTTP/1.1 {status} Fixture\r\nContent-Type: {contentType}\r\nContent-Length: {length}\r\nConnection: close\r\n{extra}\r\n"), stop.Token);
-            if (delay) await Task.Delay(300, stop.Token);
-            await stream.WriteAsync(bytes, stop.Token);
+            if (delayedResponse) await Task.Delay(300, stop.Token);
+            try { await stream.WriteAsync(bytes, stop.Token); }
+            catch (IOException error) when (expectedDisconnect && !stop.IsCancellationRequested &&
+                error.InnerException is SocketException socketError &&
+                socketError.SocketErrorCode is SocketError.ConnectionReset or SocketError.Shutdown or SocketError.ConnectionAborted)
+            {
+                Interlocked.Increment(ref peerDisconnects);
+            }
+            finally { if (resetPeer) resetBodyAttempted.TrySetResult(); }
         }
     }
     catch (OperationCanceledException) { }
@@ -87,6 +100,23 @@ try
         try { await bridge.RequestAsync(action); throw new Exception("Unknown action accepted"); } catch (ArgumentException) { }
     }
     Check(requests.Count == before, "Unknown paths rejected before network");
+    // Force a peer reset after headers to exercise the CI failure deterministically.
+    using (var peer = new TcpClient())
+    {
+        await peer.ConnectAsync(IPAddress.Loopback, origin.Port);
+        await using var stream = peer.GetStream();
+        await stream.WriteAsync(Encoding.ASCII.GetBytes($"POST /api/polymorfa/token HTTP/1.1\r\nHost: {origin.Authority}\r\nOrigin: {origin.GetLeftPart(UriPartial.Authority)}\r\nCookie: app-session=opaque-fixture\r\nContent-Length: 0\r\nX-Fixture-Reset: 1\r\nConnection: close\r\n\r\n"));
+        using var reader = new StreamReader(stream, Encoding.UTF8, false, 1024, leaveOpen: true);
+        Check((await reader.ReadLineAsync())?.StartsWith("HTTP/1.1 200", StringComparison.Ordinal) == true, "Reset fixture receives response headers");
+        while (await reader.ReadLineAsync() is { Length: > 0 }) { }
+        peer.Client.LingerState = new LingerOption(true, 0);
+        peer.Close();
+    }
+    await resetBodyAttempted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+    Check(Volatile.Read(ref peerDisconnects) > 0, "Reset fixture exercises expected disconnected-peer cleanup");
+    var afterReset = bridge.RequestAsync("conversations");
+    if (await Task.WhenAny(afterReset, server).WaitAsync(TimeSpan.FromSeconds(2)) == server) await server;
+    Check((await afterReset).Status == 200, "Fixture continues accepting authorized requests after a reset peer");
     redirect = true;
     Check((await bridge.RequestAsync("token")).Status == 502, "Redirect must not leak native cookie");
     redirect = false; html = true;

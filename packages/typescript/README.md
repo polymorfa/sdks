@@ -3563,3 +3563,20 @@ const state = await client.passkeys.getConfirmation(session);
 const confirmExplicitly = () =>
   client.passkeys.confirm(session, suppliedConfirmation);
 ```
+
+### Authenticated HTTP moderation (unreleased)
+
+`client.voip.moderateWaitingRoom` sends a correlated action to
+`POST /messaging/voip/calls/{id}/waiting-room`. Supply the held connection ID and
+an action with `type: waiting_room_control`, `requestId`, and either `toggle`
+with `enabled`, or `admit`/`deny` with the pending participant's public ID.
+Server credentials may name their connection's participant; client tokens omit
+that field and need `voip_signal`.
+
+The API checks current credential and Number/project authority per request. Read
+`data.ok` and `data.code`; HTTP success alone does not confirm the provider action.
+The SDK disables automatic network retries for this operation. A missing reply
+or unknown outcome must not be replayed. Browser UI-kit controls use this HTTP
+path; programmatic media WebSocket controls retain their credential rechecks.
+This source requires the matching unreleased backend. It does not enable a
+customer environment or advance package/API availability.

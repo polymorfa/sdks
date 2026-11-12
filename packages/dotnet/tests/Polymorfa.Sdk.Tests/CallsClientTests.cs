@@ -34,6 +34,18 @@ internal static class CallsClientTests
         var change = call.SetMediaStateAsync(audioMuted: true); var command = await WebSocketFixture.ReceiveJsonAsync(media); await WebSocketFixture.TextAsync(media, "{\"type\":\"media_state\",\"requestId\":\"" + command.GetProperty("requestId").GetString() + "\",\"audioMuted\":true,\"videoEnabled\":false}"); ResourceTests.True((await change).AudioMuted);
         using var mediaDeadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         await using var frames = call.MediaFramesAsync(mediaDeadline.Token).GetAsyncEnumerator();
+        await WebSocketFixture.TextAsync(media, """{"type":"waiting_room","state":{"enabled":true,"isAdmin":true,"inWaitingRoom":false,"users":[{"id":"123","audioMuted":false,"video":false,"state":"invited","guest":true,"name":"Ada Guest"}]}}""");
+        while (await frames.MoveNextAsync() && frames.Current is not CallWaitingRoom) { }
+        ResourceTests.Equal(call.WaitingRoom!.Users[0].Name, "Ada Guest");
+        var admitting = call.AdmitParticipantAsync("123");
+        var waitingCommand = await WebSocketFixture.ReceiveJsonAsync(media);
+        ResourceTests.Equal(waitingCommand.GetProperty("type").GetString(), "waiting_room_control");
+        ResourceTests.Equal(waitingCommand.GetProperty("participantId").GetString(), "123");
+        await WebSocketFixture.TextAsync(media, """{"type":"waiting_room_result","requestId":"unrelated","ok":true}""");
+        await WebSocketFixture.TextAsync(media, "{\"type\":\"waiting_room_result\",\"requestId\":\"" + waitingCommand.GetProperty("requestId").GetString() + "\",\"ok\":true}");
+        await admitting;
+        ResourceTests.Equal(call.WaitingRoom.Users.Count, 1);
+
         await WebSocketFixture.TextAsync(media, "{\"type\":\"video_source\",\"source\":7,\"connectionId\":\"connection_1\",\"connectionParticipant\":\"agent\"}");
         while (await frames.MoveNextAsync() && frames.Current is not CallVideoSource) { }
         ResourceTests.Equal(call.VideoSources.Single().Source, 7u); ResourceTests.Equal(call.VideoSources[0].ConnectionParticipant, "agent");

@@ -64,6 +64,50 @@ export function validateFeatureContractPins(source, pins) {
     );
   }
 }
+export function validateGuestCallPublication(source, candidate, apiVersion) {
+  assert.equal(candidate.schemaVersion, 1);
+  for (const scope of [candidate, candidate.httpControl]) {
+    assert.equal(
+      scope?.sourceAccepted,
+      true,
+      "Guest calls are held from publication until API source acceptance",
+    );
+    assert.equal(
+      scope.published,
+      true,
+      "Guest calls are held from publication",
+    );
+  }
+  assert.equal(
+    candidate.apiVersion,
+    apiVersion,
+    "Guest-call API version mismatch",
+  );
+  assert.ok(
+    Array.isArray(candidate.candidateSource?.files),
+    "Guest-call source files are required",
+  );
+  const files = candidate.candidateSource.files.filter(
+    (file) => file.path === source.contracts.messaging.sourcePath,
+  );
+  assert.equal(
+    files.length,
+    1,
+    "Guest calls require one Messaging contract source",
+  );
+  assert.match(files[0].sha256, /^[a-f0-9]{64}$/);
+  validateFeatureContractPins(source, [
+    {
+      repository: candidate.candidateSource.repository,
+      sourceCommit: candidate.candidateSource.commit,
+      family: "messaging",
+      published: candidate.published,
+      sourcePath: files[0].path,
+      sourceSha256: files[0].sha256,
+    },
+  ]);
+}
+
 // Expands a supplement that pins both audiences into one pin per family.
 export function multiSourcePins(supplement) {
   return Object.entries(supplement.sources).map(([family, spec]) => ({
@@ -94,6 +138,17 @@ export function expectedContract() {
   const source = JSON.parse(readFileSync(join(root, "contracts/source.json")));
   assert.equal(source.repository, "polymorfa/polymorfa");
   assert.match(source.commit, /^[a-f0-9]{40}$/);
+  const apiVersion = /NATIVE_API_VERSION = "([^"]+)"/.exec(
+    readFileSync(join(root, "packages/typescript/src/version.ts"), "utf8"),
+  )?.[1];
+  assert.ok(apiVersion);
+  validateGuestCallPublication(
+    source,
+    JSON.parse(
+      readFileSync(join(root, "contracts/calls-guests.candidate.json")),
+    ),
+    apiVersion,
+  );
   validateFeatureContractPins(source, [
     ...multiSourcePins(
       JSON.parse(
@@ -126,10 +181,6 @@ export function expectedContract() {
   validateFeatureContractPins(source, [
     JSON.parse(readFileSync(join(root, "contracts/official-api-round2.json"))),
   ]);
-  const apiVersion = /NATIVE_API_VERSION = "([^"]+)"/.exec(
-    readFileSync(join(root, "packages/typescript/src/version.ts"), "utf8"),
-  )?.[1];
-  assert.ok(apiVersion);
   const contracts = Object.fromEntries(
     Object.entries(source.contracts).map(([name, spec]) => {
       assert.ok(["messaging", "platform"].includes(name));

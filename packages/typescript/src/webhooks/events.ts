@@ -584,6 +584,9 @@ export interface CallTelemetryPayload {
 export interface CallParticipant {
   /** Authoritative raised-hand state for a connected participant. */
   readonly handRaised?: boolean;
+  /** Provider guest marker; the supplied name is not verified identity. */
+  readonly guest?: boolean;
+  readonly name?: string;
   readonly id: string;
   readonly phoneNumber?: string;
   readonly bsuid?: string;

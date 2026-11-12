@@ -61,3 +61,14 @@ its options type, now `DefineUiKitOptions`.
 | `@polymorfa/ui`                                         | `@polymorfa/ui-kit/appearance`                                        |
 | `@polymorfa/store`, `@polymorfa/store/react`            | `@polymorfa/ui-kit/store`, `@polymorfa/ui-kit/store/react`            |
 | `@polymorfa/devtools`, `@polymorfa/devtools/production` | `@polymorfa/ui-kit/devtools`, `@polymorfa/ui-kit/devtools/production` |
+
+## Guest call participants (unreleased)
+
+React `ParticipantList` and the `<pmfa-call>` Web Component display a guest's
+self-reported name with a Guest label. A phone number is optional. The Calls
+controller exposes `waitingRoom`, `setApprovalRequired`, `admitParticipant` and
+`denyParticipant`. Controls appear only for an active connection whose current
+provider state grants administrator authority. Acknowledgement does not remove
+a pending user until the provider updates the roster. Unconfirmed changes show
+an error; commands are not retried automatically. This requires the matching
+unreleased backend and does not enable guest messaging or anonymous API access.

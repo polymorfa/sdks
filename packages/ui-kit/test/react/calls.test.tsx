@@ -891,6 +891,7 @@ describe("unified calls UI", () => {
     const participant = {
       id: "123",
       phoneNumber: "+15550100",
+      name: "",
       audioMuted: false,
       video: true,
       state: "connected" as const,
@@ -991,6 +992,78 @@ describe("unified calls UI", () => {
     ).toEqual(["+15550101In call · Muted", "p2Ringing"]);
     f.emit({ type: "participantLeft", callId: "P", participantId: "p1" });
     expect(host.querySelectorAll("li")).toHaveLength(1);
+    f.controller.dispose();
+  });
+
+  it.each([
+    [{ name: "", phoneNumber: "+15550101" }, "+15550101"],
+    [{ name: "", guest: true }, "123"],
+    [{ name: "0", guest: true }, "0"],
+  ])("uses visible participant labels for empty names", (metadata, label) => {
+    const f = feedFixture();
+    const host = mount(<ParticipantList controller={f.controller} />);
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "P", from: "+15550100", video: false },
+    });
+    f.emit({
+      type: "participant",
+      callId: "P",
+      participant: {
+        id: "123",
+        audioMuted: false,
+        video: false,
+        state: "connected",
+        ...metadata,
+      },
+    });
+    expect(host.querySelector("li span")?.textContent).toBe(label);
+    f.controller.dispose();
+  });
+
+  it("renders guest names as text and labels the guest without a phone", () => {
+    const f = feedFixture();
+    const host = mount(
+      <PolymorfaProvider>
+        <ParticipantList controller={f.controller} />
+      </PolymorfaProvider>,
+    );
+    f.emit({
+      type: "incomingCall",
+      call: { callId: "P", from: "+15550100", video: false },
+    });
+    f.emit({
+      type: "participant",
+      callId: "P",
+      participant: {
+        id: "123",
+        guest: true,
+        name: "<Ada Guest>",
+        audioMuted: false,
+        video: false,
+        state: "connected",
+      },
+    });
+    expect(host.querySelector("li")?.textContent).toBe(
+      "<Ada Guest>Guest · In call",
+    );
+    expect(host.querySelector("ada")).toBeNull();
+    f.emit({
+      type: "participant",
+      callId: "P",
+      participant: {
+        id: "123",
+        guest: true,
+        name: "Changed",
+        audioMuted: false,
+        video: false,
+        state: "connected",
+      },
+    });
+    expect(host.querySelectorAll("li")).toHaveLength(1);
+    expect(host.querySelector("li")?.textContent).toContain("Changed");
+    f.emit({ type: "participantLeft", callId: "P", participantId: "123" });
+    expect(host.querySelector("li")).toBeNull();
     f.controller.dispose();
   });
 
@@ -1407,4 +1480,67 @@ it("starts display capture from the share control and disables the camera until 
   await act(async () => {
     await f.controller.dispose();
   });
+});
+
+it("shows pending guests and sends moderation only with current media authority", async () => {
+  const f = fixture();
+  const moderate = vi.fn(async () => undefined);
+  f.session.moderateWaitingRoom = moderate;
+  await act(async () => {
+    await f.controller.place("+15550100");
+  });
+  const callbacks = vi.mocked(f.media.open).mock.calls[0]![2];
+  act(() => callbacks.onConnectionState("connected"));
+  const guest = {
+    id: "123",
+    state: "invited" as const,
+    audioMuted: false,
+    video: false,
+    guest: true,
+    name: "<Ada Guest>",
+  };
+  act(() =>
+    callbacks.onControl?.({
+      type: "waiting_room",
+      state: {
+        enabled: true,
+        isAdmin: true,
+        inWaitingRoom: false,
+        users: [guest],
+      },
+    }),
+  );
+  const host = mount(<ParticipantList controller={f.controller} />);
+  expect(host.textContent).toContain("<Ada Guest>");
+  expect(host.querySelector("Ada")).toBeNull();
+  const admit = Array.from(host.querySelectorAll("button")).find(
+    (b) => b.textContent === "Admit",
+  )!;
+  await act(async () => admit.click());
+  expect(moderate).toHaveBeenCalledWith({
+    operation: "admit",
+    participantId: "123",
+  });
+  // An acknowledgement does not invent a new provider roster.
+  expect(host.textContent).toContain("<Ada Guest>");
+  act(() =>
+    callbacks.onControl?.({
+      type: "waiting_room",
+      state: {
+        enabled: true,
+        isAdmin: false,
+        inWaitingRoom: false,
+        users: [guest],
+      },
+    }),
+  );
+  expect(
+    Array.from(host.querySelectorAll("button")).some(
+      (b) => b.textContent === "Admit",
+    ),
+  ).toBe(false);
+  await expect(f.controller.admitParticipant("123")).rejects.toThrow(
+    "authority",
+  );
+  await f.controller.dispose();
 });

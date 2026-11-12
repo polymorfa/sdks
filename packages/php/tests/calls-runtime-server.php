@@ -68,6 +68,7 @@ $server->onText(function (Server $server, Connection $connection, Text $message)
                 throw new RuntimeException('Reconnect failed to refresh credential.');
             }
             $connection->text('{"type":"ready","sampleRate":16000,"video":true}');
+            $connection->text('{"type":"waiting_room","state":{"enabled":true,"isAdmin":true,"inWaitingRoom":false,"users":[{"id":"123","audioMuted":false,"video":false,"state":"invited","guest":true,"name":"Ada Guest"}]}}');
             $connection->text('{"type":"participant_joined","participant":{"id":"15550000001","audioMuted":false,"video":true,"state":"connected"}}');
             $connection->text('{"type":"remote_media","audioMuted":true}');
             $connection->text('{"type":"video_source","source":42,"connectionId":"connection_other","connectionParticipant":"server:other"}');
@@ -82,6 +83,10 @@ $server->onText(function (Server $server, Connection $connection, Text $message)
     if (($frame['type'] ?? '') === 'media_state') {
         $record(['type' => 'preferences','callId' => explode('/', $context['path'])[3],'audioMuted' => $frame['audioMuted'] ?? false]);
         $connection->text(json_encode(['type' => 'media_state','requestId' => $frame['requestId'],'audioMuted' => $frame['audioMuted'] ?? false,'videoEnabled' => $frame['videoEnabled'] ?? false,'screenSharing' => $frame['screenSharing'] ?? false], JSON_THROW_ON_ERROR));
+    } elseif (($frame['type'] ?? '') === 'waiting_room_control') {
+        if ($frame['operation'] !== 'admit' || $frame['participantId'] !== '123') { throw new RuntimeException('Wrong waiting control'); }
+        $connection->text(json_encode(['type'=>'waiting_room_result','requestId'=>'unrelated','ok'=>true], JSON_THROW_ON_ERROR));
+        $connection->text(json_encode(['type'=>'waiting_room_result','requestId'=>$frame['requestId'],'ok'=>true], JSON_THROW_ON_ERROR));
     } elseif (($frame['type'] ?? '') === 'ping') {
         $connection->text('{"type":"pong"}');
     } elseif (($frame['type'] ?? '') === 'auth') {
