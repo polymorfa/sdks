@@ -157,6 +157,7 @@ CLAIM = {
         "criticalFindingDays": 1,
         "sharedConnection": False,
         "simultaneousCalls": False,
+        "linkedDeviceInteractive": False,
         "measuredHours": 100,
     },
     "summary": "Review",

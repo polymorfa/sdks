@@ -1,5 +1,14 @@
 # Contract coverage
 
+## Ban Credit claim waivers
+
+`ban-credit-waivers.json` pins the `BanSafeClaim` and `BanSafeClaimPayload`
+verdict enums and the `linkedDeviceInteractive` claim evidence field to API source `38487509fa14dcad94e09df8c85f544e516b01cd`
+(polymorfa/polymorfa#845, merged). It is held with `published: false`.
+`ban-credit-waivers-contract.test.ts` checks the TypeScript types against it;
+each native package has a decoding test. No operation is added. Re-pin to the
+merged API revision before publication.
+
 ## Campaign and custody additions
 
 `campaign-custody-20261014.json` pins thirty machine-accessible operations and

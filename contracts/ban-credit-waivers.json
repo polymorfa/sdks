@@ -1,0 +1,65 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "sourceCommit": "38487509fa14dcad94e09df8c85f544e516b01cd",
+  "published": false,
+  "scope": "Ban Credit claim waivers: verdict linked_device_interactive and claim evidence linkedDeviceInteractive (polymorfa/polymorfa#845, merged). Other SDK contracts retain their recorded source revisions.",
+  "sources": {
+    "platform": {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "sha256": "66a15c733e79bed64982883c19f73a196434c409557762c061fb4c9cc9f2f03f"
+    },
+    "messaging": {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sha256": "4ab7649b01873b0b530a2b35e99ead508748f869a3318429c184d30e4defe39b"
+    }
+  },
+  "verdicts": {
+    "BanSafeClaim": {
+      "family": "platform",
+      "enum": [
+        "other_device",
+        "customer_conduct",
+        "shared_network",
+        "ours",
+        "inconclusive",
+        "simultaneous_calls",
+        "linked_device_interactive"
+      ]
+    },
+    "BanSafeClaimPayload": {
+      "family": "messaging",
+      "enum": [
+        "other_device",
+        "customer_conduct",
+        "shared_network",
+        "ours",
+        "inconclusive",
+        "simultaneous_calls",
+        "linked_device_interactive"
+      ]
+    }
+  },
+  "evidence": {
+    "BanSafeClaimEvidence": {
+      "family": "platform",
+      "required": [
+        "attributionRuleVersion",
+        "windowDays",
+        "deviceEvidence",
+        "otherDevices",
+        "restrictedInWindow",
+        "criticalFindingDays",
+        "sharedConnection",
+        "measuredHours",
+        "simultaneousCalls",
+        "linkedDeviceInteractive"
+      ],
+      "properties": {
+        "linkedDeviceInteractive": {
+          "type": "boolean",
+          "description": "Whether this number sent an interactive message (buttons, lists, product messages, Flows and similar) from a linked device inside the window. When true, Ban Credit does not cover the ban and the claim is denied when filed. False for claims filed before this was recorded."
+        }
+      }
+    }
+  }
+}

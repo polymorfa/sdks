@@ -748,6 +748,7 @@ class BanSafeClaimPayload(TypedDict):
         "customer_conduct",
         "shared_network",
         "simultaneous_calls",
+        "linked_device_interactive",
         "ours",
         "inconclusive",
     ]

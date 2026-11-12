@@ -941,7 +941,9 @@ export interface BanSafeClaimPayload {
     | "ours"
     | "inconclusive"
     /** Simultaneous calls voided Ban Insurance; the claim is denied when filed. */
-    | "simultaneous_calls";
+    | "simultaneous_calls"
+    /** An interactive message sent from a linked device voided Ban Credit; the claim is denied when filed. */
+    | "linked_device_interactive";
   readonly windowStart: string;
   readonly windowEnd: string;
   /** Decimal cent amounts with up to six fractional digits. */
