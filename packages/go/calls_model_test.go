@@ -438,7 +438,7 @@ func TestCallsOutboundEarlyAcceptedAndLateDisconnect(t *testing.T) {
 			defer server.Close()
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 			defer cancel()
-			c, _ := NewCallsClient(CallsClientConfig{Config: orgConfig(server.URL), Session: "s", Participant: "worker"})
+			c, _ := NewCallsClient(CallsClientConfig{Config: teamConfig(server.URL), Session: "s", Participant: "worker"})
 			session, e := c.Follow(ctx, CallsFollowOptions{})
 			if e != nil {
 				t.Fatal(e)

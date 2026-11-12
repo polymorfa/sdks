@@ -6,7 +6,7 @@ using static Adoption41Fixtures;
 internal static class CampaignExistingTests
 {
     internal static int Checks { get; private set; }
-    internal static readonly Credential Key = Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k");
+    internal static readonly Credential Key = Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k");
     internal static void Check(bool value, string label) { if (!value) throw new Exception(label); Checks++; }
     internal static ClientOptions Options(WireFixture wire) => new() { BaseUrl = wire.Url, MaxNetworkRetries = 0, Timeout = TimeSpan.FromSeconds(2) };
     internal static async Task Messaging(string method, string path, string? body, string response, Func<MessagingClient, Task> invoke, int status = 200, string version = "2026-09-22", IReadOnlyDictionary<string, string>? headers = null)
@@ -16,17 +16,17 @@ internal static class CampaignExistingTests
         var serve = wire.ServeAsync(method, path, body, response, status, headers);
         await invoke(client); await serve; Checks++;
     }
-    internal static async Task Organization(string method, string path, string? body, string response, Func<OrganizationClient, Task> invoke, int status = 200, string version = "2026-09-22", IReadOnlyDictionary<string, string>? headers = null)
+    internal static async Task Team(string method, string path, string? body, string response, Func<TeamClient, Task> invoke, int status = 200, string version = "2026-09-22", IReadOnlyDictionary<string, string>? headers = null)
     {
         using var wire = new WireFixture { ExpectedHeaders = new Dictionary<string, string> { ["polymorfa-version"] = version } };
-        using var client = new OrganizationClient(Key, Options(wire));
+        using var client = new TeamClient(Key, Options(wire));
         var serve = wire.ServeAsync(method, path, body, response, status, headers);
         await invoke(client); await serve; Checks++;
     }
-    internal static async Task NoHttp(Func<MessagingClient, OrganizationClient, Task> action)
+    internal static async Task NoHttp(Func<MessagingClient, TeamClient, Task> action)
     {
-        using var wire = new WireFixture(); using var client = new MessagingClient(Key, Options(wire)); using var org = new OrganizationClient(Key, Options(wire));
-        try { await action(client, org); throw new Exception("Invalid input accepted."); }
+        using var wire = new WireFixture(); using var client = new MessagingClient(Key, Options(wire)); using var team = new TeamClient(Key, Options(wire));
+        try { await action(client, team); throw new Exception("Invalid input accepted."); }
         catch (PolymorfaConfigurationException) { Check(!wire.Pending, "Invalid input reached HTTP."); }
     }
     internal static async Task InvalidResponse(Func<Task> action)
@@ -62,13 +62,13 @@ internal static class CampaignExistingTests
         await Messaging("POST", path + "/c/resume", null, Envelope(operation), async c => { await c.Campaigns.ResumeAsync("support", "c"); });
         await Messaging("POST", path + "/c/stop", null, Envelope(Change(CampaignJson, "operationId", null)), async c => Check((await c.Campaigns.StopAsync("support", "c")).Data.Data.OperationId is null, "Stop null operation"));
         await Messaging("GET", path + "/c/analytics", null, Envelope(Report), async c => { var r = (await c.Campaigns.AnalyticsAsync("support", "c")).Data.Data; Check(r.AverageResponseTimeMs is null && r.MinResponseTimeMs is null && r.MaxResponseTimeMs is null && r.Experiment is null && r.FollowUps.Total == 0, "Messaging report"); });
-        await Organization("GET", "/platform/campaigns?projectId=" + Project, null, Envelope("[" + CampaignJson + "]", false), async c => { await c.Campaigns.ListAsync(new(Project)); });
-        await Organization("POST", "/platform/campaigns", "{\"projectId\":\"" + Project + "\",\"name\":\"Campaign\"}", Envelope(CampaignJson, false), async c => { await c.Campaigns.CreateAsync(new(Project, "Campaign")); });
-        await Organization("GET", "/platform/campaigns/c?projectId=" + Project, null, "{\"data\":null}", async c => Check((await c.Campaigns.RetrieveAsync("c", new(Project))).Data.Data is null, "Nullable Platform retrieve"));
+        await Team("GET", "/platform/campaigns?projectId=" + Project, null, Envelope("[" + CampaignJson + "]", false), async c => { await c.Campaigns.ListAsync(new(Project)); });
+        await Team("POST", "/platform/campaigns", "{\"projectId\":\"" + Project + "\",\"name\":\"Campaign\"}", Envelope(CampaignJson, false), async c => { await c.Campaigns.CreateAsync(new(Project, "Campaign")); });
+        await Team("GET", "/platform/campaigns/c?projectId=" + Project, null, "{\"data\":null}", async c => Check((await c.Campaigns.RetrieveAsync("c", new(Project))).Data.Data is null, "Nullable Platform retrieve"));
         foreach (var body in new UpdatePlatformCampaignRequest?[] { null, new(), new() { AdditionalFields = new Dictionary<string, JsonElement> { ["future"] = JsonSerializer.SerializeToElement(false) } } })
-            await Organization("PATCH", "/platform/campaigns/c?projectId=" + Project, body is null ? null : body.AdditionalFields is null ? "{}" : "{\"future\":false}", Envelope(CampaignJson, false), async c => { await c.Campaigns.UpdateAsync("c", body, new(Project)); });
-        await Organization("POST", "/platform/campaigns/c/launch", "{\"projectId\":\"" + Project + "\",\"scheduledAt\":0.5,\"skipMissingVariables\":false}", "{\"data\":{\"id\":\"c\",\"status\":\"queued\",\"operationId\":\"op\",\"future\":false}}", async c => { var r = (await c.Campaigns.LaunchAsync("c", new(Project, 0.5, false))).Data.Data; Check(r.Id == "c" && r.Status == "queued" && r.OperationId == "op" && !r.AdditionalFields!["future"].GetBoolean(), "Typed open launch result"); });
-        await Organization("GET", "/platform/campaigns/c/analytics?projectId=" + Project, null, Envelope(Report, false), async c => Check((await c.Campaigns.AnalyticsAsync("c", new(Project))).Data.Data.FollowUps.NextDueAt is null, "Platform report"));
+            await Team("PATCH", "/platform/campaigns/c?projectId=" + Project, body is null ? null : body.AdditionalFields is null ? "{}" : "{\"future\":false}", Envelope(CampaignJson, false), async c => { await c.Campaigns.UpdateAsync("c", body, new(Project)); });
+        await Team("POST", "/platform/campaigns/c/launch", "{\"projectId\":\"" + Project + "\",\"scheduledAt\":0.5,\"skipMissingVariables\":false}", "{\"data\":{\"id\":\"c\",\"status\":\"queued\",\"operationId\":\"op\",\"future\":false}}", async c => { var r = (await c.Campaigns.LaunchAsync("c", new(Project, 0.5, false))).Data.Data; Check(r.Id == "c" && r.Status == "queued" && r.OperationId == "op" && !r.AdditionalFields!["future"].GetBoolean(), "Typed open launch result"); });
+        await Team("GET", "/platform/campaigns/c/analytics?projectId=" + Project, null, Envelope(Report, false), async c => Check((await c.Campaigns.AnalyticsAsync("c", new(Project))).Data.Data.FollowUps.NextDueAt is null, "Platform report"));
         var reasons = Enum.GetValues<CampaignRecipientFailureReason>();
         foreach (var reason in reasons)
         {
@@ -78,7 +78,7 @@ internal static class CampaignExistingTests
             var page = "{\"success\":true,\"data\":[" + row + "],\"page\":{\"nextCursor\":null,\"hasMore\":false}}";
             await Messaging("GET", path + "/c/recipients?status=queued&cursor=next&limit=100&reason=" + wireReason, null, page, async c => { var r = (await c.Campaigns.ListRecipientsAsync("support", "c", new("queued", "next", 100, reason))).Data.Data[0]; Check(r.NextMessageAt == 0.5 && r.FailureReason == reason && r.MessagesSent == 0, "Fractional Messaging recipient"); });
         }
-        await Organization("GET", "/platform/campaigns/c/recipients?projectId=" + Project + "&status=queued&cursor=next&limit=1&reason=other", null, "{\"data\":[" + Recipient + "],\"page\":{\"nextCursor\":null}}", async c => Check((await c.Campaigns.RecipientsAsync("c", new(Project, "queued", "next", 1, CampaignRecipientFailureReason.Other))).Data.Data[0].NextMessageAt is null, "Platform recipient"));
+        await Team("GET", "/platform/campaigns/c/recipients?projectId=" + Project + "&status=queued&cursor=next&limit=1&reason=other", null, "{\"data\":[" + Recipient + "],\"page\":{\"nextCursor\":null}}", async c => Check((await c.Campaigns.RecipientsAsync("c", new(Project, "queued", "next", 1, CampaignRecipientFailureReason.Other))).Data.Data[0].NextMessageAt is null, "Platform recipient"));
     }
     private static async Task RequestsAsync()
     {
@@ -94,7 +94,7 @@ internal static class CampaignExistingTests
         await NoHttp(async (_, c) => { await c.Campaigns.LaunchAsync("c", new(Project, double.NaN)); });
         await NoHttp(async (_, c) => { await c.Campaigns.UpdateAsync("c", new() { AdditionalFields = new Dictionary<string, JsonElement> { ["\ud800"] = JsonSerializer.SerializeToElement(false) } }, new(Project)); });
         var once = new SinglePassMessages();
-        await Organization("POST", "/platform/campaigns", "{\"projectId\":\"" + Project + "\",\"name\":\"Campaign\",\"messagesArray\":[{}]}", Envelope(CampaignJson, false), async c => { await c.Campaigns.CreateAsync(new(Project, "Campaign", MessagesArray: once)); });
+        await Team("POST", "/platform/campaigns", "{\"projectId\":\"" + Project + "\",\"name\":\"Campaign\",\"messagesArray\":[{}]}", Envelope(CampaignJson, false), async c => { await c.Campaigns.CreateAsync(new(Project, "Campaign", MessagesArray: once)); });
         Check(once.Enumerations == 1, "Caller messages enumerated once");
         var mapping = new CampaignVariableMapping { ["0"] = new(), ["__proto__"] = new("source.key", "fallback") };
         await Messaging("POST", "/messaging/projects/s/campaigns", "{\"name\":\"Campaign\",\"variableMapping\":{\"0\":{},\"__proto__\":{\"source\":\"source.key\",\"fallback\":\"fallback\"}},\"trackedLinks\":[{\"key\":\"a\",\"url\":\"HTTPS://Example.test\"},{\"key\":\"b\",\"url\":\"HTTPS://Example.test\"}]}", Envelope(CampaignJson), async c => { await c.Campaigns.CreateAsync("s", new("Campaign", VariableMapping: mapping, TrackedLinks: new[] { new CampaignTrackedLink("a", "HTTPS://Example.test"), new CampaignTrackedLink("b", "HTTPS://Example.test") })); });
@@ -113,7 +113,7 @@ internal static class CampaignExistingTests
         foreach (var follow in new[] { new CampaignFollowUp(new CampaignFollowUpText("x"), DelaySeconds: 604800), new CampaignFollowUp(new CampaignFollowUpText("x"), ExpirySeconds: 86400), new CampaignFollowUp(new CampaignFollowUpText("x"), DelaySeconds: 59), new CampaignFollowUp(new CampaignFollowUpText("x"), ExpirySeconds: 2592001) })
             await NoHttp(async (c, _) => { await c.Campaigns.UpdateAsync("s", "c", new() { FollowUp = follow }); });
         var open = new PlatformCampaignMessage { Source = new string('x', 4097), DelayAfterSec = 0, Buttons = Enumerable.Range(0, 4).Select(_ => new PlatformCampaignButton("reply", "")).ToArray(), Media = new("image", "") { AdditionalFields = new Dictionary<string, JsonElement> { ["future"] = JsonSerializer.SerializeToElement(false) } } };
-        await Organization("POST", "/platform/campaigns", JsonSerializer.Serialize(new { projectId = Project, name = "Campaign", messagesArray = new object[] { new { }, new { source = new string('x', 4097), delayAfterSec = 0, buttons = Enumerable.Range(0, 4).Select(_ => new { kind = "reply", label = "" }), media = new { kind = "image", url = "", future = false } } } }), Envelope(CampaignJson, false), async c => { await c.Campaigns.CreateAsync(new(Project, "Campaign", MessagesArray: [new(), open])); });
+        await Team("POST", "/platform/campaigns", JsonSerializer.Serialize(new { projectId = Project, name = "Campaign", messagesArray = new object[] { new { }, new { source = new string('x', 4097), delayAfterSec = 0, buttons = Enumerable.Range(0, 4).Select(_ => new { kind = "reply", label = "" }), media = new { kind = "image", url = "", future = false } } } }), Envelope(CampaignJson, false), async c => { await c.Campaigns.CreateAsync(new(Project, "Campaign", MessagesArray: [new(), open])); });
         await NoHttp(async (_, c) => { await c.Campaigns.CreateAsync(new(Project, "Campaign", Variants: PatchValue<IReadOnlyList<CampaignVariant>>.Set(null))); });
         await NoHttp(async (_, c) => { await c.Campaigns.CreateAsync(new(Project, "Campaign", MessagesArray: Enumerable.Range(0, 11).Select(_ => new PlatformCampaignMessage()).ToArray())); });
         await NoHttp(async (_, c) => { await c.Campaigns.CreateAsync(new(Project, "Campaign", MessagesArray: [new() { Version = 3 }])); });
@@ -142,21 +142,21 @@ internal static class CampaignExistingTests
         foreach (var field in new[] { "trackedLinks", "experimentOutcome", "followUp", "sendWindow", "recipientCount" })
             await Messaging("GET", "/messaging/projects/s/campaigns/c", null, Envelope(Change(CampaignJson, field, null, true)), c => InvalidResponse(async () => { await c.Campaigns.RetrieveAsync("s", "c"); }));
         foreach (var field in new[] { "averageResponseTimeMs", "minResponseTimeMs", "maxResponseTimeMs", "experiment", "followUps", "sentCount" })
-            await Organization("GET", "/platform/campaigns/c/analytics?projectId=" + Project, null, Envelope(Change(Report, field, null, true), false), c => InvalidResponse(async () => { await c.Campaigns.AnalyticsAsync("c", new(Project)); }));
+            await Team("GET", "/platform/campaigns/c/analytics?projectId=" + Project, null, Envelope(Change(Report, field, null, true), false), c => InvalidResponse(async () => { await c.Campaigns.AnalyticsAsync("c", new(Project)); }));
         var links = new JsonArray(Enumerable.Range(0, 6).Select(i => (JsonNode)new JsonObject { ["key"] = "k" + i, ["url"] = "https://example.test/normalized" }).ToArray());
         var full = Change(CampaignJson, "trackedLinks", links); full = Change(full, "followUp", JsonNode.Parse("{\"message\":{\"type\":\"text\",\"text\":\"ok\"}}")); full = Change(full, "variableMapping", null);
-        await Organization("GET", "/platform/campaigns/c?projectId=" + Project, null, Envelope(full, false), async c => { var value = (await c.Campaigns.RetrieveAsync("c", new(Project))).Data.Data!; Check(value.TrackedLinks.Count == 6 && value.VariableMapping is null && value.FollowUp!.DelaySeconds is null, "Stored links or sparse follow-up"); });
+        await Team("GET", "/platform/campaigns/c?projectId=" + Project, null, Envelope(full, false), async c => { var value = (await c.Campaigns.RetrieveAsync("c", new(Project))).Data.Data!; Check(value.TrackedLinks.Count == 6 && value.VariableMapping is null && value.FollowUp!.DelaySeconds is null, "Stored links or sparse follow-up"); });
         foreach (var field in new[] { "failureReason", "messagesSent", "nextMessageAt", "sequenceError", "followUp" })
             await Messaging("GET", "/messaging/projects/s/campaigns/c/recipients", null, "{\"success\":true,\"data\":[" + Change(Recipient, field, null, true) + "],\"page\":{\"nextCursor\":null,\"hasMore\":false}}", c => InvalidResponse(async () => { await c.Campaigns.ListRecipientsAsync("s", "c"); }));
-        await Organization("GET", "/platform/campaigns/c/recipients?projectId=" + Project, null, "{\"data\":[" + Change(Recipient, "nextMessageAt", JsonValue.Create(0.5)) + "],\"page\":{\"nextCursor\":null}}", c => InvalidResponse(async () => { await c.Campaigns.RecipientsAsync("c", new(Project)); }));
+        await Team("GET", "/platform/campaigns/c/recipients?projectId=" + Project, null, "{\"data\":[" + Change(Recipient, "nextMessageAt", JsonValue.Create(0.5)) + "],\"page\":{\"nextCursor\":null}}", c => InvalidResponse(async () => { await c.Campaigns.RecipientsAsync("c", new(Project)); }));
         foreach (var (status, code) in new[] { (409, "campaign_approval_stale"), (422, "campaign_variables_missing"), (400, "future_code"), (404, "not_found") })
-            await Organization("POST", "/platform/campaigns/c/launch", "{\"projectId\":\"" + Project + "\"}", "{\"error\":{\"code\":\"" + code + "\",\"message\":\"Synthetic\",\"param\":\"variables\"}}", async c => { try { await c.Campaigns.LaunchAsync("c", new(Project)); throw new Exception("Remote denial accepted"); } catch (PolymorfaException e) { Check(e.Status == status && e.Code == code && e.Param == "variables" && e.Metadata!.Headers["x-trace-id"] == "safe", "Remote metadata"); } }, status, headers: new Dictionary<string, string> { ["x-trace-id"] = "safe", ["idempotent-replayed"] = "false", ["set-cookie"] = "secret" });
+            await Team("POST", "/platform/campaigns/c/launch", "{\"projectId\":\"" + Project + "\"}", "{\"error\":{\"code\":\"" + code + "\",\"message\":\"Synthetic\",\"param\":\"variables\"}}", async c => { try { await c.Campaigns.LaunchAsync("c", new(Project)); throw new Exception("Remote denial accepted"); } catch (PolymorfaException e) { Check(e.Status == status && e.Code == code && e.Param == "variables" && e.Metadata!.Headers["x-trace-id"] == "safe", "Remote metadata"); } }, status, headers: new Dictionary<string, string> { ["x-trace-id"] = "safe", ["idempotent-replayed"] = "false", ["set-cookie"] = "secret" });
     }
     private static async Task ReplayAsync()
     {
         for (var route = 0; route < 4; route++)
         {
-            using var wire = new WireFixture { AbsentHeaders = ["idempotency-key"] }; using var messaging = new MessagingClient(Key, Options(wire)); using var org = new OrganizationClient(Key, Options(wire));
+            using var wire = new WireFixture { AbsentHeaders = ["idempotency-key"] }; using var messaging = new MessagingClient(Key, Options(wire)); using var team = new TeamClient(Key, Options(wire));
             var path = route switch { 0 => "/messaging/projects/s/campaigns/c/recipients", 1 => "/platform/campaigns/c/recipients", 2 => "/platform/audiences", _ => "/platform/audiences/a/members" };
             var body = route switch { 0 => "{\"recipients\":[]}", 1 => "{\"projectId\":\"" + Project + "\",\"recipients\":[]}", 2 => "{\"name\":\"A\",\"members\":[]}", _ => "{\"members\":[]}" };
             var serve = wire.ServeAsync("POST", path, body, "{\"error\":{\"code\":\"unknown_effect\",\"message\":\"Synthetic\"}}", 503);
@@ -166,9 +166,9 @@ internal static class CampaignExistingTests
                 switch (route)
                 {
                     case 0: await messaging.Campaigns.AddRecipientsAsync("s", "c", new([]), options); break;
-                    case 1: await org.Campaigns.AddRecipientsAsync("c", new(Project, []), options); break;
-                    case 2: await org.Audiences.CreateAsync(CreateAudienceRequest.FromMembers("A", []), options); break;
-                    case 3: await org.Audiences.AddMembersAsync("a", new([]), options); break;
+                    case 1: await team.Campaigns.AddRecipientsAsync("c", new(Project, []), options); break;
+                    case 2: await team.Audiences.CreateAsync(CreateAudienceRequest.FromMembers("A", []), options); break;
+                    case 3: await team.Audiences.AddMembersAsync("a", new([]), options); break;
                 }
                 throw new Exception("Uncertain write succeeded");
             }
@@ -177,7 +177,7 @@ internal static class CampaignExistingTests
         }
         for (var route = 0; route < 4; route++)
         {
-            using var wire = new WireFixture(); using var messaging = new MessagingClient(Key, Options(wire)); using var org = new OrganizationClient(Key, Options(wire));
+            using var wire = new WireFixture(); using var messaging = new MessagingClient(Key, Options(wire)); using var team = new TeamClient(Key, Options(wire));
             var members = new List<CampaignRecipientInput> { new("+15550001111") }; var headers = new Dictionary<string, string> { ["x-snapshot"] = "before" };
             var options = new RequestOptions { IdempotencyKey = "caller-key", MaxNetworkRetries = 1, Headers = headers };
             var path = route switch { 0 => "/messaging/projects/s/campaigns/c/recipients", 1 => "/platform/campaigns/c/recipients", 2 => "/platform/audiences", _ => "/platform/audiences/a/members" };
@@ -194,9 +194,9 @@ internal static class CampaignExistingTests
             switch (route)
             {
                 case 0: await messaging.Campaigns.AddRecipientsAsync("s", "c", new(members), options); break;
-                case 1: await org.Campaigns.AddRecipientsAsync("c", new(Project, members), options); break;
-                case 2: await org.Audiences.CreateAsync(CreateAudienceRequest.FromMembers("A", members), options); break;
-                case 3: await org.Audiences.AddMembersAsync("a", new(members), options); break;
+                case 1: await team.Campaigns.AddRecipientsAsync("c", new(Project, members), options); break;
+                case 2: await team.Audiences.CreateAsync(CreateAudienceRequest.FromMembers("A", members), options); break;
+                case 3: await team.Audiences.AddMembersAsync("a", new(members), options); break;
             }
             await server; Check(!wire.Pending, "Extra replay");
         }

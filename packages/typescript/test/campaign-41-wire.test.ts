@@ -10,7 +10,7 @@ import {
   type CampaignVariableMapping,
 } from "../src/index.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 const projectId = "018f0000-0000-7000-8000-000000000001",
   id = "018f0000-0000-7000-8000-000000000002";
 const campaign: Campaign = {
@@ -120,11 +120,11 @@ it("retains complete independent campaign returns for all thirteen changed metho
   });
   servers.push(server);
   const m = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const c = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const calls = [
@@ -297,11 +297,11 @@ for (const operation of [
     });
     servers.push(server);
     const m = new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
     });
     const c = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
     });
     const call = (selected: typeof options | { maxNetworkRetries: number }) =>
@@ -354,7 +354,7 @@ for (const [status, code] of [
     }));
     servers.push(server);
     const c = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
     });
     await expect(

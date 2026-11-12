@@ -1798,7 +1798,7 @@
     {
       "family": "platform",
       "method": "DELETE",
-      "path": "/console/organization/avatar",
+      "path": "/console/team/avatar",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -1849,7 +1849,7 @@
       "method": "DELETE",
       "path": "/platform/audiences/{listId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.DeleteAsync",
+      "sdkMethod": "TeamClient.Audiences.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
     },
     {
@@ -1857,7 +1857,7 @@
       "method": "DELETE",
       "path": "/platform/audiences/{listId}/members/{phone}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.DeleteMemberAsync",
+      "sdkMethod": "TeamClient.Audiences.DeleteMemberAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
     },
     {
@@ -1865,7 +1865,7 @@
       "method": "DELETE",
       "path": "/platform/call-opt-outs/{optOutId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallOptOuts.DeleteAsync",
+      "sdkMethod": "TeamClient.CallOptOuts.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
     },
     {
@@ -1873,7 +1873,7 @@
       "method": "DELETE",
       "path": "/platform/campaigns/{campaignId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.DeleteAsync",
+      "sdkMethod": "TeamClient.Campaigns.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -1881,7 +1881,7 @@
       "method": "DELETE",
       "path": "/platform/customers/{customerId}/pairing-links/{pairingLinkId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.RevokePairingLinkAsync",
+      "sdkMethod": "TeamClient.Customers.RevokePairingLinkAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -1921,7 +1921,7 @@
       "method": "DELETE",
       "path": "/platform/keys/{keyId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.ApiKeys.DeactivateAsync",
+      "sdkMethod": "TeamClient.ApiKeys.DeactivateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -1929,7 +1929,7 @@
       "method": "DELETE",
       "path": "/platform/media/{mediaId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Media.DeleteAsync",
+      "sdkMethod": "TeamClient.Media.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MediaApiTests.cs"
     },
     {
@@ -1937,7 +1937,7 @@
       "method": "DELETE",
       "path": "/platform/optouts/{phone}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.OptOuts.DeleteAsync",
+      "sdkMethod": "TeamClient.OptOuts.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
     },
     {
@@ -1953,7 +1953,7 @@
       "method": "DELETE",
       "path": "/platform/sessions/{session}/client-rules",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.ClientTokens.DeleteRulesAsync",
+      "sdkMethod": "TeamClient.ClientTokens.DeleteRulesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -1961,7 +1961,7 @@
       "method": "DELETE",
       "path": "/platform/sessions/{sessionId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.DeleteAsync",
+      "sdkMethod": "TeamClient.Sessions.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -1969,7 +1969,7 @@
       "method": "DELETE",
       "path": "/platform/sip-trunks/{trunkId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SipTrunks.DeleteAsync",
+      "sdkMethod": "TeamClient.SipTrunks.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
     },
     {
@@ -1984,7 +1984,7 @@
       "method": "DELETE",
       "path": "/platform/voice/audio/{assetId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.DeleteAsync",
+      "sdkMethod": "TeamClient.Voice.Audio.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
     },
     {
@@ -1992,7 +1992,7 @@
       "method": "DELETE",
       "path": "/platform/voice/provider-credentials/{credentialId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.DeleteAsync",
+      "sdkMethod": "TeamClient.Voice.ProviderCredentials.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
     },
     {
@@ -2000,7 +2000,7 @@
       "method": "DELETE",
       "path": "/platform/webhooks/{webhookId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Webhooks.DeleteAsync",
+      "sdkMethod": "TeamClient.Webhooks.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
@@ -2167,7 +2167,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/organizations/{slug}",
+      "path": "/console/teams/{slug}",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -2281,7 +2281,7 @@
       "method": "GET",
       "path": "/platform/audiences",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.ListAsync",
+      "sdkMethod": "TeamClient.Audiences.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
     },
     {
@@ -2289,7 +2289,7 @@
       "method": "GET",
       "path": "/platform/audiences/{listId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.RetrieveAsync",
+      "sdkMethod": "TeamClient.Audiences.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
     },
     {
@@ -2297,7 +2297,7 @@
       "method": "GET",
       "path": "/platform/audiences/{listId}/members",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.ListMembersAsync",
+      "sdkMethod": "TeamClient.Audiences.ListMembersAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
     },
     {
@@ -2305,7 +2305,7 @@
       "method": "GET",
       "path": "/platform/audit",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.AuditLogs.ListAsync",
+      "sdkMethod": "TeamClient.AuditLogs.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -2313,7 +2313,7 @@
       "method": "GET",
       "path": "/platform/bans",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SessionBans.ListAsync",
+      "sdkMethod": "TeamClient.SessionBans.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -2321,7 +2321,7 @@
       "method": "GET",
       "path": "/platform/bans/active",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SessionBans.ListActiveAsync",
+      "sdkMethod": "TeamClient.SessionBans.ListActiveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -2329,7 +2329,7 @@
       "method": "GET",
       "path": "/platform/bansafe/claims",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListClaimsAsync",
+      "sdkMethod": "TeamClient.BanSafe.ListClaimsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -2337,7 +2337,7 @@
       "method": "GET",
       "path": "/platform/bansafe/claims/{claimId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.GetClaimAsync",
+      "sdkMethod": "TeamClient.BanSafe.GetClaimAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -2345,7 +2345,7 @@
       "method": "GET",
       "path": "/platform/bansafe/collection",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListCollectionAsync",
+      "sdkMethod": "TeamClient.BanSafe.ListCollectionAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -2353,7 +2353,7 @@
       "method": "GET",
       "path": "/platform/bansafe/enforcement",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListEnforcementAsync",
+      "sdkMethod": "TeamClient.BanSafe.ListEnforcementAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -2361,7 +2361,7 @@
       "method": "GET",
       "path": "/platform/bansafe/findings",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListFindingsAsync",
+      "sdkMethod": "TeamClient.BanSafe.ListFindingsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -2369,7 +2369,7 @@
       "method": "GET",
       "path": "/platform/bansafe/health",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListHealthAsync",
+      "sdkMethod": "TeamClient.BanSafe.ListHealthAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -2377,7 +2377,7 @@
       "method": "GET",
       "path": "/platform/bansafe/health-actions",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListHealthActionsAsync",
+      "sdkMethod": "TeamClient.BanSafe.ListHealthActionsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -2385,7 +2385,7 @@
       "method": "GET",
       "path": "/platform/bansafe/health/{session}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.GetHealthAsync",
+      "sdkMethod": "TeamClient.BanSafe.GetHealthAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -2393,7 +2393,7 @@
       "method": "GET",
       "path": "/platform/bansafe/health/{session}/history",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListHealthHistoryAsync",
+      "sdkMethod": "TeamClient.BanSafe.ListHealthHistoryAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -2401,7 +2401,7 @@
       "method": "GET",
       "path": "/platform/bansafe/incidents",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListIncidentsAsync",
+      "sdkMethod": "TeamClient.BanSafe.ListIncidentsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -2409,7 +2409,7 @@
       "method": "GET",
       "path": "/platform/bansafe/signals",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListSignalsAsync",
+      "sdkMethod": "TeamClient.BanSafe.ListSignalsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -2417,7 +2417,7 @@
       "method": "GET",
       "path": "/platform/bansafe/telemetry/{session}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.GetTelemetryAsync",
+      "sdkMethod": "TeamClient.BanSafe.GetTelemetryAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -2425,7 +2425,7 @@
       "method": "GET",
       "path": "/platform/bansafe/telemetry/{session}/history",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListTelemetryHistoryAsync",
+      "sdkMethod": "TeamClient.BanSafe.ListTelemetryHistoryAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -2433,7 +2433,7 @@
       "method": "GET",
       "path": "/platform/billing",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.RetrieveAsync",
+      "sdkMethod": "TeamClient.Billing.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
     },
     {
@@ -2441,7 +2441,7 @@
       "method": "GET",
       "path": "/platform/billing/controls/{scope}/{resourceId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.GetResourceControlsAsync",
+      "sdkMethod": "TeamClient.Billing.GetResourceControlsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
     },
     {
@@ -2449,7 +2449,7 @@
       "method": "GET",
       "path": "/platform/billing/limits",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.GetLimitsAsync",
+      "sdkMethod": "TeamClient.Billing.GetLimitsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
     },
     {
@@ -2457,7 +2457,7 @@
       "method": "GET",
       "path": "/platform/billing/pricing",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.ListPricingAsync",
+      "sdkMethod": "TeamClient.Billing.ListPricingAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
     },
     {
@@ -2465,7 +2465,7 @@
       "method": "GET",
       "path": "/platform/billing/priorities",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.GetPrioritiesAsync",
+      "sdkMethod": "TeamClient.Billing.GetPrioritiesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
     },
     {
@@ -2473,7 +2473,7 @@
       "method": "GET",
       "path": "/platform/billing/transactions",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.ListTransactionsAsync",
+      "sdkMethod": "TeamClient.Billing.ListTransactionsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
     },
     {
@@ -2481,7 +2481,7 @@
       "method": "GET",
       "path": "/platform/billing/usage",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.UsageAsync",
+      "sdkMethod": "TeamClient.Billing.UsageAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
     },
     {
@@ -2489,7 +2489,7 @@
       "method": "GET",
       "path": "/platform/call-opt-outs",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallOptOuts.ListAsync",
+      "sdkMethod": "TeamClient.CallOptOuts.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
     },
     {
@@ -2497,7 +2497,7 @@
       "method": "GET",
       "path": "/platform/call-policy",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallPolicy.RetrieveAsync",
+      "sdkMethod": "TeamClient.CallPolicy.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
     },
     {
@@ -2505,7 +2505,7 @@
       "method": "GET",
       "path": "/platform/call-retention",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallRetention.RetrieveAsync",
+      "sdkMethod": "TeamClient.CallRetention.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
     },
     {
@@ -2513,7 +2513,7 @@
       "method": "GET",
       "path": "/platform/calls",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Calls.ListAsync",
+      "sdkMethod": "TeamClient.Calls.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallAnalyticsTests.cs"
     },
     {
@@ -2521,7 +2521,7 @@
       "method": "GET",
       "path": "/platform/calls/{callId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Calls.RetrieveAsync",
+      "sdkMethod": "TeamClient.Calls.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallAnalyticsTests.cs"
     },
     {
@@ -2529,7 +2529,7 @@
       "method": "GET",
       "path": "/platform/calls/export",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Calls.ExportAsync",
+      "sdkMethod": "TeamClient.Calls.ExportAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallAnalyticsTests.cs"
     },
     {
@@ -2537,7 +2537,7 @@
       "method": "GET",
       "path": "/platform/calls/stats",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Calls.StatsAsync",
+      "sdkMethod": "TeamClient.Calls.StatsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallAnalyticsTests.cs"
     },
     {
@@ -2545,7 +2545,7 @@
       "method": "GET",
       "path": "/platform/campaigns",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.ListAsync",
+      "sdkMethod": "TeamClient.Campaigns.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -2553,7 +2553,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.RetrieveAsync",
+      "sdkMethod": "TeamClient.Campaigns.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -2561,7 +2561,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/analytics",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.AnalyticsAsync",
+      "sdkMethod": "TeamClient.Campaigns.AnalyticsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -2569,7 +2569,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/conversions",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.ConversionsAsync",
+      "sdkMethod": "TeamClient.Campaigns.ConversionsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -2577,7 +2577,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/events",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.EventsAsync",
+      "sdkMethod": "TeamClient.Campaigns.EventsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -2585,7 +2585,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/recipients",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.RecipientsAsync",
+      "sdkMethod": "TeamClient.Campaigns.RecipientsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -2593,7 +2593,7 @@
       "method": "GET",
       "path": "/platform/customers",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.ListAsync",
+      "sdkMethod": "TeamClient.Customers.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -2601,7 +2601,7 @@
       "method": "GET",
       "path": "/platform/customers/{customerId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.RetrieveAsync",
+      "sdkMethod": "TeamClient.Customers.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -2609,7 +2609,7 @@
       "method": "GET",
       "path": "/platform/customers/{customerId}/events",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.ListEventsAsync",
+      "sdkMethod": "TeamClient.Customers.ListEventsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -2617,7 +2617,7 @@
       "method": "GET",
       "path": "/platform/customers/{customerId}/numbers",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.ListNumbersAsync",
+      "sdkMethod": "TeamClient.Customers.ListNumbersAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -2625,7 +2625,7 @@
       "method": "GET",
       "path": "/platform/customers/{customerId}/pairing-links",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.ListPairingLinksAsync",
+      "sdkMethod": "TeamClient.Customers.ListPairingLinksAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -2633,7 +2633,7 @@
       "method": "GET",
       "path": "/platform/events",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Events.ListAsync",
+      "sdkMethod": "TeamClient.Events.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
     },
     {
@@ -2641,7 +2641,7 @@
       "method": "GET",
       "path": "/platform/events/{eventId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Events.RetrieveAsync",
+      "sdkMethod": "TeamClient.Events.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
     },
     {
@@ -2753,7 +2753,7 @@
       "method": "GET",
       "path": "/platform/gates",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Usage.ListGatesAsync",
+      "sdkMethod": "TeamClient.Usage.ListGatesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
     },
     {
@@ -2761,7 +2761,7 @@
       "method": "GET",
       "path": "/platform/incidents",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SecurityIncidents.ListAsync",
+      "sdkMethod": "TeamClient.SecurityIncidents.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -2769,7 +2769,7 @@
       "method": "GET",
       "path": "/platform/keys",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.ApiKeys.ListAsync",
+      "sdkMethod": "TeamClient.ApiKeys.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -2777,7 +2777,7 @@
       "method": "GET",
       "path": "/platform/media/{mediaId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Media.RetrieveAsync",
+      "sdkMethod": "TeamClient.Media.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MediaApiTests.cs"
     },
     {
@@ -2785,7 +2785,7 @@
       "method": "GET",
       "path": "/platform/members",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Members.ListAsync",
+      "sdkMethod": "TeamClient.Members.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -2793,7 +2793,7 @@
       "method": "GET",
       "path": "/platform/operations",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Operations.ListAsync",
+      "sdkMethod": "TeamClient.Operations.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
     },
     {
@@ -2801,7 +2801,7 @@
       "method": "GET",
       "path": "/platform/operations/{operationId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Operations.GetAsync",
+      "sdkMethod": "TeamClient.Operations.GetAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
     },
     {
@@ -2809,7 +2809,7 @@
       "method": "GET",
       "path": "/platform/operations/{operationId}/transitions",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Operations.ListTransitionsAsync",
+      "sdkMethod": "TeamClient.Operations.ListTransitionsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
     },
     {
@@ -2817,7 +2817,7 @@
       "method": "GET",
       "path": "/platform/optouts",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.OptOuts.ListAsync",
+      "sdkMethod": "TeamClient.OptOuts.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
     },
     {
@@ -2825,7 +2825,7 @@
       "method": "GET",
       "path": "/platform/optouts/settings",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.OptOuts.GetSettingsAsync",
+      "sdkMethod": "TeamClient.OptOuts.GetSettingsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
     },
     {
@@ -2833,7 +2833,7 @@
       "method": "GET",
       "path": "/platform/projects",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.ListAsync",
+      "sdkMethod": "TeamClient.Projects.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
     },
     {
@@ -2841,7 +2841,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/customers/status",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.StatusAsync",
+      "sdkMethod": "TeamClient.Customers.StatusAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -2873,7 +2873,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/health-policy",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.GetHealthPolicyAsync",
+      "sdkMethod": "TeamClient.Projects.GetHealthPolicyAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
     },
     {
@@ -2881,7 +2881,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/hybrid-merge-candidates",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.ListHybridMergeCandidatesAsync",
+      "sdkMethod": "TeamClient.Projects.ListHybridMergeCandidatesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
     },
     {
@@ -2889,7 +2889,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/insurance-evidence",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.GetInsuranceEvidenceAsync",
+      "sdkMethod": "TeamClient.Projects.GetInsuranceEvidenceAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
     },
     {
@@ -2921,7 +2921,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/safe-mode",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.GetSafeModeAsync",
+      "sdkMethod": "TeamClient.Projects.GetSafeModeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
     },
     {
@@ -2929,7 +2929,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/warmup-plan",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.GetWarmupPlanAsync",
+      "sdkMethod": "TeamClient.Projects.GetWarmupPlanAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
     },
     {
@@ -2993,7 +2993,7 @@
       "method": "GET",
       "path": "/platform/session-configuration",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Configuration.RetrieveAsync",
+      "sdkMethod": "TeamClient.Configuration.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -3001,7 +3001,7 @@
       "method": "GET",
       "path": "/platform/sessions",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.ListAsync",
+      "sdkMethod": "TeamClient.Sessions.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -3009,7 +3009,7 @@
       "method": "GET",
       "path": "/platform/sessions/{session}/call-settings",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Calls.RetrieveCallSettingsAsync",
+      "sdkMethod": "TeamClient.Calls.RetrieveCallSettingsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
     },
     {
@@ -3017,7 +3017,7 @@
       "method": "GET",
       "path": "/platform/sessions/{session}/client-rules",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.ClientTokens.RetrieveRulesAsync",
+      "sdkMethod": "TeamClient.ClientTokens.RetrieveRulesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -3025,7 +3025,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.RetrieveAsync",
+      "sdkMethod": "TeamClient.Sessions.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -3033,7 +3033,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/capabilities",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.GetCapabilitiesAsync",
+      "sdkMethod": "TeamClient.Sessions.GetCapabilitiesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -3041,7 +3041,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/me",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.AccountAsync",
+      "sdkMethod": "TeamClient.Sessions.AccountAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
     },
     {
@@ -3049,7 +3049,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/safe-mode",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.GetSafeModeAsync",
+      "sdkMethod": "TeamClient.Sessions.GetSafeModeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -3057,7 +3057,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/tier-quotes/{quoteId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.RetrieveTierChangeAsync",
+      "sdkMethod": "TeamClient.Sessions.RetrieveTierChangeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -3065,7 +3065,7 @@
       "method": "GET",
       "path": "/platform/sip-trunks",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SipTrunks.ListAsync",
+      "sdkMethod": "TeamClient.SipTrunks.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
     },
     {
@@ -3073,7 +3073,7 @@
       "method": "GET",
       "path": "/platform/sip-trunks/{trunkId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SipTrunks.RetrieveAsync",
+      "sdkMethod": "TeamClient.SipTrunks.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
     },
     {
@@ -3081,7 +3081,7 @@
       "method": "GET",
       "path": "/platform/sip/endpoint",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SipTrunks.EndpointAsync",
+      "sdkMethod": "TeamClient.SipTrunks.EndpointAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
     },
     {
@@ -3089,7 +3089,7 @@
       "method": "GET",
       "path": "/platform/team",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Organizations.RetrieveAsync",
+      "sdkMethod": "TeamClient.Teams.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -3111,7 +3111,7 @@
       "method": "GET",
       "path": "/platform/tokens",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.ProjectTokens.ListAsync",
+      "sdkMethod": "TeamClient.ProjectTokens.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -3119,7 +3119,7 @@
       "method": "GET",
       "path": "/platform/usage",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Usage.SummaryAsync",
+      "sdkMethod": "TeamClient.Usage.SummaryAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
     },
     {
@@ -3127,7 +3127,7 @@
       "method": "GET",
       "path": "/platform/usage/records",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Usage.ListRecordsAsync",
+      "sdkMethod": "TeamClient.Usage.ListRecordsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
     },
     {
@@ -3135,7 +3135,7 @@
       "method": "GET",
       "path": "/platform/voice/audio",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.ListAsync",
+      "sdkMethod": "TeamClient.Voice.Audio.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
     },
     {
@@ -3143,7 +3143,7 @@
       "method": "GET",
       "path": "/platform/voice/audio/{assetId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.RetrieveAsync",
+      "sdkMethod": "TeamClient.Voice.Audio.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
     },
     {
@@ -3151,7 +3151,7 @@
       "method": "GET",
       "path": "/platform/voice/audio/{assetId}/preview",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.PreviewUrlAsync",
+      "sdkMethod": "TeamClient.Voice.Audio.PreviewUrlAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
     },
     {
@@ -3159,7 +3159,7 @@
       "method": "GET",
       "path": "/platform/voice/provider-credentials",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.ListAsync",
+      "sdkMethod": "TeamClient.Voice.ProviderCredentials.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
     },
     {
@@ -3167,7 +3167,7 @@
       "method": "GET",
       "path": "/platform/voice/provider-credentials/{credentialId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.RetrieveAsync",
+      "sdkMethod": "TeamClient.Voice.ProviderCredentials.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
     },
     {
@@ -3175,7 +3175,7 @@
       "method": "GET",
       "path": "/platform/webhook-deliveries",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.WebhookDeliveries.ListAsync",
+      "sdkMethod": "TeamClient.WebhookDeliveries.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
@@ -3183,7 +3183,7 @@
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.WebhookDeliveries.RetrieveAsync",
+      "sdkMethod": "TeamClient.WebhookDeliveries.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
@@ -3191,7 +3191,7 @@
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}/attempts",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.WebhookDeliveries.ListAttemptsAsync",
+      "sdkMethod": "TeamClient.WebhookDeliveries.ListAttemptsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
@@ -3199,7 +3199,7 @@
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.WebhookDeliveries.RetrieveAttemptAsync",
+      "sdkMethod": "TeamClient.WebhookDeliveries.RetrieveAttemptAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
@@ -3207,7 +3207,7 @@
       "method": "GET",
       "path": "/platform/webhooks",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Webhooks.ListAsync",
+      "sdkMethod": "TeamClient.Webhooks.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
@@ -3215,7 +3215,7 @@
       "method": "GET",
       "path": "/platform/webhooks/{webhookId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Webhooks.RetrieveAsync",
+      "sdkMethod": "TeamClient.Webhooks.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
@@ -3228,7 +3228,7 @@
     {
       "family": "platform",
       "method": "PATCH",
-      "path": "/console/organization",
+      "path": "/console/team",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -3272,7 +3272,7 @@
       "method": "PATCH",
       "path": "/platform/campaigns/{campaignId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.UpdateAsync",
+      "sdkMethod": "TeamClient.Campaigns.UpdateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -3280,7 +3280,7 @@
       "method": "PATCH",
       "path": "/platform/customers/{customerId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.UpdateAsync",
+      "sdkMethod": "TeamClient.Customers.UpdateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -3312,7 +3312,7 @@
       "method": "PATCH",
       "path": "/platform/sessions/{sessionId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.SetTierOverrideAsync",
+      "sdkMethod": "TeamClient.Sessions.SetTierOverrideAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -3320,7 +3320,7 @@
       "method": "PATCH",
       "path": "/platform/sip-trunks/{trunkId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SipTrunks.UpdateAsync",
+      "sdkMethod": "TeamClient.SipTrunks.UpdateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
     },
     {
@@ -3335,7 +3335,7 @@
       "method": "PATCH",
       "path": "/platform/voice/audio/{assetId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.UpdateAsync",
+      "sdkMethod": "TeamClient.Voice.Audio.UpdateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
     },
     {
@@ -3343,7 +3343,7 @@
       "method": "PATCH",
       "path": "/platform/webhooks/{webhookId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Webhooks.UpdateAsync",
+      "sdkMethod": "TeamClient.Webhooks.UpdateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
@@ -3475,21 +3475,21 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organization-invitations/{invitationId}/accept",
+      "path": "/console/team-invitations/{invitationId}/accept",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organization/avatar/uploads",
+      "path": "/console/team/avatar/uploads",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organizations/ensure",
+      "path": "/console/teams/ensure",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -3524,7 +3524,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/quicklink/logo/org",
+      "path": "/console/quicklink/logo/team",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -3617,7 +3617,7 @@
       "method": "POST",
       "path": "/platform/audiences",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.CreateAsync",
+      "sdkMethod": "TeamClient.Audiences.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
     },
     {
@@ -3625,7 +3625,7 @@
       "method": "POST",
       "path": "/platform/audiences/{listId}/members",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.AddMembersAsync",
+      "sdkMethod": "TeamClient.Audiences.AddMembersAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
     },
     {
@@ -3633,7 +3633,7 @@
       "method": "POST",
       "path": "/platform/audiences/uploads",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.CreateUploadAsync",
+      "sdkMethod": "TeamClient.Audiences.CreateUploadAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AudienceSettingsTests.cs"
     },
     {
@@ -3641,7 +3641,7 @@
       "method": "POST",
       "path": "/platform/bansafe/incidents",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.CreateIncidentAsync",
+      "sdkMethod": "TeamClient.BanSafe.CreateIncidentAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -3649,7 +3649,7 @@
       "method": "POST",
       "path": "/platform/bansafe/incidents/{incidentId}/retract",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.RetractIncidentAsync",
+      "sdkMethod": "TeamClient.BanSafe.RetractIncidentAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
     },
     {
@@ -3657,7 +3657,7 @@
       "method": "POST",
       "path": "/platform/call-opt-outs",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallOptOuts.CreateAsync",
+      "sdkMethod": "TeamClient.CallOptOuts.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
     },
     {
@@ -3665,7 +3665,7 @@
       "method": "POST",
       "path": "/platform/call-opt-outs/import",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallOptOuts.ImportAsync",
+      "sdkMethod": "TeamClient.CallOptOuts.ImportAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
     },
     {
@@ -3673,7 +3673,7 @@
       "method": "POST",
       "path": "/platform/campaigns",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.CreateAsync",
+      "sdkMethod": "TeamClient.Campaigns.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -3681,7 +3681,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/archive",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.ArchiveAsync",
+      "sdkMethod": "TeamClient.Campaigns.ArchiveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -3689,7 +3689,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/conversions",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.RecordConversionAsync",
+      "sdkMethod": "TeamClient.Campaigns.RecordConversionAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -3697,7 +3697,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/duplicate",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.DuplicateAsync",
+      "sdkMethod": "TeamClient.Campaigns.DuplicateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -3705,7 +3705,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/launch",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.LaunchAsync",
+      "sdkMethod": "TeamClient.Campaigns.LaunchAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -3713,7 +3713,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/pause",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.PauseAsync",
+      "sdkMethod": "TeamClient.Campaigns.PauseAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -3721,7 +3721,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/recipients",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.AddRecipientsAsync",
+      "sdkMethod": "TeamClient.Campaigns.AddRecipientsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -3729,7 +3729,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/requeue",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.RequeueAsync",
+      "sdkMethod": "TeamClient.Campaigns.RequeueAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -3737,7 +3737,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/reschedule",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.RescheduleAsync",
+      "sdkMethod": "TeamClient.Campaigns.RescheduleAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -3745,7 +3745,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/resume",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.ResumeAsync",
+      "sdkMethod": "TeamClient.Campaigns.ResumeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -3753,7 +3753,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/stop",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.StopAsync",
+      "sdkMethod": "TeamClient.Campaigns.StopAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
@@ -3761,7 +3761,7 @@
       "method": "POST",
       "path": "/platform/client-tokens",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.ClientTokens.MintAsync",
+      "sdkMethod": "TeamClient.ClientTokens.MintAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -3769,7 +3769,7 @@
       "method": "POST",
       "path": "/platform/customers",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.CreateAsync",
+      "sdkMethod": "TeamClient.Customers.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -3777,7 +3777,7 @@
       "method": "POST",
       "path": "/platform/customers/{customerId}/archive",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.ArchiveAsync",
+      "sdkMethod": "TeamClient.Customers.ArchiveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -3785,7 +3785,7 @@
       "method": "POST",
       "path": "/platform/customers/{customerId}/numbers/{sessionId}/transfer",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.TransferNumberAsync",
+      "sdkMethod": "TeamClient.Customers.TransferNumberAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -3793,7 +3793,7 @@
       "method": "POST",
       "path": "/platform/customers/{customerId}/pairing-links",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.CreatePairingLinkAsync",
+      "sdkMethod": "TeamClient.Customers.CreatePairingLinkAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -3801,7 +3801,7 @@
       "method": "POST",
       "path": "/platform/customers/{customerId}/restore",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.RestoreAsync",
+      "sdkMethod": "TeamClient.Customers.RestoreAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -3809,7 +3809,7 @@
       "method": "POST",
       "path": "/platform/events/{eventId}/replays",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Events.ReplayAsync",
+      "sdkMethod": "TeamClient.Events.ReplayAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
     },
     {
@@ -3905,7 +3905,7 @@
       "method": "POST",
       "path": "/platform/incidents/{incidentId}/acknowledge",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SecurityIncidents.AcknowledgeAsync",
+      "sdkMethod": "TeamClient.SecurityIncidents.AcknowledgeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -3913,7 +3913,7 @@
       "method": "POST",
       "path": "/platform/media/uploads",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Media.CreateUploadAsync",
+      "sdkMethod": "TeamClient.Media.CreateUploadAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MediaApiTests.cs"
     },
     {
@@ -3921,7 +3921,7 @@
       "method": "POST",
       "path": "/platform/operations/{operationId}/cancel",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Operations.CancelAsync",
+      "sdkMethod": "TeamClient.Operations.CancelAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OperationsTests.cs"
     },
     {
@@ -3929,7 +3929,7 @@
       "method": "POST",
       "path": "/platform/optouts",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.OptOuts.CreateAsync",
+      "sdkMethod": "TeamClient.OptOuts.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
     },
     {
@@ -3937,7 +3937,7 @@
       "method": "POST",
       "path": "/platform/optouts/batch",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.OptOuts.CreateBatchAsync",
+      "sdkMethod": "TeamClient.OptOuts.CreateBatchAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
     },
     {
@@ -3945,7 +3945,7 @@
       "method": "POST",
       "path": "/platform/projects",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.CreateAsync",
+      "sdkMethod": "TeamClient.Projects.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
     },
     {
@@ -3953,7 +3953,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/customers/enable",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.EnableAsync",
+      "sdkMethod": "TeamClient.Customers.EnableAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -3969,7 +3969,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/events/stream/{streamId}/ack",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Events.AcknowledgeStreamAsync",
+      "sdkMethod": "TeamClient.Events.AcknowledgeStreamAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/EventsTests.cs"
     },
     {
@@ -3985,7 +3985,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/approve",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.ApproveProductionEnrollmentAsync",
+      "sdkMethod": "TeamClient.Projects.ApproveProductionEnrollmentAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
     },
     {
@@ -3993,7 +3993,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/cancel",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.CancelProductionEnrollmentAsync",
+      "sdkMethod": "TeamClient.Projects.CancelProductionEnrollmentAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
     },
     {
@@ -4001,7 +4001,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/promote",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.RequestProductionEnrollmentAsync",
+      "sdkMethod": "TeamClient.Projects.RequestProductionEnrollmentAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
     },
     {
@@ -4062,7 +4062,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/logout",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.LogoutAsync",
+      "sdkMethod": "TeamClient.Sessions.LogoutAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
     },
     {
@@ -4070,7 +4070,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/restart",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.RestartAsync",
+      "sdkMethod": "TeamClient.Sessions.RestartAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
     },
     {
@@ -4078,7 +4078,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/start",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.StartAsync",
+      "sdkMethod": "TeamClient.Sessions.StartAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -4086,7 +4086,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/stop",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.StopAsync",
+      "sdkMethod": "TeamClient.Sessions.StopAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -4094,7 +4094,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/tier-quotes",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.QuoteTierChangeAsync",
+      "sdkMethod": "TeamClient.Sessions.QuoteTierChangeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -4109,7 +4109,7 @@
       "method": "POST",
       "path": "/platform/sessions/delete",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.DeleteManyAsync",
+      "sdkMethod": "TeamClient.Sessions.DeleteManyAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -4117,7 +4117,7 @@
       "method": "POST",
       "path": "/platform/sessions/stop",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.StopManyAsync",
+      "sdkMethod": "TeamClient.Sessions.StopManyAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -4125,7 +4125,7 @@
       "method": "POST",
       "path": "/platform/sip-trunks",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SipTrunks.CreateAsync",
+      "sdkMethod": "TeamClient.SipTrunks.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
     },
     {
@@ -4133,7 +4133,7 @@
       "method": "POST",
       "path": "/platform/sip-trunks/{trunkId}/credentials",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SipTrunks.RotateCredentialsAsync",
+      "sdkMethod": "TeamClient.SipTrunks.RotateCredentialsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SipTests.cs"
     },
     {
@@ -4148,7 +4148,7 @@
       "method": "POST",
       "path": "/platform/voice/audio",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.CreateUploadAsync",
+      "sdkMethod": "TeamClient.Voice.Audio.CreateUploadAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
     },
     {
@@ -4156,7 +4156,7 @@
       "method": "POST",
       "path": "/platform/voice/audio/{assetId}/complete",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.CompleteAsync",
+      "sdkMethod": "TeamClient.Voice.Audio.CompleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
     },
     {
@@ -4164,7 +4164,7 @@
       "method": "POST",
       "path": "/platform/voice/audio/tts",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.SynthesizeAsync",
+      "sdkMethod": "TeamClient.Voice.Audio.SynthesizeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
     },
     {
@@ -4172,7 +4172,7 @@
       "method": "POST",
       "path": "/platform/voice/provider-credentials",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.CreateAsync",
+      "sdkMethod": "TeamClient.Voice.ProviderCredentials.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
     },
     {
@@ -4180,7 +4180,7 @@
       "method": "POST",
       "path": "/platform/voice/provider-credentials/{credentialId}/verify",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.VerifyAsync",
+      "sdkMethod": "TeamClient.Voice.ProviderCredentials.VerifyAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/VoiceTests.cs"
     },
     {
@@ -4188,7 +4188,7 @@
       "method": "POST",
       "path": "/platform/webhook-deliveries/{deliveryId}/retry",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.WebhookDeliveries.RetryAsync",
+      "sdkMethod": "TeamClient.WebhookDeliveries.RetryAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
@@ -4196,7 +4196,7 @@
       "method": "POST",
       "path": "/platform/webhooks",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Webhooks.CreateAsync",
+      "sdkMethod": "TeamClient.Webhooks.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
@@ -4204,7 +4204,7 @@
       "method": "POST",
       "path": "/platform/webhooks/{webhookId}/secret-rotations",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Webhooks.RotateSecretAsync",
+      "sdkMethod": "TeamClient.Webhooks.RotateSecretAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
@@ -4212,7 +4212,7 @@
       "method": "POST",
       "path": "/platform/webhooks/{webhookId}/tests",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Webhooks.TestAsync",
+      "sdkMethod": "TeamClient.Webhooks.TestAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/PlatformWebhookTests.cs"
     },
     {
@@ -4260,7 +4260,7 @@
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/console/organization/avatar",
+      "path": "/console/team/avatar",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -4311,7 +4311,7 @@
       "method": "PUT",
       "path": "/platform/billing/controls/{scope}/{resourceId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.SetResourceControlsAsync",
+      "sdkMethod": "TeamClient.Billing.SetResourceControlsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
     },
     {
@@ -4319,7 +4319,7 @@
       "method": "PUT",
       "path": "/platform/billing/limits/{scope}/{resourceId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.SetLimitAsync",
+      "sdkMethod": "TeamClient.Billing.SetLimitAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
     },
     {
@@ -4327,7 +4327,7 @@
       "method": "PUT",
       "path": "/platform/billing/priorities",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.ReorderPrioritiesAsync",
+      "sdkMethod": "TeamClient.Billing.ReorderPrioritiesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
     },
     {
@@ -4335,7 +4335,7 @@
       "method": "PUT",
       "path": "/platform/billing/priorities/{scope}/{resourceId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.SetPriorityAsync",
+      "sdkMethod": "TeamClient.Billing.SetPriorityAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BillingTests.cs"
     },
     {
@@ -4343,7 +4343,7 @@
       "method": "PUT",
       "path": "/platform/call-policy",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallPolicy.UpdateAsync",
+      "sdkMethod": "TeamClient.CallPolicy.UpdateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
     },
     {
@@ -4351,7 +4351,7 @@
       "method": "PUT",
       "path": "/platform/call-retention",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallRetention.UpdateAsync",
+      "sdkMethod": "TeamClient.CallRetention.UpdateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallConsentTests.cs"
     },
     {
@@ -4375,7 +4375,7 @@
       "method": "PUT",
       "path": "/platform/optouts/settings",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.OptOuts.UpdateSettingsAsync",
+      "sdkMethod": "TeamClient.OptOuts.UpdateSettingsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/UsageTests.cs"
     },
     {
@@ -4383,7 +4383,7 @@
       "method": "PUT",
       "path": "/platform/projects/{projectId}/health-policy",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.UpdateHealthPolicyAsync",
+      "sdkMethod": "TeamClient.Projects.UpdateHealthPolicyAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
     },
     {
@@ -4391,7 +4391,7 @@
       "method": "PUT",
       "path": "/platform/projects/{projectId}/insurance-evidence",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.UpdateInsuranceEvidenceAsync",
+      "sdkMethod": "TeamClient.Projects.UpdateInsuranceEvidenceAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
     },
     {
@@ -4399,7 +4399,7 @@
       "method": "PUT",
       "path": "/platform/projects/{projectId}/safe-mode",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.UpdateSafeModeAsync",
+      "sdkMethod": "TeamClient.Projects.UpdateSafeModeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
     },
     {
@@ -4407,7 +4407,7 @@
       "method": "PUT",
       "path": "/platform/projects/{projectId}/warmup-plan",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.UpdateWarmupPlanAsync",
+      "sdkMethod": "TeamClient.Projects.UpdateWarmupPlanAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
     },
     {
@@ -4423,7 +4423,7 @@
       "method": "PUT",
       "path": "/platform/session-configuration",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Configuration.UpdateAsync",
+      "sdkMethod": "TeamClient.Configuration.UpdateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -4431,7 +4431,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{session}/call-settings",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Calls.UpdateCallSettingsAsync",
+      "sdkMethod": "TeamClient.Calls.UpdateCallSettingsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
     },
     {
@@ -4439,7 +4439,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{session}/client-rules",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.ClientTokens.UpdateRulesAsync",
+      "sdkMethod": "TeamClient.ClientTokens.UpdateRulesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -4447,7 +4447,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.UpdateAsync",
+      "sdkMethod": "TeamClient.Sessions.UpdateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -4455,7 +4455,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}/safe-mode",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.UpdateSafeModeAsync",
+      "sdkMethod": "TeamClient.Sessions.UpdateSafeModeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
     },
     {
@@ -4463,7 +4463,7 @@
       "method": "GET",
       "path": "/platform/analytics",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Analytics.GetAsync",
+      "sdkMethod": "TeamClient.Analytics.GetAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallAnalyticsTests.cs"
     },
     {
@@ -4479,7 +4479,7 @@
       "method": "GET",
       "path": "/platform/analytics/metrics",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Analytics.MetricsAsync",
+      "sdkMethod": "TeamClient.Analytics.MetricsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallAnalyticsTests.cs"
     },
     {

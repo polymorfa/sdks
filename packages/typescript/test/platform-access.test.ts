@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
@@ -14,7 +14,7 @@ import {
   type AuditLog,
   type DataEnvelope,
   type ManagementOperation,
-  type OrganizationMember,
+  type TeamMember,
   type ProjectToken,
   type SecurityIncident,
   type SessionBan,
@@ -47,8 +47,8 @@ async function platformAccessServer(): Promise<{
     requests: server.requests,
     client: new Client({
       credential: {
-        type: "organizationApiKey",
-        value: ORGANIZATION_API_KEY,
+        type: "teamApiKey",
+        value: TEAM_API_KEY,
       },
       baseUrl: server.url,
       maxNetworkRetries: 0,
@@ -56,7 +56,7 @@ async function platformAccessServer(): Promise<{
   };
 }
 
-describe("Client organization access and operations", () => {
+describe("Client team access and operations", () => {
   it("exports the complete resource and response contracts", () => {
     expectTypeOf<Client["apiKeys"]>().toEqualTypeOf<ApiKeysResource>();
     expectTypeOf<Client["members"]>().toEqualTypeOf<MembersResource>();
@@ -71,7 +71,7 @@ describe("Client organization access and operations", () => {
     >().toEqualTypeOf<ProjectTokensResource>();
 
     expectTypeOf<ApiKey>().toHaveProperty("lastUsed");
-    expectTypeOf<OrganizationMember>().toHaveProperty("joinedAt");
+    expectTypeOf<TeamMember>().toHaveProperty("joinedAt");
     expectTypeOf<AuditLog>().toHaveProperty("metadata");
     expectTypeOf<SessionBan>().toHaveProperty("banExpiresAt");
     expectTypeOf<SecurityIncident>().toHaveProperty("acknowledgedAt");
@@ -106,7 +106,7 @@ describe("Client organization access and operations", () => {
     const listed = await client.members.list();
 
     expectTypeOf(listed).toEqualTypeOf<
-      ApiResponse<DataEnvelope<readonly OrganizationMember[]>>
+      ApiResponse<DataEnvelope<readonly TeamMember[]>>
     >();
     expect(client.members).not.toHaveProperty("invite");
     expect(client.members).not.toHaveProperty("updateRole");
@@ -150,7 +150,7 @@ describe("Client organization access and operations", () => {
     ]);
   });
 
-  it("lists and acknowledges organization security incidents", async () => {
+  it("lists and acknowledges team security incidents", async () => {
     const { client, requests } = await platformAccessServer();
     const listed = await client.securityIncidents.list();
     const acknowledged = await client.securityIncidents.acknowledge(

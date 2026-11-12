@@ -1,4 +1,4 @@
-import { organization } from "../../../../lib/polymorfa.js";
+import { team } from "../../../../lib/polymorfa.js";
 import {
   action,
   object,
@@ -8,7 +8,7 @@ import {
 } from "../../../../lib/route.js";
 
 export const POST = route("admin", async ({ body }) => {
-  const media = organization().media;
+  const media = team().media;
   switch (action(body)) {
     case "retrieve":
       return media.retrieve(text(body, "mediaId"));

@@ -43,7 +43,7 @@ async def test_shared_wire_scenario(fixture_url, scenario):
     async with httpx.AsyncClient() as admin:
         await admin.post(fixture_url + "/__fixtures/" + scenario["id"] + "/reset")
         async with AsyncMessagingClient(
-            Credential("organization_api_key", FIXTURES["organizationCredential"]),
+            Credential("team_api_key", FIXTURES["teamCredential"]),
             base_url=fixture_url,
         ) as client:
 

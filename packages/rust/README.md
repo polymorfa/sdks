@@ -22,8 +22,8 @@ println!("{}", result.data.data.receipt.id);
 # }
 ```
 
-Use `OrganizationClient` with an team key for Platform operations;
-`organization.project("project-id")` creates an immutable project view. Project
+Use `TeamClient` with a team key for Platform operations;
+`team.project("project-id")` creates an immutable project view. Project
 tokens cannot bind to another project. Credentials are validated before network
 requests. The crate refuses compilation for WASM: Rust frontend applications use
 the existing UI Kit web components from `@polymorfa/ui-kit`, with token
@@ -73,11 +73,11 @@ operations and Messaging/Platform campaign workflows with typed A/B/variation
 results, cursor recipients, send windows and reported conversions,
 catalog/product/marketing and Flow encryption helpers,
 embedded signup continuation and simulated Test phone/events, resolved observation
-policies, organization identity/credential metadata/audit/security reads and
+policies, team identity/credential metadata/audit/security reads and
 revision-guarded billing controls, Customer lifecycle and pairing links, audience
 imports/member pages, keyword suppression settings, media upload metadata and
-session bans, organization call policy and do-not-call imports/pages, resolved session configuration and sparse revision
-patches, organization Number batches/tier quotes/safety/capabilities, owner-bound
+session bans, team call policy and do-not-call imports/pages, resolved session configuration and sparse revision
+patches, team Number batches/tier quotes/safety/capabilities, owner-bound
 QuickLink/default configuration and team call retention, and Platform webhook/delivery/operation resources in both owner scopes.
 All pinned known webhook event types expose typed payloads, with provider
 extensions and future event envelopes preserved. Metered usage includes cursor
@@ -96,17 +96,17 @@ The supplement remains unpublished and does not establish deployed availability.
 Use `campaign_contracts` for the named requests, results and reply-flow variants.
 `MessagingClient::campaigns()` provides six server-only methods: reply-flow read,
 create and assignment, test-send, tracked links and recipient CSV export. An
-organization's `campaigns()` provides the corresponding Platform methods plus
-launch approvals and team settings. `organization.project(id).campaigns()` retains
+team's `campaigns()` provides the corresponding Platform methods plus
+launch approvals and team settings. `team.project(id).campaigns()` retains
 its project and exposes seven campaign methods without a selector argument.
-Organization-only profile/import, STOP-confirmation, audience retarget and team
+Team-only profile/import, STOP-confirmation, audience retarget and team
 settings operations are absent from project views.
 
 ```rust,no_run
-use polymorfa_sdk::{OrganizationClient, RequestOptions};
+use polymorfa_sdk::{TeamClient, RequestOptions};
 use polymorfa_sdk::campaign_contracts::CustomerSignalCustodyUpdate;
-# async fn defaults(organization: &OrganizationClient, project_id: &str, customer_id: &str) -> polymorfa_sdk::Result<()> {
-let project = organization.project(project_id)?;
+# async fn defaults(team: &TeamClient, project_id: &str, customer_id: &str) -> polymorfa_sdk::Result<()> {
+let project = team.project(project_id)?;
 let custody = project.signal_custody();
 let current = custody.retrieve_customer(customer_id, RequestOptions::default()).await?;
 custody.update_customer(customer_id, &CustomerSignalCustodyUpdate {
@@ -217,7 +217,7 @@ Other tests exercise actual native HTTP sockets, independent media vectors,
 request serialization and decoded responses. No live provider requests are
 needed or performed by the test suite.
 
-Platform resources include typed BanSafe observations, project Functions and Flow drafts, Voice assets and provider credentials, call diagnostics/statistics/exports, and WhatsApp Analytics. Function and Flow writes are sent once; uncertain provider receipts are reconciled by reads. Project views preserve their identity and check organization-key resource mutations before acting. Voice upload URLs and one-time signing secrets omit `Debug`. Credit quantities named `Cents` retain fractional values.
+Platform resources include typed BanSafe observations, project Functions and Flow drafts, Voice assets and provider credentials, call diagnostics/statistics/exports, and WhatsApp Analytics. Function and Flow writes are sent once; uncertain provider receipts are reconciled by reads. Project views preserve their identity and check team-key resource mutations before acting. Voice upload URLs and one-time signing secrets omit `Debug`. Credit quantities named `Cents` retain fractional values.
 
 
 Programmatic calls use `calls_runtime::CallsClient` and `calls_token::CallsTokenSource`. Native processes can use a short-lived client token for the granted Calls subset; placement omits session and participant identity, socket identity comes from the grant, and server-only resources remain refused. Server credentials and the Rust SDK stay outside browser/WASM builds.
@@ -287,7 +287,7 @@ removes a campaign cap), recipients report
 `CampaignRecipientFailureReason::FrequencyCap`, and analytics add
 `frequency_cap.skipped_recipient_count`.
 
-`OrganizationClient::audience_segments` lists, retrieves, creates, updates and
+`TeamClient::audience_segments` lists, retrieves, creates, updates and
 deletes saved segments, and previews a saved segment or unsaved rules. Project
 clients have no segment methods. `AudienceSegmentCondition` variants carry typed
 values, using `serde_json::Number` so numbers keep their exact spelling;
@@ -524,7 +524,7 @@ no raw-protobuf mapping or opaque media descriptor decoding is inferred here.
 Use `storage_sync::apply_verified_event` only after `webhooks::construct_event`
 verifies the exact received bytes. Send a successful webhook response after
 persistence succeeds. `storage_sync::NativeStorageEventSource::new` wraps an
-existing project/organization Events resource with its existing credential and
+existing project/team Events resource with its existing credential and
 request authority. Pass it to `storage::sync::sync_to_storage` explicitly;
 SDK construction never enables retention or starts a consumer.
 

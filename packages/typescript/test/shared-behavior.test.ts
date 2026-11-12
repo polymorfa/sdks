@@ -5,7 +5,7 @@ import { HttpTransport } from "../src/transport/http.js";
 import { MessagingClient } from "../src/messaging/client.js";
 import { Client } from "../src/client.js";
 import type {
-  OrganizationClientOptions,
+  TeamClientOptions,
   ProjectScopedClientOptions,
 } from "../src/credentials.js";
 import { webhooks } from "../src/webhooks/utilities.js";
@@ -47,7 +47,7 @@ describe("shared local configuration", () => {
           ? new MessagingClient(options)
           : vector.projectId
             ? new Client(options as ProjectScopedClientOptions)
-            : new Client(options as OrganizationClientOptions);
+            : new Client(options as TeamClientOptions);
       if (vector.valid) expect(construct).not.toThrow();
       else expect(construct).toThrow();
     });
@@ -64,7 +64,7 @@ describe("shared native wire behavior", () => {
       const url = `${base}/__fixtures/${scenario.id}`;
       const transport = new HttpTransport({
         baseUrl: url,
-        authorization: `Bearer ${fixture.organizationCredential}`,
+        authorization: `Bearer ${fixture.teamCredential}`,
         apiVersion: fixture.apiVersion,
         maxNetworkRetries: scenario.outcome.maxNetworkRetries ?? 2,
         timeoutMs: scenario.outcome.timeoutMs ?? 1000,
@@ -146,7 +146,7 @@ describe("shared native wire behavior", () => {
       await fetch(`${base}/__fixtures/${id}/reset`, { method: "POST" });
       const client = new MessagingClient({
         baseUrl: `${base}/__fixtures/${id}`,
-        credential: { type: "apiKey", value: fixture.organizationCredential },
+        credential: { type: "apiKey", value: fixture.teamCredential },
       });
       const options = { headers: { "x-polymorfa-fixture": id } };
       const result =

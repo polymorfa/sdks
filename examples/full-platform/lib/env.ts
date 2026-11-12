@@ -15,7 +15,7 @@ export function optionalEnv(name: string): string | undefined {
 
 export const env = {
   projectToken: () => requiredEnv("POLYMORFA_PROJECT_TOKEN"),
-  organizationApiKey: () => requiredEnv("POLYMORFA_ORGANIZATION_API_KEY"),
+  teamApiKey: () => requiredEnv("POLYMORFA_TEAM_API_KEY"),
   projectId: () => requiredEnv("POLYMORFA_PROJECT_ID"),
   projectSlug: () => requiredEnv("POLYMORFA_PROJECT_SLUG"),
   session: () => requiredEnv("POLYMORFA_SESSION"),

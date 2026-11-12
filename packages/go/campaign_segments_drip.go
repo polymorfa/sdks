@@ -447,14 +447,14 @@ type AudienceSegmentDeletion struct {
 	ID      string `json:"id"`
 }
 
-// AudienceSegments are organization resources: team keys only,
+// AudienceSegments are team resources: team keys only,
 // campaigns:read for reads and campaigns:manage for writes and unsaved previews.
 // Revision conflicts and bounded evaluation timeouts return 409 state_conflict;
 // re-read, reconcile or simplify rules before trying again. Writes and
 // previews are sent once.
 type AudienceSegments struct{ t *transport }
 
-func (c *OrganizationClient) AudienceSegments() *AudienceSegments { return &AudienceSegments{c.t} }
+func (c *TeamClient) AudienceSegments() *AudienceSegments { return &AudienceSegments{c.t} }
 
 func audienceSegmentPath(id string) (string, error) {
 	if strings.TrimSpace(id) == "" {

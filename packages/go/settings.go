@@ -70,7 +70,7 @@ type QuickLinkSettingsResource struct {
 	projectID string
 }
 
-func (c *OrganizationClient) QuickLinkSettings() *QuickLinkSettingsResource {
+func (c *TeamClient) QuickLinkSettings() *QuickLinkSettingsResource {
 	return &QuickLinkSettingsResource{t: c.t}
 }
 func (c *ProjectClient) QuickLinkSettings() *QuickLinkSettingsResource {
@@ -95,7 +95,7 @@ type SessionConfigurationResource struct {
 	projectID string
 }
 
-func (c *OrganizationClient) SessionConfiguration() *SessionConfigurationResource {
+func (c *TeamClient) SessionConfiguration() *SessionConfigurationResource {
 	return &SessionConfigurationResource{t: c.t}
 }
 func (c *ProjectClient) SessionConfiguration() *SessionConfigurationResource {
@@ -123,7 +123,7 @@ func (r *SessionConfigurationResource) Update(ctx context.Context, b UpdateSessi
 type PlatformPayload map[string]json.RawMessage
 type PlatformMedia struct{ t *transport }
 
-func (c *OrganizationClient) Media() *PlatformMedia { return &PlatformMedia{c.t} }
+func (c *TeamClient) Media() *PlatformMedia { return &PlatformMedia{c.t} }
 func (r *PlatformMedia) Retrieve(ctx context.Context, id string, o ...RequestOptions) (Response[Envelope[PlatformPayload]], error) {
 	return request[Envelope[PlatformPayload]](ctx, r.t, "GET", "/platform/media/"+escaped(id), nil, nil, options(o))
 }

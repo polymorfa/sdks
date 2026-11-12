@@ -1798,7 +1798,7 @@
     {
       "family": "platform",
       "method": "DELETE",
-      "path": "/console/organization/avatar",
+      "path": "/console/team/avatar",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -1849,7 +1849,7 @@
       "method": "DELETE",
       "path": "/platform/audiences/{listId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.Delete",
+      "sdkMethod": "TeamClient.Audiences.Delete",
       "testFile": "cloud_audiences_test.go"
     },
     {
@@ -1857,7 +1857,7 @@
       "method": "DELETE",
       "path": "/platform/audiences/{listId}/members/{phone}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.DeleteMember",
+      "sdkMethod": "TeamClient.Audiences.DeleteMember",
       "testFile": "cloud_audiences_test.go"
     },
     {
@@ -1865,7 +1865,7 @@
       "method": "DELETE",
       "path": "/platform/call-opt-outs/{optOutId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallOptOuts.Delete",
+      "sdkMethod": "TeamClient.CallOptOuts.Delete",
       "testFile": "accounts_test.go"
     },
     {
@@ -1873,7 +1873,7 @@
       "method": "DELETE",
       "path": "/platform/campaigns/{campaignId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Delete",
+      "sdkMethod": "TeamClient.Campaigns.Delete",
       "testFile": "campaigns_test.go"
     },
     {
@@ -1881,7 +1881,7 @@
       "method": "DELETE",
       "path": "/platform/customers/{customerId}/pairing-links/{pairingLinkId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.RevokePairingLink",
+      "sdkMethod": "TeamClient.Customers.RevokePairingLink",
       "testFile": "customers_test.go"
     },
     {
@@ -1921,7 +1921,7 @@
       "method": "DELETE",
       "path": "/platform/keys/{keyId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.APIKeys.Deactivate",
+      "sdkMethod": "TeamClient.APIKeys.Deactivate",
       "testFile": "accounts_test.go"
     },
     {
@@ -1929,7 +1929,7 @@
       "method": "DELETE",
       "path": "/platform/media/{mediaId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Media.Delete",
+      "sdkMethod": "TeamClient.Media.Delete",
       "testFile": "settings_test.go"
     },
     {
@@ -1937,7 +1937,7 @@
       "method": "DELETE",
       "path": "/platform/optouts/{phone}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.OptOuts.Delete",
+      "sdkMethod": "TeamClient.OptOuts.Delete",
       "testFile": "security_optouts_test.go"
     },
     {
@@ -1961,7 +1961,7 @@
       "method": "DELETE",
       "path": "/platform/sessions/{sessionId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.Delete",
+      "sdkMethod": "TeamClient.Sessions.Delete",
       "testFile": "platform_sessions_test.go"
     },
     {
@@ -1969,7 +1969,7 @@
       "method": "DELETE",
       "path": "/platform/sip-trunks/{trunkId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SIPTrunks.Delete",
+      "sdkMethod": "TeamClient.SIPTrunks.Delete",
       "testFile": "sip_trunks_test.go"
     },
     {
@@ -1984,7 +1984,7 @@
       "method": "DELETE",
       "path": "/platform/voice/audio/{assetId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.Delete",
+      "sdkMethod": "TeamClient.Voice.Audio.Delete",
       "testFile": "voice_test.go"
     },
     {
@@ -1992,7 +1992,7 @@
       "method": "DELETE",
       "path": "/platform/voice/provider-credentials/{credentialId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.Delete",
+      "sdkMethod": "TeamClient.Voice.ProviderCredentials.Delete",
       "testFile": "voice_test.go"
     },
     {
@@ -2000,7 +2000,7 @@
       "method": "DELETE",
       "path": "/platform/webhooks/{webhookId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Webhooks.Delete",
+      "sdkMethod": "TeamClient.Webhooks.Delete",
       "testFile": "developer_test.go"
     },
     {
@@ -2167,7 +2167,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/organizations/{slug}",
+      "path": "/console/teams/{slug}",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -2281,7 +2281,7 @@
       "method": "GET",
       "path": "/platform/audiences",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.List",
+      "sdkMethod": "TeamClient.Audiences.List",
       "testFile": "cloud_audiences_test.go"
     },
     {
@@ -2289,7 +2289,7 @@
       "method": "GET",
       "path": "/platform/audiences/{listId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.Retrieve",
+      "sdkMethod": "TeamClient.Audiences.Retrieve",
       "testFile": "cloud_audiences_test.go"
     },
     {
@@ -2297,7 +2297,7 @@
       "method": "GET",
       "path": "/platform/audiences/{listId}/members",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.ListMembers",
+      "sdkMethod": "TeamClient.Audiences.ListMembers",
       "testFile": "cloud_audiences_test.go"
     },
     {
@@ -2305,7 +2305,7 @@
       "method": "GET",
       "path": "/platform/audit",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.AuditLogs.List",
+      "sdkMethod": "TeamClient.AuditLogs.List",
       "testFile": "security_optouts_test.go"
     },
     {
@@ -2313,7 +2313,7 @@
       "method": "GET",
       "path": "/platform/bans",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SessionBans.List",
+      "sdkMethod": "TeamClient.SessionBans.List",
       "testFile": "security_optouts_test.go"
     },
     {
@@ -2321,7 +2321,7 @@
       "method": "GET",
       "path": "/platform/bans/active",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SessionBans.ListActive",
+      "sdkMethod": "TeamClient.SessionBans.ListActive",
       "testFile": "security_optouts_test.go"
     },
     {
@@ -2329,7 +2329,7 @@
       "method": "GET",
       "path": "/platform/bansafe/claims",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListClaims",
+      "sdkMethod": "TeamClient.BanSafe.ListClaims",
       "testFile": "bansafe_test.go"
     },
     {
@@ -2337,7 +2337,7 @@
       "method": "GET",
       "path": "/platform/bansafe/claims/{claimId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.GetClaim",
+      "sdkMethod": "TeamClient.BanSafe.GetClaim",
       "testFile": "bansafe_test.go"
     },
     {
@@ -2345,7 +2345,7 @@
       "method": "GET",
       "path": "/platform/bansafe/collection",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListCollection",
+      "sdkMethod": "TeamClient.BanSafe.ListCollection",
       "testFile": "bansafe_test.go"
     },
     {
@@ -2353,7 +2353,7 @@
       "method": "GET",
       "path": "/platform/bansafe/enforcement",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListEnforcement",
+      "sdkMethod": "TeamClient.BanSafe.ListEnforcement",
       "testFile": "bansafe_test.go"
     },
     {
@@ -2361,7 +2361,7 @@
       "method": "GET",
       "path": "/platform/bansafe/findings",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListFindings",
+      "sdkMethod": "TeamClient.BanSafe.ListFindings",
       "testFile": "bansafe_test.go"
     },
     {
@@ -2369,7 +2369,7 @@
       "method": "GET",
       "path": "/platform/bansafe/health",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListHealth",
+      "sdkMethod": "TeamClient.BanSafe.ListHealth",
       "testFile": "bansafe_test.go"
     },
     {
@@ -2377,7 +2377,7 @@
       "method": "GET",
       "path": "/platform/bansafe/health-actions",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListHealthActions",
+      "sdkMethod": "TeamClient.BanSafe.ListHealthActions",
       "testFile": "bansafe_test.go"
     },
     {
@@ -2385,7 +2385,7 @@
       "method": "GET",
       "path": "/platform/bansafe/health/{session}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.GetHealth",
+      "sdkMethod": "TeamClient.BanSafe.GetHealth",
       "testFile": "bansafe_test.go"
     },
     {
@@ -2393,7 +2393,7 @@
       "method": "GET",
       "path": "/platform/bansafe/health/{session}/history",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListHealthHistory",
+      "sdkMethod": "TeamClient.BanSafe.ListHealthHistory",
       "testFile": "bansafe_test.go"
     },
     {
@@ -2401,7 +2401,7 @@
       "method": "GET",
       "path": "/platform/bansafe/incidents",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListIncidents",
+      "sdkMethod": "TeamClient.BanSafe.ListIncidents",
       "testFile": "bansafe_test.go"
     },
     {
@@ -2409,7 +2409,7 @@
       "method": "GET",
       "path": "/platform/bansafe/signals",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListSignals",
+      "sdkMethod": "TeamClient.BanSafe.ListSignals",
       "testFile": "bansafe_test.go"
     },
     {
@@ -2417,7 +2417,7 @@
       "method": "GET",
       "path": "/platform/bansafe/telemetry/{session}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.GetTelemetry",
+      "sdkMethod": "TeamClient.BanSafe.GetTelemetry",
       "testFile": "bansafe_test.go"
     },
     {
@@ -2425,7 +2425,7 @@
       "method": "GET",
       "path": "/platform/bansafe/telemetry/{session}/history",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.ListTelemetryHistory",
+      "sdkMethod": "TeamClient.BanSafe.ListTelemetryHistory",
       "testFile": "bansafe_test.go"
     },
     {
@@ -2433,7 +2433,7 @@
       "method": "GET",
       "path": "/platform/billing",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.Retrieve",
+      "sdkMethod": "TeamClient.Billing.Retrieve",
       "testFile": "billing_test.go"
     },
     {
@@ -2441,7 +2441,7 @@
       "method": "GET",
       "path": "/platform/billing/controls/{scope}/{resourceId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.GetResourceControls",
+      "sdkMethod": "TeamClient.Billing.GetResourceControls",
       "testFile": "billing_test.go"
     },
     {
@@ -2449,7 +2449,7 @@
       "method": "GET",
       "path": "/platform/billing/limits",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.GetLimits",
+      "sdkMethod": "TeamClient.Billing.GetLimits",
       "testFile": "billing_test.go"
     },
     {
@@ -2457,7 +2457,7 @@
       "method": "GET",
       "path": "/platform/billing/pricing",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.ListPricing",
+      "sdkMethod": "TeamClient.Billing.ListPricing",
       "testFile": "billing_test.go"
     },
     {
@@ -2465,7 +2465,7 @@
       "method": "GET",
       "path": "/platform/billing/priorities",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.GetPriorities",
+      "sdkMethod": "TeamClient.Billing.GetPriorities",
       "testFile": "billing_test.go"
     },
     {
@@ -2473,7 +2473,7 @@
       "method": "GET",
       "path": "/platform/billing/transactions",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.ListTransactions",
+      "sdkMethod": "TeamClient.Billing.ListTransactions",
       "testFile": "billing_test.go"
     },
     {
@@ -2481,7 +2481,7 @@
       "method": "GET",
       "path": "/platform/billing/usage",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.Usage",
+      "sdkMethod": "TeamClient.Billing.Usage",
       "testFile": "billing_test.go"
     },
     {
@@ -2489,7 +2489,7 @@
       "method": "GET",
       "path": "/platform/call-opt-outs",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallOptOuts.List",
+      "sdkMethod": "TeamClient.CallOptOuts.List",
       "testFile": "accounts_test.go"
     },
     {
@@ -2497,7 +2497,7 @@
       "method": "GET",
       "path": "/platform/call-policy",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallPolicy.Retrieve",
+      "sdkMethod": "TeamClient.CallPolicy.Retrieve",
       "testFile": "accounts_test.go"
     },
     {
@@ -2505,7 +2505,7 @@
       "method": "GET",
       "path": "/platform/call-retention",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallRetention.Retrieve",
+      "sdkMethod": "TeamClient.CallRetention.Retrieve",
       "testFile": "accounts_test.go"
     },
     {
@@ -2513,7 +2513,7 @@
       "method": "GET",
       "path": "/platform/calls",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Calls.List",
+      "sdkMethod": "TeamClient.Calls.List",
       "testFile": "calls_analytics_test.go"
     },
     {
@@ -2521,7 +2521,7 @@
       "method": "GET",
       "path": "/platform/calls/{callId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Calls.Retrieve",
+      "sdkMethod": "TeamClient.Calls.Retrieve",
       "testFile": "calls_analytics_test.go"
     },
     {
@@ -2529,7 +2529,7 @@
       "method": "GET",
       "path": "/platform/calls/export",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Calls.Export",
+      "sdkMethod": "TeamClient.Calls.Export",
       "testFile": "calls_analytics_test.go"
     },
     {
@@ -2537,7 +2537,7 @@
       "method": "GET",
       "path": "/platform/calls/stats",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Calls.Stats",
+      "sdkMethod": "TeamClient.Calls.Stats",
       "testFile": "calls_analytics_test.go"
     },
     {
@@ -2545,7 +2545,7 @@
       "method": "GET",
       "path": "/platform/campaigns",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.List",
+      "sdkMethod": "TeamClient.Campaigns.List",
       "testFile": "campaigns_test.go"
     },
     {
@@ -2553,7 +2553,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Retrieve",
+      "sdkMethod": "TeamClient.Campaigns.Retrieve",
       "testFile": "campaigns_test.go"
     },
     {
@@ -2561,7 +2561,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/analytics",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Analytics",
+      "sdkMethod": "TeamClient.Campaigns.Analytics",
       "testFile": "campaigns_test.go"
     },
     {
@@ -2569,7 +2569,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/conversions",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Conversions",
+      "sdkMethod": "TeamClient.Campaigns.Conversions",
       "testFile": "campaigns_test.go"
     },
     {
@@ -2577,7 +2577,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/events",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Events",
+      "sdkMethod": "TeamClient.Campaigns.Events",
       "testFile": "campaigns_test.go"
     },
     {
@@ -2585,7 +2585,7 @@
       "method": "GET",
       "path": "/platform/campaigns/{campaignId}/recipients",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Recipients",
+      "sdkMethod": "TeamClient.Campaigns.Recipients",
       "testFile": "campaigns_test.go"
     },
     {
@@ -2593,7 +2593,7 @@
       "method": "GET",
       "path": "/platform/customers",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.List",
+      "sdkMethod": "TeamClient.Customers.List",
       "testFile": "customers_test.go"
     },
     {
@@ -2601,7 +2601,7 @@
       "method": "GET",
       "path": "/platform/customers/{customerId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.Retrieve",
+      "sdkMethod": "TeamClient.Customers.Retrieve",
       "testFile": "customers_test.go"
     },
     {
@@ -2609,7 +2609,7 @@
       "method": "GET",
       "path": "/platform/customers/{customerId}/events",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.ListEvents",
+      "sdkMethod": "TeamClient.Customers.ListEvents",
       "testFile": "customers_test.go"
     },
     {
@@ -2617,7 +2617,7 @@
       "method": "GET",
       "path": "/platform/customers/{customerId}/numbers",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.ListNumbers",
+      "sdkMethod": "TeamClient.Customers.ListNumbers",
       "testFile": "customers_test.go"
     },
     {
@@ -2625,7 +2625,7 @@
       "method": "GET",
       "path": "/platform/customers/{customerId}/pairing-links",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.ListPairingLinks",
+      "sdkMethod": "TeamClient.Customers.ListPairingLinks",
       "testFile": "customers_test.go"
     },
     {
@@ -2633,7 +2633,7 @@
       "method": "GET",
       "path": "/platform/events",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Events.List",
+      "sdkMethod": "TeamClient.Events.List",
       "testFile": "collection_wire_test.go"
     },
     {
@@ -2641,7 +2641,7 @@
       "method": "GET",
       "path": "/platform/events/{eventId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Events.Retrieve",
+      "sdkMethod": "TeamClient.Events.Retrieve",
       "testFile": "developer_test.go"
     },
     {
@@ -2753,7 +2753,7 @@
       "method": "GET",
       "path": "/platform/gates",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Usage.ListGates",
+      "sdkMethod": "TeamClient.Usage.ListGates",
       "testFile": "settings_test.go"
     },
     {
@@ -2761,7 +2761,7 @@
       "method": "GET",
       "path": "/platform/incidents",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SecurityIncidents.List",
+      "sdkMethod": "TeamClient.SecurityIncidents.List",
       "testFile": "security_optouts_test.go"
     },
     {
@@ -2769,7 +2769,7 @@
       "method": "GET",
       "path": "/platform/keys",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.APIKeys.List",
+      "sdkMethod": "TeamClient.APIKeys.List",
       "testFile": "accounts_test.go"
     },
     {
@@ -2777,7 +2777,7 @@
       "method": "GET",
       "path": "/platform/media/{mediaId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Media.Retrieve",
+      "sdkMethod": "TeamClient.Media.Retrieve",
       "testFile": "settings_test.go"
     },
     {
@@ -2785,7 +2785,7 @@
       "method": "GET",
       "path": "/platform/members",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Members.List",
+      "sdkMethod": "TeamClient.Members.List",
       "testFile": "accounts_test.go"
     },
     {
@@ -2793,7 +2793,7 @@
       "method": "GET",
       "path": "/platform/operations",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Operations.List",
+      "sdkMethod": "TeamClient.Operations.List",
       "testFile": "collection_wire_test.go"
     },
     {
@@ -2801,7 +2801,7 @@
       "method": "GET",
       "path": "/platform/operations/{operationId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Operations.Get",
+      "sdkMethod": "TeamClient.Operations.Get",
       "testFile": "developer_test.go"
     },
     {
@@ -2809,7 +2809,7 @@
       "method": "GET",
       "path": "/platform/operations/{operationId}/transitions",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Operations.ListTransitions",
+      "sdkMethod": "TeamClient.Operations.ListTransitions",
       "testFile": "collection_wire_test.go"
     },
     {
@@ -2817,7 +2817,7 @@
       "method": "GET",
       "path": "/platform/optouts",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.OptOuts.List",
+      "sdkMethod": "TeamClient.OptOuts.List",
       "testFile": "security_optouts_test.go"
     },
     {
@@ -2825,7 +2825,7 @@
       "method": "GET",
       "path": "/platform/optouts/settings",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.OptOuts.GetSettings",
+      "sdkMethod": "TeamClient.OptOuts.GetSettings",
       "testFile": "security_optouts_test.go"
     },
     {
@@ -2833,7 +2833,7 @@
       "method": "GET",
       "path": "/platform/projects",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.List",
+      "sdkMethod": "TeamClient.Projects.List",
       "testFile": "operations_test.go"
     },
     {
@@ -2841,7 +2841,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/customers/status",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.Status",
+      "sdkMethod": "TeamClient.Customers.Status",
       "testFile": "customers_test.go"
     },
     {
@@ -2873,7 +2873,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/health-policy",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.GetHealthPolicy",
+      "sdkMethod": "TeamClient.Projects.GetHealthPolicy",
       "testFile": "project_health_test.go"
     },
     {
@@ -2881,7 +2881,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/hybrid-merge-candidates",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.ListHybridMergeCandidates",
+      "sdkMethod": "TeamClient.Projects.ListHybridMergeCandidates",
       "testFile": "project_health_test.go"
     },
     {
@@ -2889,7 +2889,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/insurance-evidence",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.GetInsuranceEvidence",
+      "sdkMethod": "TeamClient.Projects.GetInsuranceEvidence",
       "testFile": "project_health_test.go"
     },
     {
@@ -2921,7 +2921,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/safe-mode",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.GetSafeMode",
+      "sdkMethod": "TeamClient.Projects.GetSafeMode",
       "testFile": "project_health_test.go"
     },
     {
@@ -2929,7 +2929,7 @@
       "method": "GET",
       "path": "/platform/projects/{projectId}/warmup-plan",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.GetWarmupPlan",
+      "sdkMethod": "TeamClient.Projects.GetWarmupPlan",
       "testFile": "project_health_test.go"
     },
     {
@@ -2985,7 +2985,7 @@
       "method": "GET",
       "path": "/platform/quicklink",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.QuickLinkSettings.Retrieve",
+      "sdkMethod": "TeamClient.QuickLinkSettings.Retrieve",
       "testFile": "settings_test.go"
     },
     {
@@ -2993,7 +2993,7 @@
       "method": "GET",
       "path": "/platform/session-configuration",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SessionConfiguration.Retrieve",
+      "sdkMethod": "TeamClient.SessionConfiguration.Retrieve",
       "testFile": "settings_test.go"
     },
     {
@@ -3001,7 +3001,7 @@
       "method": "GET",
       "path": "/platform/sessions",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.List",
+      "sdkMethod": "TeamClient.Sessions.List",
       "testFile": "platform_sessions_test.go"
     },
     {
@@ -3025,7 +3025,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.Retrieve",
+      "sdkMethod": "TeamClient.Sessions.Retrieve",
       "testFile": "platform_sessions_test.go"
     },
     {
@@ -3033,7 +3033,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/capabilities",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.GetCapabilities",
+      "sdkMethod": "TeamClient.Sessions.GetCapabilities",
       "testFile": "platform_sessions_test.go"
     },
     {
@@ -3049,7 +3049,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/safe-mode",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.GetSafeMode",
+      "sdkMethod": "TeamClient.Sessions.GetSafeMode",
       "testFile": "platform_sessions_test.go"
     },
     {
@@ -3057,7 +3057,7 @@
       "method": "GET",
       "path": "/platform/sessions/{sessionId}/tier-quotes/{quoteId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.RetrieveTierChange",
+      "sdkMethod": "TeamClient.Sessions.RetrieveTierChange",
       "testFile": "platform_sessions_test.go"
     },
     {
@@ -3065,7 +3065,7 @@
       "method": "GET",
       "path": "/platform/sip-trunks",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SIPTrunks.List",
+      "sdkMethod": "TeamClient.SIPTrunks.List",
       "testFile": "sip_trunks_test.go"
     },
     {
@@ -3073,7 +3073,7 @@
       "method": "GET",
       "path": "/platform/sip-trunks/{trunkId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SIPTrunks.Retrieve",
+      "sdkMethod": "TeamClient.SIPTrunks.Retrieve",
       "testFile": "sip_trunks_test.go"
     },
     {
@@ -3081,7 +3081,7 @@
       "method": "GET",
       "path": "/platform/sip/endpoint",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SIPTrunks.Endpoint",
+      "sdkMethod": "TeamClient.SIPTrunks.Endpoint",
       "testFile": "sip_trunks_test.go"
     },
     {
@@ -3089,7 +3089,7 @@
       "method": "GET",
       "path": "/platform/team",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Organizations.Retrieve",
+      "sdkMethod": "TeamClient.Teams.Retrieve",
       "testFile": "accounts_test.go"
     },
     {
@@ -3111,7 +3111,7 @@
       "method": "GET",
       "path": "/platform/tokens",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.ProjectTokens.List",
+      "sdkMethod": "TeamClient.ProjectTokens.List",
       "testFile": "accounts_test.go"
     },
     {
@@ -3119,7 +3119,7 @@
       "method": "GET",
       "path": "/platform/usage",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Usage.Summary",
+      "sdkMethod": "TeamClient.Usage.Summary",
       "testFile": "settings_test.go"
     },
     {
@@ -3127,7 +3127,7 @@
       "method": "GET",
       "path": "/platform/usage/records",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Usage.ListRecords",
+      "sdkMethod": "TeamClient.Usage.ListRecords",
       "testFile": "settings_test.go"
     },
     {
@@ -3135,7 +3135,7 @@
       "method": "GET",
       "path": "/platform/voice/audio",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.List",
+      "sdkMethod": "TeamClient.Voice.Audio.List",
       "testFile": "voice_test.go"
     },
     {
@@ -3143,7 +3143,7 @@
       "method": "GET",
       "path": "/platform/voice/audio/{assetId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.Retrieve",
+      "sdkMethod": "TeamClient.Voice.Audio.Retrieve",
       "testFile": "voice_test.go"
     },
     {
@@ -3151,7 +3151,7 @@
       "method": "GET",
       "path": "/platform/voice/audio/{assetId}/preview",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.PreviewURL",
+      "sdkMethod": "TeamClient.Voice.Audio.PreviewURL",
       "testFile": "voice_test.go"
     },
     {
@@ -3159,7 +3159,7 @@
       "method": "GET",
       "path": "/platform/voice/provider-credentials",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.List",
+      "sdkMethod": "TeamClient.Voice.ProviderCredentials.List",
       "testFile": "voice_test.go"
     },
     {
@@ -3167,7 +3167,7 @@
       "method": "GET",
       "path": "/platform/voice/provider-credentials/{credentialId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.Retrieve",
+      "sdkMethod": "TeamClient.Voice.ProviderCredentials.Retrieve",
       "testFile": "voice_test.go"
     },
     {
@@ -3175,7 +3175,7 @@
       "method": "GET",
       "path": "/platform/webhook-deliveries",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.WebhookDeliveries.List",
+      "sdkMethod": "TeamClient.WebhookDeliveries.List",
       "testFile": "collection_wire_test.go"
     },
     {
@@ -3183,7 +3183,7 @@
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.WebhookDeliveries.Retrieve",
+      "sdkMethod": "TeamClient.WebhookDeliveries.Retrieve",
       "testFile": "developer_test.go"
     },
     {
@@ -3191,7 +3191,7 @@
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}/attempts",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.WebhookDeliveries.ListAttempts",
+      "sdkMethod": "TeamClient.WebhookDeliveries.ListAttempts",
       "testFile": "collection_wire_test.go"
     },
     {
@@ -3199,7 +3199,7 @@
       "method": "GET",
       "path": "/platform/webhook-deliveries/{deliveryId}/attempts/{attemptId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.WebhookDeliveries.RetrieveAttempt",
+      "sdkMethod": "TeamClient.WebhookDeliveries.RetrieveAttempt",
       "testFile": "developer_test.go"
     },
     {
@@ -3207,7 +3207,7 @@
       "method": "GET",
       "path": "/platform/webhooks",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Webhooks.List",
+      "sdkMethod": "TeamClient.Webhooks.List",
       "testFile": "collection_wire_test.go"
     },
     {
@@ -3215,7 +3215,7 @@
       "method": "GET",
       "path": "/platform/webhooks/{webhookId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Webhooks.Retrieve",
+      "sdkMethod": "TeamClient.Webhooks.Retrieve",
       "testFile": "developer_test.go"
     },
     {
@@ -3228,7 +3228,7 @@
     {
       "family": "platform",
       "method": "PATCH",
-      "path": "/console/organization",
+      "path": "/console/team",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -3272,7 +3272,7 @@
       "method": "PATCH",
       "path": "/platform/campaigns/{campaignId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Update",
+      "sdkMethod": "TeamClient.Campaigns.Update",
       "testFile": "campaigns_test.go"
     },
     {
@@ -3280,7 +3280,7 @@
       "method": "PATCH",
       "path": "/platform/customers/{customerId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.Update",
+      "sdkMethod": "TeamClient.Customers.Update",
       "testFile": "customers_test.go"
     },
     {
@@ -3312,7 +3312,7 @@
       "method": "PATCH",
       "path": "/platform/sessions/{sessionId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.SetTierOverride",
+      "sdkMethod": "TeamClient.Sessions.SetTierOverride",
       "testFile": "platform_sessions_test.go"
     },
     {
@@ -3320,7 +3320,7 @@
       "method": "PATCH",
       "path": "/platform/sip-trunks/{trunkId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SIPTrunks.Update",
+      "sdkMethod": "TeamClient.SIPTrunks.Update",
       "testFile": "sip_trunks_test.go"
     },
     {
@@ -3335,7 +3335,7 @@
       "method": "PATCH",
       "path": "/platform/voice/audio/{assetId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.Update",
+      "sdkMethod": "TeamClient.Voice.Audio.Update",
       "testFile": "voice_test.go"
     },
     {
@@ -3343,7 +3343,7 @@
       "method": "PATCH",
       "path": "/platform/webhooks/{webhookId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Webhooks.Update",
+      "sdkMethod": "TeamClient.Webhooks.Update",
       "testFile": "developer_test.go"
     },
     {
@@ -3475,21 +3475,21 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organization-invitations/{invitationId}/accept",
+      "path": "/console/team-invitations/{invitationId}/accept",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organization/avatar/uploads",
+      "path": "/console/team/avatar/uploads",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organizations/ensure",
+      "path": "/console/teams/ensure",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -3524,7 +3524,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/quicklink/logo/org",
+      "path": "/console/quicklink/logo/team",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -3617,7 +3617,7 @@
       "method": "POST",
       "path": "/platform/audiences",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.Create",
+      "sdkMethod": "TeamClient.Audiences.Create",
       "testFile": "cloud_audiences_test.go"
     },
     {
@@ -3625,7 +3625,7 @@
       "method": "POST",
       "path": "/platform/audiences/{listId}/members",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.AddMembers",
+      "sdkMethod": "TeamClient.Audiences.AddMembers",
       "testFile": "cloud_audiences_test.go"
     },
     {
@@ -3633,7 +3633,7 @@
       "method": "POST",
       "path": "/platform/audiences/uploads",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Audiences.CreateUpload",
+      "sdkMethod": "TeamClient.Audiences.CreateUpload",
       "testFile": "cloud_audiences_test.go"
     },
     {
@@ -3641,7 +3641,7 @@
       "method": "POST",
       "path": "/platform/bansafe/incidents",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.CreateIncident",
+      "sdkMethod": "TeamClient.BanSafe.CreateIncident",
       "testFile": "bansafe_test.go"
     },
     {
@@ -3649,7 +3649,7 @@
       "method": "POST",
       "path": "/platform/bansafe/incidents/{incidentId}/retract",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.BanSafe.RetractIncident",
+      "sdkMethod": "TeamClient.BanSafe.RetractIncident",
       "testFile": "bansafe_test.go"
     },
     {
@@ -3657,7 +3657,7 @@
       "method": "POST",
       "path": "/platform/call-opt-outs",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallOptOuts.Create",
+      "sdkMethod": "TeamClient.CallOptOuts.Create",
       "testFile": "accounts_test.go"
     },
     {
@@ -3665,7 +3665,7 @@
       "method": "POST",
       "path": "/platform/call-opt-outs/import",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallOptOuts.Import",
+      "sdkMethod": "TeamClient.CallOptOuts.Import",
       "testFile": "accounts_test.go"
     },
     {
@@ -3673,7 +3673,7 @@
       "method": "POST",
       "path": "/platform/campaigns",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Create",
+      "sdkMethod": "TeamClient.Campaigns.Create",
       "testFile": "campaigns_test.go"
     },
     {
@@ -3681,7 +3681,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/archive",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Archive",
+      "sdkMethod": "TeamClient.Campaigns.Archive",
       "testFile": "campaigns_test.go"
     },
     {
@@ -3689,7 +3689,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/conversions",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.RecordConversion",
+      "sdkMethod": "TeamClient.Campaigns.RecordConversion",
       "testFile": "campaigns_test.go"
     },
     {
@@ -3697,7 +3697,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/duplicate",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Duplicate",
+      "sdkMethod": "TeamClient.Campaigns.Duplicate",
       "testFile": "campaigns_test.go"
     },
     {
@@ -3705,7 +3705,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/launch",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Launch",
+      "sdkMethod": "TeamClient.Campaigns.Launch",
       "testFile": "campaigns_test.go"
     },
     {
@@ -3713,7 +3713,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/pause",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Pause",
+      "sdkMethod": "TeamClient.Campaigns.Pause",
       "testFile": "campaigns_test.go"
     },
     {
@@ -3721,7 +3721,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/recipients",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.AddRecipients",
+      "sdkMethod": "TeamClient.Campaigns.AddRecipients",
       "testFile": "campaigns_test.go"
     },
     {
@@ -3729,7 +3729,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/requeue",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Requeue",
+      "sdkMethod": "TeamClient.Campaigns.Requeue",
       "testFile": "campaigns_test.go"
     },
     {
@@ -3737,7 +3737,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/reschedule",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Reschedule",
+      "sdkMethod": "TeamClient.Campaigns.Reschedule",
       "testFile": "supplements_test.go"
     },
     {
@@ -3745,7 +3745,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/resume",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Resume",
+      "sdkMethod": "TeamClient.Campaigns.Resume",
       "testFile": "campaigns_test.go"
     },
     {
@@ -3753,7 +3753,7 @@
       "method": "POST",
       "path": "/platform/campaigns/{campaignId}/stop",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Campaigns.Stop",
+      "sdkMethod": "TeamClient.Campaigns.Stop",
       "testFile": "campaigns_test.go"
     },
     {
@@ -3769,7 +3769,7 @@
       "method": "POST",
       "path": "/platform/customers",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.Create",
+      "sdkMethod": "TeamClient.Customers.Create",
       "testFile": "customers_test.go"
     },
     {
@@ -3777,7 +3777,7 @@
       "method": "POST",
       "path": "/platform/customers/{customerId}/archive",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.Archive",
+      "sdkMethod": "TeamClient.Customers.Archive",
       "testFile": "customers_test.go"
     },
     {
@@ -3785,7 +3785,7 @@
       "method": "POST",
       "path": "/platform/customers/{customerId}/numbers/{sessionId}/transfer",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.TransferNumber",
+      "sdkMethod": "TeamClient.Customers.TransferNumber",
       "testFile": "customers_test.go"
     },
     {
@@ -3793,7 +3793,7 @@
       "method": "POST",
       "path": "/platform/customers/{customerId}/pairing-links",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.CreatePairingLink",
+      "sdkMethod": "TeamClient.Customers.CreatePairingLink",
       "testFile": "customers_test.go"
     },
     {
@@ -3801,7 +3801,7 @@
       "method": "POST",
       "path": "/platform/customers/{customerId}/restore",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.Restore",
+      "sdkMethod": "TeamClient.Customers.Restore",
       "testFile": "customers_test.go"
     },
     {
@@ -3809,7 +3809,7 @@
       "method": "POST",
       "path": "/platform/events/{eventId}/replays",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Events.Replay",
+      "sdkMethod": "TeamClient.Events.Replay",
       "testFile": "developer_test.go"
     },
     {
@@ -3905,7 +3905,7 @@
       "method": "POST",
       "path": "/platform/incidents/{incidentId}/acknowledge",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SecurityIncidents.Acknowledge",
+      "sdkMethod": "TeamClient.SecurityIncidents.Acknowledge",
       "testFile": "security_optouts_test.go"
     },
     {
@@ -3913,7 +3913,7 @@
       "method": "POST",
       "path": "/platform/media/uploads",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Media.CreateUpload",
+      "sdkMethod": "TeamClient.Media.CreateUpload",
       "testFile": "settings_test.go"
     },
     {
@@ -3921,7 +3921,7 @@
       "method": "POST",
       "path": "/platform/operations/{operationId}/cancel",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Operations.Cancel",
+      "sdkMethod": "TeamClient.Operations.Cancel",
       "testFile": "developer_test.go"
     },
     {
@@ -3929,7 +3929,7 @@
       "method": "POST",
       "path": "/platform/optouts",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.OptOuts.Create",
+      "sdkMethod": "TeamClient.OptOuts.Create",
       "testFile": "security_optouts_test.go"
     },
     {
@@ -3937,7 +3937,7 @@
       "method": "POST",
       "path": "/platform/optouts/batch",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.OptOuts.CreateBatch",
+      "sdkMethod": "TeamClient.OptOuts.CreateBatch",
       "testFile": "security_optouts_test.go"
     },
     {
@@ -3945,7 +3945,7 @@
       "method": "POST",
       "path": "/platform/projects",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.Create",
+      "sdkMethod": "TeamClient.Projects.Create",
       "testFile": "operations_test.go"
     },
     {
@@ -3953,7 +3953,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/customers/enable",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Customers.Enable",
+      "sdkMethod": "TeamClient.Customers.Enable",
       "testFile": "customers_test.go"
     },
     {
@@ -3985,7 +3985,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/approve",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.ApproveProductionEnrollment",
+      "sdkMethod": "TeamClient.Projects.ApproveProductionEnrollment",
       "testFile": "operations_test.go"
     },
     {
@@ -3993,7 +3993,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/production-enrollments/{operationId}/cancel",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.CancelProductionEnrollment",
+      "sdkMethod": "TeamClient.Projects.CancelProductionEnrollment",
       "testFile": "operations_test.go"
     },
     {
@@ -4001,7 +4001,7 @@
       "method": "POST",
       "path": "/platform/projects/{projectId}/promote",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.RequestProductionEnrollment",
+      "sdkMethod": "TeamClient.Projects.RequestProductionEnrollment",
       "testFile": "operations_test.go"
     },
     {
@@ -4078,7 +4078,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/start",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.Start",
+      "sdkMethod": "TeamClient.Sessions.Start",
       "testFile": "platform_sessions_test.go"
     },
     {
@@ -4086,7 +4086,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/stop",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.Stop",
+      "sdkMethod": "TeamClient.Sessions.Stop",
       "testFile": "platform_sessions_test.go"
     },
     {
@@ -4094,7 +4094,7 @@
       "method": "POST",
       "path": "/platform/sessions/{sessionId}/tier-quotes",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.QuoteTierChange",
+      "sdkMethod": "TeamClient.Sessions.QuoteTierChange",
       "testFile": "platform_sessions_test.go"
     },
     {
@@ -4109,7 +4109,7 @@
       "method": "POST",
       "path": "/platform/sessions/delete",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.DeleteMany",
+      "sdkMethod": "TeamClient.Sessions.DeleteMany",
       "testFile": "platform_sessions_test.go"
     },
     {
@@ -4117,7 +4117,7 @@
       "method": "POST",
       "path": "/platform/sessions/stop",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.StopMany",
+      "sdkMethod": "TeamClient.Sessions.StopMany",
       "testFile": "platform_sessions_test.go"
     },
     {
@@ -4125,7 +4125,7 @@
       "method": "POST",
       "path": "/platform/sip-trunks",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SIPTrunks.Create",
+      "sdkMethod": "TeamClient.SIPTrunks.Create",
       "testFile": "sip_trunks_test.go"
     },
     {
@@ -4133,7 +4133,7 @@
       "method": "POST",
       "path": "/platform/sip-trunks/{trunkId}/credentials",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SIPTrunks.RotateCredentials",
+      "sdkMethod": "TeamClient.SIPTrunks.RotateCredentials",
       "testFile": "sip_trunks_test.go"
     },
     {
@@ -4148,7 +4148,7 @@
       "method": "POST",
       "path": "/platform/voice/audio",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.CreateUpload",
+      "sdkMethod": "TeamClient.Voice.Audio.CreateUpload",
       "testFile": "voice_test.go"
     },
     {
@@ -4156,7 +4156,7 @@
       "method": "POST",
       "path": "/platform/voice/audio/{assetId}/complete",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.Complete",
+      "sdkMethod": "TeamClient.Voice.Audio.Complete",
       "testFile": "voice_test.go"
     },
     {
@@ -4164,7 +4164,7 @@
       "method": "POST",
       "path": "/platform/voice/audio/tts",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.Audio.Synthesize",
+      "sdkMethod": "TeamClient.Voice.Audio.Synthesize",
       "testFile": "voice_test.go"
     },
     {
@@ -4172,7 +4172,7 @@
       "method": "POST",
       "path": "/platform/voice/provider-credentials",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.Create",
+      "sdkMethod": "TeamClient.Voice.ProviderCredentials.Create",
       "testFile": "voice_test.go"
     },
     {
@@ -4180,7 +4180,7 @@
       "method": "POST",
       "path": "/platform/voice/provider-credentials/{credentialId}/verify",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Voice.ProviderCredentials.Verify",
+      "sdkMethod": "TeamClient.Voice.ProviderCredentials.Verify",
       "testFile": "voice_test.go"
     },
     {
@@ -4188,7 +4188,7 @@
       "method": "POST",
       "path": "/platform/webhook-deliveries/{deliveryId}/retry",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.WebhookDeliveries.Retry",
+      "sdkMethod": "TeamClient.WebhookDeliveries.Retry",
       "testFile": "developer_test.go"
     },
     {
@@ -4196,7 +4196,7 @@
       "method": "POST",
       "path": "/platform/webhooks",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Webhooks.Create",
+      "sdkMethod": "TeamClient.Webhooks.Create",
       "testFile": "developer_test.go"
     },
     {
@@ -4204,7 +4204,7 @@
       "method": "POST",
       "path": "/platform/webhooks/{webhookId}/secret-rotations",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Webhooks.RotateSecret",
+      "sdkMethod": "TeamClient.Webhooks.RotateSecret",
       "testFile": "developer_test.go"
     },
     {
@@ -4212,7 +4212,7 @@
       "method": "POST",
       "path": "/platform/webhooks/{webhookId}/tests",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Webhooks.Test",
+      "sdkMethod": "TeamClient.Webhooks.Test",
       "testFile": "developer_test.go"
     },
     {
@@ -4260,7 +4260,7 @@
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/console/organization/avatar",
+      "path": "/console/team/avatar",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -4311,7 +4311,7 @@
       "method": "PUT",
       "path": "/platform/billing/controls/{scope}/{resourceId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.SetResourceControls",
+      "sdkMethod": "TeamClient.Billing.SetResourceControls",
       "testFile": "billing_test.go"
     },
     {
@@ -4319,7 +4319,7 @@
       "method": "PUT",
       "path": "/platform/billing/limits/{scope}/{resourceId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.SetLimit",
+      "sdkMethod": "TeamClient.Billing.SetLimit",
       "testFile": "billing_test.go"
     },
     {
@@ -4327,7 +4327,7 @@
       "method": "PUT",
       "path": "/platform/billing/priorities",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.ReorderPriorities",
+      "sdkMethod": "TeamClient.Billing.ReorderPriorities",
       "testFile": "billing_test.go"
     },
     {
@@ -4335,7 +4335,7 @@
       "method": "PUT",
       "path": "/platform/billing/priorities/{scope}/{resourceId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Billing.SetPriority",
+      "sdkMethod": "TeamClient.Billing.SetPriority",
       "testFile": "billing_test.go"
     },
     {
@@ -4343,7 +4343,7 @@
       "method": "PUT",
       "path": "/platform/call-policy",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallPolicy.Update",
+      "sdkMethod": "TeamClient.CallPolicy.Update",
       "testFile": "accounts_test.go"
     },
     {
@@ -4351,7 +4351,7 @@
       "method": "PUT",
       "path": "/platform/call-retention",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.CallRetention.Update",
+      "sdkMethod": "TeamClient.CallRetention.Update",
       "testFile": "accounts_test.go"
     },
     {
@@ -4375,7 +4375,7 @@
       "method": "PUT",
       "path": "/platform/optouts/settings",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.OptOuts.UpdateSettings",
+      "sdkMethod": "TeamClient.OptOuts.UpdateSettings",
       "testFile": "security_optouts_test.go"
     },
     {
@@ -4383,7 +4383,7 @@
       "method": "PUT",
       "path": "/platform/projects/{projectId}/health-policy",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.UpdateHealthPolicy",
+      "sdkMethod": "TeamClient.Projects.UpdateHealthPolicy",
       "testFile": "project_health_test.go"
     },
     {
@@ -4391,7 +4391,7 @@
       "method": "PUT",
       "path": "/platform/projects/{projectId}/insurance-evidence",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.UpdateInsuranceEvidence",
+      "sdkMethod": "TeamClient.Projects.UpdateInsuranceEvidence",
       "testFile": "project_health_test.go"
     },
     {
@@ -4399,7 +4399,7 @@
       "method": "PUT",
       "path": "/platform/projects/{projectId}/safe-mode",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.UpdateSafeMode",
+      "sdkMethod": "TeamClient.Projects.UpdateSafeMode",
       "testFile": "project_health_test.go"
     },
     {
@@ -4407,7 +4407,7 @@
       "method": "PUT",
       "path": "/platform/projects/{projectId}/warmup-plan",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Projects.UpdateWarmupPlan",
+      "sdkMethod": "TeamClient.Projects.UpdateWarmupPlan",
       "testFile": "project_health_test.go"
     },
     {
@@ -4415,7 +4415,7 @@
       "method": "PUT",
       "path": "/platform/quicklink",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.QuickLinkSettings.Update",
+      "sdkMethod": "TeamClient.QuickLinkSettings.Update",
       "testFile": "settings_test.go"
     },
     {
@@ -4423,7 +4423,7 @@
       "method": "PUT",
       "path": "/platform/session-configuration",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.SessionConfiguration.Update",
+      "sdkMethod": "TeamClient.SessionConfiguration.Update",
       "testFile": "settings_test.go"
     },
     {
@@ -4447,7 +4447,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.Update",
+      "sdkMethod": "TeamClient.Sessions.Update",
       "testFile": "platform_sessions_test.go"
     },
     {
@@ -4455,7 +4455,7 @@
       "method": "PUT",
       "path": "/platform/sessions/{sessionId}/safe-mode",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Sessions.UpdateSafeMode",
+      "sdkMethod": "TeamClient.Sessions.UpdateSafeMode",
       "testFile": "platform_sessions_test.go"
     },
     {
@@ -4463,7 +4463,7 @@
       "method": "GET",
       "path": "/platform/analytics",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Analytics.Get",
+      "sdkMethod": "TeamClient.Analytics.Get",
       "testFile": "calls_analytics_test.go"
     },
     {
@@ -4479,7 +4479,7 @@
       "method": "GET",
       "path": "/platform/analytics/metrics",
       "status": "covered",
-      "sdkMethod": "OrganizationClient.Analytics.Metrics",
+      "sdkMethod": "TeamClient.Analytics.Metrics",
       "testFile": "calls_analytics_test.go"
     },
     {

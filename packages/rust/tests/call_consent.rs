@@ -3,8 +3,8 @@ mod support;
 use polymorfa_sdk::{call_consent::*, ErrorKind, RequestOptions};
 use serde_json::json;
 #[tokio::test]
-async fn organization_call_policy_and_single_identifier_optouts_native_wire() {
-    wire_unwrapped_organization!(
+async fn team_call_policy_and_single_identifier_optouts_native_wire() {
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/call-policy",
@@ -12,7 +12,7 @@ async fn organization_call_policy_and_single_identifier_optouts_native_wire() {
         json!({"data":{"blockedCountryCodes":["44","1876"],"optOutCount":2,"revision":3,"updatedAt":"2026-10-11T10:00:00Z"}}),
         client.call_policy().retrieve(RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "PUT",
         "/platform/call-policy",
@@ -26,7 +26,7 @@ async fn organization_call_policy_and_single_identifier_optouts_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/call-opt-outs",
@@ -40,7 +40,7 @@ async fn organization_call_policy_and_single_identifier_optouts_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/call-opt-outs",
@@ -54,7 +54,7 @@ async fn organization_call_policy_and_single_identifier_optouts_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/call-opt-outs/import",
@@ -80,7 +80,7 @@ async fn organization_call_policy_and_single_identifier_optouts_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "DELETE",
         "/platform/call-opt-outs/optout",
@@ -101,7 +101,7 @@ async fn call_optout_cursor_page_and_configuration_validation_native_wire() {
         expected.clone(),
     )
     .await;
-    let client = support::organization(base);
+    let client = support::team(base);
     let page = client
         .call_opt_outs()
         .list(
@@ -118,7 +118,7 @@ async fn call_optout_cursor_page_and_configuration_validation_native_wire() {
     assert_eq!(page.metadata.request_id.as_deref(), Some("wire_fixture"));
     assert_eq!(serde_json::to_value(page.items).unwrap(), expected["data"]);
     server.await.unwrap();
-    let client = support::organization("http://127.0.0.1:1".into());
+    let client = support::team("http://127.0.0.1:1".into());
     assert!(client
         .call_opt_outs()
         .list(

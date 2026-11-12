@@ -65,7 +65,7 @@ func TestCampaignFollowUpNativeWrites(t *testing.T) {
 					if r.Method != method || r.URL.Path != path || !reflect.DeepEqual(got, want) {
 						t.Errorf("wire %s %s %s", r.Method, r.URL.Path, b)
 					}
-					if r.Header.Get("Authorization") != "Bearer "+orgConfig("").Credential.Value || r.Header.Get("Polymorfa-Version") != APIVersion {
+					if r.Header.Get("Authorization") != "Bearer "+teamConfig("").Credential.Value || r.Header.Get("Polymorfa-Version") != APIVersion {
 						t.Error("auth/version")
 					}
 					if !create && surface == "platform" && r.URL.Query().Get("projectId") != "p" {
@@ -92,7 +92,7 @@ func TestCampaignFollowUpNativeWrites(t *testing.T) {
 						t.Error("minimal response timing changed")
 					}
 				} else {
-					o, e := NewOrganizationClient(orgConfig(s.URL))
+					o, e := NewTeamClient(teamConfig(s.URL))
 					if e != nil {
 						t.Fatal(e)
 					}
@@ -132,7 +132,7 @@ func TestCampaignFollowUpNativeReports(t *testing.T) {
 	}))
 	defer s.Close()
 	m := mustMessaging(t, s.URL)
-	o, _ := NewOrganizationClient(orgConfig(s.URL))
+	o, _ := NewTeamClient(teamConfig(s.URL))
 	ctx := context.Background()
 	a, e := m.Campaigns().Analytics(ctx, "project", "campaign")
 	if e != nil {

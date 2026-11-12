@@ -22,7 +22,7 @@ PAYLOAD = {
 }
 EVENT = {
     "id": "event_1",
-    "organizationId": "org_1",
+    "teamId": "team_1",
     "projectId": None,
     "type": "future.event",
     "source": "runtime",
@@ -37,9 +37,9 @@ SECRET = {"version": 2, "createdAt": "2026-10-11T00:00:00Z", "previousValidUntil
 RETRY = {"maximumAttempts": 5, "backoff": "exponential", "initialDelaySeconds": 10}
 HOOK = {
     "id": "hook_1",
-    "organizationId": "org_1",
+    "teamId": "team_1",
     "projectId": None,
-    "owner": "organization",
+    "owner": "team",
     "url": "https://example.com/webhook",
     "eventTypes": ["future.event"],
     "enabled": True,
@@ -65,7 +65,7 @@ REPLAY = {
 }
 DELIVERY = {
     "id": "delivery_1",
-    "organizationId": "org_1",
+    "teamId": "team_1",
     "projectId": None,
     "eventId": "event_1",
     "webhookId": "hook_1",
@@ -84,7 +84,7 @@ DELIVERY = {
 }
 ATTEMPT = {
     "id": "attempt_1",
-    "organizationId": "org_1",
+    "teamId": "team_1",
     "projectId": None,
     "deliveryId": "delivery_1",
     "number": 2,
@@ -104,7 +104,7 @@ ATTEMPT = {
 }
 OP = {
     "id": "op_1",
-    "organizationId": "org_1",
+    "teamId": "team_1",
     "projectId": None,
     "kind": "campaign",
     "resource": {"type": "campaign", "id": "campaign_1"},
@@ -338,7 +338,7 @@ def owned(value, project):
     return {
         key: ("project_1" if project else None)
         if key == "projectId"
-        else ("project" if project else "organization")
+        else ("project" if project else "team")
         if key == "owner"
         else owned(item, project)
         for key, item in value.items()
@@ -366,7 +366,7 @@ async def test_all_typed_developer_methods(
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -387,7 +387,7 @@ async def test_all_typed_developer_methods(
 async def test_webhook_test_owner_and_operation_wait_guards():
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     ) as client:
@@ -426,7 +426,7 @@ async def test_indexed_event_page_ingestion_offset_and_filter(project):
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -457,7 +457,7 @@ async def test_indexed_invalid_server_metadata_retains_response_metadata(page):
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(
@@ -484,7 +484,7 @@ async def test_indexed_offset_preflight_and_operation_wait_sequence():
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),

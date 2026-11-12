@@ -50,14 +50,14 @@ final readonly class ProjectClient
         $this->flows = new Resources\Flows($transport, $projectId);
         $this->calls = new Resources\CallRecords($transport, $projectId);
         $this->callRetention = new Resources\CallRetention($transport);
-        $this->voice = new Resources\Voice($transport, $projectId, $credential->kind === 'organization_api_key');
+        $this->voice = new Resources\Voice($transport, $projectId, $credential->kind === 'team_api_key');
         $this->analytics = new Resources\AnalyticsResource($transport, $projectId);
         $this->requestLogs = new Resources\RequestLogs($transport, $projectId);
         $prefix = '/platform/projects/' . rawurlencode($projectId);
         $this->functions = new Resources\Functions($transport, $projectId);
         $this->quickLinkSettings = new Resources\QuickLinkSettings($transport, $projectId);
         $this->sessionConfiguration = new Resources\SessionConfiguration($transport, $projectId);
-        $this->sipTrunks = new Resources\SipTrunks($transport, $projectId, $credential->kind === 'organization_api_key');
+        $this->sipTrunks = new Resources\SipTrunks($transport, $projectId, $credential->kind === 'team_api_key');
         $this->usage = new Resources\Usage($transport, $projectId);
         $this->events = new Events($transport, $prefix);
         $this->operations = new Resources\Operations($transport, $prefix);

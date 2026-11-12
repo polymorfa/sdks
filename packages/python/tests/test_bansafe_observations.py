@@ -55,7 +55,7 @@ HEALTH = {
 ENFORCEMENT = {
     "rung": "notify",
     "previousRung": "none",
-    "organizationFloor": "none",
+    "teamFloor": "none",
     "reason": "health",
     "source": "automatic",
     "throughputPerMinute": 10.0,
@@ -433,7 +433,7 @@ async def test_bansafe_observation_native_wire(name, method, path, body, query, 
     server = await asyncio.start_server(serve, "127.0.0.1", 0)
     client = AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",

@@ -61,7 +61,7 @@ export class CloudMarketingResource {
   > {
     if (this.credentialType === "clientToken")
       throw new PolymorfaConfigurationError(
-        "Marketing Messages status requires an organization API key or project token.",
+        "Marketing Messages status requires a team API key or project token.",
         "credential",
       );
     if (!session.trim() || session.length > 128)
@@ -83,7 +83,7 @@ export class CloudMarketingResource {
   ): Promise<ApiResponse<CloudMarketingStatus>> {
     if (this.credentialType === "clientToken") {
       throw new PolymorfaConfigurationError(
-        "Official API marketing status requires an team key or project token.",
+        "Official API marketing status requires a team key or project token.",
         "credential",
       );
     }

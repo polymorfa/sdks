@@ -9,7 +9,7 @@ import {
   type UpdateCampaignRequest,
   type CampaignDripPatch,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 const servers: TestServer[] = [];
 afterEach(async () => {
@@ -35,14 +35,14 @@ const rules: AudienceSegmentRules = {
 };
 function platform(url: string) {
   return new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: url,
     maxNetworkRetries: 2,
   });
 }
 function messaging(url: string) {
   return new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: url,
     maxNetworkRetries: 2,
   });
@@ -314,7 +314,7 @@ it("surfaces saved preview timeout once so the caller can simplify rules", async
   expect(server.requests).toHaveLength(1);
 });
 
-it("requires organization project context and keeps segment authority out of project clients", () => {
+it("requires team project context and keeps segment authority out of project clients", () => {
   const client = platform("https://api.example.test");
   expectTypeOf<Parameters<typeof client.campaigns.enroll>[1]>().toMatchTypeOf<{
     readonly projectId: string;

@@ -86,7 +86,7 @@ test("the integrated campaign supplement inventory maps eleven operations in eve
   assert.equal(result.operations, 11);
   assert.ok(result.fields > 0);
   assert.equal(
-    methodToken("OrganizationClient.Campaigns().GetFrequencyCap"),
+    methodToken("TeamClient.Campaigns().GetFrequencyCap"),
     "GetFrequencyCap",
   );
   assert.equal(
@@ -122,13 +122,13 @@ test("supplement inventory drift and missing native evidence fail closed", () =>
     [
       (v) =>
         (v.operations[5].languages.dotnet.sdkMethod =
-          "OrganizationClient.AudienceSegments.NeverCalledAsync"),
+          "TeamClient.AudienceSegments.NeverCalledAsync"),
       /test does not call/,
     ],
     [
       (v) =>
         (v.operations[6].languages.go.sdkMethod =
-          "OrganizationClient.AudienceSegments().Retrieve2"),
+          "TeamClient.AudienceSegments().Retrieve2"),
       /does not call|source lacks/,
     ],
     [(v) => (v.fields[0].contractName = "MissingSchema.field"), /is not in/],

@@ -51,7 +51,7 @@ async def test_native_borrowed_project_lifetime_and_owner_failure(close_failure)
     native = NativeTransport()
     root = AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",

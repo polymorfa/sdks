@@ -14,7 +14,7 @@
             "operationId": "evaluateFeatures",
             "tags": ["Features"],
             "summary": "Evaluate feature availability",
-            "description": "Returns feature decisions for the authenticated organization or project. Client credentials cannot access this operation. Machine requests do not record experiment exposure.",
+            "description": "Returns feature decisions for the authenticated team or project. Client credentials cannot access this operation. Machine requests do not record experiment exposure.",
             "security": [{ "BearerAuth": [] }],
             "requestBody": {
               "required": true,
@@ -436,7 +436,7 @@
                       "whatsapp_group_suspended",
                       "whatsapp_group_has_no_participants",
                       "bansafe_suspended",
-                      "bansafe_org_suspended",
+                      "bansafe_team_suspended",
                       "bansafe_cold_blocked",
                       "bansafe_cold_held",
                       "bansafe_throttled",
@@ -459,7 +459,7 @@
                   "request_log_url": {
                     "type": "string",
                     "format": "uri",
-                    "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+                    "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
                   }
                 },
                 "required": ["type", "code", "message", "param", "request_id"]
@@ -500,11 +500,11 @@
             "operationId": "evaluateAccountFeatures",
             "tags": ["Feature availability"],
             "summary": "Evaluate feature availability",
-            "description": "Evaluate feature decisions for the live dashboard organization from each feature's published setting. No permission is granted by a decision. Features not offered to the team are omitted unless the team is enrolled; opt-in features include their terms before enrollment, and enrolled features stay visible for withdrawal.\n\nRequires a verified dashboard bearer and current organization authorization. Team keys and project tokens are not accepted.",
+            "description": "Evaluate feature decisions for the live dashboard team from each feature's published setting. No permission is granted by a decision. Features not offered to the team are omitted unless the team is enrolled; opt-in features include their terms before enrollment, and enrolled features stay visible for withdrawal.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
             "x-audience": "console",
             "x-polymorfa-resource-boundary": "human_only",
             "x-excluded-from-public": true,
-            "x-exclusion-reason": "Private dashboard feature discovery; requires live organization membership.",
+            "x-exclusion-reason": "Private dashboard feature discovery; requires live team membership.",
             "security": [{ "ConsoleSession": [] }],
             "requestBody": {
               "required": true,
@@ -719,12 +719,12 @@
             "operationId": "setFeatureEnrollment",
             "tags": ["Feature availability"],
             "summary": "setFeatureEnrollment",
-            "description": "Live organization owner/admin only. Enabling requires the feature's published opt-in setting, its current terms revision, entitlement, release eligibility and no operational disable; a terms change during the request returns 409. Withdrawal does not delete resources.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Team keys and project tokens are not accepted.",
+            "description": "Live team owner/admin only. Enabling requires the feature's published opt-in setting, its current terms revision, entitlement, release eligibility and no operational disable; a terms change during the request returns 409. Withdrawal does not delete resources.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
             "x-audience": "console",
             "x-polymorfa-resource-boundary": "human_only",
             "x-excluded-from-public": true,
-            "x-exclusion-reason": "Private beta enrollment; requires live organization owner or admin authority.",
-            "x-required-organization-role": "owner_or_admin",
+            "x-exclusion-reason": "Private beta enrollment; requires live team owner or admin authority.",
+            "x-required-team-role": "owner_or_admin",
             "security": [{ "ConsoleSession": [] }],
             "requestBody": {
               "required": true,
@@ -821,7 +821,7 @@
             "operationId": "recordFeatureExposure",
             "tags": ["Feature availability"],
             "summary": "recordFeatureExposure",
-            "description": "Deprecated. Exposure measurement is not recorded through this route; it always returns 403.\n\nRequires a verified dashboard bearer and current organization authorization. Team keys and project tokens are not accepted.",
+            "description": "Deprecated. Exposure measurement is not recorded through this route; it always returns 403.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
             "x-audience": "console",
             "x-polymorfa-resource-boundary": "human_only",
             "x-excluded-from-public": true,
@@ -1082,7 +1082,7 @@
                   "request_log_url": {
                     "type": "string",
                     "format": "uri",
-                    "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+                    "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
                   }
                 }
               },
@@ -1109,7 +1109,7 @@
       "method": "POST",
       "path": "/messaging/features/evaluate",
       "operationId": "evaluateFeatures",
-      "fingerprint": "994b893419de21c7916d3eeaaffec43bf3a70663c874412761b682a4a554889f",
+      "fingerprint": "96fc11127730186ddaeb53dd35f97d6ae85047da2a4062b5beb67f02f41e2e75",
       "typescript": {
         "status": "excluded",
         "reason": "Host-runtime feature evaluation is not a customer messaging operation in this SDK."

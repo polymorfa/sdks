@@ -56,7 +56,7 @@ export const recipes = {
   deleteBusinessCoverPhoto: messaging(),
   setBusinessCartEnabled: messaging({ body: { enabled: true } }),
   setBusinessProductVisibility: messaging({ body: { hidden: true } }),
-  listProjects: { client: "organization", request: {} },
+  listProjects: { client: "team", request: {} },
   listProjectEvents: { client: "project", request: {} },
 };
 export const p = (name) => JSON.stringify(`{{${name}}}`);

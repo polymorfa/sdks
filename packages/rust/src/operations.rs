@@ -42,7 +42,7 @@ pub struct OperationCapabilities {
 #[serde(rename_all = "camelCase")]
 pub struct Operation {
     pub id: String,
-    pub organization_id: String,
+    pub team_id: String,
     pub project_id: Option<String>,
     pub kind: String,
     pub resource: OperationResource,
@@ -101,7 +101,7 @@ pub struct ListOperationsParameters {
     pub limit: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cursor: Option<String>,
-    /// Organization reads only; use an immutable project view for project tokens.
+    /// Team reads only; use an immutable project view for project tokens.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<String>,
 }

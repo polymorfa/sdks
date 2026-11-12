@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
@@ -54,7 +54,7 @@ function client(
   server: TestServer,
   credential: ConstructorParameters<typeof MessagingClient>[0]["credential"] = {
     type: "apiKey",
-    value: ORGANIZATION_API_KEY,
+    value: TEAM_API_KEY,
   },
 ) {
   return new MessagingClient({
@@ -377,9 +377,7 @@ describe("VoipResource", () => {
     expect(server.requests[0]?.headers["idempotency-key"]).toBe("place-1");
     expect(server.requests[4]?.headers["content-type"]).toBeUndefined();
     for (const request of server.requests) {
-      expect(request.headers.authorization).toBe(
-        `Bearer ${ORGANIZATION_API_KEY}`,
-      );
+      expect(request.headers.authorization).toBe(`Bearer ${TEAM_API_KEY}`);
     }
   });
 

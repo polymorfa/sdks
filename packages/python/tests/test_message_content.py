@@ -261,7 +261,7 @@ async def test_public_send_all_composed_variants_context_and_response(content, c
         Credential("client_token", "pmfa_ct_fixture_only")
         if client_token
         else Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     )

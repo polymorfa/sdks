@@ -268,7 +268,7 @@ async fn platform_campaign_drafts_open_fields_and_recipient_contracts_native_wir
     let params = PlatformCampaignParameters {
         project_id: "project".into(),
     };
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/campaigns?projectId=project&projectSlug=slug",
@@ -283,7 +283,7 @@ async fn platform_campaign_drafts_open_fields_and_recipient_contracts_native_wir
         )
     );
     let body = json!({"projectId":"project","name":"Campaign","recipientCount":2,"sendWindow":null,"recipients":[{"phone":"+15551234567"}],"composerBlueprint":{"version":2,"source":"Hello"},"messagesArray":[],"audienceRef":{"id":"audience"},"complianceConfig":{"consent":true}});
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/campaigns",
@@ -296,7 +296,7 @@ async fn platform_campaign_drafts_open_fields_and_recipient_contracts_native_wir
     );
     let mut open = campaign();
     open["futureField"] = json!({"preserve":true});
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/campaigns/campaign?projectId=project",
@@ -306,7 +306,7 @@ async fn platform_campaign_drafts_open_fields_and_recipient_contracts_native_wir
             .campaigns()
             .retrieve("campaign", &params, RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/campaigns/missing?projectId=project",
@@ -326,7 +326,7 @@ async fn platform_campaign_drafts_open_fields_and_recipient_contracts_native_wir
         },
         extensions: [("futureField".into(), json!({"change":true}))].into(),
     };
-    wire_organization!(
+    wire_team!(
         client,
         "PATCH",
         "/platform/campaigns/campaign?projectId=project",
@@ -336,7 +336,7 @@ async fn platform_campaign_drafts_open_fields_and_recipient_contracts_native_wir
             .campaigns()
             .update("campaign", Some(&patch), &params, RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "DELETE",
         "/platform/campaigns/campaign?projectId=project",
@@ -346,7 +346,7 @@ async fn platform_campaign_drafts_open_fields_and_recipient_contracts_native_wir
             .campaigns()
             .delete("campaign", &params, RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/campaigns/campaign/analytics?projectId=project",
@@ -356,7 +356,7 @@ async fn platform_campaign_drafts_open_fields_and_recipient_contracts_native_wir
             .campaigns()
             .analytics("campaign", &params, RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/campaigns/campaign/events?projectId=project",
@@ -366,8 +366,8 @@ async fn platform_campaign_drafts_open_fields_and_recipient_contracts_native_wir
             .campaigns()
             .events("campaign", &params, RequestOptions::default())
     );
-    wire_organization!(client,"GET","/platform/campaigns/campaign/recipients?projectId=project&status=read&cursor=cursor&limit=25",None,json!({"data":recipients(),"page":{"nextCursor":null,"hasMore":false}}),client.campaigns().recipients("campaign",&ListPlatformCampaignRecipientsParameters{project_id:"project".into(),reason:None,status:Some(CampaignRecipientStatus::Read),cursor:Some("cursor".into()),limit:Some(25)},RequestOptions::default()));
-    wire_organization!(
+    wire_team!(client,"GET","/platform/campaigns/campaign/recipients?projectId=project&status=read&cursor=cursor&limit=25",None,json!({"data":recipients(),"page":{"nextCursor":null,"hasMore":false}}),client.campaigns().recipients("campaign",&ListPlatformCampaignRecipientsParameters{project_id:"project".into(),reason:None,status:Some(CampaignRecipientStatus::Read),cursor:Some("cursor".into()),limit:Some(25)},RequestOptions::default()));
+    wire_team!(
         client,
         "POST",
         "/platform/campaigns/campaign/recipients",
@@ -389,7 +389,7 @@ async fn platform_campaign_drafts_open_fields_and_recipient_contracts_native_wir
 #[tokio::test]
 async fn platform_campaign_lifecycle_payloads_and_reported_conversions_native_wire() {
     let body: PlatformCampaignPayload = [("projectId".into(), json!("project"))].into();
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/campaigns/campaign/launch",
@@ -405,7 +405,7 @@ async fn platform_campaign_lifecycle_payloads_and_reported_conversions_native_wi
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/campaigns/campaign/pause",
@@ -415,7 +415,7 @@ async fn platform_campaign_lifecycle_payloads_and_reported_conversions_native_wi
             .campaigns()
             .pause("campaign", Some(&body), RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/campaigns/campaign/resume",
@@ -425,7 +425,7 @@ async fn platform_campaign_lifecycle_payloads_and_reported_conversions_native_wi
             .campaigns()
             .resume("campaign", Some(&body), RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/campaigns/campaign/stop",
@@ -435,7 +435,7 @@ async fn platform_campaign_lifecycle_payloads_and_reported_conversions_native_wi
             .campaigns()
             .stop("campaign", Some(&body), RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/campaigns/campaign/archive",
@@ -445,7 +445,7 @@ async fn platform_campaign_lifecycle_payloads_and_reported_conversions_native_wi
             .campaigns()
             .archive("campaign", Some(&body), RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/campaigns/campaign/duplicate",
@@ -455,7 +455,7 @@ async fn platform_campaign_lifecycle_payloads_and_reported_conversions_native_wi
             .campaigns()
             .duplicate("campaign", Some(&body), RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/campaigns/campaign/requeue",
@@ -465,7 +465,7 @@ async fn platform_campaign_lifecycle_payloads_and_reported_conversions_native_wi
             .campaigns()
             .requeue("campaign", Some(&body), RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/campaigns/campaign/reschedule",
@@ -480,7 +480,7 @@ async fn platform_campaign_lifecycle_payloads_and_reported_conversions_native_wi
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/campaigns/campaign/conversions",
@@ -504,7 +504,7 @@ async fn platform_campaign_lifecycle_payloads_and_reported_conversions_native_wi
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/campaigns/campaign/conversions?projectId=project",
@@ -595,7 +595,7 @@ async fn receipt_timed_follow_up_native_campaign_requests_and_optional_responses
             )
         );
         let body = json!({"projectId":"project","name":"Campaign","followUp":follow_up});
-        wire_organization!(
+        wire_team!(
             client,
             "POST",
             "/platform/campaigns",
@@ -627,7 +627,7 @@ async fn receipt_timed_follow_up_native_campaign_requests_and_optional_responses
                 RequestOptions::default()
             )
         );
-        wire_organization!(
+        wire_team!(
             client,
             "PATCH",
             "/platform/campaigns/campaign?projectId=project",
@@ -668,7 +668,7 @@ async fn follow_up_reports_and_recipient_receipts_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/campaigns/campaign/recipients?projectId=project",
@@ -701,7 +701,7 @@ async fn follow_up_reports_and_recipient_receipts_native_wire() {
     analytics["minResponseTimeMs"] = json!(null);
     analytics["maxResponseTimeMs"] = json!(null);
     analytics["experiment"] = json!(null);
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/campaigns/campaign/analytics?projectId=project",

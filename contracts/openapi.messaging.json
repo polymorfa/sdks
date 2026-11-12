@@ -4093,7 +4093,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -4109,7 +4109,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -4123,7 +4123,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind",
@@ -4181,7 +4181,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -4197,7 +4197,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -4207,7 +4207,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind"
@@ -4264,7 +4264,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -4280,7 +4280,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -4303,7 +4303,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind",
@@ -4361,7 +4361,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -4377,7 +4377,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -4395,7 +4395,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind",
@@ -4454,7 +4454,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -4470,7 +4470,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -4480,7 +4480,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind"
@@ -4537,7 +4537,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -4553,7 +4553,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -4563,7 +4563,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind"
@@ -4620,7 +4620,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -4636,7 +4636,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -4650,7 +4650,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind",
@@ -4708,7 +4708,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -4724,7 +4724,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -4738,7 +4738,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind",
@@ -4796,7 +4796,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -4812,7 +4812,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -4830,7 +4830,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind",
@@ -4889,7 +4889,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -4905,7 +4905,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -4923,7 +4923,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind",
@@ -4982,7 +4982,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -4998,7 +4998,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -5012,7 +5012,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind",
@@ -5070,7 +5070,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -5086,7 +5086,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -5109,7 +5109,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind",
@@ -5167,7 +5167,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -5183,7 +5183,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -5201,7 +5201,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind",
@@ -5259,7 +5259,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -5275,7 +5275,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -5293,7 +5293,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind",
@@ -5352,7 +5352,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -5368,7 +5368,7 @@
             "type": "string",
             "enum": [
               "better_auth",
-              "org_key",
+              "team_key",
               "project_token",
               "cli_grant",
               "system"
@@ -5386,7 +5386,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "customerId",
           "actorKind",
@@ -5446,7 +5446,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -5492,7 +5492,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "assetId",
           "name",
@@ -5554,7 +5554,7 @@
             "type": "string",
             "format": "date-time"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -5594,7 +5594,7 @@
         "required": [
           "eventId",
           "occurredAt",
-          "organizationId",
+          "teamId",
           "projectId",
           "assetId",
           "name",
@@ -5697,7 +5697,7 @@
             "type": "string",
             "enum": [
               "number",
-              "organization"
+              "team"
             ],
             "description": "Whether this covers one number or every number in the workspace."
           },
@@ -5730,7 +5730,7 @@
             "enum": [
               "health",
               "finding",
-              "org_pattern",
+              "team_pattern",
               "repeat",
               "restriction",
               "operator",
@@ -8009,7 +8009,7 @@
                   "whatsapp_group_suspended",
                   "whatsapp_group_has_no_participants",
                   "bansafe_suspended",
-                  "bansafe_org_suspended",
+                  "bansafe_team_suspended",
                   "bansafe_cold_blocked",
                   "bansafe_cold_held",
                   "bansafe_throttled",
@@ -8034,7 +8034,7 @@
               "request_log_url": {
                 "type": "string",
                 "format": "uri",
-                "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+                "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
               }
             },
             "required": [
@@ -18647,7 +18647,7 @@
           "lastError": {
             "type": "string",
             "nullable": true,
-            "description": "Why the recipient failed or was skipped. `opted_out` means the phone is on the organization's opt-out list."
+            "description": "Why the recipient failed or was skipped. `opted_out` means the phone is on the team's opt-out list."
           },
           "externalMessageId": {
             "type": "string",
@@ -19183,7 +19183,7 @@
           "projectId": {
             "type": "string",
             "format": "uuid",
-            "description": "Project that receives the connected number. Required for organization keys with more than one project."
+            "description": "Project that receives the connected number. Required for team keys with more than one project."
           },
           "customerId": {
             "type": "string",
@@ -20612,7 +20612,7 @@
       "BearerAuth": {
         "type": "http",
         "scheme": "bearer",
-        "description": "Polymorfa organization key (pmfa_ prefix), project token (pmfa_pt_ prefix) where supported, or short-lived client token (pmfa_ct_ prefix). Organization and project keys may be personal or service-account owned and enforce selected action scopes. Organization keys cover the team and its projects; project tokens stay inside one project. Client tokens stay inside their live project and session and enforce their client rules."
+        "description": "Polymorfa team key (pmfa_ prefix), project token (pmfa_pt_ prefix) where supported, or short-lived client token (pmfa_ct_ prefix). Team and project keys may be personal or service-account owned and enforce selected action scopes. Team keys cover the team and its projects; project tokens stay inside one project. Client tokens stay inside their live project and session and enforce their client rules."
       }
     }
   },
@@ -20892,7 +20892,7 @@
           "Features"
         ],
         "summary": "Evaluate feature availability",
-        "description": "Returns feature decisions for the authenticated organization or project. Client credentials cannot access this operation. Machine requests do not record experiment exposure.",
+        "description": "Returns feature decisions for the authenticated team or project. Client credentials cannot access this operation. Machine requests do not record experiment exposure.",
         "security": [
           {
             "BearerAuth": []
@@ -29317,7 +29317,7 @@
           "VoIP"
         ],
         "summary": "Place an outbound call from a session",
-        "description": "**Required scope:** `sessions:manage`\n\nOriginates a WhatsApp call to `to`, an ad-hoc group call to `participants` (2 to 31 distinct E.164 phone numbers or public user IDs), or every remote member of `groupId` (a public group ID). Group rosters must contain 2 to 31 remote members; a membership change during placement refuses the call. Provide exactly one destination form. Group calls require a Linked Device number and check every recipient against the team policy and number restrictions before dialing. The call is owned by the placing participant and rings on the callee's device: `call.accepted` follows when they pick up and `call.ended` when either side hangs up. Carry its audio and video with a Polymorfa Calls SDK. `exclusive: true` claims the call for the placing participant. Client tokens place from their bound session; server credentials must name one. Outbound starts share a rate limit per organization and source session across server credentials and client tokens; client-token rules also apply.",
+        "description": "**Required scope:** `sessions:manage`\n\nOriginates a WhatsApp call to `to`, an ad-hoc group call to `participants` (2 to 31 distinct E.164 phone numbers or public user IDs), or every remote member of `groupId` (a public group ID). Group rosters must contain 2 to 31 remote members; a membership change during placement refuses the call. Provide exactly one destination form. Group calls require a Linked Device number and check every recipient against the team policy and number restrictions before dialing. The call is owned by the placing participant and rings on the callee's device: `call.accepted` follows when they pick up and `call.ended` when either side hangs up. Carry its audio and video with a Polymorfa Calls SDK. `exclusive: true` claims the call for the placing participant. Client tokens place from their bound session; server credentials must name one. Outbound starts share a rate limit per team and source session across server credentials and client tokens; client-token rules also apply.",
         "security": [
           {
             "BearerAuth": []
@@ -29581,7 +29581,7 @@
             }
           },
           "429": {
-            "description": "Outbound call rate exceeded for this organization and source session, or a client-token setup or concurrency limit was reached",
+            "description": "Outbound call rate exceeded for this team and source session, or a client-token setup or concurrency limit was reached",
             "content": {
               "application/json": {
                 "schema": {
@@ -66643,7 +66643,7 @@
           "Campaigns"
         ],
         "summary": "Create a campaign",
-        "description": "**Required scope:** `campaigns:manage`\n\nCreates a draft campaign on any plan. `senderConfig.sessionIds` may name numbers that are not yet on a plan that includes Campaigns; launch checks the selection. It is refused with `403 bansafe_org_suspended` while the team is suspended and `400` when `senderConfig.sessionIds` is malformed or a per-number cap is above its safety ceiling.",
+        "description": "**Required scope:** `campaigns:manage`\n\nCreates a draft campaign on any plan. `senderConfig.sessionIds` may name numbers that are not yet on a plan that includes Campaigns; launch checks the selection. It is refused with `403 bansafe_team_suspended` while the team is suspended and `400` when `senderConfig.sessionIds` is malformed or a per-number cap is above its safety ceiling.",
         "security": [
           {
             "BearerAuth": []

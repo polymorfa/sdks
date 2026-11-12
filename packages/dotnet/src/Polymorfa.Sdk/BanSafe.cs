@@ -32,7 +32,7 @@ public record BanSafeNumber : BanSafeHealthProjection
     public string ProjectId { get; init; } = null!;
     public BanSafeNumberEnforcement? Enforcement { get; init; }
 }
-public sealed record BanSafeNumberEnforcement(string Rung, string PreviousRung, string OrganizationFloor, string Reason, string Source, decimal? ThroughputPerMinute, bool BlocksUnsolicited, bool Suspended, string StartedAt, string? EligibleLiftAt, decimal ExitProgress, IReadOnlyList<string> BlockingFindings, bool OperatorHold, string AppealState, string State);
+public sealed record BanSafeNumberEnforcement(string Rung, string PreviousRung, string TeamFloor, string Reason, string Source, decimal? ThroughputPerMinute, bool BlocksUnsolicited, bool Suspended, string StartedAt, string? EligibleLiftAt, decimal ExitProgress, IReadOnlyList<string> BlockingFindings, bool OperatorHold, string AppealState, string State);
 public sealed record BanSafeNumberWarmup(bool Enabled, string? TenureSource, int TenureDay, int? Allowance, int? SentToday, string? ResetsAt, IReadOnlyList<WarmupCurvePoint> Curve);
 public sealed record BanSafeNumberDetail : BanSafeNumber
 {
@@ -47,7 +47,7 @@ public sealed record BanSafeEnforcementSummary : BanSafeNumber
 {
     public string Rung { get; init; } = null!;
     public string PreviousRung { get; init; } = null!;
-    public string OrganizationFloor { get; init; } = null!;
+    public string TeamFloor { get; init; } = null!;
     public string Reason { get; init; } = null!;
     public string Source { get; init; } = null!;
     public decimal? ThroughputPerMinute { get; init; }

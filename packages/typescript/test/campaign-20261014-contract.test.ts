@@ -25,7 +25,7 @@ import {
   type StopConfirmationSummary,
   type ApiResponse,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 
 const projectId = "018f0000-0000-7000-8000-000000000001";
@@ -252,16 +252,16 @@ afterEach(async () => {
 });
 
 function clients(baseUrl: string) {
-  const organization = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+  const team = new Client({
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl,
   });
-  const project = organization.project(projectId);
+  const project = team.project(projectId);
   const messaging = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl,
   });
-  return { organization, project, messaging };
+  return { team, project, messaging };
 }
 type Clients = ReturnType<typeof clients>;
 interface WireCase {
@@ -331,16 +331,14 @@ const cases: readonly WireCase[] = [
     name: "getPlatformCampaignReplyFlow",
     method: "GET",
     path: `/platform/campaign-reply-flows/${flowId}?projectId=${projectId}`,
-    call: (c, o) =>
-      c.organization.campaigns.getReplyFlow(flowId, { projectId }, o),
+    call: (c, o) => c.team.campaigns.getReplyFlow(flowId, { projectId }, o),
   },
   {
     name: "createPlatformCampaignReplyFlow",
     method: "POST",
     path: "/platform/campaign-reply-flows",
     body: { ...flow, projectId },
-    call: (c, o) =>
-      c.organization.campaigns.createReplyFlow({ ...flow, projectId }, o),
+    call: (c, o) => c.team.campaigns.createReplyFlow({ ...flow, projectId }, o),
   },
   {
     name: "setPlatformCampaignReplyFlow",
@@ -348,7 +346,7 @@ const cases: readonly WireCase[] = [
     path: `/platform/campaigns/${campaignId}/reply-flow`,
     body: { replyFlowId: null, projectId },
     call: (c, o) =>
-      c.organization.campaigns.setReplyFlow(
+      c.team.campaigns.setReplyFlow(
         campaignId,
         { replyFlowId: null, projectId },
         o,
@@ -360,36 +358,27 @@ const cases: readonly WireCase[] = [
     path: `/platform/campaigns/${campaignId}/test-send`,
     body: { ...testSend, projectId },
     call: (c, o) =>
-      c.organization.campaigns.testSend(
-        campaignId,
-        { ...testSend, projectId },
-        o,
-      ),
+      c.team.campaigns.testSend(campaignId, { ...testSend, projectId }, o),
   },
   {
     name: "listCampaignLaunchApprovals",
     method: "GET",
     path: `/platform/campaigns/${campaignId}/approvals?projectId=${projectId}`,
     call: (c, o) =>
-      c.organization.campaigns.listLaunchApprovals(
-        campaignId,
-        { projectId },
-        o,
-      ),
+      c.team.campaigns.listLaunchApprovals(campaignId, { projectId }, o),
   },
   {
     name: "getCampaignLinks",
     method: "GET",
     path: `/platform/campaigns/${campaignId}/links?projectId=${projectId}`,
-    call: (c, o) =>
-      c.organization.campaigns.links(campaignId, { projectId }, o),
+    call: (c, o) => c.team.campaigns.links(campaignId, { projectId }, o),
   },
   {
     name: "exportCampaignRecipients",
     method: "GET",
     path: `/platform/campaigns/${campaignId}/recipients/export?limit=1000&projectId=${projectId}`,
     call: (c, o) =>
-      c.organization.campaigns.exportRecipients(
+      c.team.campaigns.exportRecipients(
         campaignId,
         { projectId, limit: 1000 },
         o,
@@ -399,40 +388,39 @@ const cases: readonly WireCase[] = [
     name: "getCampaignSettings",
     method: "GET",
     path: "/platform/campaign-settings",
-    call: (c, o) => c.organization.campaigns.getSettings(o),
+    call: (c, o) => c.team.campaigns.getSettings(o),
   },
   {
     name: "listAudienceProfiles",
     method: "GET",
     path: `/platform/audience-profiles?cursor=${jobId}&limit=100`,
     call: (c, o) =>
-      c.organization.audienceProfiles.list({ cursor: jobId, limit: 100 }, o),
+      c.team.audienceProfiles.list({ cursor: jobId, limit: 100 }, o),
   },
   {
     name: "getAudienceProfile",
     method: "GET",
     path: `/platform/audience-profiles/%2B15551234567`,
-    call: (c, o) => c.organization.audienceProfiles.retrieve(phone, o),
+    call: (c, o) => c.team.audienceProfiles.retrieve(phone, o),
   },
   {
     name: "putAudienceProfile",
     method: "PUT",
     path: `/platform/audience-profiles/%2B15551234567`,
     body: profile,
-    call: (c, o) => c.organization.audienceProfiles.put(phone, profile, o),
+    call: (c, o) => c.team.audienceProfiles.put(phone, profile, o),
   },
   {
     name: "deleteAudienceProfile",
     method: "DELETE",
     path: "/platform/audience-profiles/%2B15551234567?expectedRevision=9",
-    call: (c, o) => c.organization.audienceProfiles.delete(phone, 9, o),
+    call: (c, o) => c.team.audienceProfiles.delete(phone, 9, o),
   },
   {
     name: "listAudienceProfileConsent",
     method: "GET",
     path: "/platform/audience-profiles/%2B15551234567/consent?limit=2",
-    call: (c, o) =>
-      c.organization.audienceProfiles.listConsent(phone, { limit: 2 }, o),
+    call: (c, o) => c.team.audienceProfiles.listConsent(phone, { limit: 2 }, o),
   },
   {
     name: "createAudienceProfileImport",
@@ -443,7 +431,7 @@ const cases: readonly WireCase[] = [
       csvBase64: btoa("phone,tags,attributes\r\n"),
     },
     call: (c, o) =>
-      c.organization.audienceProfiles.imports.create(
+      c.team.audienceProfiles.imports.create(
         { replayKey: "import-1", csvBase64: btoa("phone,tags,attributes\r\n") },
         o,
       ),
@@ -452,13 +440,13 @@ const cases: readonly WireCase[] = [
     name: "getAudienceProfileImport",
     method: "GET",
     path: `/platform/audience-profile-imports/${jobId}`,
-    call: (c, o) => c.organization.audienceProfiles.imports.retrieve(jobId, o),
+    call: (c, o) => c.team.audienceProfiles.imports.retrieve(jobId, o),
   },
   {
     name: "cancelAudienceProfileImport",
     method: "DELETE",
     path: `/platform/audience-profile-imports/${jobId}`,
-    call: (c, o) => c.organization.audienceProfiles.imports.cancel(jobId, o),
+    call: (c, o) => c.team.audienceProfiles.imports.cancel(jobId, o),
   },
   {
     name: "createAudienceFromCampaign",
@@ -466,7 +454,7 @@ const cases: readonly WireCase[] = [
     path: "/platform/audiences/from-campaign",
     body: { name: "Read", campaignId, outcome: "read", projectId },
     call: (c, o) =>
-      c.organization.audiences.createFromCampaign(
+      c.team.audiences.createFromCampaign(
         { name: "Read", campaignId, outcome: "read", projectId },
         o,
       ),
@@ -475,7 +463,7 @@ const cases: readonly WireCase[] = [
     name: "getStopConfirmationSettings",
     method: "GET",
     path: "/platform/optouts/confirmation-settings",
-    call: (c, o) => c.organization.optOuts.getConfirmationSettings(o),
+    call: (c, o) => c.team.optOuts.getConfirmationSettings(o),
   },
   {
     name: "updateStopConfirmationSettings",
@@ -483,7 +471,7 @@ const cases: readonly WireCase[] = [
     path: "/platform/optouts/confirmation-settings",
     body: { teamId: projectId, revision: 0, enabled: false, locale: null },
     call: (c, o) =>
-      c.organization.optOuts.updateConfirmationSettings(
+      c.team.optOuts.updateConfirmationSettings(
         { teamId: projectId, revision: 0, enabled: false, locale: null },
         o,
       ),
@@ -492,7 +480,7 @@ const cases: readonly WireCase[] = [
     name: "getStopConfirmationSummary",
     method: "GET",
     path: "/platform/optouts/confirmation-summary",
-    call: (c, o) => c.organization.optOuts.getConfirmationSummary(o),
+    call: (c, o) => c.team.optOuts.getConfirmationSummary(o),
   },
   {
     name: "getProjectSignalCustody",
@@ -595,7 +583,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
       returned,
     );
     expect(
-      (await c.organization.audienceProfiles.retrieve(phone)).data.data,
+      (await c.team.audienceProfiles.retrieve(phone)).data.data,
     ).toMatchObject({ attributes: { "0": 0, null: null }, extra: {} });
   });
   it.each([
@@ -644,7 +632,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
       "incomplete profile",
       { data: {} },
       "application/json",
-      (c: Clients) => c.organization.audienceProfiles.retrieve(phone),
+      (c: Clients) => c.team.audienceProfiles.retrieve(phone),
     ],
     [
       "incomplete custody",
@@ -656,13 +644,13 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
       "missing nullable cursor",
       { data: [], page: { hasMore: false } },
       "application/json",
-      (c: Clients) => c.organization.audienceProfiles.list(),
+      (c: Clients) => c.team.audienceProfiles.list(),
     ],
     [
       "HTML success",
       "private response body",
       "text/html",
-      (c: Clients) => c.organization.campaigns.getSettings(),
+      (c: Clients) => c.team.campaigns.getSettings(),
     ],
   ] as const)(
     "rejects %s through public HTTP with safe metadata",
@@ -705,9 +693,9 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
             expectedRevision: 0,
             signalModeDefault: "standard",
           }),
-        () => c.organization.customers.getSignalCustody(projectId, id),
+        () => c.team.customers.getSignalCustody(projectId, id),
         () =>
-          c.organization.customers.updateSignalCustody(projectId, id, {
+          c.team.customers.updateSignalCustody(projectId, id, {
             expectedRevision: 0,
             signalModeDefault: null,
           }),
@@ -747,7 +735,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
   });
 
   it.each([
-    { type: "apiKey" as const, value: ORGANIZATION_API_KEY },
+    { type: "apiKey" as const, value: TEAM_API_KEY },
     { type: "projectToken" as const, value: PROJECT_TOKEN },
   ])("retains all six Messaging methods for $type", async (credential) => {
     const base = clients("http://127.0.0.1:1");
@@ -909,9 +897,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
         expect(request.headers["polymorfa-version"]).toBe(
           index === 0 ? "2026-10-14" : "2026-10-15",
         );
-        expect(request.headers.authorization).toBe(
-          `Bearer ${ORGANIZATION_API_KEY}`,
-        );
+        expect(request.headers.authorization).toBe(`Bearer ${TEAM_API_KEY}`);
         expect(
           request.body === "" ? undefined : JSON.parse(request.body),
         ).toEqual(row.body);
@@ -926,7 +912,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
     const server = await startTestServer(() => ({ body: '{"data":[]}' }));
     servers.push(server);
     const c = clients(server.url);
-    await c.organization.campaigns.list({ projectId });
+    await c.team.campaigns.list({ projectId });
     expect(server.requests[0]?.headers["polymorfa-version"]).toBe("2026-09-22");
   });
 
@@ -945,13 +931,13 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
       ),
     }));
     servers.push(server);
-    const organization = clients(server.url).organization;
+    const team = clients(server.url).team;
     const direct = new Client({
       credential: { type: "projectToken", value: PROJECT_TOKEN },
       projectId,
       baseUrl: server.url,
     });
-    for (const project of [organization.project(projectId), direct]) {
+    for (const project of [team.project(projectId), direct]) {
       await project.campaigns.getReplyFlow(flowId);
       await project.campaigns.createReplyFlow(flow);
       await project.campaigns.setReplyFlow(campaignId, { replyFlowId: null });
@@ -1005,22 +991,22 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
       ).toBe(projectId);
     }
     const invalid = () => {
-      const project = organization.project(projectId);
-      // @ts-expect-error project clients cannot read organization settings
+      const project = team.project(projectId);
+      // @ts-expect-error project clients cannot read team settings
       void project.campaigns.getSettings;
-      // @ts-expect-error project clients cannot import organization profiles
+      // @ts-expect-error project clients cannot import team profiles
       void project.audienceProfiles;
       // @ts-expect-error a bound project's body has no selector
       project.campaigns.testSend(campaignId, { ...testSend, projectId });
-      // @ts-expect-error organization GET requires a project selector
-      organization.campaigns.links(campaignId);
+      // @ts-expect-error team GET requires a project selector
+      team.campaigns.links(campaignId);
       project.signalCustody.update({
         expectedRevision: 0,
         // @ts-expect-error project custody cannot inherit
         signalModeDefault: null,
       });
       // @ts-expect-error enabled confirmations require a locale
-      organization.optOuts.updateConfirmationSettings({
+      team.optOuts.updateConfirmationSettings({
         teamId: projectId,
         revision: 0,
         enabled: true,
@@ -1105,7 +1091,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
       });
     });
     const c = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       fetch,
     }).project(projectId);
     const result = await c.campaigns.testSend(campaignId, mutable, {
@@ -1128,7 +1114,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
       ),
     );
     const c = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       fetch,
     });
     await expect(
@@ -1204,7 +1190,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
       return response;
     };
     const c = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
       fetch,
     }).project(projectId);
@@ -1223,7 +1209,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
   it("validates required/null, finite numbers, UTF-8, base64 and revision limits before transport", () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     const c = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       fetch,
     });
     const badCalls = [
@@ -1331,14 +1317,14 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
     servers.push(server);
     const c = clients(server.url);
     const bound = await c.project.signalCustody.retrieve();
-    const alias = await c.organization.projects.getSignalCustody(projectId);
+    const alias = await c.team.projects.getSignalCustody(projectId);
     expect(bound.data).toEqual(alias.data.data);
-    await c.organization.projects.updateSignalCustody(projectId, {
+    await c.team.projects.updateSignalCustody(projectId, {
       expectedRevision: 0,
       signalModeDefault: "zero_knowledge",
     });
-    await c.organization.customers.getSignalCustody(customerId, projectId);
-    await c.organization.customers.updateSignalCustody(customerId, projectId, {
+    await c.team.customers.getSignalCustody(customerId, projectId);
+    await c.team.customers.updateSignalCustody(customerId, projectId, {
       expectedRevision: 2,
       signalModeDefault: null,
     });

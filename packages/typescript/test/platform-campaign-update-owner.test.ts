@@ -4,7 +4,7 @@ import {
   PolymorfaConfigurationError,
   type UpdatePlatformCampaignRequest,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 
 const projectId = "018f0000-0000-7000-8000-000000000001";
@@ -26,7 +26,7 @@ it.each(
   const server = await startTestServer(() => ({ body: '{"data":{}}' }));
   servers.push(server);
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const result = await Promise.resolve()
@@ -45,7 +45,7 @@ it("preserves empty updates, open JSON and explicit request versions on the sele
   }));
   servers.push(server);
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const bodies: (UpdatePlatformCampaignRequest | undefined)[] = [

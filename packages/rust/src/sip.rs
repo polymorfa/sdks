@@ -219,9 +219,9 @@ pub struct SipTrunks<'a> {
     pub(crate) http: &'a HttpTransport,
     pub(crate) project_id: Option<&'a str>,
 }
-pub struct OrganizationSipTrunks<'a>(pub(crate) SipTrunks<'a>);
+pub struct TeamSipTrunks<'a>(pub(crate) SipTrunks<'a>);
 pub struct ProjectSipTrunks<'a>(pub(crate) SipTrunks<'a>);
-impl<'a> std::ops::Deref for OrganizationSipTrunks<'a> {
+impl<'a> std::ops::Deref for TeamSipTrunks<'a> {
     type Target = SipTrunks<'a>;
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -233,7 +233,7 @@ impl<'a> std::ops::Deref for ProjectSipTrunks<'a> {
         &self.0
     }
 }
-impl OrganizationSipTrunks<'_> {
+impl TeamSipTrunks<'_> {
     pub async fn list(
         &self,
         project: &str,
@@ -289,9 +289,7 @@ impl SipTrunks<'_> {
         options: RequestOptions,
     ) -> Result<ApiResponse<Vec<SipTrunk>>> {
         if project.trim().is_empty() {
-            return Err(configuration(
-                "A projectId is required for organization clients",
-            ));
+            return Err(configuration("A projectId is required for team clients"));
         }
         Ok(unwrapped(
             self.http
@@ -312,9 +310,7 @@ impl SipTrunks<'_> {
         options: RequestOptions,
     ) -> Result<ApiResponse<SipTrunkCreated>> {
         if project.trim().is_empty() {
-            return Err(configuration(
-                "A projectId is required for organization clients",
-            ));
+            return Err(configuration("A projectId is required for team clients"));
         }
         #[derive(Serialize)]
         struct ScopedBody<'a> {
@@ -398,10 +394,7 @@ impl SipTrunks<'_> {
     }
     async fn confine(&self, id: &str, options: &RequestOptions) -> Result<()> {
         if self.project_id.is_some()
-            && matches!(
-                self.http.credential,
-                Some(Credential::OrganizationApiKey(_))
-            )
+            && matches!(self.http.credential, Some(Credential::TeamApiKey(_)))
         {
             let mut read = options.clone();
             read.idempotency_key = None;

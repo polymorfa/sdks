@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -317,7 +317,7 @@ describe("coverage checker", () => {
     });
   });
 
-  it("maps batch session lifecycle to the organization-key client", () => {
+  it("maps batch session lifecycle to the team-key client", () => {
     const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
       operations: Array<{
         operationId: string;
@@ -345,8 +345,8 @@ describe("coverage checker", () => {
     };
     const client = new Client({
       credential: {
-        type: "organizationApiKey",
-        value: ORGANIZATION_API_KEY,
+        type: "teamApiKey",
+        value: TEAM_API_KEY,
       },
     });
     const projectClient = client.project("project_coverage");
@@ -354,7 +354,7 @@ describe("coverage checker", () => {
       MessagingClient: new MessagingClient({
         credential: {
           type: "apiKey",
-          value: ORGANIZATION_API_KEY,
+          value: TEAM_API_KEY,
         },
       }),
       Client: client,
@@ -641,7 +641,7 @@ describe("coverage checker", () => {
     });
   });
 
-  it("maps the organization-key Platform access family and excludes dashboard member mutations", () => {
+  it("maps the team-key Platform access family and excludes dashboard member mutations", () => {
     const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
       operations: Array<{
         operationId: string;

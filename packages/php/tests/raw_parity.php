@@ -12,7 +12,7 @@ raises(fn () => Polymorfa\GraphTransport::headers('unknown'), Polymorfa\Validati
 foreach (['[1,2]','"hello"','false','null'] as $wire) {
     $history = [];
     $client = new Polymorfa\Client($credential, http:mocked([new GuzzleHttp\Psr7\Response(200, ['content-type' => 'application/json'], $wire)], $history));
-    raises(fn () => $client->organizations->retrieve(), Polymorfa\ServerException::class);
+    raises(fn () => $client->teams->retrieve(), Polymorfa\ServerException::class);
 }
 foreach ([['text/html','<html>bad</html>'],['application/json','{broken']] as [$contentType,$wire]) {
     $history = [];

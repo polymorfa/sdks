@@ -1,4 +1,4 @@
-"""Explicit immutable organization and project clients."""
+"""Explicit immutable team and project clients."""
 
 from __future__ import annotations
 
@@ -31,15 +31,6 @@ from .observations import Identities, Labels, Privacy
 from .official_groups import OfficialGroups
 from .official_round2 import Catalogs
 from .onboarding import CloudOnboarding, Testing
-from .organization import (
-    ApiKeys,
-    AuditLogs,
-    Members,
-    Organizations,
-    ProjectTokens,
-    SecurityIncidents,
-    SessionBans,
-)
 from .passkeys import Passkeys
 from .platform_media import Media as PlatformMedia
 from .policies import HybridLink, ObservationPolicies, SessionConfigurations
@@ -47,6 +38,15 @@ from .quick_replies import QuickReplies, Users
 from .request_logs import RequestLogs
 from .settings import OptOuts, QuickLinkConfiguration
 from .sip import SipTrunks
+from .team import (
+    ApiKeys,
+    AuditLogs,
+    Members,
+    ProjectTokens,
+    SecurityIncidents,
+    SessionBans,
+    Teams,
+)
 from .templates import CloudTemplates, Templates
 from .transport import ClientOptions, Credential, Transport
 from .usage import Usage
@@ -240,7 +240,7 @@ class AsyncClient:
     call_opt_outs: CallOptOuts
     opt_outs: OptOuts
     customers: Customers
-    organizations: Organizations
+    teams: Teams
     members: Members
     api_keys: ApiKeys
     project_tokens: ProjectTokens
@@ -267,7 +267,7 @@ class AsyncClient:
     raw: platform.Raw
 
     def __init__(self, credential: Credential, **options: Unpack[ClientOptions]) -> None:
-        if credential.kind != "organization_api_key":
+        if credential.kind != "team_api_key":
             raise ConfigurationError("credential")
         transport = Transport(credential, **options)
         object.__setattr__(self, "_transport", transport)
@@ -280,7 +280,7 @@ class AsyncClient:
         object.__setattr__(self, "ban_safe", BanSafeObservations(transport))
         for name, resource in (
             ("opt_outs", OptOuts),
-            ("organizations", Organizations),
+            ("teams", Teams),
             ("members", Members),
             ("api_keys", ApiKeys),
             ("project_tokens", ProjectTokens),

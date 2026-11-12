@@ -6,7 +6,7 @@ fn health() -> Value {
     json!({"health":91.5,"band":"good","healthSource":"ml_model","healthEstimatorVersion":"rules1","healthModelVersion":"model1","healthEvaluatedAt":"now","healthFeatureCoverage":0.9,"healthReliability":"validated","healthUnavailableReason":null,"healthProbabilities":{"healthy":0.9,"limited":0.08,"restricted":0.01,"banned":0.01},"mostLikelyHealthState":"healthy","healthExplanation":{"penalties":{"conduct":1.0,"delivery":2.0,"connection":0.0,"restriction":0.0,"total":3.0},"factors":[{"group":"delivery","key":"failed","penalty":2.0,"observedValue":0.1,"sampleSize":20}],"measuredGroups":["delivery","connection"],"missingGroups":["conduct"]},"observedAccountState":{"state":"healthy","observedAt":"now","source":"account_check"}})
 }
 fn enforcement() -> Value {
-    json!({"rung":"notify","previousRung":"none","organizationFloor":"none","reason":"health","source":"automatic","throughputPerMinute":10.0,"blocksUnsolicited":false,"suspended":false,"startedAt":"now","eligibleLiftAt":null,"exitProgress":0.5,"blockingFindings":["delivery"],"operatorHold":false,"appealState":"none","state":"applied"})
+    json!({"rung":"notify","previousRung":"none","teamFloor":"none","reason":"health","source":"automatic","throughputPerMinute":10.0,"blocksUnsolicited":false,"suspended":false,"startedAt":"now","eligibleLiftAt":null,"exitProgress":0.5,"blockingFindings":["delivery"],"operatorHold":false,"appealState":"none","state":"applied"})
 }
 fn number() -> Value {
     let mut v = health();
@@ -36,7 +36,7 @@ fn page(item: Value) -> Value {
 }
 #[tokio::test]
 async fn health_explanations_findings_enforcement_and_telemetry_native_wire() {
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bansafe/health?cursor=before&limit=5&projectId=project",
@@ -53,7 +53,7 @@ async fn health_explanations_findings_enforcement_and_telemetry_native_wire() {
     );
     let mut detail = number();
     detail.as_object_mut().unwrap().extend(json!({"warmup":{"enabled":true,"tenureSource":"history","tenureDay":5,"allowance":10,"sentToday":2,"resetsAt":"later","curve":[{"day":1,"allowance":5}]},"findings":[finding()],"liftRequires":"clean","appealState":"requested"}).as_object().unwrap().clone());
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bansafe/health/support",
@@ -65,7 +65,7 @@ async fn health_explanations_findings_enforcement_and_telemetry_native_wire() {
     );
     let mut point = health();
     point["band"] = Value::Null;
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bansafe/health/support/history?limit=5&since=then",
@@ -80,7 +80,7 @@ async fn health_explanations_findings_enforcement_and_telemetry_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bansafe/signals",
@@ -90,7 +90,7 @@ async fn health_explanations_findings_enforcement_and_telemetry_native_wire() {
     );
     let mut telemetry = collection();
     telemetry["snapshot"] = snapshot();
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bansafe/telemetry/support",
@@ -100,7 +100,7 @@ async fn health_explanations_findings_enforcement_and_telemetry_native_wire() {
             .ban_safe()
             .get_telemetry("support", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bansafe/telemetry/support/history?cursor=before&limit=5&since=then&until=now",
@@ -117,7 +117,7 @@ async fn health_explanations_findings_enforcement_and_telemetry_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bansafe/collection?limit=5",
@@ -131,7 +131,7 @@ async fn health_explanations_findings_enforcement_and_telemetry_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bansafe/health-actions?session=support&status=succeeded",
@@ -148,7 +148,7 @@ async fn health_explanations_findings_enforcement_and_telemetry_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bansafe/findings?severity=warning&status=open",
@@ -170,7 +170,7 @@ async fn health_explanations_findings_enforcement_and_telemetry_native_wire() {
         .extend(enforcement().as_object().unwrap().clone());
     summary.as_object_mut().unwrap().extend(json!({"sessionId":"sid","session":"support","phoneNumber":"+1555","projectId":"project","liftRequires":"clean","enforcement":enforcement()}).as_object().unwrap().clone());
     summary.as_object_mut().unwrap().remove("exitProgress");
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bansafe/enforcement?rung=notify",
@@ -187,7 +187,7 @@ async fn health_explanations_findings_enforcement_and_telemetry_native_wire() {
 }
 #[tokio::test]
 async fn incident_receipt_retraction_and_claim_evidence_native_wire() {
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bansafe/incidents?session=support",
@@ -201,7 +201,7 @@ async fn incident_receipt_retraction_and_claim_evidence_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/bansafe/incidents",
@@ -216,7 +216,7 @@ async fn incident_receipt_retraction_and_claim_evidence_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/bansafe/incidents/incident/retract",
@@ -226,7 +226,7 @@ async fn incident_receipt_retraction_and_claim_evidence_native_wire() {
             .ban_safe()
             .retract_incident("incident", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bansafe/claims?status=under_review",
@@ -240,7 +240,7 @@ async fn incident_receipt_retraction_and_claim_evidence_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bansafe/claims/claim",

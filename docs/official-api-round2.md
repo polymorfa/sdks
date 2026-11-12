@@ -49,7 +49,7 @@ not run on the constrained local host.
 
 ## Native entry points
 
-These calls assume an existing server client with an organization API key or
+These calls assume an existing server client with a team API key or
 project token. Client tokens cannot access the Number catalog/status methods or
 Official groups. Keep the client's normal cancellation and disposal rules.
 
@@ -68,7 +68,7 @@ at least 192 pixels. The SDK owns the multipart boundary and does not replay an
 uncertain upload. The Linked Devices `Groups` picture contract stays separate.
 
 All six Platform webhook resources accept typed `batching` on create/update and
-return saved settings on reads. Use the organization or project resource that
+return saved settings on reads. Use the team or project resource that
 owns the endpoint. Changing a format without supplying batching leaves the API
 to validate the stored settings. Disabling batching does not require an enabled
 beta. Never infer that omission disables an endpoint's saved batching.

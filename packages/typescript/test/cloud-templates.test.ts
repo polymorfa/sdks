@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { MessagingClient } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 
 const servers: TestServer[] = [];
@@ -10,7 +10,7 @@ afterEach(async () => {
 
 function client(server: TestServer) {
   return new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
     maxNetworkRetries: 2,
   });
@@ -46,7 +46,7 @@ describe("Cloud templates", () => {
   it("preserves receipt fields and encodes Number, template name and language separately", async () => {
     const template = {
       id: "tpl_1",
-      tenantId: "org_1",
+      tenantId: "team_1",
       session: "support/eu",
       wabaId: "12345678901234567890",
       name: "delivery/name",
@@ -91,7 +91,7 @@ describe("Cloud templates", () => {
     ]);
     expect(JSON.parse(server.requests[3]!.body)).toEqual(body);
     expect(server.requests[0]!.headers.authorization).toBe(
-      `Bearer ${ORGANIZATION_API_KEY}`,
+      `Bearer ${TEAM_API_KEY}`,
     );
   });
 

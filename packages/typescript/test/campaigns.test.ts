@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
@@ -140,7 +140,7 @@ async function campaignsServer(): Promise<{
     client: new MessagingClient({
       credential: {
         type: "apiKey",
-        value: ORGANIZATION_API_KEY,
+        value: TEAM_API_KEY,
       },
       baseUrl: server.url,
       maxNetworkRetries: 0,
@@ -165,7 +165,7 @@ describe("MessagingClient campaigns", () => {
     }));
     servers.push(server);
     const client = new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     });
@@ -318,7 +318,7 @@ describe("MessagingClient campaigns", () => {
 
   it("requires an update field at compile time", () => {
     const client = new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
     });
     const invalidUpdate = () => {
       // @ts-expect-error the API rejects an empty campaign update

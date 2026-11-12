@@ -158,7 +158,7 @@ async def test_typed_project_bansafe(method, setting, body, data, messaging, pla
     client_class = AsyncMessagingClient if family == "messaging" else AsyncClient
     async with client_class(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -216,7 +216,7 @@ async def test_health_policy_stale_version_preserves_conflict_metadata():
 
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -244,7 +244,7 @@ async def test_platform_session_bansafe(method):
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),

@@ -10,12 +10,12 @@ use url::Url;
 
 #[derive(Clone)]
 pub enum Credential {
-    OrganizationApiKey(String),
+    TeamApiKey(String),
     ProjectToken(String),
     ClientToken(String),
 }
 impl Credential {
-    pub fn organization_api_key(value: impl Into<String>) -> Result<Self> {
+    pub fn team_api_key(value: impl Into<String>) -> Result<Self> {
         let value = value.into();
         if !opaque_shape(&value, "pmfa_")
             || [
@@ -31,7 +31,7 @@ impl Credential {
         {
             return Err(configuration("credential"));
         }
-        Ok(Self::OrganizationApiKey(value))
+        Ok(Self::TeamApiKey(value))
     }
     pub fn project_token(value: impl Into<String>) -> Result<Self> {
         let value = value.into();
@@ -49,12 +49,12 @@ impl Credential {
     }
     pub(crate) fn value(&self) -> &str {
         match self {
-            Self::OrganizationApiKey(v) | Self::ProjectToken(v) | Self::ClientToken(v) => v,
+            Self::TeamApiKey(v) | Self::ProjectToken(v) | Self::ClientToken(v) => v,
         }
     }
     pub(crate) fn validate(&self) -> Result<()> {
         match self {
-            Self::OrganizationApiKey(v) => Self::organization_api_key(v.clone()),
+            Self::TeamApiKey(v) => Self::team_api_key(v.clone()),
             Self::ProjectToken(v) => Self::project_token(v.clone()),
             Self::ClientToken(v) => Self::client_token(v.clone()),
         }

@@ -173,7 +173,7 @@ CASES = [
 ]
 
 
-@pytest.mark.parametrize("scope", ["organization", "project", "project_token"])
+@pytest.mark.parametrize("scope", ["team", "project", "project_token"])
 @pytest.mark.parametrize("case", CASES)
 async def test_public_typed_call_record_methods_full_request_response_metadata(scope, case):
     method, path, query, data, invoke = case
@@ -207,7 +207,7 @@ async def test_public_typed_call_record_methods_full_request_response_metadata(s
         )
         if scope == "project_token"
         else Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     )
@@ -248,7 +248,7 @@ async def test_export_all_suppresses_csv_headers_and_keeps_ndjson(format):
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -269,7 +269,7 @@ async def test_export_all_suppresses_csv_headers_and_keeps_ndjson(format):
 async def test_export_repeated_cursor_fails_before_replayed_body_yield():
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(
@@ -303,7 +303,7 @@ async def test_call_record_validation_and_datetime_serialization():
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -339,7 +339,7 @@ async def test_call_record_validation_and_datetime_serialization():
 async def test_export_unexpected_content_type_retains_request_metadata():
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(

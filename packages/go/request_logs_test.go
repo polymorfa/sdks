@@ -31,7 +31,7 @@ func TestRequestLogsTypedWireAndFilters(t *testing.T) {
 		io.WriteString(w, fixture)
 	}))
 	defer server.Close()
-	client, _ := NewOrganizationClient(orgConfig(server.URL))
+	client, _ := NewTeamClient(teamConfig(server.URL))
 	project, _ := client.Project("project")
 	ctx := context.Background()
 	route, credentialID, requestID, traceID, until := "/messaging/:session/messages", "key", "request", "trace", "2026-10-12"
@@ -86,7 +86,7 @@ func TestRequestLogPageMalformedAndNullableFields(t *testing.T) {
 			w.Header().Set("X-Request-Id", "invalid_log")
 			io.WriteString(w, body)
 		}))
-		client, _ := NewOrganizationClient(orgConfig(server.URL))
+		client, _ := NewTeamClient(teamConfig(server.URL))
 		_, err := client.RequestLogs().List(context.Background(), ListRequestLogsParams{ProjectID: "project"})
 		var api *Error
 		if !errors.As(err, &api) || api.Kind != ServerError || api.Code != "invalid_response" || api.Metadata.RequestID != "invalid_log" {
@@ -135,7 +135,7 @@ func TestRequestLogsNativeTailBackfillRetryAndFollow(t *testing.T) {
 		}
 	}))
 	defer server.Close()
-	client, _ := NewOrganizationClient(orgConfig(server.URL))
+	client, _ := NewTeamClient(teamConfig(server.URL))
 	zero := 0
 	seen := []string{}
 	started := time.Now()
@@ -175,7 +175,7 @@ func TestRequestLogsTailCancellationAndRetryAfter(t *testing.T) {
 		}
 	}))
 	defer server.Close()
-	client, _ := NewOrganizationClient(orgConfig(server.URL))
+	client, _ := NewTeamClient(teamConfig(server.URL))
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 	zero := 0

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Client, MessagingClient } from "../src/index.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -19,7 +19,7 @@ afterEach(async () => {
 function operation(status: string, sequence: number) {
   return {
     id: OPERATION_ID,
-    organizationId: "org",
+    teamId: "team",
     projectId: PROJECT_ID,
     kind: "campaign",
     resource: { type: "campaign", id: "c1" },
@@ -50,9 +50,9 @@ async function serve(
 }
 
 describe("operations", () => {
-  it("is available on organization and project clients but not on messaging", () => {
+  it("is available on team and project clients but not on messaging", () => {
     const client = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
     });
     const messaging = new MessagingClient({
       credential: { type: "projectToken", value: PROJECT_TOKEN },
@@ -62,7 +62,7 @@ describe("operations", () => {
     expect(messaging).not.toHaveProperty("operations");
   });
 
-  it("maps list, get, transitions, and cancel to the organization routes", async () => {
+  it("maps list, get, transitions, and cancel to the team routes", async () => {
     const server = await serve((request) =>
       request.path.includes("/transitions") ||
       request.path.startsWith("/platform/operations?")
@@ -78,7 +78,7 @@ describe("operations", () => {
           : json({ data: operation("running", 2) }),
     );
     const client = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     });
@@ -137,7 +137,7 @@ describe("operations", () => {
       json({ data: operation(index < 2 ? "running" : "succeeded", index + 2) }),
     );
     const client = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     });
@@ -159,7 +159,7 @@ describe("operations", () => {
     async ({ elapsed, wait }) => {
       const server = await serve(() => json({ data: operation("running", 5) }));
       const client = new Client({
-        credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+        credential: { type: "teamApiKey", value: TEAM_API_KEY },
         baseUrl: server.url,
         maxNetworkRetries: 0,
       });
@@ -185,7 +185,7 @@ describe("operations", () => {
   it("returns the current state when the wait budget is spent", async () => {
     const server = await serve(() => json({ data: operation("running", 2) }));
     const client = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     });
@@ -203,7 +203,7 @@ describe("operations", () => {
       ...(index === 1 ? { delayMs: 3_000 } : {}),
     }));
     const client = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     });
@@ -221,7 +221,7 @@ describe("operations", () => {
       delayMs: 2_000,
     }));
     const client = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
       maxNetworkRetries: 0,
     });
@@ -236,7 +236,7 @@ describe("operations", () => {
 
   it("rejects an invalid wait budget before sending", async () => {
     const client = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       baseUrl: "http://127.0.0.1:9",
     });
     for (const maxWaitMs of [-1, Number.POSITIVE_INFINITY, Number.NaN]) {
@@ -248,7 +248,7 @@ describe("operations", () => {
 
   it("rejects an out-of-range wait before sending", async () => {
     const client = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       baseUrl: "http://127.0.0.1:9",
     });
     expect(() => client.operations.get(OPERATION_ID, { wait: 31 })).toThrow(

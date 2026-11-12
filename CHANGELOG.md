@@ -2,6 +2,43 @@
 
 ## Unreleased
 
+- Breaking: every public "organization" name is now "team", matching API
+  contract revision `61610853b4` of polymorfa/polymorfa#887. There are no
+  deprecated aliases. Update call sites in all six SDKs:
+  - Credentials: TypeScript `{ type: "organizationApiKey" }` is
+    `{ type: "teamApiKey" }` and `validateOrganizationApiKey` is
+    `validateTeamApiKey`; Python and PHP `organization_api_key` is
+    `team_api_key` (PHP `Credential::organizationApiKey()` is
+    `Credential::teamApiKey()`); Rust `Credential::organization_api_key()` and
+    `OrganizationApiKey` are `Credential::team_api_key()` and `TeamApiKey`; Go
+    `OrganizationAPIKey` is `TeamAPIKey`; C# `Credential.OrganizationApiKey()`
+    and `CredentialKind.OrganizationApiKey` are `TeamApiKey`. The
+    `credentialKind` value `organization_api_key` is `team_api_key`.
+  - Clients: Go `NewOrganizationClient` is `NewTeamClient`; Rust and C#
+    `OrganizationClient` is `TeamClient`; Go `OrganizationVoice` and
+    `OrganizationSIPTrunks` are `TeamVoice` and `TeamSIPTrunks`; TypeScript
+    `OrganizationClientOptions` and `OrganizationControlPlaneResources` are
+    `TeamClientOptions` and `TeamControlPlaneResources`. Python and PHP bind
+    the team from the credential and have no separate client class.
+  - Management namespace and types: `organizations` is `teams` (for example
+    `client.teams.retrieve()`; Python `polymorfa.team`, PHP `Resources\Teams`,
+    Rust `team` and `team_controls`), the `OrganizationWebhook*`,
+    `OrganizationEvent*`, `OrganizationMember*` and `OrganizationOperation*`
+    types are `Team*`, and `createOrganizationWebhook`, `listOrganizationEvents`
+    and the other organization-named methods are `createTeamWebhook`,
+    `listTeamEvents` and so on in each language's case.
+  - Wire fields and values: `orgId` and `organizationId` are `teamId`, the
+    `bansafe_org_suspended` error code is `bansafe_team_suspended`, and the
+    actor kind `org_key` is `team_key`.
+  - Examples read `POLYMORFA_TEAM_KEY` (previously `POLYMORFA_ORG_KEY`) and
+    `POLYMORFA_TEAM_API_KEY` (previously `POLYMORFA_ORGANIZATION_API_KEY`).
+
+  Contract snapshots, coverage fingerprints, the machine-credential fixture and
+  the documentation snippet catalog are re-pinned to that revision. Publish
+  these SDKs only after the API change is deployed: a build from this source
+  cannot call an API that still uses the old names. Source-only and
+  unpublished.
+
 - UI Kit: keep a 320px thread beside the Inbox list in narrow two-pane layouts, and include the linked guides in the package.
 
 - Breaking: the browser UI packages are now one package, the UI Kit
@@ -238,7 +275,7 @@
 - Call consent. `Client.callPolicy` (`retrieve`, `update`) reads and replaces
   the team's blocked country codes with an optional `expectedRevision` guard,
   and `Client.callOptOuts` (`list`, `create`, `import`, `delete`) manages the
-  team's do-not-call list. Both need an team key. `list` returns a
+  team's do-not-call list. Both need a team key. `list` returns a
   `CursorPage` that follows `page.nextCursor`; `create` answers `201` for a new
   entry and `200` for one already listed, told apart by `metadata.status`.
   `MessagingClient.voip.retrieveCallPermission()` reads a person's call
@@ -266,7 +303,7 @@
 
 - Added `Client.usage` to read monthly metered usage, page or iterate usage
   records, and inspect team usage gates. Project clients can read only their
-  own usage; gate state requires an team key. The `usage.recorded`
+  own usage; gate state requires a team key. The `usage.recorded`
   webhook has a typed payload, and enforced limits use the
   `gate_limit_reached` error code. Usage is measured but not charged.
 
@@ -317,7 +354,7 @@
 - Breaking: `Client.campaigns.retrieve`, `delete`, `analytics` and `events` take
   a required `PlatformCampaignParams` argument before their request options,
   and `update` requires it after the body. Set its mandatory `projectId` to the
-  project that owns the campaign. This resource belongs to the organization
+  project that owns the campaign. This resource belongs to the team
   client; a team API key is not bound to one project.
 
 - `Client.campaigns.update` takes `UpdatePlatformCampaignRequest`. It names
@@ -349,7 +386,7 @@
   audience membership.
 
 - Added `Client.optOuts.getSettings` and `updateSettings` for the
-  organization's STOP/START keyword capture.
+  team's STOP/START keyword capture.
 
 - Added `campaign_throughput_capped` to `POLYMORFA_ERROR_CODES`. Campaign
   launch and resume refuse with it when the project is over its send rate.
@@ -391,7 +428,7 @@
   `BanSafeRiskFactorGroup` union of the sixteen documented groups.
   `BanSafeHealthChangedPayload.previousBand` uses `BanSafeHealthBandName | null`,
   matching the five health bands accepted by `band`.
-- Added `Client.operations` on organization and project clients: `list`
+- Added `Client.operations` on team and project clients: `list`
   (filter by `projectId`, status, kind, resource, and time), `get` with an
   optional server long-poll (`wait`, 0 to 30 seconds), `listTransitions`,
   `cancel` (generates an `Idempotency-Key`), and `wait`, which chains

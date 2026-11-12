@@ -176,7 +176,7 @@ pub const POLYMORFA_ERROR_CODES: &[&str] = &[
     "order_cancellation_failed",
     "number_restricted",
     "bansafe_suspended",
-    "bansafe_org_suspended",
+    "bansafe_team_suspended",
     "bansafe_cold_blocked",
     "bansafe_cold_held",
     "bansafe_throttled",

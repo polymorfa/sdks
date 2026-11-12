@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
@@ -221,7 +221,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.supplements).toBeUndefined();
     expect(source.contracts.platform.sha256).toBe(
-      "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+      "7b51c19e27ca66ced5f93e9cd381b43ae1b22ca655e7429d3896e607140a58b4",
     );
     for (const id of [
       "getWhatsAppAnalytics",
@@ -274,7 +274,7 @@ describe("reconciled coverage evidence", () => {
         Response.json(fixture.response, { status: fixture.status }),
       );
       const messaging = new MessagingClient({
-        credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+        credential: { type: "apiKey", value: TEAM_API_KEY },
         baseUrl: "https://api.example.com",
         maxNetworkRetries: 0,
         fetch,
@@ -306,7 +306,7 @@ describe("reconciled coverage evidence", () => {
         expect(JSON.parse(init.body as string)).toEqual(fixture.body);
       }
       expect(new Headers(init.headers).get("authorization")).toBe(
-        `Bearer ${ORGANIZATION_API_KEY}`,
+        `Bearer ${TEAM_API_KEY}`,
       );
       if (fixture.method === "place") {
         expect(new Headers(init.headers).get("idempotency-key")).toBe(
@@ -336,8 +336,8 @@ describe("reconciled coverage evidence", () => {
     const fetch = vi.fn(async () => Response.json({ data: {} }));
     const client = new Client({
       credential: {
-        type: "organizationApiKey",
-        value: ORGANIZATION_API_KEY,
+        type: "teamApiKey",
+        value: TEAM_API_KEY,
       },
       fetch,
     });

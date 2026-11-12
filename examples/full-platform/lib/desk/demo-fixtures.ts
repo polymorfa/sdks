@@ -9,9 +9,9 @@ const iso = (offset: number) => new Date(now - offset).toISOString();
  * SDK response shapes closely enough for the Admin pages to render them.
  */
 const FIXTURES: Readonly<Record<string, unknown>> = {
-  "/api/admin/organization": {
-    organization: {
-      id: "org_demo",
+  "/api/admin/team": {
+    team: {
+      id: "team_demo",
       name: "Acme Inc.",
       slug: "acme",
       plan: "pay_as_you_go",

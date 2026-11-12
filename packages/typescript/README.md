@@ -42,14 +42,14 @@ Node.js applications that need its file helpers.
 
 ## Management client and project views
 
-`Client` has one ownership context for its lifetime. Construct an organization
-client with an team key, then derive immutable project views with
+`Client` has one ownership context for its lifetime. Construct a team
+client with a team key, then derive immutable project views with
 `project(projectId)`:
 
 ```ts
 const platform = new Client({
   credential: {
-    type: "organizationApiKey",
+    type: "teamApiKey",
     value: process.env.POLYMORFA_PLATFORM_API_KEY!,
   },
   apiVersion: "2026-09-22",
@@ -80,15 +80,15 @@ const project = new Client({
 
 The server verifies that initial binding. Rebinding the same project-token
 client to a different project fails before transport. A project view exposes
-only owner-bound management resources; organization resources such as
-`projects`, `members`, and `billing` stay on the organization client.
+only owner-bound management resources; team resources such as
+`projects`, `members`, and `billing` stay on the team client.
 `MessagingClient` remains separate because its session APIs and credentials
 have a different authorization boundary.
 
-Messaging credentials are explicit: `apiKey` for an organization server key,
+Messaging credentials are explicit: `apiKey` for a team server key,
 `projectToken` for the single opaque project-token format, and `clientToken`
 for the browser action allowlist. Server credentials fail in browser runtimes.
-An team key is exactly `pmfa_` plus 72 unpadded base64url characters;
+A team key is exactly `pmfa_` plus 72 unpadded base64url characters;
 a project token is exactly `pmfa_pt_` plus 94. The SDK checks only this public
 v1 grammar and never decodes or decrypts the credential.
 
@@ -106,20 +106,20 @@ additions are unpublished until the matching package release passes its API
 acceptance gate. A helper does not grant beta enrollment, permissions, funding,
 or a supported connection type.
 
-| Resource                               | Added methods                                                                                                      |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `MessagingClient.campaigns`            | `getReplyFlow`, `createReplyFlow`, `setReplyFlow`, `testSend`, `links`, `exportRecipients`                         |
-| Organization `Client.campaigns`        | The same six methods, plus `listLaunchApprovals` and `getSettings`                                                 |
-| Project `Client.campaigns`             | The seven project-confined methods; organization settings and approval writes are unavailable                      |
-| Organization `Client.audienceProfiles` | `list`, `retrieve`, `put`, `delete`, `listConsent`, and `imports.create`, `imports.retrieve`, `imports.cancel`     |
-| Organization `Client.audiences`        | `createFromCampaign`                                                                                               |
-| Organization `Client.optOuts`          | `getConfirmationSettings`, `updateConfirmationSettings`, `getConfirmationSummary`                                  |
-| Project `Client.signalCustody`         | `retrieve`, `update`, `retrieveCustomer`, `updateCustomer`; organization aliases are on `projects` and `customers` |
+| Resource                       | Added methods                                                                                                  |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `MessagingClient.campaigns`    | `getReplyFlow`, `createReplyFlow`, `setReplyFlow`, `testSend`, `links`, `exportRecipients`                     |
+| Team `Client.campaigns`        | The same six methods, plus `listLaunchApprovals` and `getSettings`                                             |
+| Project `Client.campaigns`     | The seven project-confined methods; team settings and approval writes are unavailable                          |
+| Team `Client.audienceProfiles` | `list`, `retrieve`, `put`, `delete`, `listConsent`, and `imports.create`, `imports.retrieve`, `imports.cancel` |
+| Team `Client.audiences`        | `createFromCampaign`                                                                                           |
+| Team `Client.optOuts`          | `getConfirmationSettings`, `updateConfirmationSettings`, `getConfirmationSummary`                              |
+| Project `Client.signalCustody` | `retrieve`, `update`, `retrieveCustomer`, `updateCustomer`; team aliases are on `projects` and `customers`     |
 
 These helpers send `Polymorfa-Version: 2026-10-14` when their request options
 omit `apiVersion`. An explicit request option takes precedence. Unrelated
 methods retain the existing global `2026-09-22` default. Project campaign
-methods derive their project selector from the client; organization campaign
+methods derive their project selector from the client; team campaign
 aliases require an explicit project selector. Messaging methods take a project
 slug, not a Platform project UUID.
 
@@ -179,7 +179,7 @@ Recipient pages accept `reason` together with status, cursor and limit, and
 preserve nullable failure/timing fields and `messagesSent: 0`. These are ordinary
 JSON pages; CSV export has its separate filter rules.
 
-Organization `campaigns.launch` requires `{ projectId, scheduledAt?,
+Team `campaigns.launch` requires `{ projectId, scheduledAt?,
 skipMissingVariables? }`. The selected project is explicit and the request is
 closed. Project campaign resources retain only their seven confined supplement
 methods; they do not expose old CRUD or lifecycle methods. Approval, funding,
@@ -345,7 +345,7 @@ console.log(safeMode.data.data.effective.presence);
 ```
 
 Finding acknowledgement and restriction appeals require a signed-in dashboard
-user. The organization-key SDK does not expose those two mutations.
+user. The team-key SDK does not expose those two mutations.
 
 ## Browser client tokens
 
@@ -393,7 +393,7 @@ Session administration uses Platform routes and requires a server credential.
 The existing `MessagingClient.sessions` method names remain available.
 Start an existing Linked Device session, then retrieve its connection status with
 `sessions.retrieve`. The standard pairing flow is QuickLink. Direct JSON QR and phone
-pairing-code routes require `sessions:manage` plus an explicit organization
+pairing-code routes require `sessions:manage` plus an explicit team
 entitlement; without it, the API returns `403` and the application must create
 a QuickLink. Follow a returned operation ID with `Client.operations.get` or
 `Client.operations.wait`.
@@ -412,7 +412,7 @@ pinned API contract does not expose session logs or a separate
 connection-status endpoint. The API no longer emits `session.qr` webhook
 events. Applications must observe QuickLink state through the QuickLink flow;
 the entitlement-gated `sessions.qr` and `sessions.requestPairingCode` methods
-remain available only for organizations that have direct pairing enabled.
+remain available only for teams that have direct pairing enabled.
 
 ## Project templates
 
@@ -499,7 +499,7 @@ browser code.
 
 `messaging.cloudTemplates` lists, retrieves, creates, edits and deletes Meta templates
 for a Number. It is separate from `messaging.templates`, which manages project
-drafts. Use an team key or project token; the SDK rejects browser
+drafts. Use a team key or project token; the SDK rejects browser
 client tokens before sending any of these requests. The native template API
 requires an enabled Official API connection. For a Hybrid Number it uses that
 exact connection and its WABA; a retired or disabled
@@ -535,7 +535,7 @@ ID and invite link arrive in a `group.update` event with action `created`.
 Send to a group with `messages.send` and the group's conversation ID (text,
 media and templates only). Every change makes one attempt even with a retry
 override and passes your `idempotencyKey` to the API. Read the group before
-repeating an uncertain change. Use an team key or project token.
+repeating an uncertain change. Use a team key or project token.
 
 ```ts
 const { data } = await messaging.officialGroups.create("support", {
@@ -552,7 +552,7 @@ await messaging.officialGroups.approveJoinRequests("support", groupId, [
 reads catalog IDs and names visible to the connected WABA credentials. It
 requires `sessions:read` and Graph access. The response retains opaque cursors;
 it does not expose upstream pagination URLs or grant merchant ownership. Use
-an team key or project token, with the latter confined to its project.
+a team key or project token, with the latter confined to its project.
 
 `messaging.cloudCatalogs.listProducts(wabaId, catalogId, { version: "v26.0", limit: 25, after })`
 reads a page of product IDs, optional retailer IDs, names, and availability
@@ -564,7 +564,7 @@ listing products does not grant permission to send them.
 `messaging.cloudMarketing.status(wabaId, { version: "v26.0" })` reads Meta's
 raw `marketing_messages_lite_api_status` and
 `marketing_messages_onboarding_status` strings through an Official API Number
-in the credential's project. It requires `sessions:read` and an organization
+in the credential's project. It requires `sessions:read` and a team
 API key or project token. The fields do not establish terms acceptance,
 recipient permission, eligibility, or permission to send.
 
@@ -734,7 +734,7 @@ Calls clients send these reports for you.
 ## Call consent
 
 Every call is checked against the team's call policy before the destination
-rings. Reading and changing the policy needs an team key; project
+rings. Reading and changing the policy needs a team key; project
 tokens and client tokens receive `403`.
 
 ```ts
@@ -1377,7 +1377,7 @@ if (page.data.nextCursor) {
 console.log(page.metadata.headers["polymorfa-data-region"]);
 ```
 
-These conversation and message reads require an team key or project token, a visible
+These conversation and message reads require a team key or project token, a visible
 Number with hosted message storage enabled, team enrollment in
 `messaging.history`, and `chats:read` or `messages:read` as appropriate. The
 feature is an unreleased enrolled beta; an SDK method does not grant access.
@@ -2080,7 +2080,7 @@ message identifiers are URL-encoded by the SDK.
 `listRecipients`, `addRecipients`, `update`, `launch`, `reschedule`, `pause`,
 `resume`, `stop`, and `requeue`. Reads require `campaigns:read`; writes require
 `campaigns:manage`.
-Pass the project's slug as the first argument. Campaigns accept organization
+Pass the project's slug as the first argument. Campaigns accept team
 API keys or project tokens; browser client tokens cannot use these methods.
 
 ```ts
@@ -2118,7 +2118,7 @@ write once by default because the route has no replay key. For a campaign that
 has launched and is waiting to start, call
 `messaging.campaigns.reschedule(projectSlug, campaignId, { scheduledAt })`.
 Set `scheduledAt` to a Unix millisecond timestamp or `null` to start now. The
-organization client has `client.campaigns.reschedule(campaignId, { projectId,
+team client has `client.campaigns.reschedule(campaignId, { projectId,
 scheduledAt })` for the Platform route. Both reschedule methods accept an
 optional idempotency key in request options.
 
@@ -2301,7 +2301,7 @@ The API refuses suspension with `403` and invalid lifecycle transitions with
 `Client.campaigns` provides the Platform campaign methods. Its single-campaign
 reads, updates and deletion take a `PlatformCampaignParams` argument: a team
 API key must supply the owning `projectId`. This resource is available only
-on organization clients, not project views or project-token clients. Recipient
+on team clients, not project views or project-token clients. Recipient
 listing and append also require `projectId`. Platform
 `recipients` uses the same cursor-page shape. `Client.audiences` manages audience
 members, and `Client.optOuts` reads and replaces team keyword settings.
@@ -2449,7 +2449,7 @@ through the first stable major. A later major can remove them with a migration
 release.
 
 The management `Client` owns a separate durable developer API at both
-organization and project scope:
+team and project scope:
 
 - `events.list`, `retrieve`, and `replay`
 - `webhooks.list`, `create`, `retrieve`, `update`, `delete`, `test`, and
@@ -2458,7 +2458,7 @@ organization and project scope:
   `retry`
 - `operations.list`, `get`, `listTransitions`, `cancel`, and `wait`
 
-`platform.webhooks.test` accepts `TestOrganizationWebhookInput`, which has an
+`platform.webhooks.test` accepts `TestTeamWebhookInput`, which has an
 optional `eventType` and no body or session ID. A project-bound client accepts
 `TestProjectWebhookInput`; when you supply a native event body, supply its
 project session ID too. Both methods send an `Idempotency-Key` for each test:
@@ -2508,7 +2508,7 @@ console.log(replay.data.operationId);
 
 Cursor-based list methods return `CursorPage<T>`. Mutations return owner-specific typed
 receipts and preserve response metadata, request IDs, and idempotency receipts.
-Organization and project `events.list({ afterOffset: "0" })` instead return an
+Team and project `events.list({ afterOffset: "0" })` instead return an
 `FollowableIndexedEventPage`: `highWatermark` gives the retained-stream baseline,
 `nextOffset` identifies the continuation point when more events exist, and `nextPage()`
 continues in ingestion order using that offset. The raw response's
@@ -2543,7 +2543,7 @@ guidance. The CLI listener protocol stays private to the CLI.
 `events.stream()` follows a project's server-sent event stream. It needs a
 credential with `events:listen` and a team enrolled in the Event streams beta;
 without enrollment the iterator throws `PolymorfaAuthorizationError` with code
-`feature_unavailable`. Organization clients pass `projectId`.
+`feature_unavailable`. Team clients pass `projectId`.
 
 ```ts
 const controller = new AbortController();
@@ -2624,9 +2624,9 @@ used by the server client.
 ## Metered call usage and gates
 
 `Client.usage` reads the merged usage API. It needs `sessions:read`.
-Organization clients can read team usage or filter by project and session;
+Team clients can read team usage or filter by project and session;
 project clients read only their bound project's usage. Gate state is team-wide:
-`listGates()` requires an team key, and the API returns 403 for
+`listGates()` requires a team key, and the API returns 403 for
 project credentials.
 
 ```ts
@@ -2656,7 +2656,7 @@ does not change prices, modes or customer access. Package publication and live a
 
 ## Billing and usage
 
-`Client.billing` exposes the complete organization-key billing family.
+`Client.billing` exposes the complete team-key billing family.
 Balance, usage, transaction and pricing reads require `sessions:read`.
 Spending limits and priority reads require `billing:read`; changes require
 `billing:manage` and Pay-As-You-Go. Project and client credentials cannot use
@@ -2769,9 +2769,9 @@ appears only in the error message. A candidate's `ineligibleReason` explains why
 a pair cannot merge now. Listing candidates and merging require Hybrid Link
 access; without it the API returns `403 feature_unavailable`.
 
-## Organization access and security
+## Team access and security
 
-The organization view exposes key metadata, members, audit logs, session bans,
+The team view exposes key metadata, members, audit logs, session bans,
 security incidents, and project-token metadata:
 
 ```ts
@@ -2798,7 +2798,7 @@ await platform.apiKeys.deactivate(keys.data.data[0]!.keyId, {
 
 These read operations require `sessions:read`. API-key deactivation and incident
 acknowledgement require `sessions:manage`. The two mutations are direct
-organization-scoped writes rather than asynchronous operations. The SDK retries
+team-scoped writes rather than asynchronous operations. The SDK retries
 them only when an idempotency key is supplied, but the pinned handlers do not
 persist that header. Incident acknowledgement is repeatable; an API-key
 deactivation retry after an unseen successful response can return `404` because
@@ -2808,7 +2808,7 @@ These list responses are complete arrays. The source exposes no cursor or
 page token. The live audit handler accepts exact `action` and `resource`
 filters plus a limit bounded to 1 through 500, although those query fields are
 missing from the pinned OpenAPI operation. Project-token metadata requires an
-explicit project ID for organization-key calls even though OpenAPI marks the
+explicit project ID for team-key calls even though OpenAPI marks the
 query field optional. Neither token-list operation returns bearer secrets.
 
 The API-key list handler currently reports the all-scopes mask for each row
@@ -2818,11 +2818,11 @@ Incident acknowledgement records an empty acting-user value for API-key calls;
 the subsequent incident list can therefore expose an empty `acknowledgedBy`
 string rather than a dashboard user ID.
 
-Organization updates, member role changes, member deletion, invitations,
+Team updates, member role changes, member deletion, invitations,
 billing top-ups, and console usage insights require a dashboard session and
 are not exposed by the server SDK. Browser client tokens are rejected by the
 Management API. Project tokens are accepted only by a project-scoped `Client`;
-organization-only resources are absent from that view's public type.
+team-only resources are absent from that view's public type.
 
 ## QuickLink lifecycle and settings
 
@@ -2851,10 +2851,10 @@ list, recover, or history operation.
 
 `Client.quickLinkSettings.retrieve` and `update` map the management
 `GET /platform/quicklink` and `PUT /platform/quicklink` operations. Use them on the root
-organization client or an immutable project view:
+team client or an immutable project view:
 
 ```ts
-const organizationSettings = await platform.quickLinkSettings.retrieve();
+const teamSettings = await platform.quickLinkSettings.retrieve();
 const projectSettings = await platform
   .project("project_123")
   .quickLinkSettings.update(
@@ -2872,7 +2872,7 @@ const projectSettings = await platform
 These methods manage saved settings only. Hosted lifecycle methods stay on
 `MessagingClient.quickLinks`, not `Client` or `client.project(...)`, because
 the `/messaging/quicklinks/{id}` routes do not carry an immutable project path for an
-organization-key project view. Console-only logo routes are outside the SDK.
+team-key project view. Console-only logo routes are outside the SDK.
 
 `successCallbackUrl` and `failureCallbackUrl` are project-only HTTPS
 destinations; the API copies them into each link when it is issued, and link
@@ -2884,7 +2884,7 @@ can repeat across invitations and does not grant access.
 
 ## Management session lifecycle
 
-The organization client's `sessions.start` requests a start for one stopped or
+The team client's `sessions.start` requests a start for one stopped or
 failed session. It accepts a session UUID or stable slug and an optional project
 context:
 
@@ -3048,7 +3048,7 @@ const { data } = await messaging.testing.listEventFixtures(projectId);
 Set `fromSession` on a `message.received` request to send a simulated text
 from another connected Test number in the same project instead; the response
 has `delivery: "simulated"` and the event arrives as ordinary Test number
-activity. Both methods require an team key or project token with
+activity. Both methods require a team key or project token with
 `sandbox:write` (trigger) or `sandbox:read` (list) and Test numbers access.
 
 Use `session.restriction_updated` with `{ restrictionActive: false }` to
@@ -3085,7 +3085,7 @@ await messaging.testing.unlinkPhoneDevice(projectId, "my-test-number", 74);
 ```
 
 `getPhone` needs `sandbox:read`; `sendPhoneMessage` and `unlinkPhoneDevice`
-need `sandbox:write`. All three need an team key or project token
+need `sandbox:write`. All three need a team key or project token
 and Test numbers access. Real numbers, an offline phone and recipients outside
 the project are refused with a `PolymorfaValidationError`. Phone messages share
 the 30-per-minute project limit with test events. Device 0 is the phone and
@@ -3116,7 +3116,7 @@ now merged into API `dev` by PR #260.
 ## Functions
 
 Use a project client with `functions:read`, `functions:manage` or
-`functions:invoke`, according to the operation. Your organization must be enabled
+`functions:invoke`, according to the operation. Your team must be enabled
 for Functions and the selected execution region must be available. Client tokens
 cannot access this control plane.
 
@@ -3233,7 +3233,7 @@ methods do not grant permissions, paid access or deployed availability.
 Publication of this source revision is separate from API deployment.
 
 For one customer or number, read and save both controls without loading the
-organization directory:
+team directory:
 
 ```typescript
 const {

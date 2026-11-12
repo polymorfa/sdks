@@ -38,7 +38,7 @@ func uploadFixture(t *testing.T, handler http.HandlerFunc) *MessagingClient {
 	u, _ := url.Parse("https://cdn.whatsapp.net")
 	jar.SetCookies(u, []*http.Cookie{{Name: "must_not_replay", Value: "private_fixture"}})
 	client.Jar = jar
-	config := orgConfig(server.URL)
+	config := teamConfig(server.URL)
 	config.HTTPClient = client
 	sdk, err := NewMessagingClient(config)
 	if err != nil {

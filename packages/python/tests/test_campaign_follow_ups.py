@@ -142,7 +142,7 @@ async def test_native_follow_up_requests_responses_and_removal(surface, configur
     try:
         async with cls(
             Credential(
-                "organization_api_key",
+                "team_api_key",
                 "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
             ),
             base_url=base_url,
@@ -216,7 +216,7 @@ async def test_follow_up_enrollment_refusal_preserves_api_error(surface):
     cls = AsyncMessagingClient if surface == "messaging" else AsyncClient
     async with cls(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),

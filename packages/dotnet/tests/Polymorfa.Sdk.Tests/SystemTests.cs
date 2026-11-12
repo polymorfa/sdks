@@ -13,7 +13,7 @@ internal static class SystemTests
         var serve = fixture.ServeAsync("GET", "/messaging/bridge/route", null, """{"wsUrl":"wss://bridge.polymorfa.com/ws","region":"BR","kind":"production","signal":"customer","tokenKind":"project","expiresAt":1726170122}""");
         using var bridge = new BridgeClient(Credential.ProjectToken(key), new() { BaseUrl = fixture.Url });
         ResourceTests.Equal((await bridge.Routes.ResolveAsync()).Data.Region, "BR"); await serve;
-        try { using var wrong = new BridgeClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k")); throw new Exception("Wrong Bridge principal accepted"); } catch (PolymorfaConfigurationException) { }
+        try { using var wrong = new BridgeClient(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k")); throw new Exception("Wrong Bridge principal accepted"); } catch (PolymorfaConfigurationException) { }
         Console.WriteLine("PASS credential-free System probes and project-token Bridge discovery");
     }
     private static async Task System(string path, string response, Func<SystemClient, Task> invoke)

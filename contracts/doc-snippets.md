@@ -24,8 +24,8 @@ reference being rendered. A newer or mismatched page uses cURL, even if its
 operation ID has the same spelling. Do not rewrite an older SDK call to fit it.
 
 Replace `{{POLYMORFA_API_KEY}}` with a credential of the explicit
-`credentialKind`. These recipes use an **organization API key** and the matching
-client principal. A project Test key does not authorize organization operations.
+`credentialKind`. These recipes use an **team API key** and the matching
+client principal. A project Test key does not authorize team operations.
 The docs renderer owns key selection and retrieval; this catalog never retrieves,
 stores or logs a reader's key. It must escape substituted values as string
 literals in the selected language. Plain text replacement of untrusted values is

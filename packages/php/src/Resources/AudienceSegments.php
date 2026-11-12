@@ -7,7 +7,7 @@ namespace Polymorfa\Resources;
 use Polymorfa\{ApiResponse,AudienceSegmentValidation,ConfigurationException,ExistingContract,RequestOptions};
 
 /**
- * Organization-owned saved audience segments (contracts/campaign-segments-drip.json).
+ * Team-owned saved audience segments (contracts/campaign-segments-drip.json).
  * Team keys only: campaigns:read for reads, campaigns:manage for
  * writes and unsaved previews. Revision conflicts and bounded evaluation
  * timeouts return 409 state_conflict; re-read, reconcile or simplify the rules.

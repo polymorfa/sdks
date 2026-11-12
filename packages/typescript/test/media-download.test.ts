@@ -10,7 +10,7 @@ import {
   signedUrlExpiry,
 } from "../src/index.js";
 import { HttpTransport } from "../src/transport/http.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 
 const API = "https://api.polymorfa.test";
 const SIGNED =
@@ -33,7 +33,7 @@ function mockFetch(
 
 function client(fetch: typeof globalThis.fetch): MessagingClient {
   return new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: API,
     maxNetworkRetries: 0,
     timeoutMs: 1_000,
@@ -108,7 +108,7 @@ describe("MessagingMediaResource streaming downloads", () => {
     expect(calls[0]?.url).toBe(`${API}/messaging/media/media%2F1`);
     expect(calls[0]?.init.redirect).toBe("manual");
     expect(header(calls[0]!.init, "authorization")).toBe(
-      `Bearer ${ORGANIZATION_API_KEY}`,
+      `Bearer ${TEAM_API_KEY}`,
     );
   });
 

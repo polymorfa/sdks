@@ -16,7 +16,7 @@ npm run dev -w @polymorfa/example-calls
 
 Open `http://127.0.0.1:5273`. The Vite server listens only on loopback. Enter
 the session of a real connected staging Number and paste a client token minted
-for that session. To mint one locally, use a separate Zsh terminal. An organization
+for that session. To mint one locally, use a separate Zsh terminal. A team
 server key or project token
 stays in that terminal's environment and never enters the browser:
 

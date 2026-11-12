@@ -85,23 +85,23 @@ internal static class CampaignSegmentsDripTests
     private static async Task FrequencyCapAsync()
     {
         const string path = "/platform/campaign-settings/frequency-cap";
-        await BillingTests.Organization("GET", path, null, "{\"data\":{\"teamId\":\"" + Project + "\",\"maxPer24Hours\":2,\"maxPer7Days\":5,\"revision\":1,\"updatedAt\":null}}", async c =>
+        await BillingTests.Team("GET", path, null, "{\"data\":{\"teamId\":\"" + Project + "\",\"maxPer24Hours\":2,\"maxPer7Days\":5,\"revision\":1,\"updatedAt\":null}}", async c =>
         {
             var read = (await c.Campaigns.GetFrequencyCapAsync()).Data.Data;
             ResourceTests.Equal((read.MaxPer24Hours, read.MaxPer7Days, read.Revision, read.UpdatedAt), ((int?)2, (int?)5, 1L, (long?)null));
         });
-        await BillingTests.Organization("PUT", path, """{"maxPer24Hours":2,"maxPer7Days":5,"revision":1}""", "{\"data\":{\"teamId\":\"" + Project + "\",\"maxPer24Hours\":2,\"maxPer7Days\":5,\"revision\":2,\"updatedAt\":1800000000000}}", async c => ResourceTests.Equal((await c.Campaigns.UpdateFrequencyCapAsync(new(2, 5, 1))).Data.Data.UpdatedAt, 1800000000000L));
-        await BillingTests.Organization("PUT", path, """{"maxPer24Hours":null,"maxPer7Days":null,"revision":2}""", "{\"data\":{\"teamId\":\"" + Project + "\",\"maxPer24Hours\":null,\"maxPer7Days\":null,\"revision\":3,\"updatedAt\":1800000000000}}", async c => ResourceTests.Equal((await c.Campaigns.UpdateFrequencyCapAsync(new(null, null, 2))).Data.Data.Revision, 3L));
+        await BillingTests.Team("PUT", path, """{"maxPer24Hours":2,"maxPer7Days":5,"revision":1}""", "{\"data\":{\"teamId\":\"" + Project + "\",\"maxPer24Hours\":2,\"maxPer7Days\":5,\"revision\":2,\"updatedAt\":1800000000000}}", async c => ResourceTests.Equal((await c.Campaigns.UpdateFrequencyCapAsync(new(2, 5, 1))).Data.Data.UpdatedAt, 1800000000000L));
+        await BillingTests.Team("PUT", path, """{"maxPer24Hours":null,"maxPer7Days":null,"revision":2}""", "{\"data\":{\"teamId\":\"" + Project + "\",\"maxPer24Hours\":null,\"maxPer7Days\":null,\"revision\":3,\"updatedAt\":1800000000000}}", async c => ResourceTests.Equal((await c.Campaigns.UpdateFrequencyCapAsync(new(null, null, 2))).Data.Data.Revision, 3L));
         const string limits = """{"maxPer24Hours":2,"maxPer7Days":5}""";
-        await BillingTests.Organization("POST", "/platform/campaigns", "{\"projectId\":\"" + Project + "\",\"name\":\"cap\",\"frequencyCap\":" + limits + "}", Adoption41Fixtures.Envelope(DripCampaign, false), async c => ResourceTests.Equal((await c.Campaigns.CreateAsync(new(Project, "cap") { FrequencyCap = Limits })).Data.Data.FrequencyCap, new CampaignFrequencyCap(2, null)));
-        await BillingTests.Organization("PATCH", "/platform/campaigns/c?projectId=" + Project, """{"frequencyCap":null}""", Adoption41Fixtures.Envelope(DripCampaign, false), async c => await c.Campaigns.UpdateAsync("c", new() { FrequencyCap = PatchValue<CampaignFrequencyCap>.Set(null) }, new(Project)));
+        await BillingTests.Team("POST", "/platform/campaigns", "{\"projectId\":\"" + Project + "\",\"name\":\"cap\",\"frequencyCap\":" + limits + "}", Adoption41Fixtures.Envelope(DripCampaign, false), async c => ResourceTests.Equal((await c.Campaigns.CreateAsync(new(Project, "cap") { FrequencyCap = Limits })).Data.Data.FrequencyCap, new CampaignFrequencyCap(2, null)));
+        await BillingTests.Team("PATCH", "/platform/campaigns/c?projectId=" + Project, """{"frequencyCap":null}""", Adoption41Fixtures.Envelope(DripCampaign, false), async c => await c.Campaigns.UpdateAsync("c", new() { FrequencyCap = PatchValue<CampaignFrequencyCap>.Set(null) }, new(Project)));
         await ResourceTests.Messaging("POST", "/messaging/projects/" + Project + "/campaigns", "{\"name\":\"cap\",\"frequencyCap\":" + limits + "}", Adoption41Fixtures.Envelope(DripCampaign), async c => await c.Campaigns.CreateAsync(Project, new("cap") { FrequencyCap = Limits }));
         await ResourceTests.Messaging("PATCH", "/messaging/projects/" + Project + "/campaigns/c", """{"frequencyCap":null}""", Adoption41Fixtures.Envelope(DripCampaign), async c => await c.Campaigns.UpdateAsync(Project, "c", new() { FrequencyCap = PatchValue<CampaignFrequencyCap>.Set(null) }));
         await ResourceTests.Messaging("GET", "/messaging/projects/" + Project + "/campaigns/c/recipients?status=skipped&reason=frequency_cap", null, "{\"success\":true,\"data\":[" + Recipient + "],\"page\":{\"nextCursor\":null,\"hasMore\":false}}", async c => ResourceTests.Equal((await c.Campaigns.ListRecipientsAsync(Project, "c", new("skipped", Reason: CampaignRecipientFailureReason.FrequencyCap))).Data.Data[0].FailureReason, CampaignRecipientFailureReason.FrequencyCap));
-        await BillingTests.Organization("GET", "/platform/campaigns/c/recipients?projectId=" + Project + "&status=skipped&reason=frequency_cap", null, "{\"data\":[" + Recipient + "],\"page\":{\"nextCursor\":null,\"hasMore\":false}}", async c => ResourceTests.Equal((await c.Campaigns.RecipientsAsync("c", new(Project, "skipped", Reason: CampaignRecipientFailureReason.FrequencyCap))).Data.Data[0].SequenceError, "link_clicked"));
-        await BillingTests.Organization("GET", "/platform/campaigns/c/analytics?projectId=" + Project, null, Adoption41Fixtures.Envelope(Analytics, false), async c => ResourceTests.Equal((await c.Campaigns.AnalyticsAsync("c", new(Project))).Data.Data.FrequencyCap!.SkippedRecipientCount, 3L));
+        await BillingTests.Team("GET", "/platform/campaigns/c/recipients?projectId=" + Project + "&status=skipped&reason=frequency_cap", null, "{\"data\":[" + Recipient + "],\"page\":{\"nextCursor\":null,\"hasMore\":false}}", async c => ResourceTests.Equal((await c.Campaigns.RecipientsAsync("c", new(Project, "skipped", Reason: CampaignRecipientFailureReason.FrequencyCap))).Data.Data[0].SequenceError, "link_clicked"));
+        await BillingTests.Team("GET", "/platform/campaigns/c/analytics?projectId=" + Project, null, Adoption41Fixtures.Envelope(Analytics, false), async c => ResourceTests.Equal((await c.Campaigns.AnalyticsAsync("c", new(Project))).Data.Data.FrequencyCap!.SkippedRecipientCount, 3L));
         await ResourceTests.Messaging("GET", "/messaging/projects/" + Project + "/campaigns/c/analytics", null, Adoption41Fixtures.Envelope(Analytics), async c => ResourceTests.Equal((await c.Campaigns.AnalyticsAsync(Project, "c")).Data.Data.Drip!.Steps[0].Exited, 1L));
-        await BillingTests.Organization("GET", "/platform/campaigns/c?projectId=" + Project, null, Adoption41Fixtures.Envelope(DripCampaign, false), async c =>
+        await BillingTests.Team("GET", "/platform/campaigns/c?projectId=" + Project, null, Adoption41Fixtures.Envelope(DripCampaign, false), async c =>
         {
             var campaign = (await c.Campaigns.RetrieveAsync("c", new(Project))).Data.Data!;
             ResourceTests.Equal(campaign.FrequencyCap, new CampaignFrequencyCap(2, null));
@@ -111,18 +111,18 @@ internal static class CampaignSegmentsDripTests
 
     private static async Task SegmentsAsync()
     {
-        await BillingTests.Organization("GET", "/platform/audience-segments?limit=10&cursor=next", null, "{\"data\":[" + SegmentJson + "],\"page\":{\"hasMore\":false,\"nextCursor\":null}}", async c => ResourceTests.Equal((await c.AudienceSegments.ListAsync(new(10, "next"))).Data.Data[0].Revision, 2L));
-        await BillingTests.Organization("GET", "/platform/audience-segments/s%2F1", null, "{\"data\":" + SegmentJson + "}", async c =>
+        await BillingTests.Team("GET", "/platform/audience-segments?limit=10&cursor=next", null, "{\"data\":[" + SegmentJson + "],\"page\":{\"hasMore\":false,\"nextCursor\":null}}", async c => ResourceTests.Equal((await c.AudienceSegments.ListAsync(new(10, "next"))).Data.Data[0].Revision, 2L));
+        await BillingTests.Team("GET", "/platform/audience-segments/s%2F1", null, "{\"data\":" + SegmentJson + "}", async c =>
         {
             var segment = (await c.AudienceSegments.RetrieveAsync("s/1")).Data.Data;
             if (segment.Rules.Groups[0].Conditions[1] is not AudienceSegmentAttributeCompare { Name: "spend", Operator: AudienceSegmentCompareOperator.GreaterThan, Value: 100m }) throw new Exception("Discriminated condition decode changed.");
         });
-        await BillingTests.Organization("POST", "/platform/audience-segments", "{\"name\":\"VIP\",\"rules\":" + RulesJson + "}", "{\"data\":" + SegmentJson + "}", async c => await c.AudienceSegments.CreateAsync(new("VIP", Rules)));
-        await BillingTests.Organization("PATCH", "/platform/audience-segments/s", "{\"expectedRevision\":1,\"rules\":" + RulesJson + "}", "{\"data\":" + SegmentJson + "}", async c => await c.AudienceSegments.UpdateAsync("s", new(1) { Rules = Rules }));
-        await BillingTests.Organization("GET", "/platform/audience-segments/s/preview", null, "{\"data\":" + PreviewJson.TrimEnd('}') + ",\"revision\":2}}", async c => ResourceTests.Equal((await c.AudienceSegments.PreviewAsync("s")).Data.Data.Revision, 2L));
-        await BillingTests.Organization("POST", "/platform/audience-segments/preview", "{\"rules\":" + RulesJson + "}", "{\"data\":" + PreviewJson + "}", async c => ResourceTests.Equal((await c.AudienceSegments.PreviewRulesAsync(Rules)).Data.Data.Sample[0].Phone, "+49*******12"));
-        await BillingTests.Organization("DELETE", "/platform/audience-segments/s?expectedRevision=2", null, "{\"data\":{\"deleted\":true,\"id\":\"" + Id + "\"}}", async c => ResourceTests.Equal((await c.AudienceSegments.DeleteAsync("s", 2)).Data.Data.Deleted, true));
-        using var bound = new OrganizationClient(Credential.OrganizationApiKey(Key)).Project(Project);
+        await BillingTests.Team("POST", "/platform/audience-segments", "{\"name\":\"VIP\",\"rules\":" + RulesJson + "}", "{\"data\":" + SegmentJson + "}", async c => await c.AudienceSegments.CreateAsync(new("VIP", Rules)));
+        await BillingTests.Team("PATCH", "/platform/audience-segments/s", "{\"expectedRevision\":1,\"rules\":" + RulesJson + "}", "{\"data\":" + SegmentJson + "}", async c => await c.AudienceSegments.UpdateAsync("s", new(1) { Rules = Rules }));
+        await BillingTests.Team("GET", "/platform/audience-segments/s/preview", null, "{\"data\":" + PreviewJson.TrimEnd('}') + ",\"revision\":2}}", async c => ResourceTests.Equal((await c.AudienceSegments.PreviewAsync("s")).Data.Data.Revision, 2L));
+        await BillingTests.Team("POST", "/platform/audience-segments/preview", "{\"rules\":" + RulesJson + "}", "{\"data\":" + PreviewJson + "}", async c => ResourceTests.Equal((await c.AudienceSegments.PreviewRulesAsync(Rules)).Data.Data.Sample[0].Phone, "+49*******12"));
+        await BillingTests.Team("DELETE", "/platform/audience-segments/s?expectedRevision=2", null, "{\"data\":{\"deleted\":true,\"id\":\"" + Id + "\"}}", async c => ResourceTests.Equal((await c.AudienceSegments.DeleteAsync("s", 2)).Data.Data.Deleted, true));
+        using var bound = new TeamClient(Credential.TeamApiKey(Key)).Project(Project);
         ResourceTests.True(bound.GetType().GetProperty("AudienceSegments") is null);
     }
 
@@ -179,18 +179,18 @@ internal static class CampaignSegmentsDripTests
             for (var call = 0; call < 8; call++)
             {
                 using var server = new Counting(status, "{\"error\":{\"code\":\"" + code + "\",\"message\":\"Unavailable, deleted segment or evaluation timeout\"}}");
-                using var org = new OrganizationClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = server.Url, MaxNetworkRetries = 2 });
-                using var messaging = new MessagingClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = server.Url, MaxNetworkRetries = 2 });
+                using var team = new TeamClient(Credential.TeamApiKey(Key), new() { BaseUrl = server.Url, MaxNetworkRetries = 2 });
+                using var messaging = new MessagingClient(Credential.TeamApiKey(Key), new() { BaseUrl = server.Url, MaxNetworkRetries = 2 });
                 var caller = new RequestOptions { Headers = new Dictionary<string, string> { ["x-caller"] = "kept" }, IdempotencyKey = call == 7 ? "caller-key" : null };
                 Func<Task> invoke = call switch
                 {
-                    0 => () => org.Campaigns.UpdateFrequencyCapAsync(new(1, 1, 0), caller),
-                    1 => () => org.AudienceSegments.UpdateAsync("s", new(2) { Name = "new" }, caller),
-                    2 => () => org.AudienceSegments.CreateAsync(new("n", Rules), caller),
-                    3 => () => org.AudienceSegments.DeleteAsync("s", 2, caller),
-                    4 => () => org.AudienceSegments.PreviewAsync("s", caller),
-                    5 => () => org.AudienceSegments.PreviewRulesAsync(Rules, caller),
-                    6 => () => org.Campaigns.EnrollAsync("c", new(Project, "+1"), caller),
+                    0 => () => team.Campaigns.UpdateFrequencyCapAsync(new(1, 1, 0), caller),
+                    1 => () => team.AudienceSegments.UpdateAsync("s", new(2) { Name = "new" }, caller),
+                    2 => () => team.AudienceSegments.CreateAsync(new("n", Rules), caller),
+                    3 => () => team.AudienceSegments.DeleteAsync("s", 2, caller),
+                    4 => () => team.AudienceSegments.PreviewAsync("s", caller),
+                    5 => () => team.AudienceSegments.PreviewRulesAsync(Rules, caller),
+                    6 => () => team.Campaigns.EnrollAsync("c", new(Project, "+1"), caller),
                     _ => () => messaging.Campaigns.EnrollAsync(Project, "c", new("+1"), caller),
                 };
                 try { await invoke(); throw new Exception("Error status accepted"); }
@@ -205,7 +205,7 @@ internal static class CampaignSegmentsDripTests
                 if (call == 6) ResourceTests.True(!server.Heads[0].Contains("idempotency-key:", StringComparison.Ordinal));
             }
         using var read = new Counting(503, """{"error":{"code":"unavailable","message":"retry"}}""");
-        using var client = new OrganizationClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = read.Url, MaxNetworkRetries = 2 });
+        using var client = new TeamClient(Credential.TeamApiKey(Key), new() { BaseUrl = read.Url, MaxNetworkRetries = 2 });
         try { await client.AudienceSegments.RetrieveAsync("s"); throw new Exception("Unavailable read accepted"); } catch (PolymorfaServerException) { }
         if (read.Count != 3) throw new Exception("Segment reads changed retry policy.");
     }
@@ -213,7 +213,7 @@ internal static class CampaignSegmentsDripTests
     private static async Task FailClosedAsync()
     {
         using var fixture = new WireFixture();
-        using var client = new OrganizationClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
+        using var client = new TeamClient(Credential.TeamApiKey(Key), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
         async Task Rejected(Func<Task> action) { try { await action(); } catch (PolymorfaConfigurationException) { return; } throw new Exception("Invalid input accepted before sending."); }
         foreach (var blank in new[] { "", " " }) await Rejected(() => client.AudienceSegments.RetrieveAsync(blank));
         await Rejected(() => client.AudienceSegments.PreviewRulesAsync(new(AudienceSegmentMatch.All, [new(AudienceSegmentMatch.All, [new AudienceSegmentUnknownCondition(JsonSerializer.SerializeToElement(new { field = "future" }))])])));
@@ -229,14 +229,14 @@ internal static class CampaignSegmentsDripTests
     private static async Task DripAsync()
     {
         var steps = new[] { new PlatformCampaignMessage { Source = "hi" }, new PlatformCampaignMessage { Source = "later", DelayAfterSec = 2592000, DelayUnit = CampaignDelayUnit.Days, SendWindow = new CampaignStepWindow(["monday"], [new("09:00", "17:00")]) } };
-        await BillingTests.Organization("POST", "/platform/campaigns", "{\"projectId\":\"" + Project + "\",\"name\":\"VIP drip\",\"segmentId\":\"s\",\"drip\":{\"enrollment\":\"continuous\"},\"messagesArray\":[{\"source\":\"hi\"},{\"source\":\"later\",\"delayAfterSec\":2592000,\"delayUnit\":\"days\",\"sendWindow\":{\"days\":[\"monday\"],\"hours\":[{\"start\":\"09:00\",\"end\":\"17:00\"}]}}]}", Adoption41Fixtures.Envelope(DripCampaign, false), async c => await c.Campaigns.CreateAsync(new(Project, "VIP drip", MessagesArray: steps) { SegmentId = "s", Drip = new CampaignDripInput(CampaignDripEnrollment.Continuous) }));
-        await BillingTests.Organization("POST", "/platform/campaigns", "{\"projectId\":\"" + Project + "\",\"name\":\"drip\",\"drip\":{},\"messagesArray\":[{\"delayAfterSec\":2592000}]}", Adoption41Fixtures.Envelope(DripCampaign, false), async c => await c.Campaigns.CreateAsync(new(Project, "drip", MessagesArray: [new PlatformCampaignMessage { DelayAfterSec = 2592000 }]) { Drip = new CampaignDripInput() }));
+        await BillingTests.Team("POST", "/platform/campaigns", "{\"projectId\":\"" + Project + "\",\"name\":\"VIP drip\",\"segmentId\":\"s\",\"drip\":{\"enrollment\":\"continuous\"},\"messagesArray\":[{\"source\":\"hi\"},{\"source\":\"later\",\"delayAfterSec\":2592000,\"delayUnit\":\"days\",\"sendWindow\":{\"days\":[\"monday\"],\"hours\":[{\"start\":\"09:00\",\"end\":\"17:00\"}]}}]}", Adoption41Fixtures.Envelope(DripCampaign, false), async c => await c.Campaigns.CreateAsync(new(Project, "VIP drip", MessagesArray: steps) { SegmentId = "s", Drip = new CampaignDripInput(CampaignDripEnrollment.Continuous) }));
+        await BillingTests.Team("POST", "/platform/campaigns", "{\"projectId\":\"" + Project + "\",\"name\":\"drip\",\"drip\":{},\"messagesArray\":[{\"delayAfterSec\":2592000}]}", Adoption41Fixtures.Envelope(DripCampaign, false), async c => await c.Campaigns.CreateAsync(new(Project, "drip", MessagesArray: [new PlatformCampaignMessage { DelayAfterSec = 2592000 }]) { Drip = new CampaignDripInput() }));
         var audience = new CampaignDripPatch(CampaignDripEnrollment.Audience);
-        await BillingTests.Organization("PATCH", "/platform/campaigns/c?projectId=" + Project, """{"drip":{"enrollment":"audience"}}""", Adoption41Fixtures.Envelope(DripCampaign, false), async c => await c.Campaigns.UpdateAsync("c", new() { Drip = audience }, new(Project)));
+        await BillingTests.Team("PATCH", "/platform/campaigns/c?projectId=" + Project, """{"drip":{"enrollment":"audience"}}""", Adoption41Fixtures.Envelope(DripCampaign, false), async c => await c.Campaigns.UpdateAsync("c", new() { Drip = audience }, new(Project)));
         await ResourceTests.Messaging("PATCH", "/messaging/projects/" + Project + "/campaigns/c", """{"drip":{"enrollment":"audience"}}""", Adoption41Fixtures.Envelope(DripCampaign), async c => await c.Campaigns.UpdateAsync(Project, "c", new() { Drip = audience }));
-        await BillingTests.Organization("PATCH", "/platform/campaigns/c?projectId=" + Project, """{"drip":null,"segmentId":null}""", Adoption41Fixtures.Envelope(DripCampaign, false), async c => await c.Campaigns.UpdateAsync("c", new() { Drip = PatchValue<CampaignDripPatch>.Set(null), SegmentId = PatchValue<string>.Set(null) }, new(Project)));
-        await BillingTests.Organization("PATCH", "/platform/campaigns/c?projectId=" + Project, """{"messagesArray":[{"source":"later","delayAfterSec":2592000,"sendWindow":null}]}""", Adoption41Fixtures.Envelope(DripCampaign, false), async c => await c.Campaigns.UpdateAsync("c", new() { MessagesArray = [new PlatformCampaignMessage { Source = "later", DelayAfterSec = 2592000, SendWindow = PatchValue<CampaignStepWindow>.Set(null) }] }, new(Project)));
-        await BillingTests.Organization("POST", "/platform/campaigns/c%2F1/enrollments", "{\"projectId\":\"" + Project + "\",\"phone\":\"+5511999990000\"}", "{\"data\":" + EnrollmentJson + "}", async c =>
+        await BillingTests.Team("PATCH", "/platform/campaigns/c?projectId=" + Project, """{"drip":null,"segmentId":null}""", Adoption41Fixtures.Envelope(DripCampaign, false), async c => await c.Campaigns.UpdateAsync("c", new() { Drip = PatchValue<CampaignDripPatch>.Set(null), SegmentId = PatchValue<string>.Set(null) }, new(Project)));
+        await BillingTests.Team("PATCH", "/platform/campaigns/c?projectId=" + Project, """{"messagesArray":[{"source":"later","delayAfterSec":2592000,"sendWindow":null}]}""", Adoption41Fixtures.Envelope(DripCampaign, false), async c => await c.Campaigns.UpdateAsync("c", new() { MessagesArray = [new PlatformCampaignMessage { Source = "later", DelayAfterSec = 2592000, SendWindow = PatchValue<CampaignStepWindow>.Set(null) }] }, new(Project)));
+        await BillingTests.Team("POST", "/platform/campaigns/c%2F1/enrollments", "{\"projectId\":\"" + Project + "\",\"phone\":\"+5511999990000\"}", "{\"data\":" + EnrollmentJson + "}", async c =>
         {
             var enrolled = (await c.Campaigns.EnrollAsync("c/1", new(Project, "+5511999990000"))).Data.Data;
             ResourceTests.Equal((enrolled.Created, enrolled.EnrolledAt), (false, 1800000000000d));

@@ -9,7 +9,7 @@ import {
   isEvent,
   type KnownWebhookEventType,
   type ProjectWebhookDeliveryAttempt,
-  type OrganizationWebhookDeliveryAttempt,
+  type TeamWebhookDeliveryAttempt,
   type SessionLoggedOutPayload,
   type RuntimeTemplateStatusPayload,
   type CloudTemplateStatusPayload,
@@ -215,7 +215,7 @@ function expectShape(
 
 const IDS = {
   event: "0b0e5b1e-0000-4000-8000-000000000001",
-  organization: "0b0e5b1e-0000-4000-8000-000000000002",
+  team: "0b0e5b1e-0000-4000-8000-000000000002",
   project: "0b0e5b1e-0000-4000-8000-000000000003",
   customer: "0b0e5b1e-0000-4000-8000-000000000004",
   pairingLink: "0b0e5b1e-0000-4000-8000-000000000005",
@@ -225,7 +225,7 @@ const AT = "2026-09-16T00:00:00.000Z";
 const customer = {
   eventId: IDS.event,
   occurredAt: AT,
-  organizationId: IDS.organization,
+  teamId: IDS.team,
   projectId: IDS.project,
   customerId: IDS.customer,
   actorKind: "project_token",
@@ -233,7 +233,7 @@ const customer = {
 const customerRequired = [
   "eventId",
   "occurredAt",
-  "organizationId",
+  "teamId",
   "projectId",
   "customerId",
   "actorKind",
@@ -589,7 +589,7 @@ const PAYLOADS: {
     {
       eventId: IDS.event,
       occurredAt: AT,
-      organizationId: IDS.organization,
+      teamId: IDS.team,
       projectId: IDS.project,
       assetId: IDS.customer,
       name: "Greeting",
@@ -601,7 +601,7 @@ const PAYLOADS: {
     [
       "eventId",
       "occurredAt",
-      "organizationId",
+      "teamId",
       "projectId",
       "assetId",
       "name",
@@ -615,7 +615,7 @@ const PAYLOADS: {
     {
       eventId: IDS.event,
       occurredAt: AT,
-      organizationId: IDS.organization,
+      teamId: IDS.team,
       projectId: IDS.project,
       assetId: IDS.customer,
       name: "Greeting",
@@ -625,7 +625,7 @@ const PAYLOADS: {
     [
       "eventId",
       "occurredAt",
-      "organizationId",
+      "teamId",
       "projectId",
       "assetId",
       "name",
@@ -1061,7 +1061,7 @@ describe("webhook catalog contract", () => {
 describe("webhook delivery attempt contract", () => {
   const base = {
     id: IDS.event,
-    organizationId: IDS.organization,
+    teamId: IDS.team,
     deliveryId: IDS.pairingLink,
     number: 2,
     status: "failed",
@@ -1080,7 +1080,7 @@ describe("webhook delivery attempt contract", () => {
   } as const;
   const required = [
     "id",
-    "organizationId",
+    "teamId",
     "projectId",
     "deliveryId",
     "number",
@@ -1106,16 +1106,14 @@ describe("webhook delivery attempt contract", () => {
     );
   });
 
-  it("matches the organization attempt schema with a null response", () => {
+  it("matches the team attempt schema with a null response", () => {
     const value = { ...base, projectId: null, response: null };
     expectShape(
       platform,
-      "OrganizationWebhookDeliveryAttempt",
-      shape<OrganizationWebhookDeliveryAttempt>()(value, required),
+      "TeamWebhookDeliveryAttempt",
+      shape<TeamWebhookDeliveryAttempt>()(value, required),
     );
-    expectTypeOf<
-      OrganizationWebhookDeliveryAttempt["response"]
-    >().toEqualTypeOf<{
+    expectTypeOf<TeamWebhookDeliveryAttempt["response"]>().toEqualTypeOf<{
       readonly contentType: string;
       readonly excerpt: string;
       readonly truncated: boolean;

@@ -3,7 +3,7 @@
   "info": {
     "title": "Polymorfa Console & Management API",
     "version": "1.0.0",
-    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (247 endpoints): each endpoint declares either a scoped `pmfa_` organization key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (111 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
+    "description": "Complete console/management surface. Resource-oriented REST: `{param}` path variables, single-word action sub-resources.\n\nNamespaces decide inclusion:\n- `/platform/…` — **public registry** (247 endpoints): each endpoint declares either a scoped `pmfa_` team key or a verified live dashboard JWT, or dashboard-only authorization when a specific user's authority is required. Only implemented handlers are published to customers and SDKs.\n- `/console/…` — **console-only** (111 endpoints): verified dashboard identity. EXCLUDED from the published spec; reason per endpoint.\n\nThe published customer spec = this document filtered to `x-audience: public` endpoints with an implemented runtime handler.\nMost transitional body/response schemas remain loose (`additionalProperties: true`); session-control operations use explicit strict schemas."
   },
   "servers": [
     {
@@ -24,7 +24,7 @@
         ],
         "x-audience": "console",
         "x-dashboard-only": true,
-        "x-excluded-reason": "Native account route restricted to live dashboard owner/admin membership; not a project or organization API-key operation.",
+        "x-excluded-reason": "Native account route restricted to live dashboard owner/admin membership; not a project or team API-key operation.",
         "security": [
           {
             "ConsoleSession": []
@@ -110,7 +110,7 @@
         ],
         "x-audience": "console",
         "x-dashboard-only": true,
-        "x-excluded-reason": "Native account route restricted to live dashboard owner/admin membership; not a project or organization API-key operation.",
+        "x-excluded-reason": "Native account route restricted to live dashboard owner/admin membership; not a project or team API-key operation.",
         "security": [
           {
             "ConsoleSession": []
@@ -118,7 +118,7 @@
         ],
         "parameters": [
           {
-            "name": "x-polymorfa-expected-org-id",
+            "name": "x-polymorfa-expected-team-id",
             "in": "header",
             "required": true,
             "schema": {
@@ -235,7 +235,7 @@
         ],
         "x-audience": "console",
         "x-dashboard-only": true,
-        "x-excluded-reason": "Native account route restricted to live dashboard owner/admin membership; not a project or organization API-key operation.",
+        "x-excluded-reason": "Native account route restricted to live dashboard owner/admin membership; not a project or team API-key operation.",
         "security": [
           {
             "ConsoleSession": []
@@ -243,7 +243,7 @@
         ],
         "parameters": [
           {
-            "name": "x-polymorfa-expected-org-id",
+            "name": "x-polymorfa-expected-team-id",
             "in": "header",
             "required": true,
             "schema": {
@@ -298,7 +298,7 @@
         ],
         "x-audience": "console",
         "x-dashboard-only": true,
-        "x-excluded-reason": "Dashboard identity and live organization membership are required; the account projection is not an API-key operation.",
+        "x-excluded-reason": "Dashboard identity and live team membership are required; the account projection is not an API-key operation.",
         "security": [
           {
             "ConsoleSession": []
@@ -368,7 +368,7 @@
         ],
         "x-audience": "console",
         "x-dashboard-only": true,
-        "x-excluded-reason": "Dashboard identity and live organization membership are required; diagnostics are not an API-key operation.",
+        "x-excluded-reason": "Dashboard identity and live team membership are required; diagnostics are not an API-key operation.",
         "security": [
           {
             "ConsoleSession": []
@@ -444,7 +444,7 @@
           "Events"
         ],
         "summary": "Stream project events",
-        "description": "**Required scope:** `events:listen`\n\nOpens a server-sent event (SSE) stream of this project's events. Every event frame carries the same event object as the events API and the exact webhook body when it is available.\n\nSend `Accept: text/event-stream`. Resume after a disconnect by sending the last received `cursor` as `Last-Event-ID` or `cursor`. Cursors are valid for 24 hours and are bound to the organization, project and `types` filter.\n\nWith `ack=auto` (default), each event is released as soon as it is written. With `ack=manual`, at most `maxInFlight` events are outstanding until you acknowledge them; unacknowledged events produce a `backpressure` frame and then a `dropped` frame.\n\nThe stream sends a `heartbeat` frame every `heartbeatIntervalMs`. It closes with `revoked` within one heartbeat after the credential, project or feature access ends, and with `expiry` at `connectionExpiresAt` or after `idleTimeoutMs` without an event. Reconnect from the last cursor after `expiry`, `dropped` or a recoverable `gap`.\n\nRequires `events:listen` and the Event streams beta. Organization API keys and project tokens are accepted; client tokens are rejected.",
+        "description": "**Required scope:** `events:listen`\n\nOpens a server-sent event (SSE) stream of this project's events. Every event frame carries the same event object as the events API and the exact webhook body when it is available.\n\nSend `Accept: text/event-stream`. Resume after a disconnect by sending the last received `cursor` as `Last-Event-ID` or `cursor`. Cursors are valid for 24 hours and are bound to the team, project and `types` filter.\n\nWith `ack=auto` (default), each event is released as soon as it is written. With `ack=manual`, at most `maxInFlight` events are outstanding until you acknowledge them; unacknowledged events produce a `backpressure` frame and then a `dropped` frame.\n\nThe stream sends a `heartbeat` frame every `heartbeatIntervalMs`. It closes with `revoked` within one heartbeat after the credential, project or feature access ends, and with `expiry` at `connectionExpiresAt` or after `idleTimeoutMs` without an event. Reconnect from the last cursor after `expiry`, `dropped` or a recoverable `gap`.\n\nRequires `events:listen` and the Event streams beta. Team API keys and project tokens are accepted; client tokens are rejected.",
         "x-required-scope": "events:listen",
         "security": [
           {
@@ -2714,10 +2714,10 @@
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "Project to read. Omit to total every project in the organization. Project tokens always read their own project."
+              "description": "Project to read. Omit to total every project in the team. Project tokens always read their own project."
             },
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization. Project tokens always read their own project.",
+            "description": "Project to read. Omit to total every project in the team. Project tokens always read their own project.",
             "name": "projectId",
             "in": "query"
           },
@@ -3048,7 +3048,7 @@
           "Analytics"
         ],
         "summary": "Export analytics metrics",
-        "description": "**Required scope:** `sessions:read`\n\nAuthenticated metrics for a customer's Prometheus or OpenTelemetry Collector. Requires live Analytics enablement. Disabled Analytics returns only enablement and export-window metrics, with no business measurements. All samples are gauges: counts describe an overlapping window, not monotonic counters. Do not use rate() or increase() on them. Labels contain number/project record IDs and bounded categories, never contact identities or message content. Null or unmeasured values are omitted; coverage and observation timestamps are included. API request vitals retain project/organization scope even when filtering a number.",
+        "description": "**Required scope:** `sessions:read`\n\nAuthenticated metrics for a customer's Prometheus or OpenTelemetry Collector. Requires live Analytics enablement. Disabled Analytics returns only enablement and export-window metrics, with no business measurements. All samples are gauges: counts describe an overlapping window, not monotonic counters. Do not use rate() or increase() on them. Labels contain number/project record IDs and bounded categories, never contact identities or message content. Null or unmeasured values are omitted; coverage and observation timestamps are included. API request vitals retain project/team scope even when filtering a number.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -3070,10 +3070,10 @@
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "One number record UUID, within the authorized project or organization."
+              "description": "One number record UUID, within the authorized project or team."
             },
             "required": false,
-            "description": "One number record UUID, within the authorized project or organization.",
+            "description": "One number record UUID, within the authorized project or team.",
             "name": "sessionId",
             "in": "query"
           },
@@ -3354,7 +3354,7 @@
           "Analytics"
         ],
         "summary": "Export project analytics metrics",
-        "description": "**Required scope:** `sessions:read`\n\nAuthenticated metrics for a customer's Prometheus or OpenTelemetry Collector. Requires live Analytics enablement. Disabled Analytics returns only enablement and export-window metrics, with no business measurements. All samples are gauges: counts describe an overlapping window, not monotonic counters. Do not use rate() or increase() on them. Labels contain number/project record IDs and bounded categories, never contact identities or message content. Null or unmeasured values are omitted; coverage and observation timestamps are included. API request vitals retain project/organization scope even when filtering a number.",
+        "description": "**Required scope:** `sessions:read`\n\nAuthenticated metrics for a customer's Prometheus or OpenTelemetry Collector. Requires live Analytics enablement. Disabled Analytics returns only enablement and export-window metrics, with no business measurements. All samples are gauges: counts describe an overlapping window, not monotonic counters. Do not use rate() or increase() on them. Labels contain number/project record IDs and bounded categories, never contact identities or message content. Null or unmeasured values are omitted; coverage and observation timestamps are included. API request vitals retain project/team scope even when filtering a number.",
         "security": [
           {
             "ApiKeyAuth": []
@@ -3376,10 +3376,10 @@
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "One number record UUID, within the authorized project or organization."
+              "description": "One number record UUID, within the authorized project or team."
             },
             "required": false,
-            "description": "One number record UUID, within the authorized project or organization.",
+            "description": "One number record UUID, within the authorized project or team.",
             "name": "sessionId",
             "in": "query"
           },
@@ -3875,7 +3875,7 @@
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "Project whose trunks are listed. Required for organization keys."
+              "description": "Project whose trunks are listed. Required for team keys."
             },
             "required": false,
             "name": "projectId",
@@ -6803,7 +6803,7 @@
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "Project whose assets are listed. Required for organization keys."
+              "description": "Project whose assets are listed. Required for team keys."
             },
             "required": false,
             "name": "projectId",
@@ -12470,7 +12470,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:manage",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [
           {
             "ApiKeyAuth": []
@@ -12649,7 +12649,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:manage",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [
           {
             "ApiKeyAuth": []
@@ -12744,7 +12744,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:manage",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [
           {
             "ApiKeyAuth": []
@@ -12962,7 +12962,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:manage",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [
           {
             "ApiKeyAuth": []
@@ -13163,7 +13163,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:manage",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [
           {
             "ApiKeyAuth": []
@@ -13373,7 +13373,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:manage",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [
           {
             "ApiKeyAuth": []
@@ -13470,7 +13470,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:manage",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [
           {
             "ApiKeyAuth": []
@@ -13688,7 +13688,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:invoke",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [
           {
             "ApiKeyAuth": []
@@ -14050,7 +14050,7 @@
           "session-configuration"
         ],
         "summary": "Read session configuration",
-        "description": "Returns effective configuration, overrides, and runtime application status for an owned session.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Returns effective configuration, overrides, and runtime application status for an owned session.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -14130,7 +14130,7 @@
           "session-configuration"
         ],
         "summary": "Update session configuration",
-        "description": "Sets or resets explicit configuration for an owned session using a revision check.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Sets or resets explicit configuration for an owned session using a revision check.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -14220,7 +14220,7 @@
           "calls"
         ],
         "summary": "Read session call settings",
-        "description": "Returns the call settings for an owned session. Sessions without saved settings return the defaults and a null `updatedAt`.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Returns the call settings for an owned session. Sessions without saved settings return the defaults and a null `updatedAt`.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -14303,12 +14303,12 @@
           "calls"
         ],
         "summary": "Update session call settings",
-        "description": "Updates the call settings for an owned session. Omitted fields keep their values. New calls use the saved settings. Routing to a SIP trunk requires a trunk in the session's project that can receive calls. `expectedRevision` refuses an update to settings that changed since they were read.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Updates the call settings for an owned session. Omitted fields keep their values. New calls use the saved settings. Routing to a SIP trunk requires a trunk in the session's project that can receive calls. `expectedRevision` refuses an update to settings that changed since they were read.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Private Console call settings; requires live dashboard membership. The Platform API publishes the same settings under /platform/sessions/{session}/call-settings.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -14394,7 +14394,7 @@
           "calls"
         ],
         "summary": "Read team call data retention",
-        "description": "Returns how long Polymorfa keeps the team's call data. Teams without a saved setting return the default (`extended`, 90 days) with revision 0.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Returns how long Polymorfa keeps the team's call data. Teams without a saved setting return the default (`extended`, 90 days) with revision 0.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -14455,12 +14455,12 @@
           "calls"
         ],
         "summary": "Update team call data retention",
-        "description": "Records how long Polymorfa keeps the team's call data. Deletion of call data older than the period starts on a date Polymorfa announces in the changelog; until then, saving a period deletes nothing. `expectedRevision` refuses an update to a setting that changed since it was read.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Records how long Polymorfa keeps the team's call data. Deletion of call data older than the period starts on a date Polymorfa announces in the changelog; until then, saving a period deletes nothing. `expectedRevision` refuses an update to a setting that changed since it was read.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Private Console call data retention; requires live dashboard owner or admin membership. The Platform API publishes the same setting under /platform/call-retention.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -14532,7 +14532,7 @@
           "calls"
         ],
         "summary": "List SIP trunks",
-        "description": "Lists the team's SIP trunks, or one project's when `projectId` is given. Passwords are never returned.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Lists the team's SIP trunks, or one project's when `projectId` is given. Passwords are never returned.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -14606,12 +14606,12 @@
           "calls"
         ],
         "summary": "Create a SIP trunk",
-        "description": "Creates a SIP trunk in the named project. For trunks that accept calls from a PBX, the response contains the digest password once. Unavailable when SIP trunks are not enabled for the deployment.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Creates a SIP trunk in the named project. For trunks that accept calls from a PBX, the response contains the digest password once. Unavailable when SIP trunks are not enabled for the deployment.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Private Console SIP trunks; requires a live owner or admin. The Platform API publishes the same operation under /platform/sip-trunks.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -14686,7 +14686,7 @@
           "calls"
         ],
         "summary": "Get a SIP trunk",
-        "description": "Returns one SIP trunk without secret values.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Returns one SIP trunk without secret values.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -14760,12 +14760,12 @@
           "calls"
         ],
         "summary": "Update a SIP trunk",
-        "description": "Changes the sent fields of a SIP trunk. `expectedRevision` refuses a change to a trunk that changed since it was read.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Changes the sent fields of a SIP trunk. `expectedRevision` refuses a change to a trunk that changed since it was read.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Private Console SIP trunks; requires a live owner or admin. The Platform API publishes the same operation under /platform/sip-trunks.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -14848,12 +14848,12 @@
           "calls"
         ],
         "summary": "Delete a SIP trunk",
-        "description": "Deletes a SIP trunk that no session routes incoming calls to.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Deletes a SIP trunk that no session routes incoming calls to.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Private Console SIP trunks; requires a live owner or admin. The Platform API publishes the same operation under /platform/sip-trunks.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -14928,12 +14928,12 @@
           "calls"
         ],
         "summary": "Rotate SIP trunk credentials",
-        "description": "Replaces the password a PBX uses to place calls and returns it once.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Replaces the password a PBX uses to place calls and returns it once.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Private Console SIP trunks; requires a live owner or admin. The Platform API publishes the same operation under /platform/sip-trunks.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -15008,7 +15008,7 @@
           "calls"
         ],
         "summary": "Get the team's call policy",
-        "description": "Returns the team's blocked country codes and the size of its do-not-call list.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Returns the team's blocked country codes and the size of its do-not-call list.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -15069,12 +15069,12 @@
           "calls"
         ],
         "summary": "Update the team's blocked country codes",
-        "description": "Replaces the blocked country codes. `expectedRevision` refuses a change to a policy that changed since it was read.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Replaces the blocked country codes. `expectedRevision` refuses a change to a policy that changed since it was read.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Private Console call policy; requires a live owner or admin. The Platform API publishes the same operation under /platform/call-policy.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -15146,7 +15146,7 @@
           "calls"
         ],
         "summary": "List the do-not-call list",
-        "description": "Lists the team's do-not-call entries, newest first.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Lists the team's do-not-call entries, newest first.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -15251,12 +15251,12 @@
           "calls"
         ],
         "summary": "Add a person to the do-not-call list",
-        "description": "Adds a phone number or BSUID; an existing entry is returned unchanged.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Adds a phone number or BSUID; an existing entry is returned unchanged.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Private Console call policy; requires a live owner or admin. The Platform API publishes the same operation under /platform/call-opt-outs.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -15328,12 +15328,12 @@
           "calls"
         ],
         "summary": "Import do-not-call entries",
-        "description": "Adds up to 5,000 entries and reports the ones that were not added.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Adds up to 5,000 entries and reports the ones that were not added.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Private Console call policy; requires a live owner or admin. The Platform API publishes the same operation under /platform/call-opt-outs/import.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -15405,12 +15405,12 @@
           "calls"
         ],
         "summary": "Remove a person from the do-not-call list",
-        "description": "Removes one entry.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Removes one entry.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Private Console call policy; requires a live owner or admin. The Platform API publishes the same operation under /platform/call-opt-outs/{optOutId}.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -15482,7 +15482,7 @@
           "calls"
         ],
         "summary": "Get the SIP address",
-        "description": "Returns the host, ports and RTP range PBXs use for this environment, or `sip_not_hosted` when it has no SIP address.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Returns the host, ports and RTP range PBXs use for this environment, or `sip_not_hosted` when it has no SIP address.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -15545,7 +15545,7 @@
           "calls"
         ],
         "summary": "List audio assets",
-        "description": "Lists the team's audio assets, or one project's when `projectId` is given, newest first.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Lists the team's audio assets, or one project's when `projectId` is given, newest first.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -15659,7 +15659,7 @@
           "calls"
         ],
         "summary": "Upload an audio file",
-        "description": "Creates an audio asset in the named project and returns the upload URL. Requires the Voice Automation beta and an owner or admin.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Creates an audio asset in the named project and returns the upload URL. Requires the Voice Automation beta and an owner or admin.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -15744,7 +15744,7 @@
           "calls"
         ],
         "summary": "Generate speech",
-        "description": "Generates speech with ElevenLabs or OpenAI and stores it as an audio asset. Requires the Voice Automation beta and an owner or admin.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Generates speech with ElevenLabs or OpenAI and stores it as an audio asset. Requires the Voice Automation beta and an owner or admin.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -15832,7 +15832,7 @@
           "calls"
         ],
         "summary": "Get an audio asset",
-        "description": "Returns one audio asset.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Returns one audio asset.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -15906,7 +15906,7 @@
           "calls"
         ],
         "summary": "Update an audio asset",
-        "description": "Renames an asset or changes its retention. `expectedRevision` refuses a change to an asset that changed since it was read.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Renames an asset or changes its retention. `expectedRevision` refuses a change to an asset that changed since it was read.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -15993,7 +15993,7 @@
           "calls"
         ],
         "summary": "Delete an audio asset",
-        "description": "Deletes an audio asset that no campaign or flow uses, and its stored audio.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Deletes an audio asset that no campaign or flow uses, and its stored audio.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -16072,7 +16072,7 @@
           "calls"
         ],
         "summary": "Complete an audio upload",
-        "description": "Confirms that the file was sent and starts conversion.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Confirms that the file was sent and starts conversion.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -16154,7 +16154,7 @@
           "calls"
         ],
         "summary": "Get an audio preview URL",
-        "description": "Returns a 5-minute URL to the Opus preview of a ready asset.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Returns a 5-minute URL to the Opus preview of a ready asset.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -16236,7 +16236,7 @@
           "calls"
         ],
         "summary": "List voice provider credentials",
-        "description": "Lists stored ElevenLabs and OpenAI keys without the keys.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Lists stored ElevenLabs and OpenAI keys without the keys.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -16310,7 +16310,7 @@
           "calls"
         ],
         "summary": "Store a voice provider credential",
-        "description": "Stores an ElevenLabs or OpenAI key, encrypted, after checking it with the provider. Requires an owner or admin. The key is never returned.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Stores an ElevenLabs or OpenAI key, encrypted, after checking it with the provider. Requires an owner or admin. The key is never returned.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -16398,7 +16398,7 @@
           "calls"
         ],
         "summary": "Get a voice provider credential",
-        "description": "Returns one credential without its key.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Returns one credential without its key.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -16472,7 +16472,7 @@
           "calls"
         ],
         "summary": "Delete a voice provider credential",
-        "description": "Deletes a stored provider key.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Deletes a stored provider key.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -16548,7 +16548,7 @@
           "calls"
         ],
         "summary": "Verify a voice provider credential",
-        "description": "Checks the stored key with the provider again and records the result.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Checks the stored key with the provider again and records the result.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -16633,7 +16633,7 @@
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:read",
         "x-merged-endpoints": [
-          "listSessionsByOrganization"
+          "listSessionsByTeam"
         ],
         "security": [
           {
@@ -17316,7 +17316,7 @@
         "summary": "List session bans",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:read",
         "security": [
@@ -17373,7 +17373,7 @@
         "summary": "List active session bans",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:read",
         "security": [
@@ -18361,9 +18361,9 @@
           "bansafe"
         ],
         "summary": "Acknowledge a safety finding",
-        "description": "Records that a named person on the team has seen this finding, optionally silences its notifications for up to 30 days, and unlocks the appeal form. It does not change the Health estimate, the restriction, or any campaign limit. Requires a signed-in team owner, admin, or developer; an API key or token is refused with `bansafe_ack_requires_dashboard_identity`.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Records that a named person on the team has seen this finding, optionally silences its notifications for up to 30 days, and unlocks the appeal form. It does not change the Health estimate, the restriction, or any campaign limit. Requires a signed-in team owner, admin, or developer; an API key or token is refused with `bansafe_ack_requires_dashboard_identity`.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": true,
         "x-dashboard-only": true,
         "security": [
@@ -18568,9 +18568,9 @@
           "bansafe"
         ],
         "summary": "Appeal a number restriction",
-        "description": "Files one appeal against a number's restriction. Every open finding on the number must be acknowledged first, otherwise the request is refused with `findings_unacknowledged`. Filing an appeal does not change the restriction. Requires a signed-in team owner, admin, or developer.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Files one appeal against a number's restriction. Every open finding on the number must be acknowledged first, otherwise the request is refused with `findings_unacknowledged`. Filing an appeal does not change the restriction. Requires a signed-in team owner, admin, or developer.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": true,
         "x-dashboard-only": true,
         "security": [
@@ -18866,7 +18866,7 @@
         "summary": "Withdraw a ban report",
         "description": "Withdraws a customer report and returns its incident record. Repeating the request returns the closed record. An incident observed from WhatsApp cannot be withdrawn and returns `409 bansafe_incident_not_a_report`. An unknown incident returns 404.\n\nRequires a team API key with `sessions:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:manage",
         "security": [
@@ -19234,7 +19234,7 @@
           "bansafe"
         ],
         "summary": "Set a project's Safe Mode ceiling",
-        "description": "Sets the most visible behaviour any number in this project may use. Send only the settings you want to change. Presence and read receipts are visible to the people these numbers message: turning them on makes a number appear online, exposes last seen subject to the account's privacy settings, and puts blue ticks on incoming messages. Raising a setting requires a plan that includes BanSafe Lite, and lowering one is always allowed. A signed-in caller must be an team owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Sets the most visible behaviour any number in this project may use. Send only the settings you want to change. Presence and read receipts are visible to the people these numbers message: turning them on makes a number appear online, exposes last seen subject to the account's privacy settings, and puts blue ticks on incoming messages. Raising a setting requires a plan that includes BanSafe Lite, and lowering one is always allowed. A signed-in caller must be a team owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -19408,7 +19408,7 @@
           "bansafe"
         ],
         "summary": "Set a number's Safe Mode",
-        "description": "Sets one number's Safe Mode. Each setting accepts `inherit` to follow the project ceiling. An override may only be equally or more conservative than the ceiling; a more visible value is refused with `safe_mode_exceeds_project_ceiling`. Raising a setting requires a plan that includes BanSafe Lite, and lowering one is always allowed. A signed-in caller must be an team owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Sets one number's Safe Mode. Each setting accepts `inherit` to follow the project ceiling. An override may only be equally or more conservative than the ceiling; a more visible value is refused with `safe_mode_exceeds_project_ceiling`. Raising a setting requires a plan that includes BanSafe Lite, and lowering one is always allowed. A signed-in caller must be a team owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "session",
         "x-excluded-from-public": false,
@@ -19582,7 +19582,7 @@
           "bansafe"
         ],
         "summary": "Set a project's warm-up plan",
-        "description": "Turns the warm-up plan on or off for a project and sets how long the ramp takes and how many messages a number may send on its first day. Send only the settings you want to change. While the plan is on, a send past a number's allowance is refused with `bansafe_daily_allowance_reached` and campaign recipients are deferred to the next reset. Turning the plan on requires a plan that includes BanSafe Lite; turning it off is always allowed. A signed-in caller must be an team owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Turns the warm-up plan on or off for a project and sets how long the ramp takes and how many messages a number may send on its first day. Send only the settings you want to change. While the plan is on, a send past a number's allowance is refused with `bansafe_daily_allowance_reached` and campaign recipients are deferred to the next reset. Turning the plan on requires a plan that includes BanSafe Lite; turning it off is always allowed. A signed-in caller must be a team owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -19927,7 +19927,7 @@
           "bansafe"
         ],
         "summary": "Set a project's insurance evidence setting",
-        "description": "Enables or disables collection of counts about other linked devices. Collection never includes messages, recipient identities, or device names. Disabling collection discards stored device evidence. A 503 `propagation_pending` means the setting was stored but a connected number has not confirmed it; retry the request. A signed-in caller must be an team owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+        "description": "Enables or disables collection of counts about other linked devices. Collection never includes messages, recipient identities, or device names. Disabling collection discards stored device evidence. A 503 `propagation_pending` means the setting was stored but a connected number has not confirmed it; retry the request. A signed-in caller must be a team owner, admin, or developer.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -20108,7 +20108,7 @@
           "campaigns"
         ],
         "summary": "Create campaign",
-        "description": "Creates a draft campaign on any plan. `senderConfig.sessionIds` may name numbers that are not yet on a plan that includes Campaigns; launch checks the selection. It is refused with `403 bansafe_org_suspended` while the team is suspended, `400 invalid_parameter` when `senderConfig.sessionIds` is malformed, and `400 campaign_throughput_capped` when a per-number cap is above its safety ceiling.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Creates a draft campaign on any plan. `senderConfig.sessionIds` may name numbers that are not yet on a plan that includes Campaigns; launch checks the selection. It is refused with `403 bansafe_team_suspended` while the team is suspended, `400 invalid_parameter` when `senderConfig.sessionIds` is malformed, and `400 campaign_throughput_capped` when a per-number cap is above its safety ceiling.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -21017,7 +21017,7 @@
           "campaigns"
         ],
         "summary": "Reschedule campaign",
-        "description": "Moves the start of a launched campaign that is still waiting for it. Set `scheduledAt` to a later or earlier time, or to `null` to start now. The response returns the campaign with its new `scheduledAt`; sending the current start time again changes nothing. A suspended team is refused with `403 bansafe_org_suspended`. `409` means the campaign has already started, is finished or being stopped, or was never launched; launch a draft with `scheduledAt` instead.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+        "description": "Moves the start of a launched campaign that is still waiting for it. Set `scheduledAt` to a later or earlier time, or to `null` to start now. The response returns the campaign with its new `scheduledAt`; sending the current start time again changes nothing. A suspended team is refused with `403 bansafe_team_suspended`. `409` means the campaign has already started, is finished or being stopped, or was never launched; launch a draft with `scheduledAt` instead.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
@@ -21973,7 +21973,7 @@
         "summary": "List audiences",
         "description": "Public Management API. Requires a team API key with `campaigns:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "campaigns:read",
         "security": [
@@ -22028,7 +22028,7 @@
         "summary": "Create an audience",
         "description": "Creates an audience from inline `members` (at most 1,000) or from an uploaded CSV file (`fileId` + `mapping`). Numbers are normalized to E.164 and repeated numbers are kept once. A file import accepts at most 100,000 data rows; a larger file is refused with `413` and must be split. The response reports how many rows were invalid, with up to 20 samples. `recipientCount` is the number of stored members; any client-supplied count is ignored.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "campaigns:manage",
         "security": [
@@ -22110,7 +22110,7 @@
         "summary": "Get audience",
         "description": "Public Management API. Requires a team API key with `campaigns:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "campaigns:read",
         "security": [
@@ -22175,7 +22175,7 @@
         "summary": "Delete audience",
         "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "campaigns:manage",
         "security": [
@@ -22242,7 +22242,7 @@
         "summary": "Create audience upload url",
         "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "campaigns:manage",
         "security": [
@@ -22310,7 +22310,7 @@
         "summary": "Add audience members",
         "description": "Adds up to 1,000 members to an audience. A number already in the audience is skipped. Invalid entries are reported, not added.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "campaigns:manage",
         "security": [
@@ -22412,7 +22412,7 @@
         "summary": "List audience members",
         "description": "Lists an audience's members in the order they were added, with cursor pagination.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "campaigns:read",
         "security": [
@@ -22519,7 +22519,7 @@
         "summary": "Remove an audience member",
         "description": "Removes one member by phone number. The number is normalized the same way as on import. Campaigns that already launched keep the recipients they copied.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "campaigns:manage",
         "security": [
@@ -24632,7 +24632,7 @@
         "summary": "List opt outs",
         "description": "Public Management API. Requires a team API key with `campaigns:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "campaigns:read",
         "security": [
@@ -24687,7 +24687,7 @@
         "summary": "Create opt out",
         "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "campaigns:manage",
         "security": [
@@ -24755,7 +24755,7 @@
         "summary": "Create opt outs",
         "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "campaigns:manage",
         "security": [
@@ -24823,7 +24823,7 @@
         "summary": "Delete opt out",
         "description": "Public Management API. Requires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "campaigns:manage",
         "security": [
@@ -24890,7 +24890,7 @@
         "summary": "Get opt-out keyword settings",
         "description": "Returns whether keyword opt-out capture is enabled for the team and the opt-out and opt-in keyword lists. A team that never saved settings receives the defaults: enabled, opt-out keywords `STOP`, `STOPALL`, `UNSUBSCRIBE`, `CANCEL`, `END`, `QUIT`, `PARAR`, `SAIR`, `CANCELAR`, `DESCADASTRAR`, `BAJA`, and opt-in keywords `START`, `UNSTOP`. `updatedAt` is null while the defaults apply.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "campaigns:read",
         "security": [
@@ -24954,7 +24954,7 @@
         "summary": "Update opt-out keyword settings",
         "description": "Replaces the team's keyword opt-out settings. When enabled, a direct text reply whose whole body matches an opt-out keyword, from a number that received a campaign message from the team in the last 30 days, adds that number to the opt-out list with source `stop-keyword` and emits `contact.opted_out`. Matching ignores letter case and surrounding punctuation and whitespace. An opt-in keyword removes only an opt-out created this way and emits `contact.opted_in`; opt-outs added manually, by file or through the API are never removed by a reply. Each list holds at most 50 keywords of 1 to 32 characters, the opt-out list needs at least one keyword, and the two lists must not share a keyword. Keywords are stored in upper case. Changes apply to replies within 30 seconds.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "campaigns:manage",
         "security": [
@@ -25030,7 +25030,7 @@
         "summary": "Get billing",
         "description": "Public Management API. Requires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "billing:read",
         "security": [
@@ -25087,7 +25087,7 @@
         "summary": "List usage meters",
         "description": "Public Management API. Requires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "billing:read",
         "security": [
@@ -25144,7 +25144,7 @@
         "summary": "List billing transactions",
         "description": "Public Management API. Requires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "billing:read",
         "security": [
@@ -25201,7 +25201,7 @@
         "summary": "List tier pricing",
         "description": "Public Management API. Requires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "billing:read",
         "security": [
@@ -25256,9 +25256,9 @@
           "billing"
         ],
         "summary": "Read a resource's limit and priority",
-        "description": "Reads one project, customer or real number without loading the team directory. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:read`. Project tokens are not accepted.",
+        "description": "Reads one project, customer or real number without loading the team directory. Requires a team API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "billing:read",
         "security": [
@@ -25350,9 +25350,9 @@
           "billing"
         ],
         "summary": "Set a resource's limit and priority",
-        "description": "Saves the monthly limit and priority together, atomically. Both observed revisions are required. Conflicts leave both settings unchanged. Null removes a limit; zero blocks new charges. Existing paid service continues. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
+        "description": "Saves the monthly limit and priority together, atomically. Both observed revisions are required. Conflicts leave both settings unchanged. Null removes a limit; zero blocks new charges. Existing paid service continues. Requires a team API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "billing:manage",
         "security": [
@@ -25490,9 +25490,9 @@
           "billing"
         ],
         "summary": "Read monthly spending limits",
-        "description": "Reads attributed charges and active reservations in Polymorfa credits. Months reset at 00:00 UTC on the first day. Omit projectId for project limits across the team; pass it to include that project's customer and number limits. Pass scope=project to read only project limits. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:read`. Project tokens are not accepted.",
+        "description": "Reads attributed charges and active reservations in Polymorfa credits. Months reset at 00:00 UTC on the first day. Omit projectId for project limits across the team; pass it to include that project's customer and number limits. Pass scope=project to read only project limits. Requires a team API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "billing:read",
         "security": [
@@ -25584,9 +25584,9 @@
           "billing"
         ],
         "summary": "Set a monthly spending limit",
-        "description": "Zero blocks new charges; null removes the limit. Existing paid service continues to its paid-window end. Reservations count toward admission. Supply the revision from the limit read; a stale revision returns 409. Retrying the same successful update is harmless. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
+        "description": "Zero blocks new charges; null removes the limit. Existing paid service continues to its paid-window end. Reservations count toward admission. Supply the revision from the limit read; a stale revision returns 409. Retrying the same successful update is harmless. Requires a team API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "billing:manage",
         "security": [
@@ -25721,9 +25721,9 @@
           "billing"
         ],
         "summary": "Read funding priorities",
-        "description": "Lists active projects, customers and real numbers. Pass scope=project to read only project ranks. Pass projectId to read one project and its customer/number leaderboard. Project priority takes precedence. Within a project, numbers inherit their customer priority; a higher number priority overrides it. Number priority then breaks ties before renewal due time and stable number identity. Numbers are ranked within a project. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:read`. Project tokens are not accepted.",
+        "description": "Lists active projects, customers and real numbers. Pass scope=project to read only project ranks. Pass projectId to read one project and its customer/number leaderboard. Project priority takes precedence. Within a project, numbers inherit their customer priority; a higher number priority overrides it. Number priority then breaks ties before renewal due time and stable number identity. Numbers are ranked within a project. Requires a team API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "billing:read",
         "security": [
@@ -25813,9 +25813,9 @@
           "billing"
         ],
         "summary": "Reorder funding priorities",
-        "description": "resourceIds is the complete list in highest-first order. Project order includes every active project; customer and number orders include every active customer or real number in projectId. Use scope=resource with projectId and a complete resources array of {scope: customer or number, resourceId} for one mixed leaderboard. Saves the whole order atomically. Concurrent changes or an incomplete list return 409. Retrying the same successful order is harmless. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
+        "description": "resourceIds is the complete list in highest-first order. Project order includes every active project; customer and number orders include every active customer or real number in projectId. Use scope=resource with projectId and a complete resources array of {scope: customer or number, resourceId} for one mixed leaderboard. Saves the whole order atomically. Concurrent changes or an incomplete list return 409. Retrying the same successful order is harmless. Requires a team API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "billing:manage",
         "security": [
@@ -26020,9 +26020,9 @@
           "billing"
         ],
         "summary": "Set a funding priority",
-        "description": "Changes future funding protection and recovery order without shortening paid service. Supply the team-wide revision from the priorities read. A stale revision returns 409. Requires an organization API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
+        "description": "Changes future funding protection and recovery order without shortening paid service. Supply the team-wide revision from the priorities read. A stale revision returns 409. Requires a team API key with the stated billing scope, or a signed-in team owner or admin. Project and client credentials cannot access these controls. Billing must be configured. Writes require Pay-As-You-Go. These controls never enable charging of unpriced usage.\n\nRequires a team API key with `billing:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "billing:manage",
         "security": [
@@ -26164,7 +26164,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization.",
+            "description": "Project to read. Omit to total every project in the team.",
             "schema": {
               "type": "string"
             }
@@ -26384,7 +26384,7 @@
         "summary": "List usage gates",
         "description": "Returns every usage gate with its mode, limit, current usage and decisions in the last 30 days. Gate state covers the whole team, so it needs a team API key; project tokens are refused. Pass `session` to include limits that apply per number, and `projectId` to require that the number belongs to that project. The active outbound monthly gate is record-only: an action over its limit is counted but allowed. It cannot be switched to enforce until placement reservations are available. An action whose limit cannot be checked fails with `503`.\n\nRequires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:read",
         "security": [
@@ -26468,14 +26468,14 @@
     },
     "/platform/team": {
       "get": {
-        "operationId": "getOrganization",
+        "operationId": "getTeam",
         "tags": [
           "team"
         ],
-        "summary": "Get organization",
+        "summary": "Get team",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:read",
         "security": [
@@ -26523,20 +26523,20 @@
         }
       }
     },
-    "/console/organization": {
+    "/console/team": {
       "patch": {
-        "operationId": "updateOrganization",
+        "operationId": "updateTeam",
         "tags": [
-          "organization"
+          "team"
         ],
-        "summary": "Update organization",
-        "description": "**EXCLUDED from the public API** (`console`). Organization changes require an authenticated console member.",
+        "summary": "Update team",
+        "description": "**EXCLUDED from the public API** (`console`). Team changes require an authenticated console member.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Organization changes require an authenticated console member.",
+        "x-exclusion-reason": "Team changes require an authenticated console member.",
         "x-dashboard-only": true,
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -26599,7 +26599,7 @@
         "summary": "List projects",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:read",
         "security": [
@@ -26654,7 +26654,7 @@
         "summary": "Create a project",
         "description": "Creates a project in development. A Free team can have one active project; creating another returns `409` with code `payg_required` until the team upgrades to Pay-As-You-Go. Pay-As-You-Go teams have no project limit.\n\nRequires a team API key with `sessions:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:manage",
         "security": [
@@ -26782,7 +26782,7 @@
           "projects"
         ],
         "summary": "Read project setup progress",
-        "description": "Returns current project setup facts and the setup goals selected for this project. Includes a saved enum-only integration plan, revision and live edit eligibility; onboarding choices seed the first project. Completion is derived from current records. Does not enable features, create resources, or verify deployed integrations.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Returns current project setup facts and the setup goals selected for this project. Includes a saved enum-only integration plan, revision and live edit eligibility; onboarding choices seed the first project. Completion is derived from current records. Does not enable features, create resources, or verify deployed integrations.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -27099,12 +27099,12 @@
           "projects"
         ],
         "summary": "Save a project integration plan",
-        "description": "Saves reviewed enum-only setup answers. Server SDK choices require TypeScript or JavaScript; browser calling requires client code and the Calls feature. Requires a current owner or admin and the expected revision; stale writes return 409. Does not grant access, enable features, import a session or configure resources.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Saves reviewed enum-only setup answers. Server SDK choices require TypeScript or JavaScript; browser calling requires client code and the Calls feature. Requires a current owner or admin and the expected revision; stale writes return 409. Does not grant access, enable features, import a session or configure resources.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Dashboard-only enum-only integration guidance; no credentials, feature authority or runtime configuration.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -27332,7 +27332,7 @@
           "projects"
         ],
         "summary": "Record consented setup usage",
-        "description": "Records a bounded enum-only interaction with a server-derived completion snapshot. Requires current dashboard membership and measurement consent. Stores no prompt or imported answer content. Exact event ids deduplicate retries. Measurements expire after 90 days and staff reads aggregate counts only.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Records a bounded enum-only interaction with a server-derived completion snapshot. Requires current dashboard membership and measurement consent. Stores no prompt or imported answer content. Exact event ids deduplicate retries. Measurements expire after 90 days and staff reads aggregate counts only.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -27498,12 +27498,12 @@
           "projects"
         ],
         "summary": "Update project settings",
-        "description": "Updates the display name, icon, or default number plan without changing the project ID, URL, stage, or individual number overrides.\n\n**Hybrid Link.** A default plan without Hybrid Link returns `409` with code `hybrid_choice_required` while a Hybrid Link Number inherits the project plan. Change each such Number's tier first and choose which connection it keeps.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Updates the display name, icon, or default number plan without changing the project ID, URL, stage, or individual number overrides.\n\n**Hybrid Link.** A default plan without Hybrid Link returns `409` with code `hybrid_choice_required` while a Hybrid Link Number inherits the project plan. Change each such Number's tier first and choose which connection it keeps.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Dashboard project name, icon, and default number plan settings. Requires a current owner or admin.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -28187,14 +28187,14 @@
     },
     "/platform/webhooks": {
       "get": {
-        "operationId": "listOrganizationWebhooks",
+        "operationId": "listTeamWebhooks",
         "tags": [
           "webhooks"
         ],
         "summary": "List team webhooks",
         "description": "Lists only team-owned webhook endpoints. Project-owned endpoints are excluded.\n\nRequires a team API key with `webhooks:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhooks:read",
         "security": [
@@ -28270,7 +28270,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/OrganizationWebhook"
+                        "$ref": "#/components/schemas/TeamWebhook"
                       }
                     },
                     "page": {
@@ -28297,14 +28297,14 @@
         }
       },
       "post": {
-        "operationId": "createOrganizationWebhook",
+        "operationId": "createTeamWebhook",
         "tags": [
           "webhooks"
         ],
-        "summary": "Create an team webhook",
-        "description": "Creates an team-owned webhook and returns its generated signing secret once.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
+        "summary": "Create a team webhook",
+        "description": "Creates a team-owned webhook and returns its generated signing secret once.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhooks:manage",
         "security": [
@@ -28332,7 +28332,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateOrganizationWebhookInput"
+                "$ref": "#/components/schemas/CreateTeamWebhookInput"
               }
             }
           }
@@ -28361,7 +28361,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhookCreationReceipt"
+                      "$ref": "#/components/schemas/TeamWebhookCreationReceipt"
                     }
                   },
                   "required": [
@@ -28388,14 +28388,14 @@
     },
     "/platform/webhooks/{webhookId}": {
       "get": {
-        "operationId": "getOrganizationWebhook",
+        "operationId": "getTeamWebhook",
         "tags": [
           "webhooks"
         ],
-        "summary": "Get an team webhook",
+        "summary": "Get a team webhook",
         "description": "Returns one team-owned webhook without secret values.\n\nRequires a team API key with `webhooks:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhooks:read",
         "security": [
@@ -28441,7 +28441,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhook"
+                      "$ref": "#/components/schemas/TeamWebhook"
                     }
                   },
                   "required": [
@@ -28466,14 +28466,14 @@
         }
       },
       "patch": {
-        "operationId": "updateOrganizationWebhook",
+        "operationId": "updateTeamWebhook",
         "tags": [
           "webhooks"
         ],
-        "summary": "Update an team webhook",
+        "summary": "Update a team webhook",
         "description": "Updates settings without rotating the signing secret.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhooks:manage",
         "security": [
@@ -28510,7 +28510,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateOrganizationWebhookInput"
+                "$ref": "#/components/schemas/UpdateTeamWebhookInput"
               }
             }
           }
@@ -28539,7 +28539,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhookMutationReceipt"
+                      "$ref": "#/components/schemas/TeamWebhookMutationReceipt"
                     }
                   },
                   "required": [
@@ -28567,14 +28567,14 @@
         }
       },
       "delete": {
-        "operationId": "deleteOrganizationWebhook",
+        "operationId": "deleteTeamWebhook",
         "tags": [
           "webhooks"
         ],
-        "summary": "Delete an team webhook",
+        "summary": "Delete a team webhook",
         "description": "Deletes one team-owned webhook.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhooks:manage",
         "security": [
@@ -28630,7 +28630,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhookDeletionReceipt"
+                      "$ref": "#/components/schemas/TeamWebhookDeletionReceipt"
                     }
                   },
                   "required": [
@@ -28660,14 +28660,14 @@
     },
     "/platform/webhooks/{webhookId}/secret-rotations": {
       "post": {
-        "operationId": "rotateOrganizationWebhookSecret",
+        "operationId": "rotateTeamWebhookSecret",
         "tags": [
           "webhooks"
         ],
-        "summary": "Rotate an team webhook secret",
+        "summary": "Rotate a team webhook secret",
         "description": "Rotates the signing secret and returns the new secret once.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhooks:manage",
         "security": [
@@ -28733,7 +28733,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhookSecretRotationReceipt"
+                      "$ref": "#/components/schemas/TeamWebhookSecretRotationReceipt"
                     }
                   },
                   "required": [
@@ -28763,14 +28763,14 @@
     },
     "/platform/webhooks/{webhookId}/tests": {
       "post": {
-        "operationId": "testOrganizationWebhook",
+        "operationId": "testTeamWebhook",
         "tags": [
           "webhooks"
         ],
         "summary": "Send a team webhook test",
         "description": "Creates a synthetic team event and a traceable webhook delivery.\n\nRequires a team API key with `webhooks:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhooks:manage",
         "security": [
@@ -28807,7 +28807,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TestOrganizationWebhookInput"
+                "$ref": "#/components/schemas/TestTeamWebhookInput"
               }
             }
           }
@@ -28836,7 +28836,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhookTestReceipt"
+                      "$ref": "#/components/schemas/TeamWebhookTestReceipt"
                     }
                   },
                   "required": [
@@ -29617,14 +29617,14 @@
     },
     "/platform/events": {
       "get": {
-        "operationId": "listOrganizationEvents",
+        "operationId": "listTeamEvents",
         "tags": [
           "events"
         ],
         "summary": "List team events",
         "description": "Lists team-owned event metadata. Project-owned events are excluded.\n\nRequires a team API key with `events:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "events:read",
         "security": [
@@ -29718,7 +29718,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/OrganizationEvent"
+                        "$ref": "#/components/schemas/TeamEvent"
                       }
                     },
                     "page": {
@@ -29747,14 +29747,14 @@
     },
     "/platform/events/{eventId}": {
       "get": {
-        "operationId": "getOrganizationEvent",
+        "operationId": "getTeamEvent",
         "tags": [
           "events"
         ],
-        "summary": "Get an team event",
+        "summary": "Get a team event",
         "description": "Returns one team-owned event and includes exact payload bytes only when requested and available.\n\nRequires a team API key with `events:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "events:read",
         "security": [
@@ -29809,7 +29809,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationEvent"
+                      "$ref": "#/components/schemas/TeamEvent"
                     }
                   },
                   "required": [
@@ -29836,14 +29836,14 @@
     },
     "/platform/events/{eventId}/replays": {
       "post": {
-        "operationId": "replayOrganizationEvent",
+        "operationId": "replayTeamEvent",
         "tags": [
           "events"
         ],
-        "summary": "Replay an team event",
+        "summary": "Replay a team event",
         "description": "Creates a new logical delivery for a retained team event.\n\nRequires a team API key with `events:replay`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "events:replay",
         "security": [
@@ -29909,7 +29909,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationEventReplayReceipt"
+                      "$ref": "#/components/schemas/TeamEventReplayReceipt"
                     }
                   },
                   "required": [
@@ -30297,14 +30297,14 @@
     },
     "/platform/webhook-deliveries": {
       "get": {
-        "operationId": "listOrganizationWebhookDeliveries",
+        "operationId": "listTeamWebhookDeliveries",
         "tags": [
           "webhook deliveries"
         ],
         "summary": "List team webhook deliveries",
         "description": "Lists logical deliveries for team-owned webhooks. Project-owned deliveries are excluded.\n\nRequires a team API key with `webhook-deliveries:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhook-deliveries:read",
         "security": [
@@ -30413,7 +30413,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/OrganizationWebhookDelivery"
+                        "$ref": "#/components/schemas/TeamWebhookDelivery"
                       }
                     },
                     "page": {
@@ -30442,14 +30442,14 @@
     },
     "/platform/webhook-deliveries/{deliveryId}": {
       "get": {
-        "operationId": "getOrganizationWebhookDelivery",
+        "operationId": "getTeamWebhookDelivery",
         "tags": [
           "webhook deliveries"
         ],
-        "summary": "Get an team webhook delivery",
+        "summary": "Get a team webhook delivery",
         "description": "Returns one logical team webhook delivery.\n\nRequires a team API key with `webhook-deliveries:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhook-deliveries:read",
         "security": [
@@ -30495,7 +30495,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhookDelivery"
+                      "$ref": "#/components/schemas/TeamWebhookDelivery"
                     }
                   },
                   "required": [
@@ -30522,14 +30522,14 @@
     },
     "/platform/webhook-deliveries/{deliveryId}/retry": {
       "post": {
-        "operationId": "retryOrganizationWebhookDelivery",
+        "operationId": "retryTeamWebhookDelivery",
         "tags": [
           "webhook deliveries"
         ],
-        "summary": "Retry an team webhook delivery",
+        "summary": "Retry a team webhook delivery",
         "description": "Appends a new immutable attempt to the same logical delivery.\n\nRequires a team API key with `webhook-deliveries:retry`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhook-deliveries:retry",
         "security": [
@@ -30585,7 +30585,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhookDeliveryRetryReceipt"
+                      "$ref": "#/components/schemas/TeamWebhookDeliveryRetryReceipt"
                     }
                   },
                   "required": [
@@ -30618,14 +30618,14 @@
     },
     "/platform/webhook-deliveries/{deliveryId}/attempts": {
       "get": {
-        "operationId": "listOrganizationWebhookDeliveryAttempts",
+        "operationId": "listTeamWebhookDeliveryAttempts",
         "tags": [
           "webhook deliveries"
         ],
         "summary": "List team delivery attempts",
         "description": "Lists immutable network attempts for one team webhook delivery.\n\nRequires a team API key with `webhook-deliveries:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhook-deliveries:read",
         "security": [
@@ -30692,7 +30692,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/OrganizationWebhookDeliveryAttempt"
+                        "$ref": "#/components/schemas/TeamWebhookDeliveryAttempt"
                       }
                     },
                     "page": {
@@ -30724,14 +30724,14 @@
     },
     "/platform/webhook-deliveries/{deliveryId}/attempts/{attemptId}": {
       "get": {
-        "operationId": "getOrganizationWebhookDeliveryAttempt",
+        "operationId": "getTeamWebhookDeliveryAttempt",
         "tags": [
           "webhook deliveries"
         ],
         "summary": "Get team delivery attempt",
         "description": "Returns one immutable network attempt.\n\nRequires a team API key with `webhook-deliveries:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "webhook-deliveries:read",
         "security": [
@@ -30786,7 +30786,7 @@
                   "additionalProperties": false,
                   "properties": {
                     "data": {
-                      "$ref": "#/components/schemas/OrganizationWebhookDeliveryAttempt"
+                      "$ref": "#/components/schemas/TeamWebhookDeliveryAttempt"
                     }
                   },
                   "required": [
@@ -33634,7 +33634,7 @@
         "summary": "List members",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:read",
         "security": [
@@ -33695,7 +33695,7 @@
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Membership administration requires an authenticated console member.",
         "x-dashboard-only": true,
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -33762,7 +33762,7 @@
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Membership administration requires an authenticated console member.",
         "x-dashboard-only": true,
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -33837,7 +33837,7 @@
         "x-excluded-from-public": true,
         "x-exclusion-reason": "Membership administration requires an authenticated console member.",
         "x-dashboard-only": true,
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -33899,7 +33899,7 @@
         "summary": "List api keys",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:read",
         "security": [
@@ -33956,7 +33956,7 @@
         "summary": "Deactivate api key",
         "description": "Public Management API. Requires a team API key with `sessions:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:manage",
         "security": [
@@ -34090,7 +34090,7 @@
         "summary": "List audit logs",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:read",
         "security": [
@@ -34147,7 +34147,7 @@
         "summary": "List security incidents",
         "description": "Public Management API. Requires a team API key with `sessions:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:read",
         "security": [
@@ -34204,7 +34204,7 @@
         "summary": "Acknowledge security incident",
         "description": "Public Management API. Requires a team API key with `sessions:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "sessions:manage",
         "security": [
@@ -34282,7 +34282,7 @@
         "summary": "Get media url",
         "description": "Public Management API. Requires a team API key with `media:read`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "media:read",
         "security": [
@@ -34347,7 +34347,7 @@
         "summary": "Delete media",
         "description": "Public Management API. Requires a team API key with `media:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "media:manage",
         "security": [
@@ -34414,7 +34414,7 @@
         "summary": "Create media upload url",
         "description": "Public Management API. Requires a team API key with `media:manage`. Project tokens are not accepted.",
         "x-audience": "public",
-        "x-polymorfa-resource-boundary": "organization",
+        "x-polymorfa-resource-boundary": "team",
         "x-excluded-from-public": false,
         "x-required-scope": "media:manage",
         "security": [
@@ -34758,18 +34758,18 @@
         }
       }
     },
-    "/console/organizations/{slug}": {
+    "/console/teams/{slug}": {
       "get": {
-        "operationId": "getOrganizationBySlug",
+        "operationId": "getTeamBySlug",
         "tags": [
-          "organizations"
+          "teams"
         ],
-        "summary": "Get organization by slug",
-        "description": "**EXCLUDED from the public API** (`console`). Console org-switcher lookup; a key is already bound to one org.",
+        "summary": "Get team by slug",
+        "description": "**EXCLUDED from the public API** (`console`). Console team-switcher lookup; a key is already bound to one team.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Console org-switcher lookup; a key is already bound to one org.",
+        "x-exclusion-reason": "Console team-switcher lookup; a key is already bound to one team.",
         "security": [
           {
             "ConsoleSession": []
@@ -34822,13 +34822,13 @@
         }
       }
     },
-    "/console/organization/avatar/uploads": {
+    "/console/team/avatar/uploads": {
       "post": {
-        "operationId": "generateOrganizationAvatarUploadUrl",
+        "operationId": "generateTeamAvatarUploadUrl",
         "tags": [
-          "organization"
+          "team"
         ],
-        "summary": "Generate organization avatar upload url",
+        "summary": "Generate team avatar upload url",
         "description": "**EXCLUDED from the public API** (`console`). Browser logo-upload flow.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
@@ -34887,13 +34887,13 @@
         }
       }
     },
-    "/console/organization/avatar": {
+    "/console/team/avatar": {
       "put": {
-        "operationId": "saveAvatarOrganization",
+        "operationId": "saveAvatarTeam",
         "tags": [
-          "organization"
+          "team"
         ],
-        "summary": "Save avatar organization",
+        "summary": "Save avatar team",
         "description": "**EXCLUDED from the public API** (`console`). Browser logo-upload flow.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
@@ -34952,11 +34952,11 @@
         }
       },
       "delete": {
-        "operationId": "removeAvatarOrganization",
+        "operationId": "removeAvatarTeam",
         "tags": [
-          "organization"
+          "team"
         ],
-        "summary": "Remove avatar organization",
+        "summary": "Remove avatar team",
         "description": "**EXCLUDED from the public API** (`console`). Browser logo-upload flow.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
@@ -35004,13 +35004,13 @@
         }
       }
     },
-    "/console/organizations/ensure": {
+    "/console/teams/ensure": {
       "post": {
-        "operationId": "ensureForCurrentUserOrganization",
+        "operationId": "ensureForCurrentUserTeam",
         "tags": [
-          "organizations"
+          "teams"
         ],
-        "summary": "Ensure for current user organization",
+        "summary": "Ensure for current user team",
         "description": "**EXCLUDED from the public API** (`console`). First-sign-in bootstrap for the session user.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
@@ -35152,11 +35152,11 @@
           "profile"
         ],
         "summary": "Get user profile",
-        "description": "**EXCLUDED from the public API** (`console`). 'Current user' only exists for a session; keys are org-scoped, not user-scoped.",
+        "description": "**EXCLUDED from the public API** (`console`). 'Current user' only exists for a session; keys are team-scoped, not user-scoped.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "'Current user' only exists for a session; keys are org-scoped, not user-scoped.",
+        "x-exclusion-reason": "'Current user' only exists for a session; keys are team-scoped, not user-scoped.",
         "security": [
           {
             "ConsoleSession": []
@@ -36875,18 +36875,18 @@
         }
       }
     },
-    "/console/quicklink/logo/org": {
+    "/console/quicklink/logo/team": {
       "post": {
-        "operationId": "useOrgLogoQuickLinkSettings",
+        "operationId": "useTeamLogoQuickLinkSettings",
         "tags": [
           "quicklink"
         ],
-        "summary": "Use org logo quick link settings",
-        "description": "**EXCLUDED from the public API** (`console`). Console snapshot flow (copies org logo).",
+        "summary": "Use team logo quick link settings",
+        "description": "**EXCLUDED from the public API** (`console`). Console snapshot flow (copies team logo).",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Console snapshot flow (copies org logo).",
+        "x-exclusion-reason": "Console snapshot flow (copies team logo).",
         "security": [
           {
             "ConsoleSession": []
@@ -37012,11 +37012,11 @@
           "webhooks"
         ],
         "summary": "List webhook endpoints",
-        "description": "Lists sanitized webhook endpoint settings for the authenticated team.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Lists sanitized webhook endpoint settings for the authenticated team.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Dashboard webhook settings for the authenticated organization.",
+        "x-exclusion-reason": "Dashboard webhook settings for the authenticated team.",
         "security": [
           {
             "ConsoleSession": []
@@ -37073,12 +37073,12 @@
           "webhooks"
         ],
         "summary": "Create a webhook endpoint",
-        "description": "Creates a webhook endpoint for the authenticated team. Requires live owner or admin authority.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Creates a webhook endpoint for the authenticated team. Requires live owner or admin authority.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Dashboard webhook settings for the authenticated organization.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-exclusion-reason": "Dashboard webhook settings for the authenticated team.",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -37147,12 +37147,12 @@
           "webhooks"
         ],
         "summary": "Update a webhook endpoint",
-        "description": "Updates a webhook endpoint in the authenticated team. Requires live owner or admin authority.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Updates a webhook endpoint in the authenticated team. Requires live owner or admin authority.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Dashboard webhook settings for the authenticated organization.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-exclusion-reason": "Dashboard webhook settings for the authenticated team.",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -37233,12 +37233,12 @@
           "webhooks"
         ],
         "summary": "Delete a webhook endpoint",
-        "description": "Deletes a webhook endpoint in the authenticated team. Requires live owner or admin authority.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Deletes a webhook endpoint in the authenticated team. Requires live owner or admin authority.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Dashboard webhook settings for the authenticated organization.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-exclusion-reason": "Dashboard webhook settings for the authenticated team.",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -37437,7 +37437,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization.",
+            "description": "Project to read. Omit to total every project in the team.",
             "schema": {
               "type": "string"
             }
@@ -37615,7 +37615,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization.",
+            "description": "Project to read. Omit to total every project in the team.",
             "schema": {
               "type": "string"
             }
@@ -37807,7 +37807,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization.",
+            "description": "Project to read. Omit to total every project in the team.",
             "schema": {
               "type": "string"
             }
@@ -37869,11 +37869,11 @@
           "calls"
         ],
         "summary": "List calls",
-        "description": "Lists the team's calls, newest first. Filter by project, session, state, direction, start time, or live calls only. `live=true` returns offered and answered calls; `live=false` returns declined, missed, and ended calls. Pass `nextCursor` as `cursor` to read the next page with the same filters.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Lists the team's calls, newest first. Filter by project, session, state, direction, start time, or live calls only. `live=true` returns offered and answered calls; `live=false` returns declined, missed, and ended calls. Pass `nextCursor` as `cursor` to read the next page with the same filters.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Customer console view of the organization's own call records.",
+        "x-exclusion-reason": "Customer console view of the team's own call records.",
         "security": [
           {
             "ConsoleSession": []
@@ -37884,7 +37884,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization.",
+            "description": "Project to read. Omit to total every project in the team.",
             "schema": {
               "type": "string"
             }
@@ -38029,7 +38029,7 @@
           "calls"
         ],
         "summary": "Get call detail",
-        "description": "Returns one call with its participants, connections, media measurements, webhook delivery outcomes, and correlation identifiers. Measurements that were not reported are null. Webhook delivery records are kept for 30 days.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Returns one call with its participants, connections, media measurements, webhook delivery outcomes, and correlation identifiers. Measurements that were not reported are null. Webhook delivery records are kept for 30 days.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -38115,12 +38115,12 @@
           "calls"
         ],
         "summary": "End a call",
-        "description": "Ends a live call for every participant. Returns 409 when the call is not live. Every attempt is recorded in the audit log.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Ends a live call for every participant. Returns 409 when the call is not live. Every attempt is recorded in the audit log.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Console call control; requires a live organization owner or admin. Server integrations end calls with DELETE /messaging/voip/calls/{callId}.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-exclusion-reason": "Console call control; requires a live team owner or admin. Server integrations end calls with DELETE /messaging/voip/calls/{callId}.",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -38210,12 +38210,12 @@
           "calls"
         ],
         "summary": "Remove a call connection",
-        "description": "Closes one client connection of a live call. The call continues for everyone else. Returns 409 when the call is not live or the connection now belongs to another participant. Every attempt is recorded in the audit log.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Closes one client connection of a live call. The call continues for everyone else. Returns 409 when the call is not live or the connection now belongs to another participant. Every attempt is recorded in the audit log.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Console call control; requires a live organization owner or admin. Server integrations close their own connections with POST /messaging/voip/calls/{callId}/leave.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-exclusion-reason": "Console call control; requires a live team owner or admin. Server integrations close their own connections with POST /messaging/voip/calls/{callId}/leave.",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -38317,7 +38317,7 @@
           "audit"
         ],
         "summary": "Read scoped Settings audit history",
-        "description": "Dashboard-only team or project audit history for a date range. Includes actor name and profile image only for recorded actors in the authenticated team. Public audit API response stays unchanged.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Dashboard-only team or project audit history for a date range. Includes actor name and profile image only for recorded actors in the authenticated team. Public audit API response stays unchanged.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -38332,7 +38332,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization.",
+            "description": "Project to read. Omit to total every project in the team.",
             "schema": {
               "type": "string"
             }
@@ -38418,7 +38418,7 @@
           "projects"
         ],
         "summary": "Read project log forwarding",
-        "description": "Project-scoped dashboard configuration. Owners and admins receive destination URLs and header names. Members receive metadata with null URLs and empty header names. Saved header values and signing secrets are never returned.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Project-scoped dashboard configuration. Owners and admins receive destination URLs and header names. Members receive metadata with null URLs and empty header names. Saved header values and signing secrets are never returned.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -38657,12 +38657,12 @@
           "projects"
         ],
         "summary": "Save ordered log sampling rules",
-        "description": "Samples operational forwarding by request/event identity. Source logs and permanent audit history remain complete. Requires an exact revision and operation UUID; retries replay for 30 days. Incompatible type/identifier combinations are rejected.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Samples operational forwarding by request/event identity. Source logs and permanent audit history remain complete. Requires an exact revision and operation UUID; retries replay for 30 days. Incompatible type/identifier combinations are rejected.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-dashboard-only": true,
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -38824,12 +38824,12 @@
           "projects"
         ],
         "summary": "Configure a custom HTTPS log drain",
-        "description": "Creates, pauses, resumes or deletes one project drain with revision guards and exact operation replay. Up to five drains. URLs and headers are encrypted at rest. Delivery is at least once, never follows redirects, retries at most six times over 24 hours, and retains delivery metadata for seven days. Deleting removes that drain and its queue.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Creates, pauses, resumes or deletes one project drain with revision guards and exact operation replay. Up to five drains. URLs and headers are encrypted at rest. Delivery is at least once, never follows redirects, retries at most six times over 24 hours, and retains delivery metadata for seven days. Deleting removes that drain and its queue.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
         "x-dashboard-only": true,
-        "x-required-organization-role": "owner_or_admin",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -39037,7 +39037,7 @@
           "insights"
         ],
         "summary": "Read scoped log activity dates",
-        "description": "Returns the earliest retained operational log and all activity dates in the requested IANA timezone. Does not depend on the log list result limit or active filters.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Returns the earliest retained operational log and all activity dates in the requested IANA timezone. Does not depend on the log list result limit or active filters.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -39052,7 +39052,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization.",
+            "description": "Project to read. Omit to total every project in the team.",
             "schema": {
               "type": "string"
             }
@@ -39150,11 +39150,11 @@
           "insights"
         ],
         "summary": "Logs insight",
-        "description": "**EXCLUDED from the public API** (`console`). Customer console observability for the selected organization and project.",
+        "description": "**EXCLUDED from the public API** (`console`). Customer console observability for the selected team and project.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Customer console observability for the selected organization and project.",
+        "x-exclusion-reason": "Customer console observability for the selected team and project.",
         "security": [
           {
             "ConsoleSession": []
@@ -39165,7 +39165,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization.",
+            "description": "Project to read. Omit to total every project in the team.",
             "schema": {
               "type": "string"
             }
@@ -39286,7 +39286,7 @@
           "insights"
         ],
         "summary": "Read Console API and webhook errors",
-        "description": "Dashboard-only counts for the last 24 hours, independent of Analytics consent. Project scope is verified through live dashboard authority.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Dashboard-only counts for the last 24 hours, independent of Analytics consent. Project scope is verified through live dashboard authority.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -39301,7 +39301,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization.",
+            "description": "Project to read. Omit to total every project in the team.",
             "schema": {
               "type": "string"
             }
@@ -39425,7 +39425,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization.",
+            "description": "Project to read. Omit to total every project in the team.",
             "schema": {
               "type": "string"
             }
@@ -39633,7 +39633,7 @@
           "insights"
         ],
         "summary": "Search Console number options",
-        "description": "Private dashboard-only, org-scoped production number labels for selectors. Optional projectId must name an active, nondeleting project. Search is a literal case-insensitive substring of display name, current phone, session name or immutable number UUID, evaluated before pagination. Numbers in testing, deletion or deleted status and inactive/deleting projects are excluded; expired number history remains selectable. Results use immutable UUID ascending keyset order, default 25 and maximum 100; a cursor is bound to org, project and normalized search. It is navigation only and never grants authority. Response includes only number ID, project ID and a display label, with no configuration, owner, customer or provider fields. Public session listing is unchanged.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Private dashboard-only, team-scoped production number labels for selectors. Optional projectId must name an active, nondeleting project. Search is a literal case-insensitive substring of display name, current phone, session name or immutable number UUID, evaluated before pagination. Numbers in testing, deletion or deleted status and inactive/deleting projects are excluded; expired number history remains selectable. Results use immutable UUID ascending keyset order, default 25 and maximum 100; a cursor is bound to team, project and normalized search. It is navigation only and never grants authority. Response includes only number ID, project ID and a display label, with no configuration, owner, customer or provider fields. Public session listing is unchanged.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -39648,7 +39648,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization.",
+            "description": "Project to read. Omit to total every project in the team.",
             "schema": {
               "type": "string",
               "format": "uuid"
@@ -39741,7 +39741,7 @@
           "insights"
         ],
         "summary": "Read Console usage",
-        "description": "Private Console usage for the authenticated team or one active project. `start` and `end` are inclusive Unix-millisecond boundaries, with a maximum span of 366 days. A missing end defaults to now; a missing start defaults to 29 days before the end. Daily buckets use UTC dates and include only dates with observed audit or credit-ledger activity. API request counts include API and MCP operations; peak request rate is the busiest one-minute bucket, not a sum of daily peaks. Number and connection metrics are live snapshots, and message-rate usage remains null because its peak is not measured. The project breakdown includes active projects and omits unattributed team activity, which remains in team totals.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Private Console usage for the authenticated team or one active project. `start` and `end` are inclusive Unix-millisecond boundaries, with a maximum span of 366 days. A missing end defaults to now; a missing start defaults to 29 days before the end. Daily buckets use UTC dates and include only dates with observed audit or credit-ledger activity. API request counts include API and MCP operations; peak request rate is the busiest one-minute bucket, not a sum of daily peaks. Number and connection metrics are live snapshots, and message-rate usage remains null because its peak is not measured. The project breakdown includes active projects and omits unattributed team activity, which remains in team totals.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -39756,7 +39756,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization.",
+            "description": "Project to read. Omit to total every project in the team.",
             "schema": {
               "type": "string",
               "format": "uuid"
@@ -39849,7 +39849,7 @@
           "insights"
         ],
         "summary": "Analytics insight",
-        "description": "Org/project-scoped recorded API, event, webhook and number analytics. Event and webhook counts include unexpired metadata only; current snapshots are independent of dates. No message bodies or identity fields are returned.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Team/project-scoped recorded API, event, webhook and number analytics. Event and webhook counts include unexpired metadata only; current snapshots are independent of dates. No message bodies or identity fields are returned.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -39864,7 +39864,7 @@
             "name": "projectId",
             "in": "query",
             "required": false,
-            "description": "Project to read. Omit to total every project in the organization.",
+            "description": "Project to read. Omit to total every project in the team.",
             "schema": {
               "type": "string"
             }
@@ -39945,7 +39945,7 @@
           "insights"
         ],
         "summary": "Get insight preferences",
-        "description": "undefined\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "undefined\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -40006,7 +40006,7 @@
           "insights"
         ],
         "summary": "Update insight preferences",
-        "description": "undefined\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "undefined\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -40075,13 +40075,13 @@
         }
       }
     },
-    "/console/organization-invitations/{invitationId}/accept": {
+    "/console/team-invitations/{invitationId}/accept": {
       "post": {
-        "operationId": "acceptOrganizationInvitation",
+        "operationId": "acceptTeamInvitation",
         "tags": [
-          "organization-invitations"
+          "team-invitations"
         ],
-        "summary": "Accept organization invitation",
+        "summary": "Accept team invitation",
         "description": "**EXCLUDED from the public API** (`console`). Deferred Better Auth invitation-acceptance flow; dashboard identity only.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
@@ -40157,11 +40157,11 @@
           "Feature availability"
         ],
         "summary": "Evaluate feature availability",
-        "description": "Evaluate feature decisions for the live dashboard organization. With measurement consent, assigned experiments return a five-minute exposure token. No permission is granted by a decision. Unoffered, unenrolled betas are omitted. Offered betas include terms before enrollment; enrolled betas remain visible for withdrawal.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Evaluate feature decisions for the live dashboard team. With measurement consent, assigned experiments return a five-minute exposure token. No permission is granted by a decision. Unoffered, unenrolled betas are omitted. Offered betas include terms before enrollment; enrolled betas remain visible for withdrawal.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Private dashboard feature discovery; requires live organization membership.",
+        "x-exclusion-reason": "Private dashboard feature discovery; requires live team membership.",
         "security": [
           {
             "ConsoleSession": []
@@ -40355,12 +40355,12 @@
           "Feature availability"
         ],
         "summary": "setFeatureEnrollment",
-        "description": "Live organization owner/admin only. Enabling requires current terms, entitlement, release eligibility and no operational disable. Withdrawal does not delete resources.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Organization keys and project tokens are not accepted.",
+        "description": "Live team owner/admin only. Enabling requires current terms, entitlement, release eligibility and no operational disable. Withdrawal does not delete resources.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
-        "x-exclusion-reason": "Private beta enrollment; requires live organization owner or admin authority.",
-        "x-required-organization-role": "owner_or_admin",
+        "x-exclusion-reason": "Private beta enrollment; requires live team owner or admin authority.",
+        "x-required-team-role": "owner_or_admin",
         "security": [
           {
             "ConsoleSession": []
@@ -40486,7 +40486,7 @@
           "Feature availability"
         ],
         "summary": "recordFeatureExposure",
-        "description": "Record actual exposure using the signed evaluation token. Binds user, organization, version and variant; tokens expire after five minutes. Deduplicates per assignment/version/variant and five-minute bucket.\n\nRequires a verified dashboard bearer and current organization authorization. Organization keys and project tokens are not accepted.",
+        "description": "Record actual exposure using the signed evaluation token. Binds user, team, version and variant; tokens expire after five minutes. Deduplicates per assignment/version/variant and five-minute bucket.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
         "x-audience": "console",
         "x-polymorfa-resource-boundary": "human_only",
         "x-excluded-from-public": true,
@@ -44732,7 +44732,7 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "orgId": {
+              "teamId": {
                 "type": "string",
                 "format": "uuid"
               },
@@ -44743,7 +44743,7 @@
               }
             },
             "required": [
-              "orgId",
+              "teamId",
               "projectId"
             ]
           },
@@ -44897,7 +44897,7 @@
               "number"
             ]
           },
-          "orgId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -44919,7 +44919,7 @@
         },
         "required": [
           "kind",
-          "orgId",
+          "teamId",
           "projectId",
           "numberId",
           "numberName"
@@ -45301,7 +45301,7 @@
               "request_log_url": {
                 "type": "string",
                 "format": "uri",
-                "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+                "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
               }
             }
           },
@@ -45337,7 +45337,7 @@
           "id": {
             "$ref": "#/components/schemas/CustomerId"
           },
-          "orgId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -45381,7 +45381,7 @@
         },
         "required": [
           "id",
-          "orgId",
+          "teamId",
           "projectId",
           "name",
           "externalCustomerId",
@@ -45399,7 +45399,7 @@
           "id": {
             "$ref": "#/components/schemas/CustomerId"
           },
-          "orgId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -45463,7 +45463,7 @@
         },
         "required": [
           "id",
-          "orgId",
+          "teamId",
           "projectId",
           "name",
           "externalCustomerId",
@@ -45720,7 +45720,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "orgId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -45860,7 +45860,7 @@
         },
         "required": [
           "id",
-          "orgId",
+          "teamId",
           "projectId",
           "customerId",
           "expectedPhoneMasked",
@@ -45895,7 +45895,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "orgId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -46041,7 +46041,7 @@
         },
         "required": [
           "id",
-          "orgId",
+          "teamId",
           "projectId",
           "customerId",
           "expectedPhoneMasked",
@@ -48805,7 +48805,7 @@
             "enum": [
               "none",
               "custom",
-              "organization",
+              "team",
               "project"
             ]
           },
@@ -49003,7 +49003,7 @@
             "enum": [
               "none",
               "custom",
-              "organization",
+              "team",
               "project"
             ]
           },
@@ -49523,7 +49523,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "orgId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -49584,7 +49584,7 @@
         },
         "required": [
           "id",
-          "orgId",
+          "teamId",
           "projectId",
           "flowId",
           "sessionId",
@@ -51053,7 +51053,7 @@
           "id": {
             "$ref": "#/components/schemas/ProjectId"
           },
-          "orgId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -51092,7 +51092,7 @@
         },
         "required": [
           "id",
-          "orgId",
+          "teamId",
           "name",
           "slug",
           "stage",
@@ -51108,7 +51108,7 @@
           "id": {
             "$ref": "#/components/schemas/ProjectId"
           },
-          "orgId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -51166,7 +51166,7 @@
         },
         "required": [
           "id",
-          "orgId",
+          "teamId",
           "name",
           "slug",
           "icon",
@@ -52981,7 +52981,7 @@
               "suspend"
             ]
           },
-          "organizationFloor": {
+          "teamFloor": {
             "type": "string",
             "enum": [
               "none",
@@ -53059,7 +53059,7 @@
         "required": [
           "rung",
           "previousRung",
-          "organizationFloor",
+          "teamFloor",
           "reason",
           "source",
           "throughputPerMinute",
@@ -53876,7 +53876,7 @@
               "suspend"
             ]
           },
-          "organizationFloor": {
+          "teamFloor": {
             "type": "string",
             "enum": [
               "none",
@@ -54060,7 +54060,7 @@
           "projectId",
           "rung",
           "previousRung",
-          "organizationFloor",
+          "teamFloor",
           "reason",
           "source",
           "throughputPerMinute",
@@ -55292,7 +55292,7 @@
           "previousValidUntil"
         ]
       },
-      "CreateOrganizationWebhookInput": {
+      "CreateTeamWebhookInput": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -55392,7 +55392,7 @@
           "eventTypes"
         ]
       },
-      "UpdateOrganizationWebhookInput": {
+      "UpdateTeamWebhookInput": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -55494,7 +55494,7 @@
           }
         }
       },
-      "OrganizationWebhook": {
+      "TeamWebhook": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -55502,14 +55502,14 @@
             "type": "string",
             "format": "uuid"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
           "owner": {
             "type": "string",
             "enum": [
-              "organization"
+              "team"
             ]
           },
           "projectId": {
@@ -55569,7 +55569,7 @@
         },
         "required": [
           "id",
-          "organizationId",
+          "teamId",
           "owner",
           "projectId",
           "url",
@@ -55591,7 +55591,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -55655,7 +55655,7 @@
         },
         "required": [
           "id",
-          "organizationId",
+          "teamId",
           "owner",
           "projectId",
           "url",
@@ -55669,12 +55669,12 @@
           "updatedAt"
         ]
       },
-      "OrganizationWebhookCreationReceipt": {
+      "TeamWebhookCreationReceipt": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "webhook": {
-            "$ref": "#/components/schemas/OrganizationWebhook"
+            "$ref": "#/components/schemas/TeamWebhook"
           },
           "operationId": {
             "type": "string",
@@ -55737,12 +55737,12 @@
           "secretAvailable"
         ]
       },
-      "OrganizationWebhookMutationReceipt": {
+      "TeamWebhookMutationReceipt": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
           "webhook": {
-            "$ref": "#/components/schemas/OrganizationWebhook"
+            "$ref": "#/components/schemas/TeamWebhook"
           },
           "operationId": {
             "type": "string",
@@ -55785,7 +55785,7 @@
           "idempotency"
         ]
       },
-      "OrganizationWebhookDeletionReceipt": {
+      "TeamWebhookDeletionReceipt": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -55849,7 +55849,7 @@
           "idempotency"
         ]
       },
-      "OrganizationWebhookSecretRotationReceipt": {
+      "TeamWebhookSecretRotationReceipt": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -55966,7 +55966,7 @@
           "unavailable"
         ]
       },
-      "OrganizationEvent": {
+      "TeamEvent": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -55974,7 +55974,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -56039,7 +56039,7 @@
         },
         "required": [
           "id",
-          "organizationId",
+          "teamId",
           "projectId",
           "type",
           "source",
@@ -56059,7 +56059,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -56121,7 +56121,7 @@
         },
         "required": [
           "id",
-          "organizationId",
+          "teamId",
           "projectId",
           "type",
           "source",
@@ -56133,7 +56133,7 @@
           "metadataExpiresAt"
         ]
       },
-      "OrganizationWebhookDelivery": {
+      "TeamWebhookDelivery": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -56141,7 +56141,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -56252,7 +56252,7 @@
         },
         "required": [
           "id",
-          "organizationId",
+          "teamId",
           "projectId",
           "eventId",
           "webhookId",
@@ -56278,7 +56278,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -56386,7 +56386,7 @@
         },
         "required": [
           "id",
-          "organizationId",
+          "teamId",
           "projectId",
           "eventId",
           "webhookId",
@@ -56404,7 +56404,7 @@
           "lastOutcome"
         ]
       },
-      "OrganizationWebhookDeliveryAttempt": {
+      "TeamWebhookDeliveryAttempt": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -56412,7 +56412,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -56503,7 +56503,7 @@
         },
         "required": [
           "id",
-          "organizationId",
+          "teamId",
           "projectId",
           "deliveryId",
           "number",
@@ -56526,7 +56526,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -56614,7 +56614,7 @@
         },
         "required": [
           "id",
-          "organizationId",
+          "teamId",
           "projectId",
           "deliveryId",
           "number",
@@ -56752,7 +56752,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -56861,7 +56861,7 @@
         },
         "required": [
           "id",
-          "organizationId",
+          "teamId",
           "projectId",
           "kind",
           "resource",
@@ -56885,7 +56885,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -56992,7 +56992,7 @@
         },
         "required": [
           "id",
-          "organizationId",
+          "teamId",
           "projectId",
           "kind",
           "resource",
@@ -57152,7 +57152,7 @@
         "additionalProperties": false,
         "maxProperties": 0
       },
-      "TestOrganizationWebhookInput": {
+      "TestTeamWebhookInput": {
         "type": "object",
         "additionalProperties": false,
         "description": "A team webhook test accepts an optional event type. Supplied event bodies and session IDs are rejected with HTTP 400.",
@@ -57201,7 +57201,7 @@
           }
         ]
       },
-      "OrganizationEventReplayReceipt": {
+      "TeamEventReplayReceipt": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -57255,7 +57255,7 @@
           "idempotency"
         ]
       },
-      "OrganizationWebhookDeliveryRetryReceipt": {
+      "TeamWebhookDeliveryRetryReceipt": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -57309,7 +57309,7 @@
           "idempotency"
         ]
       },
-      "OrganizationWebhookTestReceipt": {
+      "TeamWebhookTestReceipt": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -57596,7 +57596,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "organizationId": {
+          "teamId": {
             "type": "string",
             "format": "uuid"
           },
@@ -57678,7 +57678,7 @@
         },
         "required": [
           "id",
-          "organizationId",
+          "teamId",
           "projectId",
           "type",
           "source",
@@ -59206,7 +59206,7 @@
           "projectId": {
             "type": "string",
             "format": "uuid",
-            "description": "Project that owns the trunk. Required for organization keys; project keys use their own project."
+            "description": "Project that owns the trunk. Required for team keys; project keys use their own project."
           },
           "name": {
             "type": "string",
@@ -60207,7 +60207,7 @@
           "projectId": {
             "type": "string",
             "format": "uuid",
-            "description": "Project that owns the asset. Required for organization keys."
+            "description": "Project that owns the asset. Required for team keys."
           },
           "name": {
             "type": "string",
@@ -60261,7 +60261,7 @@
           "projectId": {
             "type": "string",
             "format": "uuid",
-            "description": "Project that owns the asset. Required for organization keys."
+            "description": "Project that owns the asset. Required for team keys."
           },
           "name": {
             "type": "string",
@@ -61831,7 +61831,7 @@
                   "whatsapp_group_suspended",
                   "whatsapp_group_has_no_participants",
                   "bansafe_suspended",
-                  "bansafe_org_suspended",
+                  "bansafe_team_suspended",
                   "bansafe_cold_blocked",
                   "bansafe_cold_held",
                   "bansafe_throttled",
@@ -61856,7 +61856,7 @@
               "request_log_url": {
                 "type": "string",
                 "format": "uri",
-                "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+                "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
               }
             },
             "required": [

@@ -148,7 +148,7 @@ export class MessagingBanSafeResource {
   private assertServerCredential(): void {
     if (this.credentialType === "clientToken") {
       throw new PolymorfaConfigurationError(
-        "BanSafe settings require an team key or project token.",
+        "BanSafe settings require a team key or project token.",
         "credential",
       );
     }

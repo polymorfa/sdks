@@ -2,7 +2,7 @@
 declare(strict_types=1);
 $fixture = json_decode(file_get_contents(__DIR__.'/../../../contracts/machine-credentials.v1.json'), true, flags: JSON_THROW_ON_ERROR);
 foreach ($fixture['opaque'] as $vector) {
-    $factory = $vector['kind'] === 'key' ? 'organizationApiKey' : 'projectToken';
+    $factory = $vector['kind'] === 'key' ? 'teamApiKey' : 'projectToken';
     Polymorfa\Credential::$factory($vector['token']);
     foreach ([str_replace('_A','_B',$vector['token']),$vector['token'].'=', $vector['token']."\n", substr($vector['token'],0,-1).'!'] as $bad) raises(fn () => Polymorfa\Credential::$factory($bad), Polymorfa\ConfigurationException::class);
 }
@@ -10,7 +10,7 @@ foreach (array_merge($fixture['client']['cases'], $fixture['client']['rejections
 foreach ([400,13000] as $size) {
     $raw = str_repeat("\0",$size);
     $body = rtrim(strtr(base64_encode($raw.pack('N',crc32($raw))),'+/','-_'),'=');
-    foreach (['organizationApiKey'=>'pmfa_','projectToken'=>'pmfa_pt_'] as $factory=>$prefix) {
+    foreach (['teamApiKey'=>'pmfa_','projectToken'=>'pmfa_pt_'] as $factory=>$prefix) {
         $value=$prefix.$body; $credential=Polymorfa\Credential::$factory($value);
         if (strlen($value)<=512 || str_contains(print_r($credential,true),$value)) throw new RuntimeException('Credential growth/redaction failed');
     }
@@ -25,7 +25,7 @@ $redacted = $method->invoke(null,['message'=>$secret,'details'=>['apiKey'=>'synt
 if (str_contains(json_encode($redacted, JSON_THROW_ON_ERROR),$secret) || str_contains(json_encode($redacted, JSON_THROW_ON_ERROR),'synthetic')) throw new RuntimeException('Error credential leaked');
 
 $values=[];
-foreach ($fixture['opaque'] as $v) $values[]=[$v['kind']==='key'?'organizationApiKey':'projectToken',$v['token']];
+foreach ($fixture['opaque'] as $v) $values[]=[$v['kind']==='key'?'teamApiKey':'projectToken',$v['token']];
 foreach ($fixture['client']['cases'] as $v) $values[]=['clientToken',$v['token']];
 $values[]=['clientToken','pmfa_ct_'.rtrim(strtr(base64_encode(str_repeat("\0",600)),'+/','-_'),'=')];
 foreach ($values as [$factory,$token]) {

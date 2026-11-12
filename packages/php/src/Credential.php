@@ -8,11 +8,11 @@ final readonly class Credential
 {
     private function __construct(public string $kind, #[\SensitiveParameter] private string $value)
     {
-        if ($kind === 'organization_api_key' && preg_match('/^pmfa_(pt|ct|ls|at|wst|sd)_/', $value)) {
+        if ($kind === 'team_api_key' && preg_match('/^pmfa_(pt|ct|ls|at|wst|sd)_/', $value)) {
             throw new ConfigurationException('credential');
         }
         $valid = match ($kind) {
-            'organization_api_key' => self::opaqueShape($value, 'pmfa_'),
+            'team_api_key' => self::opaqueShape($value, 'pmfa_'),
             'project_token' => self::opaqueShape($value, 'pmfa_pt_'),
             'client_token' => self::clientShape($value),
             default => false,
@@ -49,9 +49,9 @@ final readonly class Credential
             && rtrim(strtr(base64_encode($raw), '+/', '-_'), '=') === $body;
     }
 
-    public static function organizationApiKey(#[\SensitiveParameter] string $value): self
+    public static function teamApiKey(#[\SensitiveParameter] string $value): self
     {
-        return new self('organization_api_key', $value);
+        return new self('team_api_key', $value);
     }
 
     public static function projectToken(#[\SensitiveParameter] string $value): self

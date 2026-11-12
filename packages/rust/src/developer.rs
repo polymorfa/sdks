@@ -39,7 +39,7 @@ pub struct WebhookSigningSecretMetadata {
 pub struct PlatformWebhook {
     pub batching: crate::official_round2::WebhookBatching,
     pub id: String,
-    pub organization_id: String,
+    pub team_id: String,
     pub owner: String,
     pub project_id: Option<String>,
     pub url: String,
@@ -228,9 +228,7 @@ impl PlatformWebhooks<'_> {
         options: RequestOptions,
     ) -> Result<ApiResponse<EventReplayReceipt>> {
         if self.prefix == "/platform" && matches!(body, TestWebhookRequest::Custom { .. }) {
-            return Err(configuration(
-                "organization webhook test: custom body unavailable",
-            ));
+            return Err(configuration("team webhook test: custom body unavailable"));
         }
         request(
             self.http,
@@ -274,7 +272,7 @@ pub struct DeliveryOutcome {
 #[serde(rename_all = "camelCase")]
 pub struct WebhookDelivery {
     pub id: String,
-    pub organization_id: String,
+    pub team_id: String,
     pub project_id: Option<String>,
     pub event_id: String,
     pub webhook_id: String,
@@ -327,7 +325,7 @@ pub struct DeliveryAttemptResponse {
 #[serde(rename_all = "camelCase")]
 pub struct WebhookDeliveryAttempt {
     pub id: String,
-    pub organization_id: String,
+    pub team_id: String,
     pub project_id: Option<String>,
     pub delivery_id: String,
     pub number: u32,

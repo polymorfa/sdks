@@ -126,12 +126,12 @@ impl Default for WaitForAudioOptions {
         }
     }
 }
-pub struct OrganizationVoice<'a>(pub(crate) &'a HttpTransport);
+pub struct TeamVoice<'a>(pub(crate) &'a HttpTransport);
 pub struct ProjectVoice<'a> {
     pub(crate) http: &'a HttpTransport,
     pub(crate) project_id: &'a str,
 }
-impl OrganizationVoice<'_> {
+impl TeamVoice<'_> {
     pub fn audio<'a>(&'a self, project_id: &'a str) -> Result<VoiceAudio<'a>> {
         if project_id.trim().is_empty() {
             return Err(configuration("projectId"));
@@ -158,20 +158,14 @@ impl ProjectVoice<'_> {
         VoiceAudio {
             http: self.http,
             project_id: self.project_id,
-            confine: matches!(
-                self.http.credential,
-                Some(Credential::OrganizationApiKey(_))
-            ),
+            confine: matches!(self.http.credential, Some(Credential::TeamApiKey(_))),
         }
     }
     pub fn provider_credentials(&self) -> VoiceProviderCredentials<'_> {
         VoiceProviderCredentials {
             http: self.http,
             project_id: Some(self.project_id),
-            confine: matches!(
-                self.http.credential,
-                Some(Credential::OrganizationApiKey(_))
-            ),
+            confine: matches!(self.http.credential, Some(Credential::TeamApiKey(_))),
         }
     }
 }
@@ -460,7 +454,7 @@ impl VoiceProviderCredentials<'_> {
             if v.data.project_id.is_none() {
                 return Err(Error::local(
                     ErrorKind::Authorization,
-                    "Manage team-wide credentials from the organization client",
+                    "Manage team-wide credentials from the team client",
                     "permission_denied",
                 )
                 .with_local_status(403));

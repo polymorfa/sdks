@@ -58,14 +58,14 @@ try
 {
     using var ready = JsonDocument.Parse(await server.StandardOutput.ReadLineAsync().WaitAsync(TimeSpan.FromSeconds(10)) ?? throw new Exception("Fixture server exited."));
     var baseUrl = new Uri(ready.RootElement.GetProperty("url").GetString()!);
-    var key = fixtures.RootElement.GetProperty("organizationCredential").GetString()!;
+    var key = fixtures.RootElement.GetProperty("teamCredential").GetString()!;
     using var control = new HttpClient();
     var count = 0;
     foreach (var scenario in fixtures.RootElement.GetProperty("scenarios").EnumerateArray())
     {
         var id = scenario.GetProperty("id").GetString()!;
         var expected = scenario.GetProperty("request"); var outcome = scenario.GetProperty("outcome");
-        using var client = new MessagingClient(Credential.OrganizationApiKey(key), new ClientOptions { BaseUrl = baseUrl });
+        using var client = new MessagingClient(Credential.TeamApiKey(key), new ClientOptions { BaseUrl = baseUrl });
         using var cancellation = new CancellationTokenSource();
         if (outcome.TryGetProperty("cancelAfterMs", out var cancel)) cancellation.CancelAfter(cancel.GetInt32());
         var options = new RequestOptions
@@ -133,9 +133,9 @@ try
         try
         {
             var value = fixture.GetProperty("credential").GetString()!;
-            var credential = fixture.GetProperty("credentialType").GetString() switch { "projectToken" => Credential.ProjectToken(value), "clientToken" => Credential.ClientToken(value), _ => Credential.OrganizationApiKey(value) };
+            var credential = fixture.GetProperty("credentialType").GetString() switch { "projectToken" => Credential.ProjectToken(value), "clientToken" => Credential.ClientToken(value), _ => Credential.TeamApiKey(value) };
             var options = new ClientOptions { BaseUrl = fixture.TryGetProperty("baseUrl", out var url) ? new(url.GetString()!) : baseUrl, MaxNetworkRetries = fixture.TryGetProperty("maxNetworkRetries", out var retries) ? retries.GetInt32() : 2, Timeout = fixture.TryGetProperty("timeoutMs", out var timeout) ? TimeSpan.FromMilliseconds(timeout.GetInt32()) : TimeSpan.FromSeconds(30) };
-            using IDisposable client = fixture.GetProperty("client").GetString() == "messaging" ? new MessagingClient(credential, options) : credential.Kind == CredentialKind.ProjectToken ? new ProjectClient(credential, fixture.TryGetProperty("projectId", out var project) ? project.GetString()! : "", options) : new OrganizationClient(credential, options);
+            using IDisposable client = fixture.GetProperty("client").GetString() == "messaging" ? new MessagingClient(credential, options) : credential.Kind == CredentialKind.ProjectToken ? new ProjectClient(credential, fixture.TryGetProperty("projectId", out var project) ? project.GetString()! : "", options) : new TeamClient(credential, options);
             if (credential.ToString().Contains(value)) throw new Exception("Credential string leaked.");
         }
         catch (PolymorfaConfigurationException) { valid = false; }

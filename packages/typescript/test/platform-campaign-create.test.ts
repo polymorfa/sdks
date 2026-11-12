@@ -6,7 +6,7 @@ import {
   type CreatePlatformCampaignRequest,
   type ReschedulePlatformCampaignRequest,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 
 const servers: TestServer[] = [];
@@ -92,16 +92,16 @@ it("covers exactly the pinned create request fields without closing opaque JSON"
   >().toEqualTypeOf<unknown>();
 });
 
-it("requires the organization project and body at compile time", () => {
+it("requires the team project and body at compile time", () => {
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
   });
   const invalidCalls = () => {
     // @ts-expect-error create requires a body
     client.campaigns.create();
     // @ts-expect-error name is mandatory
     client.campaigns.create({ projectId: "project" });
-    // @ts-expect-error organization clients require their owning project
+    // @ts-expect-error team clients require their owning project
     client.campaigns.create({ name: "August" });
     client.campaigns.create({
       name: "August",
@@ -133,7 +133,7 @@ it("sends the required scope and preserves every JSON field to the Platform rout
   }));
   servers.push(server);
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const result = await client.campaigns.create(body);
@@ -161,7 +161,7 @@ it("never retries a Platform create after an uncertain server response", async (
   }));
   servers.push(server);
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
     maxNetworkRetries: 3,
   });
@@ -190,7 +190,7 @@ it("returns the archive receipt and surfaces an active-campaign conflict", async
   );
   servers.push(server);
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const receipt = await client.campaigns.archive("campaign-1");
@@ -213,7 +213,7 @@ it("reschedules a waiting campaign with its project and safe retry key", async (
   }));
   servers.push(server);
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const request: ReschedulePlatformCampaignRequest = {

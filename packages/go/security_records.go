@@ -57,9 +57,9 @@ type AuditLogs struct{ t *transport }
 type SessionBans struct{ t *transport }
 type SecurityIncidents struct{ t *transport }
 
-func (c *OrganizationClient) AuditLogs() *AuditLogs                 { return &AuditLogs{c.t} }
-func (c *OrganizationClient) SessionBans() *SessionBans             { return &SessionBans{c.t} }
-func (c *OrganizationClient) SecurityIncidents() *SecurityIncidents { return &SecurityIncidents{c.t} }
+func (c *TeamClient) AuditLogs() *AuditLogs                 { return &AuditLogs{c.t} }
+func (c *TeamClient) SessionBans() *SessionBans             { return &SessionBans{c.t} }
+func (c *TeamClient) SecurityIncidents() *SecurityIncidents { return &SecurityIncidents{c.t} }
 func (r *AuditLogs) List(ctx context.Context, p ListAuditLogsParams, o ...RequestOptions) (Response[Envelope[[]AuditLog]], error) {
 	q := url.Values{}
 	setString(q, "action", p.Action)

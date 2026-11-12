@@ -1821,7 +1821,7 @@
     {
       "family": "platform",
       "method": "DELETE",
-      "path": "/console/organization/avatar",
+      "path": "/console/team/avatar",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -2221,7 +2221,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/organizations/{slug}",
+      "path": "/console/teams/{slug}",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -3159,7 +3159,7 @@
       "method": "GET",
       "path": "/platform/team",
       "status": "covered",
-      "sdkMethod": "Client::organizations.retrieve",
+      "sdkMethod": "Client::teams.retrieve",
       "testFile": "tests/accounts.php"
     },
     {
@@ -3301,7 +3301,7 @@
     {
       "family": "platform",
       "method": "PATCH",
-      "path": "/console/organization",
+      "path": "/console/team",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -3573,7 +3573,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organization-invitations/{invitationId}/accept",
+      "path": "/console/team-invitations/{invitationId}/accept",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -3581,7 +3581,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organization/avatar/uploads",
+      "path": "/console/team/avatar/uploads",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -3589,7 +3589,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organizations/ensure",
+      "path": "/console/teams/ensure",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -3629,7 +3629,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/quicklink/logo/org",
+      "path": "/console/quicklink/logo/team",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -4389,7 +4389,7 @@
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/console/organization/avatar",
+      "path": "/console/team/avatar",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"

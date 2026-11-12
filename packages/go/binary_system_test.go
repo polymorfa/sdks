@@ -45,7 +45,7 @@ func TestTypedBinaryWire(t *testing.T) {
 	for _, f := range binaryWireCases {
 		t.Run(f.SDKMethod, func(t *testing.T) {
 			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.Method != f.Method || r.URL.Path != f.Path || r.Header.Get("Authorization") != "Bearer "+orgConfig("").Credential.Value {
+				if r.Method != f.Method || r.URL.Path != f.Path || r.Header.Get("Authorization") != "Bearer "+teamConfig("").Credential.Value {
 					t.Error("request", r.Method, r.URL, r.Header)
 				}
 				w.Header().Set("Content-Type", "application/octet-stream")
@@ -53,7 +53,7 @@ func TestTypedBinaryWire(t *testing.T) {
 				w.Write([]byte{0, 1, 255, 2})
 			}))
 			defer s.Close()
-			m, _ := NewMessagingClient(orgConfig(s.URL))
+			m, _ := NewMessagingClient(teamConfig(s.URL))
 			b, md, err := f.Call(context.Background(), m)
 			if err != nil || string(b) != string([]byte{0, 1, 255, 2}) || md.RequestID != "binary_request" {
 				t.Fatal(b, md, err)
@@ -83,7 +83,7 @@ func TestTypedSystemWire(t *testing.T) {
 				io.WriteString(w, f.Body)
 			}))
 			defer s.Close()
-			c, _ := NewSystemClient(orgConfig(s.URL))
+			c, _ := NewSystemClient(teamConfig(s.URL))
 			v, err := f.Call(context.Background(), c)
 			if err != nil {
 				t.Fatal(err)

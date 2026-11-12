@@ -1821,7 +1821,7 @@
     {
       "family": "platform",
       "method": "DELETE",
-      "path": "/console/organization/avatar",
+      "path": "/console/team/avatar",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -1952,7 +1952,7 @@
       "path": "/platform/keys/{keyId}",
       "status": "covered",
       "sdkMethod": "AsyncClient.api_keys.deactivate",
-      "testFile": "tests/test_organization.py"
+      "testFile": "tests/test_team.py"
     },
     {
       "family": "platform",
@@ -2221,7 +2221,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/organizations/{slug}",
+      "path": "/console/teams/{slug}",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -2376,7 +2376,7 @@
       "path": "/platform/audit",
       "status": "covered",
       "sdkMethod": "AsyncClient.audit_logs.list",
-      "testFile": "tests/test_organization.py"
+      "testFile": "tests/test_team.py"
     },
     {
       "family": "platform",
@@ -2384,7 +2384,7 @@
       "path": "/platform/bans",
       "status": "covered",
       "sdkMethod": "AsyncClient.session_bans.list",
-      "testFile": "tests/test_organization.py"
+      "testFile": "tests/test_team.py"
     },
     {
       "family": "platform",
@@ -2392,7 +2392,7 @@
       "path": "/platform/bans/active",
       "status": "covered",
       "sdkMethod": "AsyncClient.session_bans.list_active",
-      "testFile": "tests/test_organization.py"
+      "testFile": "tests/test_team.py"
     },
     {
       "family": "platform",
@@ -2832,7 +2832,7 @@
       "path": "/platform/incidents",
       "status": "covered",
       "sdkMethod": "AsyncClient.security_incidents.list",
-      "testFile": "tests/test_organization.py"
+      "testFile": "tests/test_team.py"
     },
     {
       "family": "platform",
@@ -2840,7 +2840,7 @@
       "path": "/platform/keys",
       "status": "covered",
       "sdkMethod": "AsyncClient.api_keys.list",
-      "testFile": "tests/test_organization.py"
+      "testFile": "tests/test_team.py"
     },
     {
       "family": "platform",
@@ -2856,7 +2856,7 @@
       "path": "/platform/members",
       "status": "covered",
       "sdkMethod": "AsyncClient.members.list",
-      "testFile": "tests/test_organization.py"
+      "testFile": "tests/test_team.py"
     },
     {
       "family": "platform",
@@ -3159,8 +3159,8 @@
       "method": "GET",
       "path": "/platform/team",
       "status": "covered",
-      "sdkMethod": "AsyncClient.organizations.retrieve",
-      "testFile": "tests/test_organization.py"
+      "sdkMethod": "AsyncClient.teams.retrieve",
+      "testFile": "tests/test_team.py"
     },
     {
       "family": "platform",
@@ -3184,7 +3184,7 @@
       "path": "/platform/tokens",
       "status": "covered",
       "sdkMethod": "AsyncClient.project_tokens.list",
-      "testFile": "tests/test_organization.py"
+      "testFile": "tests/test_team.py"
     },
     {
       "family": "platform",
@@ -3301,7 +3301,7 @@
     {
       "family": "platform",
       "method": "PATCH",
-      "path": "/console/organization",
+      "path": "/console/team",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -3573,7 +3573,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organization-invitations/{invitationId}/accept",
+      "path": "/console/team-invitations/{invitationId}/accept",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -3581,7 +3581,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organization/avatar/uploads",
+      "path": "/console/team/avatar/uploads",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -3589,7 +3589,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/organizations/ensure",
+      "path": "/console/teams/ensure",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -3629,7 +3629,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/quicklink/logo/org",
+      "path": "/console/quicklink/logo/team",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"
@@ -4024,7 +4024,7 @@
       "path": "/platform/incidents/{incidentId}/acknowledge",
       "status": "covered",
       "sdkMethod": "AsyncClient.security_incidents.acknowledge",
-      "testFile": "tests/test_organization.py"
+      "testFile": "tests/test_team.py"
     },
     {
       "family": "platform",
@@ -4389,7 +4389,7 @@
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/console/organization/avatar",
+      "path": "/console/team/avatar",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials.",
       "milestone": "excluded-contract"

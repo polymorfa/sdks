@@ -134,7 +134,7 @@ describe("SDK types match the pinned contract snapshots", () => {
   it("keeps Customer profiles free of phone data", () => {
     const customer = keys<Customer>({
       id: true,
-      orgId: true,
+      teamId: true,
       projectId: true,
       name: true,
       externalCustomerId: true,
@@ -148,7 +148,7 @@ describe("SDK types match the pinned contract snapshots", () => {
     expect(
       keys<CustomerSummary>({
         id: true,
-        orgId: true,
+        teamId: true,
         projectId: true,
         name: true,
         externalCustomerId: true,

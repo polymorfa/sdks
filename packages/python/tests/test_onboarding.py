@@ -177,7 +177,7 @@ async def test_typed_onboarding_methods(method, path, body, fixture, invoke):
 async def test_unlink_companion_bounds_and_keyed_fixture_retry():
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     ) as client:
@@ -208,7 +208,7 @@ async def test_unlink_companion_bounds_and_keyed_fixture_retry():
 
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
