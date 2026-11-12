@@ -92,7 +92,7 @@ test("the legacy Firestore chain retains its locked versions and production clas
 
 test("the exact legacy removal consumer resolves patched Glob and Minimatch", () => {
   assert.equal(pattern.manifest.version, "14.0.2");
-  assert.equal(matcher.manifest.version, "11.0.4");
+  assert.equal(matcher.manifest.version, "11.0.5");
 });
 
 test("legacy asynchronous removal preserves literal path behavior", async (t) => {
