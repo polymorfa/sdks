@@ -17,8 +17,15 @@ final readonly class WebhookEvent
         public mixed $payload,
         public array $raw,
         public bool $known,
-        public ?string $externalId = null
+        public ?string $externalId = null,
+        private ?string $verifiedBody = null
     ) {
+    }
+    /** @internal Preserve JSON objects and arrays in verified fixture round trips. */
+    public function fixtureBody(): string
+    {
+        $wire = $this->verifiedBody === null ? $this->raw : json_decode($this->verifiedBody, false, 512, JSON_THROW_ON_ERROR);
+        return json_encode($wire, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
     /** Typed view of known event names, not a general payload schema validator.
      * Signed/verified parsing narrowly validates projected descriptor history. Raw forward fields remain available.

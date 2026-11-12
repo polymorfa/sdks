@@ -48,6 +48,8 @@ pub struct ChannelMessage {
     pub message_type: String,
     pub timestamp: String,
     pub views: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub forwards: Option<u64>,
     pub reaction_counts: BTreeMap<String, u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,

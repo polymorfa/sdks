@@ -4,7 +4,10 @@ namespace Polymorfa.Sdk;
 
 public sealed record Channel(string? Id = null, string? Name = null, string? Description = null, string? ProfileUrl = null, long? Followers = null, bool? Muted = null, bool? Preview = null);
 public sealed record CreateChannelRequest(string Name, string? Description = null, string? Picture = null);
-public sealed record ChannelMessage(long Position, string Id, [property: JsonPropertyName("whatsapp_ids")] WhatsAppMessageIds WhatsAppIds, ConversationReference Conversation, string Type, string Timestamp, long Views, IReadOnlyDictionary<string, long> ReactionCounts, string? Text = null, [property: JsonPropertyName("whatsapp_id")] string? WhatsAppId = null);
+public sealed record ChannelMessage(long Position, string Id, [property: JsonPropertyName("whatsapp_ids")] WhatsAppMessageIds WhatsAppIds, ConversationReference Conversation, string Type, string Timestamp, long Views, IReadOnlyDictionary<string, long> ReactionCounts, string? Text = null, [property: JsonPropertyName("whatsapp_id")] string? WhatsAppId = null)
+{
+    public long? Forwards { get; init; }
+}
 public sealed record ChannelMessagesParameters(int? Count = null, long? Before = null);
 public sealed record ChannelMessageUpdatesParameters(int? Count = null, long? Since = null, long? After = null);
 public sealed record ChannelReactionRequest(string Reaction);

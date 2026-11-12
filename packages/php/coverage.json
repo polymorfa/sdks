@@ -4647,6 +4647,13 @@
       "published": false,
       "language": "php"
     },
+    "newsletterObservations": {
+      "inventory": "contracts/newsletter-observations.json",
+      "baselineUnchanged": true,
+      "published": false,
+      "language": "php",
+      "testFile": "packages/php/tests/newsletter_observations.php"
+    },
     "interactiveMessages": {
       "inventory": "contracts/native-interactive-messages.json",
       "language": "php",
