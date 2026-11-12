@@ -115,6 +115,7 @@ internal sealed class MessageContentConverter : JsonConverter<MessageContent>
         if (root.TryGetProperty("order", out _)) return root.Deserialize<OrderContent>(options)!;
         if (root.TryGetProperty("list", out _)) return root.Deserialize<ListContent>(options)!;
         if (root.TryGetProperty("buttons", out _)) return root.Deserialize<ButtonsContent>(options)!;
+        if (root.TryGetProperty("carousel", out _)) return root.Deserialize<CarouselContent>(options)!;
         if (root.TryGetProperty("addressMessage", out _)) return root.Deserialize<AddressContent>(options)!;
         if (root.TryGetProperty("flow", out _)) return root.Deserialize<FlowContent>(options)!;
         if (root.TryGetProperty("callPermissionRequest", out _)) return root.Deserialize<CallPermissionRequestContent>(options)!;

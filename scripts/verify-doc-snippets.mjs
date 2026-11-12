@@ -19,6 +19,7 @@ import {
   validateCatalog,
 } from "./doc-snippets/catalog.mjs";
 import { languages } from "./doc-snippets/recipes.mjs";
+import { nativeCargoCommand, nativeCargoTargetArgs } from "./native-cargo.mjs";
 
 function run(command, args, cwd, env = {}) {
   const result = spawnSync(command, args, {
@@ -37,6 +38,10 @@ function run(command, args, cwd, env = {}) {
 const json = (path, data) =>
   writeFileSync(path, `${JSON.stringify(data, null, 2)}\n`);
 
+/**
+ * Compile every exported program against a physical package without executing API calls.
+ * Optional negative verification must fail on the substituted nonexistent public method.
+ */
 export async function verify(language, { negativeTest = false } = {}) {
   if (!languages.includes(language))
     throw new Error(`Choose ${languages.join(", ")}`);
@@ -265,6 +270,7 @@ export async function verify(language, { negativeTest = false } = {}) {
         { DOTNET_ROLL_FORWARD: "Major" },
       );
   } else {
+    const cargo = nativeCargoCommand();
     // Cargo's unpublished dependency patch can annotate its source lockfile.
     // Package an exact archived source tree so verification never edits checkout
     // inputs or consumes a developer's ignored files.
@@ -284,51 +290,60 @@ export async function verify(language, { negativeTest = false } = {}) {
     );
     run("tar", ["-xf", archive, "-C", source], work);
     const sdkSource = join(source, "packages/rust");
-    // Leave compilation targets to Cargo and the user's shared cache manager.
-    // Copy only produced distributions into this check's private artifact tree.
-    const packed = join(work, "packed");
-    mkdirSync(packed);
-    const packageCrate = (manifest, name, extra = []) => {
-      const metadata = JSON.parse(
-        run(
-          "cargo",
-          [
-            "metadata",
-            "--manifest-path",
-            manifest,
-            "--format-version",
-            "1",
-            "--no-deps",
-          ],
-          sdkSource,
-        ),
-      );
-      run(
-        "cargo",
-        ["package", "--manifest-path", manifest, "--allow-dirty", ...extra],
-        sdkSource,
-      );
-      const archive = join(
-        metadata.target_directory,
+    const target = join(work, "packed");
+    /** Ask the Mac cache manager for its target; other platforms use the verifier staging tree. */
+    const packageTarget = (manifest) =>
+      process.platform === "darwin"
+        ? JSON.parse(
+            run(
+              cargo,
+              [
+                "metadata",
+                "--manifest-path",
+                manifest,
+                "--format-version",
+                "1",
+                "--no-deps",
+              ],
+              sdkSource,
+            ),
+          ).target_directory
+        : target;
+    const coreManifest = join(sdkSource, "storage-core/Cargo.toml");
+    const coreTarget = packageTarget(coreManifest);
+    run(
+      cargo,
+      [
         "package",
-        `${name}.crate`,
-      );
-      run("tar", ["-xf", archive, "-C", packed], work);
-      return join(packed, name);
-    };
+        "--manifest-path",
+        coreManifest,
+        ...nativeCargoTargetArgs(target),
+        "--allow-dirty",
+      ],
+      sdkSource,
+    );
     const version = catalog.packages.rust.version;
-    const core = packageCrate(
-      join(sdkSource, "storage-core/Cargo.toml"),
+    const core = join(
+      coreTarget,
+      "package",
       `polymorfa-storage-core-${version}`,
     );
-    const pkg = packageCrate(
-      join(sdkSource, "Cargo.toml"),
-      `polymorfa-sdk-${version}`,
+    const sdkManifest = join(sdkSource, "Cargo.toml");
+    const sdkTarget = packageTarget(sdkManifest);
+    run(
+      cargo,
       [
+        "package",
+        "--manifest-path",
+        sdkManifest,
+        ...nativeCargoTargetArgs(target),
+        "--allow-dirty",
         "--config",
         `patch.crates-io.polymorfa-storage-core.path=${JSON.stringify(core)}`,
       ],
+      sdkSource,
     );
+    const pkg = join(sdkTarget, "package", `polymorfa-sdk-${version}`);
     writeFileSync(
       join(work, "Cargo.toml"),
       `[package]\nname = "doc-snippets"\nversion = "0.0.0"\nedition = "2021"\nrust-version = "1.85"\n[dependencies]\npolymorfa-sdk = { path = ${JSON.stringify(pkg)} }\ntokio = { version = "1", features = ["rt", "macros"] }\n[patch.crates-io]\npolymorfa-storage-core = { path = ${JSON.stringify(core)} }\n`,
@@ -345,8 +360,8 @@ export async function verify(language, { negativeTest = false } = {}) {
       join(root, "packages/rust/.cargo/config.toml"),
       join(work, ".cargo/config.toml"),
     );
-    run("cargo", ["generate-lockfile"], work);
-    check = () => run("cargo", ["check", "--locked", "--bins"], work);
+    run(cargo, ["generate-lockfile"], work);
+    check = () => run(cargo, ["check", "--locked", "--bins"], work);
   }
   process.stdout.write(check());
   console.log(

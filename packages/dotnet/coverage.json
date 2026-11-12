@@ -4515,6 +4515,12 @@
       "baselineUnchanged": true,
       "published": false,
       "language": "dotnet"
+    },
+    "interactiveMessages": {
+      "inventory": "contracts/native-interactive-messages.json",
+      "language": "dotnet",
+      "baselineUnchanged": true,
+      "published": false
     }
   }
 }

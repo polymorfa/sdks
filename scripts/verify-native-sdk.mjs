@@ -3,6 +3,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
+import { nativeCargoCommand, nativeCargoTargetArgs } from "./native-cargo.mjs";
 
 const language = process.argv[2];
 if (!["go", "python", "php", "dotnet", "rust"].includes(language))
@@ -89,12 +90,21 @@ if (language === "go") {
       throw new Error("PHP framework host verification failed");
   }
 } else if (language === "rust") {
+  const cargo = nativeCargoCommand();
+  // Keep the full all-feature suite small enough to link on normal CI disks.
+  // Debug assertions, optimization, test selection and cache settings are unchanged.
+  const validationProfiles = [
+    "--config",
+    "profile.dev.debug=0",
+    "--config",
+    "profile.test.debug=0",
+  ];
   run("node", [resolve(root, "examples/rust/yew/build-elements.mjs")]);
   for (const [manifest, target] of [
     ["examples/rust/axum/Cargo.toml", undefined],
     ["examples/rust/yew/frontend/Cargo.toml", "wasm32-unknown-unknown"],
   ]) {
-    run("cargo", [
+    run(cargo, [
       "check",
       "--locked",
       "--manifest-path",
@@ -102,25 +112,26 @@ if (language === "go") {
       ...(target ? ["--target", target] : []),
     ]);
   }
-  run("cargo", [
+  run(cargo, [
     "test",
     "--locked",
     "--manifest-path",
     resolve(root, "examples/rust/yew/server/Cargo.toml"),
   ]);
-  run("cargo", ["fmt", "--check"]);
-  run("cargo", [
+  run(cargo, ["fmt", "--check"]);
+  run(cargo, [
     "clippy",
+    ...validationProfiles,
     "--all-targets",
     "--all-features",
     "--",
     "-D",
     "warnings",
   ]);
-  run("cargo", ["test", "--all-features"]);
+  run(cargo, ["test", ...validationProfiles, "--all-features"]);
   const coreManifest = resolve(cwd, "storage-core/Cargo.toml");
-  run("cargo", ["fmt", "--manifest-path", coreManifest, "--check"]);
-  run("cargo", [
+  run(cargo, ["fmt", "--manifest-path", coreManifest, "--check"]);
+  run(cargo, [
     "clippy",
     "--manifest-path",
     coreManifest,
@@ -129,10 +140,10 @@ if (language === "go") {
     "-D",
     "warnings",
   ]);
-  run("cargo", ["test", "--manifest-path", coreManifest, "--locked"]);
+  run(cargo, ["test", "--manifest-path", coreManifest, "--locked"]);
   const metadata = JSON.parse(
     run(
-      "cargo",
+      cargo,
       [
         "metadata",
         "--manifest-path",
@@ -149,13 +160,15 @@ if (language === "go") {
     (pkg) => pkg.name === "polymorfa-storage-core",
   );
   if (!core) throw new Error("Missing portable Rust storage package");
-  const target = resolve(cwd, "target");
-  run("cargo", [
+  const target =
+    process.platform === "darwin"
+      ? metadata.target_directory
+      : resolve(cwd, "target");
+  run(cargo, [
     "package",
     "--manifest-path",
     coreManifest,
-    "--target-dir",
-    target,
+    ...nativeCargoTargetArgs(target),
     "--allow-dirty",
   ]);
   // Cargo 1.85 cannot stage unpublished interdependent crates itself. Verify
@@ -163,10 +176,9 @@ if (language === "go") {
   // Release preparation must repeat unpatched registry verification after the
   // core is published under the release's separate authority.
   const packedCore = resolve(target, "package", `${core.name}-${core.version}`);
-  run("cargo", [
+  run(cargo, [
     "package",
-    "--target-dir",
-    target,
+    ...nativeCargoTargetArgs(target),
     "--allow-dirty",
     "--config",
     `patch.crates-io.polymorfa-storage-core.path=${JSON.stringify(packedCore)}`,
