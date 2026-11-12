@@ -5,7 +5,7 @@ use serde_json::json;
 
 #[tokio::test]
 async fn session_resource_wire_contracts() {
-    let session = json!({"sessionId":"s","name":"Support","tenantId":"org","type":"linked_device","testMode":false,"status":"CONNECTED","createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z"});
+    let session = json!({"sessionId":"s","name":"Support","tenantId":"team","type":"linked_device","testMode":false,"status":"CONNECTED","createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z"});
     let platform = json!({"_id":"number","_creationTime":1,"projectId":"project","sessionId":"s","name":"Support","isBusiness":true,"testMode":false,"status":"CONNECTED","messageCount":2});
     wire_messaging!(
         client,
@@ -239,7 +239,7 @@ async fn quicklink_resource_wire_contracts() {
 }
 #[tokio::test]
 async fn webhook_resource_wire_contracts() {
-    let webhook = json!({"id":"hook","tenantId":"org","url":"https://example.test/webhook","events":["message.received"],"retries":{"attempts":3,"delaySeconds":2,"policy":"exponential"},"headers":[],"enabled":true,"createdAt":"2026-10-11T12:00:00Z"});
+    let webhook = json!({"id":"hook","tenantId":"team","url":"https://example.test/webhook","events":["message.received"],"retries":{"attempts":3,"delaySeconds":2,"policy":"exponential"},"headers":[],"enabled":true,"createdAt":"2026-10-11T12:00:00Z"});
     wire_messaging!(
         client,
         "GET",
@@ -301,7 +301,7 @@ async fn webhook_resource_wire_contracts() {
 }
 #[tokio::test]
 async fn project_resource_wire_contracts() {
-    let project = json!({"id":"project","orgId":"org","name":"Support","slug":"support","icon":{"type":"emoji","value":"🦀"},"defaultTier":"standard","isActive":true,"stage":"development"});
+    let project = json!({"id":"project","teamId":"team","name":"Support","slug":"support","icon":{"type":"emoji","value":"🦀"},"defaultTier":"standard","isActive":true,"stage":"development"});
     let mut stats = project.clone();
     stats.as_object_mut().unwrap().remove("id");
     stats["_id"] = json!("project");
@@ -309,7 +309,7 @@ async fn project_resource_wire_contracts() {
     stats["activeSessions"] = json!(1);
     stats["totalSessions"] = json!(2);
     stats["totalMessages"] = json!(3);
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/projects",
@@ -317,7 +317,7 @@ async fn project_resource_wire_contracts() {
         json!({"data":[stats]}),
         client.projects().list(RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/projects",
@@ -332,14 +332,14 @@ async fn project_resource_wire_contracts() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/projects/project/promote",
         Some(
             json!({"business":{"name":"Support","website":"https://example.test","supportEmail":"support@example.test"}})
         ),
-        json!({"data":{"id":"project","orgId":"org","name":"Support","slug":"support","stage":"development","operationId":"operation","enrollmentStatus":"requested","billingMode":"payg"}}),
+        json!({"data":{"id":"project","teamId":"team","name":"Support","slug":"support","stage":"development","operationId":"operation","enrollmentStatus":"requested","billingMode":"payg"}}),
         client.projects().request_production_enrollment(
             "project",
             &ProductionEnrollmentRequest {
@@ -352,7 +352,7 @@ async fn project_resource_wire_contracts() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/projects/project/production-enrollments/operation/approve",
@@ -364,7 +364,7 @@ async fn project_resource_wire_contracts() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/projects/project/production-enrollments/operation/cancel",

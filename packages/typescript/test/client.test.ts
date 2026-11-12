@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
@@ -6,11 +6,11 @@ import {
   MessagingClient,
   PolymorfaConfigurationError,
   PolymorfaValidationError,
-  type OrganizationEvent,
-  type OrganizationQuickLinkSettings,
+  type TeamEvent,
+  type TeamQuickLinkSettings,
   type ProjectEvent,
   type ProjectQuickLinkSettings,
-  type TestOrganizationWebhookInput,
+  type TestTeamWebhookInput,
   type TestProjectWebhookInput,
 } from "../src/index.js";
 import {
@@ -29,7 +29,7 @@ async function testClient(
   projectId?: string,
   eventResponse?: string,
 ): Promise<{
-  client: Client<"organization"> | Client<"project">;
+  client: Client<"team"> | Client<"project">;
   requests: RecordedRequest[];
 }> {
   const server = await startTestServer(({ path }) => ({
@@ -55,8 +55,8 @@ async function testClient(
         ? new Client({
             ...shared,
             credential: {
-              type: "organizationApiKey",
-              value: ORGANIZATION_API_KEY,
+              type: "teamApiKey",
+              value: TEAM_API_KEY,
             },
           })
         : new Client({
@@ -71,9 +71,9 @@ async function testClient(
 }
 
 describe("Client ownership", () => {
-  it("binds organization roots and immutable project views without probing", async () => {
+  it("binds team roots and immutable project views without probing", async () => {
     const { client, requests } = await testClient();
-    if (client.owner !== "organization") throw new Error("unexpected owner");
+    if (client.owner !== "team") throw new Error("unexpected owner");
     expect(client.projectId).toBeNull();
     expectTypeOf(client.events.retrieve).returns.resolves.toHaveProperty(
       "data",
@@ -87,12 +87,12 @@ describe("Client ownership", () => {
     >().toEqualTypeOf<ProjectEvent>();
     expectTypeOf<
       Awaited<ReturnType<typeof client.events.retrieve>>["data"]
-    >().toEqualTypeOf<OrganizationEvent>();
+    >().toEqualTypeOf<TeamEvent>();
 
-    await client.events.retrieve("event/org");
+    await client.events.retrieve("event/team");
     await project.events.retrieve("event/project");
     expect(requests.map(({ path }) => path)).toEqual([
-      "/platform/events/event%2Forg",
+      "/platform/events/event%2Fteam",
       "/platform/projects/project%2Fone/events/event%2Fproject",
     ]);
   });
@@ -113,7 +113,7 @@ describe("Client ownership", () => {
     expect(
       () =>
         new Client({
-          credential: { type: "organizationApiKey", value: "pmfa_ls_once" },
+          credential: { type: "teamApiKey", value: "pmfa_ls_once" },
           fetch,
         }),
     ).toThrow(PolymorfaConfigurationError);
@@ -129,7 +129,7 @@ describe("Client ownership", () => {
 
   it("rejects malformed keys and special-purpose tickets before fetch", () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
-    const invalidOrganizationKeys = [
+    const invalidTeamKeys = [
       `pmfa_at_${"A".repeat(69)}`,
       `pmfa_wst_${"A".repeat(68)}`,
       `pmfa_sd_${"A".repeat(69)}`,
@@ -138,11 +138,11 @@ describe("Client ownership", () => {
       `pmfa_${"A".repeat(71)}+`,
     ];
 
-    for (const value of invalidOrganizationKeys) {
+    for (const value of invalidTeamKeys) {
       expect(
         () =>
           new Client({
-            credential: { type: "organizationApiKey", value },
+            credential: { type: "teamApiKey", value },
             fetch,
           }),
       ).toThrow(PolymorfaConfigurationError);
@@ -174,16 +174,16 @@ describe("Client ownership", () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it("treats an explicitly undefined organization projectId as unscoped", () => {
+  it("treats an explicitly undefined team projectId as unscoped", () => {
     const client = new (Client as unknown as new (options: unknown) => Client)({
       credential: {
-        type: "organizationApiKey",
-        value: ORGANIZATION_API_KEY,
+        type: "teamApiKey",
+        value: TEAM_API_KEY,
       },
       projectId: undefined,
     });
 
-    expect(client.owner).toBe("organization");
+    expect(client.owner).toBe("team");
     expect(client.projectId).toBeNull();
   });
 
@@ -226,13 +226,13 @@ describe("project raw confinement", () => {
 });
 
 describe("durable developer resources", () => {
-  it("keeps organization webhook tests separate from project body tests", async () => {
+  it("keeps team webhook tests separate from project body tests", async () => {
     const { client, requests } = await testClient();
-    if (client.owner !== "organization") throw new Error("unexpected owner");
+    if (client.owner !== "team") throw new Error("unexpected owner");
     const project = client.project("project/a");
 
     expectTypeOf<Parameters<typeof client.webhooks.test>[1]>().toEqualTypeOf<
-      TestOrganizationWebhookInput | undefined
+      TestTeamWebhookInput | undefined
     >();
     expectTypeOf<Parameters<typeof project.webhooks.test>[1]>().toEqualTypeOf<
       TestProjectWebhookInput | undefined
@@ -247,7 +247,7 @@ describe("durable developer resources", () => {
       client.webhooks.test("team-hook", {
         body,
         sessionId: "session-id",
-      } as unknown as TestOrganizationWebhookInput),
+      } as unknown as TestTeamWebhookInput),
     ).rejects.toBeInstanceOf(PolymorfaValidationError);
     expect(requests).toEqual([]);
 
@@ -341,12 +341,12 @@ describe("durable developer resources", () => {
 describe("QuickLink settings", () => {
   it("binds settings reads and updates to the client ownership context", async () => {
     const { client, requests } = await testClient();
-    if (client.owner !== "organization") throw new Error("unexpected owner");
+    if (client.owner !== "team") throw new Error("unexpected owner");
     const project = client.project("project/a");
 
     expectTypeOf<
       Awaited<ReturnType<typeof client.quickLinkSettings.retrieve>>["data"]
-    >().toEqualTypeOf<OrganizationQuickLinkSettings | null>();
+    >().toEqualTypeOf<TeamQuickLinkSettings | null>();
     expectTypeOf<
       Awaited<ReturnType<typeof project.quickLinkSettings.retrieve>>["data"]
     >().toEqualTypeOf<ProjectQuickLinkSettings | null>();
@@ -355,7 +355,7 @@ describe("QuickLink settings", () => {
     await project.quickLinkSettings.retrieve();
     await client.quickLinkSettings.update(
       { enabled: true, methods: ["qr", "pairing"] },
-      { idempotencyKey: "quicklink-org-1" },
+      { idempotencyKey: "quicklink-team-1" },
     );
     await project.quickLinkSettings.update(
       {
@@ -381,7 +381,7 @@ describe("QuickLink settings", () => {
     expect(requests[3]?.body).toBe(
       '{"headline":"Connect your number","defaultMethod":"qr","successCallbackUrl":"https://app.example.com/connected","failureCallbackUrl":null,"allowPhoneChange":true,"projectId":"project/a"}',
     );
-    expect(requests[2]?.headers["idempotency-key"]).toBe("quicklink-org-1");
+    expect(requests[2]?.headers["idempotency-key"]).toBe("quicklink-team-1");
     expect(requests[3]?.headers["idempotency-key"]).toBe("quicklink-project-1");
   });
 });

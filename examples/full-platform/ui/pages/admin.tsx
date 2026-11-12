@@ -269,7 +269,7 @@ async function run(
 }
 
 const TABS: readonly { id: string; label: string; icon: IconName }[] = [
-  { id: "organization", label: "Organization", icon: "building" },
+  { id: "team", label: "Team", icon: "building" },
   { id: "projects", label: "Projects", icon: "templates" },
   { id: "billing", label: "Billing", icon: "dashboard" },
   { id: "security", label: "Security", icon: "shield" },
@@ -286,22 +286,19 @@ const TABS: readonly { id: string; label: string; icon: IconName }[] = [
 function Panel({ tab }: { readonly tab: string }) {
   const [secret, setSecret] = useState<string>();
   switch (tab) {
-    case "organization":
+    case "team":
       return (
-        <Section path="/api/admin/organization">
+        <Section path="/api/admin/team">
           {(data, reload) => {
-            const org = field(data, "organization") as Row | undefined;
+            const team = field(data, "team") as Row | undefined;
             return (
               <>
                 <Card>
                   <div className="stats">
-                    <Stat
-                      label="Organization"
-                      value={String(org?.name ?? "—")}
-                    />
+                    <Stat label="Team" value={String(team?.name ?? "—")} />
                     <Stat
                       label="Plan"
-                      value={titleCase(String(org?.plan ?? "—"))}
+                      value={titleCase(String(team?.plan ?? "—"))}
                     />
                     <Stat
                       label="Members"
@@ -335,7 +332,7 @@ function Panel({ tab }: { readonly tab: string }) {
                               window.confirm(`Deactivate ${String(row.name)}?`)
                             ) {
                               void run(
-                                "/api/admin/organization",
+                                "/api/admin/team",
                                 {
                                   action: "deactivateApiKey",
                                   keyId: String(row.id),
@@ -844,12 +841,12 @@ function Panel({ tab }: { readonly tab: string }) {
 }
 
 export function AdminPage() {
-  const [tab, setTab] = useState("organization");
+  const [tab, setTab] = useState("team");
   return (
     <div className="page">
       <PageHeader
         title="Admin"
-        description="Organization, billing, security and platform settings."
+        description="Team, billing, security and platform settings."
       />
       <div className="settings-layout">
         <nav className="settings-nav" aria-label="Admin sections">

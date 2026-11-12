@@ -9,7 +9,7 @@ import {
   type RequestLog,
 } from "../src/index.js";
 import { retryAfterMs } from "../src/platform/request-logs.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -64,7 +64,7 @@ function page(
 
 async function logServer(
   respond: (request: RecordedRequest, index: number) => TestResponse,
-  credential: "organizationApiKey" | "projectToken" = "organizationApiKey",
+  credential: "teamApiKey" | "projectToken" = "teamApiKey",
 ) {
   const server = await startTestServer(respond);
   servers.push(server);
@@ -78,8 +78,8 @@ async function logServer(
         })
       : new Client({
           credential: {
-            type: "organizationApiKey",
-            value: ORGANIZATION_API_KEY,
+            type: "teamApiKey",
+            value: TEAM_API_KEY,
           },
           baseUrl: server.url,
           maxNetworkRetries: 0,

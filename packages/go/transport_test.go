@@ -19,12 +19,12 @@ import (
 	"time"
 )
 
-func orgConfig(base string) Config {
-	return Config{Credential: Credential{OrganizationAPIKey, "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: base}
+func teamConfig(base string) Config {
+	return Config{Credential: Credential{TeamAPIKey, "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: base}
 }
 func mustMessaging(t *testing.T, base string) *MessagingClient {
 	t.Helper()
-	c, err := NewMessagingClient(orgConfig(base))
+	c, err := NewMessagingClient(teamConfig(base))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,7 +36,7 @@ func TestCredentialBoundaries(t *testing.T) {
 		c         Credential
 		messaging bool
 		valid     bool
-	}{{"org", Credential{OrganizationAPIKey, "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, false, true}, {"project", Credential{ProjectToken, "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, false, true}, {"client", Credential{ClientToken, "pmfa_ct_eA"}, true, true}, {"client platform", Credential{ClientToken, "pmfa_ct_eA"}, false, false}, {"listener", Credential{OrganizationAPIKey, "pmfa_ls_" + strings.Repeat("a", 69)}, false, false}, {"special", Credential{OrganizationAPIKey, "pmfa_at_" + strings.Repeat("a", 69)}, false, false}, {"project invalid tail", Credential{ProjectToken, "pmfa_pt_" + strings.Repeat("a", 93) + "B"}, false, false}, {"project as org", Credential{OrganizationAPIKey, "pmfa_pt_" + strings.Repeat("a", 69)}, false, false}} {
+	}{{"team", Credential{TeamAPIKey, "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, false, true}, {"project", Credential{ProjectToken, "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, false, true}, {"client", Credential{ClientToken, "pmfa_ct_eA"}, true, true}, {"client platform", Credential{ClientToken, "pmfa_ct_eA"}, false, false}, {"listener", Credential{TeamAPIKey, "pmfa_ls_" + strings.Repeat("a", 69)}, false, false}, {"special", Credential{TeamAPIKey, "pmfa_at_" + strings.Repeat("a", 69)}, false, false}, {"project invalid tail", Credential{ProjectToken, "pmfa_pt_" + strings.Repeat("a", 93) + "B"}, false, false}, {"project as team", Credential{TeamAPIKey, "pmfa_pt_" + strings.Repeat("a", 69)}, false, false}} {
 		t.Run(test.name, func(t *testing.T) {
 			err := validateCredential(test.c, test.messaging)
 			if (err == nil) != test.valid {
@@ -49,10 +49,10 @@ func TestCredentialBoundaries(t *testing.T) {
 	}
 }
 func TestBaseURLAndProjectRawConfinement(t *testing.T) {
-	if _, err := NewMessagingClient(orgConfig("http://example.com")); err == nil {
+	if _, err := NewMessagingClient(teamConfig("http://example.com")); err == nil {
 		t.Fatal("plaintext credential accepted")
 	}
-	if _, err := NewMessagingClient(orgConfig("https://user:password@example.com")); err == nil {
+	if _, err := NewMessagingClient(teamConfig("https://user:password@example.com")); err == nil {
 		t.Fatal("URL credential accepted")
 	}
 	calls := 0
@@ -65,11 +65,11 @@ func TestBaseURLAndProjectRawConfinement(t *testing.T) {
 		io.WriteString(w, `{"ok":true}`)
 	}))
 	defer s.Close()
-	org, err := NewOrganizationClient(orgConfig(s.URL + "/discarded"))
+	team, err := NewTeamClient(teamConfig(s.URL + "/discarded"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	p, err := org.Project("a/b")
+	p, err := team.Project("a/b")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,7 +87,7 @@ func TestBaseURLAndProjectRawConfinement(t *testing.T) {
 	if calls != 1 {
 		t.Fatal(calls)
 	}
-	c := orgConfig(s.URL)
+	c := teamConfig(s.URL)
 	c.Credential = Credential{ProjectToken, "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}
 	project, err := NewProjectClient(c, "a")
 	if err != nil {
@@ -221,7 +221,7 @@ func TestCursorPageLazyAndLoopGuard(t *testing.T) {
 		}
 	}))
 	defer s.Close()
-	c, err := NewOrganizationClient(orgConfig(s.URL))
+	c, err := NewTeamClient(teamConfig(s.URL))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -469,7 +469,7 @@ func TestSharedWireFixtures(t *testing.T) {
 	}
 	for _, f := range fixtures.Configuration {
 		t.Run(f.ID, func(t *testing.T) {
-			kind := OrganizationAPIKey
+			kind := TeamAPIKey
 			switch f.CredentialType {
 			case "projectToken":
 				kind = ProjectToken
@@ -487,7 +487,7 @@ func TestSharedWireFixtures(t *testing.T) {
 			} else if kind == ProjectToken {
 				_, err = NewProjectClient(c, f.ProjectID)
 			} else {
-				_, err = NewOrganizationClient(c)
+				_, err = NewTeamClient(c)
 			}
 			if (err == nil) != f.Valid {
 				t.Fatal("configuration vector", err)
@@ -571,7 +571,7 @@ func TestRetryResponseBodyReadPreservesSafeWriteIdentity(t *testing.T) {
 				w.Write([]byte(`{"data":{"value":"complete"}}`))
 			}))
 			defer s.Close()
-			cfg := orgConfig(s.URL)
+			cfg := teamConfig(s.URL)
 			retries := 1
 			cfg.MaxNetworkRetries = &retries
 			m, _ := NewMessagingClient(cfg)
@@ -594,7 +594,7 @@ func TestMalformedJSONKeepsProtocolClassification(t *testing.T) {
 		w.Write([]byte(`{"invalid":`))
 	}))
 	defer s.Close()
-	m, _ := NewMessagingClient(orgConfig(s.URL))
+	m, _ := NewMessagingClient(teamConfig(s.URL))
 	_, err := m.Raw(context.Background(), RawRequest{Method: "GET", Path: "/platform/invalid"})
 	var e *Error
 	if !errors.As(err, &e) || e.Kind != ServerError || e.Code != "invalid_response" {

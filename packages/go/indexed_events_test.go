@@ -21,7 +21,7 @@ func TestIndexedEventsFollowOffsets(t *testing.T) {
 		}
 	}))
 	defer s.Close()
-	o, _ := NewOrganizationClient(orgConfig(s.URL))
+	o, _ := NewTeamClient(teamConfig(s.URL))
 	p, err := o.Events().List(context.Background(), ListEventsParams{AfterOffset: "0"})
 	if err != nil || p.NextOffset != "10" || p.HighWatermark != "10" || len(requests) != 1 {
 		t.Fatal(p, err, requests)
@@ -46,7 +46,7 @@ func TestIndexedEventsInvalidBounds(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			io.WriteString(w, body)
 		}))
-		o, _ := NewOrganizationClient(orgConfig(s.URL))
+		o, _ := NewTeamClient(teamConfig(s.URL))
 		if _, err := o.Events().ListIndexed(context.Background(), ListIndexedEventsParams{AfterOffset: "0"}); err == nil {
 			t.Error(body)
 		}

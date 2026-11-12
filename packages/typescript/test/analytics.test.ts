@@ -1,7 +1,7 @@
 import { afterEach, expect, it } from "vitest";
 import { Client, PolymorfaValidationError } from "../src/index.js";
 import type { WhatsAppDeviceAnalytics } from "../src/index.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 const servers: TestServer[] = [];
 afterEach(async () => Promise.all(servers.splice(0).map((s) => s.close())));
@@ -21,7 +21,7 @@ it("reads enabled or disabled analytics and confines a project token without wid
   }));
   servers.push(server);
   const root = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   expect((await root.analytics.get({ start: 0, end: 1 })).data).toEqual(body);
@@ -89,7 +89,7 @@ it("preserves nullable call quality, follow-up coverage and per-number call seri
   }));
   servers.push(server);
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const result = (await client.analytics.get()).data;
@@ -156,7 +156,7 @@ it("rejects HTML success bodies and incomplete OpenMetrics framing", async () =>
     }));
     servers.push(server);
     const client = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
     });
     await expect(
@@ -229,7 +229,7 @@ it("preserves joint country/message cohorts, unknown client families and stale d
   }));
   servers.push(server);
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const result = await client.analytics.get({ start: 0, end: 1 });
@@ -278,7 +278,7 @@ it("preserves country/count/device receipt activity without changing nullable co
   }));
   servers.push(server);
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const data = (await client.analytics.get()).data;

@@ -91,7 +91,7 @@ type FlowProviderResult struct {
 }
 type FlowEndpoint struct {
 	ID           string  `json:"id"`
-	OrgID        string  `json:"orgId"`
+	TeamID       string  `json:"teamId"`
 	ProjectID    string  `json:"projectId"`
 	FlowID       string  `json:"flowId"`
 	SessionID    string  `json:"sessionId"`

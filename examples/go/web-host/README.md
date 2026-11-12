@@ -25,7 +25,7 @@ Register `/webhooks/polymorfa` with the API for the assigned Number, native form
 
 Set `POLYMORFA_EXAMPLE_TRANSPORT=local-test-number` when using isolated local test numbers. The page then labels simulated WhatsApp transport. This is a local transport label, not evidence of real WhatsApp-network delivery.
 
-Before hosting it publicly, integrate the application's real authentication, live membership and Number/recipient authorization, HTTPS origin, durable sessions and transactional message/idempotency storage. Keep project and organization credentials exclusively in the server process.
+Before hosting it publicly, integrate the application's real authentication, live membership and Number/recipient authorization, HTTPS origin, durable sessions and transactional message/idempotency storage. Keep project and team credentials exclusively in the server process.
 
 `main_test.go` and `conversation_test.go` use real HTTP servers with a fixture upstream to verify both hosts, native credential/version headers, authentication, assigned targets, origin rejection, caller-key replay and conflict handling, webhook signatures, event deduplication, target confinement and conversation reads after reload. Those tests do not prove a deployed or real WhatsApp-network exchange.
 

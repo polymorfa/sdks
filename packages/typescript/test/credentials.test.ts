@@ -4,13 +4,13 @@ import {
   assertServerRuntime,
   validateClientCredential,
   validateMessagingCredential,
-  validateOrganizationApiKey,
+  validateTeamApiKey,
 } from "../src/credentials.js";
 import { PolymorfaConfigurationError } from "../src/errors.js";
 
 import {
   MACHINE_CREDENTIALS,
-  ORGANIZATION_API_KEY,
+  TEAM_API_KEY,
   PROJECT_TOKEN,
 } from "./support/credentials.js";
 
@@ -38,11 +38,11 @@ describe("credential validation", () => {
     expect(
       validateMessagingCredential({
         type: "apiKey",
-        value: ORGANIZATION_API_KEY,
+        value: TEAM_API_KEY,
       }),
     ).toEqual({
       type: "apiKey",
-      value: ORGANIZATION_API_KEY,
+      value: TEAM_API_KEY,
     });
   });
 
@@ -77,25 +77,25 @@ describe("credential validation", () => {
     expect(() =>
       validateMessagingCredential({
         type: "clientToken",
-        value: ORGANIZATION_API_KEY,
+        value: TEAM_API_KEY,
       }),
     ).toThrow(/Messaging client token/);
     expect(() =>
       validateMessagingCredential({
         type: "projectToken",
-        value: ORGANIZATION_API_KEY,
+        value: TEAM_API_KEY,
       }),
     ).toThrow(/Messaging project token/);
   });
 
   it("rejects client, project, and listener tokens as team keys", () => {
-    expect(() => validateOrganizationApiKey("pmfa_ct_ZXhhbXBsZQ")).toThrow(
+    expect(() => validateTeamApiKey("pmfa_ct_ZXhhbXBsZQ")).toThrow(
       PolymorfaConfigurationError,
     );
-    expect(() => validateOrganizationApiKey("pmfa_pt_example")).toThrow(
+    expect(() => validateTeamApiKey("pmfa_pt_example")).toThrow(
       /Client and project tokens/,
     );
-    expect(() => validateOrganizationApiKey("pmfa_ls_example")).toThrow(
+    expect(() => validateTeamApiKey("pmfa_ls_example")).toThrow(
       /Listener credentials/,
     );
   });
@@ -118,9 +118,9 @@ describe("credential validation", () => {
           crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
       }
       raw.writeUInt32BE((crc ^ 0xffffffff) >>> 0, length);
-      expect(
-        validateOrganizationApiKey("pmfa_" + raw.toString("base64url")),
-      ).toBe("pmfa_" + raw.toString("base64url"));
+      expect(validateTeamApiKey("pmfa_" + raw.toString("base64url"))).toBe(
+        "pmfa_" + raw.toString("base64url"),
+      );
       const value = "pmfa_pt_" + raw.toString("base64url");
       expect(validateClientCredential({ type: "projectToken", value })).toEqual(
         { type: "projectToken", value },
@@ -137,25 +137,21 @@ describe("credential validation", () => {
       expect(() =>
         validateMessagingCredential({ type: "apiKey", value }),
       ).toThrow(PolymorfaConfigurationError);
-      expect(() => validateOrganizationApiKey(value)).toThrow(
+      expect(() => validateTeamApiKey(value)).toThrow(
         PolymorfaConfigurationError,
       );
     }
   });
 
   it("rejects legacy and padded credentials before transport", () => {
-    expect(() =>
-      validateOrganizationApiKey(`pmfa_${"A".repeat(72)}`),
-    ).toThrow();
+    expect(() => validateTeamApiKey(`pmfa_${"A".repeat(72)}`)).toThrow();
     expect(() =>
       validateClientCredential({
         type: "projectToken",
         value: `pmfa_pt_${"A".repeat(94)}`,
       }),
     ).toThrow();
-    expect(() =>
-      validateOrganizationApiKey(ORGANIZATION_API_KEY + "="),
-    ).toThrow();
+    expect(() => validateTeamApiKey(TEAM_API_KEY + "=")).toThrow();
   });
 
   it("rejects malformed and non-canonical team keys", () => {
@@ -164,7 +160,7 @@ describe("credential validation", () => {
       `pmfa_${"A".repeat(73)}`,
       `pmfa_${"A".repeat(71)}+`,
     ]) {
-      expect(() => validateOrganizationApiKey(value)).toThrow(
+      expect(() => validateTeamApiKey(value)).toThrow(
         PolymorfaConfigurationError,
       );
     }
@@ -262,7 +258,7 @@ it("native constructors carry shared credentials unchanged and redact reflected 
   const { MessagingClient } = await import("../src/index.js");
   const { startTestServer } = await import("./support/http-server.js");
   const values = [
-    { type: "apiKey" as const, value: ORGANIZATION_API_KEY },
+    { type: "apiKey" as const, value: TEAM_API_KEY },
     { type: "projectToken" as const, value: PROJECT_TOKEN },
     ...MACHINE_CREDENTIALS.client.cases.map((v: { token: string }) => ({
       type: "clientToken" as const,
@@ -311,9 +307,7 @@ it("native constructors carry shared credentials unchanged and redact reflected 
 
 it("rejects checksum corruption in canonical opaque bodies", () => {
   expect(() =>
-    validateOrganizationApiKey(
-      ORGANIZATION_API_KEY.replace("pmfa_A", "pmfa_B"),
-    ),
+    validateTeamApiKey(TEAM_API_KEY.replace("pmfa_A", "pmfa_B")),
   ).toThrow();
   expect(() =>
     validateClientCredential({

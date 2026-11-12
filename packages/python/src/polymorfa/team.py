@@ -1,4 +1,4 @@
-"""Organization metadata, credential metadata and security observations."""
+"""Team metadata, credential metadata and security observations."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from .models import DataEnvelope
 from .transport import ApiResponse, RequestOptions
 
 
-class Organization(TypedDict):
+class Team(TypedDict):
     id: str
     externalId: str
     name: str
@@ -33,7 +33,7 @@ class Organization(TypedDict):
 class Member(TypedDict):
     _id: str
     _creationTime: int
-    orgId: str
+    teamId: str
     userId: str
     email: str
     name: str | None
@@ -50,7 +50,7 @@ class ApiKey(TypedDict):
     keyId: str
     start: str
     last4: str
-    orgId: str
+    teamId: str
     label: str
     scopes: int
     source: str
@@ -123,10 +123,8 @@ class Acknowledged(TypedDict):
     acknowledged: Literal[True]
 
 
-class Organizations(Resource):
-    async def retrieve(
-        self, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[Organization]]:
+class Teams(Resource):
+    async def retrieve(self, *, options: RequestOptions = O) -> ApiResponse[DataEnvelope[Team]]:
         return await self._request("GET", "/platform/team", options=options)
 
 

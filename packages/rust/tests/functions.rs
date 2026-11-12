@@ -24,7 +24,7 @@ fn invocation() -> Value {
 }
 #[tokio::test]
 async fn definitions_revision_guard_and_immutable_deployments_native_wire() {
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/functions?limit=5&projectId=00000000-0000-0000-0000-000000000001",
@@ -38,7 +38,7 @@ async fn definitions_revision_guard_and_immutable_deployments_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/functions",
@@ -52,8 +52,8 @@ async fn definitions_revision_guard_and_immutable_deployments_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(client,"GET","/platform/functions/00000000-0000-0000-0000-000000000002?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":definition()}),client.project(PROJECT).unwrap().functions().retrieve(FUNCTION,RequestOptions::default()));
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(client,"GET","/platform/functions/00000000-0000-0000-0000-000000000002?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":definition()}),client.project(PROJECT).unwrap().functions().retrieve(FUNCTION,RequestOptions::default()));
+    wire_unwrapped_team!(
         client,
         "PATCH",
         "/platform/functions/00000000-0000-0000-0000-000000000002",
@@ -69,9 +69,9 @@ async fn definitions_revision_guard_and_immutable_deployments_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(client,"DELETE","/platform/functions/00000000-0000-0000-0000-000000000002?expectedRevision=2&projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"ok":true}}),client.project(PROJECT).unwrap().functions().delete(FUNCTION,2,RequestOptions::default()));
-    wire_unwrapped_organization!(client,"GET","/platform/functions/00000000-0000-0000-0000-000000000002/deployments?before=cursor&limit=5&projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"items":[summary()],"nextCursor":null}}),client.project(PROJECT).unwrap().functions().deployments().list(FUNCTION,&ListFunctionsParameters{limit:Some(5),before:Some("cursor".into())},RequestOptions::default()));
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(client,"DELETE","/platform/functions/00000000-0000-0000-0000-000000000002?expectedRevision=2&projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"ok":true}}),client.project(PROJECT).unwrap().functions().delete(FUNCTION,2,RequestOptions::default()));
+    wire_unwrapped_team!(client,"GET","/platform/functions/00000000-0000-0000-0000-000000000002/deployments?before=cursor&limit=5&projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"items":[summary()],"nextCursor":null}}),client.project(PROJECT).unwrap().functions().deployments().list(FUNCTION,&ListFunctionsParameters{limit:Some(5),before:Some("cursor".into())},RequestOptions::default()));
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/functions/00000000-0000-0000-0000-000000000002/deployments",
@@ -98,8 +98,8 @@ async fn definitions_revision_guard_and_immutable_deployments_native_wire() {
                 RequestOptions::default()
             )
     );
-    wire_unwrapped_organization!(client,"GET","/platform/functions/00000000-0000-0000-0000-000000000002/deployments/00000000-0000-0000-0000-000000000003?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":deployment()}),client.project(PROJECT).unwrap().functions().deployments().retrieve(FUNCTION,DEPLOYMENT,RequestOptions::default()));
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(client,"GET","/platform/functions/00000000-0000-0000-0000-000000000002/deployments/00000000-0000-0000-0000-000000000003?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":deployment()}),client.project(PROJECT).unwrap().functions().deployments().retrieve(FUNCTION,DEPLOYMENT,RequestOptions::default()));
+    wire_unwrapped_team!(
         client,
         "PUT",
         "/platform/functions/00000000-0000-0000-0000-000000000002/promotion",
@@ -122,8 +122,8 @@ async fn definitions_revision_guard_and_immutable_deployments_native_wire() {
 }
 #[tokio::test]
 async fn secrets_and_nonretained_invocation_receipts_native_wire() {
-    wire_unwrapped_organization!(client,"GET","/platform/functions/00000000-0000-0000-0000-000000000002/secrets?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"items":[secret()],"nextCursor":null}}),client.project(PROJECT).unwrap().functions().secrets().list(FUNCTION,&ListFunctionsParameters::default(),RequestOptions::default()));
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(client,"GET","/platform/functions/00000000-0000-0000-0000-000000000002/secrets?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"items":[secret()],"nextCursor":null}}),client.project(PROJECT).unwrap().functions().secrets().list(FUNCTION,&ListFunctionsParameters::default(),RequestOptions::default()));
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/functions/00000000-0000-0000-0000-000000000002/secrets",
@@ -143,10 +143,10 @@ async fn secrets_and_nonretained_invocation_receipts_native_wire() {
                 RequestOptions::default()
             )
     );
-    wire_unwrapped_organization!(client,"DELETE","/platform/functions/00000000-0000-0000-0000-000000000002/secrets/00000000-0000-0000-0000-000000000003?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"ok":true}}),client.project(PROJECT).unwrap().functions().secrets().revoke(FUNCTION,DEPLOYMENT,RequestOptions::default()));
-    wire_unwrapped_organization!(client,"GET","/platform/functions/00000000-0000-0000-0000-000000000002/invocations?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"items":[invocation()],"nextCursor":"next"}}),client.project(PROJECT).unwrap().functions().invocations().list(FUNCTION,&ListFunctionsParameters::default(),RequestOptions::default()));
-    wire_unwrapped_organization!(client,"GET","/platform/functions/00000000-0000-0000-0000-000000000002/invocations/00000000-0000-0000-0000-000000000003?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":invocation()}),client.project(PROJECT).unwrap().functions().invocations().retrieve(FUNCTION,DEPLOYMENT,RequestOptions::default()));
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(client,"DELETE","/platform/functions/00000000-0000-0000-0000-000000000002/secrets/00000000-0000-0000-0000-000000000003?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"ok":true}}),client.project(PROJECT).unwrap().functions().secrets().revoke(FUNCTION,DEPLOYMENT,RequestOptions::default()));
+    wire_unwrapped_team!(client,"GET","/platform/functions/00000000-0000-0000-0000-000000000002/invocations?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"items":[invocation()],"nextCursor":"next"}}),client.project(PROJECT).unwrap().functions().invocations().list(FUNCTION,&ListFunctionsParameters::default(),RequestOptions::default()));
+    wire_unwrapped_team!(client,"GET","/platform/functions/00000000-0000-0000-0000-000000000002/invocations/00000000-0000-0000-0000-000000000003?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":invocation()}),client.project(PROJECT).unwrap().functions().invocations().retrieve(FUNCTION,DEPLOYMENT,RequestOptions::default()));
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/functions/00000000-0000-0000-0000-000000000002/invocations",
@@ -178,7 +178,7 @@ async fn secrets_and_nonretained_invocation_receipts_native_wire() {
                 }
             )
     );
-    let client = support::organization("http://127.0.0.1:1".into())
+    let client = support::team("http://127.0.0.1:1".into())
         .project(PROJECT)
         .unwrap();
     assert_eq!(
@@ -219,7 +219,7 @@ async fn function_writes_do_not_retry_even_with_keyed_override() {
                 .is_err()
         );
     });
-    let client = support::organization(format!("http://{address}"))
+    let client = support::team(format!("http://{address}"))
         .project(PROJECT)
         .unwrap();
     let error = client

@@ -36,7 +36,7 @@ func TestUsageIteratorResumesAndRejectsInitialCursorLoop(t *testing.T) {
 				}
 			}))
 			defer server.Close()
-			client, _ := NewOrganizationClient(orgConfig(server.URL))
+			client, _ := NewTeamClient(teamConfig(server.URL))
 			project, _ := client.Project("project")
 			params := UsageRecordParams{Meter: "call.duration", ListParams: ListParams{Cursor: start}}
 			sequence := project.Usage().IterateRecords(context.Background(), params)
@@ -85,7 +85,7 @@ func TestMessagingCampaignCreateKeepsInvocationIdentityAcrossRetry(t *testing.T)
 				io.WriteString(w, campaignFixture)
 			}))
 			defer server.Close()
-			client, _ := NewMessagingClient(orgConfig(server.URL))
+			client, _ := NewMessagingClient(teamConfig(server.URL))
 			for invocation := 0; invocation < 2; invocation++ {
 				response, err := client.Campaigns().Create(context.Background(), "project", CreateCampaignRequest{Name: "Campaign"}, RequestOptions{IdempotencyKey: supplied})
 				if err != nil || response.Metadata.Attempts != 2 {
@@ -109,7 +109,7 @@ func TestMintedClientTokensRedactFormattingButPreserveExplicitJSON(t *testing.T)
 		io.WriteString(w, `{"data":{"token":"`+token+`","expiresAt":"2026-10-15"}}`)
 	}))
 	defer server.Close()
-	client, _ := NewMessagingClient(orgConfig(server.URL))
+	client, _ := NewMessagingClient(teamConfig(server.URL))
 	response, err := client.ClientTokens().Mint(context.Background(), MintClientTokenRequest{EphemeralID: "app", Session: "session"})
 	if err != nil {
 		t.Fatal(err)

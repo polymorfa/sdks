@@ -18,10 +18,10 @@ from polymorfa.media import (
 
 
 @pytest.mark.parametrize("prefix", ["pt", "ct", "ls", "at", "wst", "sd"])
-def test_reject_wrong_principal_even_at_organization_length(prefix):
+def test_reject_wrong_principal_even_at_team_length(prefix):
     key = f"pmfa_{prefix}_" + "a" * (72 - len(prefix) - 1)
     with pytest.raises(ConfigurationError):
-        Credential("organization_api_key", key)
+        Credential("team_api_key", key)
 
 
 def test_media_integrity_before_release():

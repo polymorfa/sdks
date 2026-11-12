@@ -28,7 +28,7 @@ internal static class OfficialRound2Tests
             }
             return Response("""{"success":true,"data":{"catalogId":"123","syncedAt":null,"stale":true,"productCount":1,"lastAttempt":{"startedAt":"now","finishedAt":null,"outcome":"future"},"catalogs":[],"catalog":{"catalogId":"123"},"products":[{"id":"p","price":"0.10"}],"nextCursor":"next_-","wabaId":"w","onboarding":{"status":"unknown","metaStatus":null},"terms":{"status":"unknown","metaStatus":null,"date":null},"cloudApiMarketingDisabled":false}}""");
         });
-        using (var c = new MessagingClient(Credential.OrganizationApiKey(Key), new() { TransportHandler = handler }))
+        using (var c = new MessagingClient(Credential.TeamApiKey(Key), new() { TransportHandler = handler }))
         {
             await c.Catalogs.ListAsync("n /x"); var s = await c.Catalogs.RetrieveAsync("n /x", "123"); Check(s.Data.Data.SyncedAt is null && s.Data.Data.LastAttempt.Outcome == "future");
             await c.Catalogs.SyncAsync("n /x", "123"); var p = await c.Catalogs.ListProductsAsync("n /x", "123", new(100, "next_-")); Check(p.Data.Data.Products[0].Price == "0.10");
@@ -39,11 +39,11 @@ internal static class OfficialRound2Tests
         Check(paths.Count == 6 && paths[0] == "GET /messaging/n%20%2Fx/catalogs" && paths[5] == "PUT /messaging/n%20%2Fx/official-groups/g%2Fx/picture");
         var attempts = 0;
         using var denied = new Handler((r, _) => { attempts++; var v = Response("""{"error":{"code":"catalog_sync_cooldown","message":"Wait"}}""", HttpStatusCode.TooManyRequests); v.Headers.TryAddWithoutValidation("Retry-After", "120"); return Task.FromResult(v); });
-        using (var c = new MessagingClient(Credential.OrganizationApiKey(Key), new() { TransportHandler = denied }))
+        using (var c = new MessagingClient(Credential.TeamApiKey(Key), new() { TransportHandler = denied }))
         { try { await c.Catalogs.SyncAsync("n", "123", new() { IdempotencyKey = "key", MaxNetworkRetries = 3 }); throw new Exception("Expected cooldown"); } catch (PolymorfaRateLimitException e) { Check(e.Code == "catalog_sync_cooldown" && e.Metadata!.Headers["retry-after"] == "120"); } }
         Check(attempts == 1);
         using var cancelled = new CancellationTokenSource(); cancelled.Cancel();
-        using (var c = new MessagingClient(Credential.OrganizationApiKey(Key), new() { TransportHandler = new Handler((_, token) => Task.FromCanceled<HttpResponseMessage>(token)) }))
+        using (var c = new MessagingClient(Credential.TeamApiKey(Key), new() { TransportHandler = new Handler((_, token) => Task.FromCanceled<HttpResponseMessage>(token)) }))
         { try { await c.OfficialGroups.SetPictureAsync("n", "g", jpeg, new() { CancellationToken = cancelled.Token }); throw new Exception("Expected cancellation"); } catch (PolymorfaCancelledException) { } }
         using (var c = new MessagingClient(Credential.ClientToken("pmfa_ct_bG9jYWw")))
         { try { await c.Catalogs.ListAsync("n"); throw new Exception("Expected credential refusal"); } catch (PolymorfaConfigurationException) { } }
@@ -52,7 +52,7 @@ internal static class OfficialRound2Tests
             const string hook = "{\"id\":\"w\",\"batching\":{\"enabled\":false,\"maxEvents\":100,\"windowMs\":1000}}";
             return Response(r.Method == HttpMethod.Get ? "{\"data\":" + hook + "}" : "{\"data\":{\"webhook\":" + hook + "}}");
         });
-        using (var c = new OrganizationClient(Credential.OrganizationApiKey(Key), new() { TransportHandler = platformHandler }))
+        using (var c = new TeamClient(Credential.TeamApiKey(Key), new() { TransportHandler = platformHandler }))
         {
             foreach (var resource in new[] { c.Webhooks, c.Project("p/x").Webhooks }) {
                 await resource.CreateAsync(new("https://example.test", [], Batching: new(false)));

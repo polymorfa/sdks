@@ -141,7 +141,7 @@ async def test_typed_observation_and_hybrid(method, path, body, query, data, inv
 
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -172,7 +172,7 @@ async def test_saved_configuration_owner_context(project_id, write):
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),

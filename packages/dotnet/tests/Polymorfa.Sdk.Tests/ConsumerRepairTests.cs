@@ -18,7 +18,7 @@ internal static class ConsumerRepairTests
         foreach (var repeated in new[] { false, true })
         {
             await using var peer = new Peer((_, stream, _) => Reply(stream, 200, JsonSerializer.Serialize(new { data = new { records = Array.Empty<int>(), nextCursor = repeated ? "seed /+" : null } })));
-            using var client = new OrganizationClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = peer.Url, MaxNetworkRetries = 0 });
+            using var client = new TeamClient(Credential.TeamApiKey(Key), new() { BaseUrl = peer.Url, MaxNetworkRetries = 0 });
             try { await foreach (var _ in client.Usage.IterateRecordsAsync(new(Cursor: "seed /+"))) { } Check(!repeated, "Usage repeated initial cursor accepted"); }
             catch (PolymorfaServerException error) { Check(repeated && error.Code == "invalid_response" && error.RequestId == "repair", "Usage cursor error changed"); }
             Check(peer.Requests.Count == 1 && peer.Requests.Single().Target == "/platform/usage/records?cursor=seed%20%2F%2B", "Usage initial cursor discarded/repeated");
@@ -89,7 +89,7 @@ internal static class ConsumerRepairTests
                     Check(request.Target == "/prefix/messaging/media/id" && request.Headers["authorization"] == "Bearer " + Key && request.Headers["polymorfa-version"] == "2026-09-22", "Media API request changed");
                     if (redirect) await Reply(stream, 302, "", "Location: " + storage.Url + "signed?signature=private\r\n"); else await Stall(stream, stop);
                 });
-                using var client = new MessagingClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = new(api.Url, "prefix"), MaxNetworkRetries = 0 });
+                using var client = new MessagingClient(Credential.TeamApiKey(Key), new() { BaseUrl = new(api.Url, "prefix"), MaxNetworkRetries = 0 });
                 await using var download = await client.Media.DownloadStreamAsync("id", new() { Timeout = TimeSpan.FromMilliseconds(200), Headers = new Dictionary<string, string> { ["x-private"] = "private" } });
                 var read = synchronous ? Task.Run(() => { var buffer = new byte[8]; while (download.Body.Read(buffer, 0, buffer.Length) != 0) { } }) : download.ReadAllAsync();
                 try { await read.WaitAsync(TimeSpan.FromSeconds(2)); throw new Exception("Media stall was accepted"); }
@@ -100,13 +100,13 @@ internal static class ConsumerRepairTests
         // Header time consumes the same successful request's budget, rather than starting a fresh body timer.
         await using (var api = new Peer(async (_, stream, stop) => { await Task.Delay(160, stop); await stream.WriteAsync(Encoding.ASCII.GetBytes("HTTP/1.1 200 OK\r\nContent-Length: 1\r\nx-request-id: repair\r\nConnection: close\r\n\r\n"), stop); await Task.Delay(240, stop); await stream.WriteAsync(new byte[] { 97 }, stop); }))
         {
-            using var client = new MessagingClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = api.Url, MaxNetworkRetries = 0 });
+            using var client = new MessagingClient(Credential.TeamApiKey(Key), new() { BaseUrl = api.Url, MaxNetworkRetries = 0 });
             try { await client.Media.DownloadAsync("id", new() { Timeout = TimeSpan.FromMilliseconds(300) }); throw new Exception("Media header budget reset at body"); } catch (PolymorfaTimeoutException) { }
         }
         foreach (var perRead in new[] { false, true })
         {
             await using var api = new Peer((_, stream, stop) => Stall(stream, stop));
-            using var client = new MessagingClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = api.Url });
+            using var client = new MessagingClient(Credential.TeamApiKey(Key), new() { BaseUrl = api.Url });
             using var caller = new CancellationTokenSource(); using var readCancel = new CancellationTokenSource();
             await using var download = await client.Media.DownloadStreamAsync("id", new() { Timeout = TimeSpan.FromSeconds(3), CancellationToken = caller.Token });
             var read = download.ReadAllAsync(readCancel.Token); (perRead ? readCancel : caller).CancelAfter(100);
@@ -114,7 +114,7 @@ internal static class ConsumerRepairTests
         }
         await using (var api = new Peer((_, stream, _) => Reply(stream, 200, "media")))
         {
-            using var client = new MessagingClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = api.Url });
+            using var client = new MessagingClient(Credential.TeamApiKey(Key), new() { BaseUrl = api.Url });
             await using var download = await client.Media.DownloadStreamAsync("id", new() { Timeout = TimeSpan.FromMilliseconds(200) });
             Check(Encoding.UTF8.GetString(await download.ReadAllAsync()) == "media", "Valid media changed");
             await Task.Delay(250); Check(await download.Body.ReadAsync(new byte[1]) == 0, "Completed body retained deadline");
@@ -122,7 +122,7 @@ internal static class ConsumerRepairTests
         }
         await using (var api = new Peer((request, stream, _) => Reply(stream, request.Number == 1 ? 500 : 200, request.Number == 1 ? "{}" : "retry", "Retry-After: 0\r\n")))
         {
-            using var client = new MessagingClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = api.Url, MaxNetworkRetries = 1 });
+            using var client = new MessagingClient(Credential.TeamApiKey(Key), new() { BaseUrl = api.Url, MaxNetworkRetries = 1 });
             var result = await client.Media.DownloadAsync("id"); Check(result.Metadata.Attempts == 2 && Encoding.UTF8.GetString(result.Data) == "retry", "API media retry changed");
         }
         Console.WriteLine("PASS public media: direct/redirect async/sync deadlines, shared header budget, caller/read cancellation, EOF, ownership and retry");
@@ -165,7 +165,7 @@ internal static class ConsumerRepairTests
         foreach (var cycle in new[] { new[] { "again", "again" }, new[] { "a", "b", "a" }, new[] { "seed" }, new[] { "", "" } })
         {
             await using var peer = new Peer((request, stream, _) => Reply(stream, 200, JsonSerializer.Serialize(new { items = Array.Empty<int>(), next = cycle[Math.Min(request.Number - 1, cycle.Length - 1)] })));
-            using var client = new OrganizationClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = peer.Url, MaxNetworkRetries = 0 });
+            using var client = new TeamClient(Credential.TeamApiKey(Key), new() { BaseUrl = peer.Url, MaxNetworkRetries = 0 });
             var page = await client.PaginateRawAsync(new(HttpMethod.Get, "/raw", Query: [new("position", "seed")]), Decode, "position");
             try { await Task.Run(async () => { await foreach (var _ in page) { } }).WaitAsync(TimeSpan.FromSeconds(2)); throw new Exception("Repeated cursor accepted"); }
             catch (PolymorfaServerException error) { Check(error.Code == "invalid_response" && error.RequestId == "repair" && !error.ToString().Contains(Key), "Cursor failure lost safe metadata"); }
@@ -179,7 +179,7 @@ internal static class ConsumerRepairTests
             return Reply(stream, 200, JsonSerializer.Serialize(new { items = request.Number == 1 ? Array.Empty<int>() : new[] { request.Number }, next = request.Number == 1 ? "next /+" : request.Number == 2 ? "last" : null }));
         }))
         {
-            using var client = new ProjectClient(Credential.OrganizationApiKey(Key), "p", new() { BaseUrl = new(peer.Url, "prefix") }); using var body = JsonDocument.Parse("{\"filter\":true}");
+            using var client = new ProjectClient(Credential.TeamApiKey(Key), "p", new() { BaseUrl = new(peer.Url, "prefix") }); using var body = JsonDocument.Parse("{\"filter\":true}");
             var page = await client.PaginateRawAsync(new(HttpMethod.Post, "/raw", body.RootElement, new() { IdempotencyKey = "retained" }, [new("filter", "a /+"), new("position", "seed")]), Decode, "position"); body.Dispose();
             var values = new List<int>(); await foreach (var value in page) values.Add(value); Check(values.SequenceEqual([2, 3]) && peer.Requests.Count == 3, "Valid/empty raw pages changed");
         }

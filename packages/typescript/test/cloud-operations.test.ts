@@ -4,7 +4,7 @@ import {
   type MessageAckPayload,
   type MetaPricingReport,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 
 const servers: TestServer[] = [];
@@ -21,7 +21,7 @@ function client(
       type: credential,
       value:
         credential === "apiKey"
-          ? ORGANIZATION_API_KEY
+          ? TEAM_API_KEY
           : credential === "projectToken"
             ? PROJECT_TOKEN
             : `pmfa_ct_${"A".repeat(94)}`,

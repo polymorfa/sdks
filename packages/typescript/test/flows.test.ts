@@ -10,7 +10,7 @@ import {
   type CreateFlowRequest,
   type FlowProviderRequest,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 const servers: TestServer[] = [];
 afterEach(async () => {
@@ -98,12 +98,12 @@ describe("project Flow lifecycle", () => {
       body: JSON.stringify({ data: null }),
     }));
     servers.push(server);
-    const organization = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    const team = new Client({
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
     });
-    expect(Object.hasOwn(organization, "flows")).toBe(false);
-    const flows = organization.project(projectId).flows;
+    expect(Object.hasOwn(team, "flows")).toBe(false);
+    const flows = team.project(projectId).flows;
     expect(() =>
       flows.create({
         projectId: "another",
@@ -187,7 +187,7 @@ describe("project Flow reads", () => {
       });
     });
     const sdk = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       fetch,
     });
     expect("flows" in sdk).toBe(false);

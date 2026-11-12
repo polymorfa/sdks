@@ -279,7 +279,7 @@ async def test_typed_voip_controls(method, path, body, fixture, server, invoke):
 
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -303,7 +303,7 @@ async def test_call_control_guards_and_no_retry_boundaries():
 
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -382,7 +382,7 @@ async def test_simultaneous_calls_presence(body):
         )
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await client.voip.update_call_settings("support", body)
@@ -412,7 +412,7 @@ async def test_simultaneous_calls_server_decisions(status, code, param):
         )
 
     async with AsyncMessagingClient(
-        Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         with pytest.raises(PolymorfaError) as result:

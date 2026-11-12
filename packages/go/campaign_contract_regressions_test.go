@@ -32,7 +32,7 @@ func normalizedKeywordFlow(t *testing.T) string {
 	return string(env.Data)
 }
 func TestCampaignNormalizedKeywordResponse(t *testing.T) {
-	for _, name := range []string{"org-get", "bound-get", "messaging-get", "org-create", "bound-create", "messaging-create"} {
+	for _, name := range []string{"team-get", "bound-get", "messaging-get", "team-create", "bound-create", "messaging-create"} {
 		t.Run(name, func(t *testing.T) {
 			var calls atomic.Int64
 			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -47,22 +47,22 @@ func TestCampaignNormalizedKeywordResponse(t *testing.T) {
 				_, _ = io.WriteString(w, `{"success":true,"data":`+normalizedKeywordFlow(t)+`}`)
 			}))
 			defer s.Close()
-			org, _ := NewOrganizationClient(orgConfig(s.URL))
-			bound, _ := org.Project(contractProject)
-			messaging, _ := NewMessagingClient(orgConfig(s.URL))
+			team, _ := NewTeamClient(teamConfig(s.URL))
+			bound, _ := team.Project(contractProject)
+			messaging, _ := NewMessagingClient(teamConfig(s.URL))
 			b := contractGraph()
 			b.Definition.Nodes[0].Edges[0].Match = CampaignReplyKeyword{Value: strings.Repeat("İ", 32)}
 			var result Response[Envelope[CampaignReplyFlow]]
 			var err error
 			switch name {
-			case "org-get":
-				result, err = org.Campaigns().GetReplyFlow(context.Background(), contractID, CampaignProjectParams{ProjectID: contractProject})
+			case "team-get":
+				result, err = team.Campaigns().GetReplyFlow(context.Background(), contractID, CampaignProjectParams{ProjectID: contractProject})
 			case "bound-get":
 				result, err = bound.Campaigns().GetReplyFlow(context.Background(), contractID)
 			case "messaging-get":
 				result, err = messaging.Campaigns().GetReplyFlow(context.Background(), "slug", contractID)
-			case "org-create":
-				result, err = org.Campaigns().CreateReplyFlow(context.Background(), CreatePlatformCampaignReplyFlowRequest{CreateCampaignReplyFlowRequest: b, ProjectID: contractProject})
+			case "team-create":
+				result, err = team.Campaigns().CreateReplyFlow(context.Background(), CreatePlatformCampaignReplyFlowRequest{CreateCampaignReplyFlowRequest: b, ProjectID: contractProject})
 			case "bound-create":
 				result, err = bound.Campaigns().CreateReplyFlow(context.Background(), b)
 			case "messaging-create":
@@ -76,7 +76,7 @@ func TestCampaignNormalizedKeywordResponse(t *testing.T) {
 				t.Fatal("normalized response lost")
 			}
 			b.Definition.Nodes[0].Edges[0].Match = CampaignReplyKeyword{Value: strings.Repeat("i\u0307", 32)}
-			_, err = org.Campaigns().CreateReplyFlow(context.Background(), CreatePlatformCampaignReplyFlowRequest{CreateCampaignReplyFlowRequest: b, ProjectID: contractProject})
+			_, err = team.Campaigns().CreateReplyFlow(context.Background(), CreatePlatformCampaignReplyFlowRequest{CreateCampaignReplyFlowRequest: b, ProjectID: contractProject})
 			if err == nil || calls.Load() != 1 {
 				t.Fatal("normalized response illegally expanded outbound byte limit")
 			}
@@ -110,8 +110,8 @@ func TestCampaignOptionalNullResponse(t *testing.T) {
 					w.Header().Set("Content-Type", "application/json")
 					_, _ = io.WriteString(w, `{"data":`+payload+`}`)
 				}))
-				org, _ := NewOrganizationClient(orgConfig(s.URL))
-				_, err := org.Campaigns().GetReplyFlow(context.Background(), contractID, CampaignProjectParams{ProjectID: contractProject})
+				team, _ := NewTeamClient(teamConfig(s.URL))
+				_, err := team.Campaigns().GetReplyFlow(context.Background(), contractID, CampaignProjectParams{ProjectID: contractProject})
 				s.Close()
 				if null {
 					var api *Error
@@ -154,10 +154,10 @@ func TestCampaignCallerIdempotencyHeaderCasing(t *testing.T) {
 				_, _ = io.WriteString(w, `{"data":`+sendJSON+`}`)
 			}))
 			defer s.Close()
-			org, _ := NewOrganizationClient(orgConfig(s.URL))
+			team, _ := NewTeamClient(teamConfig(s.URL))
 			opts := RequestOptions{Headers: http.Header{casing: {"caller-original"}}}
 			for i := 0; i < 2; i++ {
-				_, err := org.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject}, opts)
+				_, err := team.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject}, opts)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -173,7 +173,7 @@ func TestCampaignCallerIdempotencyHeaderCasing(t *testing.T) {
 		writeContractFixture(w, contractWireRow{model: sendJSON})
 	}))
 	defer s.Close()
-	org, _ := NewOrganizationClient(orgConfig(s.URL))
+	team, _ := NewTeamClient(teamConfig(s.URL))
 	body := PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject}
 	for _, headers := range []http.Header{
 		{"idempotency-key": {"first"}, "Idempotency-Key": {"second"}},
@@ -184,7 +184,7 @@ func TestCampaignCallerIdempotencyHeaderCasing(t *testing.T) {
 		{"idempotency-key": {"invalid\r\nheader"}},
 		{"idempotency-key": {"invalid\x7fheader"}},
 	} {
-		if _, err := org.Campaigns().TestSend(context.Background(), contractID, body, RequestOptions{Headers: headers}); err == nil {
+		if _, err := team.Campaigns().TestSend(context.Background(), contractID, body, RequestOptions{Headers: headers}); err == nil {
 			t.Fatal("ambiguous or oversized caller key accepted")
 		}
 	}
@@ -212,11 +212,11 @@ func TestCampaignCallerKeyAcrossNetworkRetry(t *testing.T) {
 		writeContractFixture(w, contractWireRow{model: sendJSON})
 	}))
 	defer s.Close()
-	org, _ := NewOrganizationClient(orgConfig(s.URL))
+	team, _ := NewTeamClient(teamConfig(s.URL))
 	opts := RequestOptions{Headers: http.Header{"idempotency-key": {"caller-original"}}}
 	done := make(chan error, 1)
 	go func() {
-		_, err := org.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject}, opts)
+		_, err := team.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject}, opts)
 		done <- err
 	}()
 	<-received
@@ -246,8 +246,8 @@ func TestCampaignIdempotencyOptionPrecedenceAndLegacy(t *testing.T) {
 			got = r.Header.Get("Idempotency-Key")
 			writeContractFixture(w, contractWireRow{model: sendJSON})
 		}))
-		org, _ := NewOrganizationClient(orgConfig(s.URL))
-		_, err = org.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject}, tc.opts)
+		team, _ := NewTeamClient(teamConfig(s.URL))
+		_, err = team.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject}, tc.opts)
 		s.Close()
 		if err != nil || got != tc.want {
 			t.Fatal("explicit option precedence changed", got, err)
@@ -262,8 +262,8 @@ func TestCampaignIdempotencyOptionPrecedenceAndLegacy(t *testing.T) {
 		_, _ = io.WriteString(w, `{"error":{"code":"busy"}}`)
 	}))
 	defer s.Close()
-	org, _ := NewOrganizationClient(orgConfig(s.URL))
-	_, err := org.Campaigns().CreateReplyFlow(context.Background(), CreatePlatformCampaignReplyFlowRequest{contractGraph(), contractProject}, RequestOptions{Headers: http.Header{"idempotency-key": {"caller"}}})
+	team, _ := NewTeamClient(teamConfig(s.URL))
+	_, err := team.Campaigns().CreateReplyFlow(context.Background(), CreatePlatformCampaignReplyFlowRequest{contractGraph(), contractProject}, RequestOptions{Headers: http.Header{"idempotency-key": {"caller"}}})
 	if err == nil || calls.Load() != 1 {
 		t.Fatal("unsafe default retry changed", err, calls.Load())
 	}

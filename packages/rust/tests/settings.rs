@@ -6,14 +6,14 @@ macro_rules! settings_wire {
     ($project:expr,$method:expr,$path:expr,$body:expr,$expected:expr,$name:ident,$resource:ident,$call:expr) => {{
         let expected=$expected;
         let (base,server)=support::wire($method,$path,$body,json!({"data":expected})).await;
-        let org=support::organization(base);let view=org.project("project").unwrap();
-        let $resource=if $project {view.$name()} else {org.$name()};
+        let team=support::team(base);let view=team.project("project").unwrap();
+        let $resource=if $project {view.$name()} else {team.$name()};
         let result=$call.await.unwrap();support::assert_subset(&expected,&serde_json::to_value(result.data).unwrap());
         assert_eq!(result.metadata.request_id.as_deref(),Some("wire_fixture"));server.await.unwrap();
     }};
 }
 #[tokio::test]
-async fn organization_and_immutable_project_configuration_defaults_native_wire() {
+async fn team_and_immutable_project_configuration_defaults_native_wire() {
     let configuration = json!({"effective":{"observation":{"presenceMode":"cache","typingMode":"events","labelMode":"project","quickReplyMode":"off"},"historySync":{"mode":"deliver","requestFull":true},"hms":{"enabled":false}},"overrides":{},"sources":{"historySync.mode":"consent","historySync.requestFull":"session","hms":"project","observation.presenceMode":"session","observation.typingMode":"team","observation.labelMode":"project","observation.quickReplyMode":"platform"},"requestedHistory":{"mode":"deliver","requestFull":true},"historyConsent":"accepted","revisions":{"team":1,"project":2,"session":3},"application":{"desiredGeneration":4,"appliedGeneration":4,"status":"applied"}});
     let update = UpdateSessionDefaults {
         configuration: SessionConfigurationPatch {
@@ -59,7 +59,7 @@ async fn organization_and_immutable_project_configuration_defaults_native_wire()
 }
 #[tokio::test]
 async fn owner_bound_quicklink_settings_sparse_nulls_and_call_retention_native_wire() {
-    let settings = json!({"id":"setting","projectId":null,"enabled":true,"successCallbackUrl":null,"failureCallbackUrl":null,"businessName":"Shop","headline":"Connect","description":null,"successMessage":null,"supportUrl":null,"privacyUrl":null,"termsUrl":null,"accent":"#123456","theme":"system","hideWatermark":false,"allowPhoneChange":false,"shape":"rounded","radiusPx":8.0,"logoMode":"organization","logoStorageId":null,"logoSourceStorageId":null,"logoUrl":null,"historySync":"ask","methods":["qr","pairing"],"defaultMethod":"qr","createdAt":1800000000000u64,"updatedAt":1800000000000u64});
+    let settings = json!({"id":"setting","projectId":null,"enabled":true,"successCallbackUrl":null,"failureCallbackUrl":null,"businessName":"Shop","headline":"Connect","description":null,"successMessage":null,"supportUrl":null,"privacyUrl":null,"termsUrl":null,"accent":"#123456","theme":"system","hideWatermark":false,"allowPhoneChange":false,"shape":"rounded","radiusPx":8.0,"logoMode":"team","logoStorageId":null,"logoSourceStorageId":null,"logoUrl":null,"historySync":"ask","methods":["qr","pairing"],"defaultMethod":"qr","createdAt":1800000000000u64,"updatedAt":1800000000000u64});
     let update:UpdateQuickLinkSettings=serde_json::from_value(json!({"headline":null,"defaultMethod":null,"methods":["pairing"],"theme":"dark","successCallbackUrl":"https://example.com/success","allowPhoneChange":true})).unwrap();
     assert_eq!(
         serde_json::to_value(&update).unwrap(),

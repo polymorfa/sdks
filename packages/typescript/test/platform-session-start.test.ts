@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
@@ -9,14 +9,14 @@ import {
 } from "../src/index.js";
 
 describe("Client.sessions.start", () => {
-  it("starts an organization-managed session", async () => {
+  it("starts a team-managed session", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json({ data: { starting: true, sessionId: "session-uuid" } }),
     );
     const client = new Client({
       credential: {
-        type: "organizationApiKey",
-        value: ORGANIZATION_API_KEY,
+        type: "teamApiKey",
+        value: TEAM_API_KEY,
       },
       baseUrl: "https://api.example.com",
       fetch,

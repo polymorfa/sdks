@@ -16,7 +16,7 @@ import (
 
 func TestCampaignContractBoundAliasesAndMessagingCredentials(t *testing.T) {
 	confined := map[string]bool{"getPlatformCampaignReplyFlow": true, "createPlatformCampaignReplyFlow": true, "setPlatformCampaignReplyFlow": true, "testSendPlatformCampaign": true, "listCampaignLaunchApprovals": true, "getCampaignLinks": true, "exportCampaignRecipients": true, "getProjectSignalCustody": true, "updateProjectSignalCustody": true, "getCustomerSignalCustody": true, "updateCustomerSignalCustody": true}
-	for _, kind := range []CredentialKind{OrganizationAPIKey, ProjectToken} {
+	for _, kind := range []CredentialKind{TeamAPIKey, ProjectToken} {
 		t.Run(string(kind), func(t *testing.T) {
 			for _, row := range contractRows() {
 				if !confined[row.id] && !strings.HasPrefix(row.path, "/messaging/") {
@@ -41,7 +41,7 @@ func TestCampaignContractBoundAliasesAndMessagingCredentials(t *testing.T) {
 						writeContractFixture(w, row)
 					}))
 					defer s.Close()
-					cfg := orgConfig(s.URL)
+					cfg := teamConfig(s.URL)
 					if kind == ProjectToken {
 						cfg.Credential = Credential{ProjectToken, "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}
 					}
@@ -90,7 +90,7 @@ func TestCampaignContractImmutableProjectResources(t *testing.T) {
 		writeContractFixture(w, contractWireRow{model: linksJSON})
 	}))
 	defer s.Close()
-	c, _ := NewOrganizationClient(orgConfig(s.URL))
+	c, _ := NewTeamClient(teamConfig(s.URL))
 	p1, _ := c.Project(contractProject)
 	a := p1.Campaigns()
 	p2, _ := p1.Project(contractCustomer)
@@ -134,7 +134,7 @@ func TestCampaignContractStableTestSendReplay(t *testing.T) {
 		writeContractFixture(w, contractWireRow{model: sendJSON})
 	}))
 	defer s.Close()
-	c, _ := NewOrganizationClient(orgConfig(s.URL))
+	c, _ := NewTeamClient(teamConfig(s.URL))
 	vars := map[string]CampaignVariable{"a": {String: cptr("original")}}
 	opts := RequestOptions{Headers: http.Header{"X-Custom": {"original"}}}
 	done := make(chan error, 1)
@@ -167,7 +167,7 @@ func TestCampaignContractUnsafeDefaultAndExplicitRetry(t *testing.T) {
 				_, _ = io.WriteString(w, `{"error":{"code":"not_ready"}}`)
 			}))
 			defer s.Close()
-			c, _ := NewOrganizationClient(orgConfig(s.URL))
+			c, _ := NewTeamClient(teamConfig(s.URL))
 			o := RequestOptions{IdempotencyKey: "caller-key"}
 			if explicit {
 				o.MaxNetworkRetries = cptr(1)
@@ -207,7 +207,7 @@ func TestCampaignContractReplayAndErrors(t *testing.T) {
 				_, _ = io.WriteString(w, `{"error":{"code":"`+tc.code+`","param":"body.sessionId","message":"Safe refusal"}}`)
 			}))
 			defer s.Close()
-			c, _ := NewOrganizationClient(orgConfig(s.URL))
+			c, _ := NewTeamClient(teamConfig(s.URL))
 			_, e := c.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject}, RequestOptions{MaxNetworkRetries: cptr(0)})
 			var api *Error
 			if !errors.As(e, &api) || api.Code != tc.code || api.Status != tc.status || api.Field != "body.sessionId" || api.RequestID != "req-error" || api.Metadata.Headers.Get("X-Trace-ID") != "trace-error" {
@@ -234,7 +234,7 @@ func TestCampaignContractReplayAndErrors(t *testing.T) {
 				_, _ = io.WriteString(w, `{"error":{"code":"uncertain"}}`)
 			}))
 			defer s.Close()
-			c, _ := NewOrganizationClient(orgConfig(s.URL))
+			c, _ := NewTeamClient(teamConfig(s.URL))
 			_, _ = c.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject})
 			if n.Load() != 1 {
 				t.Fatal(n.Load())
@@ -258,7 +258,7 @@ func TestCampaignContractCSVAndMalformedResponses(t *testing.T) {
 				_, _ = io.WriteString(w, tc.body)
 			}))
 			defer s.Close()
-			c, _ := NewOrganizationClient(orgConfig(s.URL))
+			c, _ := NewTeamClient(teamConfig(s.URL))
 			_, e := c.Campaigns().ExportRecipients(context.Background(), contractID, PlatformCampaignRecipientExportParams{ProjectID: contractProject})
 			if e == nil || calls.Load() != 1 {
 				t.Fatal(e, calls.Load())
@@ -272,7 +272,7 @@ func TestCampaignContractCSVAndMalformedResponses(t *testing.T) {
 				_, _ = io.WriteString(w, body)
 			}))
 			defer s.Close()
-			c, _ := NewOrganizationClient(orgConfig(s.URL))
+			c, _ := NewTeamClient(teamConfig(s.URL))
 			_, e := c.Projects().GetSignalCustody(context.Background(), contractProject)
 			if e == nil {
 				t.Fatal("accepted malformed response")
@@ -296,7 +296,7 @@ func TestCampaignContractNativeCancellationAndBodyDeadline(t *testing.T) {
 					<-r.Context().Done()
 				}))
 				defer s.Close()
-				c, _ := NewOrganizationClient(orgConfig(s.URL))
+				c, _ := NewTeamClient(teamConfig(s.URL))
 				ctx, cancel := context.WithCancel(context.Background())
 				defer cancel()
 				done := make(chan error, 1)
@@ -343,7 +343,7 @@ func TestCampaignContractProfilePageCursorAndMetadata(t *testing.T) {
 		_, _ = io.WriteString(w, `{"data":[],"page":{"nextCursor":null,"hasMore":false}}`)
 	}))
 	defer s.Close()
-	c, _ := NewOrganizationClient(orgConfig(s.URL))
+	c, _ := NewTeamClient(teamConfig(s.URL))
 	r, e := c.AudienceProfiles().List(context.Background(), ListAudienceProfilesParams{Cursor: cptr(contractID), Limit: cptr(1)})
 	if e != nil || r.Metadata.RequestID != "page" || r.Data.Data == nil || requests[0] != "cursor="+contractID+"&limit=1" {
 		t.Fatal(r, e, requests)
@@ -360,7 +360,7 @@ func TestCampaignContractExportPageAndProfileResponseNegatives(t *testing.T) {
 		_, _ = io.WriteString(w, "phone,status\r\n")
 	}))
 	defer s.Close()
-	c, _ := NewOrganizationClient(orgConfig(s.URL))
+	c, _ := NewTeamClient(teamConfig(s.URL))
 	v, e := c.Campaigns().ExportRecipients(context.Background(), contractID, PlatformCampaignRecipientExportParams{ProjectID: contractProject, CampaignRecipientExportParams: CampaignRecipientExportParams{Cursor: cptr("a/b+?"), Limit: cptr(1)}})
 	if e != nil || v.Data.NextCursor != nil || v.Data.Filename == nil || *v.Data.Filename != "report.csv" {
 		t.Fatal(v, e)
@@ -372,7 +372,7 @@ func TestCampaignContractExportPageAndProfileResponseNegatives(t *testing.T) {
 				_, _ = io.WriteString(w, body)
 			}))
 			defer server.Close()
-			client, _ := NewOrganizationClient(orgConfig(server.URL))
+			client, _ := NewTeamClient(teamConfig(server.URL))
 			if _, e := client.AudienceProfiles().List(context.Background(), ListAudienceProfilesParams{}); e == nil {
 				t.Fatal("invalid page accepted")
 			}

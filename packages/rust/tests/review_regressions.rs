@@ -2,8 +2,8 @@
 mod support;
 use futures_util::StreamExt as _;
 use polymorfa_sdk::{
-    calls::PlaceCallRequest, ClientOptions, Credential, ErrorKind, MessagingClient,
-    OrganizationClient, RequestOptions,
+    calls::PlaceCallRequest, ClientOptions, Credential, ErrorKind, MessagingClient, RequestOptions,
+    TeamClient,
 };
 use serde_json::json;
 use std::time::Duration;
@@ -12,7 +12,7 @@ use tokio::{
     net::TcpListener,
 };
 #[test]
-fn specialized_secrets_cannot_impersonate_organization_keys_even_when_padded() {
+fn specialized_secrets_cannot_impersonate_team_keys_even_when_padded() {
     for prefix in [
         "pmfa_pt_",
         "pmfa_ct_",
@@ -22,17 +22,10 @@ fn specialized_secrets_cannot_impersonate_organization_keys_even_when_padded() {
         "pmfa_sd_",
     ] {
         let value = format!("{}{}", prefix, "a".repeat(77 - prefix.len()));
-        assert!(Credential::organization_api_key(value.clone()).is_err());
-        assert!(OrganizationClient::new(
-            Credential::OrganizationApiKey(value),
-            ClientOptions::default()
-        )
-        .is_err());
+        assert!(Credential::team_api_key(value.clone()).is_err());
+        assert!(TeamClient::new(Credential::TeamApiKey(value), ClientOptions::default()).is_err());
     }
-    assert!(
-        Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string())
-            .is_ok()
-    );
+    assert!(Credential::team_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()).is_ok());
 }
 #[tokio::test]
 async fn download_stream_deadline_covers_a_body_that_stalls_after_headers() {

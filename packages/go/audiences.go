@@ -76,8 +76,8 @@ type DeleteAudienceMemberResult struct {
 }
 type Audiences struct{ t *transport }
 
-func (c *OrganizationClient) Audiences() *Audiences { return &Audiences{c.t} }
-func audiencePath(id string) string                 { return "/platform/audiences/" + escaped(id) }
+func (c *TeamClient) Audiences() *Audiences { return &Audiences{c.t} }
+func audiencePath(id string) string         { return "/platform/audiences/" + escaped(id) }
 
 // List, Retrieve, Delete and CreateUpload preserve the TypeScript contract's
 // open PlatformPayload response. Import/member operations have closed schemas.

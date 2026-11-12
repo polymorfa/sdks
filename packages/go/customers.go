@@ -7,7 +7,7 @@ import (
 
 type Customer struct {
 	ID                 string  `json:"id"`
-	OrgID              string  `json:"orgId"`
+	TeamID             string  `json:"teamId"`
 	ProjectID          string  `json:"projectId"`
 	Name               *string `json:"name"`
 	ExternalCustomerID *string `json:"externalCustomerId"`
@@ -75,7 +75,7 @@ type CustomerEvent struct {
 }
 type CustomerPairingLink struct {
 	ID                  string   `json:"id"`
-	OrgID               string   `json:"orgId"`
+	TeamID              string   `json:"teamId"`
 	ProjectID           string   `json:"projectId"`
 	CustomerID          string   `json:"customerId"`
 	ExpectedPhoneMasked *string  `json:"expectedPhoneMasked"`
@@ -122,8 +122,8 @@ type TransferCustomerNumberRequest struct {
 }
 type Customers struct{ t *transport }
 
-func (c *OrganizationClient) Customers() *Customers { return &Customers{c.t} }
-func customerPath(id string) string                 { return "/platform/customers/" + escaped(id) }
+func (c *TeamClient) Customers() *Customers { return &Customers{c.t} }
+func customerPath(id string) string         { return "/platform/customers/" + escaped(id) }
 func projectCustomersPath(id string) string {
 	return "/platform/projects/" + escaped(id) + "/customers"
 }

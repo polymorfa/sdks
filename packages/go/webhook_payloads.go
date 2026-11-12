@@ -541,12 +541,12 @@ type BusinessQuickReplyUpdatePayload struct {
 
 type CustomerEventPayload struct {
 	webhookPayloadBase
-	EventID        string `json:"eventId"`
-	OccurredAt     string `json:"occurredAt"`
-	OrganizationID string `json:"organizationId"`
-	ProjectID      string `json:"projectId"`
-	CustomerID     string `json:"customerId"`
-	ActorKind      string `json:"actorKind"`
+	EventID    string `json:"eventId"`
+	OccurredAt string `json:"occurredAt"`
+	TeamID     string `json:"teamId"`
+	ProjectID  string `json:"projectId"`
+	CustomerID string `json:"customerId"`
+	ActorKind  string `json:"actorKind"`
 }
 type CustomerCreatedPayload = CustomerEventPayload
 type CustomerArchivedPayload = CustomerEventPayload
@@ -859,13 +859,13 @@ type CampaignColdBlockedPayload struct {
 }
 type VoiceAssetEventPayload struct {
 	webhookPayloadBase
-	EventID        string `json:"eventId"`
-	OccurredAt     string `json:"occurredAt"`
-	OrganizationID string `json:"organizationId"`
-	ProjectID      string `json:"projectId"`
-	AssetID        string `json:"assetId"`
-	Name           string `json:"name"`
-	Source         string `json:"source"`
+	EventID    string `json:"eventId"`
+	OccurredAt string `json:"occurredAt"`
+	TeamID     string `json:"teamId"`
+	ProjectID  string `json:"projectId"`
+	AssetID    string `json:"assetId"`
+	Name       string `json:"name"`
+	Source     string `json:"source"`
 }
 type VoiceAssetReadyPayload struct {
 	VoiceAssetEventPayload

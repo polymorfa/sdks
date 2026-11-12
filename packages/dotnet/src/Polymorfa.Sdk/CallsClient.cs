@@ -119,7 +119,7 @@ public sealed class CallsClient : IAsyncDisposable
     }
     internal async Task<T> RequestAsync<T>(Func<MessagingClient, string?, RequestOptions, Task<T>> operation, RequestOptions? options = null)
     {
-        options ??= new(); var token = await Tokens.GetAsync(cancellationToken: options.CancellationToken).ConfigureAwait(false); var credential = token.Value.StartsWith("pmfa_ct_", StringComparison.Ordinal) ? Credential.ClientToken(token.Value) : token.Value.StartsWith("pmfa_pt_", StringComparison.Ordinal) ? Credential.ProjectToken(token.Value) : Credential.OrganizationApiKey(token.Value);
+        options ??= new(); var token = await Tokens.GetAsync(cancellationToken: options.CancellationToken).ConfigureAwait(false); var credential = token.Value.StartsWith("pmfa_ct_", StringComparison.Ordinal) ? Credential.ClientToken(token.Value) : token.Value.StartsWith("pmfa_pt_", StringComparison.Ordinal) ? Credential.ProjectToken(token.Value) : Credential.TeamApiKey(token.Value);
         using var client = new MessagingClient(credential, Options.Http); return await operation(client, credential.Kind == CredentialKind.ClientToken ? null : Options.Participant, options).ConfigureAwait(false);
     }
     internal async Task PublishAsync(CallsClientEvent value) { try { await events.Writer.WriteAsync(value, lifetime.Token).ConfigureAwait(false); } catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { } }

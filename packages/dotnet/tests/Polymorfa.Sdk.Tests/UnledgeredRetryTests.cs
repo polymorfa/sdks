@@ -61,7 +61,7 @@ internal static class UnledgeredRetryTests
         foreach (var operation in new[] { "send", "descriptor", "get" })
         {
             await using var peer = new Peer(503, true);
-            using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = peer.Url, MaxNetworkRetries = 1 });
+            using var client = new MessagingClient(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = peer.Url, MaxNetworkRetries = 1 });
             var options = new RequestOptions { IdempotencyKey = "send-key", MaxNetworkRetries = 1 };
             if (operation == "send") await client.Messages.SendAsync("s", new(new() { PhoneNumber = "+15550001111" }, new TextContent("fixture")), options);
             else if (operation == "descriptor")
@@ -77,7 +77,7 @@ internal static class UnledgeredRetryTests
     private static async Task CaseAsync(string operation, int status, string policy)
     {
         await using var peer = new Peer(status);
-        using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = peer.Url, MaxNetworkRetries = 1 });
+        using var client = new MessagingClient(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = peer.Url, MaxNetworkRetries = 1 });
         var options = new RequestOptions { ApiVersion = "2026-10-14", IdempotencyKey = policy == "keyed" ? "caller-key" : null, MaxNetworkRetries = policy == "default" ? null : 1, Headers = new Dictionary<string, string> { ["x-caller"] = "retained" } };
         using var input = new MemoryStream(new byte[26]);
         PolymorfaException? error = null;

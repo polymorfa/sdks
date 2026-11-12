@@ -53,12 +53,12 @@ func (s *recordingServer) all() []recordedRequest {
 	defer s.mu.Unlock()
 	return append([]recordedRequest(nil), s.requests...)
 }
-func retryingOrg(t *testing.T, base string) *OrganizationClient {
+func retryingTeam(t *testing.T, base string) *TeamClient {
 	t.Helper()
-	c := orgConfig(base)
+	c := teamConfig(base)
 	retries := 2
 	c.MaxNetworkRetries = &retries
-	o, err := NewOrganizationClient(c)
+	o, err := NewTeamClient(c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func retryingOrg(t *testing.T, base string) *OrganizationClient {
 }
 func retryingMessaging(t *testing.T, base string) *MessagingClient {
 	t.Helper()
-	c := orgConfig(base)
+	c := teamConfig(base)
 	retries := 2
 	c.MaxNetworkRetries = &retries
 	m, err := NewMessagingClient(c)
@@ -105,7 +105,7 @@ func TestFrequencyCapReadReplaceAndRemoveWithObservedRevision(t *testing.T) {
 		}
 		return 200, `{"data":{"teamId":"` + contractProject + `",` + limits + `,"revision":` + string(rune('1'+i)) + `,"updatedAt":` + map[bool]string{true: "null", false: "1800000000000"}[i == 0] + `}}`
 	})
-	o := retryingOrg(t, s.URL)
+	o := retryingTeam(t, s.URL)
 	ctx := context.Background()
 	read, err := o.Campaigns().GetFrequencyCap(ctx)
 	if err != nil || read.Data.Data.Revision != 1 || read.Data.Data.UpdatedAt != nil || *read.Data.Data.MaxPer24Hours != 2 || read.Data.Data.TeamID != contractProject {
@@ -125,7 +125,7 @@ func TestFrequencyCapReadReplaceAndRemoveWithObservedRevision(t *testing.T) {
 		if [2]string{r.method, r.path} != want[i] || r.query != "" {
 			t.Fatalf("request %d: %s %s?%s", i, r.method, r.path, r.query)
 		}
-		if r.header.Get("Authorization") != "Bearer "+orgConfig("").Credential.Value || r.header.Get("Polymorfa-Version") != APIVersion {
+		if r.header.Get("Authorization") != "Bearer "+teamConfig("").Credential.Value || r.header.Get("Polymorfa-Version") != APIVersion {
 			t.Fatal("credential or absent-only API version changed")
 		}
 	}
@@ -142,7 +142,7 @@ func TestFrequencyCapWriteErrorsAreSentOnceWithSafeMetadata(t *testing.T) {
 		s := newRecordingServer(t, func(int, recordedRequest) (int, string) {
 			return tc.status, `{"error":{"code":"` + tc.code + `","message":"Cap unavailable or stale"}}`
 		})
-		_, err := retryingOrg(t, s.URL).Campaigns().UpdateFrequencyCap(context.Background(), UpdateCampaignFrequencyCapInput{Revision: 0}, RequestOptions{Headers: http.Header{"X-Caller": {"kept"}}})
+		_, err := retryingTeam(t, s.URL).Campaigns().UpdateFrequencyCap(context.Background(), UpdateCampaignFrequencyCapInput{Revision: 0}, RequestOptions{Headers: http.Header{"X-Caller": {"kept"}}})
 		var e *Error
 		if !errors.As(err, &e) || e.Kind != tc.kind || e.Code != tc.code || e.Status != tc.status || e.RequestID != "req_segment" {
 			t.Fatalf("%d: %#v", tc.status, err)
@@ -154,7 +154,7 @@ func TestFrequencyCapWriteErrorsAreSentOnceWithSafeMetadata(t *testing.T) {
 	s := newRecordingServer(t, func(int, recordedRequest) (int, string) { return 200, `{}` })
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	_, err := retryingOrg(t, s.URL).Campaigns().UpdateFrequencyCap(ctx, UpdateCampaignFrequencyCapInput{})
+	_, err := retryingTeam(t, s.URL).Campaigns().UpdateFrequencyCap(ctx, UpdateCampaignFrequencyCapInput{})
 	var e *Error
 	if !errors.As(err, &e) || e.Kind != CancelledError || len(s.all()) != 0 {
 		t.Fatal("caller cancellation was not preserved", err)
@@ -172,7 +172,7 @@ func TestFrequencyCapFieldsReasonsAndAnalyticsOnBothSurfaces(t *testing.T) {
 		return 200, `{"success":true,"data":{"id":"c","frequencyCap":{"maxPer24Hours":2,"maxPer7Days":null}}}`
 	})
 	ctx := context.Background()
-	o, m := retryingOrg(t, s.URL), retryingMessaging(t, s.URL)
+	o, m := retryingTeam(t, s.URL), retryingMessaging(t, s.URL)
 	two, five := 2, 5
 	limits := CampaignFrequencyCap{MaxPer24Hours: &two, MaxPer7Days: &five}
 	set, clear := &Nullable[CampaignFrequencyCap]{Value: &limits}, &Nullable[CampaignFrequencyCap]{}
@@ -250,7 +250,7 @@ func TestAudienceSegmentsWireRevisionsPaginationAndPreviews(t *testing.T) {
 		return 200, `{"data":` + segmentJSON + `}`
 	})
 	ctx := context.Background()
-	segments := retryingOrg(t, s.URL).AudienceSegments()
+	segments := retryingTeam(t, s.URL).AudienceSegments()
 	page, err := segments.List(ctx, ListAudienceSegmentsParams{ListParams: ListParams{Limit: 10}})
 	if err != nil || len(page.Items) != 1 || page.NextCursor != "next" {
 		t.Fatal("segment list", err)
@@ -322,7 +322,7 @@ func TestAudienceSegmentRetryRulesAndErrors(t *testing.T) {
 		s := newRecordingServer(t, func(int, recordedRequest) (int, string) {
 			return tc.status, `{"error":{"code":"` + tc.code + `","message":"Unavailable, deleted segment or evaluation timeout"}}`
 		})
-		segments := retryingOrg(t, s.URL).AudienceSegments()
+		segments := retryingTeam(t, s.URL).AudienceSegments()
 		name := "new"
 		calls := []func() error{
 			func() error {
@@ -355,7 +355,7 @@ func TestAudienceSegmentRetryRulesAndErrors(t *testing.T) {
 		}
 		return 200, `{"data":` + segmentJSON + `}`
 	})
-	if _, err := retryingOrg(t, s.URL).AudienceSegments().Retrieve(ctx, "s"); err != nil || len(s.all()) != 3 {
+	if _, err := retryingTeam(t, s.URL).AudienceSegments().Retrieve(ctx, "s"); err != nil || len(s.all()) != 3 {
 		t.Fatal("segment read retry policy changed", err, len(s.all()))
 	}
 }
@@ -398,7 +398,7 @@ func TestAudienceSegmentConditionsRoundTripAndRejectMalformedValues(t *testing.T
 	jsonEqual(t, "future condition round trip", string(again), future)
 
 	s := newRecordingServer(t, func(int, recordedRequest) (int, string) { return 200, `{}` })
-	segments := retryingOrg(t, s.URL).AudienceSegments()
+	segments := retryingTeam(t, s.URL).AudienceSegments()
 	for _, bad := range []AudienceSegmentCondition{
 		AudienceSegmentAttributeEquals{Name: "x", Value: []int{1}},
 		AudienceSegmentAttributeEquals{Name: "x", Value: nil},
@@ -430,7 +430,7 @@ func TestDripPartialPatchEnrollmentAndStoredReads(t *testing.T) {
 		return 200, `{"success":true,"data":{"id":"c","drip":{"enrollment":"audience","exitOnReply":false,"exitOnLinkClick":true},"enrollmentOpen":false,"pauseReason":null,"segmentId":null,"segmentSnapshot":{"revision":3,"evaluatedAt":1,"matchedCount":4}}}`
 	})
 	ctx := context.Background()
-	o, m := retryingOrg(t, s.URL), retryingMessaging(t, s.URL)
+	o, m := retryingTeam(t, s.URL), retryingMessaging(t, s.URL)
 	p := PlatformCampaignParams{ProjectID: contractProject}
 	audience := CampaignDripPatch{Enrollment: CampaignDripAudience}
 	thirtyDays, hi, later := 2592000, "hi", "later"
@@ -495,7 +495,7 @@ func TestDripEnrollmentIsNeverReplayedAndRequiresProjectContext(t *testing.T) {
 		return 503, `{"error":{"code":"unavailable","message":"ambiguous"}}`
 	})
 	ctx := context.Background()
-	o, m := retryingOrg(t, s.URL), retryingMessaging(t, s.URL)
+	o, m := retryingTeam(t, s.URL), retryingMessaging(t, s.URL)
 	body := EnrollCampaignContactRequest{Phone: "+5511999990000"}
 	if _, err := o.Campaigns().Enroll(ctx, "c", EnrollPlatformCampaignContactRequest{ProjectID: contractProject, EnrollCampaignContactRequest: body}); err == nil {
 		t.Fatal("ambiguous enrollment succeeded")
@@ -529,7 +529,7 @@ func TestDripStepBoundsAndPerStepAnalytics(t *testing.T) {
 		return 200, `{"success":true,"data":{}}`
 	})
 	ctx := context.Background()
-	o, m := retryingOrg(t, s.URL), retryingMessaging(t, s.URL)
+	o, m := retryingTeam(t, s.URL), retryingMessaging(t, s.URL)
 	p := PlatformCampaignParams{ProjectID: contractProject}
 	later := "later"
 	step := func(delay int) *[]CampaignComposedMessage {

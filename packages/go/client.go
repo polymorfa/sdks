@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// MessagingClient accepts an team key, project token, or scoped
+// MessagingClient accepts a team key, project token, or scoped
 // client token. Resource-specific restrictions are enforced before HTTP.
 type MessagingClient struct{ t *transport }
 
@@ -30,22 +30,22 @@ func (c *MessagingClient) Media() *MessagingMedia       { return &MessagingMedia
 func (c *MessagingClient) Chats() *Chats                { return &Chats{c.t} }
 func serverOnly(t *transport) error {
 	if t.config.Credential.Kind == ClientToken {
-		return configuration("credential", "This operation requires an team key or project token.")
+		return configuration("credential", "This operation requires a team key or project token.")
 	}
 	return nil
 }
 
-// OrganizationClient owns the team control plane. Project creates a separate,
+// TeamClient owns the team control plane. Project creates a separate,
 // immutable view using the same configuration and HTTP transport.
-type OrganizationClient struct{ t *transport }
+type TeamClient struct{ t *transport }
 type ProjectClient struct {
 	t         *transport
 	projectID string
 }
 
-func NewOrganizationClient(c Config) (*OrganizationClient, error) {
-	if c.Credential.Kind != OrganizationAPIKey {
-		return nil, configuration("credential", "Organization clients require an team key.")
+func NewTeamClient(c Config) (*TeamClient, error) {
+	if c.Credential.Kind != TeamAPIKey {
+		return nil, configuration("credential", "Team clients require a team key.")
 	}
 	if err := validateCredential(c.Credential, false); err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func NewOrganizationClient(c Config) (*OrganizationClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &OrganizationClient{t}, nil
+	return &TeamClient{t}, nil
 }
 func NewProjectClient(c Config, projectID string) (*ProjectClient, error) {
 	if err := validateCredential(c.Credential, false); err != nil {
@@ -75,7 +75,7 @@ func validateProjectID(id string) error {
 	}
 	return nil
 }
-func (c *OrganizationClient) Project(id string) (*ProjectClient, error) {
+func (c *TeamClient) Project(id string) (*ProjectClient, error) {
 	if err := validateProjectID(id); err != nil {
 		return nil, err
 	}
@@ -90,22 +90,22 @@ func (c *ProjectClient) Project(id string) (*ProjectClient, error) {
 	}
 	return &ProjectClient{c.t, id}, nil
 }
-func (c *ProjectClient) ProjectID() string            { return c.projectID }
-func (c *ProjectClient) prefix() string               { return "/platform/projects/" + escaped(c.projectID) }
-func (c *OrganizationClient) Projects() *Projects     { return &Projects{c.t} }
-func (c *OrganizationClient) Events() *Events         { return &Events{c.t, "/platform"} }
-func (c *ProjectClient) Events() *Events              { return &Events{c.t, c.prefix()} }
-func (c *OrganizationClient) Webhooks() *Webhooks     { return &Webhooks{c.t, "/platform"} }
-func (c *ProjectClient) Webhooks() *Webhooks          { return &Webhooks{c.t, c.prefix()} }
-func (c *OrganizationClient) Operations() *Operations { return &Operations{c.t, "/platform"} }
-func (c *ProjectClient) Operations() *Operations      { return &Operations{c.t, c.prefix()} }
-func (c *OrganizationClient) WebhookDeliveries() *WebhookDeliveries {
+func (c *ProjectClient) ProjectID() string       { return c.projectID }
+func (c *ProjectClient) prefix() string          { return "/platform/projects/" + escaped(c.projectID) }
+func (c *TeamClient) Projects() *Projects        { return &Projects{c.t} }
+func (c *TeamClient) Events() *Events            { return &Events{c.t, "/platform"} }
+func (c *ProjectClient) Events() *Events         { return &Events{c.t, c.prefix()} }
+func (c *TeamClient) Webhooks() *Webhooks        { return &Webhooks{c.t, "/platform"} }
+func (c *ProjectClient) Webhooks() *Webhooks     { return &Webhooks{c.t, c.prefix()} }
+func (c *TeamClient) Operations() *Operations    { return &Operations{c.t, "/platform"} }
+func (c *ProjectClient) Operations() *Operations { return &Operations{c.t, c.prefix()} }
+func (c *TeamClient) WebhookDeliveries() *WebhookDeliveries {
 	return &WebhookDeliveries{c.t, "/platform"}
 }
 func (c *ProjectClient) WebhookDeliveries() *WebhookDeliveries {
 	return &WebhookDeliveries{c.t, c.prefix()}
 }
-func (c *OrganizationClient) Raw(ctx context.Context, r RawRequest) (RawResponse, error) {
+func (c *TeamClient) Raw(ctx context.Context, r RawRequest) (RawResponse, error) {
 	return raw(ctx, c.t, r)
 }
 func (c *MessagingClient) Raw(ctx context.Context, r RawRequest) (RawResponse, error) {

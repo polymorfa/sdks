@@ -1,4 +1,4 @@
-"""Organization-owned saved audience segments and count previews.
+"""Team-owned saved audience segments and count previews.
 
 Pinned to contracts/campaign-segments-drip.json. Team keys only:
 campaigns:read for reads, campaigns:manage for writes and unsaved previews.

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { MessagingClient, PolymorfaError } from "../src/index.js";
 import { DirectMediaApi } from "../src/media/direct-api.js";
 import { HttpTransport } from "../src/transport/http.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 
 // These held routes have no producer replay ledger. A caller key cannot make
 // an uncertain submission safe to repeat, including the explicit history retry.
@@ -46,7 +46,7 @@ describe("unledgered API submissions", () => {
             const api = new DirectMediaApi(
               new HttpTransport({
                 baseUrl: `http://127.0.0.1:${address.port}`,
-                authorization: `Bearer ${ORGANIZATION_API_KEY}`,
+                authorization: `Bearer ${TEAM_API_KEY}`,
                 timeoutMs: 3000,
                 maxNetworkRetries: 1,
               }),
@@ -88,7 +88,7 @@ describe("unledgered API submissions", () => {
             expect(error).toBeInstanceOf(PolymorfaError);
             expect(requests).toHaveLength(1);
             expect(requests[0]!.headers).toMatchObject({
-              authorization: `Bearer ${ORGANIZATION_API_KEY}`,
+              authorization: `Bearer ${TEAM_API_KEY}`,
               "x-caller": "retained",
               "polymorfa-version": "2026-10-14",
             });
@@ -136,7 +136,7 @@ describe("unledgered API submissions", () => {
       throw new Error("fixture bind");
     try {
       const sdk = new MessagingClient({
-        credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+        credential: { type: "apiKey", value: TEAM_API_KEY },
         baseUrl: `http://127.0.0.1:${address.port}`,
         maxNetworkRetries: 1,
       });

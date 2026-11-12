@@ -10,12 +10,12 @@ import {
   type SendMessageRequest,
   type WebhookPayloadMap,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import messaging from "../../../contracts/openapi.messaging.json" with { type: "json" };
 
 function client(fetch: typeof globalThis.fetch) {
   return new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: "https://api.example.com",
     maxNetworkRetries: 0,
     fetch,

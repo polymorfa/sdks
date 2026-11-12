@@ -1,6 +1,6 @@
 import type { RequestOptions, ResponseMetadata } from "../transport/types.js";
 
-export type ClientOwner = "organization" | "project";
+export type ClientOwner = "team" | "project";
 export type JsonValue =
   | null
   | boolean
@@ -20,7 +20,7 @@ export type PayloadAvailability =
 
 interface EventBase {
   readonly id: string;
-  readonly organizationId: string;
+  readonly teamId: string;
   readonly type: string;
   readonly source: "runtime" | "platform" | "test";
   readonly environment: "development" | "production";
@@ -30,7 +30,7 @@ interface EventBase {
   readonly replayableUntil: string | null;
   readonly metadataExpiresAt: string;
 }
-export interface OrganizationEvent extends EventBase {
+export interface TeamEvent extends EventBase {
   readonly projectId: null;
 }
 export interface ProjectEvent extends EventBase {
@@ -61,9 +61,9 @@ export interface IndexedEventPage<T> {
   };
   readonly metadata: ResponseMetadata;
 }
-export type ListOrganizationEventsParams = ListEventsParams;
+export type ListTeamEventsParams = ListEventsParams;
 
-/** Additional offset fields returned by organization and project event lists. */
+/** Additional offset fields returned by team and project event lists. */
 export interface IndexedEventPageMetadata {
   readonly nextCursor: string | null;
   readonly hasMore: boolean;
@@ -77,7 +77,7 @@ export interface RetrieveEventParams {
 export interface ReplayEventInput {
   readonly webhookId: string;
 }
-export type ReplayOrganizationEventInput = ReplayEventInput;
+export type ReplayTeamEventInput = ReplayEventInput;
 
 export interface IdempotencyReceipt {
   readonly id: string;
@@ -93,7 +93,7 @@ interface ReplayReceipt {
   readonly idempotency: IdempotencyReceipt;
 }
 export type ProjectEventReplayReceipt = ReplayReceipt;
-export type OrganizationEventReplayReceipt = ReplayReceipt;
+export type TeamEventReplayReceipt = ReplayReceipt;
 
 export interface WebhookRetryPolicyInput {
   readonly maximumAttempts: number;
@@ -131,7 +131,7 @@ export interface WebhookBatching {
 interface WebhookBase {
   readonly batching: WebhookBatching;
   readonly id: string;
-  readonly organizationId: string;
+  readonly teamId: string;
   readonly url: string;
   readonly eventTypes: readonly string[];
   readonly enabled: boolean;
@@ -149,8 +149,8 @@ interface WebhookBase {
   readonly createdAt: string;
   readonly updatedAt: string;
 }
-export interface OrganizationWebhook extends WebhookBase {
-  readonly owner: "organization";
+export interface TeamWebhook extends WebhookBase {
+  readonly owner: "team";
   readonly projectId: null;
 }
 export interface ProjectWebhook extends WebhookBase {
@@ -173,7 +173,7 @@ interface CreateWebhookInputBase {
   readonly phoneOfflineStartDay?: number;
   readonly headers?: readonly WebhookHeaderInput[];
 }
-export type CreateOrganizationWebhookInput = CreateWebhookInputBase;
+export type CreateTeamWebhookInput = CreateWebhookInputBase;
 export type CreateProjectWebhookInput = CreateWebhookInputBase;
 interface UpdateWebhookInputBase {
   readonly batching?: WebhookBatchingInput;
@@ -191,7 +191,7 @@ interface UpdateWebhookInputBase {
   readonly phoneOfflineStartDay?: number;
   readonly headers?: readonly WebhookHeaderInput[];
 }
-export type UpdateOrganizationWebhookInput = UpdateWebhookInputBase;
+export type UpdateTeamWebhookInput = UpdateWebhookInputBase;
 export type UpdateProjectWebhookInput = UpdateWebhookInputBase;
 export interface ListWebhooksParams {
   readonly eventType?: string;
@@ -199,12 +199,12 @@ export interface ListWebhooksParams {
   readonly limit?: number;
   readonly cursor?: string;
 }
-export type ListOrganizationWebhooksParams = ListWebhooksParams;
+export type ListTeamWebhooksParams = ListWebhooksParams;
 export interface RotateWebhookSecretInput {
   readonly overlapSeconds?: number;
 }
 export type RetryWebhookDeliveryInput = Readonly<Record<string, never>>;
-export interface OrganizationWebhookTestInput {
+export interface TeamWebhookTestInput {
   readonly eventType?: string;
   readonly body?: never;
   readonly sessionId?: never;
@@ -221,7 +221,7 @@ export type TestWebhookInput =
       readonly sessionId: string;
     };
 
-export type TestOrganizationWebhookInput = OrganizationWebhookTestInput;
+export type TestTeamWebhookInput = TeamWebhookTestInput;
 export type TestProjectWebhookInput = TestWebhookInput;
 
 interface WebhookCreationReceipt<T> {
@@ -231,8 +231,7 @@ interface WebhookCreationReceipt<T> {
   readonly secret: string | null;
   readonly secretAvailable: boolean;
 }
-export type OrganizationWebhookCreationReceipt =
-  WebhookCreationReceipt<OrganizationWebhook>;
+export type TeamWebhookCreationReceipt = WebhookCreationReceipt<TeamWebhook>;
 export type ProjectWebhookCreationReceipt =
   WebhookCreationReceipt<ProjectWebhook>;
 interface WebhookMutationReceipt<T> {
@@ -240,8 +239,7 @@ interface WebhookMutationReceipt<T> {
   readonly operationId: null;
   readonly idempotency: IdempotencyReceipt;
 }
-export type OrganizationWebhookMutationReceipt =
-  WebhookMutationReceipt<OrganizationWebhook>;
+export type TeamWebhookMutationReceipt = WebhookMutationReceipt<TeamWebhook>;
 export type ProjectWebhookMutationReceipt =
   WebhookMutationReceipt<ProjectWebhook>;
 interface WebhookDeletionReceipt {
@@ -250,7 +248,7 @@ interface WebhookDeletionReceipt {
   readonly operationId: null;
   readonly idempotency: IdempotencyReceipt;
 }
-export type OrganizationWebhookDeletionReceipt = WebhookDeletionReceipt;
+export type TeamWebhookDeletionReceipt = WebhookDeletionReceipt;
 export type ProjectWebhookDeletionReceipt = WebhookDeletionReceipt;
 interface WebhookSecretRotationReceipt {
   readonly webhookId: string;
@@ -260,17 +258,16 @@ interface WebhookSecretRotationReceipt {
   readonly secretMetadata: WebhookSigningSecretMetadata;
   readonly idempotency: IdempotencyReceipt;
 }
-export type OrganizationWebhookSecretRotationReceipt =
-  WebhookSecretRotationReceipt;
+export type TeamWebhookSecretRotationReceipt = WebhookSecretRotationReceipt;
 export type ProjectWebhookSecretRotationReceipt = WebhookSecretRotationReceipt;
-export type OrganizationWebhookTestReceipt = ReplayReceipt;
+export type TeamWebhookTestReceipt = ReplayReceipt;
 export type ProjectWebhookTestReceipt = ReplayReceipt;
 
 export type WebhookDeliveryStatus =
   "pending" | "delivering" | "retrying" | "succeeded" | "failed";
 interface WebhookDeliveryBase {
   readonly id: string;
-  readonly organizationId: string;
+  readonly teamId: string;
   readonly eventId: string;
   readonly webhookId: string;
   readonly status: WebhookDeliveryStatus;
@@ -289,7 +286,7 @@ interface WebhookDeliveryBase {
     readonly errorCode: string | null;
   } | null;
 }
-export interface OrganizationWebhookDelivery extends WebhookDeliveryBase {
+export interface TeamWebhookDelivery extends WebhookDeliveryBase {
   readonly projectId: null;
 }
 export interface ProjectWebhookDelivery extends WebhookDeliveryBase {
@@ -304,15 +301,14 @@ export interface ListWebhookDeliveriesParams {
   readonly limit?: number;
   readonly cursor?: string;
 }
-export type ListOrganizationWebhookDeliveriesParams =
-  ListWebhookDeliveriesParams;
+export type ListTeamWebhookDeliveriesParams = ListWebhookDeliveriesParams;
 export interface ListDeliveryAttemptsParams {
   readonly limit?: number;
   readonly cursor?: string;
 }
 interface WebhookDeliveryAttemptBase {
   readonly id: string;
-  readonly organizationId: string;
+  readonly teamId: string;
   readonly deliveryId: string;
   readonly number: number;
   readonly status: "pending" | "delivering" | "succeeded" | "failed";
@@ -332,7 +328,7 @@ export interface WebhookDeliveryAttemptResponse {
   readonly excerpt: string;
   readonly truncated: boolean;
 }
-export interface OrganizationWebhookDeliveryAttempt extends WebhookDeliveryAttemptBase {
+export interface TeamWebhookDeliveryAttempt extends WebhookDeliveryAttemptBase {
   readonly projectId: null;
 }
 export interface ProjectWebhookDeliveryAttempt extends WebhookDeliveryAttemptBase {
@@ -344,8 +340,7 @@ interface WebhookDeliveryRetryReceipt {
   readonly operationId: string;
   readonly idempotency: IdempotencyReceipt;
 }
-export type OrganizationWebhookDeliveryRetryReceipt =
-  WebhookDeliveryRetryReceipt;
+export type TeamWebhookDeliveryRetryReceipt = WebhookDeliveryRetryReceipt;
 export type ProjectWebhookDeliveryRetryReceipt = WebhookDeliveryRetryReceipt;
 
 export type OperationStatus =
@@ -383,7 +378,7 @@ export interface OperationActionRequired {
 }
 interface OperationBase {
   readonly id: string;
-  readonly organizationId: string;
+  readonly teamId: string;
   readonly kind: OperationKind;
   readonly resource: { readonly type: string; readonly id: string };
   readonly status: OperationStatus;
@@ -400,13 +395,13 @@ interface OperationBase {
   readonly updatedAt: string;
   readonly completedAt: string | null;
 }
-export interface OrganizationOperation extends OperationBase {
+export interface TeamOperation extends OperationBase {
   readonly projectId: null;
 }
 export interface ProjectOperation extends OperationBase {
   readonly projectId: string;
 }
-export type ManagementOperation = OrganizationOperation | ProjectOperation;
+export type ManagementOperation = TeamOperation | ProjectOperation;
 export type ManagementOperationStatus = OperationStatus;
 export type ManagementOperationKind = OperationKind;
 export type ManagementOperationProgress = OperationProgress;
@@ -422,8 +417,8 @@ export interface ListOperationsParams {
   readonly limit?: number;
   readonly cursor?: string;
 }
-/** Organization clients may narrow the list to one project. */
-export interface ListOrganizationOperationsParams extends ListOperationsParams {
+/** Team clients may narrow the list to one project. */
+export interface ListTeamOperationsParams extends ListOperationsParams {
   readonly projectId?: string;
 }
 export interface RetrieveOperationParams {
@@ -434,10 +429,10 @@ export interface RetrieveOperationParams {
 }
 
 /**
- * Organization clients may narrow the read to one project. The project route
+ * Team clients may narrow the read to one project. The project route
  * takes its project from the path, so it has no such parameter.
  */
-export interface RetrieveOrganizationOperationParams extends RetrieveOperationParams {
+export interface RetrieveTeamOperationParams extends RetrieveOperationParams {
   readonly projectId?: string;
 }
 export type ListOperationTransitionsParams =
@@ -464,14 +459,14 @@ export interface OperationTransition {
     readonly actionRequired: OperationActionRequired | null;
   };
 }
-export type OrganizationOperationTransition = OperationTransition;
+export type TeamOperationTransition = OperationTransition;
 export type ProjectOperationTransition = OperationTransition;
 interface OperationCancellationReceipt<T> {
   readonly operation: T;
   readonly operationId: string;
   readonly idempotency: IdempotencyReceipt;
 }
-export type OrganizationOperationCancellationReceipt =
+export type TeamOperationCancellationReceipt =
   OperationCancellationReceipt<ManagementOperation>;
 export type ProjectOperationCancellationReceipt =
   OperationCancellationReceipt<ProjectOperation>;
@@ -486,7 +481,7 @@ export interface WaitForOperationOptions {
   readonly signal?: AbortSignal;
 }
 
-/** Organization clients may narrow the wait to one project. */
-export interface WaitForOrganizationOperationOptions extends WaitForOperationOptions {
+/** Team clients may narrow the wait to one project. */
+export interface WaitForTeamOperationOptions extends WaitForOperationOptions {
   readonly projectId?: string;
 }

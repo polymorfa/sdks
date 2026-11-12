@@ -123,7 +123,7 @@ type ReorderBillingPrioritiesRequest struct {
 }
 type Billing struct{ t *transport }
 
-func (c *OrganizationClient) Billing() *Billing { return &Billing{c.t} }
+func (c *TeamClient) Billing() *Billing { return &Billing{c.t} }
 func billingInvalid(message string) error {
 	return &Error{Kind: ValidationError, Code: "invalid_billing_control", Message: message}
 }

@@ -8,7 +8,7 @@
   "baselineLedger": {
     "path": "contracts/coverage.json",
     "operations": 579,
-    "note": "These supplement operations are outside the pinned 579-operation ledger. Neither file establishes equality with any later API operation inventory."
+    "note": "These supplement operations were outside the 579-operation ledger pinned to API 171a9683 and are now also rows of the 671-operation ledger pinned to f180dc1ee2."
   },
   "supplements": [
     {
@@ -43,7 +43,7 @@
         },
         "go": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.Campaigns().GetFrequencyCap",
+          "sdkMethod": "TeamClient.Campaigns().GetFrequencyCap",
           "testFile": "campaign_segments_drip_test.go"
         },
         "python": {
@@ -58,12 +58,12 @@
         },
         "rust": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.campaigns().get_frequency_cap",
+          "sdkMethod": "TeamClient.campaigns().get_frequency_cap",
           "testFile": "tests/campaign_segments_drip.rs"
         },
         "dotnet": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.Campaigns.GetFrequencyCapAsync",
+          "sdkMethod": "TeamClient.Campaigns.GetFrequencyCapAsync",
           "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
         }
       }
@@ -82,7 +82,7 @@
         },
         "go": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.Campaigns().UpdateFrequencyCap",
+          "sdkMethod": "TeamClient.Campaigns().UpdateFrequencyCap",
           "testFile": "campaign_segments_drip_test.go"
         },
         "python": {
@@ -97,12 +97,12 @@
         },
         "rust": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.campaigns().update_frequency_cap",
+          "sdkMethod": "TeamClient.campaigns().update_frequency_cap",
           "testFile": "tests/campaign_segments_drip.rs"
         },
         "dotnet": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.Campaigns.UpdateFrequencyCapAsync",
+          "sdkMethod": "TeamClient.Campaigns.UpdateFrequencyCapAsync",
           "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
         }
       }
@@ -121,7 +121,7 @@
         },
         "go": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.Campaigns().Enroll",
+          "sdkMethod": "TeamClient.Campaigns().Enroll",
           "testFile": "campaign_segments_drip_test.go"
         },
         "python": {
@@ -136,12 +136,12 @@
         },
         "rust": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.campaigns().enroll",
+          "sdkMethod": "TeamClient.campaigns().enroll",
           "testFile": "tests/campaign_segments_drip.rs"
         },
         "dotnet": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.Campaigns.EnrollAsync",
+          "sdkMethod": "TeamClient.Campaigns.EnrollAsync",
           "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
         }
       }
@@ -199,7 +199,7 @@
         },
         "go": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.AudienceSegments().List",
+          "sdkMethod": "TeamClient.AudienceSegments().List",
           "testFile": "campaign_segments_drip_test.go"
         },
         "python": {
@@ -214,12 +214,12 @@
         },
         "rust": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.audience_segments().list",
+          "sdkMethod": "TeamClient.audience_segments().list",
           "testFile": "tests/campaign_segments_drip.rs"
         },
         "dotnet": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.AudienceSegments.ListAsync",
+          "sdkMethod": "TeamClient.AudienceSegments.ListAsync",
           "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
         }
       }
@@ -238,7 +238,7 @@
         },
         "go": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.AudienceSegments().Create",
+          "sdkMethod": "TeamClient.AudienceSegments().Create",
           "testFile": "campaign_segments_drip_test.go"
         },
         "python": {
@@ -253,12 +253,12 @@
         },
         "rust": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.audience_segments().create",
+          "sdkMethod": "TeamClient.audience_segments().create",
           "testFile": "tests/campaign_segments_drip.rs"
         },
         "dotnet": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.AudienceSegments.CreateAsync",
+          "sdkMethod": "TeamClient.AudienceSegments.CreateAsync",
           "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
         }
       }
@@ -277,7 +277,7 @@
         },
         "go": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.AudienceSegments().Retrieve",
+          "sdkMethod": "TeamClient.AudienceSegments().Retrieve",
           "testFile": "campaign_segments_drip_test.go"
         },
         "python": {
@@ -292,12 +292,12 @@
         },
         "rust": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.audience_segments().retrieve",
+          "sdkMethod": "TeamClient.audience_segments().retrieve",
           "testFile": "tests/campaign_segments_drip.rs"
         },
         "dotnet": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.AudienceSegments.RetrieveAsync",
+          "sdkMethod": "TeamClient.AudienceSegments.RetrieveAsync",
           "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
         }
       }
@@ -316,7 +316,7 @@
         },
         "go": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.AudienceSegments().Update",
+          "sdkMethod": "TeamClient.AudienceSegments().Update",
           "testFile": "campaign_segments_drip_test.go"
         },
         "python": {
@@ -331,12 +331,12 @@
         },
         "rust": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.audience_segments().update",
+          "sdkMethod": "TeamClient.audience_segments().update",
           "testFile": "tests/campaign_segments_drip.rs"
         },
         "dotnet": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.AudienceSegments.UpdateAsync",
+          "sdkMethod": "TeamClient.AudienceSegments.UpdateAsync",
           "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
         }
       }
@@ -355,7 +355,7 @@
         },
         "go": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.AudienceSegments().Delete",
+          "sdkMethod": "TeamClient.AudienceSegments().Delete",
           "testFile": "campaign_segments_drip_test.go"
         },
         "python": {
@@ -370,12 +370,12 @@
         },
         "rust": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.audience_segments().delete",
+          "sdkMethod": "TeamClient.audience_segments().delete",
           "testFile": "tests/campaign_segments_drip.rs"
         },
         "dotnet": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.AudienceSegments.DeleteAsync",
+          "sdkMethod": "TeamClient.AudienceSegments.DeleteAsync",
           "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
         }
       }
@@ -394,7 +394,7 @@
         },
         "go": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.AudienceSegments().Preview",
+          "sdkMethod": "TeamClient.AudienceSegments().Preview",
           "testFile": "campaign_segments_drip_test.go"
         },
         "python": {
@@ -409,12 +409,12 @@
         },
         "rust": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.audience_segments().preview",
+          "sdkMethod": "TeamClient.audience_segments().preview",
           "testFile": "tests/campaign_segments_drip.rs"
         },
         "dotnet": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.AudienceSegments.PreviewAsync",
+          "sdkMethod": "TeamClient.AudienceSegments.PreviewAsync",
           "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
         }
       }
@@ -433,7 +433,7 @@
         },
         "go": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.AudienceSegments().PreviewRules",
+          "sdkMethod": "TeamClient.AudienceSegments().PreviewRules",
           "testFile": "campaign_segments_drip_test.go"
         },
         "python": {
@@ -448,12 +448,12 @@
         },
         "rust": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.audience_segments().preview_rules",
+          "sdkMethod": "TeamClient.audience_segments().preview_rules",
           "testFile": "tests/campaign_segments_drip.rs"
         },
         "dotnet": {
           "status": "covered",
-          "sdkMethod": "OrganizationClient.AudienceSegments.PreviewRulesAsync",
+          "sdkMethod": "TeamClient.AudienceSegments.PreviewRulesAsync",
           "testFile": "tests/Polymorfa.Sdk.Tests/CampaignSegmentsDripTests.cs"
         }
       }

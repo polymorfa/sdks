@@ -35,7 +35,7 @@ func TestCallsLifecycleNativeSocket(t *testing.T) {
 			done <- err
 			return
 		}
-		if auth.Type != "auth" || auth.Token != orgConfig("").Credential.Value {
+		if auth.Type != "auth" || auth.Token != teamConfig("").Credential.Value {
 			t.Error("first message authentication")
 		}
 		wsjson.Write(ctx, conn, LifecycleFrame{Type: "ready", Session: "support", Participant: "worker"})
@@ -51,7 +51,7 @@ func TestCallsLifecycleNativeSocket(t *testing.T) {
 	defer s.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	client, err := NewCallsClient(CallsClientConfig{Config: orgConfig(s.URL), Session: "support", Participant: "worker"})
+	client, err := NewCallsClient(CallsClientConfig{Config: teamConfig(s.URL), Session: "support", Participant: "worker"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +95,7 @@ func TestCallsMediaNativeSocket(t *testing.T) {
 			done <- err
 			return
 		}
-		if auth.Type != "auth" || auth.ConnectionID != "connection_123" || auth.Participant != "worker" || auth.Token != orgConfig("").Credential.Value {
+		if auth.Type != "auth" || auth.ConnectionID != "connection_123" || auth.Participant != "worker" || auth.Token != teamConfig("").Credential.Value {
 			t.Error("media first message")
 		}
 		video := true
@@ -148,7 +148,7 @@ func TestCallsMediaNativeSocket(t *testing.T) {
 	defer s.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	client, err := NewCallsClient(CallsClientConfig{Config: orgConfig(s.URL), Session: "support", Participant: "worker"})
+	client, err := NewCallsClient(CallsClientConfig{Config: teamConfig(s.URL), Session: "support", Participant: "worker"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -206,7 +206,7 @@ func TestCallsAuthAndCodecFailures(t *testing.T) {
 		wsjson.Write(r.Context(), conn, LifecycleFrame{Type: "error", Code: "invalid_token", Message: "Refused"})
 	}))
 	defer s.Close()
-	client, err := NewCallsClient(CallsClientConfig{Config: orgConfig(s.URL), Session: "support"})
+	client, err := NewCallsClient(CallsClientConfig{Config: teamConfig(s.URL), Session: "support"})
 	if err != nil {
 		t.Fatal(err)
 	}

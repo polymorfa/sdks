@@ -8,7 +8,7 @@ internal static class RequestLogTests
     public static async Task RunAsync()
     {
         using var wire = new WireFixture { Authorization = "Bearer " + Key };
-        using var client = new OrganizationClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = wire.Url });
+        using var client = new TeamClient(Credential.TeamApiKey(Key), new() { BaseUrl = wire.Url });
         var serve = wire.ServeAsync("GET", "/platform/projects/p1/request-logs?status=404%2C5xx&method=GET%2CPOST&route=%2Fmessaging%2F%3Asession%2Fmessages&source=api&limit=2", null, Page());
         var page = await client.RequestLogs.ListAsync(new("p1", 2, Filters: new(Status: ["404", "5xx"], Method: ["GET", "POST"], Route: "/messaging/:session/messages", Source: "api"))); await serve;
         ResourceTests.Equal(page.Items[0].DurationMs, 1.234567m); ResourceTests.Equal(page.Items[0].Credential?.Last4, "aaaa"); ResourceTests.Equal(page.Metadata.RequestId, "req_native");

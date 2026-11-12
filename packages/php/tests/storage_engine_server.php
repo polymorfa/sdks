@@ -12,7 +12,7 @@ flush();
 $fixture = json_decode(file_get_contents(__DIR__.'/fixtures/storage-conformance-fixtures.json'), true, flags:JSON_THROW_ON_ERROR);
 $event = $fixture['events'][0];
 $event['session'] = 's';
-$frame = ['type' => 'event','streamId' => 'native-stream','sequence' => 9,'cursor' => 'new','event' => ['id' => 'native-event','organizationId' => 'org','projectId' => 'project','type' => $event['event'],'source' => 'runtime','environment' => 'development','createdAt' => $event['timestamp'],'payloadAvailability' => 'available','payload' => ['encoding' => 'base64','contentType' => 'application/json','data' => base64_encode(json_encode($event, JSON_THROW_ON_ERROR))],'replayableUntil' => null,'metadataExpiresAt' => $event['timestamp']]];
+$frame = ['type' => 'event','streamId' => 'native-stream','sequence' => 9,'cursor' => 'new','event' => ['id' => 'native-event','teamId' => 'team','projectId' => 'project','type' => $event['event'],'source' => 'runtime','environment' => 'development','createdAt' => $event['timestamp'],'payloadAvailability' => 'available','payload' => ['encoding' => 'base64','contentType' => 'application/json','data' => base64_encode(json_encode($event, JSON_THROW_ON_ERROR))],'replayableUntil' => null,'metadataExpiresAt' => $event['timestamp']]];
 $valid = true;
 $calls = [];
 for ($i = 0;$i < 2;$i++) {

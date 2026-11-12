@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	client, err := polymorfa.NewCallsClient(polymorfa.CallsClientConfig{Config: polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: os.Getenv("POLYMORFA_API_KEY")}}, Session: os.Getenv("POLYMORFA_SESSION"), Participant: "go-example"})
+	client, err := polymorfa.NewCallsClient(polymorfa.CallsClientConfig{Config: polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.TeamAPIKey, Value: os.Getenv("POLYMORFA_API_KEY")}}, Session: os.Getenv("POLYMORFA_SESSION"), Participant: "go-example"})
 	if err != nil {
 		log.Fatal("Set a valid API key and session: ", err)
 	}

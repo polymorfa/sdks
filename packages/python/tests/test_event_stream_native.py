@@ -105,7 +105,7 @@ async def test_actual_http_stream_encoded_webhook_resume_gap_and_manual_ack():
     try:
         async with AsyncClient(
             Credential(
-                "organization_api_key",
+                "team_api_key",
                 "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
             ),
             base_url=url,
@@ -172,7 +172,7 @@ async def test_native_stream_close_interrupts_headers_or_body(headers_sent):
     try:
         async with AsyncClient(
             Credential(
-                "organization_api_key",
+                "team_api_key",
                 "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
             ),
             base_url=url,
@@ -203,7 +203,7 @@ async def test_stream_revocation_is_terminal():
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -265,7 +265,7 @@ async def test_invalid_payload_keeps_reconnect_and_storage_checkpoint(malformed)
         )
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         events = client.project("project").events
@@ -308,7 +308,7 @@ async def test_event_stream_frame_byte_bounds(segment):
         )
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         stream = client.project("project").events.stream(
@@ -338,7 +338,7 @@ async def test_event_stream_utf8_boundary_and_frame_reset():
         )
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         stream = client.project("project").events.stream()

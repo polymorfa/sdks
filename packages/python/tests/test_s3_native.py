@@ -64,7 +64,7 @@ async def test_actual_s3_two_pass_native_reads_and_borrowed_client_ownership(nat
 
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     ) as messaging:
@@ -100,7 +100,7 @@ async def test_actual_s3_etag_change_refuses_second_pass(native_s3):
 
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     ) as messaging:

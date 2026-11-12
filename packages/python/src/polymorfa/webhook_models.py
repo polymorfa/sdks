@@ -601,10 +601,10 @@ class BusinessQuickReplyUpdatePayload(TypedDict):
 class CustomerEventPayload(TypedDict):
     eventId: str
     occurredAt: str
-    organizationId: str
+    teamId: str
     projectId: str
     customerId: str
-    actorKind: Literal["better_auth", "org_key", "project_token", "cli_grant", "system"]
+    actorKind: Literal["better_auth", "team_key", "project_token", "cli_grant", "system"]
 
 
 CustomerCreatedPayload = CustomerEventPayload
@@ -703,13 +703,13 @@ class BanSafeRequiredFinding(TypedDict):
 class BanSafeActionPayload(TypedDict):
     phoneNumber: str
     action: Literal["applied", "changed", "lifted", "daily_allowance_reached"]
-    scope: Literal["number", "organization"]
+    scope: Literal["number", "team"]
     rung: BanSafeEventRung
     previousRung: BanSafeEventRung | None
     reason: Literal[
         "health",
         "finding",
-        "org_pattern",
+        "team_pattern",
         "repeat",
         "restriction",
         "operator",
@@ -975,7 +975,7 @@ class CampaignColdBlockedPayload(TypedDict):
 class VoiceAssetEventPayload(TypedDict):
     eventId: str
     occurredAt: str
-    organizationId: str
+    teamId: str
     projectId: str
     assetId: str
     name: str

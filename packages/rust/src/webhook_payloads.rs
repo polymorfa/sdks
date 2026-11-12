@@ -604,12 +604,12 @@ payload!(BusinessQuickReplyUpdatePayload {id:String,shortcut:String,message:Stri
 #[serde(rename_all = "snake_case")]
 pub enum CustomerEventActorKind {
     BetterAuth,
-    OrgKey,
+    TeamKey,
     ProjectToken,
     CliGrant,
     System,
 }
-payload!(CustomerEventPayload {event_id:String,occurred_at:String,organization_id:String,project_id:String,customer_id:String,actor_kind:CustomerEventActorKind} {});
+payload!(CustomerEventPayload {event_id:String,occurred_at:String,team_id:String,project_id:String,customer_id:String,actor_kind:CustomerEventActorKind} {});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CustomerUpdatedPayload {
@@ -787,7 +787,7 @@ payload!(CampaignRecipientSkippedPayload {campaign_id:String,recipient_id:String
 payload!(CampaignThrottledPayload {campaign_id:String,session_key:String,reason:String,deferred_count:u32,at:u64} {});
 payload!(CampaignCapReachedPayload {campaign_id:String,session_key:String,phone:String,cap_type:String,cap_limit:u32,window_resets_at:u64,at:u64} {});
 payload!(CampaignColdBlockedPayload {campaign_id:String,recipient_id:String,phone:String,surface:String,reason:String,at:u64} {});
-payload!(VoiceAssetEventPayload {event_id:String,occurred_at:String,organization_id:String,project_id:String,asset_id:String,name:String,source:String} {});
+payload!(VoiceAssetEventPayload {event_id:String,occurred_at:String,team_id:String,project_id:String,asset_id:String,name:String,source:String} {});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VoiceAssetReadyPayload {
@@ -1073,14 +1073,14 @@ pub enum BanSafeActionKind {
 #[serde(rename_all = "snake_case")]
 pub enum BanSafeScope {
     Number,
-    Organization,
+    Team,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum BanSafeActionReason {
     Health,
     Finding,
-    OrgPattern,
+    TeamPattern,
     Repeat,
     Restriction,
     Operator,

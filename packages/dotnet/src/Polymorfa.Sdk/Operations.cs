@@ -8,7 +8,7 @@ public sealed record OperationError(string Code, bool Retryable, IReadOnlyDictio
 public sealed record OperationActionRequired(string Code, IReadOnlyDictionary<string, JsonElement>? Details);
 public sealed record OperationResource(string Type, string Id);
 public sealed record OperationCapabilities(bool Cancellable, bool Watchable);
-public sealed record ManagementOperation(string Id, string OrganizationId, string? ProjectId, string Kind, OperationResource Resource, string Status, long Sequence, OperationCapabilities Capabilities, OperationProgress? Progress, JsonElement Result, OperationError? Error, OperationActionRequired? ActionRequired, string CreatedAt, string UpdatedAt, string? CompletedAt);
+public sealed record ManagementOperation(string Id, string TeamId, string? ProjectId, string Kind, OperationResource Resource, string Status, long Sequence, OperationCapabilities Capabilities, OperationProgress? Progress, JsonElement Result, OperationError? Error, OperationActionRequired? ActionRequired, string CreatedAt, string UpdatedAt, string? CompletedAt);
 public sealed record OperationSnapshot(OperationProgress? Progress, OperationError? Error, OperationActionRequired? ActionRequired);
 public sealed record OperationTransition(string OperationId, long Sequence, string? FromStatus, string ToStatus, string? ReasonCode, string OccurredAt, OperationSnapshot Snapshot);
 public sealed record OperationCancellationReceipt(ManagementOperation Operation, string OperationId, IdempotencyReceipt Idempotency);

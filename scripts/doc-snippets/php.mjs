@@ -42,5 +42,5 @@ export function render(id, { client, request }) {
   if (!calls[id]) return undefined;
   const type = client === "messaging" ? "MessagingClient" : "Client";
   const project = client === "project" ? `->project(${p("projectId")})` : "";
-  return `<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . "/vendor/autoload.php";\n\nuse Polymorfa\\${type};\nuse Polymorfa\\Credential;\n\n$sdk = (new ${type}(Credential::organizationApiKey(${key})))${project};\n$result = ${calls[id]};\necho json_encode($result->${client === "project" ? "items" : "data"}, JSON_THROW_ON_ERROR), PHP_EOL;\n`;
+  return `<?php\ndeclare(strict_types=1);\n\nrequire __DIR__ . "/vendor/autoload.php";\n\nuse Polymorfa\\${type};\nuse Polymorfa\\Credential;\n\n$sdk = (new ${type}(Credential::teamApiKey(${key})))${project};\n$result = ${calls[id]};\necho json_encode($result->${client === "project" ? "items" : "data"}, JSON_THROW_ON_ERROR), PHP_EOL;\n`;
 }

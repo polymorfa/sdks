@@ -21,11 +21,11 @@ export interface MessagingClientOptions extends SharedClientOptions {
 
 export type ClientCredential =
   | { readonly type: "projectToken"; readonly value: string }
-  | { readonly type: "organizationApiKey"; readonly value: string };
+  | { readonly type: "teamApiKey"; readonly value: string };
 
-export interface OrganizationClientOptions extends SharedClientOptions {
+export interface TeamClientOptions extends SharedClientOptions {
   readonly credential: {
-    readonly type: "organizationApiKey";
+    readonly type: "teamApiKey";
     readonly value: string;
   };
   readonly projectId?: never;
@@ -36,8 +36,7 @@ export interface ProjectScopedClientOptions extends SharedClientOptions {
   readonly projectId: string;
 }
 
-export type ClientOptions =
-  OrganizationClientOptions | ProjectScopedClientOptions;
+export type ClientOptions = TeamClientOptions | ProjectScopedClientOptions;
 
 export function validateMessagingCredential(
   credential: MessagingCredential,
@@ -62,7 +61,7 @@ export function validateMessagingCredential(
     return credential;
   }
 
-  validateOrganizationApiKey(credential.value);
+  validateTeamApiKey(credential.value);
   return credential;
 }
 
@@ -79,13 +78,13 @@ export function validateClientCredential(
     }
     return credential;
   }
-  validateOrganizationApiKey(credential.value);
+  validateTeamApiKey(credential.value);
   return credential;
 }
 
-export function validateOrganizationApiKey(value: string): string {
+export function validateTeamApiKey(value: string): string {
   rejectListenerCredential(value);
-  rejectNonOrganizationCredential(value);
+  rejectNonTeamCredential(value);
   if (!isServerApiKey(value)) {
     throw new PolymorfaConfigurationError(
       "Team keys must use the canonical pmfa_ opaque format.",
@@ -104,7 +103,7 @@ function rejectListenerCredential(value: string): void {
   }
 }
 
-function rejectNonOrganizationCredential(value: string): void {
+function rejectNonTeamCredential(value: string): void {
   if (value.startsWith("pmfa_ct_") || value.startsWith("pmfa_pt_")) {
     throw new PolymorfaConfigurationError(
       "Client and project tokens cannot be used as team keys.",

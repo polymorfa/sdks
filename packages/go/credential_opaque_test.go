@@ -31,7 +31,7 @@ func TestOpaqueCredentialShapes(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, v := range fixture.Opaque {
-		kind := OrganizationAPIKey
+		kind := TeamAPIKey
 		if v.Kind == "project" {
 			kind = ProjectToken
 		}
@@ -54,7 +54,7 @@ func TestOpaqueCredentialShapes(t *testing.T) {
 		raw := make([]byte, size+4)
 		binary.BigEndian.PutUint32(raw[size:], crc32.ChecksumIEEE(raw[:size]))
 		body := base64.RawURLEncoding.EncodeToString(raw)
-		for _, c := range []Credential{{OrganizationAPIKey, "pmfa_" + body}, {ProjectToken, "pmfa_pt_" + body}, {ClientToken, "pmfa_ct_" + base64.RawURLEncoding.EncodeToString(raw[:size])}} {
+		for _, c := range []Credential{{TeamAPIKey, "pmfa_" + body}, {ProjectToken, "pmfa_pt_" + body}, {ClientToken, "pmfa_ct_" + base64.RawURLEncoding.EncodeToString(raw[:size])}} {
 			if len(c.Value) <= 512 {
 				t.Fatal("growth probe too short")
 			}
@@ -94,7 +94,7 @@ func TestCredentialWireReflection(t *testing.T) {
 	}
 	var credentials []Credential
 	for _, v := range fixture.Opaque {
-		kind := OrganizationAPIKey
+		kind := TeamAPIKey
 		if v.Kind == "project" {
 			kind = ProjectToken
 		}

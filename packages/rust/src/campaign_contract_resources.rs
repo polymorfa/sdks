@@ -584,7 +584,7 @@ impl crate::audiences::Audiences<'_> {
 }
 pub struct AudienceProfiles<'a>(&'a HttpTransport);
 pub struct AudienceProfileImports<'a>(&'a HttpTransport);
-impl crate::platform::OrganizationClient {
+impl crate::platform::TeamClient {
     pub fn audience_profiles(&self) -> AudienceProfiles<'_> {
         AudienceProfiles(&self.http)
     }
@@ -743,7 +743,7 @@ impl AudienceProfileImports<'_> {
         .await
     }
 }
-impl crate::organization_controls::OptOuts<'_> {
+impl crate::team_controls::OptOuts<'_> {
     pub async fn get_confirmation_settings(
         &self,
         o: RequestOptions,

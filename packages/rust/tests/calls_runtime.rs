@@ -39,7 +39,7 @@ fn opaque_fixture(ch: char) -> String {
     )
 }
 fn credential(ch: char) -> Credential {
-    Credential::organization_api_key(opaque_fixture(ch)).unwrap()
+    Credential::team_api_key(opaque_fixture(ch)).unwrap()
 }
 fn options(base: String) -> CallsClientOptions {
     let mut o = CallsClientOptions::new("support");

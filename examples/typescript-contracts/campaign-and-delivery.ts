@@ -7,11 +7,11 @@ import type {
 } from "@polymorfa/sdk";
 
 /** Source example; API admission and matching package availability are required. */
-export async function createDraft(organization: Client, projectId: string) {
+export async function createDraft(team: Client, projectId: string) {
   const variableMapping: CampaignVariableMapping = {
     first_name: { source: "name", fallback: "Friend" },
   };
-  return organization.campaigns.create({
+  return team.campaigns.create({
     projectId,
     name: "Customer-authored audience",
     variableMapping,

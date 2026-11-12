@@ -431,7 +431,7 @@ export interface PresenceUpdatePayload {
 
 /**
  * Payload for `contact.opted_out` and `contact.opted_in`. Emitted when a
- * contact replies to a campaign number with one of the organization's
+ * contact replies to a campaign number with one of the team's
  * configured keywords and the suppression list changed. The reply itself is
  * never included.
  */
@@ -788,13 +788,13 @@ export interface BusinessQuickReplyUpdatePayload {
 
 /** Principal that caused a Customer lifecycle change. */
 export type CustomerEventActorKind =
-  "better_auth" | "org_key" | "project_token" | "cli_grant" | "system";
+  "better_auth" | "team_key" | "project_token" | "cli_grant" | "system";
 
 /** Fields shared by every Customer lifecycle webhook payload. */
 export interface CustomerEventPayload {
   readonly eventId: string;
   readonly occurredAt: string;
-  readonly organizationId: string;
+  readonly teamId: string;
   readonly projectId: string;
   readonly customerId: string;
   readonly actorKind: CustomerEventActorKind;
@@ -893,13 +893,13 @@ export interface BanSafeRequiredFinding {
 export interface BanSafeActionPayload {
   readonly phoneNumber: string;
   readonly action: "applied" | "changed" | "lifted" | "daily_allowance_reached";
-  readonly scope: "number" | "organization";
+  readonly scope: "number" | "team";
   readonly rung: BanSafeEventRung;
   readonly previousRung: BanSafeEventRung | null;
   readonly reason:
     | "health"
     | "finding"
-    | "org_pattern"
+    | "team_pattern"
     | "repeat"
     | "restriction"
     | "operator"
@@ -1147,6 +1147,8 @@ export interface CampaignRecipientSentPayload {
   readonly externalMessageId: string;
   readonly variantKey: string;
   readonly attempt: number;
+  /** Position in the campaign's message sequence from 0; absent means 0. */
+  readonly messageIndex?: number;
 }
 
 export interface CampaignRecipientFailedPayload {
@@ -1156,6 +1158,8 @@ export interface CampaignRecipientFailedPayload {
   readonly attempts: number;
   readonly error: string;
   readonly failedAt: number;
+  /** Position in the campaign's message sequence from 0; absent means 0. */
+  readonly messageIndex?: number;
 }
 
 export interface CampaignRecipientSkippedPayload {
@@ -1203,7 +1207,7 @@ export interface CampaignColdBlockedPayload {
 export interface VoiceAssetEventPayload {
   readonly eventId: string;
   readonly occurredAt: string;
-  readonly organizationId: string;
+  readonly teamId: string;
   readonly projectId: string;
   readonly assetId: string;
   readonly name: string;

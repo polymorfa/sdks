@@ -5,20 +5,20 @@
   "apiVersion": "2026-09-22",
   "candidateSource": {
     "repository": "polymorfa/polymorfa",
-    "commit": "c544725b57f198a9eebf70a6edf18383bad07073",
+    "commit": "97fce0e939b41a8b9b4d280d3a033921d248f358",
     "branch": "rajeh/pol-172-calling-guests",
     "files": [
       {
         "path": "apps/api/docs/openapi.json",
-        "sha256": "bdb54f4b16c9191b7c5a76e93d66e3ca90b111e7f2a0d4054715df7fae08311a"
+        "sha256": "98bebc01bff84474a03b54d6857fd6200aff9542cfbd6851331918537b2aadaf"
       },
       {
         "path": "apps/api/docs/selfhost/openapi.json",
-        "sha256": "aa34e9a8c73d0aebfed644d4f372b4d4e90db273a75d0354975aa85c60f694ad"
+        "sha256": "543d6fbd8a589f9bad62e62f982e4f64db4af1b2e8c6ecaa6d2271be818be393"
       },
       {
         "path": "apps/api/docs/calls-media-socket.md",
-        "sha256": "6a72d45e5e26cc9beb6709edef1cd670b2b468d116c295e384ff76a2fda79634"
+        "sha256": "640924355678b1e84d2038f010f30774d8b3d8c255572c9efeeb731c043bdb3d"
       },
       {
         "path": "apps/api/internal/voip/waiting_room_controls.go",
@@ -26,19 +26,19 @@
       },
       {
         "path": "apps/api/packages/shared/src/voip.ts",
-        "sha256": "19530e168354d1568f26056b2d3b55587ce3492d355539a2967a58dac48db233"
+        "sha256": "5c0f9743cc0d3d61964d31b01540ce971d5e20fbf95295a1c83e6bc6af4535e6"
       },
       {
         "path": "docs/api-reference/openapi.json",
-        "sha256": "73ff7a165faa404039d69c785e8284bbd5e7523f48acd570ccf0a6ad87f226b9"
+        "sha256": "c300ccac35a9c7560254cbfc1705852686dcdb56c6d0cacc0d0e9a3bf5f52007"
       },
       {
         "path": "docs/api-reference/features/webhook-events.json",
-        "sha256": "2011c0e391700988b9647a4275b64838a9f37e340d982090634c3dec92d09d76"
+        "sha256": "9938168eafcfdf8e2fbc81711ac7c13c0847cc0375cc751927006fbc18e6ae9a"
       },
       {
         "path": "docs/openapi.json",
-        "sha256": "2a0bc68388cc8f4b42f731dd5bc271fb580d6112c1bf4e5ac88292482c5eeea7"
+        "sha256": "91a3783567c6b1399655186fa0c93ea89646fb452b42c7c4f7f490b685de0e39"
       },
       {
         "path": "apps/api/packages/api/src/lib/calls-socket-auth.ts",
@@ -46,19 +46,19 @@
       },
       {
         "path": "apps/api/packages/api/src/lib/credential-capabilities.ts",
-        "sha256": "c0fb9309b6c6474d49502ac4d3171bce0f7ef4c5359f3dfff56937a0a46dc661"
+        "sha256": "6183fc521043e488e905799b73476c6984f424b97596ef2f6c1c08464a8ea9aa"
       },
       {
         "path": "apps/api/packages/api/src/routes/voip.ts",
-        "sha256": "0b3068d9e0e2dad543c9aa2efabb524788b440b11eaebf5e9fce3b4dbadee385"
+        "sha256": "981919321cce03dd3e9e93db7beb1c142009f162eeb52221d0af2591c4526fa1"
       },
       {
         "path": "apps/api/packages/api/src/routes/voip-media-socket.ts",
-        "sha256": "5d2bb1843733e3e1111cd9121e02fa9ddfa168cbdc233deb4f3eb1591c3593d8"
+        "sha256": "29890171e38ac41408221424eb195368f5c16752f56bb881765d680676c11fb5"
       },
       {
         "path": "apps/api/docs/security.md",
-        "sha256": "02a2a22157b077a4d3c49ff074e8f6dd5e60670f160dc6e411d86de8ca103f62"
+        "sha256": "ebb08f330cd3a71f9c544f0f46c12042ce822a0da2f581fbebb357fef75cc3c7"
       }
     ]
   },

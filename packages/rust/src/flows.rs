@@ -91,7 +91,7 @@ pub struct FlowProviderRequest {
 }
 model!(FlowProviderOperation {id:String,request_id:Option<String>,flow_id:String,flow_name:String,session_id:String,session:String,action:ProviderAction,state:ProviderState,resolution:Option<ProviderResolution>,waba_id:Option<String>,meta_flow_id:Option<String>,definition_digest:Option<String>,provider_status:Option<String>,error_code:Option<String>,provider_code:Option<i64>,provider_subcode:Option<i64>,created_at:u64,updated_at:u64,completed_at:Option<u64>});
 model!(FlowProviderResult {operation:Option<FlowProviderOperation>,flow:FlowDraft});
-model!(FlowEndpoint {id:String,org_id:String,project_id:String,flow_id:String,session_id:String,mode:FlowEndpointMode,url:Option<String>,function_id:Option<String>,deployment_id:Option<String>,enabled:bool,revision:u64,endpoint_uri:String,created_at:u64,updated_at:u64});
+model!(FlowEndpoint {id:String,team_id:String,project_id:String,flow_id:String,session_id:String,mode:FlowEndpointMode,url:Option<String>,function_id:Option<String>,deployment_id:Option<String>,enabled:bool,revision:u64,endpoint_uri:String,created_at:u64,updated_at:u64});
 model!(ManagedEncryptionKey {id:String,state:ManagedKeyState,fingerprint:String,public_key:String,error_code:Option<String>,created_at:u64,activated_at:Option<u64>,retire_after:Option<u64>});
 model!(FlowEncryptionCustody {custody:EncryptionCustody,active_key_id:Option<String>,keys:Vec<ManagedEncryptionKey>});
 #[derive(Clone, Debug, Serialize, Deserialize)]

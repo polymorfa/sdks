@@ -2,12 +2,12 @@ export {
   assertServerRuntime,
   validateClientCredential,
   validateMessagingCredential,
-  validateOrganizationApiKey,
+  validateTeamApiKey,
   type ClientCredential,
   type ClientOptions,
   type MessagingClientOptions,
   type MessagingCredential,
-  type OrganizationClientOptions,
+  type TeamClientOptions,
   type ProjectScopedClientOptions,
   type SharedClientOptions,
 } from "./credentials.js";
@@ -16,7 +16,7 @@ export {
   type ClientBase,
   type ClientConstructor,
   type EventsResourceFor,
-  type OrganizationControlPlaneResources,
+  type TeamControlPlaneResources,
   type RawResourceFor,
   type WebhookDeliveriesResourceFor,
   type WebhooksResourceFor,
@@ -39,7 +39,7 @@ export {
   type EventStreamItem,
   type EventStreamParams,
   type LiveEventSourceAdapter,
-  type OrganizationEventStreamParams,
+  type TeamEventStreamParams,
   type StreamedEvent,
   type WebhookEnvelope,
 } from "./platform/event-stream.js";
@@ -803,7 +803,7 @@ export { MembersResource } from "./platform/members.js";
 export { OptOutsResource } from "./platform/opt-outs.js";
 export {
   QuickLinkSettingsResource,
-  type OrganizationQuickLinkSettings,
+  type TeamQuickLinkSettings,
   type ProjectQuickLinkSettings,
   type QuickLinkHistorySync,
   type QuickLinkLogoMode,
@@ -812,7 +812,7 @@ export {
   type QuickLinkTheme,
   type UpdateQuickLinkSettingsInput,
 } from "./platform/quicklink-settings.js";
-export { OrganizationsResource } from "./platform/organizations.js";
+export { TeamsResource } from "./platform/teams.js";
 export { ProjectTokensResource } from "./platform/project-tokens.js";
 export { ProjectsResource } from "./platform/projects.js";
 export { SecurityIncidentsResource } from "./platform/security-incidents.js";
@@ -1002,9 +1002,9 @@ export type {
   UpdateOptOutSettingsRequest,
   UpdatePlatformCampaignRequest,
   ManagedSession,
-  Organization,
-  OrganizationMember,
-  OrganizationMemberRole,
+  Team,
+  TeamMember,
+  TeamMemberRole,
   PlatformSession,
   PlatformPayload,
   ProductionBusiness,

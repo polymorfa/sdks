@@ -1,8 +1,8 @@
-import { organization } from "../../../../lib/polymorfa.js";
+import { team } from "../../../../lib/polymorfa.js";
 import { route } from "../../../../lib/route.js";
 
 export const GET = route("admin", async () => {
-  const billing = organization().billing;
+  const billing = team().billing;
   const [balance, usage, transactions, pricing] = await Promise.all([
     billing.retrieve(),
     billing.usage(),

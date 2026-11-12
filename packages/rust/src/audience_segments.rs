@@ -1,4 +1,4 @@
-//! Organization-owned saved audience segments and count previews, pinned to
+//! Team-owned saved audience segments and count previews, pinned to
 //! `contracts/campaign-segments-drip.json`. Team keys only:
 //! campaigns:read for reads, campaigns:manage for writes and unsaved previews.
 //! Revision conflicts and bounded evaluation timeouts return 409 `state_conflict`;
@@ -343,8 +343,8 @@ fn validate(rules: &AudienceSegmentRules) -> Result<()> {
 }
 
 pub struct AudienceSegments<'a>(&'a HttpTransport);
-impl crate::platform::OrganizationClient {
-    /// Organization segment authority; project clients have no segment methods.
+impl crate::platform::TeamClient {
+    /// Team segment authority; project clients have no segment methods.
     pub fn audience_segments(&self) -> AudienceSegments<'_> {
         AudienceSegments(&self.http)
     }

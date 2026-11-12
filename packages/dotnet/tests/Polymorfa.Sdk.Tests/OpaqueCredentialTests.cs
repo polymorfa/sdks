@@ -8,7 +8,7 @@ internal static class OpaqueCredentialTests
         foreach (var v in fixture.RootElement.GetProperty("opaque").EnumerateArray())
         {
             var token = v.GetProperty("token").GetString()!;
-            Func<string, Credential> factory = v.GetProperty("kind").GetString() == "key" ? Credential.OrganizationApiKey : Credential.ProjectToken;
+            Func<string, Credential> factory = v.GetProperty("kind").GetString() == "key" ? Credential.TeamApiKey : Credential.ProjectToken;
             _ = factory(token);
             foreach (var bad in new[] { token.Replace("_A", "_B"), token + "=", token + "\n", token + "!" })
             {
@@ -23,7 +23,7 @@ internal static class OpaqueCredentialTests
             for (var i = 0; i < size; i++) { crc ^= raw[i]; for (var b = 0; b < 8; b++) crc = (crc >> 1) ^ ((crc & 1) != 0 ? 0xedb88320u : 0); }
             System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(raw.AsSpan(size), crc ^ 0xffffffff);
             var body = Encode(raw);
-            foreach (var c in new[] { Credential.OrganizationApiKey("pmfa_" + body), Credential.ProjectToken("pmfa_pt_" + body), Credential.ClientToken("pmfa_ct_" + Encode(raw[..size])) })
+            foreach (var c in new[] { Credential.TeamApiKey("pmfa_" + body), Credential.ProjectToken("pmfa_pt_" + body), Credential.ClientToken("pmfa_ct_" + Encode(raw[..size])) })
                 if (c.ToString().Contains(body)) throw new Exception("Credential leaked");
         }
         var secret = "pmfa_ct_" + new string('A', 17000);
@@ -41,7 +41,7 @@ internal static class OpaqueCredentialTests
         {
             using var wire = new WireFixture { Authorization = "Bearer " + token };
             var serve = wire.ServeAsync("GET", "/messaging/s/profile", null, JsonSerializer.Serialize(new { error = new { code = "unauthorized", message = token, details = new { apiKey = "synthetic", projectToken = token } } }), status: 401);
-            using var sdk = new MessagingClient(kind == "key" ? Credential.OrganizationApiKey(token) : kind == "project" ? Credential.ProjectToken(token) : Credential.ClientToken(token), new() { BaseUrl = wire.Url, MaxNetworkRetries = 0 });
+            using var sdk = new MessagingClient(kind == "key" ? Credential.TeamApiKey(token) : kind == "project" ? Credential.ProjectToken(token) : Credential.ClientToken(token), new() { BaseUrl = wire.Url, MaxNetworkRetries = 0 });
             try { await sdk.Profile.GetAsync("s"); throw new Exception("Missing server rejection"); }
             catch (PolymorfaAuthenticationException error) { if (error.Code != "unauthorized" || error.Message.Contains(token) || error.Details.ToString()!.Contains(token) || error.Details.ToString()!.Contains("synthetic")) throw new Exception("Error credential leaked"); }
             await serve;

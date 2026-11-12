@@ -5,7 +5,7 @@ $identity = ['id' => '15555555555@s.whatsapp.net','phoneNumber' => '+15555555555
 $messageIds = ['linked_devices' => 'linked'];
 $linked = ['id' => 'message','whatsapp_ids' => $messageIds,'conversation' => $identity,'fromMe' => false,'timestamp' => 1,'pushName' => 'Contact','isGroup' => false,'type' => 'image','media' => 'opaque','extraProviderField' => ['preserved' => true]];
 $cloud = ['id' => 'message','whatsapp_ids' => ['official_api' => 'wamid.fixture'],'conversation' => ['id' => 'business-user','bsuid' => 'business-user'],'timestamp' => '1','type' => 'interactive','nativeFlowResponse' => ['name' => 'flow','paramsJson' => '{"answer":false}'],'replyChoice' => ['kind' => 'button','id' => 'choice'],'referral' => ['ctwa_clid' => 'click','source_id' => 'ad']];
-$customer = ['eventId' => 'event','occurredAt' => 'now','organizationId' => 'org','projectId' => 'project','customerId' => 'customer','actorKind' => 'org_key'];
+$customer = ['eventId' => 'event','occurredAt' => 'now','teamId' => 'team','projectId' => 'project','customerId' => 'customer','actorKind' => 'team_key'];
 $payment = ['reportedBy' => 'whatsapp','providerEventId' => 'provider','referenceId' => 'order','conversation' => ['phoneNumber' => '+15555555555']];
 $cases = [
  ['marketing.onboarding_updated',['kind'=>'terms_signed','wabaId'=>'w','metaEvent'=>'MM_LITE_TERMS_SIGNED']],
@@ -35,7 +35,7 @@ $cases = [
  ['bansafe.claim',['id' => 'claim','incidentId' => 'incident','phoneNumber' => '+15555555555','status' => 'paid','verdict' => 'ours','windowStart' => 'start','windowEnd' => 'end','measuredCents' => 0.000001,'capCents' => 1.125,'amountCents' => 0.125,'summary' => 'Fixture','reason' => 'Review','decidedAt' => 'now','paidAt' => 'now']],
  ['template.status',['kind' => 'message_template_quality_update','templateId' => 'template','previousQualityScore' => 'GREEN','newQualityScore' => 'YELLOW']],
  ['campaign.rescheduled',['campaignId' => 'campaign','previousScheduledAt' => null,'scheduledAt' => 1000,'rescheduledAt' => 1000]],
- ['voice.asset_failed',['eventId' => 'event','occurredAt' => 'now','organizationId' => 'org','projectId' => 'project','assetId' => 'asset','name' => 'Fixture','source' => 'future_source','failureReason' => 'future_reason']],
+ ['voice.asset_failed',['eventId' => 'event','occurredAt' => 'now','teamId' => 'team','projectId' => 'project','assetId' => 'asset','name' => 'Fixture','source' => 'future_source','failureReason' => 'future_reason']],
  ['usage.recorded',['id' => 'usage','meter' => 'call.duration','quantity' => 1.125,'unit' => 'second','dimensions' => ['video' => false],'keySource' => 'none','sourceKind' => 'call','sourceId' => 'call','projectId' => null,'session' => null,'occurredAt' => 'now','recordedAt' => 'now','revision' => 2,'pricingState' => 'unpriced','rateCard' => null,'pricedCredits' => null]],
 ];
 foreach ($cases as [$name,$payload]) {
@@ -64,7 +64,7 @@ $signature = 't=0001000,v1='.hash_hmac('sha256', '1000.'.$raw, $key);
 check(Polymorfa\Webhooks::verifyLocal($raw, $signature, $local, nowUnixSeconds:1000)->event === 'future.event', 'Local signature normalizes numeric timestamp and decodes byte key');
 raises(fn () => Polymorfa\Webhooks::verifyLocal($raw, $signature, $local, nowUnixSeconds:1301), Polymorfa\WebhookSignatureException::class);
 raises(fn () => Polymorfa\Webhooks::verifyLocal($raw, strtoupper($signature), $local, nowUnixSeconds:1000), Polymorfa\WebhookSignatureException::class);
-check(count(Polymorfa\ErrorCodes::KNOWN) === 102 && Polymorfa\ErrorCodes::isKnown('idempotency_replay_unavailable') && Polymorfa\ErrorCodes::isKnown('voice_unavailable') && !Polymorfa\ErrorCodes::isKnown('future_api_code'), 'Known API code catalog');
+check(count(Polymorfa\ErrorCodes::KNOWN) === 108 && Polymorfa\ErrorCodes::isKnown('idempotency_replay_unavailable') && Polymorfa\ErrorCodes::isKnown('voice_unavailable') && !Polymorfa\ErrorCodes::isKnown('future_api_code'), 'Known API code catalog');
 check(Polymorfa\ErrorCodes::isKnown('catalog_cache_full'), 'Known Official API code: catalog_cache_full');
 check(Polymorfa\ErrorCodes::isKnown('catalog_sync_cooldown'), 'Known Official API code: catalog_sync_cooldown');
 check(Polymorfa\ErrorCodes::isKnown('hybrid_group_linked_devices_unavailable'), 'Known Official API code: hybrid_group_linked_devices_unavailable');

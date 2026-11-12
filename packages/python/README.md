@@ -11,7 +11,7 @@ from polymorfa import AsyncMessagingClient, Credential, RequestOptions
 
 
 async def main():
-    credential = Credential("organization_api_key", os.environ["POLYMORFA_API_KEY"])
+    credential = Credential("team_api_key", os.environ["POLYMORFA_API_KEY"])
     async with AsyncMessagingClient(credential) as client:
         result = await client.messages.send(
             "support",
@@ -27,11 +27,11 @@ async def main():
 asyncio.run(main())
 ```
 
-Use `AsyncClient` for organization Platform operations, and
+Use `AsyncClient` for team Platform operations, and
 `client.project(project_id)` for an immutable project binding. Initialize
 `AsyncProjectClient` directly with a project token. A project client refuses
 rebinding and confines `raw.request` and `raw.paginate` paths to its bound project. A project
-view shares its organization's connection pool. Closing that view or leaving its
+view shares its team's connection pool. Closing that view or leaving its
 context keeps the pool open; close the root after all views have finished.
 A directly constructed project client owns and closes its pool.
 
@@ -159,7 +159,7 @@ the endpoint's signing secret and timestamp tolerance. It preserves the timestam
 text when constructing the signed input. `FLOW_FORWARD_SIGNATURE_HEADER` names
 its header. `parse_content_disposition_filename` decodes RFC 8187 filenames,
 removes directory segments and control characters, and returns a display name.
-`AsyncCallRetentionClient` reads the team-wide setting using an team key
+`AsyncCallRetentionClient` reads the team-wide setting using a team key
 or a project token without requiring a project ID. Updates retain server-side
 team-key authorization. `POLYMORFA_ERROR_CODES` and `is_known_error_code` expose
 documented codes while errors preserve unknown future codes.
@@ -236,18 +236,18 @@ cursor-paginated do-not-call list. Billing methods retain fractional credit
 amounts, enforce UUID and revision bounds, and normalize ordered resource IDs.
 Saving these settings uses the API's existing authorization and availability.
 
-Organization metadata reads cover members, server key and project token metadata,
+Team metadata reads cover members, server key and project token metadata,
 audit logs, bans and security incidents. Customer methods keep the project ID on
 reads, provide cursor pagination, and distinguish the initial pairing-link URL
 from the null URL returned after a replay.
 
 Observation and Hybrid Link policy reads preserve inheritance and revisions.
-Saved session and QuickLink defaults bind to the organization or project client.
+Saved session and QuickLink defaults bind to the team or project client.
 Official API groups expose typed join decisions and force every provider change
 to one attempt. Onboarding continuation and Testing methods require a server
 credential; Testing phone methods expose simulated device and message results.
 SIP trunks provide typed credentials and endpoint variants, with ownership checks
-before an team key acts through a project client.
+before a team key acts through a project client.
 
 Retained events, webhook signing generations and delivery attempts expose typed
 metadata and payload-availability states. Indexed event pages preserve offsets
@@ -291,7 +291,7 @@ from delivery progress. Messaging webhooks retain typed retry and header fields.
 
 Voice libraries support uploads, synthesis, previews and provider credentials.
 A project client reads its own assets and may read team-wide provider credentials;
-manage team-wide credentials through the organization client. Upload helpers send
+manage team-wide credentials through the team client. Upload helpers send
 file bytes without the API credential and omit the create request key on completion.
 `wait_until_ready` cancels an active read at its deadline and returns ready or failed
 assets. The API decides feature access.
@@ -311,7 +311,7 @@ headers and refuses a repeated cursor before yielding its body. `analytics`
 returns typed message, device, conversation and call aggregates and validates
 Prometheus/OpenMetrics gauge exports. Project analytics keeps its bound route.
 `usage` provides metered records and totals; metering does not establish charging.
-Organization `ban_safe` exposes health, telemetry, collection, findings,
+Team `ban_safe` exposes health, telemetry, collection, findings,
 enforcement, incidents and claim evidence. The API owns access and applied state.
 
 Customer-owned upload and history commands select the pending `2026-10-14`
@@ -464,7 +464,7 @@ The helper keeps the application-owned S3 client open.
 
 `SignalNodeClient` talks to the customer-operated Signal service's local
 application API. This is a server client. Supply the service's application bearer
-secret; Polymorfa project, organization and client credentials are refused.
+secret; Polymorfa project, team and client credentials are refused.
 The default address is `http://127.0.0.1:8080`. HTTPS endpoints are supported;
 private-network HTTP outside loopback requires `allow_insecure_http=True`.
 Redirects, proxy environment settings and cookie forwarding are disabled. Health
@@ -536,7 +536,7 @@ enrollment, opt-outs and funding.
 
 `client.campaigns` adds `get_reply_flow`, `create_reply_flow`, `set_reply_flow`,
 `test_send`, `list_launch_approvals`, `links`, `export_recipients` and
-`get_settings`. Organization calls select a `projectId` explicitly. The first
+`get_settings`. Team calls select a `projectId` explicitly. The first
 seven methods are also available on `client.project(project_id).campaigns`,
 which captures its project and rejects a `projectId` supplied inside an input.
 It exposes no campaign settings, audience import, retargeting or STOP settings.
@@ -616,7 +616,7 @@ Platform draft `messagesArray` accepts typed `CampaignMessageFields` or
 `CampaignMessageButton` with typed fields plus `extra_fields` for open nested
 extensions. Extensions cannot overwrite named fields. Platform PATCH supports
 an empty or omitted body; Messaging PATCH requires at least one field.
-`LaunchPlatformCampaign` requires the organization's `projectId` and accepts
+`LaunchPlatformCampaign` requires the team's `projectId` and accepts
 `scheduledAt` and `skipMissingVariables`, including zero and false. Launch
 approval, funding and campaign state remain API decisions.
 

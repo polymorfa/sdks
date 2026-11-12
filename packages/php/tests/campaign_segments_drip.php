@@ -26,7 +26,7 @@ $window = ['days' => ['monday'],'hours' => [['start' => '09:00','end' => '17:00'
 $steps = [['source' => 'hi'],['source' => 'later','delayAfterSec' => 2592000,'delayUnit' => 'days','sendWindow' => $window]];
 $q = '?projectId='.$segProject;
 
-// Organization surface: frequency cap, segments, drip, enrollment, reads.
+// Team surface: frequency cap, segments, drip, enrollment, reads.
 $cases = [
     ['GET','/platform/campaign-settings/frequency-cap',null,['data' => $capSettings],fn ($c) => $c->campaigns->getFrequencyCap()],
     ['PUT','/platform/campaign-settings/frequency-cap',$limits + ['revision' => 1],['data' => array_replace($capSettings, ['revision' => 2,'updatedAt' => 1800000000000])],fn ($c) => $c->campaigns->updateFrequencyCap($limits + ['revision' => 1])],
@@ -133,6 +133,6 @@ $client = new Polymorfa\Client($credential, http:mocked([jsonResponse(['data' =>
 $client->campaigns->create(['projectId' => $segProject,'name' => 'drip','drip' => [],'messagesArray' => [['delayAfterSec' => 2592000]]]);
 check((string) $history[0]['request']->getBody() === '{"projectId":"'.$segProject.'","name":"drip","drip":{},"messagesArray":[{"delayAfterSec":2592000}]}', 'Empty drip input stays an object and admits a 30-day step');
 
-// A project client has no organization segment authority.
+// A project client has no team segment authority.
 check(!property_exists(new Polymorfa\ProjectClient($credential, $segProject), 'audienceSegments'), 'Project clients exclude audience segments');
 echo "Frequency caps, audience segments, drips and enrollment passed on both audiences.\n";

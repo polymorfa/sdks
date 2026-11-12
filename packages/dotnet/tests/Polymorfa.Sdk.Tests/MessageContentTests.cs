@@ -42,7 +42,7 @@ internal static class MessageContentTests
             var response = "{\"success\":true,\"data\":{\"id\":\"m1\",\"whatsapp_ids\":{\"official_api\":\"wa1\"},\"conversation\":{\"bsuid\":\"US.123\"},\"timestamp\":\"2026-09-22\",\"status\":\"pending\",\"type\":\"interactive\",\"content\":" + json + ",\"operationId\":\"op1\"}}";
             request = request.Replace("\"official_api\"", JsonSerializer.Serialize(transport));
             var serving = fixture.ServeAsync("POST", "/messaging/support/messages/send", request, response);
-            using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url });
+            using var client = new MessagingClient(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url });
             var actual = (await client.Messages.SendAsync("support", new(new(Bsuid: "US.123"), content, transport, false, [], new("quoted1")))).Data.Data;
             ResourceTests.Equal(actual.Content!.GetType(), content.GetType()); ResourceTests.Equal(actual.OperationId, "op1"); await serving;
         }

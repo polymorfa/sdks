@@ -1109,7 +1109,7 @@
             "summary": "Get the contact frequency cap",
             "description": "Returns the team's contact frequency cap: the most campaign messages one phone number receives from the team in any rolling 24 hours and any rolling 7 days. Every campaign message counts, first messages and later messages of a sequence, from every campaign, project and number in the team. Test sends and messages sent outside campaigns do not count. `null` means no limit for that window. A team that never saved a cap receives both limits `null` and `revision` 0. A campaign can set its own, stricter cap with `frequencyCap`. Accepts a team API key or a live signed-in team member.\n\nAPI keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:read",
             "security": [
@@ -1176,7 +1176,7 @@
             "summary": "Update the contact frequency cap",
             "description": "Replaces the team's contact frequency cap using the `revision` you read; a changed revision answers `409`. Send `null` for a window to remove its limit, or both `null` to remove the cap. Setting a limit requires the contact frequency caps beta and otherwise answers `403 feature_unavailable`; removing the cap does not. Requires a team API key or a signed-in team owner or admin; project tokens answer `403`. A message over the cap is skipped with `frequency_cap_exceeded`; a later sequence message stops that recipient's remaining sequence. Settled skips are never retried when a cap changes.\n\nAPI keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:manage",
             "security": [
