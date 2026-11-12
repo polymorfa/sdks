@@ -9,7 +9,8 @@ later tooling or documentation commit does not create a self-reference.
 
 The current source includes main's separately pinned webhook phone-offline
 supplement. The baseline stays at `Polymorfa-Version: 2026-09-22`, with API source
-`171a9683ff45d11a4b5d3917dc428ad2722b0d99` and the two hashes in `specs`.
+`f180dc1ee2bd45dbecf01702f73bdd75c664634b` (polymorfa/polymorfa#887) and the two
+hashes in `specs`.
 Separately pinned supplements retain their own versions. The generator rejects
 changed source files, coverage pins and OpenAPI snapshots until the source is
 rebound and the catalog is verified again.
@@ -40,9 +41,9 @@ The `request` metadata records the minimal body and required query used by the
 recipe. Its schemas and union branches are validated against the pinned OpenAPI.
 No optional request fields are included in this initial catalog.
 
-There are **31 operations per language**, 186 complete programs. Each language's
-coverage ledger contains 442 covered operations, leaving **411 omitted per
-language**. The initial recipes cover text sends, message actions, session
+There are **31 operations per language**, 186 complete programs. The TypeScript
+coverage ledger contains 451 covered operations (**420 omitted**) and each
+native ledger 445 (**414 omitted**). The initial recipes cover text sends, message actions, session
 lifecycle, business profiles/catalogs/collections and project event listing.
 The remaining operations have no verified recipe in this catalog and retain
 cURL fallback. Coverage of a method does not imply a verified documentation
