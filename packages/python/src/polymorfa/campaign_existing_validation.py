@@ -120,6 +120,7 @@ DRIP_MAX_DELAY = 2592000
 
 
 def composed(value: object, max_delay: int = ORDINARY_MAX_DELAY) -> None:
+    """Validate composed-message fields and delays without claiming channel acceptance."""
     if not isinstance(value, list) or len(value) > 10:
         V.invalid("messagesArray")
     for item in value:
@@ -145,7 +146,7 @@ def composed(value: object, max_delay: int = ORDINARY_MAX_DELAY) -> None:
                 b = obj(entry, "button")
                 V.choice(b.get("kind"), ("reply", "link", "call"), "button.kind")
                 V.text(b.get("label"), "button.label", 0)
-                for key in ("url", "phone"):
+                for key in ("url", "phone", "id"):
                     if key in b:
                         V.text(b[key], key, 0)
 

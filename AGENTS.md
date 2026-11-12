@@ -41,6 +41,12 @@ matching contract revision. These check attribution and drift; passing them does
 not replace native wire tests, package consumers or runtime acceptance. The API
 drift workflow reports gaps; it does not generate or maintain handwritten SDKs.
 
+On the shared Mac, run every Cargo command through MrBoxington's active Cargo
+shim or `mbx <command>`. Let mbx manage the shared cache and toolchain isolation;
+do not invoke toolchain Cargo directly or create separate task caches. The Rust
+verifier omits debug symbols from its all-feature Clippy/test artifacts to fit
+normal CI disks. It retains the full feature/test selection and debug assertions.
+
 ## Public PR descriptions
 
 Keep public SDK and CLI PR descriptions short. State the behavior, useful

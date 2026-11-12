@@ -4533,6 +4533,12 @@
       "baselineUnchanged": true,
       "published": false,
       "language": "go"
+    },
+    "interactiveMessages": {
+      "inventory": "contracts/native-interactive-messages.json",
+      "language": "go",
+      "baselineUnchanged": true,
+      "published": false
     }
   }
 }

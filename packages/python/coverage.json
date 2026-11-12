@@ -4670,6 +4670,12 @@
       "baselineUnchanged": true,
       "published": false,
       "language": "python"
+    },
+    "interactiveMessages": {
+      "inventory": "contracts/native-interactive-messages.json",
+      "language": "python",
+      "baselineUnchanged": true,
+      "published": false
     }
   }
 }

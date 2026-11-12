@@ -18505,6 +18505,12 @@
       "inventory": "contracts/native-calls-simultaneous-calls.json",
       "baselineUnchanged": true,
       "published": false
+    },
+    "interactiveMessages": {
+      "inventory": "contracts/native-interactive-messages.json",
+      "language": "typescript",
+      "baselineUnchanged": true,
+      "published": false
     }
   }
 }

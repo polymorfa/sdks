@@ -71,6 +71,7 @@ public sealed class Messages
     private static string Path(string session, string action) => $"/messaging/{Uri.EscapeDataString(session)}/messages/{action}";
     public Task<ApiResponse<SuccessEnvelope<MessageResponse>>> SendAsync(string session, SendMessageRequest body, RequestOptions? options = null)
     {
+        InteractiveMessages.Validate(body.Content);
         if (body.Conversation.Id is null && body.Conversation.PhoneNumber is null && body.Conversation.Bsuid is null && body.Conversation.Username is null) throw new PolymorfaValidationException("A conversation identifier is required.", "invalid_parameter");
         var descriptor = body.Content switch { DescriptorImageContent c => (c.Image, WhatsAppUploadMediaType.Image), DescriptorVideoContent c => (c.Video, WhatsAppUploadMediaType.Video), DescriptorFileContent c => (c.File, WhatsAppUploadMediaType.Document), DescriptorVoiceContent c => (c.Voice, c.Voice.Ptt == true ? WhatsAppUploadMediaType.Ptt : WhatsAppUploadMediaType.Audio), StickerContent c => (c.Sticker, WhatsAppUploadMediaType.Sticker), _ => ((WhatsAppMediaSendDescriptor?)null, default(WhatsAppUploadMediaType)) };
         if (body.Content is StickerContent { Sticker: null }) throw new PolymorfaConfigurationException("A sticker descriptor is required.");
