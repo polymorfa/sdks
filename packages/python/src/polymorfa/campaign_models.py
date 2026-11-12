@@ -195,6 +195,7 @@ class CampaignMessageMediaFields(TypedDict):
 class CampaignMessageButtonFields(TypedDict):
     kind: Literal["reply", "link", "call"]
     label: str
+    id: NotRequired[str]
     url: NotRequired[str]
     phone: NotRequired[str]
 

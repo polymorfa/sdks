@@ -64,6 +64,40 @@ internal static class CampaignExistingTests
         await Messaging("GET", path + "/c/analytics", null, Envelope(Report), async c => { var r = (await c.Campaigns.AnalyticsAsync("support", "c")).Data.Data; Check(r.AverageResponseTimeMs is null && r.MinResponseTimeMs is null && r.MaxResponseTimeMs is null && r.Experiment is null && r.FollowUps.Total == 0, "Messaging report"); });
         await Organization("GET", "/platform/campaigns?projectId=" + Project, null, Envelope("[" + CampaignJson + "]", false), async c => { await c.Campaigns.ListAsync(new(Project)); });
         await Organization("POST", "/platform/campaigns", "{\"projectId\":\"" + Project + "\",\"name\":\"Campaign\"}", Envelope(CampaignJson, false), async c => { await c.Campaigns.CreateAsync(new(Project, "Campaign")); });
+        const string interactive = """{"projectId":"11111111-1111-4111-8111-111111111111","name":"Interactive","messagesArray":[{"version":2,"source":"Choose an offer","media":{"kind":"image","url":"https://example.test/offer"},"buttons":[{"kind":"reply","label":"Choose","id":"offer-stable"},{"kind":"link","label":"Open","url":"https://example.test/offer"}]}]}""";
+        CreatePlatformCampaignRequest InteractiveRequest(PlatformCampaignButton reply) => new(Project, "Interactive", MessagesArray: [new()
+        {
+            Version = 2, Source = "Choose an offer", Media = new("image", "https://example.test/offer"),
+            Buttons = [reply, new("link", "Open", Url: "https://example.test/offer")],
+        }]);
+        var oldConstructor = new PlatformCampaignButton("reply", "Choose", null, null);
+        var (oldKind, oldLabel, oldUrl, oldPhone) = oldConstructor;
+        Check(oldKind == "reply" && oldLabel == "Choose" && oldUrl is null && oldPhone is null, "four-value button construction/deconstruction");
+        Check(typeof(PlatformCampaignButton).GetConstructor([typeof(string), typeof(string), typeof(string), typeof(string)]) is not null, "four-argument constructor retained for compiled callers");
+        var legacyFields = new Dictionary<string, JsonElement> { ["id"] = JsonSerializer.SerializeToElement("offer-stable") };
+        foreach (var reply in new[]
+        {
+            oldConstructor with { AdditionalFields = legacyFields },
+            new PlatformCampaignButton("reply", "Choose", Id: "offer-stable") { AdditionalFields = legacyFields },
+        })
+            await Organization("POST", "/platform/campaigns", interactive, Envelope(CampaignJson), async c => { await c.Campaigns.CreateAsync(InteractiveRequest(reply)); });
+        Check(legacyFields["id"].GetString() == "offer-stable" && oldConstructor.Id is null, "legacy button input not mutated");
+        foreach (var reply in new[]
+        {
+            new PlatformCampaignButton("reply", "Choose", Id: "different") { AdditionalFields = legacyFields },
+            oldConstructor with { AdditionalFields = new Dictionary<string, JsonElement> { ["id"] = JsonSerializer.SerializeToElement(123) } },
+        })
+            await NoHttp(async (_, c) => { await c.Campaigns.CreateAsync(InteractiveRequest(reply)); });
+        var decodedButton = JsonSerializer.Deserialize<PlatformCampaignButton>("""{"kind":"reply","label":"Choose","id":"offer-stable"}""", new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        Check(decodedButton?.Id == "offer-stable", "reply ID deserializes through the compatible constructor");
+        await Organization("POST", "/platform/campaigns", interactive, Envelope(CampaignJson, false), async c =>
+        {
+            await c.Campaigns.CreateAsync(new(Project, "Interactive", MessagesArray: [new PlatformCampaignMessage
+            {
+                Version = 2, Source = "Choose an offer", Media = new("image", "https://example.test/offer"),
+                Buttons = [new("reply", "Choose", Id: "offer-stable"), new("link", "Open", Url: "https://example.test/offer")],
+            }]));
+        });
         await Organization("GET", "/platform/campaigns/c?projectId=" + Project, null, "{\"data\":null}", async c => Check((await c.Campaigns.RetrieveAsync("c", new(Project))).Data.Data is null, "Nullable Platform retrieve"));
         foreach (var body in new UpdatePlatformCampaignRequest?[] { null, new(), new() { AdditionalFields = new Dictionary<string, JsonElement> { ["future"] = JsonSerializer.SerializeToElement(false) } } })
             await Organization("PATCH", "/platform/campaigns/c?projectId=" + Project, body is null ? null : body.AdditionalFields is null ? "{}" : "{\"future\":false}", Envelope(CampaignJson, false), async c => { await c.Campaigns.UpdateAsync("c", body, new(Project)); });

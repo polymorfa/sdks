@@ -3475,6 +3475,42 @@ whole-body signature verification before decoding and deduplicate batch members.
 See [the scoped source contract and compatibility notes](../../docs/campaign-webhook-metadata.md).
 Package publication and matching API environment acceptance remain separate gates.
 
+### Interactive-message candidate
+
+These types target candidate API PR #562. They require its backend implementation;
+this source change does not establish hosted availability or package publication.
+Linked Devices permits ten total controls with at most three CTAs. Replies can
+mix with URL/call controls; copy and catalog controls cannot mix with replies.
+Image, video and document headers use exactly one URL or base64 source.
+
+```ts
+await messaging.messages.send(sessionId, {
+  conversation: { phoneNumber: "+15551234567" },
+  content: {
+    buttons: {
+      body: "Choose an option",
+      media: { type: "image", url: "https://example.com/header.jpg" },
+      buttons: [
+        { type: "reply", text: "Interested", id: "offer-interested" },
+        { type: "url", text: "Details", url: "https://example.com/offer" },
+      ],
+    },
+  },
+});
+```
+
+`CarouselMessageContent` contains a body, optional footer and 2–10 cards.
+Each card has a body, native buttons, and exactly one `image`
+or `video` source. Native controls within each card share a category, and reply
+IDs must be unique across all cards. One carousel is one send; clients do not
+split it into separately metered messages. Official API media buttons and
+carousels use approved templates through their existing template route.
+
+Composed campaign buttons expose an optional typed `id`; keep it stable when
+editing labels and unique within the message. This change does not expand the
+separate reply-flow action limits. All six server SDKs are in the coordinated
+interactive candidate scope; package and native qualification remain required.
+
 ### Call settings exclusion end (Unreleased)
 
 Call-settings GET and PUT responses include the read-only

@@ -153,7 +153,7 @@ final class ExistingCampaignValidation
                     $b = CampaignContractValidation::object($button, 'button');
                     CampaignContractValidation::enum($b['kind'] ?? null, ['reply','link','call'], 'button.kind');
                     CampaignContractValidation::text($b['label'] ?? null, 'button.label', 0);
-                    foreach (['url','phone'] as $key) {
+                    foreach (['url','phone','id'] as $key) {
                         if (array_key_exists($key, $b)) {
                             CampaignContractValidation::text($b[$key], $key, 0);
                         }
