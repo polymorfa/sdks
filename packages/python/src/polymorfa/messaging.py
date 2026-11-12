@@ -159,7 +159,11 @@ class Messages(Resource):
     async def send(
         self, session: str, body: SendMessage, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[MessageResponse]]:
+        """Validate interactive content before an idempotent send, retaining descriptor options."""
         content = body.get("content")
+        from .interactive import validate_interactive
+
+        validate_interactive(content)
         if isinstance(content, dict) and "sticker" in content:
             from .direct_media import validate_sticker_content
 

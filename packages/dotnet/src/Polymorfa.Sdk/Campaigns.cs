@@ -54,8 +54,14 @@ public sealed record PlatformCampaignMedia(string Kind, string Url, string? File
 {
     [JsonExtensionData] public IDictionary<string, JsonElement>? AdditionalFields { get; init; }
 }
-public sealed record PlatformCampaignButton(string Kind, string Label, string? Url = null, string? Phone = null)
+public sealed record PlatformCampaignButton(string Kind, string Label, string? Url = null, string? Phone = null, string? Id = null)
 {
+    [JsonConstructor]
+    public PlatformCampaignButton(string kind, string label, string? url, string? phone) : this(kind, label, url, phone, null) { }
+    public void Deconstruct(out string kind, out string label, out string? url, out string? phone)
+    {
+        kind = Kind; label = Label; url = Url; phone = Phone;
+    }
     [JsonExtensionData] public IDictionary<string, JsonElement>? AdditionalFields { get; init; }
 }
 public record Campaign

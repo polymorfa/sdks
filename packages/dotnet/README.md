@@ -1035,6 +1035,29 @@ See [the scoped source contract and compatibility notes](../../docs/campaign-web
 Package publication and matching API environment acceptance remain separate gates.
 
 
+### Interactive-message candidate (unreleased)
+
+This source targets the separately pinned interactive backend candidate in
+`contracts/interactive-messages.json`. It does not establish hosted availability
+or registry publication. Native button messages support image, video and document
+headers with exactly one URL or base64 source; a title cannot accompany media.
+Carousels contain 2–10 image/video cards. Only the outer carousel has a footer;
+video previews remain inside the video object. Each complete carousel is one
+message request. Linked Devices allow ten controls with at most three CTAs;
+replies can mix with URL/call controls, but not copy/catalog controls.
+
+Composed campaign buttons now expose an optional typed `id`. Preserve it across
+label changes and make reply IDs unique within the message. Existing media and
+carousel-template campaign paths retain the API's sender checks. These are
+composed campaign messages, not reply-flow actions: the latter retain their
+separate three-reply contract. The API remains authoritative for sender
+availability, media sizes, control limits and campaign sendability.
+
+Existing `AdditionalFields["id"]` string values remain supported. When `Id` is
+also supplied, both values must agree. Conflicting or non-string extension IDs
+fail before HTTP without mutating the caller's dictionary. The existing
+four-argument button constructor and four-value deconstruction remain available.
+
 ### Call settings exclusion end (Unreleased)
 
 Call-settings GET and PUT responses include the read-only
