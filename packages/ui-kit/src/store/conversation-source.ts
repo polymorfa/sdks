@@ -49,6 +49,17 @@ export function toConversationMessage(row: StoredMessage): ConversationMessage {
     ...(row.attachments === undefined || row.attachments.length === 0
       ? {}
       : { attachments: row.attachments }),
+    // Only group messages carry a sender distinct from the conversation.
+    ...(row.fromMe ||
+    row.senderId === undefined ||
+    row.senderId === row.conversationId
+      ? {}
+      : {
+          sender: {
+            id: row.senderId,
+            ...(row.pushName === undefined ? {} : { name: row.pushName }),
+          },
+        }),
   };
 }
 

@@ -163,6 +163,23 @@ a.pmfa-btn { text-decoration: none; }
 .pmfa-btn-ghost { border-color: transparent; background: transparent; color: var(--pmfa-c-muted); }
 .pmfa-btn-ghost:hover:not(:disabled) { color: var(--pmfa-c-fg); }
 .pmfa-btn-icon { width: 40px; padding: 0; border-radius: 999px; }
+.pmfa-number-picker { display: grid; gap: 6px; min-width: 0; }
+.pmfa-number-picker-label { color: var(--pmfa-c-muted); font-size: 0.8125em; font-weight: 600; }
+.pmfa-number-picker-select { appearance: auto; cursor: pointer; text-overflow: ellipsis; }
+.pmfa-number-picker-select:disabled { opacity: 0.55; cursor: not-allowed; }
+.pmfa-msg-sender {
+  display: block;
+  margin-bottom: 2px;
+  color: hsl(var(--pmfa-sender-hue, 200) 55% 38%);
+  font-size: 0.8125em;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.pmfa-msg:not(.pmfa-msg-start) .pmfa-msg-sender { display: none; }
+.pmfa-dark .pmfa-msg-sender { color: hsl(var(--pmfa-sender-hue, 200) 70% 72%); }
+@media (prefers-color-scheme: dark) {
+  .pmfa-auto .pmfa-msg-sender { color: hsl(var(--pmfa-sender-hue, 200) 70% 72%); }
+}
 .pmfa-input {
   display: block;
   width: 100%;
@@ -731,18 +748,27 @@ button.pmfa-hd:disabled { cursor: default; opacity: 0.75; }
 .pmfa-chip-preview { width: 56px; height: 56px; border-radius: 6px; object-fit: cover; }
 .pmfa-chip-player { display: block; width: 220px; max-width: 100%; }
 video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
+/*
+ * One control size for the whole composer row. The field's vertical padding
+ * comes from that size and the field's own line height, so a single line is
+ * exactly as tall as the buttons beside it at any text size, and more lines
+ * grow upward from the same bottom edge.
+ */
+.pmfa-composer { --pmfa-composer-control: 40px; --pmfa-composer-line: 1.45; }
+@media (max-width: 600px) { .pmfa-composer { --pmfa-composer-control: 44px; } }
 .pmfa-composer .pmfa-input {
   flex: 1;
   min-width: 0;
-  min-height: 40px;
-  border-radius: 20px;
-  padding: 8px 16px;
+  min-height: var(--pmfa-composer-control);
+  border-radius: calc(var(--pmfa-composer-control) / 2);
+  padding: max(4px, calc((var(--pmfa-composer-control) - var(--pmfa-composer-line) * 1em - 2px) / 2)) 16px;
   background: var(--pmfa-c-surface);
   border-color: transparent;
-  line-height: 1.45;
+  line-height: var(--pmfa-composer-line);
   resize: none;
   field-sizing: content;
 }
+.pmfa-composer-row .pmfa-btn-icon { width: var(--pmfa-composer-control); min-width: var(--pmfa-composer-control); min-height: var(--pmfa-composer-control); }
 .pmfa-composer .pmfa-input:hover { border-color: var(--pmfa-c-border); }
 .pmfa-composer .pmfa-input:focus-visible { outline-offset: 0; background: var(--pmfa-c-bg); border-color: var(--pmfa-c-border); }
 .pmfa-composer .pmfa-btn { flex: none; }
@@ -822,12 +848,13 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
 }
 .pmfa-composer > .pmfa-error { padding-inline: 8px; }
 .pmfa-composer-row { align-items: flex-end; gap: 2px; }
-.pmfa-composer-actions { display: flex; flex: none; align-items: center; gap: 2px; min-height: 40px; }
+.pmfa-composer-actions { display: flex; flex: none; align-items: center; gap: 2px; min-height: var(--pmfa-composer-control); }
 .pmfa-composer-actions:empty { display: none; }
 .pmfa-composer-actions > * { flex: none; }
 .pmfa-composer .pmfa-input {
   margin-inline: 4px;
-  max-height: calc(var(--pmfa-composer-max-rows, 8) * 1.45em + 18px);
+  /* The rows of text plus the single-line padding and border. */
+  max-height: calc((var(--pmfa-composer-max-rows, 8) - 1) * var(--pmfa-composer-line) * 1em + var(--pmfa-composer-control));
   overflow-y: auto;
 }
 .pmfa-composer .pmfa-btn-ghost[aria-expanded="true"] { color: var(--pmfa-c-primary); background: var(--pmfa-c-surface); }
@@ -841,26 +868,22 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
  */
 .pmfa-chat-window .pmfa-chat-footer, .pmfa-chat-window .pmfa-drawer-footer { padding: 8px clamp(8px, 2cqi, 16px) max(8px, env(safe-area-inset-bottom)); border-top: 0; }
 .pmfa-chat-window .pmfa-chat-footer > fieldset + * { margin-top: 6px; }
-.pmfa-chat-window .pmfa-composer { gap: 6px; padding: 0; border: 0; border-radius: 0; background: transparent; }
+.pmfa-chat-window .pmfa-composer { --pmfa-composer-control: 44px; --pmfa-composer-line: 1.4; gap: 6px; padding: 0; border: 0; border-radius: 0; background: transparent; }
 .pmfa-chat-window .pmfa-composer-row { flex-wrap: nowrap; gap: 4px; align-items: flex-end; }
-.pmfa-chat-window .pmfa-composer-actions { min-height: 44px; gap: 0; }
-.pmfa-chat-window .pmfa-composer-actions .pmfa-btn-icon { width: 40px; min-height: 40px; margin-block: 2px; color: var(--pmfa-c-muted); }
+.pmfa-chat-window .pmfa-composer-actions { gap: 0; }
+.pmfa-chat-window .pmfa-composer-actions .pmfa-btn-icon { color: var(--pmfa-c-muted); }
 .pmfa-chat-window .pmfa-composer-actions .pmfa-btn-icon .pmfa-icon { width: 22px; height: 22px; }
 .pmfa-chat-window .pmfa-composer .pmfa-input {
   flex: 1;
   min-width: 0;
-  min-height: 44px;
   margin: 0;
-  padding: 11px 16px;
   border: 1px solid transparent;
-  border-radius: 22px;
   background: var(--pmfa-c-field);
   font-size: var(--pmfa-message-font-size, 0.9375em);
-  line-height: 1.4;
 }
 .pmfa-chat-window .pmfa-composer .pmfa-input:hover { border-color: transparent; }
 .pmfa-chat-window .pmfa-composer .pmfa-input:focus-visible { outline: none; border-color: color-mix(in srgb, var(--pmfa-c-fg) 22%, transparent); background: var(--pmfa-c-field); }
-.pmfa-chat-window .pmfa-send, .pmfa-chat-window .pmfa-voice { flex: none; width: 44px; min-height: 44px; border-radius: 999px; }
+.pmfa-chat-window .pmfa-send, .pmfa-chat-window .pmfa-voice { flex: none; width: var(--pmfa-composer-control); min-height: var(--pmfa-composer-control); border-radius: 999px; }
 .pmfa-chat-window .pmfa-send { border-color: transparent; background: var(--pmfa-c-primary); color: var(--pmfa-c-on-primary); }
 .pmfa-chat-window .pmfa-send:hover:not(:disabled) { background: color-mix(in srgb, var(--pmfa-c-primary) 88%, #000000); }
 .pmfa-chat-window .pmfa-voice .pmfa-icon { width: 22px; height: 22px; }
@@ -1549,6 +1572,225 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
   .pmfa-inbox .pmfa-contact { width: 100%; border-inline-start: 0; }
   .pmfa-thread-head { padding-inline-start: 4px; }
 }
+
+/* New chat, contacts and groups */
+.pmfa-newchat, .pmfa-group {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  background: var(--pmfa-c-panel);
+  color: var(--pmfa-c-fg);
+}
+.pmfa-newchat-head, .pmfa-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 60px;
+  padding: 10px 12px;
+}
+.pmfa-group-head { justify-content: space-between; border-bottom: 1px solid var(--pmfa-c-border); }
+.pmfa-newchat-title, .pmfa-group-title { margin: 0; font-size: 1.125em; font-weight: 700; }
+.pmfa-newchat > .pmfa-search { margin: 0 16px 8px; }
+.pmfa-contacts .pmfa-newchat-head { padding-inline: 16px; }
+.pmfa-newchat-body, .pmfa-group-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 8px 12px;
+}
+.pmfa-group-body { display: flex; flex-direction: column; gap: 16px; padding: 16px; }
+.pmfa-newchat-section {
+  margin: 14px 10px 6px;
+  color: var(--pmfa-c-primary);
+  font-size: 0.8125em;
+  font-weight: 600;
+}
+.pmfa-group .pmfa-newchat-section { margin: 0 0 6px; }
+.pmfa-newchat-state { margin: 0; padding: 24px 16px; color: var(--pmfa-c-muted); text-align: center; }
+.pmfa-newchat-state .pmfa-btn { margin-top: 10px; }
+.pmfa-newchat-note { margin: 0; color: var(--pmfa-c-muted); font-size: 0.8125em; }
+.pmfa-newchat-note:empty, .pmfa-group-status:empty { display: none; }
+.pmfa-newchat-lookup { display: grid; gap: 6px; padding: 6px 10px; }
+.pmfa-newchat-lookup .pmfa-btn { justify-content: flex-start; overflow-wrap: anywhere; white-space: normal; }
+.pmfa-contact-list, .pmfa-group-members { margin: 0; padding: 0; list-style: none; }
+.pmfa-person {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 60px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+}
+button.pmfa-person { cursor: pointer; touch-action: manipulation; }
+button.pmfa-person:hover { background: var(--pmfa-c-hover); }
+button.pmfa-person:focus-visible { outline: 2px solid var(--pmfa-c-primary); outline-offset: -2px; }
+.pmfa-person-text { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.pmfa-person-name { overflow: hidden; font-weight: 500; text-overflow: ellipsis; white-space: nowrap; }
+.pmfa-person-sub { overflow: hidden; color: var(--pmfa-c-muted); font-size: 0.8125em; text-overflow: ellipsis; white-space: nowrap; }
+.pmfa-person-check {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--pmfa-c-border);
+  border-radius: 6px;
+}
+.pmfa-person-selected .pmfa-person-check { border-color: var(--pmfa-c-primary); background: var(--pmfa-c-primary); color: #ffffff; }
+.pmfa-person-check .pmfa-icon { width: 14px; height: 14px; stroke-width: 3; }
+.pmfa-newchat-action-icon { width: 48px; height: 48px; background: var(--pmfa-c-primary); color: #ffffff; }
+.pmfa-newchat-action-icon .pmfa-icon { width: 22px; height: 22px; }
+.pmfa-pick-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0 16px 10px; list-style: none; }
+.pmfa-newchat-group .pmfa-pick-chips { padding: 0; }
+.pmfa-pick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  min-height: 30px;
+  padding: 2px 4px 2px 12px;
+  border-radius: 999px;
+  background: var(--pmfa-c-field);
+  font-size: 0.8125em;
+  overflow-wrap: anywhere;
+}
+.pmfa-newchat-group .pmfa-pick-chip { padding-inline-end: 12px; }
+.pmfa-pick-chip-remove {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--pmfa-c-muted);
+  cursor: pointer;
+}
+.pmfa-pick-chip-remove:hover { background: var(--pmfa-c-hover); color: var(--pmfa-c-fg); }
+.pmfa-pick-chip-remove:focus-visible { outline: 2px solid var(--pmfa-c-primary); }
+.pmfa-pick-chip-remove .pmfa-icon { width: 14px; height: 14px; }
+.pmfa-newchat-group { display: flex; flex-direction: column; gap: 14px; padding: 8px 16px 16px; }
+.pmfa-newchat-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--pmfa-c-border);
+}
+.pmfa-group-status { margin: 0; padding: 8px 16px; background: var(--pmfa-c-field); font-size: 0.8125em; }
+.pmfa-group-hero { display: grid; justify-items: center; gap: 6px; text-align: center; }
+.pmfa-group-meta { margin: 0; color: var(--pmfa-c-muted); font-size: 0.875em; }
+.pmfa-group-field { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.pmfa-group-field .pmfa-label { flex-basis: 100%; }
+.pmfa-group-field-title { justify-content: center; }
+.pmfa-group-field-title .pmfa-group-value { font-size: 1.25em; font-weight: 700; }
+.pmfa-group-value, .pmfa-group-empty { flex: 1; min-width: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
+.pmfa-group-field-title .pmfa-group-value { flex: 0 1 auto; }
+.pmfa-group-empty { color: var(--pmfa-c-muted); }
+.pmfa-group-edit { display: grid; gap: 8px; }
+.pmfa-group-edit-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.pmfa-group-badge {
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pmfa-c-primary) 14%, transparent);
+  color: var(--pmfa-c-primary);
+  font-size: 0.75em;
+  font-weight: 600;
+}
+.pmfa-group-member .pmfa-conv-menu { position: relative; inset: auto; opacity: 1; transform: none; }
+.pmfa-group-member .pmfa-conv-menu-items { z-index: 5; }
+.pmfa-group-section { display: grid; gap: 8px; }
+.pmfa-group-invite { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.pmfa-group-code {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: var(--pmfa-r-m);
+  background: var(--pmfa-c-field);
+  font-size: 0.8125em;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.pmfa-group-setting { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.pmfa-group-setting-label { font-size: 0.875em; }
+.pmfa-segmented { display: inline-flex; flex-wrap: wrap; gap: 6px; }
+.pmfa-segmented .pmfa-btn { min-height: 36px; padding: 0 12px; }
+.pmfa-group-leave { justify-self: start; border-color: transparent; color: var(--pmfa-c-danger); }
+.pmfa-group-confirm { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--pmfa-c-border); border-radius: var(--pmfa-r-m); }
+.pmfa-group-confirm p { margin: 0; }
+.pmfa-group-add { display: grid; gap: 8px; }
+.pmfa-group-add .pmfa-contact-list { max-height: 280px; overflow-y: auto; }
+.pmfa-inbox > :is(.pmfa-newchat, .pmfa-inbox-newchat, .pmfa-inbox-calls) { min-width: 0; min-height: 0; border-inline-end: 1px solid var(--pmfa-c-border); }
+.pmfa-inbox > .pmfa-inbox-calls { display: flex; flex-direction: column; border-inline-end: 0; }
+.pmfa-inbox > :is(.pmfa-group, .pmfa-inbox-group) { min-width: 0; min-height: 0; border-inline-start: 1px solid var(--pmfa-c-border); background: var(--pmfa-c-panel); }
+.pmfa-conv-menu-items .pmfa-menu-danger { color: var(--pmfa-c-danger); }
+@container pmfa-inbox (max-width: 1023px) {
+  .pmfa-inbox > :is(.pmfa-group, .pmfa-inbox-group) {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    z-index: 3;
+    width: min(360px, 100%);
+    box-shadow: var(--pmfa-shadow-panel, 0 18px 50px rgb(23 21 31 / 0.16));
+  }
+}
+@container pmfa-inbox (max-width: 559px) {
+  .pmfa-inbox > :is(.pmfa-newchat, .pmfa-inbox-newchat, .pmfa-inbox-calls) { grid-column: 1 / -1; grid-row: 1; border-inline-end: 0; }
+  .pmfa-inbox[data-view="thread"] > :is(.pmfa-newchat, .pmfa-inbox-newchat, .pmfa-inbox-calls) { display: none; }
+  .pmfa-inbox > :is(.pmfa-group, .pmfa-inbox-group) { width: 100%; border-inline-start: 0; }
+}
+@media (pointer: coarse) {
+  .pmfa-person { min-height: 64px; }
+  .pmfa-segmented .pmfa-btn { min-height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pmfa-person, .pmfa-conv-menu { transition: none; }
+}
+
+/* Call log and the Inbox Chats/Calls switch */
+.pmfa-inbox-heading { gap: 8px; }
+.pmfa-inbox-heading .pmfa-inbox-title { flex: 1; min-width: 0; }
+.pmfa-inbox-views { display: inline-flex; flex: none; padding: 2px; border-radius: 999px; background: var(--pmfa-c-field); }
+.pmfa-inbox-views button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--pmfa-c-muted);
+  font: inherit;
+  font-size: 0.8125em;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pmfa-inbox-views button[aria-pressed="true"] { background: var(--pmfa-c-panel); color: var(--pmfa-c-fg); box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+.pmfa-inbox-views button:focus-visible { outline: 2px solid var(--pmfa-c-primary); outline-offset: 1px; }
+.pmfa-call-log { height: 100%; }
+.pmfa-call-rows { flex: 1; min-height: 0; margin: 0; padding: 2px 8px 8px; overflow-y: auto; list-style: none; }
+.pmfa-call-entry { display: flex; align-items: center; gap: 4px; }
+.pmfa-call { flex: 1; min-width: 0; }
+button.pmfa-call:disabled { cursor: default; }
+button.pmfa-call:disabled:hover { background: transparent; }
+.pmfa-call-missed .pmfa-person-name, .pmfa-call-missed .pmfa-call-dir { color: var(--pmfa-c-danger); }
+.pmfa-call-count { color: inherit; font-weight: 400; }
+.pmfa-call-sub { display: flex; align-items: center; gap: 4px; }
+.pmfa-call-dir { flex: none; width: 14px; height: 14px; color: var(--pmfa-c-muted); }
+.pmfa-call-back { flex: none; color: var(--pmfa-c-primary); }
+.pmfa-call-back .pmfa-btn-icon { color: var(--pmfa-c-primary); }
+.pmfa-call-more { width: 100%; margin-top: 4px; }
+@media (pointer: coarse) { .pmfa-inbox-views button { min-height: 40px; } }
 
 /* Connect, status, call */
 .pmfa-connect .pmfa-icon { width: 18px; height: 18px; }

@@ -3,6 +3,8 @@ using System.Text;
 using System.Text.Json;
 using Polymorfa.Sdk;
 
+if (args.Contains("--session-call-history-only")) { await ProjectPairingTests.SessionCallHistoryAsync(); return; }
+
 if (args.Contains("--cloud-order-quantity-only")) { await CloudOrderQuantityTests.RunAsync(); return; }
 
 if (args.Contains("--simultaneous-calls-only")) { await CallsTests.RunAsync(); return; }

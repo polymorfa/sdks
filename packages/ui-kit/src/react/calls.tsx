@@ -643,7 +643,6 @@ export function IncomingCallCard({
         locale,
         preMuted ? "calls.answerUnmuted" : "calls.answerMuted",
       )}
-      aria-pressed={preMuted}
     >
       {preMuted ? <MicOffIcon /> : <MicIcon />}
     </button>
@@ -723,7 +722,6 @@ export function IncomingCallCard({
                     ? "calls.answerWithoutCamera"
                     : "calls.answerWithCamera",
                 )}
-                aria-pressed={!cameraOn}
               >
                 {cameraOn ? <VideoIcon /> : <VideoOffIcon />}
               </button>
@@ -1432,7 +1430,6 @@ export function CallControls({
               <button
                 type="button"
                 className="pmfa-calls-btn pmfa-calls-btn-ctrl"
-                aria-pressed={snapshot.handRaised === true}
                 aria-label={t(
                   locale,
                   snapshot.handRaised ? "calls.lowerHand" : "calls.raiseHand",
@@ -1493,7 +1490,6 @@ export function CallControls({
                   locale,
                   cameraOff ? "calls.cameraOn" : "calls.cameraOff",
                 )}
-                aria-pressed={cameraOff}
               >
                 {cameraOff ? <VideoOffIcon /> : <VideoIcon />}
               </button>
@@ -1514,7 +1510,6 @@ export function CallControls({
               type="button"
               className="pmfa-calls-btn pmfa-calls-btn-ctrl"
               disabled={!live}
-              aria-pressed={snapshot.screenSharing === true}
               aria-label={t(
                 locale,
                 snapshot.screenSharing
@@ -1546,7 +1541,6 @@ export function CallControls({
                   locale,
                   snapshot.audioMuted ? "calls.unmute" : "calls.mute",
                 )}
-                aria-pressed={snapshot.audioMuted}
               >
                 {snapshot.audioMuted ? <MicOffIcon /> : <MicIcon />}
               </button>

@@ -246,3 +246,90 @@ export type BrowserRequestOptions = Pick<
   BrowserRequest,
   "signal" | "timeoutMs" | "maxNetworkRetries" | "idempotencyKey" | "headers"
 >;
+
+/** A group member. `id` is the stable Polymorfa user ID. */
+export interface BrowserGroupParticipant {
+  readonly id: string;
+  readonly phoneNumber?: string;
+  readonly bsuid?: string;
+  readonly username?: string;
+  readonly isAdmin: boolean;
+  readonly isSuperAdmin: boolean;
+}
+
+/** A WhatsApp group as the API reports it. The API reports no settings state. */
+export interface BrowserGroup {
+  /** Opaque Polymorfa group ID; also the group conversation's ID. */
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly ownerId: string;
+  /** Unix seconds. */
+  readonly createdAt: number;
+  readonly participants: readonly BrowserGroupParticipant[];
+}
+
+export interface BrowserGroupInviteInfo {
+  readonly id: string;
+  readonly subject: string;
+  readonly creatorId: string;
+  readonly createdAt: number;
+  readonly size: number;
+  readonly participants: readonly BrowserGroupParticipant[];
+}
+
+export interface BrowserGroupInviteCode {
+  readonly code: string;
+}
+
+export interface BrowserCreateGroupRequest {
+  readonly name: string;
+  /** 1 to 256 stable user IDs. */
+  readonly participants: readonly string[];
+}
+
+/** Who may add participants. */
+export type BrowserGroupMemberAddMode = "admin_add" | "all_member_add";
+
+/** The other party on a call: user ID, phone number or username. */
+export interface BrowserCallPeer {
+  readonly id?: string;
+  readonly phoneNumber?: string;
+  readonly username?: string;
+}
+
+/** One call on a number, as `GET /messaging/{session}/calls` returns it. */
+export interface BrowserCallRecord {
+  readonly callId: string;
+  readonly projectId: string | null;
+  readonly sessionId: string;
+  readonly direction: "inbound" | "outbound";
+  readonly upstream: "linked_device" | "cloud_api";
+  readonly outcome:
+    "answered" | "missed" | "declined" | "failed" | "in_progress";
+  readonly state: "offered" | "accepted" | "rejected" | "missed" | "ended";
+  readonly hasVideo: boolean;
+  /** Null when the call did not report the other party. */
+  readonly peer: BrowserCallPeer | null;
+  readonly startedAt: string;
+  readonly connectedAt: string | null;
+  readonly endedAt: string | null;
+  readonly durationSeconds: number | null;
+  readonly endReason: string | null;
+}
+
+export interface BrowserListCallsParams {
+  readonly cursor?: string;
+  /** 1 to 100; default 25. */
+  readonly limit?: number;
+  readonly direction?: "inbound" | "outbound";
+  readonly outcome?: BrowserCallRecord["outcome"];
+  readonly since?: string;
+  readonly until?: string;
+}
+
+export interface BrowserCallPage {
+  readonly success: true;
+  readonly data: readonly BrowserCallRecord[];
+  readonly nextCursor: string | null;
+}

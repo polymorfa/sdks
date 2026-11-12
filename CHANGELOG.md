@@ -2,6 +2,54 @@
 
 ## Unreleased
 
+- Client tokens cover a messaging frontend. All six SDKs, the drop-in handler
+  and the UI Kit accept the new session actions `conversations_read`,
+  `conversations_manage`, `labels_read`, `labels_manage`, `contacts_manage`,
+  `profile_read`, `profile_manage`, `channels_read`, `channels_manage`,
+  `business_read` and `presence_write`. Customer-scoped tokens accept every
+  action except `mcp`, including Calls, groups and call records. Requires the
+  matching API change.
+- UI Kit: `client.messaging()` gains `chats` (history, archive, disappearing
+  messages, edit and delete), `labels`, `profile` (profile and privacy),
+  `channels`, `catalog`, `presence.set`, contact block, unblock and info, and
+  `groups.setPicture` (base64). Browser Calls take `clientTokenSession` so a
+  Customer token names the number it calls from.
+
+- A number's call history with the other party's identity: `GET
+/messaging/{session}/calls` in all six SDKs (`calls.list`,
+  `SessionCalls().List` in Go, `Calls.ListAsync` in .NET). `peer` carries the
+  user ID, phone number and username. Records are served from the number's
+  data region; client tokens need the new `read_calls` action. Platform call
+  records are unchanged and keep `peerRef`. Requires the matching API change.
+- UI Kit call log: `<CallLog/>`, `<pmfa-call-log>` and an Inbox Chats/Calls
+  switch read the number's calls from the API, merge repeat calls as WhatsApp
+  does and offer call back. `ContactListView` now takes `className` and
+  `classNames`; `ContactList` and `<pmfa-contact-list>` show the Contacts list
+  on their own.
+- Drop-in handler: call events without a known peer are no longer relayed to
+  grants limited to conversations.
+
+- UI Kit: New chat and a contacts directory. `<NewChat/>` and
+  `<pmfa-new-chat>` list the WhatsApp account's contacts (`read_contact`),
+  search names without regard to case or accents, check unsaved numbers and
+  open the chosen chat as a draft until its first message. The Inbox shows
+  them from its New chat button.
+- UI Kit: groups. `<GroupDetails/>` and `<pmfa-group-details>` show a group's
+  info and members and make the changes client tokens allow: create, rename,
+  describe, add and remove members, promote and demote admins, read and reset
+  the invite link, the four settings and exit. Group threads name each
+  message's author. Framework-neutral `ContactDirectoryController`,
+  `NewChatController`, `GroupController` and `client.messaging().groups`
+  back both. Relayed group messages no longer rename the chat after their
+  sender.
+- Client tokens: `groups_read` and `groups_manage` in all six server SDKs,
+  the drop-in handler and the UI Kit, for session and Customer tokens. Requires the
+  matching API change; until it is accepted the API refuses these actions.
+- UI Kit calls: toggle buttons no longer report `aria-pressed` alongside an
+  action label ("Turn camera on", pressed). `CallNumberPicker` now renders
+  with the shared stylesheet and a `callNumberPicker` slot.
+- UI Kit Inbox: with a custom `source` and no provider client, opening a
+  conversation with a phone number no longer throws from the call button.
 - UI Kit: keep a 320px thread beside the Inbox list in narrow two-pane layouts, and include the linked guides in the package.
 
 - Breaking: the browser UI packages are now one package, the UI Kit

@@ -7,6 +7,7 @@ internal static class ProjectPairingTests
     {
         await Messaging("GET", "/messaging/support/pair/qr?format=json", null, """{"success":true,"data":{"qr":null,"event":"connected"}}""", async c => ResourceTests.Equal((await c.Sessions.QrAsync("support")).Data.Data.Qr, null));
         await Messaging("POST", "/messaging/support/pair/code", """{"phone":"15550001111"}""", """{"success":true,"data":{"code":"12345678"}}""", async c => ResourceTests.Equal((await c.Sessions.RequestPairingCodeAsync("support", new("15550001111"))).Data.Data.Code, "12345678"));
+        await SessionCallHistoryAsync();
         await Messaging("POST", "/messaging/support/calls/c1/reject", """{"from":"15550001111@s.whatsapp.net"}""", """{"success":true,"data":{"requestId":"req1"}}""", async c => ResourceTests.Equal((await c.Calls.RejectIncomingAsync("support", "c1", new("15550001111@s.whatsapp.net"))).Data.Data!.Value.GetProperty("requestId").GetString(), "req1"));
         await Messaging("GET", "/platform/sessions/support/me", null, """{"success":true,"data":{"id":"u1","pushName":"Support","phoneNumber":"+15550001111"}}""", async c => ResourceTests.Equal((await c.Sessions.AccountAsync("support")).Data.Data.PushName, "Support"));
         await Messaging("POST", "/platform/sessions/support/restart", null, """{"success":true,"message":"Restart admitted","operationId":"op1"}""", async c => ResourceTests.Equal((await c.Sessions.RestartAsync("support")).Data.OperationId, "op1"));
@@ -17,6 +18,20 @@ internal static class ProjectPairingTests
         await Organization("POST", "/platform/projects/" + Id + "/production-enrollments/" + Id + "/approve", null, """{"data":{"operationId":"op1","action":"approve","accepted":true}}""", async c => ResourceTests.True((await c.Projects.ApproveProductionEnrollmentAsync(Id, Id)).Data.Data.Accepted));
         await Organization("POST", "/platform/projects/" + Id + "/production-enrollments/" + Id + "/cancel", null, """{"data":{"operationId":"op1","action":"cancel","accepted":true}}""", async c => ResourceTests.True((await c.Projects.CancelProductionEnrollmentAsync(Id, Id)).Data.Data.Accepted));
         Console.WriteLine("PASS typed projects, enrollment, pairing, account and incoming call rejection paths");
+    }
+    public static async Task SessionCallHistoryAsync()
+    {
+        await Messaging("GET", "/messaging/support%20line/calls?limit=10&cursor=c1&outcome=missed", null, """{"success":true,"data":[{"callId":"C1","projectId":"p","sessionId":"support line","direction":"inbound","upstream":"linked_device","outcome":"missed","state":"missed","hasVideo":false,"peer":{"id":"15550100","phoneNumber":"+15550100"},"startedAt":"2026-10-27T10:00:00Z","connectedAt":null,"endedAt":null,"durationSeconds":null,"endReason":null}],"nextCursor":"next"}""", async c => { var page = (await c.Calls.ListAsync("support line", new(Limit: 10, Cursor: "c1", Outcome: "missed"))).Data; ResourceTests.Equal(page.Data[0].Peer!.PhoneNumber, "+15550100"); ResourceTests.Equal(page.NextCursor, "next"); });
+        await Messaging("GET", "/messaging/support/calls", null, """{"success":true,"data":[{"callId":"C2","projectId":"p","sessionId":"support","direction":"outbound","upstream":"linked_device","outcome":"in_progress","state":"accepted","hasVideo":false,"peer":null,"startedAt":"2026-10-27T10:00:00Z","connectedAt":null,"endedAt":null,"durationSeconds":null,"endReason":null}],"nextCursor":null}""", async c =>
+        {
+            var page = (await c.Calls.ListAsync("support")).Data;
+            ResourceTests.Equal(page.Data[0].Direction, "outbound");
+            ResourceTests.Equal(page.Data[0].Peer, null);
+            ResourceTests.Equal(page.Data[0].EndedAt, null);
+            ResourceTests.Equal(page.Data[0].DurationSeconds, null);
+            ResourceTests.Equal(page.NextCursor, null);
+        });
+        Console.WriteLine("PASS native Number call history route, pagination and nullable unfinished record");
     }
     private static Task Messaging(string method, string path, string? body, string response, Func<MessagingClient, Task> invoke) => ResourceTests.Messaging(method, path, body, response, invoke);
     private static Task Organization(string method, string path, string? body, string response, Func<OrganizationClient, Task> invoke) => BillingTests.Organization(method, path, body, response, invoke);
