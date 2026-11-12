@@ -47,7 +47,7 @@ public sealed record HybridRoutingPolicyScope(string Scope, string? ProjectId = 
 {
     public static HybridRoutingPolicyScope Team() => new("team");
     public static HybridRoutingPolicyScope Project(string projectId) => new("project", projectId);
-    public static HybridRoutingPolicyScope Number(string session) => new("session", projectId, session);
+    public static HybridRoutingPolicyScope Number(string projectId, string session) => new("session", projectId, session);
 }
 public sealed record HybridRoutingPolicy(string Scope, string Revision, string? Prefer, IReadOnlyList<string> AllowedTransports);
 public sealed record SetHybridRoutingPolicyRequest(string ExpectedRevision, [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)] string? Prefer, IReadOnlyList<string> AllowedTransports);

@@ -1035,7 +1035,11 @@ async fn confirm_explicitly(client: &polymorfa_sdk::MessagingClient, session: &s
 ## Number-scoped Test operations
 
 The Test phone methods take a Number ID, without a project argument:
-~~~rust
+```rust,no_run
+# async fn run(client: &polymorfa_sdk::MessagingClient) -> polymorfa_sdk::Result<()> {
+use polymorfa_sdk::onboarding::{TestEventFixture, TriggerTestEventRequest};
+use polymorfa_sdk::RequestOptions;
+
 let phone = client.testing().get_phone("support", RequestOptions::default()).await?;
 let event = client.testing().trigger_event("support", &TriggerTestEventRequest {
     event: TestEventFixture::CallMissed,
@@ -1043,6 +1047,9 @@ let event = client.testing().trigger_event("support", &TriggerTestEventRequest {
     from_number: Some("sales".into()),
 }, RequestOptions::default()).await?;
 let fixtures = client.testing().list_event_fixtures(RequestOptions::default()).await?;
-~~~
+# let _ = (phone, event, fixtures);
+# Ok(())
+# }
+```
 
 Send-phone-message and unlink-device helpers use the same Number scope. The trigger body contains event, optional overrides and optional fromNumber; it does not contain session or fromSession. The static fixture catalog has no project argument. History-fixture creation remains project-scoped. These operations require a server credential and the API’s Test-number access checks; a helper does not grant access or make a real Number a Test number.

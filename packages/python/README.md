@@ -934,7 +934,9 @@ async def confirm_explicitly():
 The Test phone methods take a Number ID, without a project argument:
 ~~~python
 phone = await client.testing.get_phone("support")
-event = await client.testing.trigger_event("support", {"event": "call.missed", "fromNumber": "sales"})
+event = await client.testing.trigger_event(
+    "support", {"event": "call.missed", "fromNumber": "sales"}
+)
 fixtures = await client.testing.list_event_fixtures()
 ~~~
 
