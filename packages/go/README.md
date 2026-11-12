@@ -920,3 +920,34 @@ confirmExplicitly := func() error {
 }
 _ = confirmExplicitly
 ```
+
+## Audience profile list filters (source preparation)
+
+This source implements the list-only tag and phonePrefix filters from merged
+API #567 (561c9ebcefdf05784870e8ad5a88652f721da82a). SDK review, package
+publication and matching environment acceptance remain separate gates.
+See [the source record](../../contracts/releases/2026-10-28-audience-profile-filters.md).
+
+Tags match exactly, including case and spaces, and contain 1-48 UTF-8 bytes
+without ASCII control characters. A phone prefix is a literal `+` and 1-15
+digits. Both filters apply before pagination. Omit the cursor initially; pass
+the UUID `nextCursor` with identical filters on later pages. A null next cursor
+and `hasMore: false` end pagination. Limit defaults to 25 and ranges from 1 to
+100. Omit optional values instead of serializing null or empty strings.
+The literal tag `"null"` remains a tag. Consent-history paging has no filters.
+
+Invalid filters, cursors and limits return HTTP 400 with the standard error
+envelope: `error.type` is `invalid_request_error` and `error.code` is
+`invalid_parameter`. SDK preflight validation rejects the same values before
+sending and keeps its existing native exception types. The nested import resource and canonical `csvBase64` payload
+are unchanged. No import aliases or new CSV encoder are introduced.
+
+Use named fields when constructing `ListAudienceProfilesParams`; adding optional
+fields changes unkeyed Go struct literals. Nil filter pointers mean omission.
+
+Source-only usage fragment with an already constructed team client:
+
+```go
+tag, prefix := "vip", "+44"
+page, err := client.AudienceProfiles().List(ctx, polymorfa.ListAudienceProfilesParams{Tag: &tag, PhonePrefix: &prefix})
+```

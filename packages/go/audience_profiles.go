@@ -54,7 +54,10 @@ func (r *AudienceProfileImports) Cancel(ctx context.Context, id string, o ...Req
 }
 func profilePage[T any](ctx context.Context, t *transport, path string, p ListAudienceProfilesParams, opts []RequestOptions) (Response[CursorEnvelope[T]], error) {
 	var result Response[CursorEnvelope[T]]
-	q, err := profilePageQuery(p)
+	q, err := profileListQuery(p)
+	if path != "/platform/audience-profiles" {
+		q, err = profilePageQuery(p)
+	}
 	if err != nil {
 		return result, err
 	}

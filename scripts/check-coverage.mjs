@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
+import { checkAudienceProfileFilterCoverage } from "./audience-profile-filter-coverage.mjs";
 import { checkInteractiveSupplement } from "./interactive-supplement.mjs";
 
 const HTTP_METHODS = new Set([
@@ -49,6 +50,7 @@ function main() {
       ...extractOperations("platform", readJson(args.platform)),
     ];
     const report = compareCoverage(actual, ledger, args.strict === true);
+    checkAudienceProfileFilterCoverage();
     const root = resolve(import.meta.dirname, "..");
     // The generic checker also serves isolated contracts and test fixtures.
     // Enforce the repository supplement for its real ledger, or explicitly

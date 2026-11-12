@@ -1,0 +1,1338 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "561c9ebcefdf05784870e8ad5a88652f721da82a",
+  "sourcePath": "apps/api/docs/openapi.management.json",
+  "sourceSha256": "3a4370816296cf96296d643e3d823185c64d354ca29ac24343cebff774d43319",
+  "note": "Scoped source binding for audience profile list filters. API source is merged; SDK review, package publication and environment acceptance are separate. Global and other supplement pins are unchanged.",
+  "paths": {
+    "/platform/audience-profiles": {
+      "get": {
+        "operationId": "listAudienceProfiles",
+        "tags": ["audience-profiles"],
+        "summary": "List audience profiles",
+        "description": "Lists customer-supplied profiles for the team with cursor pagination. Deleted profiles are omitted.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:read",
+        "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "format": "uuid" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "description": "Page size as decimal digits without leading zeros. Omit for 25."
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "required": false,
+            "description": "Only profiles that carry this exact tag.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+              "x-polymorfa-max-utf8-bytes": 48,
+              "description": "Exact tag, 1-48 UTF-8 bytes, without control characters."
+            }
+          },
+          {
+            "name": "phonePrefix",
+            "in": "query",
+            "required": false,
+            "description": "Only profiles whose E.164 phone number starts with this prefix, such as `+4479`.",
+            "schema": { "type": "string", "pattern": "^\\+[0-9]{1,15}$" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": { "type": "string" },
+                "description": "Stable request correlation identifier."
+              },
+              "X-Trace-Id": {
+                "schema": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+                "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+              },
+              "Polymorfa-Version": {
+                "schema": { "type": "string" },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": { "type": "string", "format": "uuid" },
+                          "phone": {
+                            "type": "string",
+                            "pattern": "^\\+[1-9][0-9]{6,14}$"
+                          },
+                          "revision": { "type": "integer", "minimum": 1 },
+                          "tags": {
+                            "type": "array",
+                            "maxItems": 20,
+                            "items": { "type": "string", "maxLength": 48 }
+                          },
+                          "attributes": {
+                            "type": "object",
+                            "maxProperties": 20,
+                            "additionalProperties": {
+                              "anyOf": [
+                                { "type": "string", "nullable": true },
+                                { "type": "number" },
+                                { "type": "boolean" }
+                              ]
+                            }
+                          },
+                          "provenance": {
+                            "type": "object",
+                            "nullable": true,
+                            "additionalProperties": false,
+                            "properties": {
+                              "source": {
+                                "type": "string",
+                                "enum": ["api", "csv", "form"]
+                              },
+                              "reference": {
+                                "type": "string",
+                                "maxLength": 128
+                              }
+                            },
+                            "required": ["source", "reference"]
+                          },
+                          "createdAt": { "type": "integer", "minimum": 0 },
+                          "updatedAt": { "type": "integer", "minimum": 0 }
+                        },
+                        "required": [
+                          "id",
+                          "phone",
+                          "revision",
+                          "tags",
+                          "attributes",
+                          "provenance",
+                          "createdAt",
+                          "updatedAt"
+                        ]
+                      }
+                    },
+                    "page": {
+                      "$ref": "#/components/schemas/CursorPageMetadata"
+                    }
+                  },
+                  "required": ["data", "page"]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/platform/audience-profiles/{phone}": {
+      "get": {
+        "operationId": "getAudienceProfile",
+        "tags": ["audience-profiles"],
+        "summary": "Get an audience profile",
+        "description": "Gets one customer-supplied profile by its E.164 phone. Deleted profiles return 404.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:read",
+        "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
+        "parameters": [
+          {
+            "name": "phone",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": { "type": "string" },
+                "description": "Stable request correlation identifier."
+              },
+              "X-Trace-Id": {
+                "schema": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+                "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+              },
+              "Polymorfa-Version": {
+                "schema": { "type": "string" },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" },
+                        "phone": {
+                          "type": "string",
+                          "pattern": "^\\+[1-9][0-9]{6,14}$"
+                        },
+                        "revision": { "type": "integer", "minimum": 1 },
+                        "tags": {
+                          "type": "array",
+                          "maxItems": 20,
+                          "items": { "type": "string", "maxLength": 48 }
+                        },
+                        "attributes": {
+                          "type": "object",
+                          "maxProperties": 20,
+                          "additionalProperties": {
+                            "anyOf": [
+                              { "type": "string", "nullable": true },
+                              { "type": "number" },
+                              { "type": "boolean" }
+                            ]
+                          }
+                        },
+                        "provenance": {
+                          "type": "object",
+                          "nullable": true,
+                          "additionalProperties": false,
+                          "properties": {
+                            "source": {
+                              "type": "string",
+                              "enum": ["api", "csv", "form"]
+                            },
+                            "reference": { "type": "string", "maxLength": 128 }
+                          },
+                          "required": ["source", "reference"]
+                        },
+                        "createdAt": { "type": "integer", "minimum": 0 },
+                        "updatedAt": { "type": "integer", "minimum": 0 }
+                      },
+                      "required": [
+                        "id",
+                        "phone",
+                        "revision",
+                        "tags",
+                        "attributes",
+                        "provenance",
+                        "createdAt",
+                        "updatedAt"
+                      ]
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "put": {
+        "operationId": "putAudienceProfile",
+        "tags": ["audience-profiles"],
+        "summary": "Create or update an audience profile",
+        "description": "Creates a bounded team profile, or replaces tags and attributes at the observed revision. A stale revision returns 409. To recreate a profile deleted in the last 30 days, send the `revision` the delete returned as `expectedRevision`; a put without it returns 409 with a message naming that revision. A consent assertion records the customer's statement; it does not clear an opt-out or authorize a send. This beta requires enrollment and release eligibility.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
+        "parameters": [
+          {
+            "name": "phone",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "expectedRevision": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Required to edit or recreate a deleted profile; omit only for first creation."
+                  },
+                  "tags": {
+                    "type": "array",
+                    "maxItems": 20,
+                    "items": { "type": "string", "maxLength": 48 }
+                  },
+                  "attributes": {
+                    "type": "object",
+                    "maxProperties": 20,
+                    "additionalProperties": {
+                      "anyOf": [
+                        { "type": "string", "nullable": true },
+                        { "type": "number" },
+                        { "type": "boolean" }
+                      ]
+                    }
+                  },
+                  "provenance": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "source": {
+                        "type": "string",
+                        "enum": ["api", "csv", "form"]
+                      },
+                      "reference": { "type": "string", "maxLength": 128 }
+                    },
+                    "required": ["source", "reference"]
+                  },
+                  "consent": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "purpose": { "type": "string", "enum": ["campaigns"] },
+                      "source": {
+                        "type": "string",
+                        "enum": ["api", "csv", "form"]
+                      },
+                      "reference": { "type": "string", "maxLength": 128 },
+                      "allowed": { "type": "boolean" },
+                      "assertedAt": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 8640000000000000
+                      }
+                    },
+                    "required": [
+                      "purpose",
+                      "source",
+                      "reference",
+                      "allowed",
+                      "assertedAt"
+                    ]
+                  }
+                },
+                "required": ["tags", "attributes"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": { "type": "string" },
+                "description": "Stable request correlation identifier."
+              },
+              "X-Trace-Id": {
+                "schema": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+                "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+              },
+              "Polymorfa-Version": {
+                "schema": { "type": "string" },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" },
+                        "phone": {
+                          "type": "string",
+                          "pattern": "^\\+[1-9][0-9]{6,14}$"
+                        },
+                        "revision": { "type": "integer", "minimum": 1 },
+                        "tags": {
+                          "type": "array",
+                          "maxItems": 20,
+                          "items": { "type": "string", "maxLength": 48 }
+                        },
+                        "attributes": {
+                          "type": "object",
+                          "maxProperties": 20,
+                          "additionalProperties": {
+                            "anyOf": [
+                              { "type": "string", "nullable": true },
+                              { "type": "number" },
+                              { "type": "boolean" }
+                            ]
+                          }
+                        },
+                        "provenance": {
+                          "type": "object",
+                          "nullable": true,
+                          "additionalProperties": false,
+                          "properties": {
+                            "source": {
+                              "type": "string",
+                              "enum": ["api", "csv", "form"]
+                            },
+                            "reference": { "type": "string", "maxLength": 128 }
+                          },
+                          "required": ["source", "reference"]
+                        },
+                        "createdAt": { "type": "integer", "minimum": 0 },
+                        "updatedAt": { "type": "integer", "minimum": 0 }
+                      },
+                      "required": [
+                        "id",
+                        "phone",
+                        "revision",
+                        "tags",
+                        "attributes",
+                        "provenance",
+                        "createdAt",
+                        "updatedAt"
+                      ]
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        }
+      },
+      "delete": {
+        "operationId": "deleteAudienceProfile",
+        "tags": ["audience-profiles"],
+        "summary": "Delete an audience profile",
+        "description": "Removes profile fields, consent assertions and reusable audience-list memberships at the observed revision, and clears the preview row of each audience the phone belonged to. Recipients already added to campaigns (including drafts), previously uploaded files and opt-outs are not changed. The phone's deletion record is kept for 30 days; `revision` is its revision. During that time, adding the phone to an audience returns 409, and recreating the profile requires `expectedRevision` set to this revision. Deletion remains available after beta withdrawal.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
+        "parameters": [
+          {
+            "name": "phone",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "expectedRevision",
+            "in": "query",
+            "required": true,
+            "description": "The profile revision you last read. A different current revision returns 409.",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": { "type": "string" },
+                "description": "Stable request correlation identifier."
+              },
+              "X-Trace-Id": {
+                "schema": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+                "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+              },
+              "Polymorfa-Version": {
+                "schema": { "type": "string" },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "deleted": { "type": "boolean", "enum": [true] },
+                        "phone": { "type": "string" },
+                        "revision": { "type": "integer", "minimum": 2 }
+                      },
+                      "required": ["deleted", "phone", "revision"]
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" }
+        }
+      }
+    },
+    "/platform/audience-profiles/{phone}/consent": {
+      "get": {
+        "operationId": "listAudienceProfileConsent",
+        "tags": ["audience-profiles"],
+        "summary": "List audience consent assertions",
+        "description": "Lists the customer's recorded campaign consent assertions for one profile. Assertions do not override opt-outs.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:read",
+        "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
+        "parameters": [
+          {
+            "name": "phone",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25,
+              "description": "Page size as decimal digits without leading zeros. Omit for 25."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": { "type": "string" },
+                "description": "Stable request correlation identifier."
+              },
+              "X-Trace-Id": {
+                "schema": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+                "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+              },
+              "Polymorfa-Version": {
+                "schema": { "type": "string" },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "id": { "type": "string", "format": "uuid" },
+                          "profileRevision": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "purpose": {
+                            "type": "string",
+                            "enum": ["campaigns"]
+                          },
+                          "source": {
+                            "type": "string",
+                            "enum": ["api", "csv", "form"]
+                          },
+                          "reference": { "type": "string" },
+                          "allowed": { "type": "boolean" },
+                          "assertedAt": { "type": "integer", "minimum": 0 },
+                          "createdAt": { "type": "integer", "minimum": 0 }
+                        },
+                        "required": [
+                          "id",
+                          "profileRevision",
+                          "purpose",
+                          "source",
+                          "reference",
+                          "allowed",
+                          "assertedAt",
+                          "createdAt"
+                        ]
+                      }
+                    },
+                    "page": {
+                      "$ref": "#/components/schemas/CursorPageMetadata"
+                    }
+                  },
+                  "required": ["data", "page"]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/platform/audience-profile-imports": {
+      "post": {
+        "operationId": "createAudienceProfileImport",
+        "tags": ["audience-profiles"],
+        "summary": "Start an audience profile CSV import",
+        "description": "Queues a bounded CSV import of customer-supplied team profiles. Exact CSV header names can be mapped to profile fields. At most one import is active per team. Files contain at most 10 MiB and 10,000 rows; the CSV is removed after completion or cancellation. The same replay key, file and mapping return the existing job. Requires beta enrollment.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "replayKey": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 128,
+                    "pattern": "^[A-Za-z0-9._:-]+$"
+                  },
+                  "csvBase64": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 13981016,
+                    "format": "byte",
+                    "description": "UTF-8 CSV encoded as standard padded base64; decoded file at most 10 MiB and 10,000 data rows. The `tags` cell holds a JSON array of strings and the `attributes` cell a JSON object, quoted as CSV requires, for example `+15550100001,\"[\"\"vip\"\"]\",\"{\"\"city\"\":\"\"Lisbon\"\"}\"`."
+                  },
+                  "mapping": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "description": "Maps profile fields to exact CSV header names. Required when the CSV uses different headers; unmapped CSV columns are ignored.",
+                    "properties": {
+                      "phone": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      },
+                      "tags": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      },
+                      "attributes": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      },
+                      "expectedRevision": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      },
+                      "provenanceReference": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      },
+                      "consentAllowed": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      },
+                      "consentAssertedAt": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      },
+                      "consentReference": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64
+                      }
+                    },
+                    "required": ["phone", "tags", "attributes"]
+                  }
+                },
+                "required": ["replayKey", "csvBase64"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": { "type": "string" },
+                "description": "Stable request correlation identifier."
+              },
+              "X-Trace-Id": {
+                "schema": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+                "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+              },
+              "Polymorfa-Version": {
+                "schema": { "type": "string" },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" },
+                        "state": {
+                          "type": "string",
+                          "enum": ["queued", "completed", "cancelled"]
+                        },
+                        "totalValid": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Rows that passed validation and will be written."
+                        },
+                        "invalidCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Rows refused by validation; `invalidSamples` lists up to 20."
+                        },
+                        "invalidSamples": {
+                          "type": "array",
+                          "maxItems": 20,
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "row": { "type": "integer", "minimum": 2 },
+                              "reason": { "type": "string" }
+                            },
+                            "required": ["row", "reason"]
+                          }
+                        },
+                        "conflictSamples": {
+                          "type": "array",
+                          "maxItems": 20,
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "row": { "type": "integer", "minimum": 2 },
+                              "reason": {
+                                "type": "string",
+                                "enum": ["quota", "revision_conflict"]
+                              }
+                            },
+                            "required": ["row", "reason"]
+                          }
+                        },
+                        "processedValid": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Valid rows written so far."
+                        },
+                        "createdCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Profiles created."
+                        },
+                        "updatedCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Existing profiles updated."
+                        },
+                        "conflictCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Valid rows not written because of the team's profile quota or a revision conflict; `conflictSamples` lists up to 20."
+                        },
+                        "createdAt": { "type": "integer", "minimum": 0 },
+                        "updatedAt": { "type": "integer", "minimum": 0 },
+                        "completedAt": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "state",
+                        "totalValid",
+                        "invalidCount",
+                        "invalidSamples",
+                        "conflictSamples",
+                        "processedValid",
+                        "createdCount",
+                        "updatedCount",
+                        "conflictCount",
+                        "createdAt",
+                        "updatedAt",
+                        "completedAt"
+                      ]
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "413": { "$ref": "#/components/responses/PayloadTooLarge" }
+        }
+      }
+    },
+    "/platform/audience-profile-imports/{jobId}": {
+      "get": {
+        "operationId": "getAudienceProfileImport",
+        "tags": ["audience-profiles"],
+        "summary": "Get an audience profile import report",
+        "description": "Returns aggregate counts and up to 20 row-number/reason samples. Raw phone numbers and custom values are not included. Reports expire 30 days after completion or cancellation.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:read",
+        "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": { "type": "string" },
+                "description": "Stable request correlation identifier."
+              },
+              "X-Trace-Id": {
+                "schema": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+                "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+              },
+              "Polymorfa-Version": {
+                "schema": { "type": "string" },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" },
+                        "state": {
+                          "type": "string",
+                          "enum": ["queued", "completed", "cancelled"]
+                        },
+                        "totalValid": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Rows that passed validation and will be written."
+                        },
+                        "invalidCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Rows refused by validation; `invalidSamples` lists up to 20."
+                        },
+                        "invalidSamples": {
+                          "type": "array",
+                          "maxItems": 20,
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "row": { "type": "integer", "minimum": 2 },
+                              "reason": { "type": "string" }
+                            },
+                            "required": ["row", "reason"]
+                          }
+                        },
+                        "conflictSamples": {
+                          "type": "array",
+                          "maxItems": 20,
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "row": { "type": "integer", "minimum": 2 },
+                              "reason": {
+                                "type": "string",
+                                "enum": ["quota", "revision_conflict"]
+                              }
+                            },
+                            "required": ["row", "reason"]
+                          }
+                        },
+                        "processedValid": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Valid rows written so far."
+                        },
+                        "createdCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Profiles created."
+                        },
+                        "updatedCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Existing profiles updated."
+                        },
+                        "conflictCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Valid rows not written because of the team's profile quota or a revision conflict; `conflictSamples` lists up to 20."
+                        },
+                        "createdAt": { "type": "integer", "minimum": 0 },
+                        "updatedAt": { "type": "integer", "minimum": 0 },
+                        "completedAt": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "state",
+                        "totalValid",
+                        "invalidCount",
+                        "invalidSamples",
+                        "conflictSamples",
+                        "processedValid",
+                        "createdCount",
+                        "updatedCount",
+                        "conflictCount",
+                        "createdAt",
+                        "updatedAt",
+                        "completedAt"
+                      ]
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      },
+      "delete": {
+        "operationId": "cancelAudienceProfileImport",
+        "tags": ["audience-profiles"],
+        "summary": "Cancel an audience profile import",
+        "description": "Stops the next batch and removes the CSV. Already committed profile edits remain. Cancellation and report reads remain available after beta withdrawal.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
+        "x-audience": "public",
+        "x-polymorfa-resource-boundary": "organization",
+        "x-excluded-from-public": false,
+        "x-required-scope": "campaigns:manage",
+        "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
+        "parameters": [
+          {
+            "name": "jobId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "headers": {
+              "X-Request-Id": {
+                "schema": { "type": "string" },
+                "description": "Stable request correlation identifier."
+              },
+              "X-Trace-Id": {
+                "schema": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+                "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+              },
+              "Polymorfa-Version": {
+                "schema": { "type": "string" },
+                "description": "API version applied to this response."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" },
+                        "state": {
+                          "type": "string",
+                          "enum": ["queued", "completed", "cancelled"]
+                        },
+                        "totalValid": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Rows that passed validation and will be written."
+                        },
+                        "invalidCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Rows refused by validation; `invalidSamples` lists up to 20."
+                        },
+                        "invalidSamples": {
+                          "type": "array",
+                          "maxItems": 20,
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "row": { "type": "integer", "minimum": 2 },
+                              "reason": { "type": "string" }
+                            },
+                            "required": ["row", "reason"]
+                          }
+                        },
+                        "conflictSamples": {
+                          "type": "array",
+                          "maxItems": 20,
+                          "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "row": { "type": "integer", "minimum": 2 },
+                              "reason": {
+                                "type": "string",
+                                "enum": ["quota", "revision_conflict"]
+                              }
+                            },
+                            "required": ["row", "reason"]
+                          }
+                        },
+                        "processedValid": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Valid rows written so far."
+                        },
+                        "createdCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Profiles created."
+                        },
+                        "updatedCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Existing profiles updated."
+                        },
+                        "conflictCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "description": "Valid rows not written because of the team's profile quota or a revision conflict; `conflictSamples` lists up to 20."
+                        },
+                        "createdAt": { "type": "integer", "minimum": 0 },
+                        "updatedAt": { "type": "integer", "minimum": 0 },
+                        "completedAt": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "state",
+                        "totalValid",
+                        "invalidCount",
+                        "invalidSamples",
+                        "conflictSamples",
+                        "processedValid",
+                        "createdCount",
+                        "updatedCount",
+                        "conflictCount",
+                        "createdAt",
+                        "updatedAt",
+                        "completedAt"
+                      ]
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    }
+  },
+  "components": {
+    "responses": {
+      "BadRequest": {
+        "description": "A path, query, or request-body value did not pass validation.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": { "type": "string" },
+            "description": "Stable request correlation identifier."
+          },
+          "X-Trace-Id": {
+            "schema": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+            "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+          },
+          "Polymorfa-Version": {
+            "schema": { "type": "string" },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "The request conflicts with the resource's current state.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": { "type": "string" },
+            "description": "Stable request correlation identifier."
+          },
+          "X-Trace-Id": {
+            "schema": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+            "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+          },
+          "Polymorfa-Version": {
+            "schema": { "type": "string" },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Authenticated but lacks the required scope/role/audience.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": { "type": "string" },
+            "description": "Stable request correlation identifier."
+          },
+          "X-Trace-Id": {
+            "schema": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+            "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+          },
+          "Polymorfa-Version": {
+            "schema": { "type": "string" },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "The requested resource was not found inside the authenticated team or project scope.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": { "type": "string" },
+            "description": "Stable request correlation identifier."
+          },
+          "X-Trace-Id": {
+            "schema": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+            "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+          },
+          "Polymorfa-Version": {
+            "schema": { "type": "string" },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      },
+      "PayloadTooLarge": {
+        "description": "Request body exceeds the endpoint limit.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": { "type": "string" },
+            "description": "Stable request correlation identifier."
+          },
+          "X-Trace-Id": {
+            "schema": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+            "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+          },
+          "Polymorfa-Version": {
+            "schema": { "type": "string" },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Missing/invalid credential for this audience.",
+        "headers": {
+          "X-Request-Id": {
+            "schema": { "type": "string" },
+            "description": "Stable request correlation identifier."
+          },
+          "X-Trace-Id": {
+            "schema": { "type": "string", "pattern": "^[0-9a-f]{32}$" },
+            "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+          },
+          "Polymorfa-Version": {
+            "schema": { "type": "string" },
+            "description": "API version applied to this response."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "CursorPageMetadata": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "nextCursor": { "type": "string", "nullable": true },
+          "hasMore": { "type": "boolean" }
+        },
+        "required": ["nextCursor", "hasMore"]
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "required": ["error", "data", "docs"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "required": ["type", "code", "message", "param", "request_id"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request_error",
+                  "authentication_error",
+                  "permission_error",
+                  "conflict_error",
+                  "rate_limit_error",
+                  "api_error",
+                  "upstream_error"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "description": "Stable failure code. Use this value for programmatic handling."
+              },
+              "message": {
+                "type": "string",
+                "description": "Safe explanation of the failure."
+              },
+              "param": {
+                "type": "string",
+                "nullable": true,
+                "description": "Invalid request field, or null when no field applies."
+              },
+              "request_id": {
+                "type": "string",
+                "description": "Matches the X-Request-Id response header. Include it when you contact support."
+              },
+              "request_log_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+              }
+            }
+          },
+          "data": {
+            "type": "string",
+            "nullable": true,
+            "enum": [null],
+            "description": "Always null for a failed request."
+          },
+          "docs": {
+            "type": "string",
+            "format": "uri",
+            "description": "Documentation link to this failure code."
+          }
+        }
+      }
+    }
+  }
+}

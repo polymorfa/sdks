@@ -414,6 +414,11 @@ class CustomerSignalCustodyUpdate(TypedDict):
     signalModeDefault: SignalCustodyMode | None
 
 
-class ListAudienceProfilesParams(TypedDict, total=False):
+class ListAudienceProfileConsentParams(TypedDict, total=False):
     cursor: str
     limit: int
+
+
+class ListAudienceProfilesParams(ListAudienceProfileConsentParams, total=False):
+    tag: str
+    phonePrefix: str

@@ -211,9 +211,14 @@ export interface AudienceConsentAssertion extends AudienceProfileConsentInput {
   readonly createdAt: number;
 }
 
-export interface ListAudienceProfilesParams {
+export interface ListAudienceProfileConsentParams {
   readonly cursor?: string;
   readonly limit?: number;
+}
+
+export interface ListAudienceProfilesParams extends ListAudienceProfileConsentParams {
+  readonly tag?: string;
+  readonly phonePrefix?: string;
 }
 
 export interface AudienceProfilePage<T> {
