@@ -11,6 +11,26 @@ operations retain their baseline fingerprints. The focused snapshots preserve
 the authoritative schema names. Native route parity and qualification must be completed before this change is ready. This is an unpublished breaking contract
 change, coordinated with polymorfa/polymorfa#792.
 
+## Idempotency response replay
+
+`idempotency-replay.json` is produced by
+`scripts/sync-idempotency-replay-contract.mjs` from committed generated API
+documents. It records the exact backend source, both complete input hashes,
+the idempotency error enums and 28 unchanged one-hour header parameters.
+It also explicitly pins conversion deduplication: different details for an
+existing `eventId` return `422 idempotency_conflict` in this source contract.
+The older baseline remains unchanged, and the transport still maps a received
+409 to `PolymorfaConflictError` and a received 422 to `PolymorfaValidationError`.
+The global baseline snapshots remain unchanged. The error catalog recognizes
+both the new replay-unavailable code and legacy completed responses.
+
+The supplement is source-only and has `published: false`. It does not establish
+deployed access or a sensitive-content retention exception. Opaque message and
+campaign responses are not retained by default. Missing replay data preserves
+the execution fence; clients must reconcile an uncertain outcome before deciding
+whether another write is safe. SDK package publication requires matching API
+acceptance through the existing release process.
+
 ## Campaign and custody additions
 
 `campaign-custody-20261014.json` pins thirty machine-accessible operations and
