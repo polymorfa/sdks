@@ -144,6 +144,7 @@ try
         Equal(valid, fixture.GetProperty("valid").GetBoolean(), id); Console.WriteLine($"PASS configuration {id}"); count++;
     }
     ResourceTests.True(PolymorfaErrorCodes.IsKnown("voice_unavailable"));
+    ResourceTests.True(PolymorfaErrorCodes.IsKnown("idempotency_replay_unavailable"));
     ResourceTests.True(!PolymorfaErrorCodes.IsKnown("future_error"));
     WebhookTests.Run();
     await SystemTests.RunAsync();

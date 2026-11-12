@@ -90,6 +90,7 @@ export const POLYMORFA_ERROR_CODES = [
   "idempotency_conflict",
   "idempotency_in_progress",
   "idempotency_outcome_unknown",
+  "idempotency_replay_unavailable",
   "feature_unavailable",
   "whatsapp_authorization_required",
   "whatsapp_payment_method_required",

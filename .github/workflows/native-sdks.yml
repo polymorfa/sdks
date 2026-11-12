@@ -53,6 +53,11 @@ jobs:
     needs: matrix
     if: needs.matrix.outputs.enabled == 'true'
     runs-on: ubuntu-latest
+    env:
+      # Full Rust feature/package verification exceeds hosted disk with DWARF.
+      # Keep the same checks and debug assertions, without compiler debug data.
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_PROFILE_TEST_DEBUG: "0"
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.matrix.outputs.matrix) }}
