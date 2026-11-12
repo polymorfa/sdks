@@ -192,11 +192,106 @@ class CatalogButton(TypedDict):
 Button = UrlButton | CallButton | ReplyButton | CopyButton | CatalogButton
 
 
-class Buttons(TypedDict):
-    title: NotRequired[str]
+class InteractiveUrlMedia(TypedDict):
+    url: str
+    mimeType: NotRequired[str]
+
+
+class InteractiveBase64Media(TypedDict):
+    base64: str
+    mimeType: NotRequired[str]
+
+
+InteractiveMediaSource = InteractiveUrlMedia | InteractiveBase64Media
+
+
+class UrlImageButtonHeader(InteractiveUrlMedia):
+    type: Literal["image"]
+
+
+class UrlVideoButtonHeader(InteractiveUrlMedia):
+    type: Literal["video"]
+    thumbnail: NotRequired[str]
+
+
+class UrlDocumentButtonHeader(InteractiveUrlMedia):
+    type: Literal["document"]
+    filename: NotRequired[str]
+
+
+class Base64ImageButtonHeader(InteractiveBase64Media):
+    type: Literal["image"]
+
+
+class Base64VideoButtonHeader(InteractiveBase64Media):
+    type: Literal["video"]
+    thumbnail: NotRequired[str]
+
+
+class Base64DocumentButtonHeader(InteractiveBase64Media):
+    type: Literal["document"]
+    filename: NotRequired[str]
+
+
+ButtonsMedia = (
+    UrlImageButtonHeader
+    | UrlVideoButtonHeader
+    | UrlDocumentButtonHeader
+    | Base64ImageButtonHeader
+    | Base64VideoButtonHeader
+    | Base64DocumentButtonHeader
+)
+
+
+class ButtonBody(TypedDict):
     body: str
     footer: NotRequired[str]
     buttons: list[Button]
+
+
+class TextButtons(ButtonBody):
+    title: NotRequired[str]
+
+
+class MediaButtons(ButtonBody):
+    media: ButtonsMedia
+
+
+Buttons = TextButtons | MediaButtons
+
+
+class CarouselUrlVideo(InteractiveUrlMedia):
+    thumbnail: NotRequired[str]
+
+
+class CarouselBase64Video(InteractiveBase64Media):
+    thumbnail: NotRequired[str]
+
+
+class CarouselCardBody(TypedDict):
+    body: str
+    buttons: list[Button]
+
+
+class ImageCarouselCard(CarouselCardBody):
+    image: InteractiveMediaSource
+
+
+class VideoCarouselCard(CarouselCardBody):
+    video: CarouselUrlVideo | CarouselBase64Video
+
+
+CarouselCard = ImageCarouselCard | VideoCarouselCard
+
+
+class Carousel(TypedDict):
+    body: str
+    footer: NotRequired[str]
+    cards: list[CarouselCard]
+
+
+class CarouselContent(TypedDict):
+    carousel: Carousel
 
 
 class Address(TypedDict):
@@ -469,6 +564,7 @@ Content = (
     | OrderContent
     | ListContent
     | ButtonsContent
+    | CarouselContent
     | AddressContent
     | FlowContent
     | PermissionContent
