@@ -96,7 +96,7 @@ export interface OrganizationEventStreamParams extends EventStreamParams {
   readonly projectId: string;
 }
 
-/** A structural match for `LiveEventSource` from `@polymorfa/store`. */
+/** A structural match for `LiveEventSource` from `@polymorfa/ui-kit/store`. */
 export interface LiveEventSourceAdapter {
   subscribe(
     listener: (
@@ -449,7 +449,7 @@ export class EventStream implements AsyncIterable<EventStreamItem> {
 
 /**
  * Adapts a stream factory to the `LiveEventSource` shape used by
- * `@polymorfa/store`'s `connectEventSource`. Events without a webhook body
+ * `@polymorfa/ui-kit/store`'s `connectEventSource`. Events without a webhook body
  * (hosted message storage off) are skipped, because the store needs the body.
  */
 export function eventStreamSource(

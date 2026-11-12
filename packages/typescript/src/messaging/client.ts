@@ -1,3 +1,4 @@
+import { PasskeysResource } from "./passkeys.js";
 import { HybridLinkResource } from "./hybrid-link.js";
 import { CloudOnboardingResource, TestingResource } from "./onboarding.js";
 import {
@@ -41,6 +42,7 @@ import { VoipResource } from "./voip.js";
 import { WebhooksResource } from "./webhooks.js";
 
 export class MessagingClient {
+  readonly passkeys: PasskeysResource;
   readonly banSafe: MessagingBanSafeResource;
   readonly business: BusinessResource;
   readonly calls: CallsResource;
@@ -131,6 +133,7 @@ export class MessagingClient {
       transport,
       credential.type,
     );
+    this.passkeys = new PasskeysResource(transport, credential.type);
     this.catalogs = new CatalogsResource(transport, credential.type);
     this.cloudCatalogs = new CloudCatalogsResource(transport, credential.type);
     this.cloudMarketing = new CloudMarketingResource(

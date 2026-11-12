@@ -16,8 +16,8 @@ Yew and Leptos applications keep this Rust SDK on the server. Their browser
 frontends use the existing Polymorfa Web Components:
 
 ```js
-import { definePolymorfa } from "@polymorfa/elements";
-definePolymorfa({ tokenEndpoint: "/api/polymorfa/token" });
+import { defineUiKit } from "@polymorfa/ui-kit/web-components";
+defineUiKit({ tokenEndpoint: "/api/polymorfa/token" });
 ```
 
 Render `<pmfa-session-status>`, `<pmfa-connect-whatsapp>` and `<pmfa-inbox>`

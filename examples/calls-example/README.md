@@ -1,6 +1,6 @@
 # Calls example
 
-A small local preview of `@polymorfa/browser` and the React `DialPad` and
+A small local preview of `@polymorfa/ui-kit` and the React `DialPad` and
 `CallSurface`. It points at `https://api.polymorfastaging.com`. The page accepts
 only a short-lived `pmfa_ct_` browser client token; it never accepts a server
 key or stores a token in a file, URL or browser storage.
