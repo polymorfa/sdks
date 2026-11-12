@@ -3,6 +3,7 @@ package polymorfa
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -153,5 +154,19 @@ func TestBusinessQuickLinkModeAndPlatform(t *testing.T) {
 	}
 	if calls != 1 {
 		t.Fatalf("invalid mode reached transport: %d", calls)
+	}
+}
+
+func TestBusinessAccountModesSurfaceConflict(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(409)
+		w.Write([]byte(`{"error":{"type":"conflict_error","code":"state_conflict","message":"The request conflicts with the resource state.","param":null,"request_id":"5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"},"data":null}`))
+	}))
+	defer s.Close()
+	_, err := mustMessaging(t, s.URL).Testing().SetAccountMode(context.Background(), "demo", TestingAccountModeRequest{AccountType: BusinessApp})
+	var apiErr *Error
+	if !errors.As(err, &apiErr) || apiErr.Kind != ConflictError || apiErr.Status != 409 || apiErr.Code != "state_conflict" {
+		t.Fatalf("conflict was not typed: %#v", err)
 	}
 }

@@ -1,11 +1,11 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "f391fb49bbffddb45459525091fe8851182fc298",
+  "commit": "14153ad9d69ddd3bae972594e6b3dc3ddae8e8e4",
   "releaseStatus": "source-only",
   "sources": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
-      "sourceSha256": "acdc3c530fd1b797679a03e62551e4d4dcb9cd365530edb748256cfee26b33b0",
+      "sourceSha256": "44a2cc304483d7cd4e12974b8f31df92a3b7880d21152aa70af0a50948b40cb1",
       "paths": {
         "/messaging/{session}/contacts/{contactId}/business-profile": {
           "get": {
@@ -546,6 +546,36 @@
                   }
                 }
               },
+              "409": {
+                "description": "The Test number is claimed in Inspector, or another mode change is pending. Unclaim it or retry.",
+                "headers": {
+                  "X-RateLimit-Limit": {
+                    "$ref": "#/components/headers/X-RateLimit-Limit"
+                  },
+                  "X-RateLimit-Remaining": {
+                    "$ref": "#/components/headers/X-RateLimit-Remaining"
+                  },
+                  "X-RateLimit-Reset": {
+                    "$ref": "#/components/headers/X-RateLimit-Reset"
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": { "$ref": "#/components/schemas/PublicError" },
+                    "example": {
+                      "error": {
+                        "type": "conflict_error",
+                        "code": "state_conflict",
+                        "message": "The request conflicts with the resource state.",
+                        "param": null,
+                        "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                      },
+                      "data": null,
+                      "docs": "https://docs.polymorfa.com/api/errors#state-conflict"
+                    }
+                  }
+                }
+              },
               "502": {
                 "description": "The phone could not change mode. Retry later.",
                 "headers": {
@@ -720,10 +750,12 @@
                       "hybrid_transport_unavailable",
                       "hybrid_target_reference_unavailable",
                       "send_outcome_unknown",
+                      "terms_acceptance_required",
+                      "terms_activation_blocked",
                       "idempotency_conflict",
                       "idempotency_in_progress",
-                      "idempotency_completed",
                       "idempotency_outcome_unknown",
+                      "idempotency_replay_unavailable",
                       "call_claimed",
                       "call_not_ringing",
                       "connection_limit",

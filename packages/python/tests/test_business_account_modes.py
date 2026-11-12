@@ -6,6 +6,7 @@ import pytest
 from polymorfa import (
     AsyncMessagingClient,
     ConfigurationError,
+    ConflictError,
     Credential,
     ServerError,
     ValidationError,
@@ -148,3 +149,24 @@ async def test_business_quicklink_rejects_invalid_modes_before_io(mode):
         with pytest.raises(ValidationError):
             await client.quick_links.create({"configuration": {"testing": {"configuration": mode}}})
     assert not calls
+
+
+async def test_business_account_modes_surface_conflict():
+    def handler(request):
+        return httpx.Response(
+            409,
+            json={
+                "error": {
+                    "type": "conflict_error",
+                    "code": "state_conflict",
+                    "message": "The request conflicts with the resource state.",
+                    "param": None,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30",
+                },
+                "data": None,
+            },
+        )
+
+    async with AsyncMessagingClient(KEY, http_transport=httpx.MockTransport(handler)) as client:
+        with pytest.raises(ConflictError):
+            await client.testing.set_account_mode("demo", {"accountType": "business_app"})

@@ -1084,7 +1084,7 @@ All six SDKs expose the Test-number account-mode operation, the corresponding
 QuickLink testing fields and optional business contact encryption values. See
 the package READMEs for the native calls. The separately produced
 `contracts/business-account-modes.json` binds API source
-`f391fb49bbffddb45459525091fe8851182fc298`; it does not replace the API baseline
+`14153ad9d69ddd3bae972594e6b3dc3ddae8e8e4`; it does not replace the API baseline
 or other supplements. `contracts/native-business-account-modes.json` attributes
 the native fixtures. Check receipts and package consumers remain separate gates.
 This source is not a package release or proof that the API is deployed.

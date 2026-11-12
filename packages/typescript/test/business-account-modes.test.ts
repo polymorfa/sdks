@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import {
   MessagingClient,
   PolymorfaConfigurationError,
+  PolymorfaConflictError,
   PolymorfaValidationError,
   type TestingAccountModeRequest,
   type ContactEncryption,
@@ -203,3 +204,30 @@ it.each(["", "x".repeat(257)])(
     expect(f.fetch).not.toHaveBeenCalled();
   },
 );
+
+it("surfaces a 409 account-mode conflict as a typed conflict error", async () => {
+  const fetch = vi.fn<typeof globalThis.fetch>(
+    async () =>
+      new Response(
+        JSON.stringify({
+          error: {
+            type: "conflict_error",
+            code: "state_conflict",
+            message: "The request conflicts with the resource state.",
+            param: null,
+            request_id: "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30",
+          },
+          data: null,
+        }),
+        { status: 409, headers: { "content-type": "application/json" } },
+      ),
+  );
+  const client = new MessagingClient({
+    baseUrl: "https://api.example",
+    fetch,
+    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+  });
+  await expect(
+    client.testing.setAccountMode("demo", { accountType: "business_app" }),
+  ).rejects.toBeInstanceOf(PolymorfaConflictError);
+});

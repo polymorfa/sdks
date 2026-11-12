@@ -1095,7 +1095,7 @@ Task<ApiResponse<SuccessEnvelope<PasskeyConfirmation>>> ConfirmExplicitly() =>
 ## Test-number account modes
 
 The Business supplement is pinned separately to API source
-`f391fb49bbffddb45459525091fe8851182fc298` in
+`14153ad9d69ddd3bae972594e6b3dc3ddae8e8e4` in
 `contracts/business-account-modes.json`. The existing API baseline remains unchanged.
 This source support does not establish hosted availability or package publication.
 
