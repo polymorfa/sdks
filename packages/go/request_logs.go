@@ -105,8 +105,8 @@ type RequestLogs struct {
 	projectID string
 }
 
-func (c *OrganizationClient) RequestLogs() *RequestLogs { return &RequestLogs{t: c.t} }
-func (c *ProjectClient) RequestLogs() *RequestLogs      { return &RequestLogs{c.t, c.projectID} }
+func (c *TeamClient) RequestLogs() *RequestLogs    { return &RequestLogs{t: c.t} }
+func (c *ProjectClient) RequestLogs() *RequestLogs { return &RequestLogs{c.t, c.projectID} }
 func (r *RequestLogs) project(requested string) (string, error) {
 	if r.projectID != "" {
 		if requested != "" && requested != r.projectID {
@@ -115,7 +115,7 @@ func (r *RequestLogs) project(requested string) (string, error) {
 		return r.projectID, nil
 	}
 	if requested == "" {
-		return "", configuration("projectId", "projectId is required to read a request log with an team key.")
+		return "", configuration("projectId", "projectId is required to read a request log with a team key.")
 	}
 	return requested, nil
 }

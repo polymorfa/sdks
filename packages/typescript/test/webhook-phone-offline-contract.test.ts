@@ -6,9 +6,9 @@ import {
   PHONE_OFFLINE_START_DAY,
   type CreateProjectWebhookInput,
   type CreateWebhookRequest,
-  type OrganizationWebhook,
+  type TeamWebhook,
   type ProjectWebhook,
-  type UpdateOrganizationWebhookInput,
+  type UpdateTeamWebhookInput,
   type UpdateWebhookRequest,
   type Webhook,
 } from "../src/index.js";
@@ -56,13 +56,13 @@ describe("webhook phoneOfflineStartDay contract", () => {
 
   it("covers every API schema that carries the field", () => {
     expect(Object.keys(supplement.schemas).sort()).toEqual([
-      "CreateOrganizationWebhookInput",
       "CreateProjectWebhookInput",
+      "CreateTeamWebhookInput",
       "CreateWebhookRequest",
-      "OrganizationWebhook",
       "ProjectWebhook",
-      "UpdateOrganizationWebhookInput",
+      "TeamWebhook",
       "UpdateProjectWebhookInput",
+      "UpdateTeamWebhookInput",
       "UpdateWebhookRequest",
       "Webhook",
     ]);
@@ -70,16 +70,14 @@ describe("webhook phoneOfflineStartDay contract", () => {
 
   it("types the field as required only where the API always returns it", () => {
     expect(supplement.schemas.ProjectWebhook?.required).toBe(true);
-    expect(supplement.schemas.OrganizationWebhook?.required).toBe(true);
+    expect(supplement.schemas.TeamWebhook?.required).toBe(true);
     expectTypeOf<
       ProjectWebhook["phoneOfflineStartDay"]
     >().toEqualTypeOf<number>();
-    expectTypeOf<
-      OrganizationWebhook["phoneOfflineStartDay"]
-    >().toEqualTypeOf<number>();
+    expectTypeOf<TeamWebhook["phoneOfflineStartDay"]>().toEqualTypeOf<number>();
     for (const name of [
       "CreateProjectWebhookInput",
-      "UpdateOrganizationWebhookInput",
+      "UpdateTeamWebhookInput",
       "Webhook",
       "CreateWebhookRequest",
       "UpdateWebhookRequest",
@@ -90,7 +88,7 @@ describe("webhook phoneOfflineStartDay contract", () => {
       CreateProjectWebhookInput["phoneOfflineStartDay"]
     >().toEqualTypeOf<number | undefined>();
     expectTypeOf<
-      UpdateOrganizationWebhookInput["phoneOfflineStartDay"]
+      UpdateTeamWebhookInput["phoneOfflineStartDay"]
     >().toEqualTypeOf<number | undefined>();
     expectTypeOf<Webhook["phoneOfflineStartDay"]>().toEqualTypeOf<
       number | undefined

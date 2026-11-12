@@ -25,17 +25,17 @@ $ecCases = [
  ['rescheduleCampaign','POST',$ecPath.'/reschedule',['scheduledAt' => null],$ecEnvelope($ecOperation),fn () => $ecMessaging->campaigns->reschedule('slug', $ecId, ['scheduledAt' => null], $ecOptions->value)],
  ['resumeCampaign','POST',$ecPath.'/resume',null,$ecEnvelope($ecOperation),fn () => $ecMessaging->campaigns->resume('slug', $ecId, $ecOptions->value)],
  ['stopCampaign','POST',$ecPath.'/stop',null,$ecEnvelope($ecStop),fn () => $ecMessaging->campaigns->stop('slug', $ecId, $ecOptions->value)],
- ['listPlatformCampaigns','GET','/platform/campaigns?projectId='.$ecProject,null,$ecData([$ecCampaign]),fn () => $ecOrg->campaigns->list(['projectId' => $ecProject], $ecOptions->value)],
- ['getPlatformCampaign','GET',$ecPlatform.'?projectId='.$ecProject,null,$ecData($ecCampaign),fn () => $ecOrg->campaigns->retrieve($ecId, ['projectId' => $ecProject], $ecOptions->value)],
- ['createPlatformCampaign','POST','/platform/campaigns',['projectId' => $ecProject,'name' => 'Draft','messagesArray' => [(object)[],['source' => str_repeat('x', 4097),'footer' => '','delayAfterSec' => 0,'future' => false]],'variableMapping' => (object)['0' => (object)[]]],$ecData($ecCampaign),fn () => $ecOrg->campaigns->create(['projectId' => $ecProject,'name' => 'Draft','messagesArray' => [[],['source' => str_repeat('x', 4097),'footer' => '','delayAfterSec' => 0,'future' => false]],'variableMapping' => ['0' => []]], $ecOptions->value)],
- ['updateCampaign','PATCH',$ecPlatform.'?projectId='.$ecProject,['future' => false,'templateId' => null,'trackedLinks' => null,'variableMapping' => null],$ecData($ecCampaign),fn () => $ecOrg->campaigns->update($ecId, ['future' => false,'templateId' => null,'trackedLinks' => null,'variableMapping' => null], ['projectId' => $ecProject], $ecOptions->value)],
- ['launchPlatformCampaign','POST',$ecPlatform.'/launch',['projectId' => $ecProject,'scheduledAt' => 0,'skipMissingVariables' => false],$ecData(['id' => $ecId,'status' => 'queued','operationId' => 'operation','future' => false]),fn () => $ecOrg->campaigns->launch($ecId, ['projectId' => $ecProject,'scheduledAt' => 0,'skipMissingVariables' => false], $ecOptions->value)],
+ ['listPlatformCampaigns','GET','/platform/campaigns?projectId='.$ecProject,null,$ecData([$ecCampaign]),fn () => $ecTeam->campaigns->list(['projectId' => $ecProject], $ecOptions->value)],
+ ['getPlatformCampaign','GET',$ecPlatform.'?projectId='.$ecProject,null,$ecData($ecCampaign),fn () => $ecTeam->campaigns->retrieve($ecId, ['projectId' => $ecProject], $ecOptions->value)],
+ ['createPlatformCampaign','POST','/platform/campaigns',['projectId' => $ecProject,'name' => 'Draft','messagesArray' => [(object)[],['source' => str_repeat('x', 4097),'footer' => '','delayAfterSec' => 0,'future' => false]],'variableMapping' => (object)['0' => (object)[]]],$ecData($ecCampaign),fn () => $ecTeam->campaigns->create(['projectId' => $ecProject,'name' => 'Draft','messagesArray' => [[],['source' => str_repeat('x', 4097),'footer' => '','delayAfterSec' => 0,'future' => false]],'variableMapping' => ['0' => []]], $ecOptions->value)],
+ ['updateCampaign','PATCH',$ecPlatform.'?projectId='.$ecProject,['future' => false,'templateId' => null,'trackedLinks' => null,'variableMapping' => null],$ecData($ecCampaign),fn () => $ecTeam->campaigns->update($ecId, ['future' => false,'templateId' => null,'trackedLinks' => null,'variableMapping' => null], ['projectId' => $ecProject], $ecOptions->value)],
+ ['launchPlatformCampaign','POST',$ecPlatform.'/launch',['projectId' => $ecProject,'scheduledAt' => 0,'skipMissingVariables' => false],$ecData(['id' => $ecId,'status' => 'queued','operationId' => 'operation','future' => false]),fn () => $ecTeam->campaigns->launch($ecId, ['projectId' => $ecProject,'scheduledAt' => 0,'skipMissingVariables' => false], $ecOptions->value)],
  ['getCampaignAnalytics','GET',$ecPath.'/analytics',null,$ecEnvelope($ecReport),fn () => $ecMessaging->campaigns->analytics('slug', $ecId, $ecOptions->value)],
- ['getPlatformCampaignAnalytics','GET',$ecPlatform.'/analytics?projectId='.$ecProject,null,$ecData($ecReport),fn () => $ecOrg->campaigns->analytics($ecId, ['projectId' => $ecProject], $ecOptions->value)],
+ ['getPlatformCampaignAnalytics','GET',$ecPlatform.'/analytics?projectId='.$ecProject,null,$ecData($ecReport),fn () => $ecTeam->campaigns->analytics($ecId, ['projectId' => $ecProject], $ecOptions->value)],
  ['listProjectCampaignRecipients','GET',$ecPath.'/recipients?reason=missing_variable&status=failed&cursor=next&limit=100',null,$ecEnvelope([$ecRecipient]) + ['page' => $ecPage],fn () => $ecMessaging->campaigns->listRecipients('slug', $ecId, ['reason' => 'missing_variable','status' => 'failed','cursor' => 'next','limit' => 100], $ecOptions->value)],
- ['listCampaignRecipients','GET',$ecPlatform.'/recipients?projectId='.$ecProject.'&reason=missing_variable&status=failed&cursor=next&limit=100',null,$ecData([array_replace($ecRecipient, ['nextMessageAt' => 0])]) + ['page' => $ecPage],fn () => $ecOrg->campaigns->recipients($ecId, ['projectId' => $ecProject,'reason' => 'missing_variable','status' => 'failed','cursor' => 'next','limit' => 100], $ecOptions->value)],
+ ['listCampaignRecipients','GET',$ecPlatform.'/recipients?projectId='.$ecProject.'&reason=missing_variable&status=failed&cursor=next&limit=100',null,$ecData([array_replace($ecRecipient, ['nextMessageAt' => 0])]) + ['page' => $ecPage],fn () => $ecTeam->campaigns->recipients($ecId, ['projectId' => $ecProject,'reason' => 'missing_variable','status' => 'failed','cursor' => 'next','limit' => 100], $ecOptions->value)],
  ['addProjectCampaignRecipients','POST',$ecPath.'/recipients',['recipients' => [['phone' => '+15555555555','variables' => (object)[]]]],$ecEnvelope($ecAdded),fn () => $ecMessaging->campaigns->addRecipients('slug', $ecId, ['recipients' => [['phone' => '+15555555555','variables' => []]]], $ecOptions->value)],
- ['addCampaignRecipients','POST',$ecPlatform.'/recipients',['projectId' => $ecProject,'recipients' => []],$ecData($ecAdded),fn () => $ecOrg->campaigns->addRecipients($ecId, ['projectId' => $ecProject,'recipients' => []], $ecOptions->value)],
+ ['addCampaignRecipients','POST',$ecPlatform.'/recipients',['projectId' => $ecProject,'recipients' => []],$ecData($ecAdded),fn () => $ecTeam->campaigns->addRecipients($ecId, ['projectId' => $ecProject,'recipients' => []], $ecOptions->value)],
 ];
 foreach ($ecCases as [$name,$method,$path,$body,$result,$invoke]) {
     $r = $ecRun($method, $path, $body, $result, $invoke);
@@ -46,8 +46,8 @@ foreach ($ecCases as [$name,$method,$path,$body,$result,$invoke]) {
     $ecRun($method, $path, $body, $result, $invoke, ['version' => '2026-10-14']);
 }
 $ecOptions->value = null;
-$ecRun('GET', $ecPlatform.'?projectId='.$ecProject, null, ['data' => null], fn () => $ecOrg->campaigns->retrieve($ecId, ['projectId' => $ecProject]));
-$ecRun('PATCH', $ecPlatform.'?projectId='.$ecProject, (object)[], ['data' => $ecCampaign], fn () => $ecOrg->campaigns->update($ecId, [], ['projectId' => $ecProject]));
+$ecRun('GET', $ecPlatform.'?projectId='.$ecProject, null, ['data' => null], fn () => $ecTeam->campaigns->retrieve($ecId, ['projectId' => $ecProject]));
+$ecRun('PATCH', $ecPlatform.'?projectId='.$ecProject, (object)[], ['data' => $ecCampaign], fn () => $ecTeam->campaigns->update($ecId, [], ['projectId' => $ecProject]));
 // Response policy has no outbound link-count or mapping-fallback quota.
 $ecNormalized = $ecCampaign;
 $ecNormalized['trackedLinks'] = array_fill(0, 6, ['key' => 'a','url' => 'https://example.com/']);
@@ -64,10 +64,10 @@ foreach (['templateId','variableMapping','trackedLinks'] as $field) {
 // Read delivery is a fact, distinct from descriptor-only saved writes and consent.
 $ecObs = ['presenceMode' => 'off','typingMode' => 'off','labelMode' => 'off','quickReplyMode' => 'off'];
 $ecConfig = ['effective' => ['observation' => $ecObs,'historySync' => ['mode' => 'metadata_only','requestFull' => false,'delivery' => 'archive'],'hms' => ['enabled' => false]],'overrides' => (object)[],'requestedHistory' => ['mode' => 'deliver','requestFull' => false,'delivery' => 'descriptor'],'sources' => ['historySync.mode' => 'consent','historySync.requestFull' => 'team','historySync.delivery' => 'platform','hms' => 'platform','observation.presenceMode' => 'platform','observation.typingMode' => 'platform','observation.labelMode' => 'platform','observation.quickReplyMode' => 'platform'],'revisions' => ['team' => 0,'project' => 0,'session' => 0],'historyConsent' => 'declined'];
-$ecSession = ['sessionId' => 's','name' => 's','tenantId' => 'org','type' => 'linked_device','testMode' => false,'status' => 'CONNECTED','createdAt' => '2026-10-16T00:00:00Z','updatedAt' => '2026-10-16T00:00:00Z','signalMode' => 'zero_knowledge','configuration' => $ecConfig];
-$ecA = $ecOrg->project($ecProject);
+$ecSession = ['sessionId' => 's','name' => 's','tenantId' => 'team','type' => 'linked_device','testMode' => false,'status' => 'CONNECTED','createdAt' => '2026-10-16T00:00:00Z','updatedAt' => '2026-10-16T00:00:00Z','signalMode' => 'zero_knowledge','configuration' => $ecConfig];
+$ecA = $ecTeam->project($ecProject);
 $ecBProject = '22222222-2222-4222-8222-222222222222';
-$ecB = $ecOrg->project($ecBProject);
+$ecB = $ecTeam->project($ecBProject);
 foreach ([$ecA,$ecB,$ecA] as $view) {
     $selected = $view === $ecA ? $ecProject : $ecBProject;
     $r = $ecRun('GET', '/platform/session-configuration?projectId='.$selected, null, ['data' => $ecConfig], fn () => $view->sessionConfiguration->retrieve(new Polymorfa\RequestOptions(apiVersion:'2026-10-14')), ['version' => '2026-10-14']);
@@ -75,14 +75,14 @@ foreach ([$ecA,$ecB,$ecA] as $view) {
 }
 foreach ([['set' => ['historySync' => ['delivery' => 'descriptor','requestFull' => false]]],['reset' => ['historySync.delivery']]] as $patch) {
     $ecRun('PUT', '/platform/session-configuration', ['configuration' => $patch,'revision' => 0,'projectId' => $ecProject], ['data' => $ecConfig], fn () => $ecA->sessionConfiguration->update(['configuration' => $patch,'revision' => 0]), ['version' => '2026-10-14']);
-    $ecRun('PUT', '/platform/sessions/s', ['configuration' => $patch,'revision' => 0], $ecEnvelope($ecSession), fn () => $ecOrg->sessions->update('s', ['configuration' => $patch,'revision' => 0]), ['version' => '2026-10-14']);
+    $ecRun('PUT', '/platform/sessions/s', ['configuration' => $patch,'revision' => 0], $ecEnvelope($ecSession), fn () => $ecTeam->sessions->update('s', ['configuration' => $patch,'revision' => 0]), ['version' => '2026-10-14']);
     $ecRun('PUT', '/platform/sessions/s', ['configuration' => $patch,'revision' => 0], $ecEnvelope($ecSession), fn () => $ecMessaging->sessions->update('s', ['configuration' => $patch,'revision' => 0], new Polymorfa\RequestOptions(apiVersion:'2026-09-22')));
 }
-$ecRun('PUT', '/platform/session-configuration', ['configuration' => ['reset' => ['historySync']],'revision' => 0], ['data' => $ecConfig], fn () => $ecOrg->sessionConfiguration->update(['configuration' => ['reset' => ['historySync']],'revision' => 0]));
+$ecRun('PUT', '/platform/session-configuration', ['configuration' => ['reset' => ['historySync']],'revision' => 0], ['data' => $ecConfig], fn () => $ecTeam->sessionConfiguration->update(['configuration' => ['reset' => ['historySync']],'revision' => 0]));
 $ecOldConfig = $ecConfig;
 unset($ecOldConfig['effective']['historySync']['delivery'],$ecOldConfig['requestedHistory']['delivery'],$ecOldConfig['sources']['historySync.delivery']);
-$ecRun('GET', '/platform/session-configuration', null, ['data' => $ecOldConfig], fn () => $ecOrg->sessionConfiguration->retrieve());
-foreach ([$ecOrg,$ecMessaging] as $client) {
+$ecRun('GET', '/platform/session-configuration', null, ['data' => $ecOldConfig], fn () => $ecTeam->sessionConfiguration->retrieve());
+foreach ([$ecTeam,$ecMessaging] as $client) {
     foreach ([null,'standard','zero_knowledge'] as $mode) {
         $fact = $ecSession;
         if ($mode === null) {

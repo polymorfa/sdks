@@ -1,4 +1,4 @@
-//! Organization identity and credential metadata. Bearer key material is never returned.
+//! Team identity and credential metadata. Bearer key material is never returned.
 use crate::{
     models::DataEnvelope,
     transport::{encode, HttpTransport},
@@ -8,7 +8,7 @@ use reqwest::Method;
 use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Organization {
+pub struct Team {
     pub id: String,
     pub external_id: String,
     pub name: String,
@@ -27,23 +27,23 @@ pub struct Organization {
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
-pub enum OrganizationMemberRole {
+pub enum TeamMemberRole {
     Owner,
     Admin,
     Member,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OrganizationMember {
+pub struct TeamMember {
     #[serde(rename = "_id")]
     pub internal_id: String,
     #[serde(rename = "_creationTime")]
     pub creation_time: f64,
-    pub org_id: String,
+    pub team_id: String,
     pub user_id: String,
     pub email: String,
     pub name: Option<String>,
-    pub role: OrganizationMemberRole,
+    pub role: TeamMemberRole,
     pub status: String,
     pub invited_at: Option<u64>,
     pub joined_at: Option<u64>,
@@ -59,7 +59,7 @@ pub struct ApiKey {
     pub key_id: String,
     pub start: String,
     pub last4: String,
-    pub org_id: String,
+    pub team_id: String,
     pub label: String,
     pub scopes: u64,
     pub source: String,
@@ -132,17 +132,17 @@ pub struct SecurityIncident {
 pub struct SecurityIncidentAcknowledgement {
     pub acknowledged: bool,
 }
-pub struct Organizations<'a>(pub(crate) &'a HttpTransport);
+pub struct Teams<'a>(pub(crate) &'a HttpTransport);
 pub struct Members<'a>(pub(crate) &'a HttpTransport);
 pub struct ApiKeys<'a>(pub(crate) &'a HttpTransport);
 pub struct ProjectTokens<'a>(pub(crate) &'a HttpTransport);
 pub struct AuditLogs<'a>(pub(crate) &'a HttpTransport);
 pub struct SecurityIncidents<'a>(pub(crate) &'a HttpTransport);
-impl Organizations<'_> {
+impl Teams<'_> {
     pub async fn retrieve(
         &self,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<Organization>>> {
+    ) -> Result<ApiResponse<DataEnvelope<Team>>> {
         self.0.get("/platform/team", options).await
     }
 }
@@ -150,7 +150,7 @@ impl Members<'_> {
     pub async fn list(
         &self,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<Vec<OrganizationMember>>>> {
+    ) -> Result<ApiResponse<DataEnvelope<Vec<TeamMember>>>> {
         self.0.get("/platform/members", options).await
     }
 }

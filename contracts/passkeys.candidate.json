@@ -97,7 +97,7 @@
   },
   "fragment": {
     "path": "contracts/passkeys.candidate.fragments.json",
-    "sha256": "4099350294f54141d49aa25caa9ecb833823d98f7b563ba4d9478da024f58722"
+    "sha256": "af718de626856fc742c242fdbd144ce885186b3781c980b5be2e721bb8ba3ce3"
   },
   "operations": [
     {

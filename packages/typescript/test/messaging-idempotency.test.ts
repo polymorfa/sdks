@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 
 import { Client, MessagingClient, PolymorfaServerError } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import {
   startTestServer,
   type TestResponse,
@@ -23,7 +23,7 @@ async function clientFor(
   return {
     server,
     client: new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
       maxNetworkRetries,
     }),
@@ -87,9 +87,9 @@ describe("Idempotency-Key on messaging writes", () => {
     ["project", "Idempotency-Key"],
     ["project", "idempotency-key"],
     ["project", "IDEMPOTENCY-KEY"],
-    ["organization", "Idempotency-Key"],
-    ["organization", "idempotency-key"],
-    ["organization", "IDEMPOTENCY-KEY"],
+    ["team", "Idempotency-Key"],
+    ["team", "idempotency-key"],
+    ["team", "IDEMPOTENCY-KEY"],
   ])(
     "preserves the %s caller's %s across repeated test sends and retries",
     async (kind, casing) => {
@@ -136,21 +136,21 @@ describe("Idempotency-Key on messaging writes", () => {
         to: "+15550001112",
         variables: {},
       };
-      const organization = new Client({
-        credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      const team = new Client({
+        credential: { type: "teamApiKey", value: TEAM_API_KEY },
         baseUrl: server.url,
       });
       for (let call = 0; call < 2; call++) {
         if (kind === "messaging")
           await client.campaigns.testSend("project", campaignId, body, options);
-        else if (kind === "organization")
-          await organization.campaigns.testSend(
+        else if (kind === "team")
+          await team.campaigns.testSend(
             campaignId,
             { ...body, projectId },
             options,
           );
         else
-          await organization
+          await team
             .project(projectId)
             .campaigns.testSend(campaignId, body, options);
       }

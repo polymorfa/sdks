@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 $webhookBody = ['id' => 'webhook-event','session' => 'session','timestamp' => '2026-10-11T00:00:00Z','event' => 'future.event','payload' => ['opaque' => ['key' => false]]];
-$event = ['id' => 'event','organizationId' => 'org','projectId' => 'project','type' => 'future.event','source' => 'runtime','environment' => 'development','createdAt' => '2026-10-11T00:00:00Z','payloadAvailability' => 'available','payload' => ['encoding' => 'base64','contentType' => 'application/json','data' => base64_encode(json_encode($webhookBody, JSON_THROW_ON_ERROR))],'replayableUntil' => null,'metadataExpiresAt' => '2026-11-11T00:00:00Z'];
+$event = ['id' => 'event','teamId' => 'team','projectId' => 'project','type' => 'future.event','source' => 'runtime','environment' => 'development','createdAt' => '2026-10-11T00:00:00Z','payloadAvailability' => 'available','payload' => ['encoding' => 'base64','contentType' => 'application/json','data' => base64_encode(json_encode($webhookBody, JSON_THROW_ON_ERROR))],'replayableUntil' => null,'metadataExpiresAt' => '2026-11-11T00:00:00Z'];
 $frame = ['type' => 'event','event' => $event,'cursor' => 'cursor2','streamId' => 'stream','sequence' => 1];
 $wire = ': heartbeat'."\r\n\r\n".'data: '.json_encode(['type' => 'checkpoint','cursor' => 'checkpoint'], JSON_THROW_ON_ERROR)."\r\n\r\n".'data: '.json_encode($frame, JSON_THROW_ON_ERROR)."\r\n\r\n";
 $invoke = function ($client) use ($event, $webhookBody) {

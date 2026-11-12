@@ -35,7 +35,7 @@ async def _wire():
             return httpx.Response(200, json={"success": True, "data": reply})
 
         async with AsyncMessagingClient(
-            credential=Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+            credential=Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
             http_transport=httpx.MockTransport(handler),
         ) as c:
             p = c.passkeys
@@ -69,7 +69,7 @@ async def _once():
             )
 
         async with AsyncMessagingClient(
-            credential=Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+            credential=Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
             max_network_retries=3,
             http_transport=httpx.MockTransport(handler),
         ) as c:
@@ -90,7 +90,7 @@ def test_passkey_outcomes_refusals_omission_and_bounds():
 
 
 async def _boundaries():
-    key = Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k")
+    key = Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k")
     for status in F["statuses"]:
         async with AsyncMessagingClient(
             key,

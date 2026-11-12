@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-type OrganizationVoice struct{ t *transport }
+type TeamVoice struct{ t *transport }
 type ProjectVoice struct {
 	t         *transport
 	projectID string
@@ -27,17 +27,17 @@ type VoiceProviderCredentials struct {
 	confine   bool
 }
 
-func (c *OrganizationClient) Voice() *OrganizationVoice { return &OrganizationVoice{c.t} }
-func (c *ProjectClient) Voice() *ProjectVoice           { return &ProjectVoice{c.t, c.projectID} }
+func (c *TeamClient) Voice() *TeamVoice       { return &TeamVoice{c.t} }
+func (c *ProjectClient) Voice() *ProjectVoice { return &ProjectVoice{c.t, c.projectID} }
 
-// Audio creates a project-specific audio view from an organization client.
-func (v *OrganizationVoice) Audio(projectID string) *VoiceAudio {
+// Audio creates a project-specific audio view from a team client.
+func (v *TeamVoice) Audio(projectID string) *VoiceAudio {
 	return &VoiceAudio{v.t, projectID, false}
 }
 func (v *ProjectVoice) Audio() *VoiceAudio {
-	return &VoiceAudio{v.t, v.projectID, v.t.config.Credential.Kind == OrganizationAPIKey}
+	return &VoiceAudio{v.t, v.projectID, v.t.config.Credential.Kind == TeamAPIKey}
 }
-func (v *OrganizationVoice) ProviderCredentials(projectID ...string) *VoiceProviderCredentials {
+func (v *TeamVoice) ProviderCredentials(projectID ...string) *VoiceProviderCredentials {
 	p := ""
 	if len(projectID) > 0 {
 		p = projectID[0]
@@ -45,7 +45,7 @@ func (v *OrganizationVoice) ProviderCredentials(projectID ...string) *VoiceProvi
 	return &VoiceProviderCredentials{t: v.t, projectID: p}
 }
 func (v *ProjectVoice) ProviderCredentials() *VoiceProviderCredentials {
-	return &VoiceProviderCredentials{v.t, v.projectID, true, v.t.config.Credential.Kind == OrganizationAPIKey}
+	return &VoiceProviderCredentials{v.t, v.projectID, true, v.t.config.Credential.Kind == TeamAPIKey}
 }
 func voiceAssetPath(id string) string { return "/platform/voice/audio/" + escaped(id) }
 func voiceCredentialPath(id string) string {
@@ -198,7 +198,7 @@ func (r *VoiceProviderCredentials) confineCredential(ctx context.Context, id str
 		return err
 	}
 	if v.Data.ProjectID == nil {
-		return &Error{Kind: AuthorizationError, Code: "permission_denied", Status: 403, Message: "Manage team-wide provider credentials from the organization client."}
+		return &Error{Kind: AuthorizationError, Code: "permission_denied", Status: 403, Message: "Manage team-wide provider credentials from the team client."}
 	}
 	return nil
 }

@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { Client } from "../src/client.js";
@@ -31,8 +31,8 @@ async function platformServer(): Promise<{
     requests: server.requests,
     client: new Client({
       credential: {
-        type: "organizationApiKey",
-        value: ORGANIZATION_API_KEY,
+        type: "teamApiKey",
+        value: TEAM_API_KEY,
       },
       baseUrl: server.url,
       maxNetworkRetries: 0,
@@ -41,7 +41,7 @@ async function platformServer(): Promise<{
 }
 
 describe("Client billing", () => {
-  it("maps the complete organization-key billing read surface", async () => {
+  it("maps the complete team-key billing read surface", async () => {
     const { client, requests } = await platformServer();
 
     const billing = await client.billing.retrieve();
@@ -360,16 +360,16 @@ describe("Client campaigns", () => {
   });
 });
 
-it("requires organization campaign scope and confines project campaign views", async () => {
+it("requires team campaign scope and confines project campaign views", async () => {
   const { client } = await platformServer();
   const project = client.project("project/a");
   expect(project.campaigns).toHaveProperty("getReplyFlow");
   expect(project.campaigns).not.toHaveProperty("retrieve");
   // These calls are compile-time assertions and must never reach transport.
   const invalidCalls = () => {
-    // @ts-expect-error project views do not expose unconfined organization campaigns
+    // @ts-expect-error project views do not expose unconfined team campaigns
     void project.campaigns.retrieve;
-    // @ts-expect-error an organization client must supply project parameters
+    // @ts-expect-error a team client must supply project parameters
     client.campaigns.retrieve("campaign/a");
     // @ts-expect-error a project ID is required within the parameters
     client.campaigns.retrieve("campaign/a", {});

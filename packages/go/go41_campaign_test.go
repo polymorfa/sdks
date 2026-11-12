@@ -10,16 +10,16 @@ import (
 	sdk "github.com/polymorfa/sdks/packages/go"
 )
 
-func go41Client(t *testing.T, handler http.HandlerFunc) (*sdk.MessagingClient, *sdk.OrganizationClient) {
+func go41Client(t *testing.T, handler http.HandlerFunc) (*sdk.MessagingClient, *sdk.TeamClient) {
 	t.Helper()
 	s := httptest.NewServer(handler)
 	t.Cleanup(s.Close)
-	cfg := sdk.Config{BaseURL: s.URL, Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}}
+	cfg := sdk.Config{BaseURL: s.URL, Credential: sdk.Credential{Kind: sdk.TeamAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}}
 	m, e := sdk.NewMessagingClient(cfg)
 	if e != nil {
 		t.Fatal(e)
 	}
-	o, e := sdk.NewOrganizationClient(cfg)
+	o, e := sdk.NewTeamClient(cfg)
 	if e != nil {
 		t.Fatal(e)
 	}

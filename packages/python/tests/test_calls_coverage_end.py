@@ -33,9 +33,7 @@ async def _coverage_end():
                 return httpx.Response(200, json={"success": True, "data": settings})
 
             async with AsyncMessagingClient(
-                credential=Credential(
-                    "organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
-                ),
+                credential=Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
                 http_transport=httpx.MockTransport(handler),
             ) as client:
                 result = (
@@ -59,7 +57,7 @@ def test_call_settings_older_response_absence():
 
 async def _older_response():
     async with AsyncMessagingClient(
-        credential=Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        credential=Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
         http_transport=httpx.MockTransport(
             lambda _: httpx.Response(200, json={"success": True, "data": FIXTURE["settings"]})
         ),
@@ -77,7 +75,7 @@ def test_call_settings_reject_response_only_and_unknown_keys():
 async def _reject_extra_keys():
     sent = []
     async with AsyncMessagingClient(
-        credential=Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        credential=Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
         http_transport=httpx.MockTransport(
             lambda request: sent.append(request) or httpx.Response(200, json={})
         ),

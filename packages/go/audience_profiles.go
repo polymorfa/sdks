@@ -12,8 +12,8 @@ import (
 type AudienceProfiles struct{ t *transport }
 type AudienceProfileImports struct{ t *transport }
 
-func (c *OrganizationClient) AudienceProfiles() *AudienceProfiles { return &AudienceProfiles{c.t} }
-func (r *AudienceProfiles) Imports() *AudienceProfileImports      { return &AudienceProfileImports{r.t} }
+func (c *TeamClient) AudienceProfiles() *AudienceProfiles    { return &AudienceProfiles{c.t} }
+func (r *AudienceProfiles) Imports() *AudienceProfileImports { return &AudienceProfileImports{r.t} }
 func audienceProfilePath(phone string) string {
 	return "/platform/audience-profiles/" + strings.ReplaceAll(escaped(phone), "+", "%2B")
 }

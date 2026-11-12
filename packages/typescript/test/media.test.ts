@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
@@ -27,7 +27,7 @@ function mediaClient(baseUrl: string, timeoutMs = 500): MessagingClient {
   return new MessagingClient({
     credential: {
       type: "apiKey",
-      value: ORGANIZATION_API_KEY,
+      value: TEAM_API_KEY,
     },
     baseUrl,
     timeoutMs,

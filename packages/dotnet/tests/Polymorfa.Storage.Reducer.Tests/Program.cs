@@ -18,7 +18,7 @@ internal static class Checks
     }
     private static WebhookEnvelope Envelope(JsonElement value) => value.Deserialize<WebhookEnvelope>(Json)!;
     private static WebhookEvent Event(string id = "event", string type = "message.received", object? payload = null) => new UnknownWebhookEvent(new(id, "sync", "2026-10-01T12:00:00Z", type, JsonSerializer.SerializeToElement(payload ?? new { id = "m", conversation = new { id = "chat" }, timestamp = 1790856000, type = "text", text = "value" })));
-    private static EventStreamItem Item(WebhookEvent? value, string cursor = "cursor-1", long sequence = 1) => new(new(value?.Envelope.Id ?? "metadata", "org", "project", value?.Envelope.Event ?? "message.received", "runtime", "development", "2026-10-01T00:00:00Z", "available", null, null, "2026-10-15T00:00:00Z"), "stream", sequence, value, cursor);
+    private static EventStreamItem Item(WebhookEvent? value, string cursor = "cursor-1", long sequence = 1) => new(new(value?.Envelope.Id ?? "metadata", "team", "project", value?.Envelope.Event ?? "message.received", "runtime", "development", "2026-10-01T00:00:00Z", "available", null, null, "2026-10-15T00:00:00Z"), "stream", sequence, value, cursor);
     internal static async Task Run()
     {
         using var oracle = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures/reducer-batches-3bac.json"))); Equal(oracle.RootElement.GetProperty("source").GetString(), StorageSchema.SourceCommit, "source pin");

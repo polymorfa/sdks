@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 import { MessagingClient } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 const f = JSON.parse(
   readFileSync(
     new URL(
@@ -59,7 +59,7 @@ describe("five direct passkey operations", () => {
   for (const [i, op] of operations.entries())
     it("wire " + i, async () => {
       const c = new MessagingClient({
-        credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+        credential: { type: "apiKey", value: TEAM_API_KEY },
         baseUrl: "https://api.example",
         fetch: async (url, init) => {
           expect(String(url)).toBe(
@@ -67,7 +67,7 @@ describe("five direct passkey operations", () => {
           );
           expect(init?.method).toBe(op.method);
           expect(new Headers(init?.headers).get("authorization")).toBe(
-            "Bearer " + ORGANIZATION_API_KEY,
+            "Bearer " + TEAM_API_KEY,
           );
           expect(new Headers(init?.headers).get("polymorfa-version")).toBe(
             "2026-09-22",
@@ -92,7 +92,7 @@ describe("five direct passkey operations", () => {
     for (const kind of ["issue", "assertion", "confirm"]) {
       let calls = 0;
       const c = new MessagingClient({
-        credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+        credential: { type: "apiKey", value: TEAM_API_KEY },
         maxNetworkRetries: 3,
         fetch: async () => {
           calls++;
@@ -123,7 +123,7 @@ describe("five direct passkey operations", () => {
   it("preserves all confirmation statuses and optional absence", async () => {
     for (const status of f.statuses) {
       const c = new MessagingClient({
-        credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+        credential: { type: "apiKey", value: TEAM_API_KEY },
         fetch: async () =>
           new Response(JSON.stringify({ success: true, data: { status } }), {
             headers: { "content-type": "application/json" },
@@ -137,7 +137,7 @@ describe("five direct passkey operations", () => {
   it("refuses client tokens and oversized bodies before I/O", () => {
     let calls = 0;
     const c = new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
       fetch: async () => {
         calls++;
         throw Error("unexpected");
@@ -180,7 +180,7 @@ it("preserves refusal statuses, non-JSON errors and uncertain upload without dup
   for (const status of f.errors) {
     let calls = 0;
     const c = new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
       fetch: async () => {
         calls++;
         return new Response(
@@ -203,7 +203,7 @@ it("preserves refusal statuses, non-JSON errors and uncertain upload without dup
     for (const kind of ["issue", "assertion", "confirm"]) {
       let calls = 0;
       const c = new MessagingClient({
-        credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+        credential: { type: "apiKey", value: TEAM_API_KEY },
         fetch: async () => {
           calls++;
           if (mode === "network")
@@ -229,7 +229,7 @@ it("preserves refusal statuses, non-JSON errors and uncertain upload without dup
 it("omits optional inputs and keeps maximum credential/user-handle wire strings", async () => {
   const bodies: unknown[] = [];
   const c = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     fetch: async (_, init) => {
       bodies.push(JSON.parse(String(init?.body)));
       return new Response(

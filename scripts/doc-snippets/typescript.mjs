@@ -41,8 +41,7 @@ export function render(id, { client, request }) {
   };
   if (!calls[id]) return undefined;
   const type = client === "messaging" ? "MessagingClient" : "Client";
-  const credentialType =
-    client === "messaging" ? "apiKey" : "organizationApiKey";
+  const credentialType = client === "messaging" ? "apiKey" : "teamApiKey";
   const project = client === "project" ? `, projectId: ${p("projectId")}` : "";
   return `import { ${type} } from "@polymorfa/sdk";\n\nasync function main(): Promise<void> {\n  const sdk = new ${type}({ credential: { type: "${credentialType}", value: ${key} }${project} });\n  const result = await ${calls[id]};\n  console.log(result);\n}\n\nmain().catch((error: unknown) => { console.error(error); process.exitCode = 1; });\n`;
 }

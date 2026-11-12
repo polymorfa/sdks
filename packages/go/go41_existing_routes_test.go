@@ -13,66 +13,66 @@ import (
 func TestGo41ThirteenCampaignRoutes(t *testing.T) {
 	rows := []struct {
 		name, method, path string
-		call               func(context.Context, *sdk.MessagingClient, *sdk.OrganizationClient) error
+		call               func(context.Context, *sdk.MessagingClient, *sdk.TeamClient) error
 	}{
-		{"listCampaigns", "GET", "/messaging/projects/p%20%2Fx/campaigns", func(c context.Context, m *sdk.MessagingClient, o *sdk.OrganizationClient) error {
+		{"listCampaigns", "GET", "/messaging/projects/p%20%2Fx/campaigns", func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient) error {
 			r, e := m.Campaigns().List(c, "p /x")
 			if e == nil && (len(r.Data.Data) != 1 || r.Data.Data[0].TrackedLinks == nil) {
 				t.Error("campaign list fields")
 			}
 			return e
 		}},
-		{"getCampaign", "GET", "/messaging/projects/p%20%2Fx/campaigns/c%20%2Fx", func(c context.Context, m *sdk.MessagingClient, o *sdk.OrganizationClient) error {
+		{"getCampaign", "GET", "/messaging/projects/p%20%2Fx/campaigns/c%20%2Fx", func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient) error {
 			_, e := m.Campaigns().Retrieve(c, "p /x", "c /x")
 			return e
 		}},
-		{"createCampaign", "POST", "/messaging/projects/p%20%2Fx/campaigns", func(c context.Context, m *sdk.MessagingClient, o *sdk.OrganizationClient) error {
+		{"createCampaign", "POST", "/messaging/projects/p%20%2Fx/campaigns", func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient) error {
 			_, e := m.Campaigns().Create(c, "p /x", sdk.CreateCampaignRequest{Name: "Draft"})
 			return e
 		}},
-		{"updateProjectCampaign", "PATCH", "/messaging/projects/p%20%2Fx/campaigns/c%20%2Fx", func(c context.Context, m *sdk.MessagingClient, o *sdk.OrganizationClient) error {
+		{"updateProjectCampaign", "PATCH", "/messaging/projects/p%20%2Fx/campaigns/c%20%2Fx", func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient) error {
 			_, e := m.Campaigns().Update(c, "p /x", "c /x", sdk.UpdateCampaignRequest{TrackedLinks: &sdk.Nullable[sdk.CampaignTrackedLinks]{}})
 			return e
 		}},
-		{"launchCampaign", "POST", "/messaging/projects/p%20%2Fx/campaigns/c%20%2Fx/launch", func(c context.Context, m *sdk.MessagingClient, o *sdk.OrganizationClient) error {
+		{"launchCampaign", "POST", "/messaging/projects/p%20%2Fx/campaigns/c%20%2Fx/launch", func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient) error {
 			_, e := m.Campaigns().Launch(c, "p /x", "c /x", sdk.LaunchCampaignRequest{})
 			return e
 		}},
-		{"pauseCampaign", "POST", "/messaging/projects/p%20%2Fx/campaigns/c%20%2Fx/pause", func(c context.Context, m *sdk.MessagingClient, o *sdk.OrganizationClient) error {
+		{"pauseCampaign", "POST", "/messaging/projects/p%20%2Fx/campaigns/c%20%2Fx/pause", func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient) error {
 			_, e := m.Campaigns().Pause(c, "p /x", "c /x")
 			return e
 		}},
-		{"rescheduleCampaign", "POST", "/messaging/projects/p%20%2Fx/campaigns/c%20%2Fx/reschedule", func(c context.Context, m *sdk.MessagingClient, o *sdk.OrganizationClient) error {
+		{"rescheduleCampaign", "POST", "/messaging/projects/p%20%2Fx/campaigns/c%20%2Fx/reschedule", func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient) error {
 			_, e := m.Campaigns().Reschedule(c, "p /x", "c /x", sdk.RescheduleCampaignRequest{})
 			return e
 		}},
-		{"resumeCampaign", "POST", "/messaging/projects/p%20%2Fx/campaigns/c%20%2Fx/resume", func(c context.Context, m *sdk.MessagingClient, o *sdk.OrganizationClient) error {
+		{"resumeCampaign", "POST", "/messaging/projects/p%20%2Fx/campaigns/c%20%2Fx/resume", func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient) error {
 			_, e := m.Campaigns().Resume(c, "p /x", "c /x")
 			return e
 		}},
-		{"stopCampaign", "POST", "/messaging/projects/p%20%2Fx/campaigns/c%20%2Fx/stop", func(c context.Context, m *sdk.MessagingClient, o *sdk.OrganizationClient) error {
+		{"stopCampaign", "POST", "/messaging/projects/p%20%2Fx/campaigns/c%20%2Fx/stop", func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient) error {
 			r, e := m.Campaigns().Stop(c, "p /x", "c /x")
 			if e == nil && r.Data.Data.OperationID != nil {
 				t.Error("nullable operation ID")
 			}
 			return e
 		}},
-		{"listPlatformCampaigns", "GET", "/platform/campaigns", func(c context.Context, m *sdk.MessagingClient, o *sdk.OrganizationClient) error {
+		{"listPlatformCampaigns", "GET", "/platform/campaigns", func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient) error {
 			_, e := o.Campaigns().List(c, sdk.ListCampaignsParams{ProjectID: go41Project})
 			return e
 		}},
-		{"getPlatformCampaign", "GET", "/platform/campaigns/c%20%2Fx", func(c context.Context, m *sdk.MessagingClient, o *sdk.OrganizationClient) error {
+		{"getPlatformCampaign", "GET", "/platform/campaigns/c%20%2Fx", func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient) error {
 			r, e := o.Campaigns().Retrieve(c, "c /x", sdk.PlatformCampaignParams{ProjectID: go41Project})
 			if e == nil && r.Data.Data != nil {
 				t.Error("nullable Platform retrieval")
 			}
 			return e
 		}},
-		{"updateCampaign", "PATCH", "/platform/campaigns/c%20%2Fx", func(c context.Context, m *sdk.MessagingClient, o *sdk.OrganizationClient) error {
+		{"updateCampaign", "PATCH", "/platform/campaigns/c%20%2Fx", func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient) error {
 			_, e := o.Campaigns().Update(c, "c /x", &sdk.UpdatePlatformCampaignRequest{Extra: sdk.PlatformPayload{"future": json.RawMessage(`false`)}}, sdk.PlatformCampaignParams{ProjectID: go41Project})
 			return e
 		}},
-		{"createPlatformCampaign", "POST", "/platform/campaigns", func(c context.Context, m *sdk.MessagingClient, o *sdk.OrganizationClient) error {
+		{"createPlatformCampaign", "POST", "/platform/campaigns", func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient) error {
 			_, e := o.Campaigns().Create(c, sdk.CreatePlatformCampaignRequest{ProjectID: go41Project, Name: "Draft"})
 			return e
 		}},
@@ -112,7 +112,7 @@ func TestGo41ThirteenCampaignRoutes(t *testing.T) {
 func TestGo41AnalyticsCompletenessRoutes(t *testing.T) {
 	const metrics = `"deviceAnalytics":{"detector":"v1","measured":false,"complete":false,"observedBuckets":0,"customerMessages":null,"accountMessages":0,"customerPlatforms":[],"accountPlatforms":[],"inventory":{"listObserved":false,"listCurrent":false,"observedAt":null,"deviceCount":null,"truncated":true,"devices":[]}},"recipientActivity":{"measured":true,"complete":false,"observedBuckets":0,"droppedSignals":3,"truncated":true,"rows":[]},"conversationBreakdown":{"measured":true,"complete":false,"observedBuckets":0,"droppedConversations":2,"truncated":true,"buckets":[],"rows":[]}`
 	for _, project := range []bool{false, true} {
-		t.Run(map[bool]string{false: "organization", true: "project"}[project], func(t *testing.T) {
+		t.Run(map[bool]string{false: "team", true: "project"}[project], func(t *testing.T) {
 			_, o := go41Client(t, func(w http.ResponseWriter, r *http.Request) {
 				want := "/platform/analytics"
 				if project {

@@ -108,7 +108,7 @@ async def test_public_usage_methods_typed_full_responses_and_metadata(case):
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -142,7 +142,7 @@ async def test_project_usage_binding_and_gate_rejection(token):
         )
         if token
         else Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     )
@@ -173,7 +173,7 @@ async def test_usage_iteration_preserves_filters_and_does_not_yield_replayed_pag
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),

@@ -28,7 +28,7 @@ RETENTION = {
     "kind,value",
     [
         (
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         (

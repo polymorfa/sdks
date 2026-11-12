@@ -1,7 +1,7 @@
 export interface ClientTokenSubject {
   readonly userId: string;
   readonly projectId?: string;
-  readonly organizationId?: string;
+  readonly teamId?: string;
 }
 
 export interface ClientTokenClaims {

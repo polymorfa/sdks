@@ -7,7 +7,7 @@ from polymorfa import AsyncClient, Credential, ValidationError
 
 PROJECT = {
     "id": "project_1",
-    "orgId": "org_1",
+    "teamId": "team_1",
     "name": "Support",
     "slug": "support",
     "icon": {"type": "emoji", "value": "🐈"},
@@ -31,7 +31,7 @@ ENROLLMENT = {
         "supportEmail": "support@example.com",
     }
 }
-ENROLLED = {k: PROJECT[k] for k in ["id", "orgId", "name", "slug", "stage"]} | {
+ENROLLED = {k: PROJECT[k] for k in ["id", "teamId", "name", "slug", "stage"]} | {
     "operationId": "op_1",
     "enrollmentStatus": "approval_required",
     "billingMode": "payg",
@@ -103,7 +103,7 @@ CAPABILITIES = {
 SESSION = {
     "sessionId": "support",
     "name": "support",
-    "tenantId": "org_1",
+    "tenantId": "team_1",
     "type": "linked_device",
     "testMode": True,
     "status": "CONNECTED",
@@ -287,7 +287,7 @@ async def test_typed_platform_core(method, path, body, query, fixture, invoke):
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -310,7 +310,7 @@ async def test_quote_confirm_guards_and_hybrid_variants():
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),

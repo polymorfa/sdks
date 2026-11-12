@@ -114,7 +114,7 @@ export interface FlowProviderResult {
 export type FlowEndpointMode = "forward" | "function" | "direct";
 export interface FlowEndpoint {
   readonly id: string;
-  readonly orgId: string;
+  readonly teamId: string;
   readonly projectId: string;
   readonly flowId: string;
   readonly sessionId: string;

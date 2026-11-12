@@ -9,5 +9,5 @@ export const MACHINE_CREDENTIALS = JSON.parse(
     "utf8",
   ),
 );
-export const ORGANIZATION_API_KEY: string = MACHINE_CREDENTIALS.opaque[0].token;
+export const TEAM_API_KEY: string = MACHINE_CREDENTIALS.opaque[0].token;
 export const PROJECT_TOKEN: string = MACHINE_CREDENTIALS.opaque[1].token;

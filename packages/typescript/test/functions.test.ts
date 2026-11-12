@@ -7,7 +7,7 @@ import {
   type FunctionDeploymentSummary,
   type FunctionsResource,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 const project = "10000000-0000-4000-8000-000000000001";
 const fn = "20000000-0000-4000-8000-000000000001";
 const deployment = "30000000-0000-4000-8000-000000000001";
@@ -24,7 +24,7 @@ function fixture() {
     Response.json({ data: { ok: true } }),
   );
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     fetch,
   });
   return { client, fetch, functions: client.project(project).functions };

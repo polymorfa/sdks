@@ -16,7 +16,7 @@ from polymorfa import (
 PROJECT = "11111111-1111-4111-8111-111111111111"
 ID = "22222222-2222-4222-8222-222222222222"
 KEY = Credential(
-    "organization_api_key",
+    "team_api_key",
     "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
 )
 CLIENT = Credential("client_token", "pmfa_ct_Zml4dHVyZQ")

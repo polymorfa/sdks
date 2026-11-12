@@ -10,7 +10,7 @@ fn metrics() -> Value {
 }
 #[tokio::test]
 async fn call_detail_roster_app_reports_statistics_and_record_cursor_native_wire() {
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/calls/call?projectId=project",
@@ -28,7 +28,7 @@ async fn call_detail_roster_app_reports_statistics_and_record_cursor_native_wire
     let mut group = metrics();
     group["key"] = json!("support");
     group["start"] = Value::Null;
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/calls/stats?groupBy=session&timezone=UTC",
@@ -51,7 +51,7 @@ async fn call_detail_roster_app_reports_statistics_and_record_cursor_native_wire
         expected.clone(),
     )
     .await;
-    let client = support::organization(base).project("project").unwrap();
+    let client = support::team(base).project("project").unwrap();
     let page = client
         .calls()
         .list(
@@ -73,7 +73,7 @@ async fn call_detail_roster_app_reports_statistics_and_record_cursor_native_wire
         &serde_json::to_value(page.items).unwrap(),
     );
     server.await.unwrap();
-    let client = support::organization("http://127.0.0.1:1".into())
+    let client = support::team("http://127.0.0.1:1".into())
         .project("project")
         .unwrap();
     assert!(client
@@ -157,7 +157,7 @@ async fn call_export_text_content_type_and_cursor_stream_native_wire() {
         Some("next"),
     )])
     .await;
-    let client = support::organization(base);
+    let client = support::team(base);
     let v = client
         .calls()
         .export(
@@ -189,7 +189,7 @@ async fn call_export_text_content_type_and_cursor_stream_native_wire() {
         ),
     ])
     .await;
-    let client = support::organization(base);
+    let client = support::team(base);
     let resource = client.calls();
     let stream = resource.export_all(Default::default(), Default::default());
     futures_util::pin_mut!(stream);
@@ -204,7 +204,7 @@ async fn call_export_text_content_type_and_cursor_stream_native_wire() {
         None,
     )])
     .await;
-    let client = support::organization(base);
+    let client = support::team(base);
     let error = client
         .calls()
         .export(&Default::default(), Default::default())
@@ -220,7 +220,7 @@ async fn call_export_text_content_type_and_cursor_stream_native_wire() {
         Some("repeat"),
     )])
     .await;
-    let client = support::organization(base);
+    let client = support::team(base);
     let resource = client.calls();
     let stream = resource.export_all(
         ExportCallRecordsParameters {

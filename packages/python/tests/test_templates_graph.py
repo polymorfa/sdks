@@ -57,7 +57,7 @@ DRAFT = {
 }
 CLOUD = {
     "id": "template_1",
-    "tenantId": "org_1",
+    "tenantId": "team_1",
     "session": "support",
     "wabaId": "123",
     "name": "welcome",

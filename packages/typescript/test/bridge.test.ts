@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
@@ -60,8 +60,8 @@ describe("BridgeClient", () => {
       () =>
         new BridgeClient({
           credential: {
-            type: "organizationApiKey",
-            value: ORGANIZATION_API_KEY,
+            type: "teamApiKey",
+            value: TEAM_API_KEY,
           },
           fetch,
         } as never),

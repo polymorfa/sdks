@@ -15,7 +15,7 @@
       "releasePath": "internal/docs/releases/2026-10-11-cloud-onboarding-readiness.md",
       "releaseSha256": "1cb94749b857cce638b81aecbf34f5dfaf1079fca94bdb1632e24069b47463d0",
       "snapshotPath": "contracts/official-api-round2/oa-03.json",
-      "snapshotSha256": "62641435f1d670607d5b91e8363f42fdc45dc7d669c2e3a8c461c2a01abe337c",
+      "snapshotSha256": "2ab82890b3c14a884e9ce616220d7ac2476e307c81a4a5b50f928680f3331ef0",
       "operationIds": ["getQuickLink", "cancelQuickLink"]
     },
     {
@@ -26,7 +26,7 @@
       "releasePath": "internal/docs/releases/2026-10-11-cloud-catalog-sync.md",
       "releaseSha256": "dfc1a16d31be23926a1440b5ded807251ba9ca4a7b732c99152ffd0d744aa30f",
       "snapshotPath": "contracts/official-api-round2/oa-16.json",
-      "snapshotSha256": "2bc4fbba821e9c3c90b7a9f632aace0360edbcaf8a1685b9b6a4d9387b5d305d",
+      "snapshotSha256": "577e680890ae3474a2f853cc43a78cf9869e2bef36dce097d8f7c143a4757c28",
       "operationIds": [
         "listCloudCatalogs",
         "getCloudCatalog",
@@ -42,7 +42,7 @@
       "releasePath": "internal/docs/releases/2026-10-11-cloud-marketing-messages.md",
       "releaseSha256": "088feba9c5dbb933f7a8f159ea7f9f1c6489fbcf70da82277c1f3bd7f04695f4",
       "snapshotPath": "contracts/official-api-round2/oa-17.json",
-      "snapshotSha256": "84f218fa062e92c5792e9f075d1049b26f314634412da2db8b49e195d53d3dee",
+      "snapshotSha256": "c6df1cfd70ce2709402f06b2233791a490f9a4dfbf4fcfc9cef15fea26c419b8",
       "operationIds": ["getMarketingMessagesStatus"]
     },
     {
@@ -53,7 +53,7 @@
       "releasePath": "internal/docs/releases/2026-10-16-oa18-parent-bsuid-block.md",
       "releaseSha256": "aea935f32779f2c4d32ca95427746203b5d51cca63f07e4d5454906d6acbe28a",
       "snapshotPath": "contracts/official-api-round2/oa-18.json",
-      "snapshotSha256": "a381304c948807df9ec410617e93ac827073978f091708aac134fe23b7c68f0d",
+      "snapshotSha256": "08406c45542ddf258446d3cc19e3c86d235e291a21a844328e5842af65540744",
       "operationIds": ["blockContact", "unblockContact"]
     },
     {
@@ -64,7 +64,7 @@
       "releasePath": "internal/docs/releases/2026-10-01-official-groups.md",
       "releaseSha256": "72efd0f27256dd1c7ee04a26e325b6a9051c4a8453d0b554dbce14241fb662d4",
       "snapshotPath": "contracts/official-api-round2/oa-21.json",
-      "snapshotSha256": "ec42f4a70d6d02803eb31864438668f19307b97486a71dcb0c38ac5cc92b13f6",
+      "snapshotSha256": "844cc5d614e20e0683ead4471c8ea359d8e07edd1acc497cf8d6126ed481113f",
       "operationIds": ["setOfficialGroupPicture"]
     },
     {
@@ -75,15 +75,15 @@
       "releasePath": "internal/docs/releases/2026-10-16-webhook-batching.md",
       "releaseSha256": "98c411776b87bcbf6fe6a77b7657472ce1ced305a427e939946454a2f8acce37",
       "snapshotPath": "contracts/official-api-round2/oa-30.json",
-      "snapshotSha256": "b6885a304b5d29d14e06c7b6281f1b55d04041f44a288f6754355b8ae67d01f4",
+      "snapshotSha256": "bd78a186a20218ff1911e1bb47969a8dd3b23a3b92d1060e374cc0f15aa56771",
       "operationIds": [
-        "listOrganizationWebhooks",
-        "createOrganizationWebhook",
-        "getOrganizationWebhook",
-        "updateOrganizationWebhook",
-        "deleteOrganizationWebhook",
-        "rotateOrganizationWebhookSecret",
-        "testOrganizationWebhook",
+        "listTeamWebhooks",
+        "createTeamWebhook",
+        "getTeamWebhook",
+        "updateTeamWebhook",
+        "deleteTeamWebhook",
+        "rotateTeamWebhookSecret",
+        "testTeamWebhook",
         "listProjectWebhooks",
         "createProjectWebhook",
         "getProjectWebhook",

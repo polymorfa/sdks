@@ -5,7 +5,7 @@ import { type DataEnvelope, unwrapResponse } from "./response.js";
 
 export type QuickLinkTheme = "light" | "dark" | "system";
 export type QuickLinkShape = "square" | "rounded" | "pill";
-export type QuickLinkLogoMode = "none" | "custom" | "organization" | "project";
+export type QuickLinkLogoMode = "none" | "custom" | "team" | "project";
 export type QuickLinkHistorySync = "ask" | "force_on" | "force_off";
 export type QuickLinkMethod = "qr" | "pairing";
 
@@ -42,7 +42,7 @@ interface QuickLinkSettingsBase {
   readonly updatedAt: number;
 }
 
-export interface OrganizationQuickLinkSettings extends QuickLinkSettingsBase {
+export interface TeamQuickLinkSettings extends QuickLinkSettingsBase {
   readonly projectId: null;
 }
 
@@ -81,7 +81,7 @@ export interface UpdateQuickLinkSettingsInput {
 
 type QuickLinkSettingsFor<O extends ClientOwner> = O extends "project"
   ? ProjectQuickLinkSettings
-  : OrganizationQuickLinkSettings;
+  : TeamQuickLinkSettings;
 
 /** Saved QuickLink configuration bound to the client's ownership context. */
 export class QuickLinkSettingsResource<O extends ClientOwner> {

@@ -31,7 +31,7 @@ public sealed class SipTrunks : Resource
 {
     private readonly string? projectId;
     private readonly bool confineById;
-    internal SipTrunks(HttpTransport http, string? projectId) : base(http) { this.projectId = projectId; confineById = projectId is not null && http.Credential.Kind == CredentialKind.OrganizationApiKey; }
+    internal SipTrunks(HttpTransport http, string? projectId) : base(http) { this.projectId = projectId; confineById = projectId is not null && http.Credential.Kind == CredentialKind.TeamApiKey; }
     private static string Path(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) throw new PolymorfaConfigurationException("A SIP trunk ID is required.");

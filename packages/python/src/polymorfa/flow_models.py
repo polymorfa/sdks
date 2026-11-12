@@ -116,7 +116,7 @@ class ProviderResult(TypedDict):
 
 class Endpoint(TypedDict):
     id: str
-    orgId: str
+    teamId: str
     projectId: str
     flowId: str
     sessionId: str

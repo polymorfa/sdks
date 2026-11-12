@@ -5,7 +5,7 @@ import {
   PolymorfaConfigurationError,
 } from "../src/index.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 const projectId = "018f0000-0000-7000-8000-000000000001";
 const campaignId = "018f0000-0000-7000-8000-000000000002";
 const servers: TestServer[] = [];
@@ -16,11 +16,11 @@ it("rejects invalid mapping keys, defaulted follow-up relations, list reasons an
   const server = await startTestServer(() => ({ body: '{"data":{}}' }));
   servers.push(server);
   const m = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const c = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const calls: (() => unknown)[] = [
@@ -88,11 +88,11 @@ it("preserves numeric mapping keys, null resets, combined filters and false laun
   }));
   servers.push(server);
   const m = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const c = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   await m.campaigns.create("p", {
@@ -140,11 +140,11 @@ it("checks UTF-16 and count boundaries without inventing limits for open compose
   }));
   servers.push(server);
   const m = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const c = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const mapping = Object.fromEntries(

@@ -28,8 +28,8 @@ fn analytics() -> Value {
     json!({"callSeries":[call],"enabled":true,"period":{"start":0,"end":1000},"requestVitals":{"requests":1,"failures":0,"errorRate":0.0},"summary":summary,"numbers":[number],"series":[{"customerOnlineSignals":1,"customerTypingSignals":1,"primaryPhoneMessages":1,"otherDeviceMessages":0,"primaryPhoneReplies":1,"phoneActivePeriods":1,"completedPhoneActivityPeriods":1,"phoneActivityMs":1000,"phoneQuietGaps":1,"phoneQuietMs":2000,"sessionId":"sid","ts":1000,"outgoingMessages":1,"incomingMessages":1,"sendFailures":0,"businessReplies":1,"averageBusinessResponseMs":1000.5,"onlineMs":5000,"disconnects":0}]})
 }
 #[tokio::test]
-async fn organization_and_project_typed_aggregate_breakdowns_native_wire() {
-    wire_unwrapped_organization!(
+async fn team_and_project_typed_aggregate_breakdowns_native_wire() {
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/analytics?end=1000&projectId=00000000-0000-0000-0000-000000000001&start=0",
@@ -45,7 +45,7 @@ async fn organization_and_project_typed_aggregate_breakdowns_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/projects/00000000-0000-0000-0000-000000000001/analytics?end=1000&start=0",
@@ -61,7 +61,7 @@ async fn organization_and_project_typed_aggregate_breakdowns_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/analytics",
@@ -71,7 +71,7 @@ async fn organization_and_project_typed_aggregate_breakdowns_native_wire() {
             .analytics()
             .get(&Default::default(), Default::default())
     );
-    let client = support::organization("http://127.0.0.1:1".into())
+    let client = support::team("http://127.0.0.1:1".into())
         .project(PROJECT)
         .unwrap();
     assert_eq!(
@@ -146,7 +146,7 @@ async fn collector_prometheus_openmetrics_and_invalid_content_native_wire() {
         "# TYPE polymorfa_analytics_enabled gauge\npolymorfa_analytics_enabled 1\n",
     )
     .await;
-    let client = support::organization(base);
+    let client = support::team(base);
     let v = client
         .analytics()
         .metrics(
@@ -163,7 +163,7 @@ async fn collector_prometheus_openmetrics_and_invalid_content_native_wire() {
     assert_eq!(v.metadata.request_id.as_deref(), Some("analytics"));
     task.await.unwrap();
     let(base,task)=server("/platform/projects/00000000-0000-0000-0000-000000000001/analytics/metrics?format=openmetrics","application/openmetrics-text; version=1.0.0","# TYPE polymorfa_analytics_enabled gauge\npolymorfa_analytics_enabled 0\n# EOF\n").await;
-    let client = support::organization(base).project(PROJECT).unwrap();
+    let client = support::team(base).project(PROJECT).unwrap();
     let v = client
         .analytics()
         .metrics(
@@ -184,7 +184,7 @@ async fn collector_prometheus_openmetrics_and_invalid_content_native_wire() {
         "# TYPE polymorfa_analytics_enabled gauge\n",
     )
     .await;
-    let client = support::organization(base);
+    let client = support::team(base);
     let error = client
         .analytics()
         .metrics(
@@ -230,7 +230,7 @@ async fn partial_unknown_inventory_and_unavailable_metrics_remain_distinct_on_bo
         json!({"data":a.clone()}),
     )
     .await;
-    let result = support::organization(base)
+    let result = support::team(base)
         .analytics()
         .get(&Default::default(), Default::default())
         .await
@@ -260,7 +260,7 @@ async fn partial_unknown_inventory_and_unavailable_metrics_remain_distinct_on_bo
         json!({"data":a}),
     )
     .await;
-    let client = support::organization(base).project(PROJECT).unwrap();
+    let client = support::team(base).project(PROJECT).unwrap();
     let result = client
         .analytics()
         .get(&Default::default(), Default::default())

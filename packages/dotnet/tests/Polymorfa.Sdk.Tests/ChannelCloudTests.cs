@@ -35,7 +35,7 @@ internal static class ChannelCloudTests
         var key = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
         using var fixture = new WireFixture { Authorization = "Bearer " + key };
         var serve = fixture.ServeAsync("POST", "/messaging/s/cloud-credentials/reauthorize", null, """{"error":{"code":"unavailable","message":"Try later"}}""", 503);
-        using var server = new MessagingClient(Credential.OrganizationApiKey(key), new() { BaseUrl = fixture.Url, Timeout = TimeSpan.FromMilliseconds(300) });
+        using var server = new MessagingClient(Credential.TeamApiKey(key), new() { BaseUrl = fixture.Url, Timeout = TimeSpan.FromMilliseconds(300) });
         try { await server.Sessions.ReauthorizeCloudCredentialsAsync("s", new() { IdempotencyKey = "key", MaxNetworkRetries = 3 }); throw new Exception("Expected server refusal"); } catch (PolymorfaServerException e) { ResourceTests.Equal(e.Metadata!.Attempts, 1); }
         await serve;
         Console.WriteLine("PASS Channels, QuickReplies, security code, Cloud credential/pricing and service-window native APIs");
@@ -46,7 +46,7 @@ internal static class ChannelCloudTests
         var key = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
         using var fixture = new WireFixture { Authorization = "Bearer " + key, ExpectedHeaders = headers };
         var serve = fixture.ServeAsync(method, path, body, response);
-        using var client = new MessagingClient(Credential.OrganizationApiKey(key), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
+        using var client = new MessagingClient(Credential.TeamApiKey(key), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
         await invoke(client); await serve;
     }
 }

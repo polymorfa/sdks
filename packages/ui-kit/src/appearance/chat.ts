@@ -76,7 +76,7 @@ export function formatOrderUnitPrice(
   }
 }
 
-/** Presentation only. Hosts supply observations and save any organization changes. */
+/** Presentation only. Hosts supply observations and save any team changes. */
 /**
  * The draft saved for a conversation. Reads only own entries, so a row ID
  * such as `constructor` never picks up an inherited property.
