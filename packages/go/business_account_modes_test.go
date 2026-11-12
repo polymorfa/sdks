@@ -62,7 +62,7 @@ func TestBusinessAccountModesRejectBeforeTransport(t *testing.T) {
 			t.Errorf("accepted %#v", input)
 		}
 	}
-	config := orgConfig(s.URL)
+	config := teamConfig(s.URL)
 	config.Credential = Credential{ClientToken, "pmfa_ct_eA"}
 	client, err := NewMessagingClient(config)
 	if err != nil {

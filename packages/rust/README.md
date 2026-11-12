@@ -1051,7 +1051,7 @@ use polymorfa_sdk::business_account_modes::{
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = MessagingClient::new(
-        Credential::organization_api_key(std::env::var("POLYMORFA_API_KEY")?)?,
+        Credential::team_api_key(std::env::var("POLYMORFA_API_KEY")?)?,
         Default::default(),
     )?;
     let result = client.testing().set_account_mode("demo", &TestingAccountModeRequest {

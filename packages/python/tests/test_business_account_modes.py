@@ -12,7 +12,7 @@ from polymorfa import (
     ValidationError,
 )
 
-KEY = Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k")
+KEY = Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k")
 
 
 @pytest.mark.parametrize(

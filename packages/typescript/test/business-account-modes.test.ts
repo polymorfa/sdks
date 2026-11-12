@@ -8,7 +8,7 @@ import {
   type TestingAccountModeRequest,
   type ContactEncryption,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 
 function fixture(
   body: unknown,
@@ -25,7 +25,7 @@ function fixture(
     fetch,
     credential:
       credential === "apiKey"
-        ? { type: "apiKey", value: ORGANIZATION_API_KEY }
+        ? { type: "apiKey", value: TEAM_API_KEY }
         : { type: "clientToken", value: "pmfa_ct_YnJvd3Nlcg" },
   });
   return { client, fetch };
@@ -225,7 +225,7 @@ it("surfaces a 409 account-mode conflict as a typed conflict error", async () =>
   const client = new MessagingClient({
     baseUrl: "https://api.example",
     fetch,
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
   });
   await expect(
     client.testing.setAccountMode("demo", { accountType: "business_app" }),
