@@ -166,6 +166,43 @@ export function checkNativeSupplements(root, inventory) {
       );
     }
   }
+  // The Number-scoped Test phone operations live in the ledger, not this
+  // inventory; each language's supplements.json must still record all three
+  // on the current routes, with the path present in its wire test.
+  for (const language of NATIVE_SUPPLEMENT_LANGUAGES) {
+    if (language === "typescript") continue;
+    const packageRoot = resolve(root, "packages", language);
+    const manifest = JSON.parse(
+      readFileSync(resolve(packageRoot, "supplements.json")),
+    );
+    const phone = manifest.operations.filter((entry) =>
+      /^\/messaging\/[^/]+\/phone(\/|$)/.test(entry.fixturePath ?? ""),
+    );
+    assert.deepEqual(
+      phone
+        .map(
+          (entry) =>
+            `${entry.method} ${entry.fixturePath
+              .replace(/^\/messaging\/[^/]+/, "/messaging/{session}")
+              .replace(/\/devices\/\d+\//, "/devices/{deviceId}/")}`,
+        )
+        .sort(),
+      [
+        "GET /messaging/{session}/phone",
+        "POST /messaging/{session}/phone/devices/{deviceId}/unlink",
+        "POST /messaging/{session}/phone/messages",
+      ],
+      `${language} supplements.json must record the three Number-scoped phone routes`,
+    );
+    for (const entry of phone) {
+      assert.ok(
+        readFileSync(resolve(packageRoot, entry.testFile), "utf8").includes(
+          entry.fixturePath,
+        ),
+        `${language} wire test lacks ${entry.fixturePath}`,
+      );
+    }
+  }
   for (const field of inventory.fields) {
     const source = supplements.get(field.supplement)?.sources?.[field.family];
     assert.ok(

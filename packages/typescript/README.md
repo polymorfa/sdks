@@ -3046,7 +3046,7 @@ const { data } = await messaging.testing.listEventFixtures();
 Set `fromNumber` on a `message.received` request to send a simulated text
 from another connected Test number in the same project instead; the response
 has `delivery: "simulated"` and the event arrives as ordinary Test number
-activity. Both methods require an team key or project token with
+activity. Both methods require a team key or project token with
 `sandbox:write` (trigger) or `sandbox:read` (list) and Test numbers access.
 
 Use `session.restriction_updated` with `{ restrictionActive: false }` to
@@ -3080,7 +3080,7 @@ await messaging.testing.unlinkPhoneDevice("my-test-number", 74);
 ```
 
 `getPhone` needs `sandbox:read`; `sendPhoneMessage` and `unlinkPhoneDevice`
-need `sandbox:write`. All three need an team key or project token
+need `sandbox:write`. All three need a team key or project token
 and Test numbers access. Real Numbers return `404 resource_not_found`
 (`PolymorfaNotFoundError`). An offline phone and invalid recipients return
 `400` (`PolymorfaValidationError`); a Test key hides unknown, real, and
