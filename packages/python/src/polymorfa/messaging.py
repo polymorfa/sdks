@@ -108,6 +108,20 @@ from .voip_models import (
 
 T = TypeVar("T")
 O = RequestOptions()
+# Writable call-setting keys; the API rejects any other key.
+_CALL_SETTING_KEYS = frozenset(
+    (
+        "callsEnabled",
+        "conferenceMode",
+        "inboundRoute",
+        "sipTrunkId",
+        "sipClaim",
+        "hostCloudApiCalls",
+        "simultaneousCalls",
+        "acknowledgeRisk",
+        "expectedRevision",
+    )
+)
 
 
 def segment(value: str) -> str:
@@ -143,7 +157,11 @@ class Messages(Resource):
     async def send(
         self, session: str, body: SendMessage, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[MessageResponse]]:
+        """Validate interactive content before an idempotent send, retaining descriptor options."""
         content = body.get("content")
+        from .interactive import validate_interactive
+
+        validate_interactive(content)
         if isinstance(content, dict) and "sticker" in content:
             from .direct_media import validate_sticker_content
 
@@ -934,6 +952,9 @@ class Voip(Resource):
             or "includeSelfAudio" in body
         ):
             raise ValidationError("Provide a supported call setting.")
+        # The API accepts only these keys; simultaneousCallsCoverageExcludedUntil is response-only.
+        if not set(body) <= _CALL_SETTING_KEYS:
+            raise ValidationError("Unknown or read-only call setting.")
         for key in (
             "callsEnabled",
             "conferenceMode",

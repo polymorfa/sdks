@@ -12,6 +12,42 @@ WINDOW = {
     "recipientTimeZone": True,
     "timeZoneVariable": "tz",
 }
+
+
+async def test_composed_campaign_preserves_reply_id_and_media_on_wire():
+    """Require the public campaign client to preserve stable IDs and media in one mock request."""
+    body = {
+        "projectId": "11111111-1111-4111-8111-111111111111",
+        "name": "Interactive",
+        "messagesArray": [
+            {
+                "version": 2,
+                "source": "Choose an offer",
+                "media": {"kind": "image", "url": "https://example.test/offer"},
+                "buttons": [
+                    {"kind": "reply", "label": "Choose", "id": "offer-stable"},
+                    {"kind": "link", "label": "Open", "url": "https://example.test/offer"},
+                ],
+            }
+        ],
+    }
+    requests = []
+
+    def handler(request):
+        """Assert the complete campaign route and JSON body before returning a synthetic receipt."""
+        requests.append(request)
+        assert request.method == "POST" and request.url.path == "/platform/campaigns"
+        assert json.loads(request.content) == body
+        return httpx.Response(200, json={"data": CAMPAIGN})
+
+    async with AsyncClient(
+        Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        http_transport=httpx.MockTransport(handler),
+    ) as client:
+        await client.campaigns.create(body)
+    assert len(requests) == 1
+
+
 VARIANT = {
     "key": "a",
     "label": "First",
@@ -582,6 +618,7 @@ async def test_all_public_campaign_and_audience_methods(surface, case):
     )
 
     def handler(request):
+        """Assert the complete campaign route and JSON body before returning a synthetic receipt."""
         assert request.method == method and request.url.path == path
         assert dict(request.url.params) == {k: str(v) for k, v in query.items()}
         assert (json.loads(request.content) if request.content else None) == body
@@ -637,6 +674,7 @@ async def test_append_no_automatic_retry_unless_explicit(surface, method, explic
     attempts = []
 
     def handler(request):
+        """Assert the complete campaign route and JSON body before returning a synthetic receipt."""
         attempts.append(request)
         if len(attempts) == 1:
             return httpx.Response(
@@ -686,6 +724,7 @@ async def test_campaign_preflight_validation_and_inline_audience():
     seen = []
 
     def handler(request):
+        """Assert the complete campaign route and JSON body before returning a synthetic receipt."""
         seen.append(request)
         assert json.loads(request.content) == {"name": "Empty"}
         return httpx.Response(200, json={"data": AUDIENCE})
@@ -727,6 +766,7 @@ async def test_recipient_pagination_carries_project_status_limit_and_options():
     seen = []
 
     def handler(request):
+        """Assert the complete campaign route and JSON body before returning a synthetic receipt."""
         seen.append(dict(request.url.params))
         first = len(seen) == 1
         assert request.headers["x-proof"] == "pages"

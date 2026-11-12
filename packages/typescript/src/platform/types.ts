@@ -1664,6 +1664,7 @@ export interface CampaignMessage extends CampaignSequenceMessage {
   readonly buttons?: readonly {
     readonly kind: "reply" | "link" | "call";
     readonly label: string;
+    readonly id?: string;
     readonly url?: string;
     readonly phone?: string;
     readonly [key: string]: unknown;

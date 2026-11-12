@@ -10,6 +10,37 @@
   literals and the C# `BanSafeClaimEvidence` constructor/Deconstruct need the
   added members. Pinned to merged API #845 source `38487509`; package
   publication waits for that API change to merge and deploy.
+
+- UI Kit: keep a 320px thread beside the Inbox list in narrow two-pane layouts, and include the linked guides in the package.
+
+- Breaking: the browser UI packages are now one package, the UI Kit
+  (`@polymorfa/ui-kit`), with one version. Change each import as follows:
+  `@polymorfa/browser` to `@polymorfa/ui-kit`, `@polymorfa/react` to
+  `@polymorfa/ui-kit/react`, `@polymorfa/elements` (and its `/chat`,
+  `/templates` and `/calls` subpaths) to `@polymorfa/ui-kit/web-components`
+  (same subpaths), `@polymorfa/ui` to `@polymorfa/ui-kit/appearance`,
+  `@polymorfa/store` and `@polymorfa/store/react` to `@polymorfa/ui-kit/store`
+  and `@polymorfa/ui-kit/store/react`, and `@polymorfa/devtools` and
+  `@polymorfa/devtools/production` to `@polymorfa/ui-kit/devtools` and
+  `@polymorfa/ui-kit/devtools/production`. `definePolymorfa()` is now
+  `defineUiKit()` and `DefinePolymorfaOptions` is now `DefineUiKitOptions`;
+  there is no alias. Other exports, behavior and the `pmfa-` tag, class and CSS
+  variable names are unchanged. `react` and `react-dom` are optional peer
+  dependencies used only by `/react` and `/store/react`. Browser call reports
+  name `@polymorfa/ui-kit` as their SDK. See the
+  [UI Kit guide](packages/ui-kit/README.md). Source-only until a nightly
+  publishes `@polymorfa/ui-kit`.
+- `@polymorfa/ui` Inbox: the conversation list and the thread sit side by side
+  from 560 px of Inbox width, down from 700 px, and Back appears only when
+  they cannot. Back showed beside the list before because its rule read the
+  thread's width. Back now has a visible border. Source-only until a nightly
+  publishes.
+
+- Prepare direct server passkey challenge, assertion and explicit confirmation methods in all six SDKs. Writes use one attempt; ceremony execution remains external. Bound to accepted API source `77e9ce31`; unreleased until package publication.
+
+- Add the read-only nullable call-settings exclusion-end response field across all six SDKs. Rust response struct literals require the new optional field; C# positional construction remains compatible. Bound to accepted API source `77e9ce31`, which also clarifies when a ban is excluded; unreleased.
+
+- TypeScript, Python and PHP call-settings updates now refuse keys the API does not accept, including the response-only `simultaneousCallsCoverageExcludedUntil`, before sending. Go, Rust and .NET requests already serialize only writable fields.
 - All six server SDKs expose optional automatic-pause `reason`/`code` and
   optional recipient-skip `messageIndex`/`followUpId` from accepted API source
   `9bb1e2ed`. Future reason/code strings and raw envelope fields are retained;
@@ -58,6 +89,14 @@
   (Messaging). `PHONE_OFFLINE_START_DAY` exports the bounds. Not usable until
   the API release that adds the field is deployed. API contract:
   polymorfa/polymorfa#631.
+
+- Interactive-message candidate (API PR #562, not deployed): Linked Devices
+  supports ten total buttons, up to three CTAs, mixed replies with URL/call
+  controls, image/video/document headers, and one 2–10-card image/video
+  carousel. Reply IDs and per-card controls are preserved. Copy/catalog controls
+  cannot mix with replies. Official API limits and approval remain separate.
+  Package publication requires the accepted API revision and matching staging.
+
 - Receipt-timed campaign follow-ups (beta). Messaging and Platform campaign
   create and update accept `followUp` (`CampaignFollowUp`): one text or
   template message sent from the first message's number, timed from its first

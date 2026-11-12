@@ -18,7 +18,7 @@ public sealed record MessageButton(string Type, string Text, string? Url = null,
     public static MessageButton Copy(string text, string code) => new("copy", text, CopyCode: code);
     public static MessageButton Catalog(string text, string businessPhoneNumber, string? catalogProductId = null) => new("catalog", text, BusinessPhoneNumber: businessPhoneNumber, CatalogProductId: catalogProductId);
 }
-public sealed record ButtonsMessage(string Body, IReadOnlyList<MessageButton> Buttons, string? Title = null, string? Footer = null);
+public sealed record ButtonsMessage(string Body, IReadOnlyList<MessageButton> Buttons, string? Title = null, string? Footer = null, ButtonsMedia? Media = null);
 public sealed record AddressMessage(string Body, string? ButtonText = null, string? Footer = null, string? Country = null);
 public sealed record FlowMessage(string Body, string ButtonText, string Id, string Token, string Action, string? Footer = null, string? Screen = null, string? DataJson = null)
 {
@@ -56,3 +56,11 @@ public sealed record OrderStatusContent(OrderStatusMessage OrderStatus) : Messag
 public sealed record TemplateContent(MessageTemplateSend Template) : MessageContent;
 /// <summary>A future response content object retained without losing fields.</summary>
 public sealed record UnknownMessageContent(JsonElement Value) : MessageContent;
+
+/// <summary>Exactly one URL/base64 source; the API owns media size and availability.</summary>
+public sealed record InteractiveMediaSource(string? Url = null, string? Base64 = null, string? MimeType = null);
+public sealed record ButtonsMedia(string Type, string? Url = null, string? Base64 = null, string? MimeType = null, string? Filename = null, string? Thumbnail = null);
+public sealed record CarouselVideo(string? Url = null, string? Base64 = null, string? MimeType = null, string? Thumbnail = null);
+public sealed record CarouselCard(string Body, IReadOnlyList<MessageButton> Buttons, InteractiveMediaSource? Image = null, CarouselVideo? Video = null);
+public sealed record CarouselMessage(string Body, IReadOnlyList<CarouselCard> Cards, string? Footer = null);
+public sealed record CarouselContent(CarouselMessage Carousel) : MessageContent;

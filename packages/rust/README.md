@@ -26,7 +26,7 @@ Use `OrganizationClient` with an team key for Platform operations;
 `organization.project("project-id")` creates an immutable project view. Project
 tokens cannot bind to another project. Credentials are validated before network
 requests. The crate refuses compilation for WASM: Rust frontend applications use
-the existing `@polymorfa/browser` and `@polymorfa/elements` components, with token
+the existing UI Kit web components from `@polymorfa/ui-kit`, with token
 issuance kept on a trusted server.
 
 Every call returns `ApiResponse<T>` with response metadata. Native errors expose
@@ -934,3 +934,106 @@ These are verified-event handling fragments, not complete receivers. Preserve
 whole-body signature verification before decoding and deduplicate batch members.
 See [the scoped source contract and compatibility notes](../../docs/campaign-webhook-metadata.md).
 Package publication and matching API environment acceptance remain separate gates.
+
+
+### Interactive-message candidate (unreleased)
+
+This source targets the separately pinned interactive backend candidate in
+`contracts/interactive-messages.json`. It does not establish hosted availability
+or registry publication. Native button messages support image, video and document
+headers with exactly one URL or base64 source; a title cannot accompany media.
+Carousels contain 2–10 image/video cards. Only the outer carousel has a footer;
+video previews remain inside the video object. Each complete carousel is one
+message request. Linked Devices allow ten controls with at most three CTAs;
+replies can mix with URL/call controls, but not copy/catalog controls.
+
+Composed campaign buttons expose `with_reply_id` and `reply_id`. Preserve the ID
+across label changes and make IDs unique within the message. Existing media and
+carousel-template campaign paths retain the API's sender checks. These are
+composed campaign messages, not reply-flow actions: the latter retain their
+separate three-reply contract. The API remains authoritative for sender
+availability, media sizes, control limits and campaign sendability.
+
+The existing struct-literal fields stay unchanged. Legacy string IDs in
+`extensions["id"]` remain supported. `with_reply_id` returns an error when
+`extensions["id"]` already holds a different or non-string value. Campaign
+create and update requests reject a non-string `extensions["id"]` with a
+validation error before any HTTP request, including buttons built without
+`with_reply_id`.
+
+```rust
+use polymorfa_sdk::campaigns::{CampaignMessageButton, CampaignMessageButtonKind};
+let button = CampaignMessageButton {
+    kind: CampaignMessageButtonKind::Reply,
+    label: "Choose".into(),
+    url: None,
+    phone: None,
+    extensions: Default::default(),
+}
+.with_reply_id("offer-stable")
+.expect("no conflicting extension ID");
+assert_eq!(button.reply_id(), Some("offer-stable"));
+```
+
+### Call settings exclusion end (Unreleased)
+
+Call-settings GET and PUT responses include the read-only
+`simultaneousCallsCoverageExcludedUntil` field as an RFC3339 string or null.
+While `simultaneousCalls` is on, null means the exclusion has no end yet.
+When it is off, a future timestamp is 30 days after the latest period ended.
+A ban is excluded when the setting was on at any time in the 30 days before it,
+so until that timestamp a new ban is not refunded. At that timestamp the earlier
+period no longer excludes a ban. Null while off
+means no recent period was reported. Neither null nor an elapsed timestamp
+guarantees coverage; all other Ban Insurance conditions still apply.
+
+The server calculates this value. Do not send it in an update or calculate it
+from the current switch alone. This addition is unreleased; source preparation
+does not establish API deployment or package publication.
+
+Rust response struct literals must include
+`simultaneous_calls_coverage_excluded_until: None` or a timestamp.
+
+## Direct passkey relay (unreleased)
+
+Use server credentials with `sessions:manage` for every operation, including reads.
+The API also checks live Number ownership, direct-pairing access, relay enrollment
+and the current attempt. These methods accept ceremony data supplied by an
+external participant. They do not run WebAuthn, store credentials, poll, or confirm
+a pairing automatically. Hosted QuickLink and extension relay endpoints are excluded.
+
+Challenge TTL uses seconds; ceremony `timeoutMs` uses milliseconds. The server
+owns ceremony options and ignores the deprecated `userVerification` and
+`timeoutMs` request fields. An optional expected `challengeB64Url` must match the
+current attempt. Keep `rawIdB64Url` and the named `*B64` assertion strings unchanged;
+do not convert between base64 and base64url. Omit optional fields when absent.
+
+Challenge issuance, assertion submission and explicit confirmation each make one
+attempt, even with caller retry options or an idempotency key. If the outcome is
+uncertain, read current challenge/confirmation state and reconcile it before a new
+write. Assertion acceptance is not pairing completion. Forwarded API failures keep
+their status and open error code; the SDK does not invent passkey error codes.
+
+The whole JSON body is limited to 1 MiB. Credential ID strings allow 1364 UTF-16
+units and optional user handles allow 86. Other opaque assertion fields share the
+body limit. The API validates encodings, decoded bounds and challenge binding.
+
+The matching API source is accepted. Package qualification and publication are
+still required before using a released package.
+
+```rust,no_run
+# async fn supplied_steps(client: &polymorfa_sdk::MessagingClient, session: &str, supplied_assertion: &polymorfa_sdk::passkeys::SubmitPasskeyAssertion, supplied_confirmation: &polymorfa_sdk::passkeys::ConfirmPasskey) -> polymorfa_sdk::Result<()> {
+use polymorfa_sdk::{passkeys::IssuePasskeyChallenge, RequestOptions};
+let ticket = client.passkeys().issue_challenge(session, &IssuePasskeyChallenge::default(), RequestOptions::default()).await?;
+client.passkeys().get_challenge(session, &ticket.data.data.ticket, RequestOptions::default()).await?;
+client.passkeys().submit_assertion(session, supplied_assertion, RequestOptions::default()).await?;
+let state = client.passkeys().get_confirmation(session, RequestOptions::default()).await?;
+// This function is called only after the caller's explicit decision.
+async fn confirm_explicitly(client: &polymorfa_sdk::MessagingClient, session: &str, supplied: &polymorfa_sdk::passkeys::ConfirmPasskey) -> polymorfa_sdk::Result<()> {
+    client.passkeys().confirm(session, supplied, RequestOptions::default()).await?;
+    Ok(())
+}
+# let _ = (state, supplied_confirmation);
+# Ok(())
+# }
+```

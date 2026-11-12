@@ -109,15 +109,17 @@ type PreviewedCallLink struct {
 	IsAdmin          bool                  `json:"isAdmin"`
 }
 type SessionCallSettings struct {
-	SimultaneousCalls bool    `json:"simultaneousCalls"`
-	CallsEnabled      bool    `json:"callsEnabled"`
-	ConferenceMode    bool    `json:"conferenceMode"`
-	InboundRoute      string  `json:"inboundRoute"`
-	SIPTrunkID        *string `json:"sipTrunkId"`
-	SIPClaim          bool    `json:"sipClaim"`
-	HostCloudAPICalls bool    `json:"hostCloudApiCalls"`
-	Revision          int64   `json:"revision"`
-	UpdatedAt         *string `json:"updatedAt"`
+	// Read-only server projection. Nil is not a coverage guarantee.
+	SimultaneousCallsCoverageExcludedUntil *string `json:"simultaneousCallsCoverageExcludedUntil"`
+	SimultaneousCalls                      bool    `json:"simultaneousCalls"`
+	CallsEnabled                           bool    `json:"callsEnabled"`
+	ConferenceMode                         bool    `json:"conferenceMode"`
+	InboundRoute                           string  `json:"inboundRoute"`
+	SIPTrunkID                             *string `json:"sipTrunkId"`
+	SIPClaim                               bool    `json:"sipClaim"`
+	HostCloudAPICalls                      bool    `json:"hostCloudApiCalls"`
+	Revision                               int64   `json:"revision"`
+	UpdatedAt                              *string `json:"updatedAt"`
 }
 
 // NullableString preserves the difference between omitted and explicitly null.

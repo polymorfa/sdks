@@ -58,3 +58,25 @@ foreach ([fn ($r) => $r->createCallLink(['session' => 'support']),fn ($r) => $r-
 $browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_Zml4dHVyZQ'));
 raises(fn () => $browser->voip->accept('call_1', ['participant' => 'agent_1']), Polymorfa\ConfigurationException::class);
 echo count($cases)." typed Calls REST fixtures and validation/retry boundaries passed.\n";
+
+$coverage = json_decode(file_get_contents(__DIR__.'/../../../contracts/fixtures/calls-coverage-end.candidate.json'), true, flags: JSON_THROW_ON_ERROR);
+foreach ($coverage['cases'] as $case) {
+    foreach (['GET', 'PUT'] as $method) {
+        $history = [];
+        $settings = array_replace($coverage['settings'], ['simultaneousCalls' => $case['on'], 'simultaneousCallsCoverageExcludedUntil' => $case['until']]);
+        $client = new Polymorfa\MessagingClient($credential, http: mocked([jsonResponse(['success' => true, 'data' => $settings])], $history));
+        $result = $method === 'GET' ? $client->voip->retrieveCallSettings('support') : $client->voip->updateCallSettings('support', ['callsEnabled' => false]);
+        check($result->data['data'] === $settings, 'Coverage end exact response');
+        check($result->data['data']['simultaneousCallsCoverageExcludedUntil'] === $case['until'], 'Coverage nullable RFC3339');
+        check($history[0]['request']->getMethod() === $method && $history[0]['request']->getUri()->getPath() === '/platform/sessions/support/call-settings', 'Coverage route');
+        if ($method === 'PUT') check(json_decode((string) $history[0]['request']->getBody(), true) === ['callsEnabled' => false], 'Coverage end not writable');
+    }
+}
+$history = [];
+$client = new Polymorfa\MessagingClient($credential, http: mocked([], $history));
+raises(fn () => $client->voip->updateCallSettings('support', ['simultaneousCallsCoverageExcludedUntil' => null]), Polymorfa\ValidationException::class);
+check($history === [], 'Response-only field is not a call setting');
+foreach ([['simultaneousCallsCoverageExcludedUntil' => null], ['simultaneousCallsCoverageExcludedUntil' => '2026-11-22T12:34:56.789Z'], ['unknownSetting' => true]] as $extra) {
+    raises(fn () => $client->voip->updateCallSettings('support', ['callsEnabled' => false] + $extra), Polymorfa\ValidationException::class);
+}
+check($history === [], 'Response-only and unknown keys are refused beside a setting');

@@ -5,6 +5,7 @@ namespace Polymorfa.Sdk;
 public sealed class MessagingClient : IDisposable
 {
     private readonly HttpTransport http;
+    public Passkeys Passkeys { get; }
     public MessagingSessions Sessions { get; }
     public Messages Messages { get; }
     public QuickLinks QuickLinks { get; }
@@ -40,7 +41,7 @@ public sealed class MessagingClient : IDisposable
     public MessagingClient(Credential credential, ClientOptions? options = null)
     {
         if (credential.Kind != CredentialKind.ClientToken) credential.RequireServer();
-        http = new(credential, options ?? new()); Sessions = new(http); Messages = new(http); QuickLinks = new(http); Webhooks = new(http); Calls = new(http); CloudOnboarding = new(http); Testing = new(http); ObservationPolicies = new(http); HybridLink = new(http); Templates = new(http); Campaigns = new(http); CloudGraph = new(http); CloudTemplates = new(http); Business = new(http); Channels = new(http); QuickReplies = new(http); BanSafe = new(http); Contacts = new(http); OfficialGroups = new(http); Catalogs = new(http); Groups = new(http); Chats = new(http); Labels = new(http); Presence = new(http); Profile = new(http); Privacy = new(http); ClientTokens = new(http); Identities = new(http); Users = new(http); Media = new(http); WhatsAppMedia = new(http); HistorySync = new(http);
+        http = new(credential, options ?? new()); Passkeys = new(http); Sessions = new(http); Messages = new(http); QuickLinks = new(http); Webhooks = new(http); Calls = new(http); CloudOnboarding = new(http); Testing = new(http); ObservationPolicies = new(http); HybridLink = new(http); Templates = new(http); Campaigns = new(http); CloudGraph = new(http); CloudTemplates = new(http); Business = new(http); Channels = new(http); QuickReplies = new(http); BanSafe = new(http); Contacts = new(http); OfficialGroups = new(http); Catalogs = new(http); Groups = new(http); Chats = new(http); Labels = new(http); Presence = new(http); Profile = new(http); Privacy = new(http); ClientTokens = new(http); Identities = new(http); Users = new(http); Media = new(http); WhatsAppMedia = new(http); HistorySync = new(http);
     }
     public Task<RawCursorPage<T>> PaginateRawAsync<T>(RawRequest request, RawPageDecoder<T> decode, string cursorParameter = "cursor") => RawCursorPage<T>.LoadAsync(http, request, decode, cursorParameter);
     public Task<ApiResponse<T>> RawAsync<T>(HttpMethod method, string path, JsonElement? body = null, RequestOptions? options = null, IReadOnlyList<KeyValuePair<string, string>>? query = null) => http.RequestAsync<T>(method, path, body, options, query);
@@ -70,6 +71,7 @@ public sealed class Messages
     private static string Path(string session, string action) => $"/messaging/{Uri.EscapeDataString(session)}/messages/{action}";
     public Task<ApiResponse<SuccessEnvelope<MessageResponse>>> SendAsync(string session, SendMessageRequest body, RequestOptions? options = null)
     {
+        InteractiveMessages.Validate(body.Content);
         if (body.Conversation.Id is null && body.Conversation.PhoneNumber is null && body.Conversation.Bsuid is null && body.Conversation.Username is null) throw new PolymorfaValidationException("A conversation identifier is required.", "invalid_parameter");
         var descriptor = body.Content switch { DescriptorImageContent c => (c.Image, WhatsAppUploadMediaType.Image), DescriptorVideoContent c => (c.Video, WhatsAppUploadMediaType.Video), DescriptorFileContent c => (c.File, WhatsAppUploadMediaType.Document), DescriptorVoiceContent c => (c.Voice, c.Voice.Ptt == true ? WhatsAppUploadMediaType.Ptt : WhatsAppUploadMediaType.Audio), StickerContent c => (c.Sticker, WhatsAppUploadMediaType.Sticker), _ => ((WhatsAppMediaSendDescriptor?)null, default(WhatsAppUploadMediaType)) };
         if (body.Content is StickerContent { Sticker: null }) throw new PolymorfaConfigurationException("A sticker descriptor is required.");

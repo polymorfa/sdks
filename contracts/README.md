@@ -23,6 +23,25 @@ reconciliation, accepted staging/production API evidence, and publication are
 separate unfinished gates. `campaign-20261014-contract.test.ts` checks all thirty
 wire operations; it does not establish provider delivery or deployed access.
 
+## Interactive message candidate
+
+`interactive-messages.json` pins button, carousel and list branches to draft API PR #562.
+Linked Devices accepts ten total controls and at most three CTAs. Replies can mix with URL/call; copy/catalog cannot mix with replies. Carousels contain 2–10 image/video cards with homogeneous controls within each card. Media headers and carousel payloads remain one send.
+Native list bounds follow the thirty-row contract; Official lists retain ten rows.
+Official API replies retain the three-button limit. SDK arrays preserve all
+parameters. Replace the draft pin with the accepted API revision and verify
+matching staging before package publication.
+
+`native-interactive-messages.json` attributes the pinned media-header and carousel
+fields to public source and native wire fixtures in all six languages. It also
+records the existing composed-campaign stable Reply ID fixtures without adding
+an accepted campaign contract. Each language registers this inventory in its
+coverage ledger. Both shared coverage commands check the pin, snapshot bytes,
+public mappings and evidence; removed registrations or stale attribution fail.
+The accepted API/SDK baseline stays unchanged. These checks establish source
+attribution. Native execution, physical package checks and matching API acceptance
+remain separate requirements.
+
 ## Request log supplement
 
 `request-logs.json` pins `GET /platform/projects/{projectId}/request-logs` and
@@ -555,7 +574,12 @@ discovery uses `BridgeClient`, and the CLI listener protocol stays CLI-only; the
    reviewed counts, zero changed fingerprints, valid public method mappings,
    and source snapshot integrity.
 
-`npm run check:coverage` uses the checked-in snapshots. Its strict flag requires
+`npm run check:coverage` uses the checked-in snapshots. The checker always
+validates interactive supplement registration when reading the repository's
+`contracts/coverage.json`; use `--interactive-supplement` when checking a candidate
+copy of that ledger. Independent contract fixtures remain generic coverage
+inputs and do not inherit the repository's separately pinned supplement.
+Its strict flag requires
 a ledger row for every operation; it does not require every row to be covered.
 The cross-repository workflow compares an exact source revision and reports
 missing or changed contracts for follow-up. Its dedicated GitHub App must have
@@ -645,6 +669,46 @@ schemas, and the related Messaging and Platform campaign and analytics fields,
 from API `dev` merge commit `8d248b578a7c76034b30a5a97349adcd15ce5c55`
 (polymorfa/polymorfa#406), with both source paths and file hashes.
 `campaign-ab-tests-contract.test.ts` checks the SDK types against it.
+
+## Feature evaluation supplement
+
+`feature-evaluation.json` records the four feature availability operations and
+their referenced components from API `dev` merge commit
+`2e38a3342b0692e62c3fa62f432d98b8d681c5bb` (polymorfa/polymorfa#816), with both
+source paths and file hashes. `scripts/sync-feature-evaluation-contract.mjs`
+extracts it without changing the operation objects. Run it with a monorepo
+checkout and an exact commit to refresh the supplement.
+
+The supplement was first pinned at `d36e12ff05` (polymorfa/polymorfa#561).
+That PR added the optional request `locale` (`en` or `pt-BR`) and the item
+fields `state` (`off`, `opt_in` or `on`), `terms` and `enrollmentSource`
+(`customer`, `staff` or null). `exposureToken` is always null, and
+`measurementAllowed` is accepted with no effect. The enrollment and exposure
+routes changed only in their descriptions; the exposure route always returns 403.
+
+The October 27 repin to #816 adds native experiments to both evaluate
+operations. Each returned feature has a required `experiments` array of
+`{ key, variant, revision, assigned }`. The single-experiment decision fields
+are deprecated with fixed values: `variant` and `experimentRevision` are always
+null, and `experimentAssigned` is always false. `measurementAllowed` is marked
+deprecated. The resolved `evaluateFeatures` component set also picks up shared
+`PublicError` codes added on API dev since #561, such as
+`team_deletion_scheduled` and `whatsapp_number_not_registered`; no SDK type
+reads them from this supplement.
+
+All four operations stay excluded, with the reasons in `coverage.json`, and no
+SDK package calls them. `evaluateFeatures` accepts team and project
+credentials; callers use an authenticated request. The three account routes
+require dashboard identity. `feature-evaluation-contract.test.ts` checks that
+the stored operations reproduce the recorded fingerprints with
+`check-coverage.mjs`, that the reviewed request and response fields (including
+`experiments`) are present, and that the ledger and SDK sources keep the
+exclusions.
+
+The full snapshots and `coverage.json` stay pinned to `contracts/source.json`.
+At the next full repin, these four rows change as recorded here. No SDK method
+or type depends on this supplement, so `scripts/release-gate.mjs` does not hold
+publication for it.
 
 ## Campaign webhook metadata supplement
 

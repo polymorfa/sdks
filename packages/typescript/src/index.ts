@@ -368,6 +368,10 @@ export type {
   BartenderMode,
   AsyncAcceptedData,
   ButtonsMessageContent,
+  ButtonsMedia,
+  InteractiveMediaSource,
+  CarouselCard,
+  CarouselMessageContent,
   BusinessProfile,
   BusinessProfileCategory,
   BusinessProfileHours,
@@ -651,6 +655,7 @@ export type {
   SeenRequest,
   SendAddressMessageRequest,
   SendButtonsMessageRequest,
+  SendCarouselMessageRequest,
   SendCallPermissionRequestMessageRequest,
   SendOrderDetailsMessageRequest,
   SendOrderStatusMessageRequest,
@@ -1416,3 +1421,5 @@ export * from "./messaging/campaign-drip.js";
 
 export type { IncomingOrderCart } from "./messaging/order-cart.js";
 export type { CloudReadinessFailureCode } from "./messaging/cloud-readiness.js";
+
+export * from "./messaging/passkeys.js";
