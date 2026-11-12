@@ -4646,6 +4646,12 @@
       "baselineUnchanged": true,
       "published": false,
       "language": "rust"
+    },
+    "interactiveMessages": {
+      "inventory": "contracts/native-interactive-messages.json",
+      "language": "rust",
+      "baselineUnchanged": true,
+      "published": false
     }
   }
 }
